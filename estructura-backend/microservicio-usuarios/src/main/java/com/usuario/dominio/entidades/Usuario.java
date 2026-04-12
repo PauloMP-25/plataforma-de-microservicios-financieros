@@ -30,7 +30,7 @@ public class Usuario implements UserDetails{
     private Long id;
 
     @Column(nullable = false, unique = true, length = 100)
-    private String username;
+    private String nombreUsuario;
 
     @Column(nullable = false)
     private String password;
