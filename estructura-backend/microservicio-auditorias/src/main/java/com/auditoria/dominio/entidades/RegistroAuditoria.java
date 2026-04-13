@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -15,9 +14,8 @@ import java.util.UUID;
     name = "registros_auditoria",
     indexes = {
         @Index(name = "idx_auditoria_modulo",    columnList = "modulo"),
-        @Index(name = "idx_auditoria_nivel",     columnList = "nivel"),
         @Index(name = "idx_auditoria_fecha",     columnList = "fecha_hora"),
-        @Index(name = "idx_auditoria_usuario",   columnList = "usuario")
+        @Index(name = "idx_auditoria_usuario",   columnList = "nombre_usuario")
     }
 )
 @Getter
@@ -35,8 +33,8 @@ public class RegistroAuditoria {
     @Column(name = "fecha_hora", nullable = false)
     private LocalDateTime fechaHora;
 
-    @Column(name = "usuario", nullable = false, length = 150)
-    private String usuario;
+    @Column(name = "nombre_usuario", nullable = false, length = 150)
+    private String nombreUsuario;
 
     @Column(name = "accion", nullable = false, length = 100)
     private String accion;
@@ -49,9 +47,6 @@ public class RegistroAuditoria {
 
     @Column(name = "detalles", columnDefinition = "TEXT")
     private String detalles;
-
-    @Column(name = "nivel", nullable = false, length = 20)
-    private String nivel;
 
     @PrePersist
     protected void alCrear() {

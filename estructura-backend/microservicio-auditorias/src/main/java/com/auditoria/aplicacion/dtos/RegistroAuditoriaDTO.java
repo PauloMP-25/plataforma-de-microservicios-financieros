@@ -14,6 +14,5 @@ public record RegistroAuditoriaDTO(
     String        accion,
     String        modulo,
     String        ipOrigen,
-    String        detalles,
-    String        nivel
+    String        detalles
 ) {}

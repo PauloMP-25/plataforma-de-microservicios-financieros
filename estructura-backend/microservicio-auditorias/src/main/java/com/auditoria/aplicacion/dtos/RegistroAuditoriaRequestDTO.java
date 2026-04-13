@@ -16,7 +16,7 @@ public record RegistroAuditoriaRequestDTO(
 
     @NotBlank(message = "El campo 'usuario' es obligatorio")
     @Size(max = 150)
-    String usuario,
+    String nombreUsuario,
 
     @NotBlank(message = "El campo 'accion' es obligatorio")
     @Size(max = 100)
@@ -29,12 +29,5 @@ public record RegistroAuditoriaRequestDTO(
     @Size(max = 45, message = "IP no puede superar 45 caracteres (IPv6)")
     String ipOrigen,
 
-    String detalles,
-
-    @NotBlank(message = "El campo 'nivel' es obligatorio")
-    @Pattern(
-        regexp = "INFO|WARNING|CRITICAL",
-        message = "El nivel debe ser INFO, WARNING o CRITICAL"
-    )
-    String nivel
+    String detalles
 ) {}

@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class RegistroAuditoriaService {
+public class ServicioRegistroAuditoria {
 
     private final RegistroAuditoriaRepository repositorioAuditoria;
 
@@ -22,8 +22,8 @@ public class RegistroAuditoriaService {
 
     @Transactional
     public RegistroAuditoriaDTO registrarEvento(RegistroAuditoriaRequestDTO request) {
-        log.info("[AUDITORIA] Registrando evento: accion={}, modulo={}, nivel={}",
-                 request.accion(), request.modulo(), request.nivel());
+        log.info("[AUDITORIA] Registrando evento: accion={}, modulo={}",
+                 request.accion(), request.modulo());
 
         RegistroAuditoria entidad = convertirAEntidad(request);
         RegistroAuditoria guardado = repositorioAuditoria.save(entidad);
@@ -35,16 +35,14 @@ public class RegistroAuditoriaService {
     // ─── Lectura ──────────────────────────────────────────────────────────────
 
     @Transactional(readOnly = true)
-    public Page<RegistroAuditoriaDTO> listarRegistros(String modulo, String nivel, Pageable paginacion) {
+    public Page<RegistroAuditoriaDTO> listarRegistros(String modulo, Pageable paginacion) {
         log.debug("[AUDITORIA] Consultando registros: modulo={}, nivel={}, pagina={}",
-                  modulo, nivel, paginacion.getPageNumber());
+                  modulo, paginacion.getPageNumber());
 
         // Normalizar cadenas vacías a null para que el query los ignore
         String moduloFiltro = (modulo != null && modulo.isBlank()) ? null : modulo;
-        String nivelFiltro  = (nivel  != null && nivel.isBlank())  ? null : nivel;
-
         return repositorioAuditoria
-                .buscarPorFiltros(moduloFiltro, nivelFiltro, paginacion)
+                .buscarPorFiltros(moduloFiltro, paginacion)
                 .map(this::convertirADTO);
     }
 
@@ -53,12 +51,11 @@ public class RegistroAuditoriaService {
     private RegistroAuditoria convertirAEntidad(RegistroAuditoriaRequestDTO dto) {
         return RegistroAuditoria.builder()
                 .fechaHora(dto.fechaHora()) // null → @PrePersist asignará LocalDateTime.now()
-                .usuario(dto.usuario())
+                .nombreUsuario(dto.nombreUsuario())
                 .accion(dto.accion())
                 .modulo(dto.modulo())
                 .ipOrigen(dto.ipOrigen())
                 .detalles(dto.detalles())
-                .nivel(dto.nivel())
                 .build();
     }
 
@@ -66,12 +63,11 @@ public class RegistroAuditoriaService {
         return new RegistroAuditoriaDTO(
                 entidad.getId(),
                 entidad.getFechaHora(),
-                entidad.getUsuario(),
+                entidad.getNombreUsuario(),
                 entidad.getAccion(),
                 entidad.getModulo(),
                 entidad.getIpOrigen(),
-                entidad.getDetalles(),
-                entidad.getNivel()
+                entidad.getDetalles()
         );
     }
 }

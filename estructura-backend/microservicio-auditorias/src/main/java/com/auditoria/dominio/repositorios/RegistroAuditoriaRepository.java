@@ -16,16 +16,17 @@ public interface RegistroAuditoriaRepository extends JpaRepository<RegistroAudit
     /**
      * Filtra por módulo y/o nivel. Ambos parámetros son opcionales.
      * Si llegan como null, la condición se ignora con el truco (:param IS NULL OR ...).
+     * @param modulo
+     * @param paginacion
+     * @return 
      */
     @Query("""
         SELECT a FROM RegistroAuditoria a
         WHERE (:modulo IS NULL OR LOWER(a.modulo) = LOWER(:modulo))
-          AND (:nivel  IS NULL OR LOWER(a.nivel)  = LOWER(:nivel))
         ORDER BY a.fechaHora DESC
         """)
     Page<RegistroAuditoria> buscarPorFiltros(
         @Param("modulo") String modulo,
-        @Param("nivel")  String nivel,
         Pageable paginacion
     );
 }
