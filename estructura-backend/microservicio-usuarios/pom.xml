@@ -12,7 +12,7 @@
 	<artifactId>microservicio-usuario</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>microservicio-usuario</name>
-	<description>Servicio de Autenticacion e Identidad con Bloqueo de IP.</description>
+	<description>Gestiona el acceso, contraseñas, roles y la lógica de seguridad de bloqueo de IP tras 3 intentos fallidos.</description>
 	<url/>
 	<licenses>
 		<license/>
