@@ -10,12 +10,13 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "tokens_confirmacion_email")
-@Getter
 @Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class TokenConfirmacionEmail {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -37,6 +38,7 @@ public class TokenConfirmacionEmail {
 
     /**
      * Verifica si el token ha expirado.
+     * @return 
      */
     public boolean estaExpirado() {
         return LocalDateTime.now().isAfter(expiraEn);
@@ -44,6 +46,7 @@ public class TokenConfirmacionEmail {
 
     /**
      * Verifica si el token ya fue confirmado.
+     * @return 
      */
     public boolean estaConfirmado() {
         return confirmadoEn != null;

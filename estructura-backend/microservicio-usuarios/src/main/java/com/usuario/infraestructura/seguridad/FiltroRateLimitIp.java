@@ -1,8 +1,8 @@
 package com.usuario.infraestructura.seguridad;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.iam.application.dto.ErrorApi;
-import com.iam.application.service.ServicioBloqueoIp;
+import com.usuario.aplicacion.dtos.ErrorApi;
+import com.usuario.aplicacion.servicios.ServicioBloqueoIp;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,7 +27,6 @@ import java.io.IOException;
 public class FiltroRateLimitIp extends OncePerRequestFilter {
 
     private static final String RUTA_LOGIN = "/api/v1/auth/login";
-
     private final ServicioBloqueoIp servicioBloqueoIp;
     private final ObjectMapper objectMapper;
 
@@ -47,7 +46,7 @@ public class FiltroRateLimitIp extends OncePerRequestFilter {
 
         log.debug("FiltroRateLimitIp → {} desde IP: {}", request.getRequestURI(), ipCliente);
 
-        if (servicioBloqueoIp.estaBloqueado(ipCliente)) {long minutosRestantes = servicioBloqueoIp.minutosParaDesbloqueo(ipCliente);
+        if (servicioBloqueoIp.bloqueado(ipCliente)) {long minutosRestantes = servicioBloqueoIp.minutosParaDesbloqueo(ipCliente);
 
             log.warn("IP bloqueada: {} ({} min restantes)", ipCliente, minutosRestantes);
 

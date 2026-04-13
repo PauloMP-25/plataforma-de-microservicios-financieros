@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class UserDetails implements UserDetailsService{
+public class DetallesUsuario implements UserDetailsService{
     private final UsuarioRepository usuarioRepository;
 
     @Override

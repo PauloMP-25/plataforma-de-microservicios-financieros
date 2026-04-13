@@ -8,13 +8,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.repository.query.Param;
 
 public interface IntentoLoginRepository extends JpaRepository<IntentoLogin, Long> {
-
     Optional<IntentoLogin> findByDireccionIp(String direccionIp);
 
     /**
      * Limpieza programada: IPs bloqueadas cuyo tiempo ya expiró.
+     * @param ahora
+     * @return 
      */
     @Modifying
     @Transactional
@@ -24,12 +26,11 @@ public interface IntentoLoginRepository extends JpaRepository<IntentoLogin, Long
     
     /**
      * Limpieza de registros antiguos no bloqueados (housekeeping).
+     * @param umbral
+     * @return 
      */
     @Modifying
     @Transactional
     @Query("DELETE FROM IntentoLogin il WHERE il.bloqueado = false AND il.ultimaModificacion < :umbral")
     int eliminarRegistrosAntiguos(LocalDateTime umbral);
-
-    List<IntentoLogin> findByBloqueadoTrue();
-    List<IntentoLogin> findByBloqueadoHastaAntes(LocalDateTime ahora);
 }

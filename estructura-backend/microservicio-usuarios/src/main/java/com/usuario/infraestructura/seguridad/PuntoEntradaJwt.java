@@ -1,7 +1,7 @@
 package com.usuario.infraestructura.seguridad;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.iam.application.dto.ErrorApi;
+import com.usuario.aplicacion.dtos.ErrorApi;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

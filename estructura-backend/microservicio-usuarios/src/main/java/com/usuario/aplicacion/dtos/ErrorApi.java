@@ -15,7 +15,6 @@ public record ErrorApi(
         String ruta,
         LocalDateTime fechaHora,
         List<String> detalles
-
 ) {
     public static ErrorApi of(int estado, String error, String mensaje, String ruta) {
         return new ErrorApi(estado, error, mensaje, ruta, LocalDateTime.now(), null);

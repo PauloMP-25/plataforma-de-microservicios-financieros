@@ -1,7 +1,7 @@
 package com.usuario.presentacion.controladores;
 
 import com.usuario.aplicacion.dtos.ErrorApi;
-import com.usuario.aplicacion.dtos.RespuestaAuth;
+import com.usuario.aplicacion.dtos.RespuestaAutenticacion;
 import com.usuario.aplicacion.dtos.SolicitudLogin;
 import com.usuario.aplicacion.dtos.SolicitudRegistro;
 import com.usuario.aplicacion.servicios.ServicioAutenticacion;
@@ -37,10 +37,10 @@ public class ControladorAuth {
             HttpServletRequest httpRequest) {
 
         String ipCliente = obtenerIpCliente(httpRequest);
-        log.debug("POST /auth/login — ip: {}, username: {}", ipCliente, request.username());
+        log.debug("POST /auth/login — ip: {}, username: {}", ipCliente, request.getNombreUsuario());
 
         try {
-            RespuestaAuth respuesta = servicioAuth.login(request, ipCliente);
+            RespuestaAutenticacion respuesta = servicioAuth.login(request, ipCliente);
             return ResponseEntity.ok(respuesta);
 
         } catch (BadCredentialsException ex) {
@@ -64,15 +64,15 @@ public class ControladorAuth {
     // Registro
     // =========================================================================
 
-    @PostMapping("/register")
+    @PostMapping("/registrar")
     public ResponseEntity<?> registrar(
             @Valid @RequestBody SolicitudRegistro request,
             HttpServletRequest httpRequest) {
 
-        log.debug("POST /auth/register — username: {}, email: {}", request.username(), request.email());
+        log.debug("POST /auth/registrar — username: {}, email: {}", request.getNombreUsuario(), request.getCorreo());
 
         try {
-            String mensaje = servicioAuth.register(request);
+            String mensaje = servicioAuth.registrar(request);
             return ResponseEntity.accepted().body(mensaje);
 
         } catch (IllegalArgumentException ex) {
@@ -91,7 +91,7 @@ public class ControladorAuth {
     // Confirmación de email
     // =========================================================================
 
-    @GetMapping("/confirm-email")
+    @GetMapping("/confirmar-email")
     public ResponseEntity<?> confirmarEmail(
             @RequestParam String token,
             HttpServletRequest httpRequest) {
@@ -99,7 +99,7 @@ public class ControladorAuth {
         log.debug("GET /auth/confirm-email — token: {}", token);
 
         try {
-            String mensaje = servicioAuth.confirmEmail(token);
+            String mensaje = servicioAuth.confirmarCorreo(token);
             return ResponseEntity.ok(mensaje);
 
         } catch (IllegalArgumentException | IllegalStateException ex) {

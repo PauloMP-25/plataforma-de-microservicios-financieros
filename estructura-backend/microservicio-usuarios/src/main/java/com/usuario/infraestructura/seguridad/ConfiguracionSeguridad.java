@@ -13,7 +13,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -26,58 +25,47 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
-
 public class ConfiguracionSeguridad {
-    private final UserDetailsService servicioDetallesUsuario;
-    private final JwtAuthFilter filtroJwt;
-    private final IpRateLimitFilter filtroRateLimitIp;
-    private final JwtAuthEntryPoint puntoEntradaJwt;
+
+    private final DetallesUsuario detallesUsuarioService;
+    private final FiltroJwt filtroJwt;
+    private final FiltroRateLimitIp filtroRateLimitIp;
+    private final PuntoEntradaJwt puntoEntradaJwt;
 
     // =========================================================================
     // Cadena de filtros
     // =========================================================================
-
     @Bean
     public SecurityFilterChain cadenaFiltrosSeguridad(HttpSecurity http) throws Exception {
 
         http
-            .csrf(AbstractHttpConfigurer::disable)
-
-            .sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-
-            .exceptionHandling(ex ->
-                ex.authenticationEntryPoint(puntoEntradaJwt)
-            )
-
-            .authorizeHttpRequests(auth -> auth
-
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session
+                        -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .exceptionHandling(ex
+                        -> ex.authenticationEntryPoint(puntoEntradaJwt)
+                )
+                .authorizeHttpRequests(auth -> auth
                 // Públicos
                 .requestMatchers(HttpMethod.POST,
                         "/api/v1/auth/login",
-                        "/api/v1/auth/register"
+                        "/api/v1/auth/registrar"
                 ).permitAll()
-
                 .requestMatchers(HttpMethod.GET,
-                        "/api/v1/auth/confirm-email"
+                        "/api/v1/auth/confirmar-email"
                 ).permitAll()
-
                 .requestMatchers("/actuator/health").permitAll()
-
                 .requestMatchers(
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html"
                 ).permitAll()
-
                 .anyRequest().authenticated()
-            )
-
-            .authenticationProvider(proveedorAutenticacion())
-
-            .addFilterBefore(filtroRateLimitIp, UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(filtroJwt, UsernamePasswordAuthenticationFilter.class);
+                )
+                .authenticationProvider(proveedorAutenticacion())
+                .addFilterBefore(filtroRateLimitIp, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(filtroJwt, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -85,11 +73,11 @@ public class ConfiguracionSeguridad {
     // =========================================================================
     // Beans
     // =========================================================================
-
     @Bean
     public AuthenticationProvider proveedorAutenticacion() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(servicioDetallesUsuario);
+
+        provider.setUserDetailsService(detallesUsuarioService);
         provider.setPasswordEncoder(codificadorPassword());
         provider.setHideUserNotFoundExceptions(false);
         return provider;
@@ -102,7 +90,7 @@ public class ConfiguracionSeguridad {
     }
 
     @Bean
-    public PasswordEncoder codificadorPassword() {
+    public static PasswordEncoder codificadorPassword() {
         return new BCryptPasswordEncoder(12);
     }
 }

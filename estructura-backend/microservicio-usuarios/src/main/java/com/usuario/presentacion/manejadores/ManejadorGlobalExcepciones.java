@@ -1,7 +1,7 @@
 package com.usuario.presentacion.manejadores;
 
 import com.usuario.aplicacion.dtos.ErrorApi;
-import com.usuario.aplicacion.excepciones.ExcepcionIpBloqueada;
+import com.usuario.aplicacion.excepciones.IpBloqueadaException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,12 +26,12 @@ public class ManejadorGlobalExcepciones {
     // Excepciones de dominio
     // =========================================================================
 
-    @ExceptionHandler(ExcepcionIpBloqueada.class)
+    @ExceptionHandler(IpBloqueadaException.class)
     public ResponseEntity<ErrorApi> manejarIpBloqueada(
-            ExcepcionIpBloqueada ex, WebRequest request) {
+            IpBloqueadaException ex, WebRequest request) {
 
         log.warn("IP bloqueada: {} — minutos restantes: {}",
-                ex.getIpAddress(), ex.getMinutesUntilUnblock());
+                ex.getDireccionIp(), ex.getMinutosParaDesbloqueo());
 
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
                 .body(ErrorApi.of(

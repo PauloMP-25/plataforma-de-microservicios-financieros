@@ -9,8 +9,6 @@ import lombok.*;
 
 @Entity
 @Table(name = "roles")
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -30,8 +28,27 @@ public class Rol {
     // Enum de referencia para uso seguro en código
     // -------------------------------------------------------------------------
     public enum NombreRol {
+        ROLE_ADMIN,
         ROLE_FREE,
         ROLE_MID,
         ROLE_PREMIUM
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+    
+    
 }

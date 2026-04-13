@@ -38,24 +38,23 @@ public class ServicioAutenticacion {
     // =========================================================================
     // Login
     // =========================================================================
-
     @Transactional
     public RespuestaAutenticacion login(SolicitudLogin request, String ipCliente) {
         try {
             authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.nombreUsuario(),
-                        request.password()
+                        request.getNombreUsuario(),
+                        request.getPassword()
                 )
             );
 
-            ipBlockerService.loginSucceeded(ipCliente);
+            servicioBloqueoIp.loginExitoso(ipCliente);
 
-            Usuario usuario = usuarioRepository.findByNombreUsuarioConRoles(request.nombreUsuario())
+            Usuario usuario = usuarioRepository.findByNombreUsuarioConRoles(request.getNombreUsuario())
                     .orElseThrow(() -> new UsernameNotFoundException(
-                            "Usuario no encontrado tras autenticación: " + request.nombreUsuario()));
+                            "Usuario no encontrado tras autenticación: " + request.getNombreUsuario()));
 
-            String token = jwtService.generateToken(usuario);
+            String token = jwtService.generarToken(usuario);
 
             List<String> roles = usuario.getRoles().stream()
                     .map(Rol::getNombre)
@@ -65,7 +64,7 @@ public class ServicioAutenticacion {
 
             return RespuestaAutenticacion.of(
                     token,
-                    jwtService.getJwtExpiration(),
+                    jwtService.obtenerExpiracionJwt(),
                     usuario.getNombreUsuario(),
                     roles
             );
@@ -74,9 +73,9 @@ public class ServicioAutenticacion {
             boolean bloqueado = servicioBloqueoIp.loginFallido(ipCliente);
 
             if (bloqueado) {
-                log.warn("IP bloqueada — ip: {}, usuario: {}", ipCliente, request.nombreUsuario());
+                log.warn("IP bloqueada — ip: {}, usuario: {}", ipCliente, request.getNombreUsuario());
             } else {
-                log.warn("Credenciales inválidas — ip: {}, usuario: {}", ipCliente, request.nombreUsuario());
+                log.warn("Credenciales inválidas — ip: {}, usuario: {}", ipCliente, request.getNombreUsuario());
             }
 
             throw new BadCredentialsException("Credenciales inválidas.");
@@ -100,11 +99,11 @@ public class ServicioAutenticacion {
             throw new IllegalArgumentException("Las contraseñas no coinciden.");
         }
 
-        if (usuarioRepository.existsByNombreUsuario(request.nombreUsuario())) {
+        if (usuarioRepository.existsByNombreUsuario(request.getNombreUsuario())) {
             throw new IllegalStateException("El nombre de usuario ya está en uso.");
         }
 
-        if (usuarioRepository.existsByCorreo(request.correo())) {
+        if (usuarioRepository.existsByCorreo(request.getCorreo())) {
             throw new IllegalStateException("El correo ya está registrado.");
         }
 
@@ -112,9 +111,9 @@ public class ServicioAutenticacion {
                 .orElseThrow(() -> new IllegalStateException("Rol ROLE_FREE no encontrado."));
 
         Usuario usuario = Usuario.builder()
-                .nombreUsuario(request.nombreUsuario())
-                .correo(request.correo())
-                .password(passwordEncoder.encode(request.contrasena()))
+                .nombreUsuario(request.getNombreUsuario())
+                .correo(request.getCorreo())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .habilitado(false)
                 .cuentaNoBloqueada(true)
                 .build();
