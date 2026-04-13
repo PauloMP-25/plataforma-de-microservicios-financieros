@@ -1,5 +1,7 @@
 package com.usuario.aplicacion.servicios;
 
+import com.usuario.aplicacion.dtos.RegistroAuditoriaDTO;
+import com.usuario.infraestructura.clientes.ClienteAuditoria;
 import com.usuario.aplicacion.dtos.RespuestaAutenticacion;
 import com.usuario.aplicacion.dtos.SolicitudLogin;
 import com.usuario.aplicacion.dtos.SolicitudRegistro;
@@ -27,6 +29,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class ServicioAutenticacion {
+
     private final AuthenticationManager authenticationManager;
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
@@ -34,7 +37,9 @@ public class ServicioAutenticacion {
     private final ServicioJwt jwtService;
     private final ServicioBloqueoIp servicioBloqueoIp;
     private final PasswordEncoder passwordEncoder;
-    
+    private final ClienteAuditoria clienteAuditoria;
+    private static final String MODULO = "MICROSERVICIO-USUARIO";
+
     // =========================================================================
     // Login
     // =========================================================================
@@ -42,23 +47,32 @@ public class ServicioAutenticacion {
     public RespuestaAutenticacion login(SolicitudLogin request, String ipCliente) {
         try {
             authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getNombreUsuario(),
-                        request.getPassword()
-                )
+                    new UsernamePasswordAuthenticationToken(
+                            request.getNombreUsuario(),
+                            request.getPassword()
+                    )
             );
 
             servicioBloqueoIp.loginExitoso(ipCliente);
 
             Usuario usuario = usuarioRepository.findByNombreUsuarioConRoles(request.getNombreUsuario())
                     .orElseThrow(() -> new UsernameNotFoundException(
-                            "Usuario no encontrado tras autenticación: " + request.getNombreUsuario()));
+                    "Usuario no encontrado tras autenticación: " + request.getNombreUsuario()));
 
             String token = jwtService.generarToken(usuario);
 
             List<String> roles = usuario.getRoles().stream()
                     .map(Rol::getNombre)
                     .collect(Collectors.toList());
+
+            clienteAuditoria.enviar(new RegistroAuditoriaDTO(
+                    LocalDateTime.now(),
+                    usuario.getNombreUsuario(),
+                    "LOGIN_EXITOSO",
+                    "Autenticación Completa",
+                    ipCliente,
+                    MODULO
+            ));
 
             log.info("Login exitoso — usuario: '{}', ip: {}", usuario.getNombreUsuario(), ipCliente);
 
@@ -71,7 +85,14 @@ public class ServicioAutenticacion {
 
         } catch (BadCredentialsException ex) {
             boolean bloqueado = servicioBloqueoIp.loginFallido(ipCliente);
-
+            clienteAuditoria.enviar(new RegistroAuditoriaDTO(
+                    LocalDateTime.now(),
+                    request.getNombreUsuario(),
+                    "LOGIN_FALLIDO",
+                    "Credenciales inválidas: " + ex.getMessage(),
+                    ipCliente,
+                    MODULO
+            ));
             if (bloqueado) {
                 log.warn("IP bloqueada — ip: {}, usuario: {}", ipCliente, request.getNombreUsuario());
             } else {
@@ -81,9 +102,25 @@ public class ServicioAutenticacion {
             throw new BadCredentialsException("Credenciales inválidas.");
 
         } catch (DisabledException ex) {
+            clienteAuditoria.enviar(new RegistroAuditoriaDTO(
+                    LocalDateTime.now(),
+                    request.getNombreUsuario(),
+                    "LOGIN_FALLIDO",
+                    "El correo aun no ha sido confirmado",
+                    ipCliente,
+                    MODULO
+            ));
             throw new DisabledException("La cuenta no ha sido activada. Revise su correo.");
 
         } catch (LockedException ex) {
+            clienteAuditoria.enviar(new RegistroAuditoriaDTO(
+                    LocalDateTime.now(),
+                    request.getNombreUsuario(),
+                    "LOGIN_FALLIDO",
+                    "Cuenta bloqueada por intentos fallidos",
+                    ipCliente,
+                    MODULO
+            ));
             throw new LockedException("Cuenta bloqueada. Contacte con soporte.");
         }
     }
@@ -91,7 +128,6 @@ public class ServicioAutenticacion {
     // =========================================================================
     // Registro
     // =========================================================================
-
     @Transactional
     public String registrar(SolicitudRegistro request) {
 
@@ -124,6 +160,14 @@ public class ServicioAutenticacion {
         String token = generarTokenConfirmacion(usuarioGuardado);
 
         log.info("Usuario registrado — {}", usuarioGuardado.getNombreUsuario());
+        clienteAuditoria.enviar(new RegistroAuditoriaDTO(
+                LocalDateTime.now(),
+                usuario.getNombreUsuario(),
+                "REGISTRO_USUARIO",
+                "Nuevo usuario registrado",
+                usuario.getCorreo(),
+                MODULO
+        ));
 
         return "Registro exitoso. Revise su correo.";
     }
@@ -131,7 +175,6 @@ public class ServicioAutenticacion {
     // =========================================================================
     // Confirmación de email
     // =========================================================================
-
     @Transactional
     public String confirmarCorreo(String tokenValor) {
 
@@ -153,6 +196,15 @@ public class ServicioAutenticacion {
         usuario.setHabilitado(true);
         usuarioRepository.save(usuario);
 
+        clienteAuditoria.enviar(new RegistroAuditoriaDTO(
+                LocalDateTime.now(),
+                usuario.getNombreUsuario(),
+                "CUENTA_ACTIVADA",
+                "Cuenta confirmada por token de correo",
+                usuario.getCorreo(),
+                MODULO
+        ));
+
         log.info("Cuenta activada — {}", usuario.getNombreUsuario());
 
         return "Cuenta activada correctamente.";
@@ -161,7 +213,6 @@ public class ServicioAutenticacion {
     // =========================================================================
     // Métodos privados
     // =========================================================================
-
     private String generarTokenConfirmacion(Usuario usuario) {
 
         String valorToken = UUID.randomUUID().toString();
