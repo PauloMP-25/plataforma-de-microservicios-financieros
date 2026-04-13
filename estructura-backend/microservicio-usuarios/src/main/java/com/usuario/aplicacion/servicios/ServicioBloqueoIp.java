@@ -1,5 +1,7 @@
 package com.usuario.aplicacion.servicios;
 
+import com.usuario.aplicacion.dtos.RegistroAuditoriaDTO;
+import com.usuario.infraestructura.clientes.ClienteAuditoria;
 import com.usuario.dominio.entidades.IntentoLogin;
 import com.usuario.dominio.repositorios.IntentoLoginRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -11,10 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class ServicioBloqueoIp {
+
     private final IntentoLoginRepository repository;
 
     @Value("${application.ip-blocker.max-attempts:3}")
@@ -26,20 +31,18 @@ public class ServicioBloqueoIp {
     @Value("${application.ip-blocker.block-duration-hours:24}")
     private long duracionBloqueoHoras;
 
+    private final ClienteAuditoria clienteAuditoria;
+    private static final String MODULO = "MICROSERVICIO-USUARIO";
+
     /**
      * Caché en memoria: IP → fecha de desbloqueo
      */
-    private final ConcurrentHashMap<String, LocalDateTime> cacheIpsBloqueadas =
-            new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, LocalDateTime> cacheIpsBloqueadas
+            = new ConcurrentHashMap<>();
 
-    public ServicioBloqueoIp(IntentoLoginRepository repository) {
-        this.repository = repository;
-    }
-    
     // =========================================================================
     // API pública
     // =========================================================================
-
     public boolean bloqueado(String ip) {
         LocalDateTime hasta = cacheIpsBloqueadas.get(ip);
 
@@ -66,11 +69,11 @@ public class ServicioBloqueoIp {
 
         IntentoLogin intento = repository.findByDireccionIp(ip)
                 .orElseGet(() -> IntentoLogin.builder()
-                        .direccionIp(ip)
-                        .intentos(0)
-                        .ultimaModificacion(LocalDateTime.now())
-                        .bloqueado(false)
-                        .build()
+                .direccionIp(ip)
+                .intentos(0)
+                .ultimaModificacion(LocalDateTime.now())
+                .bloqueado(false)
+                .build()
                 );
 
         if (ventanaExpirada(intento)) {
@@ -84,7 +87,14 @@ public class ServicioBloqueoIp {
         if (debeBloquear) {
             intento.bloquear(duracionBloqueoHoras);
             cacheIpsBloqueadas.put(ip, intento.getBloqueadoHasta());
-
+            clienteAuditoria.enviar(new RegistroAuditoriaDTO(
+                    "SISTEMA",
+                    "IP_BLOQUEADA",
+                    String.format("IP bloqueada tras %d intentos fallidos. Duración: %dh",
+                            intento.getIntentos(), duracionBloqueoHoras),
+                    ip,
+                    MODULO
+            ));
             log.warn("IP {} BLOQUEADA — intentos: {}/{}", ip, intento.getIntentos(), maxIntentos);
         }
 
@@ -122,7 +132,6 @@ public class ServicioBloqueoIp {
     // =========================================================================
     // Jobs programados
     // =========================================================================
-
     @Scheduled(fixedDelay = 900_000)
     @Transactional
     public void desbloquearIpsExpiradas() {
@@ -144,10 +153,11 @@ public class ServicioBloqueoIp {
     // =========================================================================
     // Privados
     // =========================================================================
-
     private boolean ventanaExpirada(IntentoLogin intento) {
 
-        if (intento.getUltimaModificacion() == null) return true;
+        if (intento.getUltimaModificacion() == null) {
+            return true;
+        }
 
         long minutos = ChronoUnit.MINUTES.between(
                 intento.getUltimaModificacion(),
@@ -161,8 +171,8 @@ public class ServicioBloqueoIp {
 
         LocalDateTime ahora = LocalDateTime.now();
 
-        cacheIpsBloqueadas.entrySet().removeIf(entry ->
-                ahora.isAfter(entry.getValue())
+        cacheIpsBloqueadas.entrySet().removeIf(entry
+                -> ahora.isAfter(entry.getValue())
         );
     }
 }
