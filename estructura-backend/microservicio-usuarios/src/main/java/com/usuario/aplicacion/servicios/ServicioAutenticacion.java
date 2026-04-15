@@ -3,6 +3,7 @@ package com.usuario.aplicacion.servicios;
 import com.usuario.aplicacion.dtos.RegistroAuditoriaDTO;
 import com.usuario.infraestructura.clientes.ClienteAuditoria;
 import com.usuario.aplicacion.dtos.RespuestaAutenticacion;
+import com.usuario.aplicacion.dtos.RespuestaRegistro;
 import com.usuario.aplicacion.dtos.SolicitudLogin;
 import com.usuario.aplicacion.dtos.SolicitudRegistro;
 import com.usuario.dominio.entidades.TokenConfirmacionEmail;
@@ -11,6 +12,7 @@ import com.usuario.dominio.entidades.Usuario;
 import com.usuario.dominio.repositorios.TokenConfirmacionEmailRepository;
 import com.usuario.dominio.repositorios.RolRepository;
 import com.usuario.dominio.repositorios.UsuarioRepository;
+import com.usuario.infraestructura.clientes.ClientePerfilExterno;
 import com.usuario.infraestructura.seguridad.ServicioJwt;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +40,7 @@ public class ServicioAutenticacion {
     private final ServicioBloqueoIp servicioBloqueoIp;
     private final PasswordEncoder passwordEncoder;
     private final ClienteAuditoria clienteAuditoria;
+    private final ClientePerfilExterno clientePerfilExterno;
     private static final String MODULO = "MICROSERVICIO-USUARIO";
 
     // =========================================================================
@@ -129,7 +132,7 @@ public class ServicioAutenticacion {
     // Registro
     // =========================================================================
     @Transactional
-    public String registrar(SolicitudRegistro request) {
+    public RespuestaRegistro registrar(SolicitudRegistro request) {
 
         if (!request.contrasenasCoinciden()) {
             throw new IllegalArgumentException("Las contraseñas no coinciden.");
@@ -169,7 +172,12 @@ public class ServicioAutenticacion {
                 MODULO
         ));
 
-        return "Registro exitoso. Revise su correo.";
+        return RespuestaRegistro.builder()
+                .mensaje("Registro exitoso. Revise su correo.")
+                .nombreUsuario(usuarioGuardado.getNombreUsuario())
+                .correo(usuarioGuardado.getCorreo())
+                .tokenConfirmacion(token)
+                .build();
     }
 
     // =========================================================================
@@ -206,6 +214,7 @@ public class ServicioAutenticacion {
         ));
 
         log.info("Cuenta activada — {}", usuario.getNombreUsuario());
+        clientePerfilExterno.crearPerfilInicial(UUID.fromString(usuario.getId().toString()));
 
         return "Cuenta activada correctamente.";
     }

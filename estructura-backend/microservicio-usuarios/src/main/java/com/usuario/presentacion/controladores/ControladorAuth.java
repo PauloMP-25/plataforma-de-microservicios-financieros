@@ -2,6 +2,7 @@ package com.usuario.presentacion.controladores;
 
 import com.usuario.aplicacion.dtos.ErrorApi;
 import com.usuario.aplicacion.dtos.RespuestaAutenticacion;
+import com.usuario.aplicacion.dtos.RespuestaRegistro;
 import com.usuario.aplicacion.dtos.SolicitudLogin;
 import com.usuario.aplicacion.dtos.SolicitudRegistro;
 import com.usuario.aplicacion.servicios.ServicioAutenticacion;
@@ -72,8 +73,8 @@ public class ControladorAuth {
         log.debug("POST /auth/registrar — username: {}, email: {}", request.getNombreUsuario(), request.getCorreo());
 
         try {
-            String mensaje = servicioAuth.registrar(request);
-            return ResponseEntity.accepted().body(mensaje);
+            RespuestaRegistro respuesta = servicioAuth.registrar(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
 
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest()
