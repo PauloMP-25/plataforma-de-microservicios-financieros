@@ -1,7 +1,6 @@
 package com.usuario.aplicacion.dtos;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 import lombok.Builder;
 
 /**

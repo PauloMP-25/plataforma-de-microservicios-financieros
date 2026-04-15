@@ -6,8 +6,9 @@ import lombok.Getter;
 @Getter
 @Builder
 public class RespuestaRegistro {
-    private String mensaje;
+    private String idUsuario;
     private String nombreUsuario;
     private String correo;
     private String tokenConfirmacion;
+    
 }

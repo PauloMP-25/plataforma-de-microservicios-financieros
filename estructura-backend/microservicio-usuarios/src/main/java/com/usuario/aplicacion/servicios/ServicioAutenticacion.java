@@ -133,12 +133,8 @@ public class ServicioAutenticacion {
     // Registro
     // =========================================================================
     @Transactional
-<<<<<<< Updated upstream
+
     public RespuestaRegistro registrar(SolicitudRegistro request) {
-=======
-    public RespuestaRegistro registrar(SolicitudRegistro request
-    ) {
->>>>>>> Stashed changes
 
         if (!request.contrasenasCoinciden()) {
             throw new IllegalArgumentException("Las contraseñas no coinciden.");
@@ -179,19 +175,11 @@ public class ServicioAutenticacion {
         ));
 
         return RespuestaRegistro.builder()
-<<<<<<< Updated upstream
-                .mensaje("Registro exitoso. Revise su correo.")
-                .nombreUsuario(usuarioGuardado.getNombreUsuario())
-                .correo(usuarioGuardado.getCorreo())
-                .tokenConfirmacion(token)
-                .build();
-=======
-            .mensaje("Registro exitoso. Revise su correo.")
+            .idUsuario(usuario.getId().toString())
             .nombreUsuario(usuarioGuardado.getNombreUsuario())
             .correo(usuarioGuardado.getCorreo())
             .tokenConfirmacion(token)
             .build();
->>>>>>> Stashed changes
     }
 
     // =========================================================================

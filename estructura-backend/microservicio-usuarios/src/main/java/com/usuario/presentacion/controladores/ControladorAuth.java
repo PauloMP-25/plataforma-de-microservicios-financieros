@@ -72,10 +72,7 @@ public class ControladorAuth {
 
         try {
             RespuestaRegistro respuesta = servicioAuth.registrar(request);
-<<<<<<< Updated upstream
-=======
             // Devolvemos el objeto con estado 201 Created o 202 Accepted
->>>>>>> Stashed changes
             return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
 
         } catch (IllegalArgumentException ex) {
