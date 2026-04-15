@@ -18,44 +18,32 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class ConfiguracionSeguridad {
 
-    private final FiltroJwt       filtroJwt;
+    private final FiltroJwt filtroJwt;
     private final PuntoEntradaJwt puntoEntradaJwt;
 
     @Bean
     public SecurityFilterChain cadenaFiltros(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(s ->
-                    s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .exceptionHandling(ex ->
-                    ex.authenticationEntryPoint(puntoEntradaJwt))
-            .authorizeHttpRequests(auth -> auth
-
-                // Solo ADMIN o comunicación interna puede crear perfiles iniciales
-                .requestMatchers(HttpMethod.POST,
-                        "/api/v1/clientes/inicial").permitAll()
-                        
-
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(s
+                        -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(ex
+                        -> ex.authenticationEntryPoint(puntoEntradaJwt))
+                .authorizeHttpRequests(auth -> auth
+                // Comunicación interna (POST para perfil inicial)
+                .requestMatchers(HttpMethod.POST, "/api/v1/clientes/inicial").permitAll()
+                // Rutas protegidas (PUT para actualizar perfil)
+                .requestMatchers(HttpMethod.PUT, "/api/v1/clientes/actualizar/**").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/v1/clientes/perfil/**").authenticated()
+                // Permitir errores para ver el JSON del manejador global
+                .requestMatchers("/error").permitAll()
+                .anyRequest().authenticated()
                 // Consulta SUNAT: solo autenticados
                 //.requestMatchers(HttpMethod.GET,
                 //      "/api/v1/clientes/sunat/**")
                 //        .authenticated()
-
-                // Actualización y consulta de perfil: autenticados
-                .requestMatchers(HttpMethod.PUT,
-                        "/api/v1/clientes/completar/**")
-                        .authenticated()
-
-                .requestMatchers(HttpMethod.GET,
-                        "/api/v1/clientes/perfil/**")
-                        .authenticated()
-
-                // Actuator
-                .requestMatchers("/actuator/health").permitAll()
-
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(filtroJwt, UsernamePasswordAuthenticationFilter.class);
+                )
+                .addFilterBefore(filtroJwt, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
