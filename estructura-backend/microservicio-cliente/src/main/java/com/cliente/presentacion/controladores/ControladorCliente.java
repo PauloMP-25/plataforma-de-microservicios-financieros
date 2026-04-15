@@ -66,7 +66,7 @@ public class ControladorCliente {
     // =========================================================================
     // PUT /completar/{usuarioId}  — Actualización con validación de propiedad
     // =========================================================================
-    @PutMapping("/completar/{usuarioId}")
+    @PutMapping("/actualizar/{usuarioId}")
     public ResponseEntity<?> completarPerfil(
             @PathVariable UUID usuarioId,
             @Valid @RequestBody SolicitudCliente requestDTO,
@@ -89,7 +89,6 @@ public class ControladorCliente {
             RespuestaCliente actualizado
                     = clienteService.actualizarPerfil(usuarioId, usuarioIdToken, requestDTO, ipCliente);
             return ResponseEntity.ok(actualizado);
-
         } catch (AccesoDenegadoException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ErrorApi.of(403, "ACCESO_DENEGADO",
