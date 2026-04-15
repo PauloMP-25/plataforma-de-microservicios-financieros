@@ -5,6 +5,7 @@ import com.usuario.aplicacion.dtos.RespuestaAutenticacion;
 import com.usuario.aplicacion.dtos.SolicitudLogin;
 import com.usuario.aplicacion.dtos.SolicitudRegistro;
 import com.usuario.aplicacion.servicios.ServicioAutenticacion;
+import com.usuario.infraestructura.utilidades.UtilidadIp;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +37,7 @@ public class ControladorAuth {
             @Valid @RequestBody SolicitudLogin request,
             HttpServletRequest httpRequest) {
 
-        String ipCliente = obtenerIpCliente(httpRequest);
+        String ipCliente = UtilidadIp.obtenerIpRemota(httpRequest);
         log.debug("POST /auth/login — ip: {}, username: {}", ipCliente, request.getNombreUsuario());
 
         try {
@@ -107,24 +108,5 @@ public class ControladorAuth {
                     .body(ErrorApi.of(400, "TOKEN_INVALIDO",
                             ex.getMessage(), httpRequest.getRequestURI()));
         }
-    }
-
-    // =========================================================================
-    // Helpers
-    // =========================================================================
-
-    private String obtenerIpCliente(HttpServletRequest request) {
-
-        String xff = request.getHeader("X-Forwarded-For");
-        if (xff != null && !xff.isBlank() && !"unknown".equalsIgnoreCase(xff)) {
-            return xff.split(",")[0].trim();
-        }
-
-        String xRealIp = request.getHeader("X-Real-IP");
-        if (xRealIp != null && !xRealIp.isBlank()) {
-            return xRealIp.trim();
-        }
-
-        return request.getRemoteAddr();
     }
 }

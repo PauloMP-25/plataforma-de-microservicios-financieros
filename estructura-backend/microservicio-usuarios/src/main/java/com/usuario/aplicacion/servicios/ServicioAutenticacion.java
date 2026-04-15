@@ -84,23 +84,23 @@ public class ServicioAutenticacion {
             );
 
         } catch (BadCredentialsException ex) {
-            boolean bloqueado = servicioBloqueoIp.loginFallido(ipCliente);
-            clienteAuditoria.enviar(new RegistroAuditoriaDTO(
-                    LocalDateTime.now(),
-                    request.getNombreUsuario(),
-                    "LOGIN_FALLIDO",
-                    "Credenciales inválidas: " + ex.getMessage(),
-                    ipCliente,
-                    MODULO
-            ));
-            if (bloqueado) {
-                log.warn("IP bloqueada — ip: {}, usuario: {}", ipCliente, request.getNombreUsuario());
-            } else {
-                log.warn("Credenciales inválidas — ip: {}, usuario: {}", ipCliente, request.getNombreUsuario());
+            // 1. Registramos el fallo y verificamos si se debe bloquear
+            boolean ahoraBloqueado = servicioBloqueoIp.loginFallido(ipCliente);
+
+            // 2. Solo enviamos auditoría de LOGIN_FALLIDO si la IP NO se bloqueó en este paso
+            // (para evitar duplicar con la auditoría de IP_BLOQUEADA que ya hace el servicio)
+            if (!ahoraBloqueado) {
+                clienteAuditoria.enviar(new RegistroAuditoriaDTO(
+                        LocalDateTime.now(),
+                        request.getNombreUsuario(),
+                        "LOGIN_FALLIDO",
+                        "Credenciales inválidas",
+                        ipCliente,
+                        MODULO));
             }
-
+            log.warn("Intento fallido — ip: {}, usuario: {}, ¿Bloqueado?: {}",
+                    ipCliente, request.getNombreUsuario(), ahoraBloqueado);
             throw new BadCredentialsException("Credenciales inválidas.");
-
         } catch (DisabledException ex) {
             clienteAuditoria.enviar(new RegistroAuditoriaDTO(
                     LocalDateTime.now(),
@@ -129,7 +129,8 @@ public class ServicioAutenticacion {
     // Registro
     // =========================================================================
     @Transactional
-    public String registrar(SolicitudRegistro request) {
+    public String registrar(SolicitudRegistro request
+    ) {
 
         if (!request.contrasenasCoinciden()) {
             throw new IllegalArgumentException("Las contraseñas no coinciden.");
@@ -157,6 +158,7 @@ public class ServicioAutenticacion {
         usuario.getRoles().add(rolPorDefecto);
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
 
+        //POR EL MOMENTO ESTO QUEDA ASI
         String token = generarTokenConfirmacion(usuarioGuardado);
 
         log.info("Usuario registrado — {}", usuarioGuardado.getNombreUsuario());
@@ -176,7 +178,8 @@ public class ServicioAutenticacion {
     // Confirmación de email
     // =========================================================================
     @Transactional
-    public String confirmarCorreo(String tokenValor) {
+    public String confirmarCorreo(String tokenValor
+    ) {
 
         TokenConfirmacionEmail token = tokenRepository.findByToken(tokenValor)
                 .orElseThrow(() -> new IllegalArgumentException("Token inválido."));
@@ -209,10 +212,10 @@ public class ServicioAutenticacion {
 
         return "Cuenta activada correctamente.";
     }
-
     // =========================================================================
     // Métodos privados
     // =========================================================================
+
     private String generarTokenConfirmacion(Usuario usuario) {
 
         String valorToken = UUID.randomUUID().toString();

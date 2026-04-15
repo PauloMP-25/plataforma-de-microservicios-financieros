@@ -3,6 +3,7 @@ package com.usuario.infraestructura.seguridad;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.usuario.aplicacion.dtos.ErrorApi;
 import com.usuario.aplicacion.servicios.ServicioBloqueoIp;
+import com.usuario.infraestructura.utilidades.UtilidadIp;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,7 +43,7 @@ public class FiltroRateLimitIp extends OncePerRequestFilter {
             return;
         }
 
-        String ipCliente = extraerIpCliente(request);
+        String ipCliente = UtilidadIp.obtenerIpRemota(request);
 
         log.debug("FiltroRateLimitIp → {} desde IP: {}", request.getRequestURI(), ipCliente);
 
@@ -69,25 +70,6 @@ public class FiltroRateLimitIp extends OncePerRequestFilter {
     private boolean esPeticionLogin(HttpServletRequest request) {
         return "POST".equalsIgnoreCase(request.getMethod())
                 && request.getRequestURI().contains("/auth/login");
-    }
-
-    private String extraerIpCliente(HttpServletRequest request) {
-
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (tieneValor(xForwardedFor)) {
-            return xForwardedFor.split(",")[0].trim();
-        }
-
-        String xRealIp = request.getHeader("X-Real-IP");
-        if (tieneValor(xRealIp)) {
-            return xRealIp.trim();
-        }
-        String cfIp = request.getHeader("CF-Connecting-IP");
-        if (tieneValor(cfIp)) {
-            return cfIp.trim();
-        }
-
-        return request.getRemoteAddr();
     }
 
     private boolean tieneValor(String header) {

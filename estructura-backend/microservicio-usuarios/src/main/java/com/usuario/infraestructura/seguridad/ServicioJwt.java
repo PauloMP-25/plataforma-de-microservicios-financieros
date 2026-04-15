@@ -1,5 +1,6 @@
 package com.usuario.infraestructura.seguridad;
 
+import com.usuario.dominio.entidades.Usuario;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -20,12 +21,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Servicio responsable de toda la lógica JWT:
- * generación, validación y extracción de claims.
+ * Servicio responsable de toda la lógica JWT: generación, validación y
+ * extracción de claims.
  */
 @Service
 @Slf4j
 public class ServicioJwt {
+
     @Value("${application.security.jwt.secret-key}")
     private String claveSecreta;
 
@@ -35,21 +37,23 @@ public class ServicioJwt {
     // -------------------------------------------------------------------------
     // Generación de tokens
     // -------------------------------------------------------------------------
-
-    public String generarToken(UserDetails usuario) {
+    public String generarToken(UserDetails userDetails) {
         Map<String, Object> claimsExtra = new HashMap<>();
 
-        List<String> roles = usuario.getAuthorities().stream()
+        List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
-
+        if (userDetails instanceof Usuario usuario) {
+            claimsExtra.put("usuarioId", usuario.getId().toString());
+        }
         claimsExtra.put("roles", roles);
 
-        return construirToken(claimsExtra, usuario, expiracionJwt);
+        return construirToken(claimsExtra, userDetails, expiracionJwt);
     }
+
     private String construirToken(Map<String, Object> claimsExtra,
-                                 UserDetails usuario,
-                                 long expiracion) {
+            UserDetails usuario,
+            long expiracion) {
         return Jwts.builder()
                 .claims(claimsExtra)
                 .subject(usuario.getUsername())
@@ -70,6 +74,7 @@ public class ServicioJwt {
     public List<String> extraerRoles(String token) {
         return extraerClaim(token, claims -> (List<String>) claims.get("roles"));
     }
+
     public <T> T extraerClaim(String token, Function<Claims, T> resolvedorClaims) {
         final Claims claims = extraerTodosLosClaims(token);
         return resolvedorClaims.apply(claims);
@@ -95,6 +100,7 @@ public class ServicioJwt {
             return false;
         }
     }
+
     public boolean estaExpirado(String token) {
         return obtenerExpiracion(token).before(new Date());
     }

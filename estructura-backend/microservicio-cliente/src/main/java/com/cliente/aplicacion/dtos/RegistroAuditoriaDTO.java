@@ -1,4 +1,4 @@
-package com.usuario.aplicacion.dtos;
+package com.cliente.aplicacion.dtos;
 
 import java.time.LocalDateTime;
 import lombok.Builder;
@@ -12,15 +12,14 @@ public record RegistroAuditoriaDTO(
         LocalDateTime fechaHora,
         String nombreUsuario,
         String accion,
-        String modulo,
+        String detalles,
         String ipOrigen,
-        String detalles) {
+        String modulo) {
 
     /**
      * Constructor de conveniencia sin fechaHora (el receptor la asigna).
      */
-    public RegistroAuditoriaDTO(String nombreUsuario, String accion,
-            String detalles, String direccionIp, String modulo) {
-        this(null, nombreUsuario, accion, detalles, direccionIp, modulo);
+    public RegistroAuditoriaDTO(String nombreUsuario, String accion, String detalles, String ipOrigen, String modulo) {
+        this(LocalDateTime.now(), nombreUsuario, accion, detalles, ipOrigen, modulo);
     }
 }
