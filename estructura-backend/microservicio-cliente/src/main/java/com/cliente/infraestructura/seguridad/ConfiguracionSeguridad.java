@@ -34,7 +34,12 @@ public class ConfiguracionSeguridad {
                 // Solo ADMIN o comunicación interna puede crear perfiles iniciales
                 .requestMatchers(HttpMethod.POST,
                         "/api/v1/clientes/inicial").permitAll()
+<<<<<<< Updated upstream
                         //.hasAnyRole("ADMIN", "SYSTEM")
+=======
+                
+                .requestMatchers("/error").permitAll()
+>>>>>>> Stashed changes
 
                 // Consulta SUNAT: solo autenticados
                 //.requestMatchers(HttpMethod.GET,
@@ -43,8 +48,13 @@ public class ConfiguracionSeguridad {
 
                 // Actualización y consulta de perfil: autenticados
                 .requestMatchers(HttpMethod.PUT,
+<<<<<<< Updated upstream
                         "/api/v1/clientes/completar/**").permitAll()
                         //.authenticated()
+=======
+                        "/api/v1/clientes/actualizar/**")
+                        .authenticated()
+>>>>>>> Stashed changes
 
                 .requestMatchers(HttpMethod.GET,
                         "/api/v1/clientes/perfil/**").permitAll()

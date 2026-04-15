@@ -16,8 +16,8 @@ import java.util.UUID;
 import java.util.function.Function;
 
 /**
- * Solo VALIDA y EXTRAE claims del JWT emitido por el microservicio IAM.
- * Este servicio NO genera tokens.
+ * Solo VALIDA y EXTRAE claims del JWT emitido por el microservicio IAM. Este
+ * servicio NO genera tokens.
  */
 @Service
 @Slf4j
@@ -27,7 +27,6 @@ public class ServicioJwt {
     private String claveSecreta;
 
     // ── Extracción de claims ──────────────────────────────────────────────────
-
     public String extraerNombreUsuario(String token) {
         return extraerClaim(token, Claims::getSubject);
     }
@@ -36,7 +35,9 @@ public class ServicioJwt {
         // El IAM pone el subject como nombreUsuario, no UUID.
         // Extraemos el claim "usuarioId" que debe añadirse en el IAM (ver nota abajo)
         String raw = extraerClaim(token, claims -> claims.get("usuarioId", String.class));
-        if (raw == null) return null;
+        if (raw == null) {
+            return null;
+        }
         return UUID.fromString(raw);
     }
 
@@ -50,12 +51,11 @@ public class ServicioJwt {
     }
 
     // ── Validación ────────────────────────────────────────────────────────────
-
     public boolean esTokenValido(String token) {
         try {
-            return !estaExpirado(token);
+            String username = extraerNombreUsuario(token);
+            return (username != null && !estaExpirado(token));
         } catch (JwtException | IllegalArgumentException e) {
-            log.warn("Token JWT inválido: {}", e.getMessage());
             return false;
         }
     }
@@ -65,7 +65,6 @@ public class ServicioJwt {
     }
 
     // ── Privados ──────────────────────────────────────────────────────────────
-
     private Claims extraerTodosLosClaims(String token) {
         return Jwts.parser()
                 .verifyWith(obtenerClaveFirma())

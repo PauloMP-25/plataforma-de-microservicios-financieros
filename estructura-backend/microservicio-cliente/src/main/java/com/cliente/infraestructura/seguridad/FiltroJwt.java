@@ -92,8 +92,8 @@ public class FiltroJwt extends OncePerRequestFilter {
             escribirError(response, request.getRequestURI(), "El token JWT ha expirado.");
             return;
         } catch (JwtException e) {
-            log.warn("JWT inválido: {}", e.getMessage());
-            escribirError(response, request.getRequestURI(), "Token JWT inválido.");
+            log.error("ERROR CRITICO JWT: {}", e.getMessage(), e);
+            escribirError(response, request.getRequestURI(), "Token JWT inválido." + e.getMessage());
             return;
         }
 
