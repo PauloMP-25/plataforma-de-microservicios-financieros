@@ -31,7 +31,6 @@ public class ControladorAuth {
     // =========================================================================
     // Login
     // =========================================================================
-
     @PostMapping("/login")
     public ResponseEntity<?> login(
             @Valid @RequestBody SolicitudLogin request,
@@ -64,7 +63,6 @@ public class ControladorAuth {
     // =========================================================================
     // Registro
     // =========================================================================
-
     @PostMapping("/registrar")
     public ResponseEntity<?> registrar(
             @Valid @RequestBody SolicitudRegistro request,
@@ -74,6 +72,10 @@ public class ControladorAuth {
 
         try {
             RespuestaRegistro respuesta = servicioAuth.registrar(request);
+<<<<<<< Updated upstream
+=======
+            // Devolvemos el objeto con estado 201 Created o 202 Accepted
+>>>>>>> Stashed changes
             return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
 
         } catch (IllegalArgumentException ex) {
@@ -91,7 +93,6 @@ public class ControladorAuth {
     // =========================================================================
     // Confirmación de email
     // =========================================================================
-
     @GetMapping("/confirmar-email")
     public ResponseEntity<?> confirmarEmail(
             @RequestParam String token,
