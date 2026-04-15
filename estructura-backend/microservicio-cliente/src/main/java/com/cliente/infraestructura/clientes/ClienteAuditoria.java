@@ -1,6 +1,6 @@
-package com.usuario.infraestructura.clientes;
+package com.cliente.infraestructura.clientes;
 
-import com.usuario.aplicacion.dtos.RegistroAuditoriaDTO;
+import com.cliente.aplicacion.dtos.RegistroAuditoriaDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
