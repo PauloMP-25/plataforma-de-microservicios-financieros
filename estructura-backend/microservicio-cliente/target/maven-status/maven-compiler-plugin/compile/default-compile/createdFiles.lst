@@ -8,6 +8,7 @@ com\cliente\infraestructura\clientes\ClienteAuditoria.class
 com\cliente\aplicacion\dtos\RegistroAuditoriaDTO$RegistroAuditoriaDTOBuilder.class
 com\cliente\aplicacion\dtos\RegistroAuditoriaDTO.class
 com\cliente\presentacion\controladores\ControladorCliente.class
+com\cliente\presentacion\manejadores\ManejadorGlobalErrores.class
 com\cliente\dominio\repositorios\ClienteRepository.class
 com\cliente\infraestructura\configuracion\ConfiguracionGeneral.class
 com\cliente\aplicacion\dtos\RespuestaCliente.class

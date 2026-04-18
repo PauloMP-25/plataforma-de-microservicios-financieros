@@ -1,4 +1,4 @@
-package com.usuario.infraestructura.configuracion;
+package com.cliente.infraestructura.configuracion;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
