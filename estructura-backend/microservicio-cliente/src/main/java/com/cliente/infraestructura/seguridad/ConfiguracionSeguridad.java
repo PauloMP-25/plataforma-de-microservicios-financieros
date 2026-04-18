@@ -18,7 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class ConfiguracionSeguridad {
 
-    private final FiltroJwt       filtroJwt;
+    private final FiltroJwt filtroJwt;
     private final PuntoEntradaJwt puntoEntradaJwt;
 
     @Bean
@@ -30,35 +30,17 @@ public class ConfiguracionSeguridad {
             .exceptionHandling(ex ->
                     ex.authenticationEntryPoint(puntoEntradaJwt))
             .authorizeHttpRequests(auth -> auth
-
-                // Solo ADMIN o comunicación interna puede crear perfiles iniciales
-                .requestMatchers(HttpMethod.POST,
-                        "/api/v1/clientes/inicial").permitAll()
-<<<<<<< Updated upstream
-                        //.hasAnyRole("ADMIN", "SYSTEM")
-=======
+                // Endpoint para creación inicial
+                .requestMatchers(HttpMethod.POST, "/api/v1/clientes/inicial").permitAll()
                 
+                // Endpoint de error de Spring
                 .requestMatchers("/error").permitAll()
->>>>>>> Stashed changes
 
-                // Consulta SUNAT: solo autenticados
-                //.requestMatchers(HttpMethod.GET,
-                //      "/api/v1/clientes/sunat/**")
-                //        .authenticated()
+                // Actualización de perfil (Requiere autenticación)
+                .requestMatchers(HttpMethod.PUT, "/api/v1/clientes/actualizar/**").authenticated()
 
-                // Actualización y consulta de perfil: autenticados
-                .requestMatchers(HttpMethod.PUT,
-<<<<<<< Updated upstream
-                        "/api/v1/clientes/completar/**").permitAll()
-                        //.authenticated()
-=======
-                        "/api/v1/clientes/actualizar/**")
-                        .authenticated()
->>>>>>> Stashed changes
-
-                .requestMatchers(HttpMethod.GET,
-                        "/api/v1/clientes/perfil/**").permitAll()
-                        //.authenticated()
+                // Consulta de perfil
+                .requestMatchers(HttpMethod.GET, "/api/v1/clientes/perfil/**").permitAll()
 
                 // Actuator
                 .requestMatchers("/actuator/health").permitAll()
