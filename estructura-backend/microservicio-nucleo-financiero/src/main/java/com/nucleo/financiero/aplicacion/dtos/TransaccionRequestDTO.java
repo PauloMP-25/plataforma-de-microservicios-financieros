@@ -6,7 +6,11 @@ import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public record TransaccionRequestDTO(
 
     @NotNull(message = "El ID de usuario es obligatorio")

@@ -19,7 +19,8 @@ import java.util.stream.Collectors;
 public class CategoriaService {
 
     private final CategoriaRepository categoriaRepository;
-
+    private final ClienteAuditoria clienteAuditoria;
+    private static final String MODULO = "MICROSERVICIO-NUCLEO-FINANCIERO" 
     @Transactional
     public CategoriaDTO crear(CategoriaRequestDTO request) {
         if (categoriaRepository.existsByNombreIgnoreCase(request.nombre())) {
