@@ -2,6 +2,7 @@ package com.usuario.presentacion.controladores;
 
 import com.usuario.aplicacion.dtos.ErrorApi;
 import com.usuario.aplicacion.dtos.RespuestaAutenticacion;
+import com.usuario.aplicacion.dtos.RespuestaRegistro;
 import com.usuario.aplicacion.dtos.SolicitudLogin;
 import com.usuario.aplicacion.dtos.SolicitudRegistro;
 import com.usuario.aplicacion.servicios.ServicioAutenticacion;
@@ -31,7 +32,6 @@ public class ControladorAuth {
     // =========================================================================
     // Login
     // =========================================================================
-
     @PostMapping("/login")
     public ResponseEntity<?> login(
             @Valid @RequestBody SolicitudLogin request,
@@ -64,7 +64,6 @@ public class ControladorAuth {
     // =========================================================================
     // Registro
     // =========================================================================
-
     @PostMapping("/registrar")
     public ResponseEntity<?> registrar(
             @Valid @RequestBody SolicitudRegistro request,
@@ -73,8 +72,9 @@ public class ControladorAuth {
         log.debug("POST /auth/registrar — username: {}, email: {}", request.getNombreUsuario(), request.getCorreo());
 
         try {
-            String mensaje = servicioAuth.registrar(request);
-            return ResponseEntity.accepted().body(mensaje);
+            RespuestaRegistro respuesta = servicioAuth.registrar(request);
+            // Devolvemos el objeto con estado 201 Created o 202 Accepted
+            return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
 
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest()
@@ -91,7 +91,6 @@ public class ControladorAuth {
     // =========================================================================
     // Confirmación de email
     // =========================================================================
-
     @GetMapping("/confirmar-email")
     public ResponseEntity<?> confirmarEmail(
             @RequestParam String token,

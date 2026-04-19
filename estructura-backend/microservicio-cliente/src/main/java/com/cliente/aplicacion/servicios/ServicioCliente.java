@@ -1,6 +1,5 @@
 package com.cliente.aplicacion.servicios;
 
-import com.cliente.aplicacion.dtos.RegistroAuditoriaDTO;
 import com.cliente.aplicacion.dtos.SolicitudCliente;
 import com.cliente.aplicacion.dtos.RespuestaCliente;
 //import com.cliente.aplicacion.dtos.SunatResponseDTO;
@@ -9,6 +8,7 @@ import com.cliente.aplicacion.excepciones.ClienteNoEncontradoException;
 import com.cliente.aplicacion.excepciones.DniDuplicadoException;
 import com.cliente.dominio.entidades.Cliente;
 import com.cliente.dominio.repositorios.ClienteRepository;
+import com.cliente.aplicacion.dtos.RegistroAuditoriaDTO;
 import com.cliente.infraestructura.clientes.ClienteAuditoria;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

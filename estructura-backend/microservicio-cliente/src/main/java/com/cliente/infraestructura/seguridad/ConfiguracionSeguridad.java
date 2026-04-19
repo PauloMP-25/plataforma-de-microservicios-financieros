@@ -24,30 +24,26 @@ public class ConfiguracionSeguridad {
     @Bean
     public SecurityFilterChain cadenaFiltros(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(s ->
-                    s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .exceptionHandling(ex ->
-                    ex.authenticationEntryPoint(puntoEntradaJwt))
-            .authorizeHttpRequests(auth -> auth
-                // Endpoint para creación inicial
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(s
+                        -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(ex
+                        -> ex.authenticationEntryPoint(puntoEntradaJwt))
+                .authorizeHttpRequests(auth -> auth
+                // Comunicación interna (POST para perfil inicial)
                 .requestMatchers(HttpMethod.POST, "/api/v1/clientes/inicial").permitAll()
-                
-                // Endpoint de error de Spring
-                .requestMatchers("/error").permitAll()
-
-                // Actualización de perfil (Requiere autenticación)
+                // Rutas protegidas (PUT para actualizar perfil)
                 .requestMatchers(HttpMethod.PUT, "/api/v1/clientes/actualizar/**").authenticated()
-
-                // Consulta de perfil
-                .requestMatchers(HttpMethod.GET, "/api/v1/clientes/perfil/**").permitAll()
-
-                // Actuator
-                .requestMatchers("/actuator/health").permitAll()
-
+                .requestMatchers(HttpMethod.GET, "/api/v1/clientes/perfil/**").authenticated()
+                // Permitir errores para ver el JSON del manejador global
+                .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()
-            )
-            .addFilterBefore(filtroJwt, UsernamePasswordAuthenticationFilter.class);
+                // Consulta SUNAT: solo autenticados
+                //.requestMatchers(HttpMethod.GET,
+                //      "/api/v1/clientes/sunat/**")
+                //        .authenticated()
+                )
+                .addFilterBefore(filtroJwt, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
