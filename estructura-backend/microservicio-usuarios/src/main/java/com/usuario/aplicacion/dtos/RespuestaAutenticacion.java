@@ -13,10 +13,11 @@ public record RespuestaAutenticacion(
         String tokenAcceso,
         String tipoToken,
         long expiraEn,
+        String idUsuario,
         String nombreUsuario,
         List<String> roles
 ) {
-    public static RespuestaAutenticacion of(String token, long expiraEn, String nombreUsuario, List<String> roles) {
-        return new RespuestaAutenticacion(token, "Bearer", expiraEn, nombreUsuario, roles);
+    public static RespuestaAutenticacion of(String token, long expiraEn, String idUsuario,String nombreUsuario, List<String> roles) {
+        return new RespuestaAutenticacion(token, "Bearer", expiraEn, idUsuario, nombreUsuario, roles);
     }
 }

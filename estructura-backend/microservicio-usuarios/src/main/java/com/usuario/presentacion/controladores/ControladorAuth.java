@@ -2,9 +2,11 @@ package com.usuario.presentacion.controladores;
 
 import com.usuario.aplicacion.dtos.ErrorApi;
 import com.usuario.aplicacion.dtos.RespuestaAutenticacion;
+import com.usuario.aplicacion.dtos.RespuestaRegistro;
 import com.usuario.aplicacion.dtos.SolicitudLogin;
 import com.usuario.aplicacion.dtos.SolicitudRegistro;
 import com.usuario.aplicacion.servicios.ServicioAutenticacion;
+import com.usuario.infraestructura.utilidades.UtilidadIp;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,13 +32,12 @@ public class ControladorAuth {
     // =========================================================================
     // Login
     // =========================================================================
-
     @PostMapping("/login")
     public ResponseEntity<?> login(
             @Valid @RequestBody SolicitudLogin request,
             HttpServletRequest httpRequest) {
 
-        String ipCliente = obtenerIpCliente(httpRequest);
+        String ipCliente = UtilidadIp.obtenerIpRemota(httpRequest);
         log.debug("POST /auth/login — ip: {}, username: {}", ipCliente, request.getNombreUsuario());
 
         try {
@@ -63,7 +64,6 @@ public class ControladorAuth {
     // =========================================================================
     // Registro
     // =========================================================================
-
     @PostMapping("/registrar")
     public ResponseEntity<?> registrar(
             @Valid @RequestBody SolicitudRegistro request,
@@ -72,8 +72,9 @@ public class ControladorAuth {
         log.debug("POST /auth/registrar — username: {}, email: {}", request.getNombreUsuario(), request.getCorreo());
 
         try {
-            String mensaje = servicioAuth.registrar(request);
-            return ResponseEntity.accepted().body(mensaje);
+            RespuestaRegistro respuesta = servicioAuth.registrar(request);
+            // Devolvemos el objeto con estado 201 Created o 202 Accepted
+            return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
 
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest()
@@ -90,7 +91,6 @@ public class ControladorAuth {
     // =========================================================================
     // Confirmación de email
     // =========================================================================
-
     @GetMapping("/confirmar-email")
     public ResponseEntity<?> confirmarEmail(
             @RequestParam String token,
@@ -107,24 +107,5 @@ public class ControladorAuth {
                     .body(ErrorApi.of(400, "TOKEN_INVALIDO",
                             ex.getMessage(), httpRequest.getRequestURI()));
         }
-    }
-
-    // =========================================================================
-    // Helpers
-    // =========================================================================
-
-    private String obtenerIpCliente(HttpServletRequest request) {
-
-        String xff = request.getHeader("X-Forwarded-For");
-        if (xff != null && !xff.isBlank() && !"unknown".equalsIgnoreCase(xff)) {
-            return xff.split(",")[0].trim();
-        }
-
-        String xRealIp = request.getHeader("X-Real-IP");
-        if (xRealIp != null && !xRealIp.isBlank()) {
-            return xRealIp.trim();
-        }
-
-        return request.getRemoteAddr();
     }
 }

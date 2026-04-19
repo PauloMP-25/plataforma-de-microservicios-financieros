@@ -66,7 +66,7 @@ public class ServicioBloqueoIp {
 
     @Transactional
     public boolean loginFallido(String ip) {
-
+        // 1. Buscamos o creamos el registro
         IntentoLogin intento = repository.findByDireccionIp(ip)
                 .orElseGet(() -> IntentoLogin.builder()
                 .direccionIp(ip)
@@ -76,17 +76,19 @@ public class ServicioBloqueoIp {
                 .build()
                 );
 
+        // 2. Si pasó mucho tiempo desde el último fallo, reiniciamos contador
         if (ventanaExpirada(intento)) {
             intento.reiniciar();
         }
 
         intento.incrementarIntentos();
-
+        intento.setUltimaModificacion(LocalDateTime.now()); // Aseguramos refrescar la fecha
         boolean debeBloquear = intento.getIntentos() >= maxIntentos;
 
         if (debeBloquear) {
             intento.bloquear(duracionBloqueoHoras);
             cacheIpsBloqueadas.put(ip, intento.getBloqueadoHasta());
+            //Auditoria
             clienteAuditoria.enviar(new RegistroAuditoriaDTO(
                     "SISTEMA",
                     "IP_BLOQUEADA",
@@ -98,7 +100,7 @@ public class ServicioBloqueoIp {
             log.warn("IP {} BLOQUEADA — intentos: {}/{}", ip, intento.getIntentos(), maxIntentos);
         }
 
-        repository.save(intento);
+        repository.saveAndFlush(intento);
         return debeBloquear;
     }
 
