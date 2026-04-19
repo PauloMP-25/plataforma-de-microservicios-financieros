@@ -19,20 +19,18 @@ public interface TransaccionRepository extends JpaRepository<Transaccion, UUID> 
         SELECT t FROM Transaccion t
         JOIN FETCH t.categoria c
         WHERE t.usuarioId = :usuarioId
-          AND (:tipo          IS NULL OR t.tipo = :tipo)
-          AND (:categoriaId   IS NULL OR c.id = :categoriaId)
-          AND (:nombreCliente IS NULL OR LOWER(t.nombreCliente) LIKE LOWER(CONCAT('%', :nombreCliente, '%')))
-          AND (:desde         IS NULL OR t.fechaTransaccion >= :desde)
-          AND (:hasta         IS NULL OR t.fechaTransaccion <= :hasta)
+          AND (CAST(:tipo AS string) IS NULL OR t.tipo = :tipo)
+          AND (CAST(:categoriaId AS uuid) IS NULL OR c.id = :categoriaId)
+          AND (CAST(:desde AS localdatetime) IS NULL OR t.fechaTransaccion >= :desde)
+          AND (CAST(:hasta AS localdatetime) IS NULL OR t.fechaTransaccion <= :hasta)
         ORDER BY t.fechaTransaccion DESC
         """)
     Page<Transaccion> buscarConFiltros(
-            @Param("usuarioId")     UUID usuarioId,
-            @Param("tipo")          TipoMovimiento tipo,
-            @Param("categoriaId")   UUID categoriaId,
-            @Param("nombreCliente") String nombreCliente,
-            @Param("desde")         LocalDateTime desde,
-            @Param("hasta")         LocalDateTime hasta,
+            @Param("usuarioId") UUID usuarioId,
+            @Param("tipo") TipoMovimiento tipo,
+            @Param("categoriaId") UUID categoriaId,
+            @Param("desde") LocalDateTime desde,
+            @Param("hasta") LocalDateTime hasta,
             Pageable paginacion
     );
 
@@ -45,8 +43,8 @@ public interface TransaccionRepository extends JpaRepository<Transaccion, UUID> 
         """)
     BigDecimal sumarIngresosPorPeriodo(
             @Param("usuarioId") UUID usuarioId,
-            @Param("desde")     LocalDateTime desde,
-            @Param("hasta")     LocalDateTime hasta
+            @Param("desde") LocalDateTime desde,
+            @Param("hasta") LocalDateTime hasta
     );
 
     @Query("""
@@ -58,8 +56,8 @@ public interface TransaccionRepository extends JpaRepository<Transaccion, UUID> 
         """)
     BigDecimal sumarGastosPorPeriodo(
             @Param("usuarioId") UUID usuarioId,
-            @Param("desde")     LocalDateTime desde,
-            @Param("hasta")     LocalDateTime hasta
+            @Param("desde") LocalDateTime desde,
+            @Param("hasta") LocalDateTime hasta
     );
 
     @Query("""
@@ -71,8 +69,8 @@ public interface TransaccionRepository extends JpaRepository<Transaccion, UUID> 
         """)
     long contarPorTipoYPeriodo(
             @Param("usuarioId") UUID usuarioId,
-            @Param("tipo")      TipoMovimiento tipo,
-            @Param("desde")     LocalDateTime desde,
-            @Param("hasta")     LocalDateTime hasta
+            @Param("tipo") TipoMovimiento tipo,
+            @Param("desde") LocalDateTime desde,
+            @Param("hasta") LocalDateTime hasta
     );
 }

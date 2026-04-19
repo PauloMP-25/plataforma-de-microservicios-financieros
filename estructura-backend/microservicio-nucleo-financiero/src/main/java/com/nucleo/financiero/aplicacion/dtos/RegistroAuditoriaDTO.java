@@ -2,13 +2,11 @@ package com.nucleo.financiero.aplicacion.dtos;
 
 import java.time.LocalDateTime;
 import lombok.Builder;
-import lombok.Getter;
 
 /**
  * DTO de SALIDA: lo que devuelve la API al consultar registros de auditoría.
  * Java Record: inmutable, compacto, ideal para respuestas de lectura.
  */
-@Getter
 @Builder
 public record RegistroAuditoriaDTO(
         LocalDateTime fechaHora,

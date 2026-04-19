@@ -34,7 +34,7 @@ public class Transaccion {
     @Column(name = "usuario_id", nullable = false)
     private UUID usuarioId;
 
-    @Column(name = "nombre_cliente", nullable = false, length = 150)
+    @Column(name = "nombre_cliente",columnDefinition = "TEXT", nullable = false)
     private String nombreCliente;
 
     @Column(nullable = false, precision = 15, scale = 2)
