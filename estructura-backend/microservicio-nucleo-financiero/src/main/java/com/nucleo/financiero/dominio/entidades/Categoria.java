@@ -12,6 +12,7 @@ import java.util.UUID;
         @Index(name = "idx_categoria_nombre", columnList = "nombre")
     }
 )
+@Data
 @Getter
 @Setter
 @NoArgsConstructor

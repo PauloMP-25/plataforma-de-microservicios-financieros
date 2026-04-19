@@ -69,7 +69,6 @@ public class TransaccionController {
             @RequestParam UUID usuarioId,
             @RequestParam(required = false) TipoMovimiento tipo,
             @RequestParam(required = false) UUID categoriaId,
-            @RequestParam(required = false) String nombreCliente,
             @RequestParam(required = false) Integer mes,
             @RequestParam(required = false) Integer anio,
             @RequestParam(defaultValue = "0") int pagina,
@@ -85,7 +84,7 @@ public class TransaccionController {
         }
         try {
             Page<TransaccionDTO> resultado = transaccionService
-                    .listarHistorial(usuarioId, tipo, categoriaId, nombreCliente, mes, anio, paginacion, ipCliente);
+                    .listarHistorial(usuarioId, tipo, categoriaId, mes, anio, paginacion, ipCliente);
             return ResponseEntity.ok(resultado);
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest()

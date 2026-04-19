@@ -40,7 +40,7 @@ public class TransaccionService {
                 guardada.getId(), guardada.getTipo(), guardada.getMonto(), guardada.getNombreCliente());
         clienteAuditoria.enviar(new RegistroAuditoriaDTO(
                 LocalDateTime.now(),
-                guardada.getUsuarioId(),
+                guardada.getUsuarioId().toString(),
                 "REGISTRO_TRANSACCION_EXITOSO",
                 "La transaccion ha sido registrada correctamente",
                 ipCliente,
@@ -66,7 +66,7 @@ public class TransaccionService {
         log.info("Lote completado: {} transacciones guardadas", guardadas.size());
         clienteAuditoria.enviar(new RegistroAuditoriaDTO(
                 LocalDateTime.now(),
-                guardadas.getFirst().getUsuarioId(),
+                guardadas.getFirst().getUsuarioId().toString(),
                 "REGISTRO_TRANSACCIONES_EXITOSO",
                 "Las transacciones ha sido registrada correctamente",
                 ipCliente,
@@ -78,7 +78,7 @@ public class TransaccionService {
     @Transactional(readOnly = true)
     public Page<TransaccionDTO> listarHistorial(
             UUID usuarioId, TipoMovimiento tipo, UUID categoriaId,
-            String nombreCliente, Integer mes, Integer anio, Pageable paginacion,
+            Integer mes, Integer anio, Pageable paginacion,
             String ipCliente) {
 
         LocalDateTime[] rango = resolverRangoFechas(mes, anio);
@@ -92,7 +92,6 @@ public class TransaccionService {
         ));
         return transaccionRepository.buscarConFiltros(
                 usuarioId, tipo, categoriaId,
-                (nombreCliente != null && nombreCliente.isBlank()) ? null : nombreCliente,
                 rango[0], rango[1], paginacion
         ).map(TransaccionDTO::desde);
     }

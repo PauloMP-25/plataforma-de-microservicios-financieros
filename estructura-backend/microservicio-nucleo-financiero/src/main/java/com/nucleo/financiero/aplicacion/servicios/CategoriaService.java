@@ -5,6 +5,7 @@ import com.nucleo.financiero.aplicacion.dtos.CategoriaRequestDTO;
 import com.nucleo.financiero.dominio.entidades.Categoria;
 import com.nucleo.financiero.dominio.entidades.Categoria.TipoMovimiento;
 import com.nucleo.financiero.dominio.repositorios.CategoriaRepository;
+import com.nucleo.financiero.infraestructura.clientes.ClienteAuditoria;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,7 @@ public class CategoriaService {
 
     private final CategoriaRepository categoriaRepository;
     private final ClienteAuditoria clienteAuditoria;
-    private static final String MODULO = "MICROSERVICIO-NUCLEO-FINANCIERO" 
+    private static final String MODULO = "MICROSERVICIO-NUCLEO-FINANCIERO";
     @Transactional
     public CategoriaDTO crear(CategoriaRequestDTO request) {
         if (categoriaRepository.existsByNombreIgnoreCase(request.nombre())) {
