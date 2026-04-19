@@ -34,15 +34,15 @@ public class TransaccionService {
     private static final String MODULO = "MICROSERVICIO-NUCLEO-FINANCIERO";
 
     @Transactional
-    public TransaccionDTO registrar(TransaccionRequestDTO request) {
+    public TransaccionDTO registrar(TransaccionRequestDTO request, String ipCliente) {
         Transaccion guardada = transaccionRepository.save(construirEntidad(request));
         log.info("Transacción registrada: {} — {} {} ({})",
                 guardada.getId(), guardada.getTipo(), guardada.getMonto(), guardada.getNombreCliente());
         clienteAuditoria.enviar(new RegistroAuditoriaDTO(
                 LocalDateTime.now(),
-                request.getId(),
-                "LOGIN_FALLIDO",
-                "El correo aun no ha sido confirmado",
+                guardada.getUsuarioId(),
+                "REGISTRO_TRANSACCION_EXITOSO",
+                "La transaccion ha sido registrada correctamente",
                 ipCliente,
                 MODULO
         ));
@@ -50,7 +50,7 @@ public class TransaccionService {
     }
 
     @Transactional
-    public List<TransaccionDTO> registrarLote(List<TransaccionRequestDTO> solicitudes) {
+    public List<TransaccionDTO> registrarLote(List<TransaccionRequestDTO> solicitudes, String ipCliente) {
         if (solicitudes == null || solicitudes.isEmpty()) {
             throw new IllegalArgumentException("La lista de transacciones no puede estar vacía.");
         }
@@ -64,15 +64,32 @@ public class TransaccionService {
                 .collect(Collectors.toList());
         List<Transaccion> guardadas = transaccionRepository.saveAll(entidades);
         log.info("Lote completado: {} transacciones guardadas", guardadas.size());
+        clienteAuditoria.enviar(new RegistroAuditoriaDTO(
+                LocalDateTime.now(),
+                guardadas.getFirst().getUsuarioId(),
+                "REGISTRO_TRANSACCIONES_EXITOSO",
+                "Las transacciones ha sido registrada correctamente",
+                ipCliente,
+                MODULO
+        ));
         return guardadas.stream().map(TransaccionDTO::desde).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public Page<TransaccionDTO> listarHistorial(
             UUID usuarioId, TipoMovimiento tipo, UUID categoriaId,
-            String nombreCliente, Integer mes, Integer anio, Pageable paginacion) {
+            String nombreCliente, Integer mes, Integer anio, Pageable paginacion,
+            String ipCliente) {
 
         LocalDateTime[] rango = resolverRangoFechas(mes, anio);
+        clienteAuditoria.enviar(new RegistroAuditoriaDTO(
+                LocalDateTime.now(),
+                usuarioId.toString(),
+                "LISTAR_HISTORIAL_EXITOSO",
+                "La lista de historial de las transacciones del usuario se envio correctamente",
+                ipCliente,
+                MODULO
+        ));
         return transaccionRepository.buscarConFiltros(
                 usuarioId, tipo, categoriaId,
                 (nombreCliente != null && nombreCliente.isBlank()) ? null : nombreCliente,
@@ -81,7 +98,7 @@ public class TransaccionService {
     }
 
     @Transactional(readOnly = true)
-    public ResumenFinancieroDTO obtenerResumen(UUID usuarioId, Integer mes, Integer anio) {
+    public ResumenFinancieroDTO obtenerResumen(UUID usuarioId, Integer mes, Integer anio, String ipCliente) {
         LocalDateTime[] rango = resolverRangoFechas(mes, anio);
         LocalDateTime desde = rango[0];
         LocalDateTime hasta = rango[1];
@@ -90,7 +107,14 @@ public class TransaccionService {
         BigDecimal totalGastos = transaccionRepository.sumarGastosPorPeriodo(usuarioId, desde, hasta);
         long cantidadIngresos = transaccionRepository.contarPorTipoYPeriodo(usuarioId, TipoMovimiento.INGRESO, desde, hasta);
         long cantidadGastos = transaccionRepository.contarPorTipoYPeriodo(usuarioId, TipoMovimiento.GASTO, desde, hasta);
-
+        clienteAuditoria.enviar(new RegistroAuditoriaDTO(
+                LocalDateTime.now(),
+                usuarioId.toString(),
+                "OBTENER_RESUMEN_TRANSACCIONES",
+                "Se obtuvo el resumen de las transacciones del usuario correctamente",
+                ipCliente,
+                MODULO
+        ));
         return ResumenFinancieroDTO.calcular(desde, hasta, totalIngresos, totalGastos, cantidadIngresos, cantidadGastos);
     }
 
