@@ -4,6 +4,8 @@ Cliente HTTP para comunicación con los microservicios Java.
 Usa httpx con manejo de errores y timeouts.
 """
 
+from wsgiref import headers
+
 import httpx
 import logging
 from typing import Optional, Dict, Any
@@ -26,6 +28,7 @@ class ClienteNucleoFinanciero:
     def obtener_historial_transacciones(
         self,
         usuario_id: str,
+        token: str,
         tamanio: int = 200,
         pagina: int = 0,
         mes: Optional[int] = None,
@@ -48,11 +51,16 @@ class ClienteNucleoFinanciero:
         if tipo:
             params["tipo"] = tipo
 
+        # Agregamos el encabezado de Authorization
+        headers = {
+            "Authorization": f"Bearer {token}"
+        }
+        
         url = f"{self.url_base}/api/v1/financiero/transacciones/historial"
 
         try:
             with httpx.Client(timeout=self.timeout) as cliente:
-                respuesta = cliente.get(url, params=params)
+                respuesta = cliente.get(url, params=params, headers=headers)
                 respuesta.raise_for_status()
                 logger.info(
                     "[CLIENTE] Historial obtenido para usuarioId=%s — %d transacciones",
@@ -70,12 +78,14 @@ class ClienteNucleoFinanciero:
             logger.error("[CLIENTE] Timeout al consultar historial para usuarioId=%s", usuario_id)
             raise TimeoutError("El microservicio financiero tardó demasiado en responder.")
         except httpx.HTTPStatusError as exc:
-            logger.error("[CLIENTE] Error HTTP %d al consultar historial", exc.response.status_code)
+            if exc.response.status_code == 401:
+                logger.error("[CLIENTE] Error 401: El token proporcionado no es válido o expiró")
             raise ValueError(f"Error del servidor financiero: {exc.response.status_code} — {exc.response.text}")
 
     def obtener_resumen_financiero(
         self,
         usuario_id: str,
+        token: str,
         mes: Optional[int] = None,
         anio: Optional[int] = None,
     ) -> Dict[str, Any]:
@@ -89,11 +99,15 @@ class ClienteNucleoFinanciero:
         if anio:
             params["anio"] = anio
 
+        # Agregamos el encabezado de Authorization
+        headers = {
+            "Authorization": f"Bearer {token}"
+        }
         url = f"{self.url_base}/api/v1/financiero/transacciones/resumen"
 
         try:
             with httpx.Client(timeout=self.timeout) as cliente:
-                respuesta = cliente.get(url, params=params)
+                respuesta = cliente.get(url, params=params, headers=headers)
                 respuesta.raise_for_status()
                 return respuesta.json()
         except httpx.ConnectError:
@@ -101,7 +115,9 @@ class ClienteNucleoFinanciero:
                 f"No se puede conectar al microservicio financiero en {self.url_base}."
             )
         except httpx.HTTPStatusError as exc:
-            raise ValueError(f"Error al obtener resumen: {exc.response.status_code}")
+            if exc.response.status_code == 401:
+                logger.error("[CLIENTE] Error 401: El token proporcionado no es válido o expiró")
+            raise ValueError(f"Error del servidor financiero: {exc.response.status_code} — {exc.response.text}")
 
     def obtener_categorias(self) -> list:
         """
