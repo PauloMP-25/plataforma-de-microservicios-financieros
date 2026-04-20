@@ -9,8 +9,14 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * @author Paulo Entidad principal de usuario. Implementa UserDetails de Spring
- * Security para integración directa con el contexto de autenticación.
+ * Entidad de dominio que representa a un Usuario en el sistema.
+ * <p>
+ * Implementa {@link UserDetails} para permitir que Spring Security gestione la
+ * autenticación y autorización directamente con este objeto.
+ * </p>
+ *
+ * * @author Paulo
+ * @version 1.0
  */
 @Entity
 @Table(name = "usuarios")
@@ -86,8 +92,9 @@ public class Usuario implements UserDetails {
     }
 
     /**
-     *
-     * @return
+     * Convierte los roles de la entidad en autoridades reconocidas por Spring
+     * Security.
+     * @return Colección de autoridades (permisos/roles).
      */
     @Override
     public java.util.Collection<? extends org.springframework.security.core.GrantedAuthority> getAuthorities() {

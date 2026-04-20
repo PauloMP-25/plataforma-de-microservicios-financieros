@@ -1,8 +1,9 @@
 package com.mensajeria.infraestructura.clientes;
 
+import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 
 /**
  * Feign Client que invoca el endpoint de activación de cuenta en el
@@ -21,12 +22,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface ClienteUsuario {
 
     /**
-     * Activa la cuenta del usuario enviando el token de confirmación de email.
-     * Mapea a: GET /api/v1/auth/confirmar-email?token={token}
-     *
-     * @param token el valor UUID del TokenConfirmacionEmail en ms-usuario
-     * @return mensaje de confirmación
+     * Activa la cuenta del usuario por su ID. Mapea al nuevo endpoint PUT en
+     * MS-Usuario.
+     * @param usuarioId
+     * @return 
      */
-    @GetMapping("/api/v1/auth/confirmar-email")
-    String confirmarEmail(@RequestParam("token") String token);
+    @PutMapping("/api/v1/auth/activar/{usuarioId}")
+    String activarCuenta(@PathVariable("usuarioId") UUID usuarioId);
 }
