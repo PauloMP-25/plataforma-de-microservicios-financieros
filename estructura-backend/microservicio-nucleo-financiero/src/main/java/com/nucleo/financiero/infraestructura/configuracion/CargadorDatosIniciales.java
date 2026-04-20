@@ -1,6 +1,5 @@
 package com.nucleo.financiero.infraestructura.configuracion;
 
-import com.nucleo.financiero.dominio.entidades.Categoria;
 import com.nucleo.financiero.dominio.entidades.Categoria.TipoMovimiento;
 import com.nucleo.financiero.dominio.repositorios.CategoriaRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +11,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class CargadorDatosIniciales implements CommandLineRunner {
+public abstract class CargadorDatosIniciales implements CommandLineRunner {
 
     private final CategoriaRepository categoriaRepository;
 
@@ -35,22 +34,22 @@ public class CargadorDatosIniciales implements CommandLineRunner {
         new Object[]{"Otros Ingresos",          "Ingresos no categorizados",               "plus-circle",     TipoMovimiento.INGRESO}
     );
 
-//    @Override
-//    public void run(String... args) {
-//        int creadas = 0;
-//        for (Object[] datos : CATEGORIAS_DEFAULT) {
-//            String nombre = (String) datos[0];
-//            if (!categoriaRepository.existsByNombreIgnoreCase(nombre)) {
-//                categoriaRepository.save(Categoria.builder()
-//                        .nombre(nombre)
-//                        .descripcion((String) datos[1])
-//                        .icono((String) datos[2])
-//                        .tipo((TipoMovimiento) datos[3])
-//                        .build());
-//                creadas++;
-//            }
-//        }
-//        if (creadas > 0) log.info("---- {} CATEGORÍAS DEFAULT CREADAS ----", creadas);
-//        else             log.info("---- CATEGORÍAS DEFAULT: ya existen, sin cambios ----");
-//    }
+    @Override
+    public void run(String... args) {
+        int creadas = 0;
+        for (Object[] datos : CATEGORIAS_DEFAULT) {
+            String nombre = (String) datos[0];
+            if (!categoriaRepository.existsByNombreIgnoreCase(nombre)) {
+                categoriaRepository.save(Categoria.builder()
+                        .nombre(nombre)
+                        .descripcion((String) datos[1])
+                        .icono((String) datos[2])
+                        .tipo((TipoMovimiento) datos[3])
+                        .build());
+                creadas++;
+            }
+        }
+        if (creadas > 0) log.info("---- {} CATEGORÍAS DEFAULT CREADAS ----", creadas);
+        else             log.info("---- CATEGORÍAS DEFAULT: ya existen, sin cambios ----");
+    }
 }

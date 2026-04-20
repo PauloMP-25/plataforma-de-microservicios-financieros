@@ -1,17 +1,19 @@
 package com.usuario.aplicacion.servicios;
 
+import com.usuario.aplicacion.dtos.NuevoPasswordDTO;
 import com.usuario.aplicacion.dtos.RegistroAuditoriaDTO;
 import com.usuario.infraestructura.clientes.ClienteAuditoria;
 import com.usuario.aplicacion.dtos.RespuestaAutenticacion;
 import com.usuario.aplicacion.dtos.RespuestaRegistro;
+import com.usuario.aplicacion.dtos.SolicitudGenerarOtp;
 import com.usuario.aplicacion.dtos.SolicitudLogin;
+import com.usuario.aplicacion.dtos.SolicitudRecuperacion;
 import com.usuario.aplicacion.dtos.SolicitudRegistro;
-import com.usuario.dominio.entidades.TokenConfirmacionEmail;
 import com.usuario.dominio.entidades.Rol;
 import com.usuario.dominio.entidades.Usuario;
-import com.usuario.dominio.repositorios.TokenConfirmacionEmailRepository;
 import com.usuario.dominio.repositorios.RolRepository;
 import com.usuario.dominio.repositorios.UsuarioRepository;
+import com.usuario.infraestructura.clientes.ClienteMensajeria;
 import com.usuario.infraestructura.clientes.ClientePerfilExterno;
 import com.usuario.infraestructura.seguridad.ServicioJwt;
 import lombok.RequiredArgsConstructor;
@@ -23,9 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -35,98 +35,40 @@ public class ServicioAutenticacion {
     private final AuthenticationManager authenticationManager;
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
-    private final TokenConfirmacionEmailRepository tokenRepository;
     private final ServicioJwt jwtService;
     private final ServicioBloqueoIp servicioBloqueoIp;
     private final PasswordEncoder passwordEncoder;
     private final ClienteAuditoria clienteAuditoria;
     private final ClientePerfilExterno clientePerfilExterno;
+    private final ClienteMensajeria clienteMensajeria;
     private static final String MODULO = "MICROSERVICIO-USUARIO";
 
     // =========================================================================
-    // Login
+    // Login (Optimizado: Menos código, misma seguridad)
     // =========================================================================
     @Transactional
     public RespuestaAutenticacion login(SolicitudLogin request, String ipCliente) {
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getNombreUsuario(),
-                            request.getPassword()
-                    )
-            );
+        // La autenticación lanzará excepciones que atrapará el ManejadorGlobal
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.correo(), request.password())
+        );
 
-            servicioBloqueoIp.loginExitoso(ipCliente);
+        servicioBloqueoIp.loginExitoso(ipCliente);
 
-            Usuario usuario = usuarioRepository.findByNombreUsuarioConRoles(request.getNombreUsuario())
-                    .orElseThrow(() -> new UsernameNotFoundException(
-                    "Usuario no encontrado tras autenticación: " + request.getNombreUsuario()));
+        Usuario usuario = usuarioRepository.findByCorreo(request.correo())
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + request.correo()));
 
-            String token = jwtService.generarToken(usuario);
+        registrarEventoAuditoria(usuario.getNombreUsuario(), "LOGIN_EXITOSO", "Autenticación Completa", ipCliente);
 
-            List<String> roles = usuario.getRoles().stream()
-                    .map(Rol::getNombre)
-                    .collect(Collectors.toList());
+        log.info("Login exitoso — usuario: '{}'", usuario.getNombreUsuario());
 
-            clienteAuditoria.enviar(new RegistroAuditoriaDTO(
-                    LocalDateTime.now(),
-                    usuario.getNombreUsuario(),
-                    "LOGIN_EXITOSO",
-                    "Autenticación Completa",
-                    ipCliente,
-                    MODULO
-            ));
-
-            log.info("Login exitoso — usuario: '{}', ip: {}", usuario.getNombreUsuario(), ipCliente);
-
-            return RespuestaAutenticacion.of(
-                    token,
-                    jwtService.obtenerExpiracionJwt(),
-                    usuario.getId().toString(),
-                    usuario.getNombreUsuario(),
-                    roles
-            );
-
-        } catch (BadCredentialsException ex) {
-            // 1. Registramos el fallo y verificamos si se debe bloquear
-            boolean ahoraBloqueado = servicioBloqueoIp.loginFallido(ipCliente);
-
-            // 2. Solo enviamos auditoría de LOGIN_FALLIDO si la IP NO se bloqueó en este paso
-            // (para evitar duplicar con la auditoría de IP_BLOQUEADA que ya hace el servicio)
-            if (!ahoraBloqueado) {
-                clienteAuditoria.enviar(new RegistroAuditoriaDTO(
-                        LocalDateTime.now(),
-                        request.getNombreUsuario(),
-                        "LOGIN_FALLIDO",
-                        "Credenciales inválidas",
-                        ipCliente,
-                        MODULO));
-            }
-            log.warn("Intento fallido — ip: {}, usuario: {}, ¿Bloqueado?: {}",
-                    ipCliente, request.getNombreUsuario(), ahoraBloqueado);
-            throw new BadCredentialsException("Credenciales inválidas.");
-        } catch (DisabledException ex) {
-            clienteAuditoria.enviar(new RegistroAuditoriaDTO(
-                    LocalDateTime.now(),
-                    request.getNombreUsuario(),
-                    "LOGIN_FALLIDO",
-                    "El correo aun no ha sido confirmado",
-                    ipCliente,
-                    MODULO
-            ));
-            throw new DisabledException("La cuenta no ha sido activada. Revise su correo.");
-
-        } catch (LockedException ex) {
-            clienteAuditoria.enviar(new RegistroAuditoriaDTO(
-                    LocalDateTime.now(),
-                    request.getNombreUsuario(),
-                    "LOGIN_FALLIDO",
-                    "Cuenta bloqueada por intentos fallidos",
-                    ipCliente,
-                    MODULO
-            ));
-            throw new LockedException("Cuenta bloqueada. Contacte con soporte.");
-        }
+        return RespuestaAutenticacion.of(
+                jwtService.generarToken(usuario),
+                jwtService.obtenerExpiracionJwt(),
+                usuario.getId().toString(),
+                usuario.getNombreUsuario(),
+                usuario.getRoles().stream().map(Rol::getNombre).toList()
+        );
     }
 
     // =========================================================================
@@ -134,109 +76,104 @@ public class ServicioAutenticacion {
     // =========================================================================
     @Transactional
     public RespuestaRegistro registrar(SolicitudRegistro request) {
-        if (!request.contrasenasCoinciden()) {
-            throw new IllegalArgumentException("Las contraseñas no coinciden.");
-        }
-
-        if (usuarioRepository.existsByNombreUsuario(request.getNombreUsuario())) {
-            throw new IllegalStateException("El nombre de usuario ya está en uso.");
-        }
-
-        if (usuarioRepository.existsByCorreo(request.getCorreo())) {
-            throw new IllegalStateException("El correo ya está registrado.");
-        }
+        validarDisponibilidad(request);
 
         Rol rolPorDefecto = rolRepository.findByNombre(Rol.NombreRol.ROLE_FREE.name())
-                .orElseThrow(() -> new IllegalStateException("Rol ROLE_FREE no encontrado."));
+                .orElseThrow(() -> new IllegalStateException("Rol base no configurado."));
 
         Usuario usuario = Usuario.builder()
-                .nombreUsuario(request.getNombreUsuario())
-                .correo(request.getCorreo())
-                .password(passwordEncoder.encode(request.getPassword()))
+                .nombreUsuario(request.nombreUsuario())
+                .correo(request.correo())
+                .password(passwordEncoder.encode(request.password()))
                 .habilitado(false)
                 .cuentaNoBloqueada(true)
                 .build();
-
         usuario.getRoles().add(rolPorDefecto);
+
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
 
-        //POR EL MOMENTO ESTO QUEDA ASI
-        String token = generarTokenConfirmacion(usuarioGuardado);
+        // Orquestación con otros microservicios
         clientePerfilExterno.crearPerfilInicial(usuarioGuardado.getId());
+        dispararOtp(usuarioGuardado, "EMAIL");
 
-        log.info("Usuario registrado — {}", usuarioGuardado.getNombreUsuario());
-        clienteAuditoria.enviar(new RegistroAuditoriaDTO(
-                LocalDateTime.now(),
-                usuario.getNombreUsuario(),
-                "REGISTRO_USUARIO",
-                "Nuevo usuario registrado",
-                usuario.getCorreo(),
-                MODULO
-        ));
+        registrarEventoAuditoria(usuarioGuardado.getNombreUsuario(), "REGISTRO_USUARIO", "Pendiente de validación", usuarioGuardado.getCorreo());
 
         return RespuestaRegistro.builder()
-            .idUsuario(usuario.getId().toString())
-            .nombreUsuario(usuarioGuardado.getNombreUsuario())
-            .correo(usuarioGuardado.getCorreo())
-            .tokenConfirmacion(token)
-            .build();
+                .idUsuario(usuarioGuardado.getId().toString())
+                .nombreUsuario(usuarioGuardado.getNombreUsuario())
+                .correo(usuarioGuardado.getCorreo())
+                .build();
     }
 
     // =========================================================================
-    // Confirmación de email
+    // Métodos de Soporte y Recuperación
     // =========================================================================
     @Transactional
-    public String confirmarCorreo(String tokenValor
-    ) {
+    public void activarCuenta(UUID usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("ID no encontrado"));
 
-        TokenConfirmacionEmail token = tokenRepository.findByToken(tokenValor)
-                .orElseThrow(() -> new IllegalArgumentException("Token inválido."));
-
-        if (token.estaConfirmado()) {
-            throw new IllegalStateException("Token ya utilizado.");
+        if (!usuario.isHabilitado()) {
+            usuario.setHabilitado(true);
+            usuarioRepository.save(usuario);
+            registrarEventoAuditoria(usuario.getNombreUsuario(), "CUENTA_ACTIVADA", "OTP validado", usuario.getCorreo());
         }
-
-        if (token.estaExpirado()) {
-            throw new IllegalStateException("El token ha expirado.");
-        }
-
-        token.setConfirmadoEn(LocalDateTime.now());
-        tokenRepository.save(token);
-
-        Usuario usuario = token.getUsuario();
-        usuario.setHabilitado(true);
-        usuarioRepository.save(usuario);
-
-        clienteAuditoria.enviar(new RegistroAuditoriaDTO(
-                LocalDateTime.now(),
-                usuario.getNombreUsuario(),
-                "CUENTA_ACTIVADA",
-                "Cuenta confirmada por token de correo",
-                usuario.getCorreo(),
-                MODULO
-        ));
-
-        log.info("Cuenta activada — {}", usuario.getNombreUsuario());
-        clientePerfilExterno.crearPerfilInicial(UUID.fromString(usuario.getId().toString()));
-
-        return "Cuenta activada correctamente.";
     }
+
     // =========================================================================
-    // Métodos privados
+    // Recuperación de Contraseña
     // =========================================================================
+    @Transactional
+    public void iniciarRecuperacion(SolicitudRecuperacion solicitud) {
+        Usuario usuario = usuarioRepository.findByCorreo(solicitud.correo())
+                .orElseThrow(() -> new IllegalArgumentException("Correo no encontrado"));
 
-    private String generarTokenConfirmacion(Usuario usuario) {
+        // Disparamos a mensajería con un "tipo" diferente
+        dispararOtp(usuario, "CAMBIAR_PASSWORD");
+        registrarEventoAuditoria(usuario.getNombreUsuario(), "CAMBIAR_PASSWORD", "Pendiente de confirmacion", usuario.getCorreo());
 
-        String valorToken = UUID.randomUUID().toString();
+        log.info("Proceso de recuperación iniciado para: {}", usuario.getCorreo());
+    }
 
-        TokenConfirmacionEmail token = TokenConfirmacionEmail.builder()
-                .token(valorToken)
-                .usuario(usuario)
-                .expiraEn(LocalDateTime.now().plusHours(24))
-                .build();
+    @Transactional
+    public void completarRecuperacion(NuevoPasswordDTO datos) {
+        if (!datos.contrasenasCoinciden()) {
+            throw new IllegalArgumentException("Contraseñas no coinciden");
+        }
 
-        tokenRepository.save(token);
+        UUID usuarioId = clienteMensajeria.validarCodigoYObtenerUsuario(datos.codigoOtp());
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalStateException("Usuario no encontrado tras validar OTP"));
 
-        return valorToken;
+        usuario.setPassword(passwordEncoder.encode(datos.nuevoPassword()));
+        usuarioRepository.save(usuario);
+        log.info("Password reseteado para: {}", usuario.getNombreUsuario());
+    }
+
+    // =========================================================================
+    // Helpers Privados
+    // =========================================================================
+    private void validarDisponibilidad(SolicitudRegistro request) {
+        if (!request.contrasenasCoinciden()) {
+            throw new IllegalArgumentException("Contraseñas no coinciden");
+        }
+        if (usuarioRepository.existsByNombreUsuario(request.nombreUsuario())) {
+            throw new IllegalStateException("Usuario duplicado");
+        }
+        if (usuarioRepository.existsByCorreo(request.correo())) {
+            throw new IllegalStateException("Correo duplicado");
+        }
+    }
+
+    private void dispararOtp(Usuario usuario, String tipo) {
+        try {
+            clienteMensajeria.generarCodigo(new SolicitudGenerarOtp(usuario.getId(), usuario.getCorreo(), tipo));
+        } catch (Exception e) {
+            log.error("Fallo al contactar MS-Mensajería para {}: {}", usuario.getCorreo(), e.getMessage());
+        }
+    }
+
+    private void registrarEventoAuditoria(String usuario, String accion, String desc, String origen) {
+        clienteAuditoria.enviar(new RegistroAuditoriaDTO(LocalDateTime.now(), usuario, accion, desc, origen, MODULO));
     }
 }
