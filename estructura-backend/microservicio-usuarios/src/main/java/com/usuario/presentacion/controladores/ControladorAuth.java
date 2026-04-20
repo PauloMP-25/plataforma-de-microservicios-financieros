@@ -9,6 +9,8 @@ import com.usuario.aplicacion.servicios.ServicioAutenticacion;
 import com.usuario.infraestructura.utilidades.UtilidadIp;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.util.Map;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -91,21 +93,14 @@ public class ControladorAuth {
     // =========================================================================
     // Confirmación de email
     // =========================================================================
-    @GetMapping("/confirmar-email")
-    public ResponseEntity<?> confirmarEmail(
-            @RequestParam String token,
-            HttpServletRequest httpRequest) {
-
-        log.debug("GET /auth/confirm-email — token: {}", token);
-
+    @PutMapping("/activar/{usuarioId}")
+    public ResponseEntity<?> activarCuenta(@PathVariable UUID usuarioId) {
+        log.debug("Petición de activación recibida para usuarioId: {}", usuarioId);
         try {
-            String mensaje = servicioAuth.confirmarCorreo(token);
-            return ResponseEntity.ok(mensaje);
-
-        } catch (IllegalArgumentException | IllegalStateException ex) {
-            return ResponseEntity.badRequest()
-                    .body(ErrorApi.of(400, "TOKEN_INVALIDO",
-                            ex.getMessage(), httpRequest.getRequestURI()));
+            servicioAuth.activarCuenta(usuarioId);
+            return ResponseEntity.ok(Map.of("mensaje", "Cuenta activada correctamente"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 }

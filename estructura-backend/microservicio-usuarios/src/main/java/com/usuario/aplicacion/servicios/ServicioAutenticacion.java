@@ -4,14 +4,14 @@ import com.usuario.aplicacion.dtos.RegistroAuditoriaDTO;
 import com.usuario.infraestructura.clientes.ClienteAuditoria;
 import com.usuario.aplicacion.dtos.RespuestaAutenticacion;
 import com.usuario.aplicacion.dtos.RespuestaRegistro;
+import com.usuario.aplicacion.dtos.SolicitudGenerarOtp;
 import com.usuario.aplicacion.dtos.SolicitudLogin;
 import com.usuario.aplicacion.dtos.SolicitudRegistro;
-import com.usuario.dominio.entidades.TokenConfirmacionEmail;
 import com.usuario.dominio.entidades.Rol;
 import com.usuario.dominio.entidades.Usuario;
-import com.usuario.dominio.repositorios.TokenConfirmacionEmailRepository;
 import com.usuario.dominio.repositorios.RolRepository;
 import com.usuario.dominio.repositorios.UsuarioRepository;
+import com.usuario.infraestructura.clientes.ClienteMensajeria;
 import com.usuario.infraestructura.clientes.ClientePerfilExterno;
 import com.usuario.infraestructura.seguridad.ServicioJwt;
 import lombok.RequiredArgsConstructor;
@@ -35,12 +35,12 @@ public class ServicioAutenticacion {
     private final AuthenticationManager authenticationManager;
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
-    private final TokenConfirmacionEmailRepository tokenRepository;
     private final ServicioJwt jwtService;
     private final ServicioBloqueoIp servicioBloqueoIp;
     private final PasswordEncoder passwordEncoder;
     private final ClienteAuditoria clienteAuditoria;
     private final ClientePerfilExterno clientePerfilExterno;
+    private final ClienteMensajeria clienteMensajeria;
     private static final String MODULO = "MICROSERVICIO-USUARIO";
 
     // =========================================================================
@@ -145,7 +145,7 @@ public class ServicioAutenticacion {
         if (usuarioRepository.existsByCorreo(request.getCorreo())) {
             throw new IllegalStateException("El correo ya está registrado.");
         }
-
+        // 2. Obtención de Rol y Construcción de Entidad
         Rol rolPorDefecto = rolRepository.findByNombre(Rol.NombreRol.ROLE_FREE.name())
                 .orElseThrow(() -> new IllegalStateException("Rol ROLE_FREE no encontrado."));
 
@@ -158,85 +158,71 @@ public class ServicioAutenticacion {
                 .build();
 
         usuario.getRoles().add(rolPorDefecto);
+        
+        // 3. Persistencia
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
 
-        //POR EL MOMENTO ESTO QUEDA ASI
-        String token = generarTokenConfirmacion(usuarioGuardado);
+        // 4. Creación de Perfil (Invocación Síncrona a MS-Perfiles)
         clientePerfilExterno.crearPerfilInicial(usuarioGuardado.getId());
+        
+        // 5. DISPARADOR DE MENSAJERÍA (Con manejo de resiliencia básico)
+        try {
+            SolicitudGenerarOtp solicitudOtp = new SolicitudGenerarOtp(
+                    usuarioGuardado.getId(),
+                    usuarioGuardado.getCorreo(),
+                    "EMAIL"
+            );
+            clienteMensajeria.generarCodigo(solicitudOtp);
+            log.info("Evento de OTP enviado a mensajería para usuario: {}", usuarioGuardado.getId());
+        } catch (Exception e) {
+            log.error("No se pudo disparar el OTP para {}: {}", usuarioGuardado.getCorreo(), e.getMessage());
+            // Nota: Aquí podrías decidir si lanzar una excepción o dejar que el usuario 
+            // solicite un reenvío después desde el frontend.
+        }
 
-        log.info("Usuario registrado — {}", usuarioGuardado.getNombreUsuario());
+        // 6. Auditoría y Respuesta
         clienteAuditoria.enviar(new RegistroAuditoriaDTO(
                 LocalDateTime.now(),
-                usuario.getNombreUsuario(),
+                usuarioGuardado.getNombreUsuario(),
                 "REGISTRO_USUARIO",
-                "Nuevo usuario registrado",
-                usuario.getCorreo(),
+                "Nuevo usuario registrado - Pendiente de validación",
+                usuarioGuardado.getCorreo(),
                 MODULO
         ));
 
         return RespuestaRegistro.builder()
-            .idUsuario(usuario.getId().toString())
-            .nombreUsuario(usuarioGuardado.getNombreUsuario())
-            .correo(usuarioGuardado.getCorreo())
-            .tokenConfirmacion(token)
-            .build();
+                .idUsuario(usuario.getId().toString())
+                .nombreUsuario(usuarioGuardado.getNombreUsuario())
+                .correo(usuarioGuardado.getCorreo())
+                .build();
     }
 
     // =========================================================================
-    // Confirmación de email
+    // Activación de Cuenta (Invocado por MS-Mensajería)
     // =========================================================================
     @Transactional
-    public String confirmarCorreo(String tokenValor
-    ) {
+    public void activarCuenta(UUID usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con ID: " + usuarioId));
 
-        TokenConfirmacionEmail token = tokenRepository.findByToken(tokenValor)
-                .orElseThrow(() -> new IllegalArgumentException("Token inválido."));
-
-        if (token.estaConfirmado()) {
-            throw new IllegalStateException("Token ya utilizado.");
+        if (usuario.isHabilitado()) {
+            log.warn("Intento de activación en cuenta ya habilitada: {}", usuarioId);
+            return;
         }
 
-        if (token.estaExpirado()) {
-            throw new IllegalStateException("El token ha expirado.");
-        }
-
-        token.setConfirmadoEn(LocalDateTime.now());
-        tokenRepository.save(token);
-
-        Usuario usuario = token.getUsuario();
         usuario.setHabilitado(true);
         usuarioRepository.save(usuario);
 
+        // Enviamos auditoría de la activación
         clienteAuditoria.enviar(new RegistroAuditoriaDTO(
                 LocalDateTime.now(),
                 usuario.getNombreUsuario(),
                 "CUENTA_ACTIVADA",
-                "Cuenta confirmada por token de correo",
+                "Cuenta confirmada mediante código OTP",
                 usuario.getCorreo(),
                 MODULO
         ));
 
-        log.info("Cuenta activada — {}", usuario.getNombreUsuario());
-        clientePerfilExterno.crearPerfilInicial(UUID.fromString(usuario.getId().toString()));
-
-        return "Cuenta activada correctamente.";
-    }
-    // =========================================================================
-    // Métodos privados
-    // =========================================================================
-
-    private String generarTokenConfirmacion(Usuario usuario) {
-
-        String valorToken = UUID.randomUUID().toString();
-
-        TokenConfirmacionEmail token = TokenConfirmacionEmail.builder()
-                .token(valorToken)
-                .usuario(usuario)
-                .expiraEn(LocalDateTime.now().plusHours(24))
-                .build();
-
-        tokenRepository.save(token);
-
-        return valorToken;
+        log.info("Cuenta activada exitosamente para el usuario: {}", usuario.getNombreUsuario());
     }
 }

@@ -6,9 +6,8 @@ import lombok.Getter;
 @Getter
 @Builder
 public class RespuestaRegistro {
-    private String idUsuario;
+    private String idUsuario;      // Útil para futuras referencias en el flujo
     private String nombreUsuario;
-    private String correo;
-    private String tokenConfirmacion;
-    
+    private String correo;         // Para mostrar en la vista de "Confirmar código"
+    private String mensaje;        // "Registro exitoso. Revise su correo."
 }
