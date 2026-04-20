@@ -1,14 +1,9 @@
 package com.cliente.aplicacion.servicios;
 
-import com.cliente.aplicacion.dtos.SolicitudCliente;
-import com.cliente.aplicacion.dtos.RespuestaCliente;
-//import com.cliente.aplicacion.dtos.SunatResponseDTO;
-import com.cliente.aplicacion.excepciones.AccesoDenegadoException;
-import com.cliente.aplicacion.excepciones.ClienteNoEncontradoException;
-import com.cliente.aplicacion.excepciones.DniDuplicadoException;
+import com.cliente.aplicacion.dtos.*;
+import com.cliente.aplicacion.excepciones.*;
 import com.cliente.dominio.entidades.Cliente;
 import com.cliente.dominio.repositorios.ClienteRepository;
-import com.cliente.aplicacion.dtos.RegistroAuditoriaDTO;
 import com.cliente.infraestructura.clientes.ClienteAuditoria;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+/**
+ * Servicio encargado de la lógica de negocio para la gestión de clientes.
+ * @author Paulo
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -26,148 +25,142 @@ public class ServicioCliente {
     private final ClienteAuditoria clienteAuditoria;
     private static final String MODULO = "MICROSERVICIO-CLIENTE";
 
-    // =========================================================================
-    // Crear perfil inicial (llamado por el IAM tras el registro)
-    // =========================================================================
+    /**
+     * Crea un perfil vacío vinculado a un nuevo usuario. Es idempotente: si el
+     * perfil existe, lo devuelve sin crear uno nuevo.
+     * @param usuarioId
+     * @return 
+     */
     @Transactional
     public RespuestaCliente crearPerfilInicial(UUID usuarioId) {
-        if (clienteRepository.existsByUsuarioId(usuarioId)) {
-            log.warn("Intento de crear perfil duplicado para usuarioId={}", usuarioId);
-            // Idempotente: si ya existe, devuelve el existente
-            return convertirADTO(clienteRepository.findByUsuarioId(usuarioId).orElseThrow());
-        }
-
-        Cliente cliente = Cliente.builder()
-                .usuarioId(usuarioId)
-                .perfilCompleto(false)
-                .build();
-
-        Cliente guardado = clienteRepository.save(cliente);
-        log.info("Perfil inicial creado para usuarioId={}", usuarioId);
-        return convertirADTO(guardado);
+        return clienteRepository.findByUsuarioId(usuarioId)
+                .map(this::convertirADTO)
+                .orElseGet(() -> {
+                    Cliente nuevoCliente = Cliente.builder()
+                            .usuarioId(usuarioId)
+                            .perfilCompleto(false)
+                            .build();
+                    log.info("Creando perfil inicial para usuarioId={}", usuarioId);
+                    return convertirADTO(clienteRepository.save(nuevoCliente));
+                });
     }
 
-//    // =========================================================================
-//    // Consultar SUNAT (simulación)
-//    // =========================================================================
-//    public SunatResponseDTO consultarSunat(String dni) {
-//        log.info("Consultando SUNAT para DNI={}", dni);
-//
-//        // ── Simulación: en producción, aquí va el WebClient a la API real ──
-//        // Datos ficticios para pruebas
-//        return new SunatResponseDTO(
-//                dni,
-//                "JUAN CARLOS",
-//                "GARCIA",
-//                "LOPEZ",
-//                "JUAN CARLOS GARCIA LOPEZ"
-//        );
-//    }
-    // =========================================================================
-    // Actualizar perfil — VALIDACIÓN DE PROPIEDAD
-    // =========================================================================
+    /**
+     * Actualiza la información del perfil del cliente con validación de
+     * propiedad.
+     * @param usuarioIdRuta
+     * @param usuarioIdToken
+     * @param request
+     * @param ipOrigen
+     * @return 
+     */
     @Transactional
-    public RespuestaCliente actualizarPerfil(UUID usuarioIdRuta,
-            UUID usuarioIdToken,
-            SolicitudCliente request,
-            String ipOrigen) {
-        // ── VERIFICACIÓN DE PROPIEDAD ─────────────────────────────────────
-        if (!usuarioIdRuta.equals(usuarioIdToken)) {
-            log.warn("Intento de edición no autorizado: tokenUsuario={} vs rutaUsuario={}",
-                    usuarioIdToken, usuarioIdRuta);
-            throw new AccesoDenegadoException();
-        }
+    public RespuestaCliente actualizarPerfil(UUID usuarioIdRuta, UUID usuarioIdToken, SolicitudCliente request, String ipOrigen) {
+
+        validarPropiedad(usuarioIdRuta, usuarioIdToken);
 
         Cliente cliente = clienteRepository.findByUsuarioId(usuarioIdRuta)
                 .orElseThrow(() -> new ClienteNoEncontradoException(usuarioIdRuta));
 
-        // ── Validar DNI único si cambia ───────────────────────────────────
-        if (request.getDni() != null
-                && !request.getDni().equals(cliente.getDni())
-                && clienteRepository.existsByDni(request.getDni())) {
-            throw new DniDuplicadoException(request.getDni());
-        }
+        validarDniUnico(request.getDni(), cliente);
 
-        // ── Aplicar cambios (solo los campos no nulos) ────────────────────
-        aplicarCambios(cliente, request);
-
-        // ── Actualizar estado perfilCompleto ──────────────────────────────
+        // Mapeo dinámico y actualización de estado
+        actualizarDatosEntidad(cliente, request);
         cliente.setPerfilCompleto(cliente.evaluarPerfilCompleto());
 
         Cliente actualizado = clienteRepository.save(cliente);
-        log.info("Perfil actualizado — usuarioId={}, completo={}",
-                usuarioIdRuta, actualizado.getPerfilCompleto());
 
-        clienteAuditoria.enviar(new RegistroAuditoriaDTO(
-                cliente.getNombres() + " " + cliente.getApellidos(),
-                "ACTUALIZAR_PERFIL",
-                "Perfil completado exitosamente",
-                ipOrigen, // <--- Usamos la IP que capturamos en el controlador
-                MODULO
-        ));
+        // Notificar al microservicio de auditoría
+        registrarAuditoria(actualizado, "ACTUALIZAR_PERFIL", ipOrigen);
 
         return convertirADTO(actualizado);
     }
 
-    // =========================================================================
-    // Consultar perfil
-    // =========================================================================
     @Transactional(readOnly = true)
     public RespuestaCliente consultarPerfil(UUID usuarioIdRuta, UUID usuarioIdToken) {
-        if (!usuarioIdRuta.equals(usuarioIdToken)) {
-            throw new AccesoDenegadoException();
-        }
+        validarPropiedad(usuarioIdRuta, usuarioIdToken);
 
-        Cliente cliente = clienteRepository.findByUsuarioId(usuarioIdRuta)
+        return clienteRepository.findByUsuarioId(usuarioIdRuta)
+                .map(this::convertirADTO)
                 .orElseThrow(() -> new ClienteNoEncontradoException(usuarioIdRuta));
-
-        return convertirADTO(cliente);
     }
 
     // =========================================================================
-    // Privados
+    // Métodos de Soporte (Limpieza de Código)
     // =========================================================================
-    private void aplicarCambios(Cliente cliente, SolicitudCliente dto) {
-        if (dto.getNombres() != null) {
-            cliente.setNombres(dto.getNombres());
+    private void validarPropiedad(UUID usuarioIdRuta, UUID usuarioIdToken) {
+        if (!usuarioIdRuta.equals(usuarioIdToken)) {
+            log.error("Acceso no autorizado: Usuario {} intentó acceder al perfil de {}", usuarioIdToken, usuarioIdRuta);
+            throw new AccesoDenegadoException();
         }
-        if (dto.getApellidos() != null) {
-            cliente.setApellidos(dto.getApellidos());
+    }
+
+    private void validarDniUnico(String nuevoDni, Cliente clienteActual) {
+        if (nuevoDni != null && !nuevoDni.equals(clienteActual.getDni()) && clienteRepository.existsByDni(nuevoDni)) {
+            throw new DniDuplicadoException(nuevoDni);
         }
-        if (dto.getDni() != null) {
-            cliente.setDni(dto.getDni());
+    }
+
+    /**
+     * En lugar de múltiples IFs, centralizamos la lógica de actualización. Tip:
+     * Si el proyecto crece, usa MapStruct con
+     * @BeanMapping(nullValuePropertyMappingStrategy = IGNORE)
+     */
+    private void actualizarDatosEntidad(Cliente c, SolicitudCliente d) {
+        if (d.getNombres() != null) {
+            c.setNombres(d.getNombres());
         }
-        if (dto.getFotoPerfilUrl() != null) {
-            cliente.setFotoPerfilUrl(dto.getFotoPerfilUrl());
+        if (d.getApellidos() != null) {
+            c.setApellidos(d.getApellidos());
         }
-        if (dto.getBiografia() != null) {
-            cliente.setBiografia(dto.getBiografia());
+        if (d.getDni() != null) {
+            c.setDni(d.getDni());
         }
-        if (dto.getNumeroCelular() != null) {
-            cliente.setNumeroCelular(dto.getNumeroCelular());
+        if (d.getFotoPerfilUrl() != null) {
+            c.setFotoPerfilUrl(d.getFotoPerfilUrl());
         }
-        if (dto.getDireccion() != null) {
-            cliente.setDireccion(dto.getDireccion());
+        if (d.getBiografia() != null) {
+            c.setBiografia(d.getBiografia());
         }
-        if (dto.getCiudad() != null) {
-            cliente.setCiudad(dto.getCiudad());
+        if (d.getNumeroCelular() != null) {
+            c.setNumeroCelular(d.getNumeroCelular());
         }
-        if (dto.getOcupacion() != null) {
-            cliente.setOcupacion(dto.getOcupacion());
+        if (d.getDireccion() != null) {
+            c.setDireccion(d.getDireccion());
         }
-        if (dto.getGenero() != null) {
-            cliente.setGenero(dto.getGenero());
+        if (d.getCiudad() != null) {
+            c.setCiudad(d.getCiudad());
+        }
+        if (d.getOcupacion() != null) {
+            c.setOcupacion(d.getOcupacion());
+        }
+        if (d.getGenero() != null) {
+            c.setGenero(d.getGenero());
+        }
+    }
+
+    private void registrarAuditoria(Cliente cliente, String accion, String ip) {
+        try {
+            String nombreCompleto = (cliente.getNombres() != null ? cliente.getNombres() : "Usuario")
+                    + " " + (cliente.getApellidos() != null ? cliente.getApellidos() : "");
+
+            clienteAuditoria.enviar(new RegistroAuditoriaDTO(
+                    nombreCompleto.trim(),
+                    accion,
+                    "Perfil actualizado correctamente",
+                    ip,
+                    MODULO
+            ));
+        } catch (Exception e) {
+            log.error("No se pudo enviar la auditoría, pero la transacción continúa: {}", e.getMessage());
         }
     }
 
     private RespuestaCliente convertirADTO(Cliente c) {
         return new RespuestaCliente(
-                c.getId(), c.getUsuarioId(),
-                c.getNombres(), c.getApellidos(), c.getDni(),
-                c.getFotoPerfilUrl(), c.getBiografia(),
-                c.getNumeroCelular(), c.getDireccion(),
-                c.getCiudad(), c.getOcupacion(), c.getGenero(),
-                c.getPerfilCompleto(),
+                c.getId(), c.getUsuarioId(), c.getNombres(), c.getApellidos(), c.getDni(),
+                c.getFotoPerfilUrl(), c.getBiografia(), c.getNumeroCelular(), c.getDireccion(),
+                c.getCiudad(), c.getOcupacion(), c.getGenero(), c.getPerfilCompleto(),
                 c.getFechaCreacion(), c.getFechaActualizacion()
         );
     }

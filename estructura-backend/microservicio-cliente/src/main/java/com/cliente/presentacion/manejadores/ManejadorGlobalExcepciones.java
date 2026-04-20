@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 @Slf4j
-public class ManejadorGlobalErrores {
+public class ManejadorGlobalExcepciones {
 
     // 1. Errores de Negocio Específicos
     @ExceptionHandler(AccesoDenegadoException.class)
