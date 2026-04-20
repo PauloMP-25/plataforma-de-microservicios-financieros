@@ -26,46 +26,21 @@ public class TransaccionController {
     private final TransaccionService transaccionService;
 
     @PostMapping
-    public ResponseEntity<?> registrar(@Valid @RequestBody TransaccionRequestDTO request,
-            HttpServletRequest httpRequest) {
-        //Obtencion de la IP del cliente
-        String ipCliente = UtilidadIp.obtenerIpRemota(httpRequest);
-
-        // Si usas un Proxy o Gateway (como Nginx), la IP real viene aquí:
-        String xForwardedFor = httpRequest.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null) {
-            ipCliente = xForwardedFor.split(",")[0];
-        }
-        try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(transaccionService.registrar(request, ipCliente));
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest()
-                    .body(ErrorApi.of(400, "ERROR_VALIDACION", ex.getMessage(), httpRequest.getRequestURI()));
-        }
+    public ResponseEntity<TransaccionDTO> registrar(@Valid @RequestBody TransaccionRequestDTO request, HttpServletRequest httpRequest) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(transaccionService.registrar(request, obtenerIp(httpRequest)));
     }
 
     @PostMapping("/lote")
-    public ResponseEntity<?> registrarLote(
+    public ResponseEntity<List<TransaccionDTO>> registrarLote(
             @Valid @RequestBody List<@Valid TransaccionRequestDTO> solicitudes,
             HttpServletRequest httpRequest) {
-        //Obtencion de la IP del cliente
-        String ipCliente = UtilidadIp.obtenerIpRemota(httpRequest);
-
-        // Si usas un Proxy o Gateway (como Nginx), la IP real viene aquí:
-        String xForwardedFor = httpRequest.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null) {
-            ipCliente = xForwardedFor.split(",")[0];
-        }
-        try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(transaccionService.registrarLote(solicitudes, ipCliente));
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest()
-                    .body(ErrorApi.of(400, "ERROR_VALIDACION", ex.getMessage(), httpRequest.getRequestURI()));
-        }
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(transaccionService.registrarLote(solicitudes, obtenerIp(httpRequest)));
     }
 
     @GetMapping("/historial")
-    public ResponseEntity<?> listarHistorial(
+    public ResponseEntity<Page<TransaccionDTO>> listarHistorial(
             @RequestParam UUID usuarioId,
             @RequestParam(required = false) TipoMovimiento tipo,
             @RequestParam(required = false) UUID categoriaId,
@@ -74,59 +49,30 @@ public class TransaccionController {
             @RequestParam(defaultValue = "0") int pagina,
             @RequestParam(defaultValue = "20") int tamanio,
             HttpServletRequest httpRequest) {
-        Pageable paginacion = PageRequest.of(Math.max(0, pagina), Math.min(tamanio, 100));
-        String ipCliente = UtilidadIp.obtenerIpRemota(httpRequest);
 
-        // Si usas un Proxy o Gateway (como Nginx), la IP real viene aquí:
-        String xForwardedFor = httpRequest.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null) {
-            ipCliente = xForwardedFor.split(",")[0];
-        }
-        try {
-            Page<TransaccionDTO> resultado = transaccionService
-                    .listarHistorial(usuarioId, tipo, categoriaId, mes, anio, paginacion, ipCliente);
-            return ResponseEntity.ok(resultado);
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest()
-                    .body(ErrorApi.of(400, "ERROR_VALIDACION", ex.getMessage(), httpRequest.getRequestURI()));
-        }
+        Pageable paginacion = PageRequest.of(Math.max(0, pagina), Math.min(tamanio, 100));
+        return ResponseEntity.ok(transaccionService.listarHistorial(usuarioId, tipo, categoriaId, mes, anio, paginacion, obtenerIp(httpRequest)));
     }
 
     @GetMapping("/resumen")
-    public ResponseEntity<?> obtenerResumen(
+    public ResponseEntity<ResumenFinancieroDTO> obtenerResumen(
             @RequestParam UUID usuarioId,
             @RequestParam(required = false) Integer mes,
             @RequestParam(required = false) Integer anio,
             HttpServletRequest httpRequest) {
-        String ipCliente = UtilidadIp.obtenerIpRemota(httpRequest);
-
-        // Si usas un Proxy o Gateway (como Nginx), la IP real viene aquí:
-        String xForwardedFor = httpRequest.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null) {
-            ipCliente = xForwardedFor.split(",")[0];
-        }
-        try {
-            return ResponseEntity.ok(transaccionService.obtenerResumen(usuarioId, mes, anio,ipCliente));
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest()
-                    .body(ErrorApi.of(400, "ERROR_VALIDACION", ex.getMessage(), httpRequest.getRequestURI()));
-        }
+        return ResponseEntity.ok(transaccionService.obtenerResumen(usuarioId, mes, anio, obtenerIp(httpRequest)));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> obtenerPorId(@PathVariable UUID id, HttpServletRequest httpRequest) {
-        String ipCliente = UtilidadIp.obtenerIpRemota(httpRequest);
+    public ResponseEntity<TransaccionDTO> obtenerPorId(@PathVariable UUID id) {
+        return ResponseEntity.ok(transaccionService.obtenerPorId(id));
+    }
 
-        // Si usas un Proxy o Gateway (como Nginx), la IP real viene aquí:
-        String xForwardedFor = httpRequest.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null) {
-            ipCliente = xForwardedFor.split(",")[0];
-        }
-        try {
-            return ResponseEntity.ok(transaccionService.obtenerPorId(id));
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ErrorApi.of(404, "NO_ENCONTRADO", ex.getMessage(), httpRequest.getRequestURI()));
-        }
+    // =========================================================================
+    // HELPERS
+    // =========================================================================
+    private String obtenerIp(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        return (xForwardedFor != null) ? xForwardedFor.split(",")[0] : UtilidadIp.obtenerIpRemota(request);
     }
 }
