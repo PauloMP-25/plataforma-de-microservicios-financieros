@@ -2,11 +2,6 @@ package com.cliente.presentacion.controladores;
 
 import com.cliente.aplicacion.dtos.SolicitudCliente;
 import com.cliente.aplicacion.dtos.RespuestaCliente;
-import com.cliente.aplicacion.dtos.ErrorApi;
-//import com.cliente.aplicacion.dtos.SunatResponseDTO;
-import com.cliente.aplicacion.excepciones.AccesoDenegadoException;
-import com.cliente.aplicacion.excepciones.ClienteNoEncontradoException;
-import com.cliente.aplicacion.excepciones.DniDuplicadoException;
 import com.cliente.aplicacion.servicios.ServicioCliente;
 import com.cliente.infraestructura.seguridad.FiltroJwt;
 import com.cliente.infraestructura.utilidades.UtilidadIp;
@@ -20,6 +15,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+/**
+ * Controlador para la gestión de datos de perfil de cliente. Optimizado para
+ * usar ManejadorGlobalErrores.
+ */
 @RestController
 @RequestMapping("/api/v1/clientes")
 @RequiredArgsConstructor
@@ -28,108 +27,64 @@ public class ControladorCliente {
 
     private final ServicioCliente clienteService;
 
-    // =========================================================================
-    // GET /sunat/{dni}
-    // =========================================================================
-//    @GetMapping("/sunat/{dni}")
-//    public ResponseEntity<?> consultarSunat(
-//            @PathVariable String dni,
-//            HttpServletRequest request) {
-//
-//        try {
-//            SunatResponseDTO resultado = clienteService.consultarSunat(dni);
-//            return ResponseEntity.ok(resultado);
-//        } catch (Exception ex) {
-//            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-//                    .body(ErrorApi.of(503, "SUNAT_NO_DISPONIBLE",
-//                            ex.getMessage(), request.getRequestURI()));
-//        }
-//    }
-    // =========================================================================
-    // POST /inicial  — Solo ADMIN/SYSTEM
-    // =========================================================================
+    /**
+     * Crea un perfil básico tras el registro de un usuario.
+     * @param usuarioId
+     * @return 
+     */
     @PostMapping("/inicial")
-    public ResponseEntity<?> crearPerfilInicial(
-            @RequestParam UUID usuarioId,
-            HttpServletRequest request) {
-
-        try {
-            RespuestaCliente creado = clienteService.crearPerfilInicial(usuarioId);
-            return ResponseEntity.status(HttpStatus.CREATED).body(creado);
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ErrorApi.of(500, "ERROR_INTERNO",
-                            ex.getMessage(), request.getRequestURI()));
-        }
+    public ResponseEntity<RespuestaCliente> crearPerfilInicial(@RequestParam UUID usuarioId) {
+        log.info("Creando perfil inicial para usuario: {}", usuarioId);
+        RespuestaCliente creado = clienteService.crearPerfilInicial(usuarioId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
 
-    // =========================================================================
-    // PUT /completar/{usuarioId}  — Actualización con validación de propiedad
-    // =========================================================================
+    /**
+     * Completa o actualiza los datos del cliente (DNI, Dirección, etc).
+     * @param usuarioId
+     * @param requestDTO
+     * @param request
+     * @return 
+     */
     @PutMapping("/actualizar/{usuarioId}")
-    public ResponseEntity<?> completarPerfil(
+    public ResponseEntity<RespuestaCliente> completarPerfil(
             @PathVariable UUID usuarioId,
             @Valid @RequestBody SolicitudCliente requestDTO,
             HttpServletRequest request) {
 
-        //Obtencion de la IP del cliente
-        String ipCliente = UtilidadIp.obtenerIpRemota(request);
-
-        // Si usas un Proxy o Gateway (como Nginx), la IP real viene aquí:
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null) {
-            ipCliente = xForwardedFor.split(",")[0];
-        }
-        // ── Extraer usuarioId del Token (puesto por FiltroJwt) ─────────────
+        String ipCliente = obtenerIpReal(request);
         UUID usuarioIdToken = (UUID) request.getAttribute(FiltroJwt.ATTR_USUARIO_ID);
 
-        log.debug("PUT /completar/{} — tokenUsuarioId: {}", usuarioId, usuarioIdToken);
+        log.debug("Actualizando perfil. UsuarioId: {}, Solicitado por: {}", usuarioId, usuarioIdToken);
 
-        try {
-            RespuestaCliente actualizado
-                    = clienteService.actualizarPerfil(usuarioId, usuarioIdToken, requestDTO, ipCliente);
-            return ResponseEntity.ok(actualizado);
-        } catch (AccesoDenegadoException ex) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(ErrorApi.of(403, "ACCESO_DENEGADO",
-                            ex.getMessage(), request.getRequestURI()));
-
-        } catch (ClienteNoEncontradoException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ErrorApi.of(404, "CLIENTE_NO_ENCONTRADO",
-                            ex.getMessage(), request.getRequestURI()));
-
-        } catch (DniDuplicadoException ex) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(ErrorApi.of(409, "DNI_DUPLICADO",
-                            ex.getMessage(), request.getRequestURI()));
-        }
+        RespuestaCliente actualizado = clienteService.actualizarPerfil(usuarioId, usuarioIdToken, requestDTO, ipCliente);
+        return ResponseEntity.ok(actualizado);
     }
 
-    // =========================================================================
-    // GET /perfil/{usuarioId}
-    // =========================================================================
+    /**
+     * Obtiene la información del perfil de un cliente específico.
+     * @param usuarioId
+     * @param request
+     * @return 
+     */
     @GetMapping("/perfil/{usuarioId}")
-    public ResponseEntity<?> consultarPerfil(
+    public ResponseEntity<RespuestaCliente> consultarPerfil(
             @PathVariable UUID usuarioId,
             HttpServletRequest request) {
 
         UUID usuarioIdToken = (UUID) request.getAttribute(FiltroJwt.ATTR_USUARIO_ID);
-
-        try {
-            RespuestaCliente perfil
-                    = clienteService.consultarPerfil(usuarioId, usuarioIdToken);
-            return ResponseEntity.ok(perfil);
-
-        } catch (AccesoDenegadoException ex) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(ErrorApi.of(403, "ACCESO_DENEGADO",
-                            ex.getMessage(), request.getRequestURI()));
-
-        } catch (ClienteNoEncontradoException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ErrorApi.of(404, "CLIENTE_NO_ENCONTRADO",
-                            ex.getMessage(), request.getRequestURI()));
+        RespuestaCliente perfil = clienteService.consultarPerfil(usuarioId, usuarioIdToken);
+        return ResponseEntity.ok(perfil);
+    }
+    
+    /**
+     * Utilidad privada para extraer la IP considerando proxies.
+     */
+    private String obtenerIpReal(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+            return xForwardedFor.split(",")[0].trim();
         }
+        return UtilidadIp.obtenerIpRemota(request);
     }
 }

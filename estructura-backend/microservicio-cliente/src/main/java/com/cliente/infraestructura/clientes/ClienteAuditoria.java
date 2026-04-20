@@ -32,7 +32,7 @@ public class ClienteAuditoria {
             log.debug("[MICROSERVICIO.AUDITORIA] Evento enviado: accion={} usuario={}",
                       solicitud.accion(), solicitud.nombreUsuario());
         } catch (RestClientException ex) {
-            // ❌ No propagar: la auditoría es informativa, no bloquea el flujo
+            //No propagar: la auditoría es informativa, no bloquea el flujo
             log.error("[MICROSERVICIO-AUDITORIA] Fallo al enviar evento (no bloqueante): {}", ex.getMessage());
         }
     }
