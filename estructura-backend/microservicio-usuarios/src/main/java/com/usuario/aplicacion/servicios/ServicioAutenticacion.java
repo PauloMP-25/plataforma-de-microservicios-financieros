@@ -120,6 +120,21 @@ public class ServicioAutenticacion {
         }
     }
 
+    // =========================================================================
+    // Recuperación de Contraseña
+    // =========================================================================
+    @Transactional
+    public void iniciarRecuperacion(SolicitudRecuperacion solicitud) {
+        Usuario usuario = usuarioRepository.findByCorreo(solicitud.correo())
+                .orElseThrow(() -> new IllegalArgumentException("Correo no encontrado"));
+
+        // Disparamos a mensajería con un "tipo" diferente
+        dispararOtp(usuario, "CAMBIAR_PASSWORD");
+        registrarEventoAuditoria(usuario.getNombreUsuario(), "CAMBIAR_PASSWORD", "Pendiente de confirmacion", usuario.getCorreo());
+
+        log.info("Proceso de recuperación iniciado para: {}", usuario.getCorreo());
+    }
+
     @Transactional
     public void completarRecuperacion(NuevoPasswordDTO datos) {
         if (!datos.contrasenasCoinciden()) {
