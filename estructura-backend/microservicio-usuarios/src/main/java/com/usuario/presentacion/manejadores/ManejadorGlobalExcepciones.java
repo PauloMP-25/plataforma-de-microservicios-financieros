@@ -14,6 +14,10 @@ import org.springframework.web.context.request.WebRequest;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 
 /**
  * Manejador global de excepciones.
@@ -25,7 +29,6 @@ public class ManejadorGlobalExcepciones {
     // =========================================================================
     // Excepciones de dominio
     // =========================================================================
-
     @ExceptionHandler(IpBloqueadaException.class)
     public ResponseEntity<ErrorApi> manejarIpBloqueada(
             IpBloqueadaException ex, WebRequest request) {
@@ -45,7 +48,6 @@ public class ManejadorGlobalExcepciones {
     // =========================================================================
     // Validaciones (@Valid)
     // =========================================================================
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorApi> manejarErroresValidacion(
             MethodArgumentNotValidException ex, WebRequest request) {
@@ -75,7 +77,6 @@ public class ManejadorGlobalExcepciones {
     // =========================================================================
     // Autorización
     // =========================================================================
-
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorApi> manejarAccesoDenegado(
             AccessDeniedException ex, WebRequest request) {
@@ -94,7 +95,6 @@ public class ManejadorGlobalExcepciones {
     // =========================================================================
     // Errores de negocio
     // =========================================================================
-
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorApi> manejarArgumentoInvalido(
             IllegalArgumentException ex, WebRequest request) {
@@ -124,7 +124,6 @@ public class ManejadorGlobalExcepciones {
     // =========================================================================
     // Catch-all
     // =========================================================================
-
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorApi> manejarErrorGeneral(
             Exception ex, WebRequest request) {
@@ -141,9 +140,38 @@ public class ManejadorGlobalExcepciones {
     }
 
     // =========================================================================
+// Seguridad (Cuentas bloqueadas/deshabilitadas)
+// =========================================================================
+    @ExceptionHandler(org.springframework.security.authentication.DisabledException.class)
+    public ResponseEntity<ErrorApi> manejarCuentaDeshabilitada(DisabledException ex, WebRequest request) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ErrorApi.of(403, "CUENTA_DESHABILITADA", "Debe confirmar su correo para acceder.", extraerRuta(request)));
+    }
+
+    @ExceptionHandler(org.springframework.security.authentication.LockedException.class)
+    public ResponseEntity<ErrorApi> manejarCuentaBloqueada(LockedException ex, WebRequest request) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ErrorApi.of(403, "CUENTA_BLOQUEADA", "Su cuenta ha sido bloqueada temporalmente.", extraerRuta(request)));
+    }
+
+    @ExceptionHandler(org.springframework.security.authentication.BadCredentialsException.class)
+    public ResponseEntity<ErrorApi> manejarCredencialesInvalidas(BadCredentialsException ex, WebRequest request) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorApi.of(401, "CREDENCIALES_INVALIDAS", "Usuario o contraseña incorrectos.", extraerRuta(request)));
+    }
+
+// =========================================================================
+// Errores de lectura de JSON
+// =========================================================================
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorApi> manejarJsonMalformado(HttpMessageNotReadableException ex, WebRequest request) {
+        return ResponseEntity.badRequest()
+                .body(ErrorApi.of(400, "JSON_INVALIDO", "El cuerpo de la solicitud no tiene un formato válido.", extraerRuta(request)));
+    }
+
+    // =========================================================================
     // Helper
     // =========================================================================
-
     private String extraerRuta(WebRequest request) {
         return request.getDescription(false).replace("uri=", "");
     }
