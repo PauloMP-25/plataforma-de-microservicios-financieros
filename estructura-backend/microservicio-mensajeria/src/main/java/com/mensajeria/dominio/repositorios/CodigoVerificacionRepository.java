@@ -1,12 +1,12 @@
 package com.mensajeria.dominio.repositorios;
 
 import com.mensajeria.dominio.entidades.CodigoVerificacion;
+import com.mensajeria.dominio.entidades.CodigoVerificacion.PropositoCodigo; // Importante
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -16,25 +16,33 @@ import java.util.UUID;
 public interface CodigoVerificacionRepository extends JpaRepository<CodigoVerificacion, Long> {
 
     /**
-     * Recupera el c+¦digo OTP m+ís reciente, no usado, para un usuarioId + tipo.
-     * Usado en la validaci+¦n para evitar trabajar con c+¦digos obsoletos.
+     * Busca el código más reciente, no usado, filtrando por Usuario y
+     * PROPÓSITO. Esto evita que un código de activación se use para resetear
+     * password.
      * @param usuarioId
-     * @param tipo
-     * @return 
+     * @param proposito
+     * @return
      */
-    Optional<CodigoVerificacion> findTopByUsuarioIdAndTipoAndUsadoFalseOrderByFechaCreacionDesc(
+    Optional<CodigoVerificacion> findTopByUsuarioIdAndPropositoAndUsadoFalseOrderByFechaCreacionDesc(
             UUID usuarioId,
-            CodigoVerificacion.TipoVerificacion tipo
+            PropositoCodigo proposito
     );
 
     /**
-     * Limpieza programada cada 24 horas: elimina registros expirados.
-     * Solo borra los NO usados para no perder el historial de los ya consumidos.
+     * Limpieza profunda: Elimina códigos expirados Y códigos ya utilizados.
+     * Esto mantiene la tabla ligera y rápida.
      * @param fecha
-     * @return 
+     * @return
      */
     @Modifying
-    @Transactional
-    @Query("DELETE FROM CodigoVerificacion c WHERE c.fechaExpiracion < :fecha AND c.usado = false")
-    int eliminarCodigosExpirados(@Param("fecha") LocalDateTime fecha);
+    @Query("DELETE FROM CodigoVerificacion c WHERE c.fechaExpiracion < :fecha OR c.usado = true")
+    int eliminarCodigosObsoletos(@Param("fecha") LocalDateTime fecha);
+
+    /**
+     * Busca un código específico en toda la tabla (sin importar el usuario aún). 
+     * Esto es vital para el flujo de recuperación de contraseña.
+     * @param codigo
+     * @return 
+     */
+    Optional<CodigoVerificacion> findTopByCodigoAndUsadoFalseOrderByFechaCreacionDesc(String codigo);
 }

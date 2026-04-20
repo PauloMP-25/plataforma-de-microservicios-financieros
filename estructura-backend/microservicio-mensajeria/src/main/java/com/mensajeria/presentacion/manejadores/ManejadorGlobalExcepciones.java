@@ -1,5 +1,7 @@
 package com.mensajeria.presentacion.manejadores;
 
+import com.mensajeria.aplicacion.excepciones.CodigoExpiradoException;
+import com.mensajeria.aplicacion.excepciones.CodigoPendienteNotFoundException;
 import com.mensajeria.aplicacion.excepciones.UsuarioBloqueadoExcepcion;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -90,6 +92,20 @@ public class ManejadorGlobalExcepciones {
                 .body(cuerpoError(500, "ERROR_INTERNO",
                         "Ha ocurrido un error interno. Intente nuevamente más tarde.",
                         extraerRuta(request)));
+    }
+
+    @ExceptionHandler(CodigoExpiradoException.class)
+    public ResponseEntity<Map<String, Object>> manejarCodigoExpirado(
+            CodigoExpiradoException ex, WebRequest request) {
+        return ResponseEntity.status(HttpStatus.GONE)
+                .body(cuerpoError(410, "CODIGO_EXPIRADO", ex.getMessage(), extraerRuta(request)));
+    }
+
+    @ExceptionHandler(CodigoPendienteNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> manejarCodigoNoEncontrado(
+            CodigoPendienteNotFoundException ex, WebRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(cuerpoError(404, "CODIGO_NO_ENCONTRADO", ex.getMessage(), extraerRuta(request)));
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────

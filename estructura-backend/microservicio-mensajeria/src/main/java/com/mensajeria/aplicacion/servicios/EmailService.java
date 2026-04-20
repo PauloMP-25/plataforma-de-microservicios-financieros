@@ -1,5 +1,6 @@
 package com.mensajeria.aplicacion.servicios;
 
+import com.mensajeria.dominio.entidades.CodigoVerificacion.PropositoCodigo;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -10,10 +11,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-/**
- * Servicio de envío de correos electrónicos. Reutiliza la lógica de
- * EmailService de Ikaza adaptada al contexto OTP.
- */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -27,73 +24,63 @@ public class EmailService {
     @Value("${email.nombre.empresa:MI_APP}")
     private String appName;
 
-    // ─── API pública ─────────────────────────────────────────────────────────
     /**
-     * Envía el código OTP de 6 dígitos al email indicado.
-     *
-     * @param email destinatario
-     * @param codigo código de 6 dígitos a enviar
+     * Envía el código OTP adaptando el asunto y cuerpo según el propósito.
+     * @param email
+     * @param codigo
+     * @param proposito
      */
-    public void enviarCodigoVerificacion(String email, String codigo) {
+    public void enviarCodigoOtp(String email, String codigo, PropositoCodigo proposito) {
         try {
-            log.info("[EMAIL] Enviando código OTP a: {}", email);
+            String asunto = (proposito == PropositoCodigo.ACTIVACION_CUENTA)
+                    ? "Verificación de Cuenta — " + appName
+                    : "Restablecer Contraseña — " + appName;
 
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            String tituloHtml = (proposito == PropositoCodigo.ACTIVACION_CUENTA)
+                    ? "Verificación de Cuenta"
+                    : "Restablecer Contraseña";
 
-            helper.setFrom(fromEmail);
-            helper.setTo(email);
-            helper.setSubject("Código de Verificación — " + appName);
-            helper.setText(construirHtmlCodigoVerificacion(email, codigo), true);
-
-            mailSender.send(message);
-            log.info("[EMAIL] Código OTP enviado exitosamente a {}", email);
+            enviarMimeMessage(email, asunto, construirHtml(tituloHtml, codigo));
+            log.info("[EMAIL] OTP de {} enviado a {}", proposito, email);
 
         } catch (MessagingException | MailException e) {
-            log.error("[EMAIL] Error al enviar código OTP a {}: {}", email, e.getMessage());
-            throw new RuntimeException("Error al enviar el código de verificación: " + e.getMessage());
+            log.error("[EMAIL] Error al enviar OTP a {}: {}", email, e.getMessage());
+            throw new RuntimeException("Error en el despacho de correo: " + e.getMessage());
         }
     }
 
-    // ─── HTML Builder ─────────────────────────────────────────────────────────
-    private String construirHtmlCodigoVerificacion(String email, String codigo) {
+    private void enviarMimeMessage(String to, String subject, String content) throws MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+        helper.setFrom(fromEmail);
+        helper.setTo(to);
+        helper.setSubject(subject);
+        helper.setText(content, true);
+
+        mailSender.send(message);
+    }
+
+    private String construirHtml(String titulo, String codigo) {
         return """
             <!DOCTYPE html>
-            <html><head><meta charset="UTF-8"></head><body>
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-
-              <div style="background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%);
-                          color: white; padding: 30px; text-align: center;">
-                <h1 style="margin: 0;">🔐 Verificación de Cuenta</h1>
-                <p style="margin: 10px 0 0 0; font-size: 16px;">%s</p>
+            <html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;">
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee;">
+              <div style="background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); color: white; padding: 30px; text-align: center;">
+                <h1 style="margin: 0;">%s</h1>
+                <p style="margin: 10px 0 0 0;">%s</p>
               </div>
-
-              <div style="padding: 40px; background-color: white; text-align: center;">
-                <p style="color: #333; font-size: 16px; margin-bottom: 30px;">
-                  Tu código de verificación es:
-                </p>
-                <div style="background-color: #f8f9fa; padding: 20px;
-                             border-radius: 10px; margin: 20px 0;">
-                  <h1 style="color: #667eea; font-size: 48px;
-                              letter-spacing: 10px; margin: 0;">%s</h1>
+              <div style="padding: 40px; text-align: center;">
+                <p style="color: #333; font-size: 16px;">Tu código de seguridad es:</p>
+                <div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                  <h1 style="color: #667eea; font-size: 48px; letter-spacing: 10px; margin: 0;">%s</h1>
                 </div>
-                <p style="color: #6c757d; font-size: 14px; margin-top: 30px;">
-                  Este código es válido por <strong>10 minutos</strong>.
-                </p>
-                <p style="color: #6c757d; font-size: 14px;">
-                  Si no solicitaste este código, puedes ignorar este mensaje.
-                </p>
+                <p style="color: #6c757d; font-size: 14px;">Válido por 10 minutos. Si no lo solicitaste, ignora este correo.</p>
               </div>
-
-              <div style="padding: 20px; text-align: center;
-                           background-color: #343a40; color: white;">
-                <p style="margin: 0; font-size: 14px;">%s — Sistema de Verificación</p>
-                <p style="margin: 10px 0 0 0; font-size: 12px; color: #adb5bd;">
-                  Este es un correo automático, por favor no responder.
-                </p>
+              <div style="padding: 20px; text-align: center; background-color: #343a40; color: #adb5bd; font-size: 12px;">
+                <p style="margin: 0;">%s — Seguridad Integral</p>
               </div>
-
             </div></body></html>
-            """.formatted(appName, codigo, appName);
+            """.formatted(titulo, appName, codigo, appName);
     }
 }
