@@ -12,6 +12,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Controlador para la persistencia y consulta de trazas de auditoría.
+ * Centraliza los eventos de todos los microservicios del ecosistema.
+ * * @author Paulo
+ */
 @RestController
 @RequestMapping("/api/v1/auditoria")
 @RequiredArgsConstructor
@@ -19,11 +24,11 @@ public class RegistroAuditoriaController {
 
     private final ServicioRegistroAuditoria servicioAuditoria;
 
-    /**
-     * POST /api/v1/auditoria/registrar
-     * Recibe un evento del microservicio-usuario (u otro microservicio) y lo persiste.
-     * @param request
-     * @return 
+/**
+     * Registra un nuevo evento de auditoría.
+     * Invocado usualmente por otros microservicios (vía Feign o mensajería).
+     * * @param request Datos del evento (usuario, acción, módulo, etc.)
+     * @return Registro guardado con su ID y timestamp generado.
      */
     @PostMapping("/registrar")
     public ResponseEntity<RegistroAuditoriaDTO> registrarEvento(
@@ -33,14 +38,12 @@ public class RegistroAuditoriaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
 
-    /**
-     * GET /api/auditoria/registros?modulo=IAM-SERVICE&nivel=WARNING&page=0&size=20
-     * Devuelve los registros paginados, con filtros opcionales por módulo y nivel.
-     * @param modulo
-     * @param nivel
-     * @param pagina
-     * @param tamanio
-     * @return 
+/**
+     * Consulta histórica de registros con soporte para paginación y filtros.
+     * * @param modulo (Opcional) Filtrar por microservicio (ej. "USUARIO-SERVICE")
+     * @param nivel  (Opcional) Filtrar por severidad (INFO, WARNING, ERROR)
+     * @param pagina Número de página (0 por defecto)
+     * @param tamanio Cantidad de registros por página (máx. 100)
      */
     @GetMapping("/registros")
     public ResponseEntity<Page<RegistroAuditoriaDTO>> listarRegistros(
