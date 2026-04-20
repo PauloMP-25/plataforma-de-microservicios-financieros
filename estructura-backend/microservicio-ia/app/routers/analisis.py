@@ -4,42 +4,33 @@ Endpoints de la API de IA Financiera.
 Cada endpoint corresponde a uno de los 10 módulos de análisis.
 """
 
+import fastapi
+from fastapi import APIRouter, HTTPException, Request, status, Depends, Header
 from typing import Optional
-
-from fastapi import APIRouter, HTTPException, Request, status
 from datetime import datetime
 import logging
 
-from fastapi.params import Header
-
 from app.modelos.esquemas import (
-    SolicitudAnalisis,
-    SolicitudSimulacion,
-    SolicitudMetaFinanciera,
-    RespuestaClasificacion,
-    RespuestaPrediccion,
-    RespuestaAnomalias,
-    RespuestaSuscripciones,
-    RespuestaCapacidadAhorro,
-    RespuestaMetaFinanciera,
-    RespuestaEstacionalidad,
-    RespuestaPresupuesto,
-    RespuestaSimulacion,
-    RespuestaReporte,
-    RespuestaAnalisisCompleto,
+    SolicitudAnalisis, SolicitudSimulacion, SolicitudMetaFinanciera,
+    RespuestaClasificacion, RespuestaPrediccion, RespuestaAnomalias,
+    RespuestaSuscripciones, RespuestaCapacidadAhorro, RespuestaMetaFinanciera,
+    RespuestaEstacionalidad, RespuestaPresupuesto, RespuestaSimulacion,
+    RespuestaReporte, RespuestaAnalisisCompleto
 )
 from app.clientes.cliente_financiero import ClienteNucleoFinanciero, ClienteAuditoria
 from app.utilidades.preparador_datos import json_a_dataframe
 from app.servicios import motor_ia
 
 logger = logging.getLogger(__name__)
-
 router = APIRouter(prefix="/api/v1/ia", tags=["Análisis IA Financiero"])
 
-# Instancias de clientes (se reusan por endpoint)
+# Clientes persistentes
 _cliente_financiero = ClienteNucleoFinanciero()
 _cliente_auditoria = ClienteAuditoria()
 
+# =========================================================================
+# LOGICA DE SOPORTE (Dependencias)
+# =========================================================================
 
 def _obtener_dataframe(solicitud: SolicitudAnalisis, token: str):
     """Helper: obtiene las transacciones y las convierte en DataFrame."""
