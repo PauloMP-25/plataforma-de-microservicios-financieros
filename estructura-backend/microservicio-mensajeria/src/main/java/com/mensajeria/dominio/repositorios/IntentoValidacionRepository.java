@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -18,17 +17,26 @@ public interface IntentoValidacionRepository extends JpaRepository<IntentoValida
     Optional<IntentoValidacion> findByUsuarioId(UUID usuarioId);
 
     /**
-     * Desbloquea automáticamente los usuarioIds cuyo período ya expiró.
-     * Invocado por el job de limpieza cada 15 minutos.
+     * Desbloquea masivamente a los usuarios cuyo tiempo de castigo terminó. Es
+     * más eficiente que iterar uno por uno en Java.
      * @param ahora
      * @return 
      */
     @Modifying
-    @Transactional
     @Query("""
         UPDATE IntentoValidacion iv
         SET iv.bloqueado = false, iv.intentos = 0, iv.bloqueadoHasta = null
         WHERE iv.bloqueado = true AND iv.bloqueadoHasta < :ahora
         """)
     int desbloquearUsuariosExpirados(@Param("ahora") LocalDateTime ahora);
+
+    /**
+     * Optimización de memoria: Elimina registros de intentos de usuarios que NO
+     * están bloqueados y no han tenido actividad en los últimos 7 días.
+     * @param fecha
+     * @return 
+     */
+    @Modifying
+    @Query("DELETE FROM IntentoValidacion i WHERE i.bloqueado = false AND i.ultimaModificacion < :fecha")
+    int purgarRegistrosInactivos(@Param("fecha") LocalDateTime fecha);
 }
