@@ -1,6 +1,5 @@
 package com.nucleo.financiero.infraestructura.configuracion;
 
-import com.nucleo.financiero.dominio.entidades.Categoria;
 import com.nucleo.financiero.dominio.entidades.Categoria.TipoMovimiento;
 import com.nucleo.financiero.dominio.repositorios.CategoriaRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +11,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class CargadorDatosIniciales implements CommandLineRunner {
+public abstract class CargadorDatosIniciales implements CommandLineRunner {
 
     private final CategoriaRepository categoriaRepository;
 
