@@ -22,12 +22,12 @@ public class DetallesUsuario implements UserDetailsService{
 
     @Override
     @Transactional(readOnly = true)
-    public UserDetails loadUserByUsername(String nombreUsuario) throws UsernameNotFoundException {
-        log.debug("Cargando usuario desde BD: {}", nombreUsuario);
-        return usuarioRepository.findByNombreUsuarioConRoles(nombreUsuario)
+    public UserDetails loadUserByUsername(String correo) throws UsernameNotFoundException {
+        log.debug("Cargando usuario desde BD: {}", correo);
+        return usuarioRepository.findByCorreo(correo)
             .orElseThrow(() -> {
-                log.warn("Usuario no encontrado: {}", nombreUsuario);
-                return new UsernameNotFoundException("Usuario no encontrado: " + nombreUsuario);
+                log.warn("Usuario no encontrado: {}", correo);
+                return new UsernameNotFoundException("Usuario no encontrado: " + correo);
             });
     }
 }

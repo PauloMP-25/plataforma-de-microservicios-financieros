@@ -1,5 +1,6 @@
 package com.nucleo.financiero.infraestructura.configuracion;
 
+import com.nucleo.financiero.dominio.entidades.Categoria;
 import com.nucleo.financiero.dominio.entidades.Categoria.TipoMovimiento;
 import com.nucleo.financiero.dominio.repositorios.CategoriaRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +12,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public abstract class CargadorDatosIniciales implements CommandLineRunner {
+public class CargadorDatosIniciales implements CommandLineRunner {
 
     private final CategoriaRepository categoriaRepository;
 
@@ -50,6 +51,6 @@ public abstract class CargadorDatosIniciales implements CommandLineRunner {
             }
         }
         if (creadas > 0) log.info("---- {} CATEGORÍAS DEFAULT CREADAS ----", creadas);
-        else             log.info("---- CATEGORÍAS DEFAULT: ya existen, sin cambios ----");
+        else log.info("---- CATEGORÍAS DEFAULT: ya existen, sin cambios ----");
     }
 }

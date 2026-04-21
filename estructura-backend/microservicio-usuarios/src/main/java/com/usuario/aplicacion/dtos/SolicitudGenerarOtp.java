@@ -7,7 +7,8 @@ import java.util.UUID;
  */
 public record SolicitudGenerarOtp(
     UUID usuarioId,
-    String correo,
-    String tipo // En este caso siempre será "EMAIL"
+    String email,
+    String tipo,
+    String proposito // En este caso siempre será "EMAIL"
 ) {}
 

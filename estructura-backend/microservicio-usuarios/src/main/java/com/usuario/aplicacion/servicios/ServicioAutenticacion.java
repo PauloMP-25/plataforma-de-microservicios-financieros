@@ -94,7 +94,7 @@ public class ServicioAutenticacion {
 
         // Orquestación con otros microservicios
         clientePerfilExterno.crearPerfilInicial(usuarioGuardado.getId());
-        dispararOtp(usuarioGuardado, "EMAIL");
+        dispararOtp(usuarioGuardado, "ACTIVACION_CUENTA");
 
         registrarEventoAuditoria(usuarioGuardado.getNombreUsuario(), "REGISTRO_USUARIO", "Pendiente de validación", usuarioGuardado.getCorreo());
 
@@ -129,7 +129,7 @@ public class ServicioAutenticacion {
                 .orElseThrow(() -> new IllegalArgumentException("Correo no encontrado"));
 
         // Disparamos a mensajería con un "tipo" diferente
-        dispararOtp(usuario, "CAMBIAR_PASSWORD");
+        dispararOtp(usuario, "RESTABLECER_PASSWORD");
         registrarEventoAuditoria(usuario.getNombreUsuario(), "CAMBIAR_PASSWORD", "Pendiente de confirmacion", usuario.getCorreo());
 
         log.info("Proceso de recuperación iniciado para: {}", usuario.getCorreo());
@@ -167,7 +167,8 @@ public class ServicioAutenticacion {
 
     private void dispararOtp(Usuario usuario, String tipo) {
         try {
-            clienteMensajeria.generarCodigo(new SolicitudGenerarOtp(usuario.getId(), usuario.getCorreo(), tipo));
+            String propositoReal = tipo.equals("CAMBIAR_PASSWORD") ? "RESTABLECER_PASSWORD" : "ACTIVACION_CUENTA";
+            clienteMensajeria.generarCodigo(new SolicitudGenerarOtp(usuario.getId(), usuario.getCorreo(), "EMAIL",propositoReal));
         } catch (Exception e) {
             log.error("Fallo al contactar MS-Mensajería para {}: {}", usuario.getCorreo(), e.getMessage());
         }

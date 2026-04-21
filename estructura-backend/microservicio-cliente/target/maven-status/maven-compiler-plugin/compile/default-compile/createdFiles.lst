@@ -12,6 +12,7 @@ com\cliente\presentacion\manejadores\ManejadorGlobalErrores.class
 com\cliente\dominio\repositorios\ClienteRepository.class
 com\cliente\infraestructura\configuracion\ConfiguracionGeneral.class
 com\cliente\aplicacion\dtos\RespuestaCliente.class
+com\cliente\presentacion\manejadores\ManejadorGlobalExcepciones.class
 com\cliente\aplicacion\dtos\SolicitudCliente.class
 com\cliente\aplicacion\excepciones\DniDuplicadoException.class
 com\cliente\infraestructura\seguridad\PuntoEntradaJwt.class
