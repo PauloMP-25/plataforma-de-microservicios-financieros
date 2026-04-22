@@ -1,6 +1,6 @@
 """
-main.py — Punto de entrada del Microservicio IA Financiera.
-FastAPI con documentación automática Swagger/OpenAPI en /docs.
+main.py — Punto de entrada del Microservicio IA Financiera. 
+FastAPI con documentación automática Swagger/OpenAPI en /docs e integración con Eureka Server..
 Puerto: 8086
 """
 
@@ -13,7 +13,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.configuracion import obtener_configuracion
+from app.clientes.cliente_eureka import registrar_en_eureka, desregistrar_de_eureka
 from app.routers import analisis
+
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -29,15 +31,21 @@ config = obtener_configuracion()
 # ── Lifecycle: startup / shutdown ─────────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """
+    Gestiona lo que sucede cuando el microservicio nace y muere.
+    """
     logger.info("═" * 60)
     logger.info("  Microservicio IA Financiera iniciando...")
     logger.info("  Puerto         : %d", config.puerto)
     logger.info("  Entorno        : %s", config.entorno)
-    logger.info("  Financiero URL : %s", config.url_nucleo_financiero)
-    logger.info("  Auditoria URL  : %s", config.url_auditoria)
     logger.info("═" * 60)
+
+    # --- REGISTRO EN EUREKA ---
+    await registrar_en_eureka(config)
     yield
-    logger.info("Microservicio IA Financiera detenido.")
+    # --- DESREGISTRO DE EUREKA ---
+    await desregistrar_de_eureka()
+    logger.info("Microservicio IA Financiera detenido correctamente.")
 
 
 # ── Aplicación FastAPI ────────────────────────────────────────────────────────
@@ -48,7 +56,6 @@ app = FastAPI(
 
 Este microservicio actúa como el **cerebro analítico** del sistema SaaS Financiero.
 Consume datos del `microservicio-nucleo-financiero` y ejecuta 10 módulos de análisis inteligente.
-
 ### Módulos disponibles
 
 | # | Módulo | Descripción |
@@ -91,7 +98,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 # ── Manejador global de excepciones ──────────────────────────────────────────
 @app.exception_handler(Exception)
 async def manejador_global(request: Request, exc: Exception):
@@ -112,17 +118,17 @@ async def manejador_global(request: Request, exc: Exception):
 app.include_router(analisis.router)
 
 
-@app.get(
-    "/actuator/health",
-    tags=["Sistema"],
-    summary="Health check del servicio",
-)
+@app.get("/actuator/health", tags=["Sistema"], summary="Health check del servicio")
 async def health_check():
+    """
+    Este endpoint es el que Eureka consultará cada 10-30 segundos 
+    para verificar que Python sigue vivo.
+    """
     return {
         "estado": "UP",
         "servicio": config.nombre_app,
         "version": config.version_app,
-        "puerto": config.puerto,
+        "instancia_eureka": config.id_app_eureka,
         "timestamp": datetime.now().isoformat(),
     }
 

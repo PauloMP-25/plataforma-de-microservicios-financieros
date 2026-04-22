@@ -17,7 +17,7 @@ public record SolicitudRegistro(
         @Pattern(regexp = ".*[a-z].*", message = "Debe contener al menos una letra minuscula")
         @Pattern(regexp = ".*[A-Z].*", message = "Debe contener al menos una letra mayuscula")
         @Pattern(regexp = ".*\\d.*", message = "Debe contener al menos un número")
-        @Pattern(regexp = ".*[@$!%*?&].*", message = "Debe contener al menos un carácter especial (@$!%*?&)")
+        @Pattern(regexp = ".*[@$!%*?&#].*", message = "Debe contener al menos un carácter especial (@$!%*?&)")
         @Pattern(regexp = ".{8,}", message = "Debe tener al menos 8 caracteres")
         String password,
         @NotBlank(message = "La confirmación de contraseña es obligatoria")

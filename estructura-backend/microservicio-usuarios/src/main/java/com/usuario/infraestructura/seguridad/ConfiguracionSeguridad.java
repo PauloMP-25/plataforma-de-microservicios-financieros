@@ -50,11 +50,15 @@ public class ConfiguracionSeguridad {
                 // Públicos
                 .requestMatchers(HttpMethod.POST,
                         "/api/v1/auth/login",
-                        "/api/v1/auth/registrar"
+                        "/api/v1/auth/registrar",
+                        "/api/v1/auth/recuperar-password",
+                        "/api/v1/auth/reset-password"
                 ).permitAll()
                 .requestMatchers(HttpMethod.GET,
                         "/api/v1/auth/confirmar-email"
                 ).permitAll()
+                // === AÑADE ESTA LÍNEA ===
+                .requestMatchers(HttpMethod.PUT, "/api/v1/auth/activar/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers(
                         "/v3/api-docs/**",
