@@ -80,7 +80,6 @@ Consume datos del `microservicio-nucleo-financiero` y ejecuta 10 módulos de an�
         "name": "Paulo Cesar Moron Poma",
         "email": "paulomoronpoma@gmail.com",
     },
-    lifespan=lifespan,
     license_info={
         "name": "Privado — Sistema SaaS Financiero",
     },

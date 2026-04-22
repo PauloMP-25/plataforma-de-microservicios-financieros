@@ -8,7 +8,7 @@ Gestiona el ciclo de vida del registro:
 
 import py_eureka_client.eureka_client as eureka_client
 import logging
-from configuracion import Configuracion
+import app.configuracion as Configuracion
 
 # Configuración de logs para ver el estado de la conexión en consola
 logger = logging.getLogger(__name__)

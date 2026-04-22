@@ -6,7 +6,6 @@ Utiliza pydantic-settings para validación automática y soporte de Eureka.
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 
-
 class Configuracion(BaseSettings):
     # ── Configuración de la App ───────────────────────────────    
     nombre_app: str = "Microservicio IA Financiera"
