@@ -12,6 +12,7 @@ idna==3.11
 joblib==1.5.3
 numpy==2.4.4
 pandas==3.0.2
+py-eureka-client==0.11.12
 pydantic==2.13.2
 pydantic-settings==2.13.1
 pydantic_core==2.46.2

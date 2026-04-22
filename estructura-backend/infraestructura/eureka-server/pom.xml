@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+        http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.financiero.saas</groupId>
+    <artifactId>eureka-server</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>eureka-Server</name>
+    <description>Servidor de descubrimiento de servicios para el SaaS Financiero.</description>
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.4</version>
+        <relativePath/>
+    </parent>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <start-class>com.financiero.saas.eureka.EurekaServerApplication</start-class>
+        <java.version>21</java.version>
+        <!-- ✅ Versión de Spring Cloud alineada con Spring Boot 3.4.x -->
+        <spring-cloud.version>2024.0.1</spring-cloud.version>
+        <lombok.version>1.14.8</lombok.version>
+        <log4jdbc.log4j2.version>1.16</log4jdbc.log4j2.version>
+        <rest.assured.version>2.3.3</rest.assured.version>
+    </properties>
+
+    <dependencies>
+        <!-- ═══════════════════════════════════════════════════════
+        NÚCLEO: Eureka Server
+        Levanta el servidor de registro y descubrimiento.
+        ═══════════════════════════════════════════════════════ -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+        </dependency>
+        <!-- ═══════════════════════════════════════════════════════
+             WEB: Necesario para el dashboard de Eureka
+        ═══════════════════════════════════════════════════════ -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <!-- ═══════════════════════════════════════════════════════
+             SEGURIDAD: Protege el dashboard de Eureka con usuario/contraseña.
+             Opcional pero muy recomendado en producción.
+        ═══════════════════════════════════════════════════════ -->
+        <!-- ═══════════════════════════════════════════════════════
+             SEGURIDAD: Protege el dashboard de Eureka con usuario/contraseña.
+             Opcional pero muy recomendado en producción.
+        ═══════════════════════════════════════════════════════ -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- ═══════════════════════════════════════════════════════
+             ACTUATOR: Expone /actuator/health para health checks
+        ═══════════════════════════════════════════════════════ -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <!-- ═══════════════════════════════════════════════════════
+         Gestión centralizada de versiones de Spring Cloud.
+         Garantiza compatibilidad entre todas las librerías Cloud.
+    ═══════════════════════════════════════════════════════ -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>

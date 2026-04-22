@@ -1,0 +1,66 @@
+server:
+  port: 8761
+
+spring:
+  application:
+    name: eureka-server
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # SEGURIDAD DEL DASHBOARD
+  # En producción usa variables de entorno: EUREKA_USER y EUREKA_PASSWORD
+  # ─────────────────────────────────────────────────────────────────────────
+  security:
+    user:
+      name: ${EUREKA_USER:admin}
+      password: ${EUREKA_PASSWORD:admin123}
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CONFIGURACIÓN EUREKA SERVER
+# ═══════════════════════════════════════════════════════════════════════════
+eureka:
+  instance:
+    hostname: localhost
+
+  client:
+    # El servidor NO se registra a sí mismo ni busca otros servidores.
+    # Estos dos flags son la diferencia entre un SERVER y un CLIENT.
+    register-with-eureka: false
+    fetch-registry: false
+
+    # URL donde los CLIENTES se registrarán.
+    # Incluye las credenciales de seguridad en la URL.
+    service-url:
+      defaultZone: http://${spring.security.user.name}:${spring.security.user.password}@${eureka.instance.hostname}:${server.port}/eureka/
+
+  server:
+    # Tiempo de espera (ms) antes de que Eureka elimine instancias sin heartbeat.
+    # En desarrollo se puede reducir para ver cambios rápido.
+    # En producción mantén el default (90000ms = 90s).
+    eviction-interval-timer-in-ms: 10000
+
+    # SOLO PARA DESARROLLO LOCAL con 1 sola instancia de Eureka.
+    # En producción con cluster de Eureka, deja esto en false (default).
+    enable-self-preservation: false
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ACTUATOR: Solo expone health públicamente
+# ═══════════════════════════════════════════════════════════════════════════
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: always
+
+# ═══════════════════════════════════════════════════════════════════════════
+# LOGGING
+# ═══════════════════════════════════════════════════════════════════════════
+logging:
+  level:
+    com.netflix.eureka: WARN
+    com.netflix.discovery: WARN
+    root: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
