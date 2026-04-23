@@ -15,6 +15,7 @@ import com.usuario.dominio.repositorios.RolRepository;
 import com.usuario.dominio.repositorios.UsuarioRepository;
 import com.usuario.infraestructura.clientes.ClienteMensajeria;
 import com.usuario.infraestructura.clientes.ClientePerfilExterno;
+import com.usuario.infraestructura.mensajeria.PublicadorAuditoria;
 import com.usuario.infraestructura.seguridad.ServicioJwt;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ServicioAutenticacion {
 
+    private final jakarta.servlet.http.HttpServletRequest requestHttp;
     private final AuthenticationManager authenticationManager;
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
@@ -41,6 +43,7 @@ public class ServicioAutenticacion {
     private final ClienteAuditoria clienteAuditoria;
     private final ClientePerfilExterno clientePerfilExterno;
     private final ClienteMensajeria clienteMensajeria;
+    private final PublicadorAuditoria publicadorAuditoria;
     private static final String MODULO = "MICROSERVICIO-USUARIO";
 
     // =========================================================================
@@ -48,6 +51,14 @@ public class ServicioAutenticacion {
     // =========================================================================
     @Transactional
     public RespuestaAutenticacion login(SolicitudLogin request, String ipCliente) {
+        // Buscamos al usuario antes de autenticar para capturar su ID para la auditoría
+        Usuario usuario = usuarioRepository.findByCorreo(request.correo())
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + request.correo()));
+
+        if (usuario != null) {
+            requestHttp.setAttribute("intento_usuario_id", usuario.getId());
+        }
+
         // La autenticación lanzará excepciones que atrapará el ManejadorGlobal
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.correo(), request.password())
@@ -55,10 +66,8 @@ public class ServicioAutenticacion {
 
         servicioBloqueoIp.loginExitoso(ipCliente);
 
-        Usuario usuario = usuarioRepository.findByCorreo(request.correo())
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + request.correo()));
-
         registrarEventoAuditoria(usuario.getNombreUsuario(), "LOGIN_EXITOSO", "Autenticación Completa", ipCliente);
+        publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente, "EXITO", "LOGIN CORRECTO", PublicadorAuditoria.RK_ACCESO_LOGIN);
 
         log.info("Login exitoso — usuario: '{}'", usuario.getNombreUsuario());
 
@@ -97,7 +106,6 @@ public class ServicioAutenticacion {
         dispararOtp(usuarioGuardado, "ACTIVACION_CUENTA");
 
         registrarEventoAuditoria(usuarioGuardado.getNombreUsuario(), "REGISTRO_USUARIO", "Pendiente de validación", usuarioGuardado.getCorreo());
-
         return RespuestaRegistro.builder()
                 .idUsuario(usuarioGuardado.getId().toString())
                 .nombreUsuario(usuarioGuardado.getNombreUsuario())
@@ -168,7 +176,7 @@ public class ServicioAutenticacion {
     private void dispararOtp(Usuario usuario, String tipo) {
         try {
             String propositoReal = tipo.equals("CAMBIAR_PASSWORD") ? "RESTABLECER_PASSWORD" : "ACTIVACION_CUENTA";
-            clienteMensajeria.generarCodigo(new SolicitudGenerarOtp(usuario.getId(), usuario.getCorreo(), "EMAIL",propositoReal));
+            clienteMensajeria.generarCodigo(new SolicitudGenerarOtp(usuario.getId(), usuario.getCorreo(), "EMAIL", propositoReal));
         } catch (Exception e) {
             log.error("Fallo al contactar MS-Mensajería para {}: {}", usuario.getCorreo(), e.getMessage());
         }

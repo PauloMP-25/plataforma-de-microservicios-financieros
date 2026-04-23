@@ -2,6 +2,7 @@ package com.usuario.presentacion.manejadores;
 
 import com.usuario.aplicacion.dtos.ErrorApi;
 import com.usuario.aplicacion.excepciones.IpBloqueadaException;
+import com.usuario.infraestructura.mensajeria.PublicadorAuditoria;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,9 +12,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
-
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -24,7 +26,11 @@ import org.springframework.security.authentication.LockedException;
  */
 @RestControllerAdvice
 @Slf4j
+@RequiredArgsConstructor
 public class ManejadorGlobalExcepciones {
+
+    private final PublicadorAuditoria publicador;
+    private final jakarta.servlet.http.HttpServletRequest requestHttp;
 
     // =========================================================================
     // Excepciones de dominio
@@ -156,6 +162,17 @@ public class ManejadorGlobalExcepciones {
 
     @ExceptionHandler(org.springframework.security.authentication.BadCredentialsException.class)
     public ResponseEntity<ErrorApi> manejarCredencialesInvalidas(BadCredentialsException ex, WebRequest request) {
+        // 1. Recuperamos el atributo como Object
+        Object idAtributo = requestHttp.getAttribute("intento_usuario_id");
+
+        // 2. Casteo seguro: Si es UUID lo guardamos, si no, queda null
+        UUID usuarioId = (idAtributo instanceof UUID) ? (UUID) idAtributo : null;
+
+        // 3. Obtenemos la IP
+        String ipCliente = requestHttp.getRemoteAddr();
+
+        // 4. Enviamos al publicador (Asegúrate de que tu publicador acepte UUID ahora)
+        publicador.publicarAcceso(usuarioId, ipCliente, "FALLO", "Intento fallido: Credenciales incorrectas", PublicadorAuditoria.RK_ACCESO_FALLO);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorApi.of(401, "CREDENCIALES_INVALIDAS", "Usuario o contraseña incorrectos.", extraerRuta(request)));
     }
