@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import org.hibernate.annotations.SQLRestriction;
 
 /**
  * Entidad de dominio que representa a un Usuario en el sistema.
@@ -20,7 +21,9 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "usuarios")
-@Data
+@SQLRestriction("habilitado = true")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

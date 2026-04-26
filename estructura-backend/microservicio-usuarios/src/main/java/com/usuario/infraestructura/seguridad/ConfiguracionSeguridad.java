@@ -47,18 +47,16 @@ public class ConfiguracionSeguridad {
                         -> ex.authenticationEntryPoint(puntoEntradaJwt)
                 )
                 .authorizeHttpRequests(auth -> auth
-                // Públicos
+                // --- Endpoints Públicos (Registro y Acceso) ---
                 .requestMatchers(HttpMethod.POST,
                         "/api/v1/auth/login",
                         "/api/v1/auth/registrar",
                         "/api/v1/auth/recuperar-password",
                         "/api/v1/auth/reset-password"
                 ).permitAll()
-                .requestMatchers(HttpMethod.GET,
-                        "/api/v1/auth/confirmar-email"
-                ).permitAll()
-                // === AÑADE ESTA LÍNEA ===
+                // --- Endpoint de Activación (Público) ---
                 .requestMatchers(HttpMethod.PUT, "/api/v1/auth/activar/**").permitAll()
+                // --- Monitoreo y Documentación (Público) ---
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers(
                         "/v3/api-docs/**",

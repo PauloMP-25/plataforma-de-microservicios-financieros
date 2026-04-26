@@ -1,8 +1,11 @@
 package com.usuario.presentacion.manejadores;
 
 import com.usuario.aplicacion.dtos.ErrorApi;
+import com.usuario.aplicacion.dtos.EstadoAcceso;
 import com.usuario.aplicacion.excepciones.IpBloqueadaException;
 import com.usuario.infraestructura.mensajeria.PublicadorAuditoria;
+import feign.FeignException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,6 +51,22 @@ public class ManejadorGlobalExcepciones {
                         "IP_BLOQUEADA",
                         ex.getMessage(),
                         extraerRuta(request)
+                ));
+    }
+
+    // =========================================================================
+    // Errores de comunicacion entre microservicios
+    // =========================================================================
+    @ExceptionHandler(FeignException.class)
+    public ResponseEntity<ErrorApi> manejarFeignException(FeignException ex, HttpServletRequest request) {
+        log.error("Error en comunicación externa: status={}, body={}", ex.status(), ex.contentUTF8());
+
+        return ResponseEntity.status(ex.status() > 0 ? ex.status() : 500)
+                .body(ErrorApi.of(
+                        ex.status(),
+                        "ERROR_SERVICIO_EXTERNO",
+                        "No se pudo completar la operación con un servicio externo.",
+                        request.getRequestURI()
                 ));
     }
 
@@ -172,7 +191,7 @@ public class ManejadorGlobalExcepciones {
         String ipCliente = requestHttp.getRemoteAddr();
 
         // 4. Enviamos al publicador (Asegúrate de que tu publicador acepte UUID ahora)
-        publicador.publicarAcceso(usuarioId, ipCliente, "FALLO", "Intento fallido: Credenciales incorrectas", PublicadorAuditoria.RK_ACCESO_FALLO);
+        publicador.publicarAcceso(usuarioId, ipCliente, EstadoAcceso.FALLO, "Intento fallido: Credenciales incorrectas", PublicadorAuditoria.RK_ACCESO_FALLO);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorApi.of(401, "CREDENCIALES_INVALIDAS", "Usuario o contraseña incorrectos.", extraerRuta(request)));
     }

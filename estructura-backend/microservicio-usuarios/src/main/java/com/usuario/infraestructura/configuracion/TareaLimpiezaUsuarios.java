@@ -29,7 +29,7 @@ public class TareaLimpiezaUsuarios {
 
         try {
             // Usamos el método que definiremos en el repositorio
-            int eliminados = repositorioUsuario.deleteByHabilitadoFalseAndFechaCreacionBefore(limite);
+            int eliminados = repositorioUsuario.limpiarUsuariosNoActivados(limite);
             
             if (eliminados > 0) {
                 log.info("Limpieza exitosa: Se eliminaron {} registros de usuarios no verificados.", eliminados);

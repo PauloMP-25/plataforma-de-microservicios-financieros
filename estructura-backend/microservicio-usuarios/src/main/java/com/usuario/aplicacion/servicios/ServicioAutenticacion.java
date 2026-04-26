@@ -1,10 +1,8 @@
 package com.usuario.aplicacion.servicios;
 
-import com.usuario.aplicacion.dtos.NuevoPasswordDTO;
-import com.usuario.aplicacion.dtos.RegistroAuditoriaDTO;
-import com.usuario.infraestructura.clientes.ClienteAuditoria;
+import com.usuario.aplicacion.dtos.EstadoAcceso;
 import com.usuario.aplicacion.dtos.RespuestaAutenticacion;
-import com.usuario.aplicacion.dtos.RespuestaRegistro;
+import com.usuario.aplicacion.dtos.SolicitudCambioPassword;
 import com.usuario.aplicacion.dtos.SolicitudGenerarOtp;
 import com.usuario.aplicacion.dtos.SolicitudLogin;
 import com.usuario.aplicacion.dtos.SolicitudRecuperacion;
@@ -24,8 +22,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -38,38 +34,101 @@ public class ServicioAutenticacion {
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
     private final ServicioJwt jwtService;
-    private final ServicioBloqueoIp servicioBloqueoIp;
     private final PasswordEncoder passwordEncoder;
-    private final ClienteAuditoria clienteAuditoria;
     private final ClientePerfilExterno clientePerfilExterno;
     private final ClienteMensajeria clienteMensajeria;
     private final PublicadorAuditoria publicadorAuditoria;
-    private static final String MODULO = "MICROSERVICIO-USUARIO";
+
+    // =========================================================================
+    // Activar la cuenta del usuario
+    // =========================================================================
+    @Transactional
+    public void activarCuenta(UUID usuarioId, String ipCliente) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("ID no encontrado"));
+
+        if (!usuario.isHabilitado()) {
+            usuario.setHabilitado(true);
+            usuarioRepository.save(usuario);
+            publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente, EstadoAcceso.EXITO, "CUENTA_ACTIVADA", PublicadorAuditoria.RK_ACCESO_LOGIN);
+        }
+    }
+
+    // =========================================================================
+    // Cambiar de Contraseña desde Perfil
+    // =========================================================================
+    @Transactional
+    public void cambiarPassword(UUID usuarioId, SolicitudCambioPassword solicitud, String ipCliente) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+        validarPasswordActual(usuario, solicitud.passwordActual(), ipCliente);
+
+        if (!solicitud.contrasenasNuevasCoinciden()) {
+            throw new IllegalArgumentException("Las contraseñas no coinciden");
+        }
+
+        usuario.setPassword(passwordEncoder.encode(solicitud.nuevoPassword()));
+        usuarioRepository.save(usuario);
+        publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente, EstadoAcceso.EXITO, "CAMBIO_PASSWORD_PERFIL", PublicadorAuditoria.RK_ACCESO_LOGIN);
+    }
+
+    // =========================================================================
+    // Recuperación de Contraseña
+    // =========================================================================
+    @Transactional
+    public void iniciarRecuperacion(SolicitudRecuperacion solicitud) {
+        Usuario usuario = usuarioRepository.findByCorreo(solicitud.correo())
+                .orElseThrow(() -> new IllegalArgumentException("Correo no encontrado"));
+
+        dispararOtp(usuario, "RESTABLECER_PASSWORD");
+        publicadorAuditoria.publicarAcceso(usuario.getId(), "N/A", EstadoAcceso.EXITO, "INICIO_RECUPERACION_PASSWORD", PublicadorAuditoria.RK_ACCESO_LOGIN);
+    }
+
+    @Transactional
+    public void restablecerPassword(String codigoOtp, SolicitudCambioPassword solicitud) {
+        if (!solicitud.contrasenasNuevasCoinciden()) {
+            throw new IllegalArgumentException("Las contraseñas no coinciden");
+        }
+
+        // El MS-Mensajería valida el código y nos devuelve el ID del usuario
+        UUID usuarioId = clienteMensajeria.validarCodigoYObtenerUsuario(codigoOtp);
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalStateException("Usuario no encontrado tras validación OTP"));
+
+        usuario.setPassword(passwordEncoder.encode(solicitud.nuevoPassword()));
+        usuarioRepository.save(usuario);
+        publicadorAuditoria.publicarAcceso(usuario.getId(), "N/A", EstadoAcceso.EXITO, "RESETEO_PASSWORD_OTP", PublicadorAuditoria.RK_ACCESO_LOGIN);
+    }
+
+    // =========================================================================
+    // Eliminar cuenta
+    // =========================================================================
+    @Transactional
+    public void eliminarCuenta(UUID usuarioId, String ipCliente) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("ID no encontrado"));
+
+        usuario.setHabilitado(false);
+        usuario.setCuentaNoBloqueada(false);
+        usuarioRepository.save(usuario);
+
+        publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente, EstadoAcceso.EXITO, "ELIMINACION_LOGICA_CUENTA", PublicadorAuditoria.RK_ACCESO_LOGIN);
+    }
 
     // =========================================================================
     // Login (Optimizado: Menos código, misma seguridad)
     // =========================================================================
     @Transactional
     public RespuestaAutenticacion login(SolicitudLogin request, String ipCliente) {
-        // Buscamos al usuario antes de autenticar para capturar su ID para la auditoría
         Usuario usuario = usuarioRepository.findByCorreo(request.correo())
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + request.correo()));
+                .orElseThrow(() -> new UsernameNotFoundException("Credenciales inválidas"));
 
-        if (usuario != null) {
-            requestHttp.setAttribute("intento_usuario_id", usuario.getId());
-        }
-
-        // La autenticación lanzará excepciones que atrapará el ManejadorGlobal
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.correo(), request.password())
         );
 
-        servicioBloqueoIp.loginExitoso(ipCliente);
-
-        registrarEventoAuditoria(usuario.getNombreUsuario(), "LOGIN_EXITOSO", "Autenticación Completa", ipCliente);
-        publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente, "EXITO", "LOGIN CORRECTO", PublicadorAuditoria.RK_ACCESO_LOGIN);
-
-        log.info("Login exitoso — usuario: '{}'", usuario.getNombreUsuario());
+        publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente, EstadoAcceso.EXITO, "LOGIN_EXITOSO", PublicadorAuditoria.RK_ACCESO_LOGIN);
 
         return RespuestaAutenticacion.of(
                 jwtService.generarToken(usuario),
@@ -84,11 +143,11 @@ public class ServicioAutenticacion {
     // Registro
     // =========================================================================
     @Transactional
-    public RespuestaRegistro registrar(SolicitudRegistro request) {
+    public UUID registrar(SolicitudRegistro request, String ipCliente) {
         validarDisponibilidad(request);
 
-        Rol rolPorDefecto = rolRepository.findByNombre(Rol.NombreRol.ROLE_FREE.name())
-                .orElseThrow(() -> new IllegalStateException("Rol base no configurado."));
+        Rol rolBase = rolRepository.findByNombre(Rol.NombreRol.ROLE_FREE.name())
+                .orElseThrow(() -> new IllegalStateException("Rol base no encontrado"));
 
         Usuario usuario = Usuario.builder()
                 .nombreUsuario(request.nombreUsuario())
@@ -97,92 +156,54 @@ public class ServicioAutenticacion {
                 .habilitado(false)
                 .cuentaNoBloqueada(true)
                 .build();
-        usuario.getRoles().add(rolPorDefecto);
+        usuario.getRoles().add(rolBase);
 
-        Usuario usuarioGuardado = usuarioRepository.save(usuario);
+        Usuario guardado = usuarioRepository.save(usuario);
 
-        // Orquestación con otros microservicios
-        clientePerfilExterno.crearPerfilInicial(usuarioGuardado.getId());
-        dispararOtp(usuarioGuardado, "ACTIVACION_CUENTA");
+        // Integración síncrona/asíncrona
+        clientePerfilExterno.crearPerfilInicial(guardado.getId());
+        dispararOtp(guardado, "ACTIVACION_CUENTA");
 
-        registrarEventoAuditoria(usuarioGuardado.getNombreUsuario(), "REGISTRO_USUARIO", "Pendiente de validación", usuarioGuardado.getCorreo());
-        return RespuestaRegistro.builder()
-                .idUsuario(usuarioGuardado.getId().toString())
-                .nombreUsuario(usuarioGuardado.getNombreUsuario())
-                .correo(usuarioGuardado.getCorreo())
-                .build();
+        publicadorAuditoria.publicarAcceso(guardado.getId(), ipCliente, EstadoAcceso.EXITO, "REGISTRO_INICIAL", PublicadorAuditoria.RK_ACCESO_LOGIN);
+
+        return guardado.getId();
     }
 
     // =========================================================================
-    // Métodos de Soporte y Recuperación
+    // Cerrar Sesión
     // =========================================================================
     @Transactional
-    public void activarCuenta(UUID usuarioId) {
-        Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new IllegalArgumentException("ID no encontrado"));
-
-        if (!usuario.isHabilitado()) {
-            usuario.setHabilitado(true);
-            usuarioRepository.save(usuario);
-            registrarEventoAuditoria(usuario.getNombreUsuario(), "CUENTA_ACTIVADA", "OTP validado", usuario.getCorreo());
-        }
-    }
-
-    // =========================================================================
-    // Recuperación de Contraseña
-    // =========================================================================
-    @Transactional
-    public void iniciarRecuperacion(SolicitudRecuperacion solicitud) {
-        Usuario usuario = usuarioRepository.findByCorreo(solicitud.correo())
-                .orElseThrow(() -> new IllegalArgumentException("Correo no encontrado"));
-
-        // Disparamos a mensajería con un "tipo" diferente
-        dispararOtp(usuario, "RESTABLECER_PASSWORD");
-        registrarEventoAuditoria(usuario.getNombreUsuario(), "CAMBIAR_PASSWORD", "Pendiente de confirmacion", usuario.getCorreo());
-
-        log.info("Proceso de recuperación iniciado para: {}", usuario.getCorreo());
-    }
-
-    @Transactional
-    public void completarRecuperacion(NuevoPasswordDTO datos) {
-        if (!datos.contrasenasCoinciden()) {
-            throw new IllegalArgumentException("Contraseñas no coinciden");
-        }
-
-        UUID usuarioId = clienteMensajeria.validarCodigoYObtenerUsuario(datos.codigoOtp());
-        Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new IllegalStateException("Usuario no encontrado tras validar OTP"));
-
-        usuario.setPassword(passwordEncoder.encode(datos.nuevoPassword()));
-        usuarioRepository.save(usuario);
-        log.info("Password reseteado para: {}", usuario.getNombreUsuario());
+    public void registrarLogout(UUID usuarioId, String ipCliente) {
+        publicadorAuditoria.publicarAcceso(usuarioId, ipCliente, EstadoAcceso.EXITO, "LOGOUT_EXITOSO", PublicadorAuditoria.RK_ACCESO_LOGIN);
     }
 
     // =========================================================================
     // Helpers Privados
     // =========================================================================
+    private void dispararOtp(Usuario usuario, String tipo) {
+        try {
+            clienteMensajeria.generarCodigo(new SolicitudGenerarOtp(usuario.getId(), usuario.getCorreo(), "EMAIL", tipo));
+        } catch (Exception e) {
+            log.error("Fallo comunicación con MS-Mensajería: {}", e.getMessage());
+        }
+    }
+
     private void validarDisponibilidad(SolicitudRegistro request) {
         if (!request.contrasenasCoinciden()) {
             throw new IllegalArgumentException("Contraseñas no coinciden");
         }
         if (usuarioRepository.existsByNombreUsuario(request.nombreUsuario())) {
-            throw new IllegalStateException("Usuario duplicado");
+            throw new IllegalStateException("Nombre de usuario ocupado");
         }
         if (usuarioRepository.existsByCorreo(request.correo())) {
-            throw new IllegalStateException("Correo duplicado");
+            throw new IllegalStateException("Correo ya registrado");
         }
     }
 
-    private void dispararOtp(Usuario usuario, String tipo) {
-        try {
-            String propositoReal = tipo.equals("CAMBIAR_PASSWORD") ? "RESTABLECER_PASSWORD" : "ACTIVACION_CUENTA";
-            clienteMensajeria.generarCodigo(new SolicitudGenerarOtp(usuario.getId(), usuario.getCorreo(), "EMAIL", propositoReal));
-        } catch (Exception e) {
-            log.error("Fallo al contactar MS-Mensajería para {}: {}", usuario.getCorreo(), e.getMessage());
+    private void validarPasswordActual(Usuario usuario, String passwordActual, String ipCliente) {
+        if (!passwordEncoder.matches(passwordActual, usuario.getPassword())) {
+            publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente, EstadoAcceso.FALLO, "PASSWORD_ACTUAL_INCORRECTA", PublicadorAuditoria.RK_ACCESO_FALLO);
+            throw new IllegalArgumentException("La contraseña actual es incorrecta");
         }
-    }
-
-    private void registrarEventoAuditoria(String usuario, String accion, String desc, String origen) {
-        clienteAuditoria.enviar(new RegistroAuditoriaDTO(LocalDateTime.now(), usuario, accion, desc, origen, MODULO));
     }
 }

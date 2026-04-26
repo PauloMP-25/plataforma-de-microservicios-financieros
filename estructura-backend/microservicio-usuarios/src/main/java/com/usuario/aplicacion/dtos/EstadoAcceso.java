@@ -1,8 +1,7 @@
 package com.usuario.aplicacion.dtos;
 
 /**
- *
- * @author user
+ * BORRAR
  */
 public enum EstadoAcceso {
     EXITO,

@@ -7,6 +7,8 @@ import java.util.List;
  * Respuesta de error estandarizada. Garantiza un contrato uniforme en toda la API.
  * @author Paulo
  */
+
+//CAMBIAR LUEGO AL MICROSERVICIO-COMUN
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ErrorApi(
         int estado,
