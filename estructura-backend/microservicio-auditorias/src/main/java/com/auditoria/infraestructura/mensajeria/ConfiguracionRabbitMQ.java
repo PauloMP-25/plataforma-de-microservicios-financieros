@@ -12,24 +12,17 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Infraestructura completa de RabbitMQ para el Microservicio de Auditoría.
  *
- * ┌─────────────────────────────────────────────────────────────────────┐
- * │  FLUJO FELIZ (mensaje procesado con éxito)                          │
- * │                                                                     │
- * │  Productor → exchange.auditoria (Topic) ──┬──▶ cola.auditoria.accesos       │
- * │                                            └──▶ cola.auditoria.transacciones │
- * │                                                                     │
- * │  FLUJO DE ERROR (excepción en el consumidor)                        │
- * │                                                                     │
- * │  cola.auditoria.accesos  → (error) → exchange.auditoria.dlq         │
- * │                                       └──▶ cola.auditoria.accesos.dlq        │
- * │                                                                     │
- * │  cola.auditoria.transacciones → (error) → exchange.auditoria.dlq   │
- * │                                            └──▶ cola.auditoria.transacciones.dlq │
+ * ┌─────────────────────────────────────────────────────────────────────┐ │
+ * FLUJO FELIZ (mensaje procesado con éxito) │ │ │ │ Productor →
+ * exchange.auditoria (Topic) ──┬──▶ cola.auditoria.accesos │ │ └──▶
+ * cola.auditoria.transacciones │ │ │ │ FLUJO DE ERROR (excepción en el
+ * consumidor) │ │ │ │ cola.auditoria.accesos → (error) → exchange.auditoria.dlq
+ * │ │ └──▶ cola.auditoria.accesos.dlq │ │ │ │ cola.auditoria.transacciones →
+ * (error) → exchange.auditoria.dlq │ │ └──▶ cola.auditoria.transacciones.dlq │
  * └─────────────────────────────────────────────────────────────────────┘
  *
- * Routing Keys:
- *   auditoria.acceso.#       → cola.auditoria.accesos
- *   auditoria.transaccion.#  → cola.auditoria.transacciones
+ * Routing Keys: auditoria.acceso.# → cola.auditoria.accesos
+ * auditoria.transaccion.# → cola.auditoria.transacciones
  */
 @Configuration
 public class ConfiguracionRabbitMQ {
@@ -37,48 +30,67 @@ public class ConfiguracionRabbitMQ {
     // ══════════════════════════════════════════════════════════════════════════
     // CONSTANTES — Nombres de Exchanges, Colas y Routing Keys
     // ══════════════════════════════════════════════════════════════════════════
-
     // ── Exchanges ─────────────────────────────────────────────────────────────
-    /** Exchange principal: enruta mensajes a las colas de auditoría. */
-    public static final String EXCHANGE_AUDITORIA        = "exchange.auditoria";
+    /**
+     * Exchange principal: enruta mensajes a las colas de auditoría.
+     */
+    public static final String EXCHANGE_AUDITORIA = "exchange.auditoria";
 
-    /** Dead Letter Exchange: recibe mensajes que fallaron tras los reintentos. */
-    public static final String EXCHANGE_AUDITORIA_DLQ    = "exchange.auditoria.dlq";
+    /**
+     * Dead Letter Exchange: recibe mensajes que fallaron tras los reintentos.
+     */
+    public static final String EXCHANGE_AUDITORIA_DLQ = "exchange.auditoria.dlq";
 
     // ── Colas principales ─────────────────────────────────────────────────────
-    /** Recibe eventos de acceso (login, logout, intentos fallidos). */
-    public static final String COLA_ACCESOS              = "cola.auditoria.accesos";
+    /**
+     * Recibe eventos de acceso (login, logout, intentos fallidos).
+     */
+    public static final String COLA_ACCESOS = "cola.auditoria.accesos";
 
-    /** Recibe eventos de cambios en entidades de negocio (trazabilidad). */
-    public static final String COLA_TRANSACCIONES        = "cola.auditoria.transacciones";
+    /**
+     * Recibe eventos de cambios en entidades de negocio (trazabilidad).
+     */
+    public static final String COLA_TRANSACCIONES = "cola.auditoria.transacciones";
 
     // ── Dead Letter Queues (DLQ) ──────────────────────────────────────────────
-    /** Mensajes de acceso que no pudieron procesarse después de los reintentos. */
-    public static final String COLA_ACCESOS_DLQ          = "cola.auditoria.accesos.dlq";
+    /**
+     * Mensajes de acceso que no pudieron procesarse después de los reintentos.
+     */
+    public static final String COLA_ACCESOS_DLQ = "cola.auditoria.accesos.dlq";
 
-    /** Mensajes transaccionales que no pudieron procesarse. */
-    public static final String COLA_TRANSACCIONES_DLQ    = "cola.auditoria.transacciones.dlq";
+    /**
+     * Mensajes transaccionales que no pudieron procesarse.
+     */
+    public static final String COLA_TRANSACCIONES_DLQ = "cola.auditoria.transacciones.dlq";
 
     // ── Routing Keys ──────────────────────────────────────────────────────────
-    /** Patrón para eventos de acceso. El '#' acepta cualquier sufijo. */
-    public static final String RK_ACCESO                 = "auditoria.acceso.#";
+    /**
+     * Patrón para eventos de acceso. El '#' acepta cualquier sufijo.
+     */
+    public static final String RK_ACCESO = "auditoria.acceso.#";
 
-    /** Patrón para eventos transaccionales. */
-    public static final String RK_TRANSACCION            = "auditoria.transaccion.#";
+    /**
+     * Patrón para eventos transaccionales.
+     */
+    public static final String RK_TRANSACCION = "auditoria.transaccion.#";
 
-    /** Routing key usada por las colas para reenviar mensajes muertos a la DLQ. */
-    public static final String RK_ACCESOS_DLQ            = "dlq.auditoria.accesos";
-    public static final String RK_TRANSACCIONES_DLQ      = "dlq.auditoria.transacciones";
+    /**
+     * Routing key usada por las colas para reenviar mensajes muertos a la DLQ.
+     */
+    public static final String RK_ACCESOS_DLQ = "dlq.auditoria.accesos";
+    public static final String RK_TRANSACCIONES_DLQ = "dlq.auditoria.transacciones";
+
+    public static final String RK_EVENTOS_SEGURIDAD = "auditoria.evento.#";
 
     // ══════════════════════════════════════════════════════════════════════════
     // EXCHANGES
     // ══════════════════════════════════════════════════════════════════════════
-
     /**
-     * Exchange principal de tipo Topic.
-     * Permite enrutar mensajes por patrones de routing key (ej: auditoria.acceso.*).
-     * durable=true: sobrevive reinicios del broker.
-     * @return 
+     * Exchange principal de tipo Topic. Permite enrutar mensajes por patrones
+     * de routing key (ej: auditoria.acceso.*). durable=true: sobrevive
+     * reinicios del broker.
+     *
+     * @return
      */
     @Bean
     public TopicExchange exchangeAuditoria() {
@@ -89,9 +101,10 @@ public class ConfiguracionRabbitMQ {
     }
 
     /**
-     * Dead Letter Exchange: recibe mensajes rechazados o que expiraron.
-     * Las colas principales apuntan aquí via x-dead-letter-exchange.
-     * @return 
+     * Dead Letter Exchange: recibe mensajes rechazados o que expiraron. Las
+     * colas principales apuntan aquí via x-dead-letter-exchange.
+     *
+     * @return
      */
     @Bean
     public DirectExchange exchangeAuditoriaDlq() {
@@ -104,50 +117,49 @@ public class ConfiguracionRabbitMQ {
     // ══════════════════════════════════════════════════════════════════════════
     // COLAS PRINCIPALES (con configuración DLQ integrada)
     // ══════════════════════════════════════════════════════════════════════════
-
     /**
      * Cola principal para eventos de acceso.
      *
-     * Argumentos clave:
-     *  - x-dead-letter-exchange: hacia dónde enviar mensajes que fallan
-     *  - x-dead-letter-routing-key: routing key en el DLX
-     *  - x-message-ttl: tiempo máximo de vida en ms antes de morir (10 min)
-     * @return 
+     * Argumentos clave: - x-dead-letter-exchange: hacia dónde enviar mensajes
+     * que fallan - x-dead-letter-routing-key: routing key en el DLX -
+     * x-message-ttl: tiempo máximo de vida en ms antes de morir (10 min)
+     *
+     * @return
      */
     @Bean
     public Queue colaAccesos() {
         return QueueBuilder
                 .durable(COLA_ACCESOS)
-                .withArgument("x-dead-letter-exchange",    EXCHANGE_AUDITORIA_DLQ)
+                .withArgument("x-dead-letter-exchange", EXCHANGE_AUDITORIA_DLQ)
                 .withArgument("x-dead-letter-routing-key", RK_ACCESOS_DLQ)
-                .withArgument("x-message-ttl",             600_000) // 10 minutos
+                .withArgument("x-message-ttl", 600_000) // 10 minutos
                 .build();
     }
 
     /**
-     * Cola principal para eventos de trazabilidad transaccional.
-     * Misma configuración de DLQ que la cola de accesos.
-     * @return 
+     * Cola principal para eventos de trazabilidad transaccional. Misma
+     * configuración de DLQ que la cola de accesos.
+     *
+     * @return
      */
     @Bean
     public Queue colaTransacciones() {
         return QueueBuilder
                 .durable(COLA_TRANSACCIONES)
-                .withArgument("x-dead-letter-exchange",    EXCHANGE_AUDITORIA_DLQ)
+                .withArgument("x-dead-letter-exchange", EXCHANGE_AUDITORIA_DLQ)
                 .withArgument("x-dead-letter-routing-key", RK_TRANSACCIONES_DLQ)
-                .withArgument("x-message-ttl",             600_000) // 10 minutos
+                .withArgument("x-message-ttl", 600_000) // 10 minutos
                 .build();
     }
 
     // ══════════════════════════════════════════════════════════════════════════
     // DEAD LETTER QUEUES (DLQ)
     // ══════════════════════════════════════════════════════════════════════════
-
     /**
-     * DLQ para mensajes de acceso fallidos.
-     * Sin TTL ni DLX propio: los mensajes aquí esperan revisión manual o
-     * un proceso de reprocesamiento programado.
-     * @return 
+     * DLQ para mensajes de acceso fallidos. Sin TTL ni DLX propio: los mensajes
+     * aquí esperan revisión manual o un proceso de reprocesamiento programado.
+     *
+     * @return
      */
     @Bean
     public Queue colaAccesosDlq() {
@@ -157,9 +169,10 @@ public class ConfiguracionRabbitMQ {
     }
 
     /**
-     * DLQ para mensajes transaccionales fallidos.
-     * En un entorno FinTech, estos mensajes NO se deben perder jamás.
-     * @return 
+     * DLQ para mensajes transaccionales fallidos. En un entorno FinTech, estos
+     * mensajes NO se deben perder jamás.
+     *
+     * @return
      */
     @Bean
     public Queue colaTransaccionesDlq() {
@@ -171,14 +184,15 @@ public class ConfiguracionRabbitMQ {
     // ══════════════════════════════════════════════════════════════════════════
     // BINDINGS — Conectan exchanges con colas usando routing keys
     // ══════════════════════════════════════════════════════════════════════════
-
     /**
-     * Enlaza la cola de accesos al exchange principal.
-     * El patrón "auditoria.acceso.#" acepta cualquier routing key que comience
-     * con "auditoria.acceso." (ej: auditoria.acceso.login, auditoria.acceso.logout).
+     * Enlaza la cola de accesos al exchange principal. El patrón
+     * "auditoria.acceso.#" acepta cualquier routing key que comience con
+     * "auditoria.acceso." (ej: auditoria.acceso.login,
+     * auditoria.acceso.logout).
+     *
      * @param colaAccesos
      * @param exchangeAuditoria
-     * @return 
+     * @return
      */
     @Bean
     public Binding bindingAccesos(Queue colaAccesos, TopicExchange exchangeAuditoria) {
@@ -189,11 +203,12 @@ public class ConfiguracionRabbitMQ {
     }
 
     /**
-     * Enlaza la cola de transacciones al exchange principal.
-     * Acepta cualquier routing key con prefijo "auditoria.transaccion."
+     * Enlaza la cola de transacciones al exchange principal. Acepta cualquier
+     * routing key con prefijo "auditoria.transaccion."
+     *
      * @param colaTransacciones
      * @param exchangeAuditoria
-     * @return 
+     * @return
      */
     @Bean
     public Binding bindingTransacciones(Queue colaTransacciones, TopicExchange exchangeAuditoria) {
@@ -204,11 +219,12 @@ public class ConfiguracionRabbitMQ {
     }
 
     /**
-     * Binding de la DLQ de accesos al Dead Letter Exchange.
-     * Usa routing key exacta (Direct Exchange no soporta wildcards).
+     * Binding de la DLQ de accesos al Dead Letter Exchange. Usa routing key
+     * exacta (Direct Exchange no soporta wildcards).
+     *
      * @param colaAccesosDlq
      * @param exchangeAuditoriaDlq
-     * @return 
+     * @return
      */
     @Bean
     public Binding bindingAccesosDlq(Queue colaAccesosDlq, DirectExchange exchangeAuditoriaDlq) {
@@ -220,9 +236,10 @@ public class ConfiguracionRabbitMQ {
 
     /**
      * Binding de la DLQ de transacciones al Dead Letter Exchange.
+     *
      * @param colaTransaccionesDlq
      * @param exchangeAuditoriaDlq
-     * @return 
+     * @return
      */
     @Bean
     public Binding bindingTransaccionesDlq(Queue colaTransaccionesDlq, DirectExchange exchangeAuditoriaDlq) {
@@ -232,15 +249,23 @@ public class ConfiguracionRabbitMQ {
                 .with(RK_TRANSACCIONES_DLQ);
     }
 
+    @Bean
+    public Binding bindingEventosSeguridad(Queue colaAccesos, TopicExchange exchangeAuditoria) {
+        return BindingBuilder
+                .bind(colaAccesos)
+                .to(exchangeAuditoria)
+                .with(RK_EVENTOS_SEGURIDAD);
+    }
+
     // ══════════════════════════════════════════════════════════════════════════
     // SERIALIZACIÓN JSON
     // ══════════════════════════════════════════════════════════════════════════
-
     /**
-     * Convierte automáticamente objetos Java ↔ JSON en los mensajes AMQP.
-     * Sin este bean, Spring AMQP usaría serialización binaria de Java (frágil).
-     * Con él, los mensajes son legibles desde cualquier lenguaje.
-     * @return 
+     * Convierte automáticamente objetos Java ↔ JSON en los mensajes AMQP. Sin
+     * este bean, Spring AMQP usaría serialización binaria de Java (frágil). Con
+     * él, los mensajes son legibles desde cualquier lenguaje.
+     *
+     * @return
      */
     @Bean
     public MessageConverter convertidorMensajesJson() {
@@ -248,10 +273,11 @@ public class ConfiguracionRabbitMQ {
     }
 
     /**
-     * Configura el RabbitTemplate con el convertidor JSON.
-     * Es el cliente usado por los productores para publicar mensajes.
+     * Configura el RabbitTemplate con el convertidor JSON. Es el cliente usado
+     * por los productores para publicar mensajes.
+     *
      * @param connectionFactory
-     * @return 
+     * @return
      */
     @Bean
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
@@ -261,21 +287,24 @@ public class ConfiguracionRabbitMQ {
     }
 
     /**
-     * Configura el contenedor de listeners con el convertidor JSON.
-     * Asegura que los @RabbitListener también deserialicen desde JSON.
+     * Configura el contenedor de listeners con el convertidor JSON. Asegura que
+     * los @RabbitListener también deserialicen desde JSON.
      *
      * prefetchCount=1: el consumidor procesa un mensaje a la vez antes de pedir
      * otro. Evita que un consumidor lento acumule mensajes en memoria.
+     *
      * @param connectionFactory
-     * @return 
+     * @param messageConverter
+     * @return
      */
     @Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
-            ConnectionFactory connectionFactory) {
+            ConnectionFactory connectionFactory,
+            MessageConverter messageConverter) {
 
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
-        factory.setMessageConverter(convertidorMensajesJson());
+        factory.setMessageConverter(messageConverter);
         factory.setPrefetchCount(1);
         // AcknowledgeMode.AUTO: Spring confirma automáticamente si no hay excepción,
         // rechaza si se lanza una excepción (y el mensaje va a la DLQ).

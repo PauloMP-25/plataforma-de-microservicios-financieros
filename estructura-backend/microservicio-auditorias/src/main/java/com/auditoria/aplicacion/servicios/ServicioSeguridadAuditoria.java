@@ -18,20 +18,19 @@ import java.time.LocalDateTime;
 /**
  * Servicio central de seguridad en auditoría.
  *
- * Responsabilidades:
- *  1. Registrar intentos de acceso (éxito/fallo).
- *  2. Detectar fuerza bruta: ≥3 fallos en 10 min → bloquear IP 30 min.
- *  3. Registrar cambios transaccionales para trazabilidad.
- *  4. Verificar si una IP está activamente bloqueada.
+ * Responsabilidades: 1. Registrar intentos de acceso (éxito/fallo). 2. Detectar
+ * fuerza bruta: ≥3 fallos en 10 min → bloquear IP 30 min. 3. Registrar cambios
+ * transaccionales para trazabilidad. 4. Verificar si una IP está activamente
+ * bloqueada.
  */
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class ServicioSeguridadAuditoria {
 
-    private final AuditoriaAccesoRepository       repositorioAcceso;
+    private final AuditoriaAccesoRepository repositorioAcceso;
     private final AuditoriaTransaccionalRepository repositorioTransaccional;
-    private final ListaNegraIpRepository           repositorioListaNegra;
+    private final ListaNegraIpRepository repositorioListaNegra;
 
     // ── Configuración ─────────────────────────────────────────────────────────
     @Value("${auditoria.seguridad.max-intentos-fallidos:3}")
@@ -46,17 +45,17 @@ public class ServicioSeguridadAuditoria {
     // =========================================================================
     // 1. REGISTRO DE ACCESOS
     // =========================================================================
-
     /**
-     * Persiste el evento de acceso y, si es un FALLO, evalúa si la IP debe
-     * ser bloqueada automáticamente por exceder el umbral de intentos.
+     * Persiste el evento de acceso y, si es un FALLO, evalúa si la IP debe ser
+     * bloqueada automáticamente por exceder el umbral de intentos.
      *
      * @param dto Datos del intento de acceso
      * @return El registro creado
      */
     @Transactional
     public AuditoriaAccesoDTO registrarAcceso(AuditoriaAccesoRequestDTO dto) {
-        log.debug("[AUDITORIA-ACCESO] Registrando acceso: ip={}, estado={}", dto.ipOrigen(), dto.estado());
+        log.info("[LOG-SEGURIDAD] {} | Usuario: {} | IP: {}",
+                dto.estado(), dto.usuarioId(), dto.ipOrigen());
 
         AuditoriaAcceso entidad = AuditoriaAcceso.builder()
                 .usuarioId(dto.usuarioId())
@@ -64,7 +63,7 @@ public class ServicioSeguridadAuditoria {
                 .navegador(dto.navegador())
                 .estado(dto.estado())
                 .detalleError(dto.detalleError())
-                .fecha(dto.fecha())
+                .fecha(dto.fecha() != null ? dto.fecha() : LocalDateTime.now())
                 .build();
 
         AuditoriaAcceso guardado = repositorioAcceso.save(entidad);
@@ -80,14 +79,12 @@ public class ServicioSeguridadAuditoria {
     // =========================================================================
     // 2. LÓGICA DE DETECCIÓN DE FUERZA BRUTA
     // =========================================================================
-
     /**
      * Cuenta los fallos recientes de la IP y la bloquea si supera el umbral.
      *
-     * Algoritmo:
-     *  - Ventana deslizante de {@code ventanaMinutos} minutos
-     *  - Si fallos >= {@code maxIntentosFallidos} → registrar en lista negra
-     *    por {@code bloqueoMinutos} minutos
+     * Algoritmo: - Ventana deslizante de {@code ventanaMinutos} minutos - Si
+     * fallos >= {@code maxIntentosFallidos} → registrar en lista negra por
+     * {@code bloqueoMinutos} minutos
      *
      * @param ipOrigen Dirección IP del intento fallido
      */
@@ -115,9 +112,9 @@ public class ServicioSeguridadAuditoria {
         // Si ya existe, extendemos el bloqueo; si no, creamos el registro
         ListaNegraIp registro = repositorioListaNegra.findById(ip)
                 .orElseGet(() -> ListaNegraIp.builder()
-                        .ip(ip)
-                        .fechaBloqueo(ahora)
-                        .build());
+                .ip(ip)
+                .fechaBloqueo(ahora)
+                .build());
 
         registro.setMotivo(String.format(
                 "Bloqueo automático: %d intentos fallidos en %d minutos.",
@@ -134,10 +131,9 @@ public class ServicioSeguridadAuditoria {
     // =========================================================================
     // 3. REGISTRO DE CAMBIOS TRANSACCIONALES
     // =========================================================================
-
     /**
-     * Persiste la trazabilidad de un cambio en una entidad de negocio.
-     * Captura el estado anterior y posterior para auditorías de cumplimiento.
+     * Persiste la trazabilidad de un cambio en una entidad de negocio. Captura
+     * el estado anterior y posterior para auditorías de cumplimiento.
      *
      * @param dto Datos del cambio con valorAnterior/valorNuevo en JSON
      * @return El registro de trazabilidad creado
@@ -163,10 +159,9 @@ public class ServicioSeguridadAuditoria {
     // =========================================================================
     // 4. VERIFICACIÓN DE IP EN LISTA NEGRA
     // =========================================================================
-
     /**
-     * Comprueba si una IP está activamente bloqueada en este momento.
-     * Endpoint principal consultado por el API Gateway antes de enrutar peticiones.
+     * Comprueba si una IP está activamente bloqueada en este momento. Endpoint
+     * principal consultado por el API Gateway antes de enrutar peticiones.
      *
      * @param ip Dirección IP a verificar
      * @return DTO con resultado y detalle del bloqueo si aplica
@@ -192,7 +187,6 @@ public class ServicioSeguridadAuditoria {
     // =========================================================================
     // 5. CONSULTAS
     // =========================================================================
-
     @Transactional(readOnly = true)
     public Page<AuditoriaAccesoDTO> listarAccesos(Pageable paginacion) {
         return repositorioAcceso.findAll(paginacion).map(this::convertirAccesoADTO);
@@ -210,8 +204,9 @@ public class ServicioSeguridadAuditoria {
     // =========================================================================
     // 6. MANTENIMIENTO PROGRAMADO
     // =========================================================================
-
-    /** Cada hora: limpia bloqueos de IP expirados de la lista negra. */
+    /**
+     * Cada hora: limpia bloqueos de IP expirados de la lista negra.
+     */
     @Scheduled(fixedRate = 10000)
     @Transactional
     public void limpiarBloqueoExpirados() {
@@ -221,7 +216,10 @@ public class ServicioSeguridadAuditoria {
         }
     }
 
-    /** Cada 24 horas: purga registros de acceso con más de 90 días de antigüedad. */
+    /**
+     * Cada 24 horas: purga registros de acceso con más de 90 días de
+     * antigüedad.
+     */
     @Scheduled(fixedRate = 86_400_000)
     @Transactional
     public void limpiarAccesosAntiguos() {
@@ -235,7 +233,6 @@ public class ServicioSeguridadAuditoria {
     // =========================================================================
     // MAPPERS PRIVADOS
     // =========================================================================
-
     private AuditoriaAccesoDTO convertirAccesoADTO(AuditoriaAcceso e) {
         return new AuditoriaAccesoDTO(
                 e.getId(), e.getUsuarioId(), e.getIpOrigen(),

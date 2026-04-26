@@ -8,8 +8,8 @@ import com.mensajeria.dominio.entidades.CodigoVerificacion.TipoVerificacion;
 import com.mensajeria.dominio.entidades.IntentoValidacion;
 import com.mensajeria.dominio.repositorios.CodigoVerificacionRepository;
 import com.mensajeria.dominio.repositorios.IntentoValidacionRepository;
-import com.mensajeria.infraestructura.clientes.ClienteAuditoria;
 import com.mensajeria.infraestructura.clientes.ClienteUsuario;
+import com.mensajeria.infraestructura.mensajeria.PublicadorAuditoria;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +31,7 @@ public class ServicioMensajeria {
     private final EmailService emailService;
     private final SmsService smsService;
     private final ClienteUsuario clienteUsuario;
-    private final ClienteAuditoria clienteAuditoria;
+    private final PublicadorAuditoria publicadorAuditoria;
 
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final String MODULO = "MICROSERVICIO-MENSAJERIA";
@@ -66,17 +66,21 @@ public class ServicioMensajeria {
 
         codigoRepository.save(entidad);
 
-        // Despacho unificado
+        // Lógica de auditoría informativa según el propósito y canal
+        String accionAudit = "OTP_SOLICITADO";
+        String detalleAudit = String.format("Usuario solicitó código para %s vía %s",
+                solicitud.proposito(), solicitud.tipo());
+
         if (solicitud.tipo() == TipoVerificacion.EMAIL) {
             emailService.enviarCodigoOtp(solicitud.email(), codigo, solicitud.proposito());
         } else {
             validarTelefono(solicitud.telefono());
             smsService.enviarCodigoVerificacion(solicitud.telefono(), codigo);
+            detalleAudit += " al número: " + enmascararTelefono(solicitud.telefono());
         }
 
-        registrarAuditoria(solicitud.usuarioId(), "OTP_GENERADO",
-                "Código de " + solicitud.proposito() + " enviado por " + solicitud.tipo());
-
+        // Registro de auditoría específico
+        registrarAuditoria(solicitud.usuarioId(), accionAudit, detalleAudit);
         return new RespuestaGeneracion(true, "Enviado con éxito", solicitud.tipo().name());
     }
 
@@ -152,13 +156,27 @@ public class ServicioMensajeria {
         });
     }
 
+// =========================================================================
+    // LÓGICA DE INTENTOS (Alerta de 3er Intento)
+    // =========================================================================
     private boolean registrarIntentoFallido(UUID uId) {
         IntentoValidacion i = intentoRepository.findByUsuarioId(uId)
                 .orElseGet(() -> IntentoValidacion.builder().usuarioId(uId).build());
+
         i.incrementarIntentos();
-        if (i.getIntentos() >= maxIntentos) {
-            i.bloquear(bloqueoHoras);
+        int intentosActuales = i.getIntentos();
+
+        if (intentosActuales == 2) { // El siguiente (3ero) es el crítico antes del bloqueo
+            registrarAuditoria(uId, "OTP_ADVERTENCIA",
+                    "Segundo intento fallido. El próximo error bloqueará la cuenta por " + bloqueoHoras + " horas.");
         }
+
+        if (intentosActuales >= maxIntentos) {
+            i.bloquear(bloqueoHoras);
+            registrarAuditoria(uId, "USUARIO_BLOQUEADO",
+                    "Máximo de intentos alcanzado (" + maxIntentos + "). Cuenta suspendida temporalmente.");
+        }
+
         intentoRepository.save(i);
         return i.isBloqueado();
     }
@@ -179,7 +197,17 @@ public class ServicioMensajeria {
         }
     }
 
+    // =========================================================================
+    // HELPERS DE FORMATEO
+    // =========================================================================
+    private String enmascararTelefono(String tel) {
+        if (tel == null || tel.length() < 4) {
+            return "****";
+        }
+        return "****" + tel.substring(tel.length() - 4);
+    }
+
     private void registrarAuditoria(UUID uId, String accion, String desc) {
-        clienteAuditoria.enviar(new RegistroAuditoriaDTO(uId.toString(), accion, desc, "INTERNAL", MODULO));
+        publicadorAuditoria.publicarEvento(uId, accion, desc);
     }
 }
