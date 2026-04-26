@@ -1,15 +1,16 @@
 """
-routers/analisis.py
-Endpoints de la API de IA Financiera.
-Cada endpoint corresponde a uno de los 10 módulos de análisis.
+analisis.py — Endpoints del Motor de IA Financiera.
+Integrado con Seguridad JWT y Auditoría Asíncrona.
 """
 
-import fastapi
-from fastapi import APIRouter, HTTPException, Request, status, Depends, Header
-from typing import Optional
-from datetime import datetime
 import logging
+from datetime import datetime
+from typing import Annotated
 
+from fastapi import APIRouter, HTTPException, Request, status, Depends, BackgroundTasks
+from httpcore import request
+
+# Modelos y esquemas
 from app.modelos.esquemas import (
     SolicitudAnalisis, SolicitudSimulacion, SolicitudMetaFinanciera,
     RespuestaClasificacion, RespuestaPrediccion, RespuestaAnomalias,
@@ -17,24 +18,31 @@ from app.modelos.esquemas import (
     RespuestaEstacionalidad, RespuestaPresupuesto, RespuestaSimulacion,
     RespuestaReporte, RespuestaAnalisisCompleto
 )
-from app.clientes.cliente_financiero import ClienteNucleoFinanciero, ClienteAuditoria
+
+# Clientes y Seguridad
+from app.clientes.cliente_financiero import ClienteNucleoFinanciero
+from app.clientes.cliente_auditoria import enviar_evento_auditoria
+from app.seguridad import validar_token, obtener_usuario_id
 from app.utilidades.preparador_datos import json_a_dataframe
 from app.servicios import motor_ia
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("ia_financiera.router")
 router = APIRouter(prefix="/api/v1/ia", tags=["Análisis IA Financiero"])
 
-# Clientes persistentes
+# Cliente persistente para datos financieros
 _cliente_financiero = ClienteNucleoFinanciero()
-_cliente_auditoria = ClienteAuditoria()
+
+# Definición de dependencia de seguridad para limpieza visual
+UsuarioAutenticado = Annotated[dict, Depends(validar_token)]
 
 # =========================================================================
 # LOGICA DE SOPORTE (Dependencias)
 # =========================================================================
 
-def _obtener_dataframe(solicitud: SolicitudAnalisis, token: str):
-    """Helper: obtiene las transacciones y las convierte en DataFrame."""
+async def _obtener_datos_as_df(solicitud: SolicitudAnalisis, token: str):
+    """Helper: Obtiene transacciones del Core y las convierte a DataFrame."""
     try:
+        # Nota: Idealmente cliente_financiero también debería ser async
         datos_json = _cliente_financiero.obtener_historial_transacciones(
             usuario_id=solicitud.usuario_id,
             token=token,
@@ -42,29 +50,25 @@ def _obtener_dataframe(solicitud: SolicitudAnalisis, token: str):
             mes=solicitud.mes,
             anio=solicitud.anio,
         )
-        df = json_a_dataframe(datos_json)
-        return df
-    except ConnectionError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail={
-                "error": "SERVICIO_NO_DISPONIBLE",
-                "mensaje": str(exc),
-                "sugerencia": "Verifique que microservicio-nucleo-financiero esté corriendo en el puerto 8085."
-            }
-        )
-    except (ValueError, TimeoutError) as exc:
+        return json_a_dataframe(datos_json)
+    except Exception as exc:
+        logger.error(f"Error al conectar con Nucleo Financiero: {exc}")
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail={"error": "ERROR_MICROSERVICIO", "mensaje": str(exc)}
+            detail={"error": "CORE_NO_DISPONIBLE", "mensaje": "No se pudo obtener datos del núcleo financiero."}
         )
 
 
-def _auditar(usuario_id: str, accion: str, detalles: str, request: Request):
-    """Helper: envía evento de auditoría de forma no bloqueante."""
-    ip = request.client.host if request.client else "unknown"
-    _cliente_auditoria.reportar_evento(usuario_id, accion, detalles, ip)
-
+def _registrar_auditoria_segundo_plano(tareas: BackgroundTasks, payload: UsuarioAutenticado, 
+                                      accion: str, detalles: str, request: Request):
+    """
+    Registra el evento en el microservicio de auditoría sin bloquear la respuesta principal.
+    """
+    usuario_nombre = payload.get("sub", "desconocido")
+    ip = request.client.host if request.client else "127.0.0.1"
+    
+    # Agregamos la tarea para que FastAPI la ejecute DESPUÉS de enviar la respuesta
+    tareas.add_task(enviar_evento_auditoria, usuario_nombre, accion, detalles, ip)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # ENDPOINT 1: CLASIFICAR TRANSACCIONES
@@ -80,18 +84,24 @@ def _auditar(usuario_id: str, accion: str, detalles: str, request: Request):
     `capricho`, `inversión` o `recurrente`.
     """,
 )
-async def clasificar_transacciones(solicitud: SolicitudAnalisis, 
-                                request: Request, authorization: Optional[str] = Header(None)):
-    if not authorization:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail="Se requiere el token JWT en el encabezado Authorization"
-        )
-    # Extraemos el token limpio
-    token = authorization.replace("Bearer ", "")
-    df = _obtener_dataframe(solicitud, token)
+async def clasificar_transacciones(
+    solicitud: SolicitudAnalisis, 
+    request: Request, 
+    tareas: BackgroundTasks,
+    payload: UsuarioAutenticado):
+    
+    # El token ya viene validado en el payload si llegamos aquí
+    token = request.headers.get("Authorization").replace("Bearer ", "")
+    
+    df = await _obtener_datos_as_df(solicitud, token)
     resultado = motor_ia.clasificar_transaccion_automatica(df)
-    _auditar(solicitud.usuario_id, "IA_CLASIFICACION", f"Clasificadas {resultado.get('transacciones_clasificadas', 0)} transacciones", request)
+
+    # Auditoría en segundo plano
+    _registrar_auditoria_segundo_plano(
+        tareas, payload, "IA_CLASIFICACION", 
+        f"Clasificadas {len(df)} transacciones para {solicitud.usuario_id}", request
+    )
+
     return resultado
 
 
@@ -108,17 +118,23 @@ async def clasificar_transacciones(solicitud: SolicitudAnalisis,
     o media móvil ponderada (dependiendo de la cantidad de datos históricos).
     """,
 )
-async def predecir_gastos(solicitud: SolicitudAnalisis, request: Request, authorization: Optional[str] = Header(None)):
-    if not authorization:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Se requiere el token JWT en el encabezado Authorization"
-        )
-    # Extraemos el token limpio
-    token = authorization.replace("Bearer ", "")
-    df = _obtener_dataframe(solicitud, token)
+async def predecir_gastos(
+    solicitud: SolicitudAnalisis, 
+    tareas: BackgroundTasks,
+    request: Request, 
+    payload: UsuarioAutenticado):
+
+    # El token ya viene validado en el payload si llegamos aquí
+    token = request.headers.get("Authorization").replace("Bearer ", "")
+    
+    df = await _obtener_datos_as_df(solicitud, token)    
     resultado = motor_ia.predecir_gastos_proximo_mes(df)
-    _auditar(solicitud.usuario_id, "IA_PREDICCION_GASTOS", f"Gasto predicho: S/ {resultado.get('gasto_predicho', 0)}", request)
+    
+    # Auditoría en segundo plano
+    _registrar_auditoria_segundo_plano(
+        tareas, payload, "IA_PREDICCION_GASTOS", 
+        f"Gasto predicho: S/ {resultado.get('gasto_predicho', 0)}", request
+    )
     return resultado
 
 
@@ -136,16 +152,22 @@ async def predecir_gastos(solicitud: SolicitudAnalisis, request: Request, author
     respecto a la media de su categoría.
     """,
 )
-async def detectar_anomalias(solicitud: SolicitudAnalisis, request: Request, authorization: Optional[str] = Header(None)):
-    if not authorization:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Se requiere el token JWT en el encabezado Authorization"
-        )
-    token = authorization.replace("Bearer ", "")
-    df = _obtener_dataframe(solicitud, token)
+async def detectar_anomalias(
+    solicitud: SolicitudAnalisis, 
+    request: Request, 
+    payload: UsuarioAutenticado,
+    tareas: BackgroundTasks):
+
+    token = request.headers.get("Authorization").replace("Bearer ", "")
+
+    df = await _obtener_datos_as_df(solicitud, token)  
     resultado = motor_ia.detectar_anomalias_financieras(df)
-    _auditar(solicitud.usuario_id, "IA_DETECCION_ANOMALIAS", f"Anomalías detectadas: {resultado.get('anomalias_detectadas', 0)}", request)
+    
+    # Auditoría en segundo plano
+    _registrar_auditoria_segundo_plano(
+        tareas, payload, "IA_DETECCION_ANOMALIAS", 
+        f"Anomalías detectadas: {resultado.get('anomalias_detectadas', 0)}", request
+    )
     return resultado
 
 
@@ -162,17 +184,20 @@ async def detectar_anomalias(solicitud: SolicitudAnalisis, request: Request, aut
     que podrían cancelarse para liberar capacidad de ahorro.
     """,
 )
-async def optimizar_suscripciones(solicitud: SolicitudAnalisis, request: Request, authorization: Optional[str] = Header(None)):
-    if not authorization:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Se requiere el token JWT en el encabezado Authorization"
-        )
+async def optimizar_suscripciones(solicitud: SolicitudAnalisis, request: Request, payload: UsuarioAutenticado,
+tareas: BackgroundTasks):
+
     # Extraemos el token limpio
-    token = authorization.replace("Bearer ", "")
-    df = _obtener_dataframe(solicitud, token)
+    token = request.headers.get("Authorization").replace("Bearer ", "")
+
+    df = await _obtener_datos_as_df(solicitud, token)  
     resultado = motor_ia.optimizar_suscripciones(df)
-    _auditar(solicitud.usuario_id, "IA_OPTIMIZACION_SUSCRIPCIONES", f"Ahorro potencial: S/ {resultado.get('ahorro_potencial', 0)}", request)
+
+        # Auditoría en segundo plano
+    _registrar_auditoria_segundo_plano(
+        tareas, payload, "IA_OPTIMIZACION_SUSCRIPCIONES", 
+        f"Ahorro potencial: S/ {resultado.get('ahorro_potencial', 0)}", request
+    )
     return resultado
 
 
@@ -190,17 +215,20 @@ async def optimizar_suscripciones(solicitud: SolicitudAnalisis, request: Request
     Clasifica el resultado según la regla 50/30/20.
     """,
 )
-async def calcular_ahorro(solicitud: SolicitudAnalisis, request: Request, authorization: Optional[str] = Header(None)):
-    if not authorization:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Se requiere el token JWT en el encabezado Authorization"
-        )
+async def calcular_ahorro(solicitud: SolicitudAnalisis, request: Request, payload: UsuarioAutenticado,
+tareas: BackgroundTasks):
+
     # Extraemos el token limpio
-    token = authorization.replace("Bearer ", "")
-    df = _obtener_dataframe(solicitud, token)
+    token = request.headers.get("Authorization").replace("Bearer ", "")
+
+    df = await _obtener_datos_as_df(solicitud, token)  
     resultado = motor_ia.calcular_capacidad_ahorro(df)
-    _auditar(solicitud.usuario_id, "IA_CAPACIDAD_AHORRO", f"Ahorro: S/ {resultado.get('capacidad_ahorro', 0)} ({resultado.get('porcentaje_ahorro', 0)}%)", request)
+    
+    # Auditoría en segundo plano
+    _registrar_auditoria_segundo_plano(
+        tareas, payload, "IA_CAPACIDAD_AHORRO", 
+        f"Ahorro: S/ {resultado.get('capacidad_ahorro', 0)} ({resultado.get('porcentaje_ahorro', 0)}%)", request
+    )
     return resultado
 
 
@@ -217,21 +245,24 @@ async def calcular_ahorro(solicitud: SolicitudAnalisis, request: Request, author
     dado su ritmo de ahorro actual. Incluye escenarios optimista y pesimista.
     """,
 )
-async def simular_meta(solicitud: SolicitudMetaFinanciera, request: Request, authorization: Optional[str] = Header(None)):
-    if not authorization:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Se requiere el token JWT en el encabezado Authorization"
-        )
-    token = authorization.replace("Bearer ", "")
+async def simular_meta(solicitud: SolicitudMetaFinanciera, request: Request, payload: UsuarioAutenticado,
+tareas: BackgroundTasks):
+
+    token = request.headers.get("Authorization").replace("Bearer ", "")
+
     solicitud_analisis = SolicitudAnalisis(
         usuario_id=solicitud.usuario_id,
         mes=solicitud.mes,
         anio=solicitud.anio,
     )
-    df = _obtener_dataframe(solicitud_analisis, token)
+    df =await _obtener_datos_as_df(solicitud_analisis, token)
     resultado = motor_ia.simular_metas_financieras(df, solicitud.monto_meta, solicitud.nombre_meta)
-    _auditar(solicitud.usuario_id, "IA_SIMULACION_META", f"Meta '{solicitud.nombre_meta}' en {resultado.get('meses_para_alcanzar', '?')} meses", request)
+    
+    # Auditoría en segundo plano
+    _registrar_auditoria_segundo_plano(
+        tareas, payload, "IA_SIMULACION_META", 
+        f"Meta '{solicitud.nombre_meta}' en {resultado.get('meses_para_alcanzar', '?')} meses", request
+    )
     return resultado
 
 
@@ -248,16 +279,19 @@ async def simular_meta(solicitud: SolicitudMetaFinanciera, request: Request, aut
     e ingreso y el patrón estacional del usuario.
     """,
 )
-async def analizar_estacionalidad(solicitud: SolicitudAnalisis, request: Request, authorization: Optional[str] = Header(None)):
-    if not authorization:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Se requiere el token JWT en el encabezado Authorization"
-        )
-    token = authorization.replace("Bearer ", "")
-    df = _obtener_dataframe(solicitud, token)
+async def analizar_estacionalidad(solicitud: SolicitudAnalisis, request: Request, payload: UsuarioAutenticado,
+tareas: BackgroundTasks):
+
+    token = request.headers.get("Authorization").replace("Bearer ", "")
+
+    df = await _obtener_datos_as_df(solicitud, token)  
     resultado = motor_ia.analizar_estacionalidad(df)
-    _auditar(solicitud.usuario_id, "IA_ESTACIONALIDAD", "Análisis de estacionalidad ejecutado", request)
+    
+    # Auditoría en segundo plano
+    _registrar_auditoria_segundo_plano(
+        tareas, payload, "IA_ESTACIONALIDAD", 
+        f"Estacionalidad: {resultado.get('patron_estacional', 'No detectado')}  ", request
+    )
     return resultado
 
 
@@ -274,18 +308,20 @@ async def analizar_estacionalidad(solicitud: SolicitudAnalisis, request: Request
     según el gasto de la semana anterior y los límites por categoría.
     """,
 )
-async def recomendar_presupuesto(solicitud: SolicitudAnalisis, request: Request, authorization: Optional[str] = Header(None)):
-    if not authorization:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Se requiere el token JWT en el encabezado Authorization"
-        )
+async def recomendar_presupuesto(solicitud: SolicitudAnalisis, request: Request, payload: UsuarioAutenticado,
+tareas: BackgroundTasks):
+
     # Extraemos el token limpio
-    token = authorization.replace("Bearer ", "")
-    df = _obtener_dataframe(solicitud, token)
-    df = _obtener_dataframe(solicitud)
+    token = request.headers.get("Authorization").replace("Bearer ", "")
+
+    df = await _obtener_datos_as_df(solicitud, token)  
     resultado = motor_ia.recomendar_presupuesto_dinamico(df)
-    _auditar(solicitud.usuario_id, "IA_PRESUPUESTO_DINAMICO", f"Presupuesto semanal: S/ {resultado.get('presupuesto_semana_actual', 0)}", request)
+    
+    # Auditoría en segundo plano
+    _registrar_auditoria_segundo_plano(
+        tareas, payload, "IA_PRESUPUESTO_DINAMICO", 
+        f"Presupuesto semanal: S/ {resultado.get('presupuesto_semana_actual', 0)}", request
+    )
     return resultado
 
 
@@ -302,25 +338,28 @@ async def recomendar_presupuesto(solicitud: SolicitudAnalisis, request: Request,
     o un nuevo ingreso sobre la capacidad de ahorro y el balance.
     """,
 )
-async def simular_escenario(solicitud: SolicitudSimulacion, request: Request, authorization: Optional[str] = Header(None)):
-    if not authorization:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Se requiere el token JWT en el encabezado Authorization"
-        )
-    token = authorization.replace("Bearer ", "")
+async def simular_escenario(solicitud: SolicitudSimulacion, request: Request, payload: UsuarioAutenticado,
+tareas: BackgroundTasks):
+
+    token = request.headers.get("Authorization").replace("Bearer ", "")
+
     solicitud_analisis = SolicitudAnalisis(
         usuario_id=solicitud.usuario_id,
         mes=solicitud.mes,
         anio=solicitud.anio,
     )
-    df = _obtener_dataframe(solicitud_analisis, token)
+    df =await _obtener_datos_as_df(solicitud_analisis, token)
     resultado = motor_ia.simular_escenario_que_pasaria_si(
         df,
         nuevo_gasto_fijo=solicitud.nuevo_gasto_fijo,
         nuevo_ingreso=solicitud.nuevo_ingreso,
     )
-    _auditar(solicitud.usuario_id, "IA_SIMULACION_ESCENARIO", f"Nuevo gasto fijo: S/ {solicitud.nuevo_gasto_fijo} | Nuevo ingreso: S/ {solicitud.nuevo_ingreso}", request)
+    
+    # Auditoría en segundo plano
+    _registrar_auditoria_segundo_plano(
+        tareas, payload, "IA_SIMULACION_ESCENARIO", 
+        f"Nuevo gasto fijo: S/ {solicitud.nuevo_gasto_fijo} | Nuevo ingreso: S/ {solicitud.nuevo_ingreso}", request
+    )
     return resultado
 
 
@@ -338,17 +377,20 @@ async def simular_escenario(solicitud: SolicitudSimulacion, request: Request, au
     financiera del usuario de forma comprensible, con alertas y recomendaciones.
     """,
 )
-async def generar_reporte(solicitud: SolicitudAnalisis, request: Request, authorization: Optional[str] = Header(None)):
-    if not authorization:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Se requiere el token JWT en el encabezado Authorization"
-        )
-    token = authorization.replace("Bearer ", "")
-    df = _obtener_dataframe(solicitud, token)
+async def generar_reporte(solicitud: SolicitudAnalisis, request: Request, payload: UsuarioAutenticado,
+tareas: BackgroundTasks):
+
+    token = request.headers.get("Authorization").replace("Bearer ", "")
+
+    df = await _obtener_datos_as_df(solicitud, token)  
     periodo = f"{solicitud.mes or 'todos los meses'} / {solicitud.anio or 'todos los años'}"
     resultado = motor_ia.generar_reporte_lenguaje_natural(df, periodo)
-    _auditar(solicitud.usuario_id, "IA_REPORTE_COMPLETO", f"Puntaje salud financiera: {resultado.get('puntaje_salud_financiera', 0)}/100", request)
+    
+    # Auditoría en segundo plano
+    _registrar_auditoria_segundo_plano(
+        tareas, payload, "IA_REPORTE_COMPLETO", 
+        f"Puntaje salud financiera: {resultado.get('puntaje_salud_financiera', 0)}/100", request
+    )
     return resultado
 
 
@@ -367,16 +409,14 @@ async def generar_reporte(solicitud: SolicitudAnalisis, request: Request, author
     Esta llamada puede tardar más tiempo al ejecutar todos los análisis.
     """,
 )
-async def analisis_completo(solicitud: SolicitudAnalisis, request: Request, authorization: Optional[str] = Header(None)):
+async def analisis_completo(solicitud: SolicitudAnalisis, request: Request, payload: UsuarioAutenticado,
+tareas: BackgroundTasks):
     
-    if not authorization:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Se requiere el token JWT en el encabezado Authorization"
-        )
 
-    token = authorization.replace("Bearer ", "")
-    df = _obtener_dataframe(solicitud, token)
+
+    token = request.headers.get("Authorization").replace("Bearer ", "")
+
+    df = await _obtener_datos_as_df(solicitud, token)  
     periodo = f"{solicitud.mes or 'período completo'} {solicitud.anio or ''}"
 
     prediccion = motor_ia.predecir_gastos_proximo_mes(df)
@@ -385,7 +425,12 @@ async def analisis_completo(solicitud: SolicitudAnalisis, request: Request, auth
     suscripciones = motor_ia.optimizar_suscripciones(df)
     reporte = motor_ia.generar_reporte_lenguaje_natural(df, periodo)
 
-    _auditar(solicitud.usuario_id, "IA_ANALISIS_COMPLETO", f"Análisis completo ejecutado — {len(df)} transacciones procesadas", request)
+    # Auditoría en segundo plano
+
+    _registrar_auditoria_segundo_plano(
+        tareas, payload, "IA_ANALISIS_COMPLETO", 
+        f"Análisis completo ejecutado — {len(df)} transacciones procesadas", request
+    )
 
     return {
         "usuario_id": solicitud.usuario_id,

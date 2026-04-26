@@ -1,0 +1,223 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: api-gateway
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # REDIS: Necesario para Rate Limiting
+  # En desarrollo puedes correr Redis con Docker:
+  #   docker run -d -p 6379:6379 redis:alpine
+  # ─────────────────────────────────────────────────────────────────────────
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      connect-timeout: 2s
+      timeout: 1s
+      # password: ${REDIS_PASSWORD:} # Descomentar en producción
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SPRING CLOUD GATEWAY — CONFIGURACIÓN CENTRAL
+  # ═══════════════════════════════════════════════════════════════════════════
+  cloud:
+    gateway:
+      # Tiempos de espera globales
+      httpclient:
+        connect-timeout: 5000  # 5 segundos para conectar
+        response-timeout: 10s # 10 segundos para responder
+      # Descubrimiento automático: si un servicio se llama "mi-servicio"
+      # en Eureka, el Gateway crea automáticamente una ruta /mi-servicio/**
+      # Útil para tener rutas de respaldo, pero aquí las definimos manualmente
+      # para tener control total sobre paths, filtros y seguridad.
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true  # Convierte MICROSERVICIO-USUARIO → microservicio-usuario
+
+      # ─────────────────────────────────────────────────────────────────────
+      # RUTAS DEFINIDAS MANUALMENTE
+      # Estructura de cada ruta:
+      #   id:        Identificador único (para logs y debugging)
+      #   uri:       lb://NOMBRE-EN-EUREKA  (lb = load balanced)
+      #   predicates: Condición para que esta ruta aplique
+      #   filters:   Transformaciones que se aplican a la petición/respuesta
+      # ─────────────────────────────────────────────────────────────────────
+      routes:
+        # ┌─────────────────────────────────────────────────────────┐
+        # │  MICROSERVICIO-USUARIO  (Puerto 8081)                   │
+        # │  Rutas PÚBLICAS: login y registro no requieren JWT      │
+        # └─────────────────────────────────────────────────────────┘
+        - id: servicio-usuario-auth
+          uri: lb://MICROSERVICIO-USUARIO
+          predicates:
+            - Path=/api/v1/auth/**
+          filters:
+            # StripPrefix=0: NO elimina ningún segmento del path.
+            # La petición llega como /api/v1/auth/login y se reenvía igual.
+            - StripPrefix=0
+            # Añade cabecera para que el microservicio sepa que viene del Gateway
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+          # Sin filtro JWT: estos endpoints son públicos
+          metadata:
+            requiere-autenticacion: false
+
+        # ┌─────────────────────────────────────────────────────────┐
+        # │  MICROSERVICIO-USUARIO  — Rutas protegidas              │
+        # └─────────────────────────────────────────────────────────┘
+        - id: usuario-protegido
+          uri: lb://MICROSERVICIO-USUARIO
+          predicates:
+            - Path=/api/v1/usuarios/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+          metadata:
+            requiere-autenticacion: true
+
+        # ┌─────────────────────────────────────────────────────────┐
+        # │  MICROSERVICIO-CLIENTE  (Puerto 8083)                   │
+        # └─────────────────────────────────────────────────────────┘
+        - id: servicio-cliente
+          uri: lb://MICROSERVICIO-CLIENTE
+          predicates:
+            - Path=/api/v1/clientes/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            # Rate Limiting: máx 20 peticiones/segundo por usuario autenticado
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 40
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@userKeyResolver}"
+          metadata:
+            requiere-autenticacion: true
+
+        # ┌─────────────────────────────────────────────────────────┐
+        # │  MICROSERVICIO-AUDITORIA  (Puerto 8082)                 │
+        # │  Solo accesible para ROLE_ADMIN desde el exterior       │
+        # └─────────────────────────────────────────────────────────┘
+        - id: servicio-auditoria
+          uri: lb://MICROSERVICIO-AUDITORIA
+          predicates:
+            - Path=/api/v1/auditoria/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+          metadata:
+            requiere-autenticacion: true
+            rol-requerido: ROLE_ADMIN
+
+        # ┌─────────────────────────────────────────────────────────┐
+        # │  MICROSERVICIO-MENSAJERIA  (Puerto 8084)                │
+        # │  Los OTP son públicos, el resto protegido               │
+        # └─────────────────────────────────────────────────────────┘
+        - id: servicio-mensajeria-otp
+          uri: lb://MICROSERVICIO-MENSAJERIA
+          predicates:
+            - Path=/api/v1/mensajeria/otp/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+          metadata:
+            requiere-autenticacion: false
+
+        # ┌─────────────────────────────────────────────────────────┐
+        # │  MICROSERVICIO-NUCLEO-FINANCIERO  (Puerto 8085)         │
+        # └─────────────────────────────────────────────────────────┘
+        - id: servicio-nucleo-financiero
+          uri: lb://MICROSERVICIO-NUCLEO-FINANCIERO
+          predicates:
+            - Path=/api/v1/financiero/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@userKeyResolver}"
+          metadata:
+            requiere-autenticacion: true
+
+      # ─────────────────────────────────────────────────────────────────────
+      # CORS GLOBAL: Aplica a todas las rutas del Gateway
+      # ─────────────────────────────────────────────────────────────────────
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            # En producción, reemplazar '*' con tu dominio real:
+            # allowedOrigins: "https://tu-app.com"
+            allowedOrigins:
+              - "http://localhost:3000"    # React/Next.js dev
+              - "http://localhost:5173"    # Vite dev
+              - ${FRONTEND_URL:http://localhost:3000}
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+              - PATCH
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+            # Cuánto tiempo el browser cachea la respuesta preflight (OPTIONS)
+            maxAge: 3600
+
+# ═══════════════════════════════════════════════════════════════════════════
+# EUREKA CLIENT: El Gateway se registra Y busca otros servicios
+# ═══════════════════════════════════════════════════════════════════════════
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_USER:admin}:${EUREKA_PASSWORD:admin123}@${EUREKA_HOST:localhost}:8761/eureka/
+    # El Gateway SÍ busca el registry para resolver lb:// en las rutas
+    fetch-registry: true
+    register-with-eureka: true
+    # Con qué frecuencia (ms) actualiza la caché del registry
+    registry-fetch-interval-seconds: 5
+  instance:
+    prefer-ip-address: true
+    # Tiempo que tarda Eureka en detectar que el Gateway cayó
+    lease-expiration-duration-in-seconds: 20
+    lease-renewal-interval-in-seconds: 10
+
+# ═══════════════════════════════════════════════════════════════════════════
+# JWT: Clave compartida para validar tokens (la misma del microservicio-usuario)
+# En producción: usa variable de entorno JWT_SECRET_KEY
+# ═══════════════════════════════════════════════════════════════════════════
+app:
+  security:
+    jwt:
+      secret-key: ${JWT_SECRET_KEY:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ACTUATOR
+# ═══════════════════════════════════════════════════════════════════════════
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, gateway
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true  # Expone /actuator/gateway/routes para ver rutas en tiempo real
+
+# ═══════════════════════════════════════════════════════════════════════════
+# LOGGING
+# ═══════════════════════════════════════════════════════════════════════════
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    org.springframework.security: WARN
+    com.financiero.saas.gateway: DEBUG
+    root: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
