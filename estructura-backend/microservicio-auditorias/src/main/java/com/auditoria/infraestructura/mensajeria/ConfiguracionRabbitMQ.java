@@ -2,35 +2,42 @@ package com.auditoria.infraestructura.mensajeria;
 
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 /**
- * Infraestructura completa de RabbitMQ para el Microservicio de Auditoría.
- *
- * ┌─────────────────────────────────────────────────────────────────────┐ │
- * FLUJO FELIZ (mensaje procesado con éxito) │ │ │ │ Productor →
- * exchange.auditoria (Topic) ──┬──▶ cola.auditoria.accesos │ │ └──▶
- * cola.auditoria.transacciones │ │ │ │ FLUJO DE ERROR (excepción en el
- * consumidor) │ │ │ │ cola.auditoria.accesos → (error) → exchange.auditoria.dlq
- * │ │ └──▶ cola.auditoria.accesos.dlq │ │ │ │ cola.auditoria.transacciones →
- * (error) → exchange.auditoria.dlq │ │ └──▶ cola.auditoria.transacciones.dlq │
- * └─────────────────────────────────────────────────────────────────────┘
- *
- * Routing Keys: auditoria.acceso.# → cola.auditoria.accesos
- * auditoria.transaccion.# → cola.auditoria.transacciones
+ * Configuración de infraestructura RabbitMQ para Auditoría.
+ * * Implementa un modelo de mensajería basado en Topic Exchange para el enrutamiento
+ * de eventos de acceso y transacciones. Incluye soporte para resiliencia mediante:
+ * - Dead Letter Exchange (DLX) para manejo de mensajes fallidos.
+ * - TTL (Time-To-Live) de 10 minutos para mensajes en cola.
+ * - Routing Keys con patrones wildcards (auditoria.#).
  */
 @Configuration
 public class ConfiguracionRabbitMQ {
 
+    @Value("${spring.application.name:microservicio-mensajeria}")
+    private String applicationName;
+
+    @Value("${spring.rabbitmq.host:localhost}")
+    private String rabbitHost;
+
+    @Value("${spring.rabbitmq.port:5672}")
+    private int rabbitPort;
+
+    @Value("${spring.rabbitmq.username:guest}")
+    private String rabbitUsername;
+
+    @Value("${spring.rabbitmq.password:guest}")
+    private String rabbitPassword;
     // ══════════════════════════════════════════════════════════════════════════
     // CONSTANTES — Nombres de Exchanges, Colas y Routing Keys
     // ══════════════════════════════════════════════════════════════════════════
-    // ── Exchanges ─────────────────────────────────────────────────────────────
     /**
      * Exchange principal: enruta mensajes a las colas de auditoría.
      */
@@ -82,6 +89,23 @@ public class ConfiguracionRabbitMQ {
 
     public static final String RK_EVENTOS_SEGURIDAD = "auditoria.evento.#";
 
+    /**
+     * Define la fábrica de conexiones y asigna un nombre identificable 
+     * en el panel de administración de RabbitMQ.
+     */
+    @Bean
+    public ConnectionFactory connectionFactory() {
+        // 1. Configuramos la fábrica con tus credenciales reales
+        CachingConnectionFactory factory = new CachingConnectionFactory(rabbitHost, rabbitPort);
+        factory.setUsername(rabbitUsername);
+        factory.setPassword(rabbitPassword);
+
+        // 2. Mantenemos tu estrategia de nombre personalizado
+        factory.setConnectionNameStrategy(connectionFactory -> applicationName);
+
+        return factory;
+    }
+    
     // ══════════════════════════════════════════════════════════════════════════
     // EXCHANGES
     // ══════════════════════════════════════════════════════════════════════════

@@ -17,6 +17,6 @@ import java.util.UUID;
 )
 public interface ClientePerfilExterno {
 
-    @PostMapping("/api/v1/perfiles/inicial")
+    @PostMapping("/api/v1/clientes/inicial")
     void crearPerfilInicial(@RequestParam("usuarioId") UUID usuarioId);
 }

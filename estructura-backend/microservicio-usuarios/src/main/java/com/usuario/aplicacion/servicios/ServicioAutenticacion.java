@@ -29,7 +29,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ServicioAutenticacion {
 
-    private final jakarta.servlet.http.HttpServletRequest requestHttp;
     private final AuthenticationManager authenticationManager;
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
@@ -81,7 +80,13 @@ public class ServicioAutenticacion {
         Usuario usuario = usuarioRepository.findByCorreo(solicitud.correo())
                 .orElseThrow(() -> new IllegalArgumentException("Correo no encontrado"));
 
-        dispararOtp(usuario, "RESTABLECER_PASSWORD");
+        publicadorAuditoria.publicarSolicitudOtp(new SolicitudGenerarOtp(
+                usuario.getId(),
+                usuario.getCorreo(),
+                "EMAIL",
+                "RESTABLECER_PASSWORD"
+        ));
+        
         publicadorAuditoria.publicarAcceso(usuario.getId(), "N/A", EstadoAcceso.EXITO, "INICIO_RECUPERACION_PASSWORD", PublicadorAuditoria.RK_ACCESO_LOGIN);
     }
 
@@ -160,9 +165,20 @@ public class ServicioAutenticacion {
 
         Usuario guardado = usuarioRepository.save(usuario);
 
-        // Integración síncrona/asíncrona
-        clientePerfilExterno.crearPerfilInicial(guardado.getId());
-        dispararOtp(guardado, "ACTIVACION_CUENTA");
+// 1. Perfil: Si esto es crítico, mantenlo síncrono o usa un try-catch
+        try {
+            clientePerfilExterno.crearPerfilInicial(guardado.getId());
+        } catch (Exception e) {
+            log.warn("MS-Cliente no disponible, el perfil se creará luego.");
+        }
+
+        // 2. OTP: No importa si MS-Mensajería está caído, el mensaje se guarda en RabbitMQ
+        publicadorAuditoria.publicarSolicitudOtp(new SolicitudGenerarOtp(
+                guardado.getId(),
+                guardado.getCorreo(),
+                "EMAIL",
+                "ACTIVACION_CUENTA"
+        ));
 
         publicadorAuditoria.publicarAcceso(guardado.getId(), ipCliente, EstadoAcceso.EXITO, "REGISTRO_INICIAL", PublicadorAuditoria.RK_ACCESO_LOGIN);
 
@@ -180,14 +196,6 @@ public class ServicioAutenticacion {
     // =========================================================================
     // Helpers Privados
     // =========================================================================
-    private void dispararOtp(Usuario usuario, String tipo) {
-        try {
-            clienteMensajeria.generarCodigo(new SolicitudGenerarOtp(usuario.getId(), usuario.getCorreo(), "EMAIL", tipo));
-        } catch (Exception e) {
-            log.error("Fallo comunicación con MS-Mensajería: {}", e.getMessage());
-        }
-    }
-
     private void validarDisponibilidad(SolicitudRegistro request) {
         if (!request.contrasenasCoinciden()) {
             throw new IllegalArgumentException("Contraseñas no coinciden");

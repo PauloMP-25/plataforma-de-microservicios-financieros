@@ -2,7 +2,9 @@ package com.usuario.infraestructura.mensajeria;
 
 import com.usuario.aplicacion.dtos.AuditoriaAccesoRequestDTO;
 import com.usuario.aplicacion.dtos.EstadoAcceso;
+import com.usuario.aplicacion.dtos.SolicitudGenerarOtp;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +51,16 @@ public class PublicadorAuditoria {
             log.debug("[RABBITMQ] Publicado en {}: {}", routingKey, estado);
         } catch (AmqpException ex) {
             log.error("[RABBITMQ] Fallo en publicación: {}", ex.getMessage());
+        }
+    }
+
+    public void publicarSolicitudOtp(SolicitudGenerarOtp dto) {
+        try {
+            // Enviamos el objeto DTO directamente. 
+            rabbitTemplate.convertAndSend("exchange.mensajeria", "mensaje.otp.generar", dto);
+            log.info("[RABBITMQ] Solicitud de OTP encolada para el usuario: {}", dto.usuarioId());
+        } catch (AmqpException ex) {
+            log.error("[RABBITMQ] Error al enviar solicitud de OTP: {}", ex.getMessage());
         }
     }
 }

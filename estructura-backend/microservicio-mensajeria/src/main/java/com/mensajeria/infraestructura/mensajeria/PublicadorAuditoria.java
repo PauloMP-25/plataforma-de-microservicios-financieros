@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -35,7 +36,7 @@ public class PublicadorAuditoria {
         try {
             rabbitTemplate.convertAndSend(EXCHANGE, RK_EVENTO_SEGURIDAD, dto);
             log.debug("[RABBITMQ] Auditoría enviada desde Mensajería: {}", accion);
-        } catch (Exception ex) {
+        } catch (AmqpException ex) {
             log.error("[RABBITMQ] Fallo al enviar auditoría: {}", ex.getMessage());
         }
     }

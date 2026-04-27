@@ -48,9 +48,13 @@ public class ConsumidorAuditoria {
      * @param dto DTO deserializado automáticamente desde JSON por Jackson
      * @param routingKey Routing key del mensaje (inyectada del header AMQP)
      */
+    // =========================================================================
+    // CONSUMIDOR 1: EVENTOS DE ACCESO
+    // =========================================================================
     @RabbitListener(
             queues = ConfiguracionRabbitMQ.COLA_ACCESOS,
-            containerFactory = "auditoriaErrorHandler"
+            containerFactory = "rabbitListenerContainerFactory", // La fábrica (definida en ConfiguracionRabbitMQ)
+            errorHandler = "auditoriaErrorHandler"               // El manejador de errores (ManejadorErroresRabbit)
     )
 
     public void consumirEventoAcceso(
@@ -80,7 +84,8 @@ public class ConsumidorAuditoria {
      */
     @RabbitListener(
             queues = ConfiguracionRabbitMQ.COLA_TRANSACCIONES,
-            containerFactory = "rabbitListenerContainerFactory"
+            containerFactory = "rabbitListenerContainerFactory",
+            errorHandler = "auditoriaErrorHandler"
     )
     public void consumirEventoTransaccional(
             AuditoriaTransaccionalRequestDTO dto,

@@ -71,7 +71,7 @@ public class ServicioCliente {
         Cliente actualizado = clienteRepository.save(cliente);
 
         // Notificar al microservicio de auditoría
-        registrarAuditoria(actualizado, "ACTUALIZAR_PERFIL", ipOrigen);
+//        registrarAuditoria(actualizado, "ACTUALIZAR_PERFIL", ipOrigen);
 
         return convertirADTO(actualizado);
     }
@@ -139,22 +139,22 @@ public class ServicioCliente {
         }
     }
 
-    private void registrarAuditoria(Cliente cliente, String accion, String ip) {
-        try {
-            String nombreCompleto = (cliente.getNombres() != null ? cliente.getNombres() : "Usuario")
-                    + " " + (cliente.getApellidos() != null ? cliente.getApellidos() : "");
-
-            clienteAuditoria.enviar(new RegistroAuditoriaDTO(
-                    nombreCompleto.trim(),
-                    accion,
-                    "Perfil actualizado correctamente",
-                    ip,
-                    MODULO
-            ));
-        } catch (Exception e) {
-            log.error("No se pudo enviar la auditoría, pero la transacción continúa: {}", e.getMessage());
-        }
-    }
+//    private void registrarAuditoria(Cliente cliente, String accion, String ip) {
+//        try {
+//            String nombreCompleto = (cliente.getNombres() != null ? cliente.getNombres() : "Usuario")
+//                    + " " + (cliente.getApellidos() != null ? cliente.getApellidos() : "");
+//
+//            clienteAuditoria.enviar(new RegistroAuditoriaDTO(
+//                    nombreCompleto.trim(),
+//                    accion,
+//                    "Perfil actualizado correctamente",
+//                    ip,
+//                    MODULO
+//            ));
+//        } catch (Exception e) {
+//            log.error("No se pudo enviar la auditoría, pero la transacción continúa: {}", e.getMessage());
+//        }
+//    }
 
     private RespuestaCliente convertirADTO(Cliente c) {
         return new RespuestaCliente(
