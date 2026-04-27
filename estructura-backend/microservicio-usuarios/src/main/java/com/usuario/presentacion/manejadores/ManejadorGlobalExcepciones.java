@@ -1,5 +1,6 @@
 package com.usuario.presentacion.manejadores;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.usuario.aplicacion.dtos.ErrorApi;
 import com.usuario.aplicacion.dtos.EstadoAcceso;
 import com.usuario.aplicacion.excepciones.IpBloqueadaException;
@@ -60,13 +61,30 @@ public class ManejadorGlobalExcepciones {
     // =========================================================================
     @ExceptionHandler(FeignException.class)
     public ResponseEntity<ErrorApi> manejarFeignException(FeignException ex, HttpServletRequest request) {
+        String mensajeFinal = "Error en comunicación con servicio externo.";
+
+        // 1. Intentamos extraer el mensaje real que mandó Mensajería
+        if (ex.contentUTF8() != null && !ex.contentUTF8().isBlank()) {
+            try {
+                // Usamos Jackson para leer el JSON que viene en el body
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                com.fasterxml.jackson.databind.JsonNode root = mapper.readTree(ex.contentUTF8());
+
+                if (root.has("mensaje")) {
+                    mensajeFinal = root.get("mensaje").asText();
+                }
+            } catch (JsonProcessingException e) {
+                log.warn("No se pudo parsear el error de Feign, usando mensaje genérico.");
+            }
+        }
+
         log.error("Error en comunicación externa: status={}, body={}", ex.status(), ex.contentUTF8());
 
         return ResponseEntity.status(ex.status() > 0 ? ex.status() : 500)
                 .body(ErrorApi.of(
                         ex.status(),
-                        "ERROR_SERVICIO_EXTERNO",
-                        "No se pudo completar la operación con un servicio externo.",
+                        "ERROR_MICROSERVICIO_EXTERNO",
+                        mensajeFinal, // <--- Aquí ya va el mensaje real
                         request.getRequestURI()
                 ));
     }

@@ -20,9 +20,11 @@ public class ControladorMensajeria {
     private final ServicioMensajeria servicioMensajeria;
 
     /**
-     * 1. GENERAR CÓDIGO Punto de entrada único para generar OTP de Registro o de Reset.
+     * 1. GENERAR CÓDIGO Punto de entrada único para generar OTP de Registro o
+     * de Reset.
+     *
      * @param solicitud
-     * @return 
+     * @return
      */
     @PostMapping("/generar")
     public ResponseEntity<RespuestaGeneracion> generarCodigo(
@@ -36,9 +38,11 @@ public class ControladorMensajeria {
     }
 
     /**
-     * 2. VALIDAR ACTIVACIÓN (Flujo Registro) Activa la cuenta del usuario si el código es correcto.
+     * 2. VALIDAR ACTIVACIÓN (Flujo Registro) Activa la cuenta del usuario si el
+     * código es correcto.
+     *
      * @param solicitud
-     * @return 
+     * @return
      */
     @PostMapping("/validar-activacion")
     public ResponseEntity<RespuestaValidacion> validarActivacion(
@@ -53,8 +57,9 @@ public class ControladorMensajeria {
      * 3. VALIDAR RECUPERACIÓN (Flujo Reset) Usado por Microservicio-Usuario
      * para validar el código de cambio de clave. Retorna el UUID del usuario
      * asociado al código.
+     *
      * @param codigo
-     * @return 
+     * @return
      */
     @GetMapping("/validar-recuperacion")
     public ResponseEntity<UUID> validarRecuperacion(@RequestParam("codigo") String codigo) {
@@ -62,5 +67,12 @@ public class ControladorMensajeria {
         log.debug("[GET] /otp/validar-recuperacion — Iniciando validación de reset");
 
         return ResponseEntity.ok(servicioMensajeria.validarCodigoYObtenerUsuario(codigo));
+    }
+
+    @PostMapping("/validar-limite")
+    public ResponseEntity<Void> validarLimite(@RequestBody SolicitudGenerarCodigo solicitud) {
+        // Aquí solo llamamos a verificarLimiteDiario y verificarBloqueo
+        servicioMensajeria.verificarRestricciones(solicitud.usuarioId(), solicitud.proposito());
+        return ResponseEntity.ok().build();
     }
 }

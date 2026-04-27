@@ -216,6 +216,16 @@ public class ServicioMensajeria {
         }
     }
 
+    public void verificarRestricciones(UUID usuarioId, PropositoCodigo proposito) {
+        // 1. Revisa si está bloqueado por intentos fallidos
+        verificarBloqueo(usuarioId);
+
+        // 2. Revisa si ya pidió 3 códigos hoy
+        verificarLimiteDiario(usuarioId, proposito);
+
+        log.info("[MS-MENSAJERIA] Validaciones de restricciones superadas para usuario: {}", usuarioId);
+    }
+
     // =========================================================================
     // HELPERS DE FORMATEO
     // =========================================================================

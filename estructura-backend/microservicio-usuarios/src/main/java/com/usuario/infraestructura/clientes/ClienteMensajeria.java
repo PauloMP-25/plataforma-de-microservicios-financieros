@@ -40,4 +40,7 @@ public interface ClienteMensajeria {
      */
     @GetMapping("/api/v1/mensajeria/otp/validar-recuperacion")
     UUID validarCodigoYObtenerUsuario(@RequestParam("codigo") String codigo);
+    
+    @PostMapping("/api/v1/mensajeria/otp/validar-limite")
+    void validarLimite(@RequestBody SolicitudGenerarOtp solicitud);
 }

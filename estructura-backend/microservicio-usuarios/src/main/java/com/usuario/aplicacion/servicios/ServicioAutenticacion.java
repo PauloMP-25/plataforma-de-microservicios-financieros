@@ -21,7 +21,6 @@ import com.usuario.infraestructura.seguridad.ServicioJwt;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.*;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,7 +47,6 @@ public class ServicioAutenticacion {
     public void activarCuenta(UUID usuarioId, String ipCliente) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("ID no encontrado"));
-
         if (!usuario.isHabilitado()) {
             usuario.setHabilitado(true);
             usuarioRepository.save(usuario);
@@ -85,7 +83,11 @@ public class ServicioAutenticacion {
     public void iniciarRecuperacion(SolicitudRecuperacion solicitud) {
         Usuario usuario = usuarioRepository.findByCorreoAndHabilitadoTrue(solicitud.correo())
                 .orElseThrow(() -> new IllegalArgumentException("Correo no encontrado"));
-
+        clienteMensajeria.validarLimite(new SolicitudGenerarOtp(
+                usuario.getId(),
+                usuario.getCorreo(),
+                null,
+                TipoVerificacion.EMAIL, PropositoCodigo.RESTABLECER_PASSWORD));
         publicadorAuditoria.publicarSolicitudOtp(new SolicitudGenerarOtp(
                 usuario.getId(),
                 usuario.getCorreo(),
@@ -178,7 +180,11 @@ public class ServicioAutenticacion {
                 .cuentaNoBloqueada(true)
                 .build();
         usuario.getRoles().add(rolBase);
-
+        clienteMensajeria.validarLimite(new SolicitudGenerarOtp(
+                usuario.getId(),
+                usuario.getCorreo(),
+                null,
+                TipoVerificacion.EMAIL, PropositoCodigo.ACTIVACION_CUENTA));
         Usuario guardado = usuarioRepository.save(usuario);
 
         // 1. Perfil: Si esto es crítico, mantenlo síncrono o usa un try-catch
@@ -187,7 +193,6 @@ public class ServicioAutenticacion {
         } catch (Exception e) {
             log.warn("MS-Cliente no disponible, el perfil se creará luego.");
         }
-
         // 2. OTP: No importa si MS-Mensajería está caído, el mensaje se guarda en RabbitMQ
         publicadorAuditoria.publicarSolicitudOtp(new SolicitudGenerarOtp(
                 guardado.getId(),
