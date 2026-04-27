@@ -24,7 +24,7 @@ public class DetallesUsuario implements UserDetailsService{
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String correo) throws UsernameNotFoundException {
         log.debug("Cargando usuario desde BD: {}", correo);
-        return usuarioRepository.findByCorreo(correo)
+        return usuarioRepository.findByCorreoAndHabilitadoTrue(correo)
             .orElseThrow(() -> {
                 log.warn("Usuario no encontrado: {}", correo);
                 return new UsernameNotFoundException("Usuario no encontrado: " + correo);

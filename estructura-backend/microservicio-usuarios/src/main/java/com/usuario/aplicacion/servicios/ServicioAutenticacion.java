@@ -1,12 +1,14 @@
 package com.usuario.aplicacion.servicios;
 
 import com.usuario.aplicacion.dtos.EstadoAcceso;
+import com.usuario.aplicacion.dtos.PropositoCodigo;
 import com.usuario.aplicacion.dtos.RespuestaAutenticacion;
 import com.usuario.aplicacion.dtos.SolicitudCambioPassword;
 import com.usuario.aplicacion.dtos.SolicitudGenerarOtp;
 import com.usuario.aplicacion.dtos.SolicitudLogin;
 import com.usuario.aplicacion.dtos.SolicitudRecuperacion;
 import com.usuario.aplicacion.dtos.SolicitudRegistro;
+import com.usuario.aplicacion.dtos.TipoVerificacion;
 import com.usuario.dominio.entidades.Rol;
 import com.usuario.dominio.entidades.Usuario;
 import com.usuario.dominio.repositorios.RolRepository;
@@ -49,7 +51,10 @@ public class ServicioAutenticacion {
         if (!usuario.isHabilitado()) {
             usuario.setHabilitado(true);
             usuarioRepository.save(usuario);
-            publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente, EstadoAcceso.EXITO, "CUENTA_ACTIVADA", PublicadorAuditoria.RK_ACCESO_LOGIN);
+            publicadorAuditoria.publicarAcceso(usuario.getId(),
+                    ipCliente,
+                    EstadoAcceso.EXITO, "CUENTA_ACTIVADA_VIA_OTP", PublicadorAuditoria.RK_ACCESO_LOGIN);
+            log.info("[MS-USUARIO] Usuario {} habilitado con éxito", usuarioId);
         }
     }
 
@@ -83,10 +88,11 @@ public class ServicioAutenticacion {
         publicadorAuditoria.publicarSolicitudOtp(new SolicitudGenerarOtp(
                 usuario.getId(),
                 usuario.getCorreo(),
-                "EMAIL",
-                "RESTABLECER_PASSWORD"
+                null,
+                TipoVerificacion.EMAIL,
+                PropositoCodigo.RESTABLECER_PASSWORD
         ));
-        
+
         publicadorAuditoria.publicarAcceso(usuario.getId(), "N/A", EstadoAcceso.EXITO, "INICIO_RECUPERACION_PASSWORD", PublicadorAuditoria.RK_ACCESO_LOGIN);
     }
 
@@ -165,7 +171,7 @@ public class ServicioAutenticacion {
 
         Usuario guardado = usuarioRepository.save(usuario);
 
-// 1. Perfil: Si esto es crítico, mantenlo síncrono o usa un try-catch
+        // 1. Perfil: Si esto es crítico, mantenlo síncrono o usa un try-catch
         try {
             clientePerfilExterno.crearPerfilInicial(guardado.getId());
         } catch (Exception e) {
@@ -176,8 +182,9 @@ public class ServicioAutenticacion {
         publicadorAuditoria.publicarSolicitudOtp(new SolicitudGenerarOtp(
                 guardado.getId(),
                 guardado.getCorreo(),
-                "EMAIL",
-                "ACTIVACION_CUENTA"
+                null,
+                TipoVerificacion.EMAIL,
+                PropositoCodigo.ACTIVACION_CUENTA
         ));
 
         publicadorAuditoria.publicarAcceso(guardado.getId(), ipCliente, EstadoAcceso.EXITO, "REGISTRO_INICIAL", PublicadorAuditoria.RK_ACCESO_LOGIN);

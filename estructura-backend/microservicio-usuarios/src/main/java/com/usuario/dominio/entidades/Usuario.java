@@ -21,7 +21,6 @@ import org.hibernate.annotations.SQLRestriction;
  */
 @Entity
 @Table(name = "usuarios")
-@SQLRestriction("habilitado = true")
 @Getter
 @Setter
 @NoArgsConstructor

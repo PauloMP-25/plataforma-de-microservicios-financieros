@@ -34,7 +34,6 @@ public class ServicioMensajeria {
     private final PublicadorAuditoria publicadorAuditoria;
 
     private static final SecureRandom RANDOM = new SecureRandom();
-    private static final String MODULO = "MICROSERVICIO-MENSAJERIA";
 
     @Value("${mensajeria.otp.expiracion-minutos:10}")
     private int expiracionMinutos;
@@ -89,16 +88,15 @@ public class ServicioMensajeria {
     // =========================================================================
     @Transactional
     public RespuestaValidacion validarParaActivacion(SolicitudValidarCodigo solicitud) {
+//      1. Validamos que el OTP sea correcto en nuestra base de datos (MS-Mensajería)
         CodigoVerificacion codigo = procesarValidacionInterna(solicitud, PropositoCodigo.ACTIVACION_CUENTA);
 
-        // Nueva lógica: Activación por ID en MS-Usuarios
-        try {
-            clienteUsuario.activarCuenta(codigo.getUsuarioId());
-        } catch (Exception e) {
-            log.error("[FEIGN] Error activando cuenta {}: {}", codigo.getUsuarioId(), e.getMessage());
-        }
+        // 2. Si el código es válido, llamamos al MS-Usuarios para que cambie el estado a TRUE
+        log.info("[MS-MENSAJERIA] Solicitando activación al MS-Usuarios para el ID: {}", codigo.getUsuarioId());
 
-        return new RespuestaValidacion(true, "Cuenta activada correctamente.");
+        clienteUsuario.activarCuenta(codigo.getUsuarioId());
+
+        return new RespuestaValidacion(true, "OTP válido. Cuenta activada en el sistema de usuarios.");
     }
 
     // =========================================================================
