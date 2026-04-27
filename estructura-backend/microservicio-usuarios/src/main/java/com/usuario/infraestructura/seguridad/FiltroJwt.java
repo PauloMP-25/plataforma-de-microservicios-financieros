@@ -29,7 +29,8 @@ import java.io.IOException;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class FiltroJwt extends OncePerRequestFilter{
+public class FiltroJwt extends OncePerRequestFilter {
+
     private static final String CABECERA_AUTH = "Authorization";
     private static final String PREFIJO_BEARER = "Bearer ";
 
@@ -73,30 +74,33 @@ public class FiltroJwt extends OncePerRequestFilter{
 
     private void procesarJwt(String jwt, HttpServletRequest request) {
 
-        final String nombreUsuario = servicioJwt.extraerNombreUsuario(jwt);
+        final String correo = servicioJwt.extraerCorreoUsuario(jwt);
 
-        if (nombreUsuario == null) return;
-
-        boolean yaAutenticado =
-                SecurityContextHolder.getContext().getAuthentication() != null;
-
-        if (yaAutenticado) {log.trace("Ya autenticado '{}', omitiendo JWT", nombreUsuario);
+        if (correo == null) {
             return;
         }
 
-        UserDetails usuario = servicioDetallesUsuario.loadUserByUsername(nombreUsuario);
+        boolean yaAutenticado
+                = SecurityContextHolder.getContext().getAuthentication() != null;
 
+        if (yaAutenticado) {
+            log.trace("Ya autenticado '{}', omitiendo JWT", correo);
+            return;
+        }
+
+        UserDetails usuario = servicioDetallesUsuario.loadUserByUsername(correo);
         if (servicioJwt.esTokenValido(jwt, usuario)) {
             inyectarAutenticacion(usuario, request);
             log.debug("JWT válido → usuario: '{}', roles: {}",
-                    nombreUsuario, usuario.getAuthorities());
+                    correo, usuario.getAuthorities());
         }
     }
-    private void inyectarAutenticacion(UserDetails usuario,
-                                       HttpServletRequest request) {
 
-        UsernamePasswordAuthenticationToken token =
-                new UsernamePasswordAuthenticationToken(
+    private void inyectarAutenticacion(UserDetails usuario,
+            HttpServletRequest request) {
+
+        UsernamePasswordAuthenticationToken token
+                = new UsernamePasswordAuthenticationToken(
                         usuario,
                         null,
                         usuario.getAuthorities()
@@ -107,18 +111,19 @@ public class FiltroJwt extends OncePerRequestFilter{
         );
 
         SecurityContextHolder.getContext().setAuthentication(token);
-        }
+    }
 
     // =========================================================================
     // Exclusión de endpoints públicos
     // =========================================================================
-
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String ruta = request.getRequestURI();
 
-        return ruta.startsWith("/api/v1/auth/")
-                || ruta.startsWith("/actuator/health")
+        return ruta.equals("/api/v1/auth/registrar")
+                || ruta.equals("/api/v1/auth/login")
+                || ruta.startsWith("/api/v1/auth/activar/")
+                || ruta.startsWith("/actuator/")
                 || ruta.startsWith("/v3/api-docs")
                 || ruta.startsWith("/swagger-ui");
     }

@@ -16,12 +16,12 @@ import org.springframework.transaction.annotation.Transactional;
  * @author user
  */
 public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
-
-    Optional<Usuario> findByCorreo(String correo);
-
-    Optional<Usuario> findByNombreUsuario(String nombreUsuario);
     
     Optional<Usuario> findByCorreoAndHabilitadoTrue(String correo);
+
+    Optional<Usuario> findByNombreUsuario(String nombreUsuario);
+        
+    Optional<Usuario> findByIdAndHabilitadoTrue(UUID id);
 
     boolean existsByNombreUsuario(String nombreUsuario);
 

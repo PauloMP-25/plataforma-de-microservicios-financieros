@@ -139,7 +139,7 @@ public class ControladorAutenticacion {
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetearPassword(
             @RequestParam String codigoOtp,
-            @Valid @RequestBody SolicitudCambioPassword solicitud) {
+            @Valid @RequestBody SolicitudRestablecerPassword solicitud) {
 
         servicioAuth.restablecerPassword(codigoOtp, solicitud);
 

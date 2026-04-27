@@ -8,6 +8,7 @@ import com.usuario.aplicacion.dtos.SolicitudGenerarOtp;
 import com.usuario.aplicacion.dtos.SolicitudLogin;
 import com.usuario.aplicacion.dtos.SolicitudRecuperacion;
 import com.usuario.aplicacion.dtos.SolicitudRegistro;
+import com.usuario.aplicacion.dtos.SolicitudRestablecerPassword;
 import com.usuario.aplicacion.dtos.TipoVerificacion;
 import com.usuario.dominio.entidades.Rol;
 import com.usuario.dominio.entidades.Usuario;
@@ -82,7 +83,7 @@ public class ServicioAutenticacion {
     // =========================================================================
     @Transactional
     public void iniciarRecuperacion(SolicitudRecuperacion solicitud) {
-        Usuario usuario = usuarioRepository.findByCorreo(solicitud.correo())
+        Usuario usuario = usuarioRepository.findByCorreoAndHabilitadoTrue(solicitud.correo())
                 .orElseThrow(() -> new IllegalArgumentException("Correo no encontrado"));
 
         publicadorAuditoria.publicarSolicitudOtp(new SolicitudGenerarOtp(
@@ -97,7 +98,7 @@ public class ServicioAutenticacion {
     }
 
     @Transactional
-    public void restablecerPassword(String codigoOtp, SolicitudCambioPassword solicitud) {
+    public void restablecerPassword(String codigoOtp, SolicitudRestablecerPassword solicitud) {
         if (!solicitud.contrasenasNuevasCoinciden()) {
             throw new IllegalArgumentException("Las contraseñas no coinciden");
         }
@@ -132,13 +133,22 @@ public class ServicioAutenticacion {
     // =========================================================================
     @Transactional
     public RespuestaAutenticacion login(SolicitudLogin request, String ipCliente) {
-        Usuario usuario = usuarioRepository.findByCorreo(request.correo())
-                .orElseThrow(() -> new UsernameNotFoundException("Credenciales inválidas"));
+// 1. Buscar al usuario solo por correo (para saber si existe)
+        Usuario usuario = usuarioRepository.findByCorreoAndHabilitadoTrue(request.correo())
+                .orElseThrow(() -> new BadCredentialsException("Credenciales inválidas"));
+        // Nota: Por seguridad, se usa BadCredentialsException incluso si no existe.
 
+        // 2. Verificar si está habilitado
+        if (!usuario.isHabilitado()) {
+            throw new DisabledException("Debe confirmar su correo para acceder.");
+        }
+
+        // 4. Autenticar contraseña: Si la clave está mal, lanzará BadCredentialsException
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.correo(), request.password())
         );
 
+        // 5. Éxito
         publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente, EstadoAcceso.EXITO, "LOGIN_EXITOSO", PublicadorAuditoria.RK_ACCESO_LOGIN);
 
         return RespuestaAutenticacion.of(

@@ -23,6 +23,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * Manejador global de excepciones.
@@ -165,12 +166,20 @@ public class ManejadorGlobalExcepciones {
     }
 
     // =========================================================================
-// Seguridad (Cuentas bloqueadas/deshabilitadas)
-// =========================================================================
+    // Seguridad (Cuentas bloqueadas/deshabilitadas)
+    // =========================================================================
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ErrorApi> manejarUsuarioNoEncontrado(UsernameNotFoundException ex, WebRequest request) {
+        // Esto ocurre cuando el correo no existe en la BD
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorApi.of(401, "USUARIO_NO_REGISTRADO",
+                        "El correo ingresado no pertenece a ninguna cuenta.", extraerRuta(request)));
+    }
+
     @ExceptionHandler(org.springframework.security.authentication.DisabledException.class)
     public ResponseEntity<ErrorApi> manejarCuentaDeshabilitada(DisabledException ex, WebRequest request) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ErrorApi.of(403, "CUENTA_DESHABILITADA", "Debe confirmar su correo para acceder.", extraerRuta(request)));
+                .body(ErrorApi.of(403, "CUENTA_DESHABILITADA", "Su cuenta aún no ha sido activada. Revise su correo electrónico.", extraerRuta(request)));
     }
 
     @ExceptionHandler(org.springframework.security.authentication.LockedException.class)
@@ -193,7 +202,7 @@ public class ManejadorGlobalExcepciones {
         // 4. Enviamos al publicador (Asegúrate de que tu publicador acepte UUID ahora)
         publicador.publicarAcceso(usuarioId, ipCliente, EstadoAcceso.FALLO, "Intento fallido: Credenciales incorrectas", PublicadorAuditoria.RK_ACCESO_FALLO);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ErrorApi.of(401, "CREDENCIALES_INVALIDAS", "Usuario o contraseña incorrectos.", extraerRuta(request)));
+                .body(ErrorApi.of(401, "CREDENCIALES_INVALIDAS", "La contraseña ingresada es incorrecta.", extraerRuta(request)));
     }
 
 // =========================================================================

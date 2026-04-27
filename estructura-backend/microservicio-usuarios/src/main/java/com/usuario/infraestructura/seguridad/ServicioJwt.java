@@ -44,7 +44,10 @@ public class ServicioJwt {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
         if (userDetails instanceof Usuario usuario) {
+            // Metemos toda la información que necesitas en los claims
             claimsExtra.put("usuarioId", usuario.getId().toString());
+            claimsExtra.put("nombre", usuario.getNombreUsuario());
+            claimsExtra.put("correo", usuario.getCorreo());
         }
         claimsExtra.put("roles", roles);
 
@@ -66,7 +69,7 @@ public class ServicioJwt {
     // Extracción de claims
     // -------------------------------------------------------------------------
 
-    public String extraerNombreUsuario(String token) {
+    public String extraerCorreoUsuario(String token) {
         return extraerClaim(token, Claims::getSubject);
     }
 
@@ -93,8 +96,8 @@ public class ServicioJwt {
 
     public boolean esTokenValido(String token, UserDetails usuario) {
         try {
-            final String nombreUsuario = extraerNombreUsuario(token);
-            return nombreUsuario.equals(usuario.getUsername()) && !estaExpirado(token);
+            final String correo = extraerCorreoUsuario(token);
+            return correo.equals(usuario.getUsername()) && !estaExpirado(token);
         } catch (JwtException | IllegalArgumentException e) {
             log.warn("Token JWT inválido: {}", e.getMessage());
             return false;
