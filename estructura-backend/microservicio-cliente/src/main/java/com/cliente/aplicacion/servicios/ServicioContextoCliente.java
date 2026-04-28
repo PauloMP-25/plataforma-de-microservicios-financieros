@@ -13,30 +13,30 @@ import java.util.stream.Collectors;
 
 /**
  * Servicio que agrega toda la información del cliente en un único objeto.
- * Utilizado por el microservicio-nucleo-financiero vía Feign para
- * obtener el contexto completo con una sola llamada HTTP.
+ * Utilizado por el microservicio-nucleo-financiero vía Feign para obtener el
+ * contexto completo con una sola llamada HTTP.
  */
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class ServicioContextoCliente {
 
-    private final DatosPersonalesRepositorio   repoDatosPersonales;
-    private final PerfilFinancieroRepositorio  repoPerfilFinanciero;
-    private final MetaAhorroRepositorio        repoMetaAhorro;
-    private final LimiteGastoRepositorio       repoLimiteGasto;
+    private final DatosPersonalesRepositorio repoDatosPersonales;
+    private final PerfilFinancieroRepositorio repoPerfilFinanciero;
+    private final MetaAhorroRepositorio repoMetaAhorro;
+    private final LimiteGastoRepositorio repoLimiteGasto;
 
-    private final ServicioDatosPersonales   servicioDatos;
-    private final ServicioPerfilFinanciero  servicioPerfilFinanciero;
-    private final ServicioMetaAhorro        servicioMetaAhorro;
-    private final ServicioLimiteGasto       servicioLimiteGasto;
+    private final ServicioDatosPersonales servicioDatos;
+    private final ServicioPerfilFinanciero servicioPerfilFinanciero;
+    private final ServicioMetaAhorro servicioMetaAhorro;
+    private final ServicioLimiteGasto servicioLimiteGasto;
 
     /**
      * Retorna el contexto completo del cliente: datos personales, perfil
      * financiero, metas activas y límites de gasto.
      *
-     * Este endpoint es INTERNO — consumido por microservicios de confianza.
-     * No requiere validación de propiedad porque el llamante es el núcleo
+     * Este endpoint es INTERNO — consumido por microservicios de confianza. No
+     * requiere validación de propiedad porque el llamante es el núcleo
      * financiero, no el usuario final.
      *
      * @param usuarioId UUID del usuario cuyo contexto se solicita
@@ -65,13 +65,12 @@ public class ServicioContextoCliente {
                 .map(servicioMetaAhorro::convertirADTO)
                 .collect(Collectors.toList());
 
-        // Todos los límites del usuario
-        List<RespuestaLimiteGasto> limites = repoLimiteGasto
-                .findByUsuarioIdOrderByCategoriaIdAsc(usuarioId)
-                .stream()
+        //El límite del usuario
+        RespuestaLimiteGasto limiteGlobal = repoLimiteGasto
+                .findByUsuarioIdAndActivoTrue(usuarioId)
                 .map(servicioLimiteGasto::convertirADTO)
-                .collect(Collectors.toList());
+                .orElse(null);
 
-        return new RespuestaContextoCliente(usuarioId, datos, perfil, metas, limites);
+        return new RespuestaContextoCliente(usuarioId, datos, perfil, metas, limiteGlobal);
     }
 }

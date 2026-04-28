@@ -17,6 +17,6 @@ public record RespuestaContextoCliente(
         RespuestaDatosPersonales datosPersonales,
         RespuestaPerfilFinanciero perfilFinanciero,
         List<RespuestaMetaAhorro> metas,
-        List<RespuestaLimiteGasto> limites) {
+        RespuestaLimiteGasto limiteGasto) {
 
 }

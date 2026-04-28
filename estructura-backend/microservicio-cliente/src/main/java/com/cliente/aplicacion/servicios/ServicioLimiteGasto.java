@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -42,45 +43,54 @@ public class ServicioLimiteGasto {
     public RespuestaLimiteGasto crear(UUID usuarioIdToken,
             SolicitudLimiteGasto solicitud,
             String ipOrigen) {
-        if (repositorio.existsByUsuarioIdAndCategoriaId(usuarioIdToken, solicitud.getCategoriaId())) {
-            throw new LimiteGastoDuplicadoException(solicitud.getCategoriaId());
-        }
 
-        LimiteGasto limite = LimiteGasto.builder()
+        repositorio.findByUsuarioIdAndActivoTrue(usuarioIdToken).ifPresent(limite -> {
+            if (!limite.estaVencido()) {
+                throw new IllegalStateException("Ya tienes un límite global activo y vigente.");
+            }
+            // Si está vencido, lo desactivamos para permitir el nuevo
+            limite.setActivo(false);
+            repositorio.save(limite);
+        });
+
+        LimiteGasto nuevo = LimiteGasto.builder()
                 .usuarioId(usuarioIdToken)
-                .categoriaId(solicitud.getCategoriaId())
                 .montoLimite(solicitud.getMontoLimite())
-                .porcentajeAlerta(solicitud.getPorcentajeAlerta() != null
-                        ? solicitud.getPorcentajeAlerta()
-                        : 80)
+                .porcentajeAlerta(solicitud.getPorcentajeAlerta() != null ? solicitud.getPorcentajeAlerta() : 80)
+                .fechaInicio(LocalDateTime.now())
+                .fechaFin(LocalDateTime.now().plusMonths(1))
+                .activo(true)
                 .build();
 
-        LimiteGasto guardado = repositorio.save(limite);
+        LimiteGasto guardado = repositorio.save(nuevo);
 
-        publicadorAuditoria.publicar(EventoAuditoria.de(
-                usuarioIdToken.toString(), "LIMITE_CREADO", ipOrigen,
-                String.format("Límite creado: categoría='%s' monto=S/ %.2f alerta=%d%%",
-                        guardado.getCategoriaId(), guardado.getMontoLimite(),
-                        guardado.getPorcentajeAlerta())
-        ));
+        publicadorAuditoria.publicar(EventoAuditoria.de(usuarioIdToken.toString(),
+                "LIMITE_GLOBAL_CREADO", ipOrigen,
+                String.format("Límite global: S/ %.2f hasta %s",
+                        guardado.getMontoLimite(), guardado.getFechaFin())));
 
         return convertirADTO(guardado);
     }
 
     /**
      * Actualiza un límite de gasto existente por categoría.
+     */
+    /**
+     * Actualiza el límite global ACTIVO.
      *
-     * @param usuarioIdToken
-     * @param categoriaId
+     * @param usuarioId
      * @param solicitud
-     * @param ipOrigen
+     * @param ip
      * @return
      */
     @Transactional
-    public RespuestaLimiteGasto actualizar(UUID usuarioIdToken, String categoriaId,
-            SolicitudLimiteGasto solicitud, String ipOrigen) {
-        LimiteGasto limite = repositorio.findByUsuarioIdAndCategoriaId(usuarioIdToken, categoriaId)
-                .orElseThrow(() -> new DatosPersonalesNoEncontradosException(usuarioIdToken));
+    public RespuestaLimiteGasto actualizar(UUID usuarioId, SolicitudLimiteGasto solicitud, String ip) {
+        LimiteGasto limite = repositorio.findByUsuarioIdAndActivoTrue(usuarioId)
+                .orElseThrow(() -> new DatosPersonalesNoEncontradosException(usuarioId));
+
+        if (limite.estaVencido()) {
+            throw new IllegalStateException("El límite actual ha vencido y no se puede modificar. Crea uno nuevo.");
+        }
 
         if (solicitud.getMontoLimite() != null) {
             limite.setMontoLimite(solicitud.getMontoLimite());
@@ -89,70 +99,74 @@ public class ServicioLimiteGasto {
             limite.setPorcentajeAlerta(solicitud.getPorcentajeAlerta());
         }
 
-        return convertirADTO(repositorio.save(limite));
+        LimiteGasto actualizado = repositorio.save(limite);
+
+        publicadorAuditoria.publicar(EventoAuditoria.de(usuarioId.toString(), "LIMITE_GLOBAL_ACTUALIZADO", ip,
+                "Se modificaron los parámetros del límite global activo"));
+
+        return convertirADTO(actualizado);
     }
 
     /**
-     * Lista todos los límites del usuario, ordenados alfabéticamente por
-     * categoría.
+     * Lista todos los límites del usuario, ordenados alfabéticamente
      *
-     * @param usuarioIdToken
+     * @param usuarioId
      * @return
      */
     @Transactional(readOnly = true)
-    public List<RespuestaLimiteGasto> listar(UUID usuarioIdToken) {
-        return repositorio.findByUsuarioIdOrderByCategoriaIdAsc(usuarioIdToken)
+    public List<RespuestaLimiteGasto> listarHistorial(UUID usuarioId) {
+        // Asumiendo que el repo tiene un método findByUsuarioIdOrderByFechaCreacionDesc
+        return repositorio.findByUsuarioIdOrderByFechaCreacionDesc(usuarioId)
                 .stream()
                 .map(this::convertirADTO)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Elimina el límite de una categoría específica del usuario.
-     *
-     * @param usuarioIdToken
-     * @param categoriaId
-     * @param ipOrigen
-     */
-    @Transactional
-    public void eliminar(UUID usuarioIdToken, String categoriaId, String ipOrigen) {
-        if (!repositorio.existsByUsuarioIdAndCategoriaId(usuarioIdToken, categoriaId)) {
-            throw new DatosPersonalesNoEncontradosException(usuarioIdToken);
-        }
-        repositorio.deleteByUsuarioIdAndCategoriaId(usuarioIdToken, categoriaId);
-        log.info("Límite eliminado: usuario={} categoría='{}'", usuarioIdToken, categoriaId);
-
-        publicadorAuditoria.publicar(EventoAuditoria.de(
-                usuarioIdToken.toString(), "LIMITE_ELIMINADO", ipOrigen,
-                "Límite eliminado para categoría: " + categoriaId
-        ));
+    @Transactional(readOnly = true)
+    public RespuestaLimiteGasto obtenerActivo(UUID usuarioId) {
+        return repositorio.findByUsuarioIdAndActivoTrue(usuarioId)
+                .map(this::convertirADTO)
+                .orElseThrow(() -> new DatosPersonalesNoEncontradosException(usuarioId));
     }
 
     /**
-     * Evalúa si el gasto actual de una categoría supera el umbral de alerta. Si
-     * se supera, publica el evento LIMITE_ALCANZADO. Llamado típicamente por el
-     * microservicio-nucleo-financiero.
+     * Desactiva (eliminación lógica) el límite global actual.
      *
-     * @param usuarioId usuario propietario del límite
-     * @param categoriaId nombre de la categoría (texto libre)
-     * @param gastoActual monto gastado en el período actual
+     * @param usuarioId
+     * @param ip
+     */
+    @Transactional
+    public void eliminar(UUID usuarioId, String ip) {
+        LimiteGasto limite = repositorio.findByUsuarioIdAndActivoTrue(usuarioId)
+                .orElseThrow(() -> new DatosPersonalesNoEncontradosException(usuarioId));
+
+        limite.setActivo(false);
+        repositorio.save(limite);
+
+        publicadorAuditoria.publicar(EventoAuditoria.de(usuarioId.toString(), "LIMITE_GLOBAL_ELIMINADO", ip,
+                "El usuario ha desactivado su límite global actual"));
+
+        log.info("Límite global desactivado para usuario: {}", usuarioId);
+    }
+
+    /**
+     * Evalúa el gasto TOTAL del usuario contra su límite global único.
+     *
+     * @param usuarioId
+     * @param gastoTotalActual
      * @param ipOrigen
-     * @return true si se alcanzó el umbral
+     * @return
      */
     @Transactional(readOnly = true)
-    public boolean evaluarYNotificarLimite(UUID usuarioId, String categoriaId,
-            BigDecimal gastoActual, String ipOrigen) {
-        return repositorio.findByUsuarioIdAndCategoriaId(usuarioId, categoriaId)
-                .map((LimiteGasto limite) -> {
-                    if (limite.haAlcanzadoUmbral(gastoActual)) {
+    public boolean evaluarYNotificarLimiteGlobal(UUID usuarioId, BigDecimal gastoTotalActual, String ipOrigen) {
+        return repositorio.findByUsuarioIdAndActivoTrue(usuarioId)
+                .map(limite -> {
+                    if (!limite.estaVencido() && limite.haAlcanzadoUmbral(gastoTotalActual)) {
                         publicadorAuditoria.publicar(EventoAuditoria.de(
-                                "sistema", "LIMITE_ALCANZADO", ipOrigen,
-                                String.format("Categoría '%s': gasto S/ %.2f alcanzó el %d%% del límite S/ %.2f",
-                                        categoriaId, gastoActual, limite.getPorcentajeAlerta(),
-                                        limite.getMontoLimite())
+                                "sistema", "ALERTA_PRESUPUESTO_GLOBAL", ipOrigen,
+                                String.format("Gasto total S/ %.2f alcanzó el %d%% de tu presupuesto global S/ %.2f",
+                                        gastoTotalActual, limite.getPorcentajeAlerta(), limite.getMontoLimite())
                         ));
-                        log.warn("LIMITE ALCANZADO: usuario={} categoría='{}' gasto={}",
-                                usuarioId, categoriaId, gastoActual);
                         return true;
                     }
                     return false;
@@ -165,9 +179,14 @@ public class ServicioLimiteGasto {
     // =========================================================================
     public RespuestaLimiteGasto convertirADTO(LimiteGasto e) {
         return new RespuestaLimiteGasto(
-                e.getId(), e.getUsuarioId(), e.getCategoriaId(),
-                e.getMontoLimite(), e.getPorcentajeAlerta(),
-                e.getFechaCreacion(), e.getFechaActualizacion()
+                e.getId(),
+                e.getUsuarioId(),
+                e.getMontoLimite(),
+                e.getPorcentajeAlerta(),
+                e.getFechaInicio(), // Ahora usamos fechas de periodo
+                e.getFechaFin(),
+                e.isActivo(),
+                e.getFechaCreacion()
         );
     }
 }

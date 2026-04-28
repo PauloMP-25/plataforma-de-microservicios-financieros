@@ -4,18 +4,19 @@ import com.cliente.dominio.entidades.LimiteGasto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 @Repository
 public interface LimiteGastoRepositorio extends JpaRepository<LimiteGasto, UUID> {
 
-    List<LimiteGasto> findByUsuarioIdOrderByCategoriaIdAsc(UUID usuarioId);
+    Optional<LimiteGasto> findByUsuarioIdAndActivoTrue(UUID usuarioId);
 
-    Optional<LimiteGasto> findByUsuarioIdAndCategoriaId(UUID usuarioId, String categoriaId);
+    @Modifying
+    @Query("UPDATE LimiteGastoGlobal l SET l.activo = false WHERE l.usuarioId = :usuarioId")
+    void desactivarLimitesAnteriores(UUID usuarioId);
 
-    boolean existsByUsuarioIdAndCategoriaId(UUID usuarioId, String categoriaId);
-
-    void deleteByUsuarioIdAndCategoriaId(UUID usuarioId, String categoriaId);
+    Optional<LimiteGasto> findByUsuarioIdOrderByFechaCreacionDesc(UUID usuarioId);
 }

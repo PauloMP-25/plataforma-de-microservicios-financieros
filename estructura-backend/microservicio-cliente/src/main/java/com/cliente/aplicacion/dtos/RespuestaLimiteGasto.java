@@ -10,11 +10,13 @@ import java.util.UUID;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record RespuestaLimiteGasto(
-        UUID       id,
-        UUID       usuarioId,
-        String     categoriaId,
+        UUID id,
+        UUID usuarioId,
         BigDecimal montoLimite,
-        Integer    porcentajeAlerta,
-        LocalDateTime fechaCreacion,
-        LocalDateTime fechaActualizacion
-) {}
+        Integer porcentajeAlerta,
+        LocalDateTime fechaInicio,
+        LocalDateTime fechaFin,
+        boolean activo,
+        LocalDateTime fechaCreacion) {
+
+}

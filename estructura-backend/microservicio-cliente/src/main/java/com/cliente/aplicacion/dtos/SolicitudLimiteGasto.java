@@ -14,10 +14,6 @@ import java.math.BigDecimal;
 @Data
 public class SolicitudLimiteGasto {
 
-    @NotBlank(message = "La categoría es obligatoria")
-    @Size(min = 2, max = 100, message = "La categoría debe tener entre 2 y 100 caracteres")
-    private String categoriaId;
-
     @NotNull(message = "El monto límite es obligatorio")
     @DecimalMin(value = "1.00", message = "El monto límite debe ser al menos S/ 1.00")
     @Digits(integer = 10, fraction = 2, message = "El monto límite tiene formato inválido")
