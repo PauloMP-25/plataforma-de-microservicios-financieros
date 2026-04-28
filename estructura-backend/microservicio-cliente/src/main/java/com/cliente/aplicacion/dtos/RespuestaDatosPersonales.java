@@ -5,23 +5,22 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * DTO de salida — nunca expone datos sensibles internos.
+ * DTO de salida para DatosPersonales — nunca expone datos internos sensibles.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record RespuestaCliente(
+public record RespuestaDatosPersonales(
         UUID          id,
         UUID          usuarioId,
+        String        dni,
         String        nombres,
         String        apellidos,
-        String        dni,
+        String        genero,
+        Integer       edad,
+        String        telefono,
         String        fotoPerfilUrl,
-        String        biografia,
-        String        numeroCelular,
         String        direccion,
         String        ciudad,
-        String        ocupacion,
-        String        genero,
-        Boolean       perfilCompleto,
+        Boolean       datosCompletos,
         LocalDateTime fechaCreacion,
         LocalDateTime fechaActualizacion
 ) {}
