@@ -1,6 +1,7 @@
 package com.mensajeria.aplicacion.servicios;
 
 import com.mensajeria.aplicacion.dtos.*;
+import com.mensajeria.aplicacion.excepciones.LimiteCodigosExcedidoException;
 import com.mensajeria.aplicacion.excepciones.UsuarioBloqueadoExcepcion;
 import com.mensajeria.dominio.entidades.CodigoVerificacion;
 import com.mensajeria.dominio.entidades.CodigoVerificacion.PropositoCodigo;
@@ -50,6 +51,8 @@ public class ServicioMensajeria {
     @Transactional
     public RespuestaGeneracion generarYEnviarCodigo(SolicitudGenerarCodigo solicitud) {
         verificarBloqueo(solicitud.usuarioId());
+
+        verificarLimiteDiario(solicitud.usuarioId(), solicitud.proposito());
 
         String codigo = String.valueOf(100_000 + RANDOM.nextInt(900_000));
 
@@ -193,6 +196,34 @@ public class ServicioMensajeria {
         if (!smsService.isValidPhoneNumber(tel)) {
             throw new IllegalArgumentException("Formato +51... requerido.");
         }
+    }
+
+    // =========================================================================
+    // LÓGICA DE CONTROL DE SPAM
+    // =========================================================================
+    private void verificarLimiteDiario(UUID uId, PropositoCodigo proposito) {
+        // Calculamos el inicio del día actual (00:00:00)
+        LocalDateTime inicioDia = LocalDateTime.now().toLocalDate().atStartOfDay();
+
+        // Contamos cuántos códigos ha pedido hoy para ese propósito
+        long pedidosHoy = codigoRepository.countByUsuarioIdAndPropositoAndFechaCreacionAfter(
+                uId, proposito, inicioDia);
+
+        if (pedidosHoy >= 3) {
+            log.warn("[MS-MENSAJERIA] Límite diario alcanzado para usuario: {} en {}", uId, proposito);
+            throw new LimiteCodigosExcedidoException(
+                    "Has alcanzado el límite de 3 códigos diarios para este trámite. Inténtalo mañana.");
+        }
+    }
+
+    public void verificarRestricciones(UUID usuarioId, PropositoCodigo proposito) {
+        // 1. Revisa si está bloqueado por intentos fallidos
+        verificarBloqueo(usuarioId);
+
+        // 2. Revisa si ya pidió 3 códigos hoy
+        verificarLimiteDiario(usuarioId, proposito);
+
+        log.info("[MS-MENSAJERIA] Validaciones de restricciones superadas para usuario: {}", usuarioId);
     }
 
     // =========================================================================

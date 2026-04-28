@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import org.hibernate.annotations.SQLRestriction;
 
 /**
  * Entidad de dominio que representa a un Usuario en el sistema.
@@ -108,7 +107,7 @@ public class Usuario implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.nombreUsuario;
+        return this.correo;
     }
 
     @Override

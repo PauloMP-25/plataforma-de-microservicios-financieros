@@ -45,4 +45,11 @@ public interface CodigoVerificacionRepository extends JpaRepository<CodigoVerifi
      * @return 
      */
     Optional<CodigoVerificacion> findTopByCodigoAndUsadoFalseOrderByFechaCreacionDesc(String codigo);
+
+    // Cuenta cuántos códigos tiene un usuario para un propósito (ej: RESTABLECER_PASSWORD)
+    // que aún no han sido usados.
+    long countByUsuarioIdAndPropositoAndUsadoFalse(UUID usuarioId, PropositoCodigo proposito);
+    
+    //Si quieres que el límite sea "3 por día"
+    long countByUsuarioIdAndPropositoAndFechaCreacionAfter(UUID usuarioId, PropositoCodigo proposito, LocalDateTime fecha);
 }

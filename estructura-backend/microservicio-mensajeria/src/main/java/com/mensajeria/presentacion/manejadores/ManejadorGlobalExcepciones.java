@@ -2,6 +2,7 @@ package com.mensajeria.presentacion.manejadores;
 
 import com.mensajeria.aplicacion.excepciones.CodigoExpiradoException;
 import com.mensajeria.aplicacion.excepciones.CodigoPendienteNotFoundException;
+import com.mensajeria.aplicacion.excepciones.LimiteCodigosExcedidoException;
 import com.mensajeria.aplicacion.excepciones.UsuarioBloqueadoExcepcion;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -94,18 +95,32 @@ public class ManejadorGlobalExcepciones {
                         extraerRuta(request)));
     }
 
+    // ─── Límite de solicitudes (Anti-Spam) ────────────────────────────────────
+    @ExceptionHandler(LimiteCodigosExcedidoException.class)
+    public ResponseEntity<Map<String, Object>> manejarLimiteExcedido(
+            LimiteCodigosExcedidoException ex, WebRequest request) {
+
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS) // 429
+                .body(cuerpoError(429, "LIMITE_DIARIO_EXCEDIDO",
+                        ex.getMessage(), extraerRuta(request)));
+    }
+
+    // ─── Código Expirado ──────────────────────────────────────────────────────
     @ExceptionHandler(CodigoExpiradoException.class)
     public ResponseEntity<Map<String, Object>> manejarCodigoExpirado(
             CodigoExpiradoException ex, WebRequest request) {
-        return ResponseEntity.status(HttpStatus.GONE)
-                .body(cuerpoError(410, "CODIGO_EXPIRADO", ex.getMessage(), extraerRuta(request)));
+        return ResponseEntity.status(HttpStatus.GONE) // 410
+                .body(cuerpoError(410, "CODIGO_VENCIDO",
+                        "El código ha expirado. Por favor, solicita uno nuevo.", extraerRuta(request)));
     }
 
+    // ─── Código no encontrado o Incorrecto ─────────────────────────────────────
     @ExceptionHandler(CodigoPendienteNotFoundException.class)
     public ResponseEntity<Map<String, Object>> manejarCodigoNoEncontrado(
             CodigoPendienteNotFoundException ex, WebRequest request) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(cuerpoError(404, "CODIGO_NO_ENCONTRADO", ex.getMessage(), extraerRuta(request)));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND) // 404
+                .body(cuerpoError(404, "CODIGO_INVALIDO",
+                        "El código ingresado no existe o ya fue utilizado.", extraerRuta(request)));
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
