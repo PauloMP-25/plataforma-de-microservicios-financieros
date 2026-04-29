@@ -1,19 +1,28 @@
 """
-main.py — Punto de entrada del Microservicio IA Financiera. 
+main.py
+══════════════════════════════════════════════════════════════════════════════
+Punto de entrada del Microservicio IA Financiera.
 FastAPI con documentación automática Swagger/OpenAPI en /docs e integración con Eureka Server..
+  - Lanza el ConsumidorIA en un hilo daemon al arrancar FastAPI.
+  - El hilo de RabbitMQ procesa EventoAnalisisIA y publica consejos
+    en cola.mensajeria.whatsapp.
+  - Al apagar (SIGTERM/Ctrl+C), detiene el consumidor limpiamente.
 Puerto: 8086
+══════════════════════════════════════════════════════════════════════════════
 """
 
 import logging
+import threading
 from contextlib import asynccontextmanager
 from datetime import datetime
-
+ 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
+ 
 from app.configuracion import obtener_configuracion
 from app.clientes.cliente_eureka import registrar_en_eureka, desregistrar_de_eureka
+from app.mensajeria.consumidor_ia import ConsumidorIA
 from app.routers import analisis
 
 
@@ -27,6 +36,33 @@ logger = logging.getLogger("ia_financiera")
 
 config = obtener_configuracion()
 
+# Instancia global del consumidor (necesaria para detenerlo en shutdown)
+_consumidor: ConsumidorIA | None = None
+
+# ── Consumidor RabbitMQ ─────────────────────────────────────────────
+def _iniciar_consumidor_rabbitmq() -> None:
+    """
+    Arranca el ConsumidorIA en un hilo daemon.
+    Al ser daemon, muere automáticamente cuando el proceso principal termina.
+    Si RabbitMQ no está disponible al arrancar, solo se loguea el error;
+    el microservicio FastAPI sigue funcionando con normalidad.
+    """
+    global _consumidor
+    try:
+        _consumidor = ConsumidorIA()
+        hilo = threading.Thread(
+            target=_consumidor.iniciar,
+            name="hilo-consumidor-rabbitmq",
+            daemon=True,
+        )
+        hilo.start()
+        logger.info("[MAIN] Consumidor RabbitMQ iniciado en hilo '%s'.", hilo.name)
+    except Exception as exc:
+        logger.error(
+            "[MAIN] No se pudo iniciar el ConsumidorIA: %s. "
+            "El microservicio HTTP funcionará sin procesamiento de eventos.",
+            str(exc),
+        )
 
 # ── Lifecycle: startup / shutdown ─────────────────────────────────────────────
 @asynccontextmanager
@@ -36,40 +72,50 @@ async def lifespan(app: FastAPI):
     """
     logger.info("═" * 60)
     logger.info("  Microservicio IA Financiera iniciando...")
-    logger.info("  Puerto         : %d", config.puerto)
-    logger.info("  Entorno        : %s", config.entorno)
+    logger.info("  Puerto  : %d", config.puerto)
+    logger.info("  Entorno : %s", config.entorno)
+    logger.info("  Gemini  : %s", config.gemini_modelo)
+    logger.info("  Broker  : %s:%d", config.rabbitmq_host, config.rabbitmq_puerto)
     logger.info("═" * 60)
 
     # --- REGISTRO EN EUREKA ---
     await registrar_en_eureka(config)
-    yield
+    await _iniciar_consumidor_rabbitmq()
+    yield # ── La app está corriendo ──────────────────────────────────────────
     # --- DESREGISTRO DE EUREKA ---
     await desregistrar_de_eureka()
     logger.info("Microservicio IA Financiera detenido correctamente.")
 
+    # Shutdown
+    if _consumidor:
+        _consumidor.detener()
+    await desregistrar_de_eureka()
+    logger.info("[MAIN] Microservicio IA detenido correctamente.")
 
 # ── Aplicación FastAPI ────────────────────────────────────────────────────────
 app = FastAPI(
     title="Microservicio IA Financiera",
     description="""
+
 ## Motor de Inteligencia Artificial para Análisis Financiero
 
 Este microservicio actúa como el **cerebro analítico** del sistema SaaS Financiero.
-Consume datos del `microservicio-nucleo-financiero` y ejecuta 10 módulos de análisis inteligente.
-### Módulos disponibles
+Consume datos del `microservicio-nucleo-financiero` y procesa eventos de transacciones 
+desde **RabbitMQ** (`exchange.ia`) y expone 10 módulos de análisis financiero vía HTTP.
 
-| # | Módulo | Descripción |
-|---|--------|-------------|
-| 1 | `clasificar` | Etiqueta transacciones automáticamente |
-| 2 | `predecir-gastos` | Proyecta gastos del próximo mes |
-| 3 | `detectar-anomalias` | Identifica transacciones inusuales |
-| 4 | `optimizar-suscripciones` | Detecta gastos hormiga y suscripciones |
-| 5 | `capacidad-ahorro` | Calcula capacidad real de ahorro |
-| 6 | `simular-meta` | Proyecta tiempo para alcanzar metas |
-| 7 | `estacionalidad` | Detecta patrones mensuales |
-| 8 | `presupuesto-dinamico` | Recomienda presupuesto semanal |
-| 9 | `simular-escenario` | Simula impacto de nuevos gastos/ingresos |
-| 10 | `reporte-completo` | Genera reporte ejecutivo en lenguaje natural |
+### Módulos HTTP disponibles
+| # | Endpoint | Descripción |
+|---|----------|-------------|
+| 1 | `POST /clasificar` | Etiqueta transacciones automáticamente |
+| 2 | `POST /predecir-gastos` | Proyecta gastos del próximo mes |
+| 3 | `POST /detectar-anomalias` | Identifica transacciones inusuales |
+| 4 | `POST /optimizar-suscripciones` | Detecta gastos hormiga |
+| 5 | `POST /capacidad-ahorro` | Calcula capacidad real de ahorro |
+| 6 | `POST /simular-meta` | Proyecta tiempo para alcanzar metas |
+| 7 | `POST /estacionalidad` | Detecta patrones mensuales |
+| 8 | `POST /presupuesto-dinamico` | Presupuesto semanal recomendado |
+| 9 | `POST /simular-escenario` | Simula nuevos gastos/ingresos |
+| 10 | `POST /reporte-completo` | Reporte ejecutivo en lenguaje natural |
 
 ### Dependencias
 - **microservicio-nucleo-financiero** — Puerto 8085 (fuente de datos)
@@ -128,7 +174,8 @@ async def health_check():
         "estado": "UP",
         "servicio": config.nombre_app,
         "version": config.version_app,
-        "instancia_eureka": config.id_app_eureka,
+        "broker": f"{config.rabbitmq_host}:{config.rabbitmq_puerto}",
+        "modelo_ia": config.gemini_modelo,
         "timestamp": datetime.now().isoformat(),
     }
 
