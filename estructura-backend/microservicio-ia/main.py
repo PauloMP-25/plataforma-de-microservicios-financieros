@@ -24,6 +24,7 @@ from app.configuracion import obtener_configuracion
 from app.clientes.cliente_eureka import registrar_en_eureka, desregistrar_de_eureka
 from app.mensajeria.consumidor_ia import ConsumidorIA
 from app.routers import analisis
+from app.excepciones import IA_BaseException
 
 
 # ── Logging ───────────────────────────────────────────────────────────────────
@@ -145,16 +146,43 @@ app.add_middleware(
 )
 
 # ── Manejador global de excepciones ──────────────────────────────────────────
+@app.exception_handler(IA_BaseException)
+async def manejador_ia_especifico(request: Request, exc: IA_BaseException):
+    """
+    Captura todas las excepciones que heredan de IA_BaseException.
+    Muestra el código de error específico (IA_CONFIG, IA_GEMINI, etc.)
+    """
+    logger.error(f"Error de Dominio [{exc.codigo}] en {request.url.path}: {exc.mensaje}")
+    
+    # Determinamos el status code basado en el código de error
+    status_code = status.HTTP_400_BAD_REQUEST
+    if "GEMINI_429" in exc.codigo or "BIZ_500" in exc.codigo:
+        status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    elif "CONFIG" in exc.codigo or "RABBIT" in exc.codigo:
+        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "estado": status_code,
+            "codigo_error": exc.codigo,
+            "mensaje": exc.mensaje,
+            "detalles": exc.detalles,
+            "timestamp": exc.timestamp,
+            "ruta": str(request.url.path),
+        },
+    )
+
 @app.exception_handler(Exception)
-async def manejador_global(request: Request, exc: Exception):
-    logger.error("Error inesperado en %s: %s", request.url.path, str(exc), exc_info=True)
+async def manejador_global_fallback(request: Request, exc: Exception):
+    """Manejador de última instancia para errores no controlados."""
+    logger.error(f"FALLO CRÍTICO NO CONTROLADO en {request.url.path}: {str(exc)}", exc_info=True)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
             "estado": 500,
-            "error": "ERROR_INTERNO",
-            "mensaje": "Ha ocurrido un error inesperado en el motor de IA.",
-            "ruta": str(request.url.path),
+            "codigo_error": "IA_UNKNOWN_CRITICAL",
+            "mensaje": "Error interno no controlado en el motor de IA.",
             "fecha_hora": datetime.now().isoformat(),
         },
     )
@@ -170,13 +198,25 @@ async def health_check():
     Este endpoint es el que Eureka consultará cada 10-30 segundos 
     para verificar que Python sigue vivo.
     """
+    # Verificamos si el hilo existe y está activo
+    hilo_vivo = False
+    for thread in threading.enumerate():
+        if thread.name == "hilo-consumidor-rabbitmq" and thread.is_alive():
+            hilo_vivo = True
+            break
+            
+    estado_general = "UP" if hilo_vivo else "DOWN"
+    
     return {
-        "estado": "UP",
+        "status": estado_general,
         "servicio": config.nombre_app,
         "version": config.version_app,
-        "broker": f"{config.rabbitmq_host}:{config.rabbitmq_puerto}",
-        "modelo_ia": config.gemini_modelo,
-        "timestamp": datetime.now().isoformat(),
+        "componentes": {
+            "broker": f"{config.rabbitmq_host}:{config.rabbitmq_puerto}",
+            "rabbitmq_thread": "OK" if hilo_vivo else "FAILED",
+            "modelo_ia": config.gemini_modelo
+        },
+        "timestamp": datetime.now().isoformat()
     }
 
 

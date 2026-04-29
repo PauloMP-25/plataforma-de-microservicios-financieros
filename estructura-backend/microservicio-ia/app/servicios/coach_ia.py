@@ -18,6 +18,8 @@ from typing import Optional
 import google.generativeai as genai
 
 from app.configuracion import obtener_configuracion
+from google.api_core import exceptions as google_exceptions
+from app.excepciones import AnalisisFinancieroError, GeminiCuotaExcedidaError, GeminiAutenticacionError
 from app.modelos.evento_analisis import EventoAnalisisIA
 from app.servicios.ingeniero_prompt import Ingeniero_Prompt
 
@@ -65,11 +67,19 @@ class CoachIA:
                 evento.transaccion.descripcion,
             )
             return consejo
+        
+        except google_exceptions.ResourceExhausted:
+            logger.warning("[COACH-IA] Cuota de Gemini agotada (429).")
+            raise GeminiCuotaExcedidaError()
+            
+        except google_exceptions.Unauthenticated:
+            logger.error("[COACH-IA] Error de autenticación. Revisa la API Key.")
+            raise GeminiAutenticacionError()
+            
+        except (google_exceptions.InvalidArgument, google_exceptions.DeadlineExceeded) as exc:
+            logger.error(f"[COACH-IA] Error técnico en la petición: {str(exc)}")
+            raise AnalisisFinancieroError("Error al conectar con el motor de IA.", detalles=str(exc))
 
         except Exception as exc:
-            logger.error(
-                "[COACH-IA] Error al generar consejo con Gemini: %s",
-                str(exc),
-                exc_info=True,
-            )
+            logger.error(f"[COACH-IA] Error crítico no controlado: {str(exc)}", exc_info=True)
             return None
