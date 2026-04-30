@@ -1,28 +1,38 @@
 """
-servicios/ingeniero_prompt.py
+servicios/ingeniero_prompt.py  ·  v3 — Multi-Módulos + Historial Comparativo
 ══════════════════════════════════════════════════════════════════════════════
-Módulo de Ingeniería de Prompt para el Coach Financiero IA.
-
-Responsabilidad ÚNICA: construir el prompt contextualizado que se enviará
-a Google Generative AI (Gemini). NO conoce RabbitMQ ni la API de Gemini
-directamente; solo transforma un EventoAnalisisIA en un string de prompt.
-
-Principio de diseño:
-  - Cada sección del prompt (sistema, contexto, tarea) es un método privado.
-  - El método público `construir` orquesta el ensamblado final.
-  - Si el contexto es nulo/incompleto, se degrada graciosamente con
-    secciones genéricas, nunca lanza excepción.
+Arquitectura de Estrategia de Prompts:
+ 
+  IngenierioPrompt.construir(evento, modulo) → str
+      │
+      ├── _system_prompt_para(modulo)    → instrucción de rol específica
+      ├── _seccion_tono(contexto)        → estilo de comunicación
+      ├── _seccion_perfil(contexto)      → quién es el usuario
+      ├── _seccion_historial(evento)     ← NUEVO: comparativa 6 meses
+      │     ├── _comparar_meses()        → delta%, categoría con exceso
+      │     └── _tendencia_gastos()      → proyección lineal textual
+      ├── _seccion_transaccion(evento)   → operación actual (si aplica)
+      ├── _seccion_metas(contexto)       → progreso hacia objetivos
+      ├── _seccion_limite(evento)        → alerta de presupuesto
+      └── _seccion_tarea(modulo)        → instrucción final por módulo
+ 
+Cada TipoModulo tiene su propio System Prompt especializado que le dice
+a Gemini exactamente qué rol asumir y qué análisis realizar.
 ══════════════════════════════════════════════════════════════════════════════
 """
 
 from __future__ import annotations
 
 import logging
+from typing import List, Optional, Dict
+
 from app.modelos.evento_analisis import (
-    EventoAnalisisIA,
     ContextoUsuario,
-    TonoIA,
+    EventoAnalisisIA,
+    ResumenMes,
+    TipoModulo,
     TipoMovimiento,
+    TonoIA,
 )
 
 logger = logging.getLogger(__name__)
@@ -30,12 +40,110 @@ logger = logging.getLogger(__name__)
 
 # ── Mapeo de tono → instrucciones de estilo ───────────────────────────────────
 
-_INSTRUCCIONES_TONO: dict[TonoIA, str] = {
-    TonoIA.MOTIVADOR: (
-        "Usa un tono energético y alentador. Celebra cada pequeño avance, "
-        "transforma los obstáculos en retos superables y termina siempre "
-        "con una frase de impulso positivo."
+_SYSTEM_PROMPTS: dict[TipoModulo, str] = {
+ 
+    TipoModulo.TRANSACCION_AUTOMATICA: (
+        "Eres un coach financiero personal que recibe una alerta en tiempo real "
+        "sobre una transacción que acaba de registrar el usuario. Tu trabajo es "
+        "analizarla en el contexto de sus finanzas actuales y entregar un consejo "
+        "inmediato, breve y accionable. Actúa como el mejor amigo financiero del usuario."
     ),
+
+    TipoModulo.PREDICCION_GASTOS: (
+        "Eres un analista financiero predictivo experto en series temporales y "
+        "comportamiento del consumidor latinoamericano. Tienes acceso al historial "
+        "de los últimos 6 meses del usuario. Tu tarea es proyectar cómo cerrará "
+        "el mes actual en términos de gastos, identificar si la tendencia es "
+        "alcista o bajista, y recomendar ajustes concretos ANTES de que termine el mes. "
+        "Habla de números reales, no de generalidades."
+    ),
+ 
+    TipoModulo.GASTO_HORMIGA: (
+        "Eres un cazador de gastos ocultos especializado en micro-transacciones. "
+        "Tu misión es identificar los 'gastos hormiga': pagos pequeños y recurrentes "
+        "que individualmente parecen insignificantes pero que sumados representan "
+        "un drenaje significativo del presupuesto mensual. "
+        "Ejemplos típicos: café diario, suscripciones olvidadas, snacks, apps de delivery. "
+        "Presenta el impacto TOTAL en soles y el equivalente anualizado. "
+        "Sé específico con los nombres de los comercios o categorías detectadas."
+    ),
+
+    TipoModulo.AUTOCLASIFICACION: (
+        "Eres un sistema experto en taxonomía financiera personal. "
+        "El usuario registró una transacción con una categoría asignada por el sistema. "
+        "Tu trabajo es: (1) evaluar si esa categoría es la más precisa y útil, "
+        "(2) si no lo es, sugerir una categoría alternativa mejor con justificación, "
+        "(3) explicar por qué una categorización correcta mejora la precisión "
+        "de los análisis financieros futuros. "
+        "Sé didáctico pero conciso."
+    ),
+ 
+    TipoModulo.COMPARACION_MENSUAL: (
+        "Eres un analista de tendencias financieras personales. "
+        "Compara el mes actual con el mes anterior del usuario. "
+        "Si los gastos bajaron: celebra el logro, identifica qué categorías mejoraron "
+        "y refuerza el comportamiento positivo. "
+        "Si los gastos subieron: identifica con precisión en qué categoría ocurrió "
+        "el exceso, cuánto representa ese exceso, y sugiere una acción correctiva "
+        "específica y realista para la semana siguiente."
+    ),
+ 
+    TipoModulo.CAPACIDAD_AHORRO: (
+        "Eres un planificador financiero personal especializado en optimización "
+        "del ahorro para economías emergentes. Calcula la capacidad de ahorro "
+        "real del usuario basándote en su historial de 6 meses, no en un solo mes. "
+        "Aplica la regla 50/30/20 como referencia y muestra qué tan lejos o cerca "
+        "está el usuario. Proporciona un plan de 3 pasos concretos para mejorar."
+    ),
+
+    TipoModulo.METAS_FINANCIERAS: (
+        "Eres un motivador financiero especializado en metas de ahorro a mediano plazo. "
+        "Analiza el progreso del usuario hacia sus metas, cruza esa información con "
+        "su ritmo de ahorro actual del historial y proyecta si alcanzará las metas "
+        "a tiempo. Si va retrasado, sugiere ajustes realistas al presupuesto mensual."
+    ),
+ 
+    TipoModulo.ANOMALIAS: (
+        "Eres un auditor financiero personal con experiencia en detección de fraudes "
+        "y gastos irregulares. Analiza el historial del usuario buscando transacciones "
+        "o patrones que se desvíen significativamente de su comportamiento normal. "
+        "Clasifica las anomalías por nivel de riesgo (alto/medio/bajo) y sugiere "
+        "acciones concretas para cada una."
+    ),
+ 
+    TipoModulo.ESTACIONALIDAD: (
+        "Eres un analista de comportamiento financiero estacional. "
+        "Identifica patrones cíclicos en el historial del usuario: ¿en qué meses "
+        "gasta más? ¿Hay picos en fechas especiales? ¿Cuál es su 'mes más barato'? "
+        "Usa estos patrones para ayudarle a planificar con anticipación los próximos meses."
+    ),
+
+    TipoModulo.PRESUPUESTO_DINAMICO: (
+        "Eres un gestor de presupuesto adaptativo. Basándote en el historial de "
+        "los últimos 6 meses y el comportamiento de la semana pasada, calcula un "
+        "presupuesto semanal y diario realista para el usuario. "
+        "El presupuesto debe ser ambicioso pero alcanzable, con límites por categoría "
+        "basados en los patrones históricos reales del usuario."
+    ),
+ 
+    TipoModulo.REPORTE_COMPLETO: (
+        "Eres el CFO (Director Financiero) personal del usuario. "
+        "Tienes acceso a todo su historial financiero de los últimos 6 meses. "
+        "Tu tarea es elaborar un resumen ejecutivo mensual que un CEO leería en "
+        "2 minutos: qué salió bien, qué salió mal, cuáles son los 3 riesgos "
+        "principales y cuáles son las 3 oportunidades de mejora más rentables. "
+        "Sé directo, usa datos concretos y termina con un plan de acción prioritizado."
+    ),
+}
+
+# ── Mapeo tono → instrucción de estilo ───────────────────────────────────────
+_INSTRUCCIONES_TONO: dict[TonoIA, str] = {
+
+    TonoIA.MOTIVADOR: (
+        "Usa un tono energético y alentador. Celebra cada avance, transforma "
+        "los obstáculos en retos superables y termina con una frase de impulso positivo."
+    ),
+
     TonoIA.FORMAL: (
         "Usa un tono profesional y preciso. Presenta los datos con objetividad, "
         "evita coloquialismos y estructura las recomendaciones con lenguaje técnico "
@@ -59,191 +167,316 @@ _INSTRUCCIONES_TONO: dict[TonoIA, str] = {
 _TONO_DEFAULT = _INSTRUCCIONES_TONO[TonoIA.AMIGABLE]
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+# CLASE PRINCIPAL
+# ══════════════════════════════════════════════════════════════════════════════
 class Ingeniero_Prompt:
     """
-    Construye prompts contextualizados para Gemini actuando como
-    coach financiero personalizado.
-
+    Constructor modular de prompts. 
+    Diseñado para transformar datos históricos en consejos accionables.
     Uso:
         ingeniero = IngenierioPrompt()
-        prompt = ingeniero.construir(evento)
-        respuesta = modelo_gemini.generate_content(prompt)
+        prompt = ingeniero.construir(evento, TipoModulo.PREDICCION_GASTOS)
+        respuesta = gemini.generate_content(prompt)
     """
 
     # ── Punto de entrada público ──────────────────────────────────────────────
 
-    def construir(self, evento: EventoAnalisisIA) -> str:
+    def construir(
+            self, 
+            evento: EventoAnalisisIA,
+            modulo: TipoModulo = TipoModulo.TRANSACCION_AUTOMATICA,
+        ) -> str:
         """
-        Ensambla el prompt completo desde las secciones.
-
-        Args:
-            evento: EventoAnalisisIA deserializado desde RabbitMQ.
-
-        Returns:
-            String listo para enviar a Gemini.
+        Ensambla el prompt completo para el módulo solicitado.
+        Omite secciones vacías automáticamente.
         """
         secciones = [
-            self._seccion_rol_sistema(evento.contexto),
-            self._seccion_transaccion(evento),
-            self._seccion_contexto_financiero(evento.contexto),
+            self._system_prompt_para(modulo),
+            self._seccion_tono(evento.contexto),
+            self._seccion_perfil(evento.contexto),
+            self._seccion_historial(evento),
+            self._seccion_transaccion(evento, modulo),
             self._seccion_metas(evento.contexto),
-            self._seccion_limite_presupuesto(evento),
-            self._seccion_tarea_final(evento.contexto),
+            self._seccion_limite(evento),
+            self._seccion_tarea(modulo, evento.contexto),
         ]
-
-        prompt = "\n\n".join(s for s in secciones if s)  # omite secciones vacías
-
-        logger.debug("[PROMPT] Prompt construido (%d chars)", len(prompt))
+        # Filtramos secciones vacías y unimos con doble salto de línea
+        prompt = "\n\n".join(s for s in secciones if s and s.strip())
+        
+        logger.info(f"[INGENIERIO-PROMPT] Módulo generado: {modulo.name}")
         return prompt
-
-    # ── Secciones privadas ────────────────────────────────────────────────────
-
-    def _seccion_rol_sistema(self, contexto: ContextoUsuario) -> str:
-        """Define el rol del modelo y el estilo de comunicación."""
-        tono_instruccion = _TONO_DEFAULT
-
+    
+    # ── System Prompt por módulo ──────────────────────────────────────────────
+    def _system_prompt_para(self, modulo: TipoModulo) -> str:
+        sistema = _SYSTEM_PROMPTS.get(modulo, _SYSTEM_PROMPTS[TipoModulo.TRANSACCION_AUTOMATICA])
+        return (
+            f"# ROL Y MISIÓN\n"
+            f"{sistema}\n\n"
+            "## Restricciones absolutas\n"
+            "- Responde SIEMPRE en español.\n"
+            "- Máximo 200 palabras en total (el texto se mostrará en un widget del Dashboard).\n"
+            "- Sin markdown pesado: usa solo saltos de línea y guiones para listas.\n"
+            "- No repitas los datos de entrada textualmente; interprètalos y añade valor.\n"
+            "- Si no tienes suficientes datos para una conclusión sólida, dilo honestamente."
+        )
+    
+    # ── Estilo de comunicación ────────────────────────────────────────────────
+    def _seccion_tono(self, contexto: ContextoUsuario) -> str:
+        instruccion = _TONO_DEFAULT
         if contexto.tiene_perfil and contexto.perfil_financiero:
-            tono_instruccion = _INSTRUCCIONES_TONO.get(
+            instruccion = _INSTRUCCIONES_TONO.get(
                 contexto.perfil_financiero.tono_ia, _TONO_DEFAULT
             )
+        return f"## Estilo de comunicación\n{instruccion}"
 
-        return (
-            "# ROL\n"
-            "Eres un coach financiero personal experto en finanzas personales "
-            "para personas en Latinoamérica. Tu misión es analizar cada gasto "
-            "del usuario y entregar un consejo accionable, breve y personalizado "
-            "que lo ayude a mejorar su salud financiera.\n\n"
-            f"## Estilo de comunicación\n{tono_instruccion}\n\n"
-            "## Restricciones de formato\n"
-            "- Responde SIEMPRE en español.\n"
-            "- Máximo 120 palabras en total.\n"
-            "- Sin markdown ni asteriscos: el mensaje se enviará por WhatsApp.\n"
-            "- No repitas los datos del gasto textualmente; interprètalos."
-        )
-
-    def _seccion_transaccion(self, evento: EventoAnalisisIA) -> str:
-        """Describe la transacción que dispara el análisis."""
-        t = evento.transaccion
-        tipo_label = "registraste un gasto" if t.tipo == TipoMovimiento.GASTO else "recibiste un ingreso"
-
-        return (
-            "# TRANSACCIÓN ANALIZADA\n"
-            f"El usuario acaba de registrar la siguiente operación:\n"
-            f"- Tipo: {t.tipo.value}\n"
-            f"- Descripción: {t.descripcion}\n"
-            f"- Categoría: {t.categoria}\n"
-            f"- Monto: S/ {t.monto:,.2f}"
-        )
-
-    def _seccion_contexto_financiero(self, contexto: ContextoUsuario) -> str:
-        """Agrega el perfil económico del usuario si está disponible."""
+    # ── Perfil del usuario ────────────────────────────────────────────────────
+    def _seccion_perfil(self, contexto: ContextoUsuario) -> str:
         if not contexto.tiene_perfil or not contexto.perfil_financiero:
             return (
-                "# PERFIL DEL USUARIO\n"
-                "No se dispone de información de perfil. "
-                "Ofrece un consejo general aplicable a cualquier usuario."
+                "## Perfil del usuario\n"
+                "Sin datos de perfil disponibles. Usa un enfoque general."
+            )
+        p = contexto.perfil_financiero
+        ingreso = f"S/ {p.ingreso_mensual:,.2f}" if p.ingreso_mensual > 0 else "no registrado"
+        return (
+            f"## Perfil del usuario\n"
+            f"- Ocupación: {p.ocupacion}\n"
+            f"- Ingreso mensual: {ingreso}\n"
+            "Adapta cada recomendación a esta realidad económica concreta."
+        )
+    
+    # ── Historial comparativo (NUEVO v3) ──────────────────────────────────────
+    def _seccion_historial(self, evento: EventoAnalisisIA) -> str:
+        """
+        Sección central de la v3: construye el análisis histórico comparativo.
+        Incluye tabla de 6 meses, comparación mes actual vs anterior,
+        y tendencia detectada.
+        """
+        if not evento.tiene_historial:
+            return "## Historial\nSin datos históricos. Realiza un análisis basado solo en la transacción."
+ 
+        # Ordenamos por fecha para que la IA vea la línea de tiempo correcta
+        historial = sorted(evento.historial_mensual, key=lambda m: (m.anio, m.mes))
+ 
+        lineas = ["## Historial financiero (últimos meses)"]
+        lineas.append("Período       | Ingresos    | Gastos      | Balance")
+        lineas.append("------------- | ----------- | ----------- | -----------")
+ 
+        for m in historial:
+            lineas.append(f"{m.periodo_label} | S/ {m.total_ingresos:>8,.2f} | S/ {m.total_gastos:>8,.2f} | S/ {m.balance:>8,.2f}")
+
+        # Añadimos análisis delta si hay al menos 2 meses
+        if len(historial) >= 2:
+            comparacion = self._comparar_meses(evento)
+            if comparacion:
+                lineas.append(f"\n### Análisis Comparativo\n{comparacion}")
+ 
+        # Tendencia de 6 meses
+        tendencia = self._tendencia_gastos(historial)
+        if tendencia:
+            lineas.append("")
+            lineas.append(f"## Tendencia detectada\n{tendencia}")
+ 
+        return "\n".join(lineas)
+    
+    #─ Comparación mes actual vs anterior ─────────────────────────────────────
+    def _comparar_meses(self, evento: EventoAnalisisIA) -> Optional[str]:
+        """
+        Genera el texto de comparación entre el mes actual y el anterior.
+        Si los gastos bajaron → celebración.
+        Si subieron → identifica la categoría con mayor exceso.
+        """
+        actual   = evento.mes_actual
+        anterior = evento.mes_anterior
+ 
+        if not actual or not anterior:
+            return None
+ 
+        variacion = actual.variacion_gastos_vs(anterior)
+        delta_abs = abs(actual.total_gastos - anterior.total_gastos)
+ 
+        if variacion <= -5:
+            return (
+                f"Los gastos bajaron un {abs(variacion):.1f}% respecto al mes anterior "
+                f"(S/ {delta_abs:,.2f} menos). INSTRUCCIÓN: Felicita al usuario por esta "
+                f"mejora y refuerza el comportamiento positivo. Identifica qué categoría "
+                f"contribuyó más a la reducción."
+            )
+        elif variacion >= 5:
+            categoria_exceso = actual.categoria_con_mayor_exceso_vs(anterior)
+            cat_texto = f" La categoría con mayor exceso es '{categoria_exceso}'." if categoria_exceso else ""
+            return (
+                f"Los gastos subieron un {variacion:.1f}% respecto al mes anterior "
+                f"(S/ {delta_abs:,.2f} más).{cat_texto} "
+                f"INSTRUCCIÓN: Señala este exceso con tacto, identifica la causa probable "
+                f"y sugiere una acción correctiva concreta para los próximos 7 días."
+            )
+        else:
+            return (
+                f"Los gastos se mantuvieron estables ({variacion:+.1f}% vs mes anterior). "
+                f"INSTRUCCIÓN: Menciona la estabilidad como algo positivo y sugiere una "
+                f"oportunidad de mejora incremental."
             )
 
-        perfil = contexto.perfil_financiero
-        ingreso_fmt = f"S/ {perfil.ingreso_mensual:,.2f}" if perfil.ingreso_mensual > 0 else "no especificado"
-
+    #── Tendencia de gastos ────────────────────────────────────────────────
+    def _tendencia_gastos(self, historial: List[ResumenMes]) -> Optional[str]:
+        """
+        Calcula si la tendencia de gastos de los últimos meses es
+        alcista, bajista o estable usando diferencias simples.
+        """
+        if len(historial) < 3:
+            return None
+ 
+        gastos = [m.total_gastos for m in historial[-3:]]  # últimos 3 meses
+        diff1 = gastos[1] - gastos[0]
+        diff2 = gastos[2] - gastos[1]
+ 
+        if diff1 > 0 and diff2 > 0:
+            promedio_incremento = (diff1 + diff2) / 2
+            return (
+                f"Tendencia ALCISTA: los gastos han aumentado consistentemente "
+                f"un promedio de S/ {promedio_incremento:,.2f} por mes en los últimos 3 meses. "
+                f"INSTRUCCIÓN: Este patrón debe mencionarse como una señal de alerta."
+            )
+        elif diff1 < 0 and diff2 < 0:
+            promedio_reduccion = abs(diff1 + diff2) / 2
+            return (
+                f"Tendencia BAJISTA: los gastos han disminuido consistentemente "
+                f"un promedio de S/ {promedio_reduccion:,.2f} por mes. "
+                f"INSTRUCCIÓN: Destaca este patrón positivo."
+            )
+        else:
+            return "Tendencia VARIABLE: no hay un patrón claro de alza o baja sostenida."
+ 
+    #─ Descripción de la transacción actual ─────────────────────────────────
+    def _seccion_transaccion(
+        self, evento: EventoAnalisisIA, modulo: TipoModulo
+    ) -> str:
+        """Incluye la transacción solo si es relevante para el módulo."""
+        if not evento.transaccion:
+            return ""
+ 
+        # Módulos de historial puro no necesitan el detalle de la transacción
+        modulos_sin_transaccion = {
+            TipoModulo.PREDICCION_GASTOS,
+            TipoModulo.ESTACIONALIDAD,
+            TipoModulo.REPORTE_COMPLETO,
+            TipoModulo.PRESUPUESTO_DINAMICO,
+        }
+        if modulo in modulos_sin_transaccion:
+            return ""
+ 
+        t = evento.transaccion
         return (
-            "# PERFIL DEL USUARIO\n"
-            f"- Ocupación: {perfil.ocupacion}\n"
-            f"- Ingreso mensual estimado: {ingreso_fmt}\n"
-            "Ten en cuenta esta realidad económica al formular tus recomendaciones. "
-            "Un consejo viable para un estudiante es diferente al de un profesional senior."
+            f"## Transacción analizada\n"
+            f"- Tipo: {t.tipo.value}\n"
+            f"- Descripción: {t.descripcion}\n"
+            f"- Categoría registrada: {t.categoria}\n"
+            f"- Monto: S/ {t.monto:,.2f}"
         )
-
+    
+    # ── Metas financieras ────────────────────────────────────────────────────
     def _seccion_metas(self, contexto: ContextoUsuario) -> str:
-        """Lista las metas de ahorro y su progreso actual."""
         if not contexto.tiene_metas:
             return (
-                "# METAS DE AHORRO\n"
+                "## Metas de ahorro\n"
                 "El usuario no tiene metas configuradas. "
-                "Sugiere que establezca al menos una meta concreta para motivar su ahorro."
+                "Si el análisis lo permite, sugiere establecer al menos una meta concreta."
             )
-
-        lineas = ["# METAS DE AHORRO ACTIVAS"]
+        lineas = ["## Metas de ahorro activas"]
         for meta in contexto.metas:
             barra = self._barra_progreso(meta.progreso_porcentaje)
             lineas.append(
-                f"▸ {meta.nombre}: "
-                f"S/ {meta.monto_actual:,.2f} de S/ {meta.monto_objetivo:,.2f} "
+                f"- {meta.nombre}: S/ {meta.monto_actual:,.2f} / S/ {meta.monto_objetivo:,.2f} "
                 f"({meta.progreso_porcentaje}%) {barra} "
-                f"— faltan S/ {meta.monto_restante:,.2f}"
+                f"[faltan S/ {meta.monto_restante:,.2f}]"
             )
-
         lineas.append(
-            "\nRelaciona el gasto analizado con el impacto en estas metas. "
-            "Si el gasto aleja al usuario de una meta, menciónalo con tacto."
+            "\nRelaciona el análisis con el impacto en estas metas. "
+            "Si el gasto detectado aleja al usuario de una meta, menciónalo con tacto."
         )
         return "\n".join(lineas)
-
-    def _seccion_limite_presupuesto(self, evento: EventoAnalisisIA) -> str:
-        """Evalúa el gasto contra el límite global configurado."""
+    
+    # ── Límite global ─────────────────────────────────────────────────────────
+ 
+    def _seccion_limite(self, evento: EventoAnalisisIA) -> str:
         contexto = evento.contexto
-
-        if not contexto.tiene_limite_activo:
-            return ""  # Sección omitida si no hay límite activo
-
+        if not contexto.tiene_limite_activo or not evento.transaccion:
+            return ""
+ 
         limite = contexto.limite_global
-        monto_gasto = evento.transaccion.monto
-
-        # Calculamos qué % del límite representa ESTE gasto individual
-        porcentaje_uso = (monto_gasto / limite.monto_limite) * 100 if limite.monto_limite > 0 else 0
-        umbral_alerta = limite.porcentaje_alerta
-
-        if porcentaje_uso >= 100:
+        monto  = evento.transaccion.monto
+        uso_pct = (monto / limite.monto_limite) * 100 if limite.monto_limite > 0 else 0
+ 
+        if uso_pct >= 100:
             estado = "LÍMITE SUPERADO"
-            instruccion = (
-                f"Este gasto de S/ {monto_gasto:,.2f} supera el límite mensual de "
-                f"S/ {limite.monto_limite:,.2f}. ALERTA CRÍTICA: informa al usuario "
-                "que ha excedido su presupuesto y sugiere medidas inmediatas."
-            )
-        elif porcentaje_uso >= umbral_alerta:
-            estado = "ZONA DE ALERTA"
-            instruccion = (
-                f"Con este gasto de S/ {monto_gasto:,.2f}, el usuario está en zona "
-                f"de alerta ({porcentaje_uso:.1f}% del límite de S/ {limite.monto_limite:,.2f}). "
-                "Advierte con suavidad que se está acercando al tope mensual."
-            )
+            instruccion = "ALERTA CRÍTICA: el usuario ha excedido su presupuesto mensual."
+        elif uso_pct >= limite.porcentaje_alerta:
+            estado = f"ZONA DE ALERTA ({uso_pct:.1f}%)"
+            instruccion = "Advierte suavemente que se acerca al tope mensual."
         else:
-            estado = "DENTRO DEL LÍMITE"
-            instruccion = (
-                f"El gasto representa el {porcentaje_uso:.1f}% del límite mensual "
-                f"(S/ {limite.monto_limite:,.2f}). El usuario va bien, refuerza positivamente."
-            )
-
+            estado = f"Dentro del límite ({uso_pct:.1f}%)"
+            instruccion = "Refuerza positivamente que el gasto está bajo control."
+ 
         return (
-            f"# CONTROL DE PRESUPUESTO GLOBAL\n"
-            f"Estado: {estado}\n"
-            f"Límite configurado: S/ {limite.monto_limite:,.2f}/mes\n"
-            f"Gasto actual analizado: S/ {monto_gasto:,.2f} ({porcentaje_uso:.1f}% del límite)\n\n"
-            f"Instrucción: {instruccion}"
+            f"## Control de presupuesto global\n"
+            f"- Estado: {estado}\n"
+            f"- Límite mensual configurado: S/ {limite.monto_limite:,.2f}\n"
+            f"- Este gasto representa: {uso_pct:.1f}% del límite\n"
+            f"- Instrucción: {instruccion}"
         )
-
-    def _seccion_tarea_final(self, contexto: ContextoUsuario) -> str:
-        """Instrucción final que cierra el prompt con la tarea concreta."""
-        tono_str = "amigable"
+    
+    # ── Tarea final por módulo ────────────────────────────────────────────────
+    def _seccion_tarea(
+        self, modulo: TipoModulo, contexto: ContextoUsuario
+    ) -> str:
+        """Cierra el prompt con la instrucción de salida específica del módulo."""
+        tono = "amigable"
         if contexto.tiene_perfil and contexto.perfil_financiero:
-            tono_str = contexto.perfil_financiero.tono_ia.value.lower()
-
-        return (
-            "# TAREA\n"
-            f"Con toda la información anterior, genera UN SOLO mensaje de WhatsApp "
-            f"con tono {tono_str} que:\n"
-            "1. Reconozca brevemente el gasto registrado.\n"
-            "2. Lo relacione con el estado del presupuesto y/o el progreso de las metas.\n"
-            "3. Dé UNA recomendación concreta y accionable adaptada al perfil del usuario.\n"
-            "Recuerda: máximo 120 palabras, sin markdown, en español."
+            tono = contexto.perfil_financiero.tono_ia.value.lower()
+ 
+        tareas: dict[TipoModulo, str] = {
+            TipoModulo.TRANSACCION_AUTOMATICA: (
+                f"Con toda la información anterior, genera UN consejo inmediato "
+                f"para el Dashboard con tono {tono}. Estructura: "
+                f"(1) Reconoce el gasto, (2) relaciona con historial/metas/límite, "
+                f"(3) una recomendación concreta. Máx. 150 palabras."
+            ),
+            TipoModulo.PREDICCION_GASTOS: (
+                f"Genera una predicción de cierre del mes actual con tono {tono}. "
+                f"Incluye: (1) gasto proyectado al cierre, (2) si superará o no el mes anterior, "
+                f"(3) qué categorías vigilar esta semana. Sé específico con los montos."
+            ),
+            TipoModulo.GASTO_HORMIGA: (
+                f"Genera un reporte de gastos hormiga con tono {tono}. "
+                f"Incluye: (1) total mensual estimado de gastos hormiga, "
+                f"(2) top 3 categorías hormiga, (3) impacto anualizado, "
+                f"(4) una sugerencia de reducción realista."
+            ),
+            TipoModulo.AUTOCLASIFICACION: (
+                f"Genera un análisis de clasificación con tono {tono}. "
+                f"Incluye: (1) si la categoría actual es correcta o no, "
+                f"(2) categoría sugerida (si aplica) con justificación, "
+                f"(3) por qué importa clasificar bien."
+            ),
+            TipoModulo.COMPARACION_MENSUAL: (
+                f"Genera el análisis comparativo con tono {tono}. "
+                f"Sigue la instrucción de comparación: felicitar si bajó, "
+                f"alertar con acción correctiva si subió."
+            ),
+        }
+ 
+        tarea = tareas.get(
+            modulo,
+            f"Genera un análisis financiero claro y accionable para el Dashboard "
+            f"con tono {tono}. Máximo 200 palabras, sin markdown."
         )
+        return f"## Tarea\n{tarea}"
 
     # ── Utilidades internas ───────────────────────────────────────────────────
 
     @staticmethod
-    def _barra_progreso(porcentaje: float, ancho: int = 10) -> str:
-        """Genera una barra de progreso ASCII para el prompt."""
-        llenos  = int((porcentaje / 100) * ancho)
-        vacios  = ancho - llenos
-        return f"[{'█' * llenos}{'░' * vacios}]"
+    def _barra_progreso(porcentaje: float, ancho: int = 8) -> str:
+        llenos = int((porcentaje / 100) * ancho)
+        return f"[{'█' * llenos}{'░' * (ancho - llenos)}]"

@@ -1,11 +1,11 @@
 """
-configuracion.py
+configuracion.py  ·  v3 — Dashboard + Persistencia + Multi-Módulos
 ══════════════════════════════════════════════════════════════════════════════
-Carga centralizada de variables de entorno para el Microservicio IA.
-Utiliza pydantic-settings para validación automática y soporte de Eureka.
-Extiende la configuración existente añadiendo soporte para:
-  - Google Generative AI (Gemini)
-  - RabbitMQ (broker de mensajería)
+Extiende la configuración v2 añadiendo:
+  - Parámetros de historial (MESES_HISTORIAL = 6)
+  - Colas de respuesta hacia el Dashboard
+  - Umbrales para detección de gastos hormiga
+  - URL de persistencia (microservicio-dashboard o bd directa)
 ══════════════════════════════════════════════════════════════════════════════
 """
 
@@ -13,6 +13,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 
 class Configuracion(BaseSettings):
+    
     # ── Configuración de la App ───────────────────────────────    
     nombre_app: str = "Microservicio IA Financiera"
     id_app_eureka: str = "microservicio-ia"
@@ -33,16 +34,26 @@ class Configuracion(BaseSettings):
     url_nucleo_financiero: str = "http://localhost:8085"
     url_auditoria:         str = "http://localhost:8082"
     url_cliente:           str = "http://localhost:8083"
+    url_dashboard:         str = "http://localhost:8087"
 
     # ── Parámetros de análisis IA ────────────────────────────
     umbral_anomalia: float = 2.0
     factor_seguridad_ahorro: float = 0.85
-    meses_historial_prediccion: int = 3
     monto_minimo_suscripcion: float = 5.0
+
+    # ── Historial comparativo ─────────────────────────────────────────────────
+    meses_historial:              int   = 3      # ventana temporal para todos los módulos
+    meses_historial_prediccion:   int   = 3      # alias explícito para predicción
+    umbral_gasto_hormiga:         float = 30.0   # monto máximo para clasificar como hormiga
+    min_recurrencias_hormiga:     int   = 3      # veces mínimas en el historial para ser hormiga
+
+
 
     # ── Google Generative AI (Gemini) ─────────────────────────────────────────
     gemini_api_key: str = "AIzaSyAN1g22ckI7Mb3SBh140yJBsB9Fs-aWs_0"
     gemini_modelo:  str = "gemini-1.5-flash"
+    gemini_max_tokens:        int = 500
+    gemini_temperatura:       float = 0.7        # creatividad del coach
  
     # ── RabbitMQ ──────────────────────────────────────────────────────────────
     rabbitmq_host:     str = "localhost"
@@ -51,10 +62,15 @@ class Configuracion(BaseSettings):
     rabbitmq_password: str = "guest"
     rabbitmq_vhost:    str = "/"
 
-    # Nombres de colas y exchanges (Sincronizado con consumidor_ia.py)
-    rabbitmq_exchange_ia: str = "exchange.ia"
-    rabbitmq_cola_entrada: str = "cola.ia.procesamiento"
-    rabbitmq_cola_salida_ws: str = "cola.mensajeria.whatsapp"
+    # ── Colas RabbitMQ ────────────────────────────────────────────────────────
+    # Entrada
+    cola_ia_procesamiento:   str = "cola.ia.procesamiento"
+    exchange_ia:             str = "exchange.ia"
+ 
+    # Salida hacia Dashboard (reemplaza cola.mensajeria.whatsapp)
+    cola_dashboard_consejos: str = "cola.dashboard.consejos"      # consejos automáticos
+    cola_dashboard_modulos:  str = "cola.dashboard.modulos"       # respuestas a módulos manuales
+    exchange_dashboard:      str = "exchange.dashboard"
     
     # Tiempos de vida de la conexión
     rabbitmq_heartbeat: int = 60

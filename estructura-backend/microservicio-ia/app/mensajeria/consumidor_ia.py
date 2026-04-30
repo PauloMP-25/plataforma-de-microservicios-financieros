@@ -1,24 +1,30 @@
 """
-mensajeria/consumidor_ia.py
+mensajeria/consumidor_ia.py  ·  v3 — Dual-Mode Consumer + Dashboard Routing
 ══════════════════════════════════════════════════════════════════════════════
-Consumidor RabbitMQ para la cola `cola.ia.procesamiento`.
-
-Flujo:
-  1.  Recibe mensaje JSON del exchange `exchange.ia`.
-  2.  Deserializa el cuerpo en EventoAnalisisIA (nuevo contrato).
-  3.  Delega al CoachIA para generar el consejo con Gemini.
-  4.  Publica el consejo en `cola.mensajeria.whatsapp`.
-  5.  ACK o NACK según el resultado (sin pérdida de mensajes).
-
-Principios de diseño:
-  - La lógica del callback es mínima: deserializar → procesar → publicar.
-  - Toda la lógica de negocio vive en CoachIA e IngenierioPrompt.
-  - Fallos de Gemini hacen NACK sin requeue para evitar bucles infinitos.
-  - Fallos de deserialización hacen ACK + log (el mensaje es irrecuperable).
+Consumidor RabbitMQ que maneja DOS tipos de eventos:
+ 
+  TRANSACCION_RECIENTE → disparado automáticamente por el nucleo-financiero
+        └── Respuesta publicada en: cola.dashboard.consejos
+ 
+  CONSULTA_MODULO      → disparado manualmente desde un botón del Dashboard
+        └── Respuesta publicada en: cola.dashboard.modulos
+ 
+Flujo del callback:
+  1. Deserializar EventoAnalisisIA (v3 con historial_mensual)
+  2. Resolver tipo de solicitud (automático vs manual)
+  3. Delegar a CoachIA.analizar(evento) → ResultadoAnalisisIA
+  4. Publicar ResultadoAnalisisIA en la cola correcta
+  5. Delegar persistencia al PublicadorDashboard
+  6. ACK / NACK según resultado
+ 
+Estrategia ACK/NACK:
+  JSON inválido           → ACK + descarta  (irrecuperable)
+  id_usuario ausente      → ACK + descarta  (irrecuperable)
+  CoachIA retorna None    → NACK sin requeue (evita bucle, va a dead-letter)
+  Error de publicación    → NACK con requeue (error transitorio)
+  Éxito completo          → ACK
 ══════════════════════════════════════════════════════════════════════════════
 """
-
-from __future__ import annotations
 
 import json
 import logging
@@ -31,18 +37,24 @@ from pika.adapters.blocking_connection import BlockingChannel
 from pika.spec import Basic
 
 from app.configuracion import obtener_configuracion
-from app.modelos.evento_analisis import EventoAnalisisIA
+from app.modelos.evento_analisis import (
+    EventoAnalisisIA,
+    ResultadoAnalisisIA,
+    TipoSolicitud,
+)
 from app.servicios.coach_ia import CoachIA
-from app.excepciones import BrokerComunicacionError, ContratoDatosError, GeminiError
+from app.excepciones import BrokerComunicacionError, ContratoDatosError
+
 logger = logging.getLogger(__name__)
 
 class ConsumidorIA:
     """
-    Consumidor bloqueante (pika BlockingConnection) para `cola.ia.procesamiento`.
-
-    Uso típico en main.py o un hilo separado:
+    Consumidor bloqueante (pika BlockingConnection).
+ 
+    Uso desde main.py en un hilo daemon:
         consumidor = ConsumidorIA()
-        consumidor.iniciar()   # bloquea el hilo
+        hilo = threading.Thread(target=consumidor.iniciar, daemon=True)
+        hilo.start()
     """
 
     def __init__(self) -> None:
@@ -55,29 +67,31 @@ class ConsumidorIA:
         self.EXCHANGE_IA = self._config.rabbitmq_exchange_ia
         self.COLA_ENTRADA = self._config.rabbitmq_cola_entrada
         self.COLA_SALIDA = self._config.rabbitmq_cola_salida_ws
+   
     # ── Ciclo de vida ─────────────────────────────────────────────────────────
-
     def iniciar(self) -> None:
         """Conecta al broker y comienza a consumir mensajes (bloqueante)."""
         try:
             self._conectar()
-            self._configurar_colas()
-            logger.info(f"[CONSUMIDOR] Escuchando en {self.COLA_ENTRADA}")
+            self._declarar_topologia()
+            logger.info(f"[CONSUMIDOR-v3] Escuchando en {self._config.cola_ia_procesamiento}")
             self._canal.start_consuming()
+
         except pika.exceptions.AMQPConnectionError as exc:
-            logger.critical(f"[CONSUMIDOR] Error de conexión física con RabbitMQ: {exc}")
-            raise BrokerComunicacionError("No se pudo establecer conexión con el broker.", detalles=str(exc))
+            logger.critical(f"[CONSUMIDOR] Error físico con RabbitMQ: {exc}")
+            raise BrokerComunicacionError("Conexión con el broker perdida.", detalles=str(exc))
         except KeyboardInterrupt:
             self.detener()
 
     def detener(self) -> None:
-        """Detiene el consumidor de forma limpia."""
+        """Detiene el consumidor de forma limpia desde otro hilo."""
+        self._activo.clear()
         if self._canal and self._canal.is_open:
-            self._canal.stop_consuming()
+            # stop_consuming es thread-safe en pika si se llama via add_callback_threadsafe
+            self._conexion.add_callback_threadsafe(self._canal.stop_consuming)
         self._cerrar()
 
     # ── Conexión y configuración ──────────────────────────────────────────────
-
     def _conectar(self) -> None:
         """Establece la conexión y el canal con el broker RabbitMQ."""
         try:
@@ -101,38 +115,47 @@ class ConsumidorIA:
         except Exception as exc:
             raise BrokerComunicacionError("Fallo en la autenticación o parámetros de RabbitMQ", detalles=str(exc))
 
-    def _configurar_colas(self) -> None:
-        """Declara el exchange, las colas y el binding de forma idempotente."""
-        # Exchange de entrada (durable: sobrevive reinicios del broker)
+    def _declarar_topologia(self) -> None:
+        """
+        Declara todos los exchanges y colas de forma idempotente.
+        Topología v3:
+          exchange.ia        (entrada)
+          exchange.dashboard (salida hacia Dashboard)
+        """
+        cfg = self._config
+
+        # ── Exchange de entrada ───────────────────────────────────────────────
         self._canal.exchange_declare(
-            exchange=self.EXCHANGE_IA,
-            exchange_type="direct",
-            durable=True,
+            exchange=cfg.exchange_ia, exchange_type="direct", durable=True
         )
-
-        # Cola de entrada: donde llegan los eventos de transacciones
-        self._canal.queue_declare(queue=self.COLA_ENTRADA, durable=True)
+        self._canal.queue_declare(queue=cfg.cola_ia_procesamiento, durable=True)
         self._canal.queue_bind(
-            queue=self.COLA_ENTRADA,
-            exchange=self.EXCHANGE_IA,
-            routing_key=self.COLA_ENTRADA,
+            queue=cfg.cola_ia_procesamiento,
+            exchange=cfg.exchange_ia,
+            routing_key=cfg.cola_ia_procesamiento,
         )
 
-        # Cola de salida: donde publicamos los consejos para WhatsApp
-        self._canal.queue_declare(queue=self.COLA_SALIDA, durable=True)
-
-        # Registrar el callback
-        self._canal.basic_consume(
-            queue=self.COLA_ENTRADA,
-            on_message_callback=self._callback,
-            auto_ack=False,   # ACK manual para garantizar entrega
+        # ── Exchange de salida (Dashboard) ────────────────────────────────────
+        self._canal.exchange_declare(
+            exchange=cfg.exchange_dashboard, exchange_type="direct", durable=True
         )
+        # Cola consejos automáticos
+        for cola in [cfg.cola_dashboard_consejos, cfg.cola_dashboard_modulos]:
+            self._canal.queue_declare(queue=cola, durable=True)
+            self._canal.queue_bind(queue=cola, exchange=cfg.exchange_dashboard, routing_key=cola)
+        
+        # ── Registrar callback ────────────────────────────────────────────────
+        self._canal.basic_consume(queue=cfg.cola_ia_procesamiento, on_message_callback=self._callback)
+
         logger.info(
-            "[CONSUMIDOR] Colas configuradas: entrada='%s', salida='%s'",
-            self.COLA_ENTRADA,
-            self.COLA_SALIDA,
+            "[CONSUMIDOR-v3] Topología declarada | "
+            "entrada: %s | salida: %s / %s",
+            cfg.cola_ia_procesamiento,
+            cfg.cola_dashboard_consejos,
+            cfg.cola_dashboard_modulos,
         )
 
+    #-- Cierre de conexión ───────────────────────────────────────────────────
     def _cerrar(self) -> None:
         """Cierra el canal y la conexión de forma segura."""
         try:
@@ -145,24 +168,52 @@ class ConsumidorIA:
     # ── Callback principal ────────────────────────────────────────────────────
 
     def _callback(self, canal, metodo, propiedades, cuerpo) -> None:
-        """Lógica de procesamiento con manejo de excepciones de dominio."""
+        """Orquestación del análisis y ruteo de salida."""
+        """
+        Punto de entrada para cada mensaje de cola.ia.procesamiento.
+        Orquesta el flujo completo y garantiza que siempre se emite ACK o NACK.
+        """
+        tag = metodo.delivery_tag
+        logger.info(
+            "[CALLBACK] Mensaje recibido | tag=%s | %d bytes", tag, len(cuerpo)
+        )
         try:
-            # 1. Deserialización
-            evento = self._deserializar(cuerpo)
+            # ── 1. Deserializar ───────────────────────────────────────────────────
+            evento = self._deserializar(cuerpo, tag, canal)
+            if not evento: return  # ACK ya emitido dentro de _deserializar
             
-            # 2. IA
-            consejo = self._coach.generar_consejo(evento)
-            if not consejo:
-                # Si Gemini falló internamente, hacemos NACK y no reintentamos (evitar bucle)
-                canal.basic_nack(delivery_tag=metodo.delivery_tag, requeue=False)
+            logger.info(
+                "[CALLBACK] Evento válido | usuario=%s | tipo=%s | módulo=%s | historial=%d meses",
+                evento.id_usuario,
+                evento.tipo_solicitud.value,
+                evento.modulo_solicitado.value if evento.modulo_solicitado else "AUTO",
+                len(evento.historial_mensual),
+            )
+
+            # ── 2. Analizar con CoachIA + Gemini ──────────────────────────────────
+            resultado = self._coach.analizar(evento)
+            if not resultado:
+                logger.error(
+                    "[CALLBACK] CoachIA no generó resultado para usuario=%s. NACK sin requeue.",
+                    evento.id_usuario,
+                )
+                canal.basic_nack(delivery_tag=tag, requeue=False)
                 return
 
-            # 3. Publicación
-            if self._publicar_consejo(canal, evento, consejo):
-                canal.basic_ack(delivery_tag=metodo.delivery_tag)
+            # ── 3. Publicar en la cola correcta del Dashboard ─────────────────────
+            cola_destino = self._resolver_cola_destino(evento)
+            
+            # 4. Publicación y persistencia (si falla, requeue para intentar más tarde)
+            if self._publicar_resultado(canal, resultado, cola_destino):
+                canal.basic_ack(delivery_tag=tag)
             else:
-                # Si falló la publicación, reintentamos (requeue=True)
-                canal.basic_nack(delivery_tag=metodo.delivery_tag, requeue=True)
+                canal.basic_nack(delivery_tag=tag, requeue=True)
+                logger.info(
+                    "[CALLBACK] OK | usuario=%s | módulo=%s | cola=%s | ACK",
+                    resultado.id_usuario,
+                    resultado.tipo_modulo.value,
+                    cola_destino,
+                )
 
         except ContratoDatosError:
             # Si el dato está roto, no sirve de nada reintentar. ACK para eliminar de la cola.
@@ -173,67 +224,60 @@ class ConsumidorIA:
             canal.basic_nack(delivery_tag=metodo.delivery_tag, requeue=True)
 
     # ── Métodos de soporte ────────────────────────────────────────────────────
-    def _deserializar(self, cuerpo: bytes) -> EventoAnalisisIA:
-        """Usa el modelo y lanza nuestra excepción personalizada si falla."""
+    def _deserializar(self, cuerpo: bytes, tag: int, canal: BlockingChannel) -> Optional[EventoAnalisisIA]:
+        """
+        Deserializa el cuerpo del mensaje. Si falla → ACK + descarta.
+        Valida además que id_usuario esté presente.
+        Usa el modelo y lanza nuestra excepción personalizada si falla."""
         try:
-            logger.debug(
-                "[DESERIALIZAR] Evento válido: transacción='%s', monto=%.2f, "
-                "tiene_perfil=%s, tiene_metas=%s, tiene_limite=%s",
-                EventoAnalisisIA.transaccion.descripcion,
-                EventoAnalisisIA.transaccion.monto,
-                EventoAnalisisIA.contexto.tiene_perfil,
-                EventoAnalisisIA.contexto.tiene_metas,
-                EventoAnalisisIA.contexto.tiene_limite_activo,
-            )
             return EventoAnalisisIA.desde_json(cuerpo)
+        
         except Exception as exc:
             raise ContratoDatosError("El mensaje de Java no coincide con el modelo IA", detalles=str(exc))
 
-    def _publicar_consejo(
-        self,
-        canal: BlockingChannel,
-        evento: EventoAnalisisIA,
-        consejo: str,
-    ) -> bool:
-        """
-        Publica el consejo enriquecido en la cola de salida.
-        Usa las variables de instancia configuradas en el __init__.
-        """
-        try:
-            # Construimos el payload con TU lógica original (es excelente)
-            payload = {
-                "consejo":     consejo,
-                "descripcion": evento.transaccion.descripcion,
-                "monto":       evento.transaccion.monto,
-                "categoria":   evento.transaccion.categoria,
-                "tipo":        evento.transaccion.tipo.value,
-            }
 
-            # Enriquecemos con el tono si existe perfil
-            if evento.contexto.tiene_perfil and evento.contexto.perfil_financiero:
-                payload["tono_ia"] = evento.contexto.perfil_financiero.tono_ia.value
-
-            # Publicación usando variables de instancia (self.COLA_SALIDA)
+    def _resolver_cola_destino(self, evento: EventoAnalisisIA) -> str:
+        """
+        TRANSACCION_RECIENTE → cola.dashboard.consejos  (widget de últimos consejos)
+        CONSULTA_MODULO      → cola.dashboard.modulos   (widget del módulo específico)
+        """
+        if evento.tipo_solicitud == TipoSolicitud.CONSULTA_MODULO:
+            return self._config.cola_dashboard_modulos
+        return self._config.cola_dashboard_consejos
+    
+    def _publicar_resultado(self, canal, resultado: ResultadoAnalisisIA, cola_destino: str) -> bool:
+        """
+        Serializa ResultadoAnalisisIA y lo publica en el exchange del Dashboard.
+        """
+        try: 
             canal.basic_publish(
-                exchange="", # EXCHANGE_DEFAULT
-                routing_key=self.COLA_SALIDA, # Usamos la variable del __init__
-                body=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+                exchange=self._config.exchange_dashboard,
+                routing_key=cola_destino,
+                body=json.dumps(resultado.a_dict_serializable(), ensure_ascii=False).encode("utf-8"),
                 properties=BasicProperties(
-                    delivery_mode=2,           # Persistente
+                    delivery_mode=2,                    # persistente
                     content_type="application/json",
                     content_encoding="utf-8",
+                    headers={
+                        "tipo_modulo":   resultado.tipo_modulo.value,
+                        "id_usuario":    resultado.id_usuario,
+                        "version":       "3.0",
+                    },
                 ),
             )
-            
             logger.info(
-                f"[PUBLICAR] Consejo publicado en '{self.COLA_SALIDA}' para '{evento.transaccion.descripcion}'."
+                "[PUBLICAR] ResultadoAnalisisIA publicado | "
+                "cola=%s | módulo=%s | usuario=%s | kpi=%s %s",
+                cola_destino,
+                resultado.tipo_modulo.value,
+                resultado.id_usuario,
+                resultado.kpi_principal,
+                resultado.kpi_label or "",
             )
             return True
-
         except Exception as exc:
-            # Rastrear el error específico en la publicación
             logger.error(
-                f"[PUBLICAR] Error crítico al publicar en '{self.COLA_SALIDA}': {exc}",
-                exc_info=True,
+                "[PUBLICAR] Error publicando en '%s': %s",
+                cola_destino, str(exc), exc_info=True,
             )
             return False

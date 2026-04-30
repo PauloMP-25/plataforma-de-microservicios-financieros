@@ -1,13 +1,14 @@
 """
-main.py
+main.py  ·  v3 — Dashboard + Persistencia + Multi-Módulos
 ══════════════════════════════════════════════════════════════════════════════
-Punto de entrada del Microservicio IA Financiera.
-FastAPI con documentación automática Swagger/OpenAPI en /docs e integración con Eureka Server..
-  - Lanza el ConsumidorIA en un hilo daemon al arrancar FastAPI.
-  - El hilo de RabbitMQ procesa EventoAnalisisIA y publica consejos
-    en cola.mensajeria.whatsapp.
-  - Al apagar (SIGTERM/Ctrl+C), detiene el consumidor limpiamente.
-Puerto: 8086
+Punto de entrada del Microservicio IA Financiera v3.
+ 
+Cambios respecto a v2:
+  - ConsumidorIA v3 con modo dual (automático + manual)
+  - Endpoint HTTP nuevo: POST /api/v1/ia/solicitar-modulo
+    (permite al Dashboard disparar un CONSULTA_MODULO directamente via HTTP,
+     sin pasar por RabbitMQ, útil para desarrollo y testing)
+  - Health check enriquecido con estado del consumidor
 ══════════════════════════════════════════════════════════════════════════════
 """
 
@@ -37,8 +38,9 @@ logger = logging.getLogger("ia_financiera")
 
 config = obtener_configuracion()
 
-# Instancia global del consumidor (necesaria para detenerlo en shutdown)
+# Estado global del consumidor (accesible desde el health check)
 _consumidor: ConsumidorIA | None = None
+_consumidor_activo: bool = False
 
 # ── Consumidor RabbitMQ ─────────────────────────────────────────────
 def _iniciar_consumidor_rabbitmq() -> None:
@@ -57,6 +59,7 @@ def _iniciar_consumidor_rabbitmq() -> None:
             daemon=True,
         )
         hilo.start()
+        _consumidor_activo = True
         logger.info("[MAIN] Consumidor RabbitMQ iniciado en hilo '%s'.", hilo.name)
     except Exception as exc:
         logger.error(
@@ -71,13 +74,17 @@ async def lifespan(app: FastAPI):
     """
     Gestiona lo que sucede cuando el microservicio nace y muere.
     """
-    logger.info("═" * 60)
-    logger.info("  Microservicio IA Financiera iniciando...")
-    logger.info("  Puerto  : %d", config.puerto)
-    logger.info("  Entorno : %s", config.entorno)
-    logger.info("  Gemini  : %s", config.gemini_modelo)
-    logger.info("  Broker  : %s:%d", config.rabbitmq_host, config.rabbitmq_puerto)
-    logger.info("═" * 60)
+    logger.info("═" * 65)
+    logger.info("  Microservicio IA Financiera  v%s  iniciando...", config.version_app)
+    logger.info("  Puerto         : %d", config.puerto)
+    logger.info("  Entorno        : %s", config.entorno)
+    logger.info("  Gemini         : %s (temp=%.1f)", config.gemini_modelo, config.gemini_temperatura)
+    logger.info("  Broker         : %s:%d", config.rabbitmq_host, config.rabbitmq_puerto)
+    logger.info("  Cola entrada   : %s", config.cola_ia_procesamiento)
+    logger.info("  Cola consejos  : %s", config.cola_dashboard_consejos)
+    logger.info("  Cola módulos   : %s", config.cola_dashboard_modulos)
+    logger.info("  Historial      : %d meses", config.meses_historial)
+    logger.info("═" * 65)
 
     # --- REGISTRO EN EUREKA ---
     await registrar_en_eureka(config)
@@ -99,24 +106,36 @@ app = FastAPI(
     description="""
 
 ## Motor de Inteligencia Artificial para Análisis Financiero
-
+### Novedades v3
+- **Análisis histórico comparativo**: historial de 6 meses incluido en cada evento
+- **10 módulos especializados** con System Prompts propios para Gemini
+- **Salida al Dashboard**: `ResultadoAnalisisIA` con `metadata_grafico` para charts
+- **Modo dual**: eventos automáticos (por transacción) y manuales (botón del Dashboard)
+- **KPIs por módulo**: valor destacado para el header de cada widget
+ 
+### Flujo de eventos
+```
+nucleo-financiero → exchange.ia → cola.ia.procesamiento
+    ├── TRANSACCION_RECIENTE → Gemini → cola.dashboard.consejos
+    └── CONSULTA_MODULO      → Gemini → cola.dashboard.modulos
+```
 Este microservicio actúa como el **cerebro analítico** del sistema SaaS Financiero.
 Consume datos del `microservicio-nucleo-financiero` y procesa eventos de transacciones 
 desde **RabbitMQ** (`exchange.ia`) y expone 10 módulos de análisis financiero vía HTTP.
 
 ### Módulos HTTP disponibles
-| # | Endpoint | Descripción |
+| # | Modulo | Descripción | Tipo Modulo | Gráfico
 |---|----------|-------------|
-| 1 | `POST /clasificar` | Etiqueta transacciones automáticamente |
-| 2 | `POST /predecir-gastos` | Proyecta gastos del próximo mes |
-| 3 | `POST /detectar-anomalias` | Identifica transacciones inusuales |
-| 4 | `POST /optimizar-suscripciones` | Detecta gastos hormiga |
-| 5 | `POST /capacidad-ahorro` | Calcula capacidad real de ahorro |
-| 6 | `POST /simular-meta` | Proyecta tiempo para alcanzar metas |
-| 7 | `POST /estacionalidad` | Detecta patrones mensuales |
-| 8 | `POST /presupuesto-dinamico` | Presupuesto semanal recomendado |
-| 9 | `POST /simular-escenario` | Simula nuevos gastos/ingresos |
-| 10 | `POST /reporte-completo` | Reporte ejecutivo en lenguaje natural |
+| 1 | Analisis Automatico | Etiqueta transacciones automáticamente | -- |
+| 2 | Prediccion de Gastos | Proyecta gastos del próximo mes | Lineas |
+| 3 | Detección de Anomalías | Identifica transacciones inusuales | -- |
+| 4 | Gastos Hormiga | Detecta gastos hormiga | Barras |
+| 5 | Capacidad de Ahorro | Calcula capacidad real de ahorro | Dona |
+| 6 | Metas Financieras | Proyecta tiempo para alcanzar metas | -- |
+| 7 | Estacionalidad | Detecta patrones mensuales | Lineas |
+| 8 | Presupuesto Dinámico | Presupuesto semanal recomendado | -- |
+| 9 | Comparacion Mensual | Compara gastos e ingresos mensuales | Barras Agrupadas |
+| 10 | Reporte Dinamico | Reporte ejecutivo en lenguaje natural | Barras Apiladas |
 
 ### Dependencias
 - **microservicio-nucleo-financiero** — Puerto 8085 (fuente de datos)
@@ -211,10 +230,18 @@ async def health_check():
         "status": estado_general,
         "servicio": config.nombre_app,
         "version": config.version_app,
-        "componentes": {
-            "broker": f"{config.rabbitmq_host}:{config.rabbitmq_puerto}",
-            "rabbitmq_thread": "OK" if hilo_vivo else "FAILED",
-            "modelo_ia": config.gemini_modelo
+        "gemini": config.gemini_modelo,
+        "broker": {
+            "host":            f"{config.rabbitmq_host}:{config.rabbitmq_puerto}",
+            "consumidor_activo": _consumidor_activo,
+            "cola_entrada":    config.cola_ia_procesamiento,
+            "cola_consejos":   config.cola_dashboard_consejos,
+            "cola_modulos":    config.cola_dashboard_modulos,
+        },
+        "configuracion": {
+            "meses_historial":       config.meses_historial,
+            "umbral_gasto_hormiga":  config.umbral_gasto_hormiga,
+            "factor_ahorro":         config.factor_seguridad_ahorro,
         },
         "timestamp": datetime.now().isoformat()
     }
