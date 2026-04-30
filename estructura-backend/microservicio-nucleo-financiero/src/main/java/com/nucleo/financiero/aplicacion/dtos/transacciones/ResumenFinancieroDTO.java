@@ -1,4 +1,4 @@
-package com.nucleo.financiero.aplicacion.dtos;
+package com.nucleo.financiero.aplicacion.dtos.transacciones;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

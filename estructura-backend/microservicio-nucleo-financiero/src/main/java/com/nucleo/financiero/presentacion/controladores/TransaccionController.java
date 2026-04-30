@@ -1,6 +1,6 @@
 package com.nucleo.financiero.presentacion.controladores;
 
-import com.nucleo.financiero.aplicacion.dtos.*;
+import com.nucleo.financiero.aplicacion.dtos.transacciones.*;
 import com.nucleo.financiero.aplicacion.servicios.TransaccionService;
 import com.nucleo.financiero.dominio.entidades.Categoria.TipoMovimiento;
 import com.nucleo.financiero.infraestructura.utilidades.UtilidadIp;
