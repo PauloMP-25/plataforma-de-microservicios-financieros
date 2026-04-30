@@ -23,11 +23,11 @@ class Configuracion(BaseSettings):
     
     # ── Configuración de Eureka ───────────────────────────────    
     eureka_servidor_url: str = "http://admin:admin123@localhost:8761/eureka"
-    eureka_instancia_host: str = "127.0.0.1"
+    eureka_instancia_host: str = "192.168.18.28"
     eureka_instancia_puerto: int = 8086
 
     # ── Configuración de Seguridad ────────────────────────────
-    jwt_clave_secreta: str = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970"
+    jwt_clave_secreta: str
     jwt_algoritmo: str = "HS256"
 
     # ── URLs de microservicios Java ──────────────────────────
@@ -50,11 +50,11 @@ class Configuracion(BaseSettings):
 
 
     # ── Google Generative AI (Gemini) ─────────────────────────────────────────
-    gemini_api_key: str = "AIzaSyAN1g22ckI7Mb3SBh140yJBsB9Fs-aWs_0"
-    gemini_modelo:  str = "gemini-1.5-flash"
+    gemini_api_key: str
+    gemini_modelo:  str = "gemini-2.0-flash"
     gemini_max_tokens:        int = 500
     gemini_temperatura:       float = 0.7        # creatividad del coach
- 
+    
     # ── RabbitMQ ──────────────────────────────────────────────────────────────
     rabbitmq_host:     str = "localhost"
     rabbitmq_puerto:   int = 5672
