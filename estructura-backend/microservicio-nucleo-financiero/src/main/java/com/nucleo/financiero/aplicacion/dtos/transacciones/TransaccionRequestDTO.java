@@ -1,4 +1,4 @@
-package com.nucleo.financiero.aplicacion.dtos;
+package com.nucleo.financiero.aplicacion.dtos.transacciones;
 
 import com.nucleo.financiero.dominio.entidades.Categoria.TipoMovimiento;
 import com.nucleo.financiero.dominio.entidades.Transaccion.MetodoPago;

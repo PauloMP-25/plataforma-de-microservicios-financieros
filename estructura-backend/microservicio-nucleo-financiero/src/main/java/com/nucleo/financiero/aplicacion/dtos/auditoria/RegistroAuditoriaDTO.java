@@ -1,4 +1,4 @@
-package com.nucleo.financiero.aplicacion.dtos;
+package com.nucleo.financiero.aplicacion.dtos.auditoria;
 
 import java.time.LocalDateTime;
 import lombok.Builder;

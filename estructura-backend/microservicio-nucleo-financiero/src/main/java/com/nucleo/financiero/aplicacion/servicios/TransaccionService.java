@@ -1,9 +1,9 @@
 package com.nucleo.financiero.aplicacion.servicios;
 
-import com.nucleo.financiero.aplicacion.dtos.RegistroAuditoriaDTO;
-import com.nucleo.financiero.aplicacion.dtos.ResumenFinancieroDTO;
-import com.nucleo.financiero.aplicacion.dtos.TransaccionDTO;
-import com.nucleo.financiero.aplicacion.dtos.TransaccionRequestDTO;
+import com.nucleo.financiero.aplicacion.dtos.transacciones.TransaccionRequestDTO;
+import com.nucleo.financiero.aplicacion.dtos.auditoria.RegistroAuditoriaDTO;
+import com.nucleo.financiero.aplicacion.dtos.transacciones.ResumenFinancieroDTO;
+import com.nucleo.financiero.aplicacion.dtos.transacciones.TransaccionDTO;
 import com.nucleo.financiero.dominio.entidades.Categoria;
 import com.nucleo.financiero.dominio.entidades.Categoria.TipoMovimiento;
 import com.nucleo.financiero.dominio.entidades.Transaccion;

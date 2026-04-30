@@ -1,7 +1,5 @@
 package com.nucleo.financiero.infraestructura.clientes;
 
-import com.nucleo.financiero.aplicacion.dtos.RegistroAuditoriaDTO;
-import static java.rmi.server.LogStream.log;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,6 +7,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+
+import com.nucleo.financiero.aplicacion.dtos.auditoria.RegistroAuditoriaDTO;
 
 @Slf4j
 @Component
@@ -33,7 +33,7 @@ public class ClienteAuditoria {
             log.debug("[MICROSERVICIO.AUDITORIA] Evento enviado: accion={} usuario={}",
                       solicitud.accion(), solicitud.nombreUsuario());
         } catch (RestClientException ex) {
-            // ❌ No propagar: la auditoría es informativa, no bloquea el flujo
+            //No propagar: la auditoría es informativa, no bloquea el flujo
             log.error("[MICROSERVICIO-AUDITORIA] Fallo al enviar evento (no bloqueante): {}", ex.getMessage());
         }
     }

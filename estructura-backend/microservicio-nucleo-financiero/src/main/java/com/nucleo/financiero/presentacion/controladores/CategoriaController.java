@@ -1,7 +1,7 @@
 package com.nucleo.financiero.presentacion.controladores;
 
-import com.nucleo.financiero.aplicacion.dtos.CategoriaDTO;
-import com.nucleo.financiero.aplicacion.dtos.CategoriaRequestDTO;
+import com.nucleo.financiero.aplicacion.dtos.transacciones.CategoriaDTO;
+import com.nucleo.financiero.aplicacion.dtos.transacciones.CategoriaRequestDTO;
 import com.nucleo.financiero.aplicacion.servicios.CategoriaService;
 import com.nucleo.financiero.dominio.entidades.Categoria.TipoMovimiento;
 import jakarta.validation.Valid;

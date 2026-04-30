@@ -14,3 +14,5 @@ public record RespuestaAutenticacion(
         return new RespuestaAutenticacion(token, "Bearer", expiraEn, idUsuario, nombreUsuario, roles);
     }
 }
+
+
