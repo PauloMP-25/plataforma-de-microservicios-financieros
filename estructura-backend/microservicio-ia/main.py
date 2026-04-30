@@ -17,15 +17,18 @@ import threading
 from contextlib import asynccontextmanager
 from datetime import datetime
  
-from fastapi import FastAPI, Request, status
+from fastapi import Body, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+import uvicorn
  
 from app.configuracion import obtener_configuracion
 from app.clientes.cliente_eureka import registrar_en_eureka, desregistrar_de_eureka
 from app.mensajeria.consumidor_ia import ConsumidorIA
+from app.modelos.evento_analisis import EventoAnalisisIA, ResultadoAnalisisIA
 from app.routers import analisis
 from app.excepciones import IA_BaseException
+from app.servicios.coach_ia import CoachIA
 
 
 # ── Logging ───────────────────────────────────────────────────────────────────
@@ -102,57 +105,19 @@ async def lifespan(app: FastAPI):
 
 # ── Aplicación FastAPI ────────────────────────────────────────────────────────
 app = FastAPI(
-    title="Microservicio IA Financiera",
+    title="Microservicio de Inteligencia Artificial Financiera",
     description="""
-
-## Motor de Inteligencia Artificial para Análisis Financiero
-### Novedades v3
-- **Análisis histórico comparativo**: historial de 6 meses incluido en cada evento
-- **10 módulos especializados** con System Prompts propios para Gemini
-- **Salida al Dashboard**: `ResultadoAnalisisIA` con `metadata_grafico` para charts
-- **Modo dual**: eventos automáticos (por transacción) y manuales (botón del Dashboard)
-- **KPIs por módulo**: valor destacado para el header de cada widget
- 
-### Flujo de eventos
-```
-nucleo-financiero → exchange.ia → cola.ia.procesamiento
-    ├── TRANSACCION_RECIENTE → Gemini → cola.dashboard.consejos
-    └── CONSULTA_MODULO      → Gemini → cola.dashboard.modulos
-```
-Este microservicio actúa como el **cerebro analítico** del sistema SaaS Financiero.
-Consume datos del `microservicio-nucleo-financiero` y procesa eventos de transacciones 
-desde **RabbitMQ** (`exchange.ia`) y expone 10 módulos de análisis financiero vía HTTP.
-
-### Módulos HTTP disponibles
-| # | Modulo | Descripción | Tipo Modulo | Gráfico
-|---|----------|-------------|
-| 1 | Analisis Automatico | Etiqueta transacciones automáticamente | -- |
-| 2 | Prediccion de Gastos | Proyecta gastos del próximo mes | Lineas |
-| 3 | Detección de Anomalías | Identifica transacciones inusuales | -- |
-| 4 | Gastos Hormiga | Detecta gastos hormiga | Barras |
-| 5 | Capacidad de Ahorro | Calcula capacidad real de ahorro | Dona |
-| 6 | Metas Financieras | Proyecta tiempo para alcanzar metas | -- |
-| 7 | Estacionalidad | Detecta patrones mensuales | Lineas |
-| 8 | Presupuesto Dinámico | Presupuesto semanal recomendado | -- |
-| 9 | Comparacion Mensual | Compara gastos e ingresos mensuales | Barras Agrupadas |
-| 10 | Reporte Dinamico | Reporte ejecutivo en lenguaje natural | Barras Apiladas |
-
-### Dependencias
-- **microservicio-nucleo-financiero** — Puerto 8085 (fuente de datos)
-- **microservicio-auditoria** — Puerto 8082 (registro de eventos)
+    ## Motor de Análisis Predictivo y Correctivo.
+    
+    Este servicio procesa datos financieros mediante Google Gemini 1.5 Flash para ofrecer:
+    * **Análisis por Transacción:** Consejos inmediatos tras un gasto.
+    * **Módulos bajo demanda:** 10 motores de análisis (Predicción, Gasto Hormiga, etc.).
+    
+    ### Flujo de Eventos:
+    1. **Síncrono (HTTP):** El Dashboard solicita un análisis y recibe respuesta inmediata.
+    2. **Asíncrono (RabbitMQ):** El Núcleo Financiero envía una transacción, la IA procesa y publica el resultado directamente hacia el Dashboard.
     """,
-    version=config.version_app,
-    contact={
-        "name": "Paulo Cesar Moron Poma",
-        "email": "paulomoronpoma@gmail.com",
-    },
-    license_info={
-        "name": "Privado — Sistema SaaS Financiero",
-    },
-    lifespan=lifespan,
-    docs_url="/docs",
-    redoc_url="/redoc",
-    openapi_url="/openapi.json",
+    version="3.0.0"
 )
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
@@ -210,66 +175,40 @@ async def manejador_global_fallback(request: Request, exc: Exception):
 # ── Rutas ─────────────────────────────────────────────────────────────────────
 app.include_router(analisis.router)
 
-
-@app.get("/actuator/health", tags=["Sistema"], summary="Health check del servicio")
-async def health_check():
-    """
-    Este endpoint es el que Eureka consultará cada 10-30 segundos 
-    para verificar que Python sigue vivo.
-    """
-    # Verificamos si el hilo existe y está activo
-    hilo_vivo = False
-    for thread in threading.enumerate():
-        if thread.name == "hilo-consumidor-rabbitmq" and thread.is_alive():
-            hilo_vivo = True
-            break
-            
-    estado_general = "UP" if hilo_vivo else "DOWN"
-    
-    return {
-        "status": estado_general,
-        "servicio": config.nombre_app,
-        "version": config.version_app,
-        "gemini": config.gemini_modelo,
-        "broker": {
-            "host":            f"{config.rabbitmq_host}:{config.rabbitmq_puerto}",
-            "consumidor_activo": _consumidor_activo,
-            "cola_entrada":    config.cola_ia_procesamiento,
-            "cola_consejos":   config.cola_dashboard_consejos,
-            "cola_modulos":    config.cola_dashboard_modulos,
-        },
-        "configuracion": {
-            "meses_historial":       config.meses_historial,
-            "umbral_gasto_hormiga":  config.umbral_gasto_hormiga,
-            "factor_ahorro":         config.factor_seguridad_ahorro,
-        },
-        "timestamp": datetime.now().isoformat()
-    }
-
-
-@app.get(
-    "/",
-    tags=["Sistema"],
-    summary="Información del microservicio",
-    include_in_schema=False,
+# --- MODULO HTTP (APIs Directas) ---
+@app.post(
+    "/api/v1/ia/analizar", 
+    response_model=ResultadoAnalisisIA,
+    tags=["Módulos de IA"],
+    summary="Ejecutar análisis bajo demanda",
+    description="Permite invocar cualquiera de los 10 módulos de IA pasando el historial de 6 meses."
 )
-async def raiz():
-    return {
-        "servicio": "Microservicio IA Financiera",
-        "version": config.version_app,
-        "documentacion": "/docs",
-        "health": "/actuator/health",
-        "endpoints_ia": [
-            "POST /api/v1/ia/clasificar",
-            "POST /api/v1/ia/predecir-gastos",
-            "POST /api/v1/ia/detectar-anomalias",
-            "POST /api/v1/ia/optimizar-suscripciones",
-            "POST /api/v1/ia/capacidad-ahorro",
-            "POST /api/v1/ia/simular-meta",
-            "POST /api/v1/ia/estacionalidad",
-            "POST /api/v1/ia/presupuesto-dinamico",
-            "POST /api/v1/ia/simular-escenario",
-            "POST /api/v1/ia/reporte-completo",
-            "POST /api/v1/ia/analisis-completo",
-        ],
-    }
+async def analizar_modulo_http(
+    evento: EventoAnalisisIA = Body(
+        ...,
+        example={
+            "id_usuario": "user_uuid_12345",
+            "tipo_solicitud": "CONSULTA_MODULO",
+            "modulo_solicitado": "GASTO_HORMIGA",
+            "historial_mensual": [
+                {
+                    "anio": 2026, "mes": 3, 
+                    "totalIngresos": 3000, "totalGastos": 2500,
+                    "gastosPorCategoria": {"Alimentación": 800, "Suscripciones": 150}
+                }
+            ]
+        }
+    )
+):
+    resultado = coach.analizar(evento)
+    if not resultado:
+        raise HTTPException(status_code=500, detail="Error generando respuesta de IA")
+    return resultado
+
+
+
+if __name__ == "__main__":
+    import uvicorn
+    # host 0.0.0.0 permite que el microservicio sea visto por otros 
+    # contenedores de Docker o servicios en tu red local.
+    uvicorn.run(app, host="0.0.0.0", port=8000)
