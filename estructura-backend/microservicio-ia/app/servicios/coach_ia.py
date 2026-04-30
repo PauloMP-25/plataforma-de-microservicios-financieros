@@ -22,7 +22,7 @@ No conoce RabbitMQ ni la capa de persistencia.
 from __future__ import annotations
  
 import logging
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, Optional
  
 import google.generativeai as genai
 from google.generativeai.types import GenerationConfig

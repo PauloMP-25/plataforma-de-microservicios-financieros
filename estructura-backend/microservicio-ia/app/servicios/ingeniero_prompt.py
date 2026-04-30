@@ -170,7 +170,7 @@ _TONO_DEFAULT = _INSTRUCCIONES_TONO[TonoIA.AMIGABLE]
 # ══════════════════════════════════════════════════════════════════════════════
 # CLASE PRINCIPAL
 # ══════════════════════════════════════════════════════════════════════════════
-class Ingeniero_Prompt:
+class IngenieroPrompt:
     """
     Constructor modular de prompts. 
     Diseñado para transformar datos históricos en consejos accionables.

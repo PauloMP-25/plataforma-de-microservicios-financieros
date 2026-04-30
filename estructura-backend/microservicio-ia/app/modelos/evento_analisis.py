@@ -32,11 +32,15 @@ Principios:
 
 from __future__ import annotations
 
-import datetime
+# 3. Imports estándar de Python
+import json
+from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional
 from uuid import uuid4
-from pydantic import BaseModel, Field, field_validator, json, model_validator
+
+# 4. Imports de librerías externas (Pydantic)
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from app.excepciones import ContratoDatosError
 
