@@ -1,6 +1,6 @@
 package com.nucleo.financiero.presentacion.manejadores;
 
-import com.nucleo.financiero.aplicacion.dtos.ErrorApi;
+import com.nucleo.financiero.aplicacion.dtos.auditoria.ErrorApi;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.web.bind.MethodArgumentNotValidException;
