@@ -1,6 +1,6 @@
 package com.nucleo.financiero.aplicacion.servicios;
 
-
+import com.nucleo.financiero.aplicacion.dtos.cliente.ContextoUsuarioDTO;
 import com.nucleo.financiero.aplicacion.dtos.ia.RespuestaIaDTO;
 import com.nucleo.financiero.aplicacion.dtos.ia.SolicitudIaDTO;
 import com.nucleo.financiero.infraestructura.clientes.ClienteIa;
@@ -8,35 +8,65 @@ import com.nucleo.financiero.infraestructura.mensajeria.PublicadorAuditoria;
 import com.nucleo.infraestructura.feign.ClienteContexto;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ServicioIa {
 
     private final ClienteIa clienteIa;
-    private final ClienteContexto clienteContexto; // Tu nueva interfaz Feign
+    private final ClienteContexto clienteContexto;
     private final PublicadorAuditoria publicadorAuditoria;
 
-    public RespuestaIaDTO obtenerConsejoIA(SolicitudIaDTO solicitud) {
-        // 1. Obtener contexto del cliente (Meta, ahorros, etc.)
-        // Usamos UUID porque tu ClienteContexto lo requiere
-        var contexto = clienteContexto.obtenerContexto(UUID.fromString(solicitud.getIdUsuario()));
-        
-        // 2. Enriquecer la solicitud (Opcional: puedes pasar datos del contexto a la IA)
-        //solicitud.setHistorial(contexto.getTransacciones()); // Ejemplo
+    /**
+     * Obtiene un consejo personalizado de la IA, enriqueciendo la solicitud con
+     * el contexto del cliente y registrando la actividad en la auditoría
+     * mediante RabbitMQ.
+     *
+     * @param solicitud Datos básicos de la petición.
+     * @param ipCliente IP real capturada desde el controlador.
+     * @return Respuesta procesada por Gemini en Python.
+     */
+    public RespuestaIaDTO obtenerConsejoIA(SolicitudIaDTO solicitud, String ipCliente) {
+        log.info("Iniciando proceso de IA para el usuario: {} desde IP: {}", solicitud.getIdUsuario(), ipCliente);
 
-        // 3. Llamada síncrona a Python (Feign)
-        RespuestaIaDTO respuesta = clienteIa.analizarFinanzas(solicitud);
-        
-        // 4. Registro Asíncrono en Auditoría (RabbitMQ)
-        // Usamos tu método 'publicarAcceso' porque pedir un consejo IA 
-        // es técnicamente un acceso a información analítica.
+        // 1. Obtener contexto completo del cliente (Datos personales, perfil, metas, límites)
+        ContextoUsuarioDTO contextoEnriquecido = clienteContexto.obtenerContexto(solicitud.getIdUsuario());
+
+// 2. Re-construir la solicitud usando tus métodos de fábrica para incluir el contexto
+        // Esto mantiene la inmutabilidad de tu @Value SolicitudIaDTO
+        SolicitudIaDTO solicitudFinal;
+
+        if (solicitud.getModuloSolicitado() != null) {
+            solicitudFinal = SolicitudIaDTO.paraConsultaModulo(
+                    solicitud.getIdUsuario(),
+                    solicitud.getModuloSolicitado(),
+                    solicitud.getHistorialMensual(),
+                    contextoEnriquecido
+            );
+        } else {
+            solicitudFinal = SolicitudIaDTO.paraTransaccionReciente(
+                    solicitud.getIdUsuario(),
+                    solicitud.getHistorialMensual(),
+                    contextoEnriquecido
+            );
+        }
+
+        // 3. Llamada síncrona al microservicio de IA (Python - FastAPI) vía Feign
+        log.debug("Enviando solicitud enriquecida a Python para análisis...");
+        RespuestaIaDTO respuesta = clienteIa.analizarFinanzas(solicitudFinal);
+
+        // 4. Registro Asíncrono en Auditoría vía RabbitMQ
+        // Usamos 'publicarAcceso' para indicar que se consumió información analítica.
         publicadorAuditoria.publicarAcceso(
-                UUID.fromString(solicitud.getIdUsuario()), 
-                "CONSULTA_IA", 
-                "El usuario consultó el módulo: " + solicitud.getModuloSolicitado(),
-                "0.0.0.0" // Aquí podrías pasar la IP real si la tienes
+                solicitudFinal.getIdUsuario(),
+                "CONSULTA_IA",
+                "Análisis generado con contexto: " + (solicitudFinal.getModuloSolicitado() != null
+                ? solicitudFinal.getModuloSolicitado() : "TRANSACCION_RECIENTE"),
+                ipCliente
         );
 
         return respuesta;
