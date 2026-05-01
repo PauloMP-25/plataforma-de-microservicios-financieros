@@ -28,3 +28,8 @@ replay_pid*
 **/target/
 **/logs/
 .nb-gradle/
+
+venv/
+__pycache__/
+.env
+*.pyc

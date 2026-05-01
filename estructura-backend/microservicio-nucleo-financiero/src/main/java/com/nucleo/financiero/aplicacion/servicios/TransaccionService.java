@@ -1,15 +1,14 @@
 package com.nucleo.financiero.aplicacion.servicios;
 
-import com.nucleo.financiero.aplicacion.dtos.RegistroAuditoriaDTO;
-import com.nucleo.financiero.aplicacion.dtos.ResumenFinancieroDTO;
-import com.nucleo.financiero.aplicacion.dtos.TransaccionDTO;
-import com.nucleo.financiero.aplicacion.dtos.TransaccionRequestDTO;
+import com.nucleo.financiero.aplicacion.dtos.transacciones.TransaccionRequestDTO;
+import com.nucleo.financiero.aplicacion.dtos.transacciones.ResumenFinancieroDTO;
+import com.nucleo.financiero.aplicacion.dtos.transacciones.TransaccionDTO;
 import com.nucleo.financiero.dominio.entidades.Categoria;
 import com.nucleo.financiero.dominio.entidades.Categoria.TipoMovimiento;
 import com.nucleo.financiero.dominio.entidades.Transaccion;
 import com.nucleo.financiero.dominio.repositorios.CategoriaRepository;
 import com.nucleo.financiero.dominio.repositorios.TransaccionRepository;
-import com.nucleo.financiero.infraestructura.clientes.ClienteAuditoria;
+import com.nucleo.financiero.infraestructura.mensajeria.PublicadorAuditoria;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -30,22 +29,20 @@ public class TransaccionService {
 
     private final TransaccionRepository transaccionRepository;
     private final CategoriaRepository categoriaRepository;
-    private final ClienteAuditoria clienteAuditoria;
-    private static final String MODULO = "MICROSERVICIO-NUCLEO-FINANCIERO";
+    private final PublicadorAuditoria publicadorAuditoria;
 
     @Transactional
     public TransaccionDTO registrar(TransaccionRequestDTO request, String ipCliente) {
         Transaccion guardada = transaccionRepository.save(construirEntidad(request));
         log.info("Transacción registrada: {} — {} {} ({})",
                 guardada.getId(), guardada.getTipo(), guardada.getMonto(), guardada.getNombreCliente());
-        clienteAuditoria.enviar(new RegistroAuditoriaDTO(
-                LocalDateTime.now(),
-                guardada.getUsuarioId().toString(),
-                "REGISTRO_TRANSACCION_EXITOSO",
-                "La transaccion ha sido registrada correctamente",
-                ipCliente,
-                MODULO
-        ));
+
+        publicadorAuditoria.publicarRegistro(
+                guardada.getUsuarioId(),
+                guardada.getId().toString(),
+                guardada.getMonto().toString(),
+                ipCliente
+        );
         return TransaccionDTO.desde(guardada);
     }
 
@@ -64,14 +61,12 @@ public class TransaccionService {
                 .collect(Collectors.toList());
         List<Transaccion> guardadas = transaccionRepository.saveAll(entidades);
         log.info("Lote completado: {} transacciones guardadas", guardadas.size());
-        clienteAuditoria.enviar(new RegistroAuditoriaDTO(
-                LocalDateTime.now(),
-                guardadas.getFirst().getUsuarioId().toString(),
-                "REGISTRO_TRANSACCIONES_EXITOSO",
-                "Las transacciones ha sido registrada correctamente",
-                ipCliente,
-                MODULO
-        ));
+        publicadorAuditoria.publicarAcceso(
+                guardadas.get(0).getUsuarioId(),
+                "REGISTRO_LOTE_TRANSACCIONES",
+                "Se registraron " + guardadas.size() + " transacciones exitosamente.",
+                ipCliente
+        );
         return guardadas.stream().map(TransaccionDTO::desde).collect(Collectors.toList());
     }
 
@@ -82,14 +77,14 @@ public class TransaccionService {
             String ipCliente) {
 
         LocalDateTime[] rango = resolverRangoFechas(mes, anio);
-        clienteAuditoria.enviar(new RegistroAuditoriaDTO(
-                LocalDateTime.now(),
-                usuarioId.toString(),
-                "LISTAR_HISTORIAL_EXITOSO",
-                "La lista de historial de las transacciones del usuario se envio correctamente",
-                ipCliente,
-                MODULO
-        ));
+
+        // Usamos publicarAcceso para consultas de lectura
+        publicadorAuditoria.publicarAcceso(
+                usuarioId,
+                "LISTAR_HISTORIAL",
+                "El usuario consultó su historial de transacciones.",
+                ipCliente
+        );
         return transaccionRepository.buscarConFiltros(
                 usuarioId, tipo, categoriaId,
                 rango[0], rango[1], paginacion
@@ -106,14 +101,13 @@ public class TransaccionService {
         BigDecimal totalGastos = transaccionRepository.sumarGastosPorPeriodo(usuarioId, desde, hasta);
         long cantidadIngresos = transaccionRepository.contarPorTipoYPeriodo(usuarioId, TipoMovimiento.INGRESO, desde, hasta);
         long cantidadGastos = transaccionRepository.contarPorTipoYPeriodo(usuarioId, TipoMovimiento.GASTO, desde, hasta);
-        clienteAuditoria.enviar(new RegistroAuditoriaDTO(
-                LocalDateTime.now(),
-                usuarioId.toString(),
-                "OBTENER_RESUMEN_TRANSACCIONES",
-                "Se obtuvo el resumen de las transacciones del usuario correctamente",
-                ipCliente,
-                MODULO
-        ));
+        
+        publicadorAuditoria.publicarAcceso(
+                usuarioId,
+                "OBTENER_RESUMEN",
+                "Se generó el resumen financiero del periodo solicitado.",
+                ipCliente
+        );
         return ResumenFinancieroDTO.calcular(desde, hasta, totalIngresos, totalGastos, cantidadIngresos, cantidadGastos);
     }
 

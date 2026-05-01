@@ -1,9 +1,8 @@
 package com.nucleo.financiero.presentacion.controladores;
 
-import com.nucleo.financiero.aplicacion.dtos.*;
+import com.nucleo.financiero.aplicacion.dtos.transacciones.*;
 import com.nucleo.financiero.aplicacion.servicios.TransaccionService;
 import com.nucleo.financiero.dominio.entidades.Categoria.TipoMovimiento;
-import com.nucleo.financiero.infraestructura.utilidades.UtilidadIp;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/financiero/transacciones")
+@RequestMapping("/api/v1/transacciones")
 @RequiredArgsConstructor
 @Slf4j
 @Validated
@@ -72,7 +71,7 @@ public class TransaccionController {
     // HELPERS
     // =========================================================================
     private String obtenerIp(HttpServletRequest request) {
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        return (xForwardedFor != null) ? xForwardedFor.split(",")[0] : UtilidadIp.obtenerIpRemota(request);
+        String ip = request.getRemoteAddr();
+        return ip;
     }
 }

@@ -1,7 +1,7 @@
 package com.nucleo.financiero.infraestructura.seguridad;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nucleo.financiero.aplicacion.dtos.ErrorApi;
+import com.nucleo.financiero.aplicacion.dtos.auditoria.ErrorApi;
 import jakarta.servlet.http.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
