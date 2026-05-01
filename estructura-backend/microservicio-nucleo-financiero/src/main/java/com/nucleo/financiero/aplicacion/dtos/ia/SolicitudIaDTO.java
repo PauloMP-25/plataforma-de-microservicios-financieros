@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Value;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * DTO de SALIDA: payload enviado al microservicio-ia (Python/FastAPI).
@@ -42,7 +43,7 @@ public class SolicitudIaDTO {
 
     @NotBlank
     @JsonProperty("id_usuario")
-    String idUsuario;
+    UUID idUsuario;
 
     @NotNull
     @JsonProperty("tipo_solicitud")
@@ -75,9 +76,13 @@ public class SolicitudIaDTO {
     /**
      * Crea una solicitud para análisis automático post-transacción.
      * No requiere modulo_solicitado.
+     * @param idUsuario
+     * @param contexto
+     * @param historial
+     * @return 
      */
     public static SolicitudIaDTO paraTransaccionReciente(
-            String idUsuario,
+            UUID idUsuario,
             List<ResumenMesDTO> historial,
             ContextoUsuarioDTO contexto) {
 
@@ -91,9 +96,14 @@ public class SolicitudIaDTO {
 
     /**
      * Crea una solicitud para un módulo específico solicitado desde el Dashboard.
+     * @param idUsuario
+     * @param contexto
+     * @param modulo
+     * @param historial
+     * @return 
      */
     public static SolicitudIaDTO paraConsultaModulo(
-            String idUsuario,
+            UUID idUsuario,
             ModuloIa modulo,
             List<ResumenMesDTO> historial,
             ContextoUsuarioDTO contexto) {

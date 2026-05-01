@@ -10,7 +10,7 @@ import lombok.Builder;
 @Builder
 public record RegistroAuditoriaDTO(
         LocalDateTime fechaHora,
-        String nombreUsuario,
+        String usuarioId,
         String accion,
         String modulo,
         String ipOrigen,
@@ -19,8 +19,8 @@ public record RegistroAuditoriaDTO(
     /**
      * Constructor de conveniencia sin fechaHora (el receptor la asigna).
      */
-    public RegistroAuditoriaDTO(String nombreUsuario, String accion,
+    public RegistroAuditoriaDTO(String usuarioId, String accion,
             String detalles, String direccionIp, String modulo) {
-        this(null, nombreUsuario, accion, detalles, direccionIp, modulo);
+        this(null, usuarioId, accion, detalles, direccionIp, modulo);
     }
 }

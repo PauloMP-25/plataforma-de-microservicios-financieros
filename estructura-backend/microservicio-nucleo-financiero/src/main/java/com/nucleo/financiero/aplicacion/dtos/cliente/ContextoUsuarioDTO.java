@@ -1,4 +1,4 @@
-package com.nucleo.financiero.aplicacion.dtos.ia;
+package com.nucleo.financiero.aplicacion.dtos.cliente;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
@@ -14,7 +14,9 @@ import java.util.List;
 @Value
 @Builder
 public class ContextoUsuarioDTO {
-
+    
+    
+    
     @JsonProperty("perfilFinanciero")
     PerfilFinancieroDTO perfilFinanciero;
 
