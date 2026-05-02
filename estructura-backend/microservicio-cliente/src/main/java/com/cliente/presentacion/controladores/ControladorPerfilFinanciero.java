@@ -35,7 +35,7 @@ public class ControladorPerfilFinanciero {
      * @param request
      * @return 
      */
-    @PutMapping("/{usuarioId}")
+    @PutMapping
     public ResponseEntity<RespuestaPerfilFinanciero> guardarOActualizar(
             @PathVariable UUID usuarioId,
             @Valid @RequestBody SolicitudPerfilFinanciero solicitud,
@@ -53,7 +53,7 @@ public class ControladorPerfilFinanciero {
      * @param request
      * @return 
      */
-    @GetMapping("/{usuarioId}")
+    @GetMapping
     public ResponseEntity<RespuestaPerfilFinanciero> consultar(
             @PathVariable UUID usuarioId,
             HttpServletRequest request) {

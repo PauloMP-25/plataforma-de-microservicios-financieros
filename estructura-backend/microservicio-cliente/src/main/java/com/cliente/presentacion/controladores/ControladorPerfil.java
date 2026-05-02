@@ -52,7 +52,7 @@ public class ControladorPerfil {
      * @param request
      * @return 
      */
-    @PutMapping("/{usuarioId}")
+    @PutMapping
     public ResponseEntity<RespuestaDatosPersonales> actualizar(
             @PathVariable UUID usuarioId,
             @Valid @RequestBody SolicitudDatosPersonales solicitud,
@@ -69,7 +69,7 @@ public class ControladorPerfil {
      * @param request
      * @return 
      */
-    @GetMapping("/{usuarioId}")
+    @GetMapping
     public ResponseEntity<RespuestaDatosPersonales> consultar(
             @PathVariable UUID usuarioId,
             HttpServletRequest request) {

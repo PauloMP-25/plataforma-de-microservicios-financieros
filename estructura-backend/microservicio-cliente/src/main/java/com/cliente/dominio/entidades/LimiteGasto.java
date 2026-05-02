@@ -21,7 +21,6 @@ import java.util.UUID;
         name = "limites_gasto",
         indexes = {
             @Index(name = "idx_limite_gasto_usuario_id", columnList = "usuario_id"),
-            @Index(name = "idx_limite_gasto_categoria", columnList = "categoria_id")
         },
         uniqueConstraints = {
             // Un usuario solo puede tener un límite marcado como activo físicamente
@@ -45,14 +44,6 @@ public class LimiteGasto {
      */
     @Column(name = "usuario_id", nullable = false)
     private UUID usuarioId;
-
-    /**
-     * Nombre de la categoría en texto libre. Compatible con la nomenclatura del
-     * microservicio Python de categorización. Ejemplos: "Galletas",
-     * "Transporte", "Estudios", "Delivery", "Salud"
-     */
-    @Column(name = "categoria_id", nullable = false, length = 100)
-    private String categoriaId;
 
     /**
      * Monto máximo permitido para esta categoría en el mes (en soles PEN).

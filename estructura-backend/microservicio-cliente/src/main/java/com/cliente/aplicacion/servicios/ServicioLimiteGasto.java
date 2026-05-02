@@ -44,9 +44,9 @@ public class ServicioLimiteGasto {
             SolicitudLimiteGasto solicitud,
             String ipOrigen) {
 
-        repositorio.findByUsuarioIdAndActivoTrue(usuarioIdToken).ifPresent(limite -> {
+        repositorio.findByUsuarioIdAndActivoTrue(usuarioIdToken).ifPresent((LimiteGasto limite) -> {
             if (!limite.estaVencido()) {
-                throw new IllegalStateException("Ya tienes un límite global activo y vigente.");
+                throw new LimiteGastoException("Ya tienes un límite global activo y vigente.");
             }
             // Si está vencido, lo desactivamos para permitir el nuevo
             limite.setActivo(false);
@@ -86,7 +86,7 @@ public class ServicioLimiteGasto {
     @Transactional
     public RespuestaLimiteGasto actualizar(UUID usuarioId, SolicitudLimiteGasto solicitud, String ip) {
         LimiteGasto limite = repositorio.findByUsuarioIdAndActivoTrue(usuarioId)
-                .orElseThrow(() -> new DatosPersonalesNoEncontradosException(usuarioId));
+                .orElseThrow(() -> new LimiteGastoNoEncontradoException(usuarioId));
 
         if (limite.estaVencido()) {
             throw new IllegalStateException("El límite actual ha vencido y no se puede modificar. Crea uno nuevo.");
@@ -121,17 +121,17 @@ public class ServicioLimiteGasto {
                 .map(this::convertirADTO)
                 .collect(Collectors.toList());
     }
+    
 
     @Transactional(readOnly = true)
     public RespuestaLimiteGasto obtenerActivo(UUID usuarioId) {
         return repositorio.findByUsuarioIdAndActivoTrue(usuarioId)
                 .map(this::convertirADTO)
-                .orElseThrow(() -> new DatosPersonalesNoEncontradosException(usuarioId));
+                .orElseThrow(() -> new LimiteGastoNoEncontradoException(usuarioId));
     }
 
     /**
      * Desactiva (eliminación lógica) el límite global actual.
-     *
      * @param usuarioId
      * @param ip
      */

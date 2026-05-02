@@ -148,7 +148,7 @@ public class ServicioDatosPersonales {
 
     public RespuestaDatosPersonales convertirADTO(DatosPersonales e) {
         return new RespuestaDatosPersonales(
-                e.getId(), e.getUsuarioId(), e.getDni(), e.getNombres(), e.getApellidos(),
+                e.getDni(), e.getNombres(), e.getApellidos(),
                 e.getGenero(), e.getEdad(), e.getTelefono(), e.getFotoPerfilUrl(),
                 e.getPais(), e.getCiudad(), e.getDatosCompletos(),
                 e.getFechaCreacion(), e.getFechaActualizacion()

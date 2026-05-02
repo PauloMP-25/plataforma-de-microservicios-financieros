@@ -95,7 +95,7 @@ public class ServicioPerfilFinanciero {
 
     public RespuestaPerfilFinanciero convertirADTO(PerfilFinanciero e) {
         return new RespuestaPerfilFinanciero(
-                e.getId(), e.getUsuarioId(), e.getOcupacion(),
+                e.getOcupacion(),
                 e.getIngresoMensual(), e.getEstiloVida(), e.getTonoIA(),
                 e.getFechaCreacion(), e.getFechaActualizacion()
         );

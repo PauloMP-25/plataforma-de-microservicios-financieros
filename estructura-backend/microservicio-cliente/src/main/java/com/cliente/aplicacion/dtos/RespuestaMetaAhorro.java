@@ -12,8 +12,7 @@ import java.util.UUID;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record RespuestaMetaAhorro(
-        UUID       id,
-        UUID       usuarioId,
+        UUID id,
         String     nombre,
         BigDecimal montoObjetivo,
         BigDecimal montoActual,

@@ -6,6 +6,7 @@ import com.cliente.infraestructura.seguridad.FiltroJwt;
 import com.cliente.infraestructura.utilidades.UtilidadIp;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,14 @@ public class ControladorLimiteGasto {
 
     private final ServicioLimiteGasto servicio;
 
+    /**
+     * Crea un nuevo límite global. Si hay uno vigente, falla. Si el actual está
+     * vencido, lo desactiva automáticamente.
+     *
+     * @param solicitud
+     * @param request
+     * @return
+     */
     @PostMapping
     public ResponseEntity<RespuestaLimiteGasto> crear(
             @Valid @RequestBody SolicitudLimiteGasto solicitud,
@@ -38,6 +47,12 @@ public class ControladorLimiteGasto {
                 .body(servicio.crear(uId, solicitud, UtilidadIp.obtenerIpRemota(request)));
     }
 
+    /**
+     * Obtiene únicamente el límite que se encuentra activo y vigente.
+     *
+     * @param request
+     * @return
+     */
     @GetMapping("/activo")
     public ResponseEntity<RespuestaLimiteGasto> obtenerActivo(HttpServletRequest request) {
         UUID uId = extraerUsuarioIdToken(request);
@@ -45,17 +60,15 @@ public class ControladorLimiteGasto {
     }
 
     /**
-     * Actualiza el monto límite y/o el porcentaje de alerta de una categoría.
-     * Usa el nombre de la categoría como identificador en la URL.
+     * Actualiza parcialmente el límite global ACTIVO. Se utiliza PATCH porque
+     * solo se modifican montos o porcentajes.
      *
-     * @param categoriaId
      * @param solicitud
      * @param request
      * @return
      */
-    @PutMapping("/{categoriaId}")
+    @PatchMapping
     public ResponseEntity<RespuestaLimiteGasto> actualizar(
-            @PathVariable String categoriaId,
             @Valid @RequestBody SolicitudLimiteGasto solicitud,
             HttpServletRequest request) {
 
@@ -66,19 +79,27 @@ public class ControladorLimiteGasto {
     }
 
     /**
-     * Elimina el límite de una categoría específica.
-     *
-     * @param categoriaId
+     * Lista todo el historial de límites (activos e inactivos).
      * @param request
-     * @return
+     * @return 
      */
-    @DeleteMapping("/{categoriaId}")
-    public ResponseEntity<Void> eliminar(
-            @PathVariable String categoriaId,
-            HttpServletRequest request) {
+    @GetMapping
+    public ResponseEntity<List<RespuestaLimiteGasto>> listarHistorial(HttpServletRequest request) {
+        UUID usuarioID = extraerUsuarioIdToken(request);
+        return ResponseEntity.ok(servicio.listarHistorial(usuarioID));
+    }
 
+    /**
+     * Realiza una eliminación lógica desactivando el límite activo. Esto
+     * permite al usuario crear uno nuevo inmediatamente después.
+     * @param request
+     * @return 
+     */
+    @DeleteMapping
+    public ResponseEntity<Void> desactivarLimiteActivo(HttpServletRequest request) {
         UUID usuarioIdToken = extraerUsuarioIdToken(request);
         String ip = UtilidadIp.obtenerIpRemota(request);
+
         servicio.eliminar(usuarioIdToken, ip);
         return ResponseEntity.noContent().build();
     }
