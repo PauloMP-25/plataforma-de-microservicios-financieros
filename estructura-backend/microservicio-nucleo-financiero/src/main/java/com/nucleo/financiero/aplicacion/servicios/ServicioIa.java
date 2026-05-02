@@ -5,8 +5,7 @@ import com.nucleo.financiero.aplicacion.dtos.ia.RespuestaIaDTO;
 import com.nucleo.financiero.aplicacion.dtos.ia.SolicitudIaDTO;
 import com.nucleo.financiero.infraestructura.clientes.ClienteIa;
 import com.nucleo.financiero.infraestructura.mensajeria.PublicadorAuditoria;
-import com.nucleo.infraestructura.feign.ClienteContexto;
-import java.util.UUID;
+import com.nucleo.financiero.infraestructura.clientes.ClienteContexto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

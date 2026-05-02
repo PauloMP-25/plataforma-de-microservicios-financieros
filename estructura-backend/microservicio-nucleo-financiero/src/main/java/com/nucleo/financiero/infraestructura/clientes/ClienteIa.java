@@ -6,7 +6,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "microservicio-ia", url = "${ia.servicio.url:http://localhost:8086}")
+@FeignClient(name = "microservicio-ia", url = "${microservicio.ia.url:http://localhost:8086}")
 public interface ClienteIa {
 
     @PostMapping("/api/v1/ia/analizar")
