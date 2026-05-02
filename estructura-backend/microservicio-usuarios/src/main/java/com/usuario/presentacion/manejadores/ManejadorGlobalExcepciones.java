@@ -3,7 +3,11 @@ package com.usuario.presentacion.manejadores;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.usuario.aplicacion.dtos.ErrorApi;
 import com.usuario.aplicacion.dtos.EstadoAcceso;
+import com.usuario.aplicacion.excepciones.ContrasenasNoCoincidenException;
+import com.usuario.aplicacion.excepciones.CuentaNoHabilitadaException;
 import com.usuario.aplicacion.excepciones.IpBloqueadaException;
+import com.usuario.aplicacion.excepciones.TokenInvalidoException;
+import com.usuario.aplicacion.excepciones.UsuarioYaExisteException;
 import com.usuario.infraestructura.mensajeria.PublicadorAuditoria;
 import feign.FeignException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -194,12 +198,6 @@ public class ManejadorGlobalExcepciones {
                         "El correo ingresado no pertenece a ninguna cuenta.", extraerRuta(request)));
     }
 
-    @ExceptionHandler(org.springframework.security.authentication.DisabledException.class)
-    public ResponseEntity<ErrorApi> manejarCuentaDeshabilitada(DisabledException ex, WebRequest request) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ErrorApi.of(403, "CUENTA_DESHABILITADA", "Su cuenta aún no ha sido activada. Revise su correo electrónico.", extraerRuta(request)));
-    }
-
     @ExceptionHandler(org.springframework.security.authentication.LockedException.class)
     public ResponseEntity<ErrorApi> manejarCuentaBloqueada(LockedException ex, WebRequest request) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -221,6 +219,33 @@ public class ManejadorGlobalExcepciones {
         publicador.publicarAcceso(usuarioId, ipCliente, EstadoAcceso.FALLO, "Intento fallido: Credenciales incorrectas", PublicadorAuditoria.RK_ACCESO_FALLO);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorApi.of(401, "CREDENCIALES_INVALIDAS", "La contraseña ingresada es incorrecta.", extraerRuta(request)));
+    }
+
+    // =========================================================================
+    // Excepciones Personalizadas de LUKA APP
+    // =========================================================================
+    @ExceptionHandler(UsuarioYaExisteException.class)
+    public ResponseEntity<ErrorApi> manejarUsuarioYaExiste(UsuarioYaExisteException ex, WebRequest request) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorApi.of(409, "USUARIO_DUPLICADO", ex.getMessage(), extraerRuta(request)));
+    }
+
+    @ExceptionHandler(CuentaNoHabilitadaException.class)
+    public ResponseEntity<ErrorApi> manejarCuentaNoHabilitada(CuentaNoHabilitadaException ex, WebRequest request) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ErrorApi.of(403, "CUENTA_NO_ACTIVADA", ex.getMessage(), extraerRuta(request)));
+    }
+
+    @ExceptionHandler(TokenInvalidoException.class)
+    public ResponseEntity<ErrorApi> manejarTokenInvalido(TokenInvalidoException ex, WebRequest request) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorApi.of(400, "TOKEN_INVALIDO", ex.getMessage(), extraerRuta(request)));
+    }
+
+    @ExceptionHandler(ContrasenasNoCoincidenException.class)
+    public ResponseEntity<ErrorApi> manejarPasswordNoCoinciden(ContrasenasNoCoincidenException ex, WebRequest request) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorApi.of(400, "PASSWORD_MISMATCH", ex.getMessage(), extraerRuta(request)));
     }
 
 // =========================================================================

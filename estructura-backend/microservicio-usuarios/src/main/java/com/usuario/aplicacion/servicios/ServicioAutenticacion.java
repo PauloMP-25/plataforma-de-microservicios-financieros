@@ -10,6 +10,8 @@ import com.usuario.aplicacion.dtos.SolicitudRecuperacion;
 import com.usuario.aplicacion.dtos.SolicitudRegistro;
 import com.usuario.aplicacion.dtos.SolicitudRestablecerPassword;
 import com.usuario.aplicacion.dtos.TipoVerificacion;
+import com.usuario.aplicacion.excepciones.CuentaNoHabilitadaException;
+import com.usuario.aplicacion.excepciones.TokenInvalidoException;
 import com.usuario.dominio.entidades.Rol;
 import com.usuario.dominio.entidades.Usuario;
 import com.usuario.dominio.repositorios.RolRepository;
@@ -25,6 +27,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 @Service
 @Slf4j
@@ -49,6 +52,7 @@ public class ServicioAutenticacion {
                 .orElseThrow(() -> new IllegalArgumentException("ID no encontrado"));
         if (!usuario.isHabilitado()) {
             usuario.setHabilitado(true);
+            usuario.setCuentaNoBloqueada(true);
             usuarioRepository.save(usuario);
             publicadorAuditoria.publicarAcceso(usuario.getId(),
                     ipCliente,
@@ -107,8 +111,13 @@ public class ServicioAutenticacion {
 
         // El MS-Mensajería valida el código y nos devuelve el ID del usuario
         UUID usuarioId = clienteMensajeria.validarCodigoYObtenerUsuario(codigoOtp);
+        
+        if (usuarioId == null) {
+        throw new TokenInvalidoException("No se pudo validar el código de recuperación. Intente más tarde.");
+        }
+        
         Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new IllegalStateException("Usuario no encontrado tras validación OTP"));
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado tras validación OTP"));
 
         usuario.setPassword(passwordEncoder.encode(solicitud.nuevoPassword()));
         usuarioRepository.save(usuario);
@@ -135,14 +144,21 @@ public class ServicioAutenticacion {
     // =========================================================================
     @Transactional
     public RespuestaAutenticacion login(SolicitudLogin request, String ipCliente) {
-// 1. Buscar al usuario solo por correo (para saber si existe)
-        Usuario usuario = usuarioRepository.findByCorreoAndHabilitadoTrue(request.correo())
-                .orElseThrow(() -> new BadCredentialsException("Credenciales inválidas"));
+        // 1. Buscar al usuario solo por correo (para saber si existe)
+        Usuario usuario = usuarioRepository.findByCorreo(request.correo())
+                .orElseThrow(() -> {
+                    return new UsernameNotFoundException("El correo ingresado no pertenece a ninguna cuenta.");
+                });
         // Nota: Por seguridad, se usa BadCredentialsException incluso si no existe.
 
         // 2. Verificar si está habilitado
         if (!usuario.isHabilitado()) {
-            throw new DisabledException("Debe confirmar su correo para acceder.");
+            throw new CuentaNoHabilitadaException(usuario.getCorreo());
+        }
+
+        // 3. Verificar si la cuenta no está bloqueada (Opcional, si manejas LockedException)
+        if (!usuario.isAccountNonLocked()) {
+            throw new LockedException("Su cuenta ha sido bloqueada temporalmente por seguridad.");
         }
 
         // 4. Autenticar contraseña: Si la clave está mal, lanzará BadCredentialsException
