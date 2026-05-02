@@ -10,6 +10,8 @@ import org.springframework.web.context.request.WebRequest;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.messaging.handler.annotation.support.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 @Slf4j
@@ -44,7 +46,6 @@ public class ManejadorGlobalExcepciones {
      * @param request
      * @return
      */
-    
     @ExceptionHandler(FeignException.class)
     public ResponseEntity<ErrorApi> manejarErrorComunicacion(FeignException ex, WebRequest request) {
         log.error("Error de comunicación Feign: Status {}, Body: {}", ex.status(), ex.contentUTF8());
@@ -100,15 +101,44 @@ public class ManejadorGlobalExcepciones {
     /**
      * 6. Error General: El último recurso para capturar cualquier excepción no
      * controlada y no exponer el stacktrace.
+     *
      * @param ex
      * @param request
-     * @return 
+     * @return
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorApi> manejarGeneral(Exception ex, WebRequest request) {
         log.error("CRITICAL ERROR en Nucleo Financiero: ", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorApi.of(500, "ERROR_INTERNO_SISTEMA", "Contacte al soporte técnico.", extraerRuta(request)));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorApi> manejarErrorLecturaJson(HttpMessageNotReadableException ex, WebRequest request) {
+        String mensajeDetalle = "Error en el formato del JSON o valor de enumeración inválido.";
+
+        // Intentamos extraer un mensaje más amigable del error de Jackson
+        if (ex.getCause() instanceof com.fasterxml.jackson.databind.exc.InvalidFormatException) {
+            mensajeDetalle = "Valor inválido para el campo. Verifique los tipos de datos y enumeraciones.";
+        }
+
+        return ResponseEntity.badRequest()
+                .body(ErrorApi.of(400, "JSON_NO_LEIBLE", mensajeDetalle, extraerRuta(request)));
+    }
+
+    /**
+     * Captura errores de conversión de parámetros en la URL. Ej: Enviar un
+     * texto en lugar de un UUID o un número.
+     * @param ex
+     * @param request
+     * @return 
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorApi> manejarErrorTipoParametro(MethodArgumentTypeMismatchException ex, WebRequest request) {
+        String mensaje = String.format("El parámetro '%s' tiene un formato inválido.", ex.getMessage());
+
+        return ResponseEntity.badRequest()
+                .body(ErrorApi.of(400, "PARAMETRO_INVALIDO", mensaje, extraerRuta(request)));
     }
 
     private String extraerRuta(WebRequest request) {
