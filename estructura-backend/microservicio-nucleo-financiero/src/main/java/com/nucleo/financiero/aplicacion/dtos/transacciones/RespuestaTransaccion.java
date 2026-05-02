@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record TransaccionDTO(
+public record RespuestaTransaccion(
     UUID id,
     UUID usuarioId,
     String nombreCliente,
@@ -22,8 +22,8 @@ public record TransaccionDTO(
     String notas,
     LocalDateTime fechaRegistro
 ) {
-    public static TransaccionDTO desde(Transaccion entidad) {
-        return new TransaccionDTO(
+    public static RespuestaTransaccion desde(Transaccion entidad) {
+        return new RespuestaTransaccion(
             entidad.getId(),
             entidad.getUsuarioId(),
             entidad.getNombreCliente(),
