@@ -1,0 +1,335 @@
+// ══════════════════════════════════════════════
+// VARIABLES & CONFIG
+// ══════════════════════════════════════════════
+$header-height: 70px;
+$primary-color: #4f46e5; // Puedes cambiarlo por tu color de marca
+$danger-color: #ef4444;
+$text-main: #1f2937;
+$text-muted: #6b7280;
+$bg-white: #ffffff;
+$border-color: #e5e7eb;
+$shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+$transition: all 0.2s ease-in-out;
+
+// ══════════════════════════════════════════════
+// HEADER PRINCIPAL
+// ══════════════════════════════════════════════
+.luka-header {
+  height: $header-height;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  background: $bg-white;
+  border-bottom: 1px solid $border-color;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  // Izquierda: Título y Breadcrumb
+  .header-left {
+    display: flex;
+    flex-direction: column;
+
+    .page-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: $text-main;
+      margin: 0;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      margin-top: 2px;
+
+      &-link {
+        color: $primary-color;
+        text-decoration: none;
+        &:hover { text-decoration: underline; }
+      }
+
+      &-current { color: $text-muted; }
+      &-sep { color: #d1d5db; }
+    }
+  }
+
+  // Derecha: Acciones
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+}
+
+// ══════════════════════════════════════════════
+// ACCIONES Y DROPDOWNS
+// ══════════════════════════════════════════════
+.header-action {
+  position: relative; // Para posicionar los paneles
+
+  .icon-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: $text-muted;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: $transition;
+    position: relative;
+
+    &:hover {
+      background: #f3f4f6;
+      color: $primary-color;
+    }
+
+    .badge-dot {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: $danger-color;
+      color: white;
+      font-size: 10px;
+      padding: 2px 5px;
+      border-radius: 10px;
+      border: 2px solid $bg-white;
+    }
+  }
+}
+
+// Paneles Desplegables (Base)
+.dropdown-panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  background: $bg-white;
+  border-radius: 12px;
+  box-shadow: $shadow-lg;
+  border: 1px solid $border-color;
+  min-width: 280px;
+  overflow: hidden;
+  animation: slideIn 0.2s ease-out;
+
+  .dropdown-title {
+    padding: 1rem;
+    font-weight: 600;
+    margin: 0;
+    border-bottom: 1px solid $border-color;
+  }
+}
+
+// ══════════════════════════════════════════════
+// TEMAS, NOTIFICACIONES Y PERFIL
+// ══════════════════════════════════════════════
+.theme-panel {
+  padding: 1rem;
+  .theme-swatches {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+
+    .swatch {
+      height: 30px;
+      border-radius: 6px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      &.active { border-color: $text-main; transform: scale(1.1); }
+    }
+  }
+}
+
+.notif-panel {
+  width: 320px;
+  .dropdown-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid $border-color;
+    
+    .btn-link {
+      background: none; border: none; color: $primary-color;
+      font-size: 0.8rem; cursor: pointer;
+      &:hover { text-decoration: underline; }
+    }
+  }
+
+  .notif-list {
+    list-style: none; padding: 0; margin: 0;
+    max-height: 300px; overflow-y: auto;
+
+    .notif-item {
+      display: flex; gap: 12px; padding: 12px;
+      border-bottom: 1px solid #f9fafb;
+      &.unread { background: #f0f7ff; }
+
+      .notif-icon {
+        width: 35px; height: 35px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        color: white; font-size: 0.9rem; flex-shrink: 0;
+      }
+
+      .notif-body {
+        p { margin: 0; font-size: 0.9rem; color: $text-main; }
+        small { color: $text-muted; }
+      }
+    }
+  }
+}
+
+.avatar-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: $transition;
+
+  &:hover { background: #f3f4f6; }
+
+  .avatar-letter {
+    width: 36px; height: 36px; background: $primary-color;
+    color: white; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold;
+  }
+
+  .avatar-meta {
+    text-align: left;
+    .avatar-name { display: block; font-weight: 600; font-size: 0.9rem; }
+    .avatar-plan { font-size: 0.75rem; color: #059669; display: flex; align-items: center; gap: 4px; }
+  }
+  .avatar-chevron { font-size: 0.7rem; color: $text-muted; }
+}
+
+.user-panel {
+  &-hero {
+    padding: 1.5rem; background: linear-gradient(135deg, $primary-color, #818cf8);
+    color: white; display: flex; align-items: center; gap: 12px;
+    
+    .hero-avatar {
+      width: 45px; height: 45px; background: rgba(255,255,255,0.2);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; font-weight: bold; border: 2px solid white;
+    }
+    .hero-name { margin: 0; font-weight: 600; }
+    .plan-badge { font-size: 0.7rem; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 10px; }
+  }
+
+  &-menu {
+    list-style: none; padding: 8px 0; margin: 0;
+    
+    .menu-item {
+      display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+      text-decoration: none; color: $text-main; transition: $transition;
+      width: 100%; text-align: left; background: none; border: none; cursor: pointer;
+
+      &:hover { background: #f9fafb; }
+      &-icon { font-size: 1.1rem; color: $text-muted; width: 20px; }
+      p { margin: 0; font-size: 0.9rem; font-weight: 500; }
+      small { color: $text-muted; display: block; }
+
+      &--danger { 
+        color: $danger-color; 
+        .menu-item-icon { color: $danger-color; }
+      }
+    }
+    .menu-divider { height: 1px; background: $border-color; margin: 8px 0; }
+  }
+}
+
+// ══════════════════════════════════════════════
+// MASCOTA FLOTANTE (LUKA)
+// ══════════════════════════════════════════════
+.float-mascot {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  z-index: 2000;
+
+  .float-bubble {
+    background: $bg-white;
+    padding: 1rem;
+    border-radius: 15px;
+    box-shadow: $shadow-lg;
+    margin-bottom: 1rem;
+    max-width: 200px;
+    position: relative;
+    border: 1px solid $border-color;
+
+    &::after { // Triangulito de la burbuja
+      content: '';
+      position: absolute; bottom: -8px; right: 20px;
+      border-left: 8px solid transparent; border-right: 8px solid transparent;
+      border-top: 8px solid $bg-white;
+    }
+
+    p { margin: 0; font-size: 0.9rem; color: $text-main; }
+    .float-bubble-close {
+      position: absolute; top: -8px; right: -8px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: $text-main; color: white; border: none;
+      font-size: 10px; cursor: pointer;
+    }
+  }
+
+  &-btn {
+    background: none; border: none; cursor: pointer;
+    position: relative; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    &:hover { transform: scale(1.1); }
+    &.bounce { animation: bounce 2s infinite; }
+
+    .float-mascot-img { width: 60px; height: 60px; object-fit: contain; }
+    .float-badge {
+      position: absolute; top: 0; right: 0;
+      background: $danger-color; color: white;
+      font-size: 11px; padding: 2px 6px; border-radius: 10px;
+    }
+  }
+}
+
+// ══════════════════════════════════════════════
+// ANIMACIONES
+// ══════════════════════════════════════════════
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+
+.float-mascot-img {
+  width: 80px;      
+  height: 80px;     
+  object-fit: contain; 
+  display: block;   
+}
+
+.float-mascot-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+  
+  &:hover {
+    transform: scale(1.1); 
+    transition: transform 0.2s ease;
+  }
+}
