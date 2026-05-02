@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
     
+    Optional<Usuario> findByCorreo(String correo);
+    
     Optional<Usuario> findByCorreoAndHabilitadoTrue(String correo);
 
     Optional<Usuario> findByNombreUsuario(String nombreUsuario);

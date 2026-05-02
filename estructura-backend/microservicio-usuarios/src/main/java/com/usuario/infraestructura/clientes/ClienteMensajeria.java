@@ -20,7 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
  */
 @FeignClient(
         name = "microservicio-mensajeria",
-        url = "${microservicio.mensajeria.url:http://localhost:8084}"
+        url = "${microservicio.mensajeria.url:http://localhost:8084}",
+        fallback = ClienteMensajeriaFallback.class
 )
 public interface ClienteMensajeria {
 
