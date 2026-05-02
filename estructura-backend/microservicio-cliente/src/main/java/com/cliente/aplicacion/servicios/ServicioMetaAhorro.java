@@ -175,7 +175,7 @@ public class ServicioMetaAhorro {
 
     public RespuestaMetaAhorro convertirADTO(MetaAhorro m) {
         return new RespuestaMetaAhorro(
-                m.getId(), m.getUsuarioId(), m.getNombre(),
+                m.getId(), m.getNombre(),
                 m.getMontoObjetivo(), m.getMontoActual(),
                 m.calcularPorcentajeProgreso(), // ← lógica de dominio
                 m.getFechaLimite(), m.getCompletada(),

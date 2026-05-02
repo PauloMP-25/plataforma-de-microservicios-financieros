@@ -11,11 +11,11 @@ import org.springframework.data.jpa.repository.Query;
 
 @Repository
 public interface LimiteGastoRepositorio extends JpaRepository<LimiteGasto, UUID> {
-
+    
     Optional<LimiteGasto> findByUsuarioIdAndActivoTrue(UUID usuarioId);
 
     @Modifying
-    @Query("UPDATE LimiteGastoGlobal l SET l.activo = false WHERE l.usuarioId = :usuarioId")
+    @Query("UPDATE LimiteGasto l SET l.activo = false WHERE l.usuarioId = :usuarioId")
     void desactivarLimitesAnteriores(UUID usuarioId);
 
     Optional<LimiteGasto> findByUsuarioIdOrderByFechaCreacionDesc(UUID usuarioId);

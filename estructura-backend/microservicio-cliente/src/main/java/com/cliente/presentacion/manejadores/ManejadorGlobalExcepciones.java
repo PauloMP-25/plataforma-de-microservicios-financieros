@@ -5,7 +5,8 @@ import com.cliente.aplicacion.excepciones.AccesoDenegadoException;
 import com.cliente.aplicacion.excepciones.ClienteNoEncontradoException;
 import com.cliente.aplicacion.excepciones.DatosPersonalesNoEncontradosException;
 import com.cliente.aplicacion.excepciones.DniDuplicadoException;
-import com.cliente.aplicacion.excepciones.LimiteGastoDuplicadoException;
+import com.cliente.aplicacion.excepciones.LimiteGastoException;
+import com.cliente.aplicacion.excepciones.LimiteGastoNoEncontradoException;
 import com.cliente.aplicacion.excepciones.MetaNoEncontradaException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.stream.Collectors;
+import org.springframework.web.context.request.WebRequest;
 
 /**
  * Manejador global de excepciones del microservicio-cliente. Convierte TODAS
@@ -35,9 +37,10 @@ public class ManejadorGlobalExcepciones {
     // ── 1. Acceso denegado (403) ───────────────────────────────────────────────
     /**
      * Lanzada cuando un usuario intenta modificar el perfil de otro usuario.
+     *
      * @param ex
      * @param req
-     * @return 
+     * @return
      */
     @ExceptionHandler(AccesoDenegadoException.class)
     public ResponseEntity<ErrorApi> manejarAccesoDenegado(AccesoDenegadoException ex,
@@ -49,9 +52,10 @@ public class ManejadorGlobalExcepciones {
     /**
      * Lanzada por servicios antiguos (ClienteNoEncontradoException). Se
      * conserva para compatibilidad hacia atrás.
+     *
      * @param ex
      * @param req
-     * @return 
+     * @return
      */
     @ExceptionHandler(ClienteNoEncontradoException.class)
     public ResponseEntity<ErrorApi> manejarClienteNoEncontrado(ClienteNoEncontradoException ex,
@@ -61,9 +65,10 @@ public class ManejadorGlobalExcepciones {
 
     /**
      * Lanzada cuando no existen DatosPersonales para un usuarioId.
+     *
      * @param ex
      * @param req
-     * @return 
+     * @return
      */
     @ExceptionHandler(DatosPersonalesNoEncontradosException.class)
     public ResponseEntity<ErrorApi> manejarDatosNoEncontrados(DatosPersonalesNoEncontradosException ex,
@@ -73,9 +78,10 @@ public class ManejadorGlobalExcepciones {
 
     /**
      * Lanzada cuando no existe una MetaAhorro con el UUID dado.
+     *
      * @param ex
      * @param req
-     * @return 
+     * @return
      */
     @ExceptionHandler(MetaNoEncontradaException.class)
     public ResponseEntity<ErrorApi> manejarMetaNoEncontrada(MetaNoEncontradaException ex,
@@ -86,27 +92,15 @@ public class ManejadorGlobalExcepciones {
     // ── 3. Conflictos de datos (409) ──────────────────────────────────────────
     /**
      * Lanzada cuando el DNI ya está registrado por otro usuario.
+     *
      * @param ex
      * @param req
-     * @return 
+     * @return
      */
     @ExceptionHandler(DniDuplicadoException.class)
     public ResponseEntity<ErrorApi> manejarDniDuplicado(DniDuplicadoException ex,
             HttpServletRequest req) {
         return build(HttpStatus.CONFLICT, "DNI_DUPLICADO", ex.getMessage(), req);
-    }
-
-    /**
-     * Lanzada cuando se intenta crear un segundo límite para la misma
-     * categoría.
-     * @param ex
-     * @param req
-     * @return 
-     */
-    @ExceptionHandler(LimiteGastoDuplicadoException.class)
-    public ResponseEntity<ErrorApi> manejarLimiteDuplicado(LimiteGastoDuplicadoException ex,
-            HttpServletRequest req) {
-        return build(HttpStatus.CONFLICT, "LIMITE_DUPLICADO", ex.getMessage(), req);
     }
 
     // 4. Validación Bean Validation (400)
@@ -143,11 +137,33 @@ public class ManejadorGlobalExcepciones {
                 "Ocurrió un error inesperado en el servidor.", req);
     }
 
+    // =========================================================================
+    // Excepciones Personalizadas de LUKA APP
+    // =========================================================================
+    @ExceptionHandler(LimiteGastoException.class)
+    public ResponseEntity<ErrorApi> manejarLimiteGlobalExistente(LimiteGastoException ex, WebRequest request) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorApi.of(409, "LIMITE_GLOBAL_EXISTENTE", ex.getMessage(), extraerRuta(request)));
+    }
+
+    @ExceptionHandler(LimiteGastoNoEncontradoException.class)
+    public ResponseEntity<ErrorApi> manejarLimiteGlobalNoEncontrado(LimiteGastoNoEncontradoException ex, WebRequest request) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorApi.of(401, "LIMITE_GLOBAL_NO_ENCONTRADO", ex.getMessage(), extraerRuta(request)));
+    }
+
     // ── Utilidad ───────────────────────────────────────────────────────────────
     private ResponseEntity<ErrorApi> build(HttpStatus status, String codigo,
             String mensaje, HttpServletRequest req) {
         return ResponseEntity
                 .status(status)
                 .body(ErrorApi.of(status.value(), codigo, mensaje, req.getRequestURI()));
+    }
+
+    // =========================================================================
+    // Helper
+    // =========================================================================
+    private String extraerRuta(WebRequest request) {
+        return request.getDescription(false).replace("uri=", "");
     }
 }
