@@ -5,6 +5,7 @@ import com.nucleo.financiero.aplicacion.servicios.TransaccionService;
 import com.nucleo.financiero.dominio.entidades.Categoria.TipoMovimiento;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
@@ -14,6 +15,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @RestController
 @RequestMapping("/api/v1/transacciones")
@@ -25,32 +27,32 @@ public class TransaccionController {
     private final TransaccionService transaccionService;
 
     @PostMapping
-    public ResponseEntity<TransaccionDTO> registrar(@Valid @RequestBody TransaccionRequestDTO request, HttpServletRequest httpRequest) {
+    public ResponseEntity<RespuestaTransaccion> registrar(@Valid @RequestBody SolicitudTransaccion request, HttpServletRequest httpRequest) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(transaccionService.registrar(request, obtenerIp(httpRequest)));
     }
 
     @PostMapping("/lote")
-    public ResponseEntity<List<TransaccionDTO>> registrarLote(
-            @Valid @RequestBody List<@Valid TransaccionRequestDTO> solicitudes,
+    public ResponseEntity<List<RespuestaTransaccion>> registrarLote(
+            @Valid @RequestBody List<@Valid SolicitudTransaccion> solicitudes,
             HttpServletRequest httpRequest) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(transaccionService.registrarLote(solicitudes, obtenerIp(httpRequest)));
     }
 
     @GetMapping("/historial")
-    public ResponseEntity<Page<TransaccionDTO>> listarHistorial(
+    public ResponseEntity<Page<RespuestaTransaccion>> listarHistorial(
             @RequestParam UUID usuarioId,
             @RequestParam(required = false) TipoMovimiento tipo,
             @RequestParam(required = false) UUID categoriaId,
-            @RequestParam(required = false) Integer mes,
-            @RequestParam(required = false) Integer anio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime hasta,
             @RequestParam(defaultValue = "0") int pagina,
             @RequestParam(defaultValue = "20") int tamanio,
             HttpServletRequest httpRequest) {
 
-        Pageable paginacion = PageRequest.of(Math.max(0, pagina), Math.min(tamanio, 100));
-        return ResponseEntity.ok(transaccionService.listarHistorial(usuarioId, tipo, categoriaId, mes, anio, paginacion, obtenerIp(httpRequest)));
+        Pageable paginacion = PageRequest.of(pagina, tamanio, Sort.by("fechaTransaccion").descending());
+        return ResponseEntity.ok(transaccionService.listarHistorial(usuarioId, tipo, categoriaId, desde, hasta, paginacion, obtenerIp(httpRequest)));
     }
 
     @GetMapping("/resumen")
@@ -63,7 +65,7 @@ public class TransaccionController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TransaccionDTO> obtenerPorId(@PathVariable UUID id) {
+    public ResponseEntity<RespuestaTransaccion> obtenerPorId(@PathVariable UUID id) {
         return ResponseEntity.ok(transaccionService.obtenerPorId(id));
     }
 
