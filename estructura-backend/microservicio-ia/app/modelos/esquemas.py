@@ -3,7 +3,7 @@ modelos/esquemas.py  ·  v4 — IA Centrada en Datos (LUKA)
 ══════════════════════════════════════════════════════════════════════════════
 DTOs (Data Transfer Objects) de entrada y salida para los 10 módulos de
 análisis del Microservicio IA de LUKA.
-
+ 
 Principios de diseño:
   - ENTRADA: Cada módulo recibe `usuario_id`, `token` JWT y filtros opcionales.
     No recibe el historial crudo: eso lo obtiene el servicio internamente.
@@ -11,7 +11,7 @@ Principios de diseño:
     del consejo generado por Gemini (el "coach").
   - Tipado fuerte: sin `Any` sueltos, todos los campos con tipo explícito.
   - Valores por defecto seguros en todos los campos opcionales.
-
+ 
 Estructura:
   ┌─ Entrada ──────────────────────────────────────────────────────────────┐
   │  PeticionBase            → campos comunes a todos los módulos          │
@@ -35,7 +35,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional
 from uuid import uuid4
-
+ 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 
@@ -43,20 +43,24 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 # ENUMERACIONES COMPARTIDAS
 # ══════════════════════════════════════════════════════════════════════════════
 
+# ══════════════════════════════════════════════════════════════════════════════
+# ENUMERACIONES COMPARTIDAS
+# ══════════════════════════════════════════════════════════════════════════════
+ 
 class TipoMovimiento(str, Enum):
     """Discrimina si una transacción es un ingreso o un gasto."""
     INGRESO = "INGRESO"
     GASTO = "GASTO"
-
-
+ 
+ 
 class NivelRiesgo(str, Enum):
     """Clasificación de riesgo financiero para anomalías y consejos."""
     BAJO = "BAJO"
     MEDIO = "MEDIO"
     ALTO = "ALTO"
     CRITICO = "CRITICO"
-
-
+ 
+ 
 class TipoGrafico(str, Enum):
     """Tipos de gráfico soportados por el Dashboard de LUKA."""
     LINEA = "line"
@@ -64,8 +68,8 @@ class TipoGrafico(str, Enum):
     DONA = "doughnut"
     PASTEL = "pie"
     BARRA_APILADA = "bar_stacked"
-
-
+ 
+ 
 class NombreModulo(str, Enum):
     """
     Identifica el módulo de análisis.
@@ -73,7 +77,7 @@ class NombreModulo(str, Enum):
     """
     CLASIFICAR = "CLASIFICAR"
     PREDECIR_GASTOS = "PREDECIR_GASTOS"
-    DETECTAR_ANOMALIAS = "DETECTAR_ANOMALIAS"
+    HABITOS_SEMANA = "HABITOS_SEMANA"
     OPTIMIZAR_SUSCRIPCIONES = "OPTIMIZAR_SUSCRIPCIONES"
     CAPACIDAD_AHORRO = "CAPACIDAD_AHORRO"
     SIMULAR_META = "SIMULAR_META"
@@ -109,9 +113,9 @@ class PeticionBase(BaseModel):
         le=1000,
         description="Número máximo de transacciones a recuperar.",
     )
-
+ 
     model_config = {"str_strip_whitespace": True}
-
+ 
     @field_validator("usuario_id")
     @classmethod
     def validar_usuario_id(cls, valor: str) -> str:
@@ -138,7 +142,7 @@ class FiltroDeFecha(BaseModel):
         le=2100,
         description="Año de análisis. None = todos.",
     )
-
+ 
     @model_validator(mode="after")
     def validar_coherencia_fecha(self) -> "FiltroDeFecha":
         """Si se proporciona mes, se debe proporcionar también el año."""
@@ -164,7 +168,6 @@ class TransaccionParaClasificar(BaseModel):
     )
     tipo: TipoMovimiento = Field(..., description="GASTO o INGRESO.")
 
-
 class PeticionClasificar(PeticionBase):
     """Entrada para el módulo 1: Autoclasificación de transacciones."""
     transaccion: TransaccionParaClasificar = Field(
@@ -174,7 +177,7 @@ class PeticionClasificar(PeticionBase):
 
 
 # ── Módulos 2, 3, 4, 5, 7, 8, 10: Con filtro de fecha ───────────────────────
-
+ 
 class PeticionConFiltroFecha(PeticionBase, FiltroDeFecha):
     """
     Petición estándar para módulos que analizan el historial con filtros temporales.
@@ -185,7 +188,7 @@ class PeticionConFiltroFecha(PeticionBase, FiltroDeFecha):
 
 
 # ── Módulo 6: Simulación de Meta de Ahorro ───────────────────────────────────
-
+ 
 class PeticionSimularMeta(PeticionBase):
     """Entrada para el módulo 6: Simular cuánto tiempo tomará alcanzar una meta."""
     nombre_meta: str = Field(
@@ -210,7 +213,7 @@ class PeticionSimularMeta(PeticionBase):
         gt=0,
         description="Cuánto puede aportar por mes. Si es None, se calcula desde la capacidad de ahorro.",
     )
-
+ 
     @model_validator(mode="after")
     def validar_progreso_coherente(self) -> "PeticionSimularMeta":
         """El monto ahorrado no puede superar el objetivo."""
@@ -223,7 +226,7 @@ class PeticionSimularMeta(PeticionBase):
 
 
 # ── Módulo 9: Simulación de Escenario "¿Qué pasaría si...?" ─────────────────
-
+ 
 class PeticionSimularEscenario(PeticionBase, FiltroDeFecha):
     """Entrada para el módulo 9: Analizar el impacto de un cambio hipotético."""
     descripcion_escenario: str = Field(
@@ -246,11 +249,162 @@ class PeticionSimularEscenario(PeticionBase, FiltroDeFecha):
         description="Si es True, el cambio se aplica todos los meses (suscripción). False = pago único.",
     )
 
-
+# ══════════════════════════════════════════════════════════════════════════════
+# DTO DE CONTEXTO PERSONAL — Perfil del usuario universitario
+# ══════════════════════════════════════════════════════════════════════════════
+ 
+class MetaAhorro(BaseModel):
+    """Meta de ahorro activa del usuario, obtenida del microservicio-cliente."""
+    nombre: str = Field(default="Sin nombre")
+    monto_objetivo: float = Field(default=0.0, ge=0)
+    monto_actual: float = Field(default=0.0, ge=0)
+ 
+    model_config = {"populate_by_name": True, "extra": "ignore"}
+ 
+    @property
+    def progreso_porcentaje(self) -> float:
+        if self.monto_objetivo <= 0:
+            return 0.0
+        return round((self.monto_actual / self.monto_objetivo) * 100, 1)
+ 
+    @property
+    def monto_restante(self) -> float:
+        return round(max(self.monto_objetivo - self.monto_actual, 0.0), 2)
+ 
+ 
+class LimiteGasto(BaseModel):
+    """Límite de gasto mensual configurado por el usuario."""
+    monto_limite: float = Field(default=0.0, ge=0, alias="montoLimite")
+    activo: bool = Field(default=False)
+ 
+    model_config = {"populate_by_name": True, "extra": "ignore"}
+ 
+ 
+class PerfilUsuario(BaseModel):
+    """
+    Contexto personal del universitario, obtenido del microservicio-cliente.
+ 
+    Diseño tolerante a fallos:
+      - Todos los campos son opcionales con defaults seguros.
+      - Si el microservicio-cliente no responde o falta algún campo,
+        el coach sigue funcionando con la información disponible.
+      - extra='ignore' absorbe campos nuevos del Java sin romper el modelo.
+ 
+    Cuando tengas los campos exactos del endpoint Java, solo actualiza
+    los alias (camelCase → snake_case) sin tocar el resto del sistema.
+    """
+    # ── Identidad personal ────────────────────────────────────────────────────
+    nombre: Optional[str] = Field(
+        default=None,
+        description="Nombre del universitario (ej: 'Paulo'). "
+                    "Gemini lo usará para personalizar el saludo.",
+    )
+    carrera: Optional[str] = Field(
+        default=None,
+        description="Carrera universitaria (ej: 'Ingeniería de Sistemas').",
+    )
+    universidad: Optional[str] = Field(
+        default=None,
+        description="Nombre de la universidad.",
+    )
+    ciudad: Optional[str] = Field(
+        default=None,
+        description="Ciudad donde estudia y gasta (ej: 'Lima', 'Arequipa').",
+    )
+    ciclo: Optional[int] = Field(
+        default=None,
+        ge=1,
+        le=12,
+        description="Ciclo académico actual. Útil para ajustar el contexto "
+                    "(ciclo 1 ≠ ciclo 10 en términos de gastos).",
+    )
+ 
+    # ── Datos financieros configurados ────────────────────────────────────────
+    ingreso_mensual: float = Field(
+        default=0.0,
+        ge=0,
+        alias="ingresoMensual",
+        description="Ingreso mensual declarado por el usuario (S/).",
+    )
+    meta_ahorro_activa: Optional[MetaAhorro] = Field(
+        default=None,
+        alias="metaAhorroActiva",
+        description="Meta de ahorro principal activa.",
+    )
+    limite_gasto: Optional[LimiteGasto] = Field(
+        default=None,
+        alias="limiteGasto",
+        description="Límite de gasto mensual configurado.",
+    )
+ 
+    model_config = {"populate_by_name": True, "extra": "ignore"}
+ 
+    @classmethod
+    def sin_datos(cls) -> "PerfilUsuario":
+        """
+        Retorna un perfil vacío cuando el microservicio-cliente no responde.
+        El coach trabajará en modo genérico sin personalización.
+        """
+        return cls()
+ 
+    @property
+    def nombre_display(self) -> str:
+        """Nombre para el saludo del coach. 'estudiante' si no está disponible."""
+        return self.nombre or "estudiante"
+ 
+    @property
+    def tiene_meta_activa(self) -> bool:
+        return self.meta_ahorro_activa is not None and self.meta_ahorro_activa.monto_objetivo > 0
+ 
+    @property
+    def tiene_limite_activo(self) -> bool:
+        return (
+            self.limite_gasto is not None
+            and self.limite_gasto.activo
+            and self.limite_gasto.monto_limite > 0
+        )
+ 
+    @property
+    def resumen_texto(self) -> str:
+        """
+        Genera un resumen legible del perfil para incluir en el prompt de Gemini.
+        Solo incluye los campos disponibles, omite los None.
+        """
+        partes = []
+        if self.nombre:
+            partes.append(f"Nombre: {self.nombre}")
+        if self.carrera:
+            partes.append(f"Carrera: {self.carrera}")
+        if self.universidad:
+            partes.append(f"Universidad: {self.universidad}")
+        if self.ciudad:
+            partes.append(f"Ciudad: {self.ciudad}")
+        if self.ciclo:
+            partes.append(f"Ciclo: {self.ciclo}")
+        if self.ingreso_mensual > 0:
+            partes.append(f"Ingreso mensual declarado: S/ {self.ingreso_mensual:,.2f}")
+        if self.tiene_meta_activa:
+            meta = self.meta_ahorro_activa
+            partes.append(
+                f"Meta activa: '{meta.nombre}' — "
+                f"S/ {meta.monto_actual:,.2f} de S/ {meta.monto_objetivo:,.2f} "
+                f"({meta.progreso_porcentaje}%)"
+            )
+        if self.tiene_limite_activo:
+            partes.append(
+                f"Límite de gasto mensual: S/ {self.limite_gasto.monto_limite:,.2f}"
+            )
+        return "\n".join(f"- {p}" for p in partes) if partes else "- Perfil no disponible."
+ 
+ 
 # ══════════════════════════════════════════════════════════════════════════════
 # DTOs DE SALIDA — Respuestas de los endpoints
 # ══════════════════════════════════════════════════════════════════════════════
 
+# ══════════════════════════════════════════════════════════════════════════════
+# DTOs DE SALIDA — Respuestas de los endpoints
+# ══════════════════════════════════════════════════════════════════════════════
+ 
 class PuntoGrafico(BaseModel):
     """Un punto de dato para renderizar en un gráfico del Dashboard."""
     etiqueta: str = Field(..., description="Etiqueta del eje X (ej: 'Ene 2026', 'Alimentación').")
@@ -260,8 +414,8 @@ class PuntoGrafico(BaseModel):
         description="Color hex opcional para el frontend (ej: '#E74C3C').",
         examples=["#3498DB"],
     )
-
-
+ 
+ 
 class MetadataGrafico(BaseModel):
     """
     Datos estructurados para que el Dashboard de LUKA renderice un chart.
@@ -282,26 +436,26 @@ class MetadataGrafico(BaseModel):
         default=None,
         description="Valor de línea de referencia (ej: 0, límite de presupuesto).",
     )
-
-
+ 
+ 
 class InsightAnalitico(BaseModel):
     """
     Resumen técnico producido por el Motor Analítico (Pandas/Scikit-Learn).
     Este objeto es el que se envía a Gemini como contexto.
     Gemini NO ve el DataFrame crudo; solo ve este resumen conciso.
-
+ 
     Es el "jugo" que el motor extrae de los datos antes de llamar al coach.
     """
     modulo: NombreModulo = Field(..., description="Módulo que generó el insight.")
     total_transacciones_analizadas: int = Field(default=0, ge=0)
-
+ 
     # ── Métricas financieras clave ────────────────────────────────────────────
     total_ingresos: float = Field(default=0.0, description="Suma de ingresos en el período.")
     total_gastos: float = Field(default=0.0, description="Suma de gastos en el período.")
     balance_neto: float = Field(default=0.0, description="Ingresos - Gastos.")
     promedio_gasto_mensual: float = Field(default=0.0)
     promedio_ingreso_mensual: float = Field(default=0.0)
-
+ 
     # ── Hallazgos específicos por módulo ─────────────────────────────────────
     hallazgos: Dict[str, float | str | int | bool | list] = Field(
         default_factory=dict,
@@ -330,13 +484,33 @@ class KpiWidget(BaseModel):
         default=None,
         description="'subida', 'bajada' o 'estable' para la flechita del widget.",
     )
-
-
+ 
+ 
+class EstadoCoach(str, Enum):
+    """
+    Estado del coach IA en la respuesta.
+    Permite al frontend saber si el consejo está disponible
+    o si debe mostrar un mensaje de degradación elegante.
+    """
+    EXITOSO = "EXITOSO"           # Gemini respondió correctamente.
+    CUOTA_AGOTADA = "CUOTA_AGOTADA"   # Rate limit 429 alcanzado.
+    AUTH_ERROR = "AUTH_ERROR"         # API Key inválida o expirada.
+    TIMEOUT = "TIMEOUT"               # Gemini tardó demasiado.
+    NO_DISPONIBLE = "NO_DISPONIBLE"   # Cualquier otro fallo de Gemini.
+ 
+ 
 class RespuestaModulo(BaseModel):
     """
     Respuesta unificada para los 10 endpoints de análisis.
-    Combina los datos calculados por el motor analítico
-    con el consejo generado por el coach (Gemini).
+ 
+    Garantía de degradación elegante:
+      El campo `insight`, `grafico` y `kpi` SIEMPRE están presentes
+      porque los calcula el Motor Analítico (Pandas/Scikit-Learn), que
+      nunca depende de servicios externos.
+ 
+      El campo `consejo` es Optional: puede ser None si Gemini falla.
+      El campo `estado_coach` indica el motivo exacto para que el
+      frontend pueda mostrar un mensaje adecuado al universitario.
     """
     # ── Identificación ────────────────────────────────────────────────────────
     id_respuesta: str = Field(
@@ -346,19 +520,29 @@ class RespuestaModulo(BaseModel):
     usuario_id: str
     modulo: NombreModulo
     fecha_generacion: datetime = Field(default_factory=datetime.now)
-
-    # ── Consejo del Coach (Gemini) ────────────────────────────────────────────
-    consejo: str = Field(
-        ...,
-        description="Consejo financiero en lenguaje natural generado por el coach IA.",
+ 
+    # ── Consejo del Coach (Gemini) — opcional por degradación elegante ────────
+    consejo: Optional[str] = Field(
+        default=None,
+        description=(
+            "Consejo financiero en lenguaje natural generado por Gemini. "
+            "None si el coach no está disponible; los datos del insight siguen presentes."
+        ),
     )
-
-    # ── Datos calculados por el Motor Analítico ───────────────────────────────
+    estado_coach: EstadoCoach = Field(
+        default=EstadoCoach.EXITOSO,
+        description=(
+            "Estado del coach IA. EXITOSO si el consejo está disponible. "
+            "Cualquier otro valor indica el motivo por el que consejo es None."
+        ),
+    )
+ 
+    # ── Datos calculados por el Motor Analítico — siempre presentes ───────────
     insight: InsightAnalitico = Field(
         ...,
-        description="Resumen técnico calculado por Pandas/Scikit-Learn.",
+        description="Resumen técnico calculado por Pandas/Scikit-Learn. Siempre presente.",
     )
-
+ 
     # ── Visualización para el Dashboard ──────────────────────────────────────
     grafico: Optional[MetadataGrafico] = Field(
         default=None,
@@ -368,7 +552,7 @@ class RespuestaModulo(BaseModel):
         default=None,
         description="Valor destacado para el header del widget.",
     )
-
+ 
     def a_dict_serializable(self) -> dict:
         """Serialización segura con fechas en formato ISO para JSON/RabbitMQ."""
         datos = self.model_dump()
@@ -379,7 +563,7 @@ class RespuestaModulo(BaseModel):
 # ══════════════════════════════════════════════════════════════════════════════
 # DTOs AUXILIARES (usados internamente entre capas)
 # ══════════════════════════════════════════════════════════════════════════════
-
+ 
 class ResumenMensual(BaseModel):
     """
     Totales consolidados de un mes calendario.
@@ -391,16 +575,16 @@ class ResumenMensual(BaseModel):
     total_gastos: float = Field(default=0.0, ge=0)
     gastos_por_categoria: Dict[str, float] = Field(default_factory=dict)
     cantidad_transacciones: int = Field(default=0, ge=0)
-
+ 
     @property
     def balance(self) -> float:
         return round(self.total_ingresos - self.total_gastos, 2)
-
+ 
     @property
     def periodo_label(self) -> str:
         """Etiqueta corta para gráficos: '2026-04'"""
         return f"{self.anio}-{self.mes:02d}"
-
+ 
     @property
     def porcentaje_ahorro(self) -> float:
         """% de ahorro del mes. 0 si no hay ingresos."""
