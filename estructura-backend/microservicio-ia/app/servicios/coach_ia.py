@@ -368,6 +368,36 @@ class CoachIA:
             unidad="S/",
             meta_linea=0.0,  # línea de referencia en 0
         )
+    # Dentro de tu nuevo coach_ia.py o un servicio coordinador
+from app.servicios.analitica import motor_ia
+from app.utilidades import preparador_datos
+
+    def analizar_anomalias_con_coach(evento: EventoAnalisisIA):
+        # 1. Recuperamos la lógica de Pandas que ya tenías
+        df = preparador_datos.convertir_evento_a_dataframe(evento)
+        
+        # 2. Ejecutamos tu Módulo 3 original
+        resultado_tecnico = motor_ia.detectar_anomalias_financieras(df)
+        
+        # 3. Preparamos el prompt "ligero" para Gemini
+        # En lugar de mandarle 100 transacciones, le mandamos esto:
+        prompt = f"""
+        El usuario es {evento.contexto.perfil_financiero.ocupacion}.
+        Se han detectado {resultado_tecnico['anomalias_detectadas']} anomalías.
+        Detalle: {resultado_tecnico['lista_anomalias']}
+        
+        Como coach financiero, explica esto de forma amigable y da un consejo.
+        """
+        
+        # 4. Llamamos a Gemini (sin riesgo de cuota, porque el prompt es cortito)
+        consejo = llamar_a_gemini(prompt)
+        
+        return ResultadoAnalisisIA(
+            id_usuario=evento.id_usuario,
+            consejo_texto=consejo,
+            tipo_modulo=TipoModulo.ANOMALIAS,
+            kpi_principal=resultado_tecnico['monto_total_anomalo']
+    )
     
     def _meta_reporte(self, evento: EventoAnalisisIA) -> Optional[MetadataGrafico]:
         """
