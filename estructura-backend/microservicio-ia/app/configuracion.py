@@ -1,61 +1,172 @@
 """
-configuracion.py  ·  v3 — Dashboard + Persistencia + Multi-Módulos
+configuracion.py  ·  v4 — IA Centrada en Datos (LUKA)
 ══════════════════════════════════════════════════════════════════════════════
-Extiende la configuración v2 añadiendo:
-  - Parámetros de historial (MESES_HISTORIAL = 6)
-  - Colas de respuesta hacia el Dashboard
-  - Umbrales para detección de gastos hormiga
-  - URL de persistencia (microservicio-dashboard o bd directa)
+Singleton de configuración para el Microservicio IA Financiera de LUKA.
+Gestiona todas las variables de entorno con validación Pydantic v2.
+ 
+Cambios v4 (refactorización "IA Centrada en Datos"):
+  - Separación clara entre parámetros del Motor Analítico y del Coach IA
+  - Umbrales estadísticos para cada módulo de análisis
+  - Parámetros de regresión y series temporales
+  - Configuración de la regla 50/30/20 para universitarios
 ══════════════════════════════════════════════════════════════════════════════
 """
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
+ 
+from pydantic import Field, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Configuracion(BaseSettings):
     
-    # ── Configuración de la App ───────────────────────────────    
-    nombre_app: str = "Microservicio IA Financiera"
-    id_app_eureka: str = "microservicio-ia"
-    version_app: str = "1.0.0"
-    puerto: int = 8086
-    entorno: str = "desarrollo"
-    
-    # ── Configuración de Eureka ───────────────────────────────    
-    eureka_servidor_url: str = "http://admin:admin123@localhost:8761/eureka"
-    eureka_instancia_host: str = "192.168.18.28"
-    eureka_instancia_puerto: int = 8086
+    """
+    Centraliza toda la configuración del microservicio.
+    Leer una sola vez al arrancar gracias a @lru_cache.
+    """
 
-    # ── Configuración de Seguridad ────────────────────────────
-    jwt_clave_secreta: str
+    # ══════════════════════════════════════════════════════════════════════════
+    # Configuracion de la App
+    # ══════════════════════════════════════════════════════════════════════════
+    nombre_app: str = "Microservicio IA Financiera - LUKA"
+    id_app_eureka: str = "microservicio-ia"
+    version_app: str = "4.0.0"
+    puerto: int = Field(default=8086, ge=1024, le=65535)
+    entorno: str = "desarrollo"
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # SEGURIDAD JWT
+    # ══════════════════════════════════════════════════════════════════════════
+    jwt_clave_secreta: str = Field(
+    description="Clave secreta compartida con microservicio-usuario (formato HEX).",)
+
     jwt_algoritmo: str = "HS256"
 
-    # ── URLs de microservicios Java ──────────────────────────
-    url_nucleo_financiero: str = "http://localhost:8085"
-    url_auditoria:         str = "http://localhost:8082"
-    url_cliente:           str = "http://localhost:8083"
-    url_dashboard:         str = "http://localhost:8087"
+    # ══════════════════════════════════════════════════════════════════════════
+    # DESCUBRIMIENTO DE SERVICIOS (EUREKA)
+    # ══════════════════════════════════════════════════════════════════════════ 
+    eureka_servidor_url: str = "http://admin:admin123@localhost:8761/eureka"
+    eureka_instancia_host: str = "192.168.18.28"
+    eureka_instancia_puerto: int = Field(default=8086, ge=1024, le=65535)
 
-    # ── Parámetros de análisis IA ────────────────────────────
-    umbral_anomalia: float = 2.0
-    factor_seguridad_ahorro: float = 0.85
-    monto_minimo_suscripcion: float = 5.0
+    # ══════════════════════════════════════════════════════════════════════════
+    # URLs DE MICROSERVICIOS JAVA
+    # ══════════════════════════════════════════════════════════════════════════
+    url_nucleo_financiero: str = Field(
+        default="http://localhost:8085",
+        description="Puerto 8085: fuente de transacciones.",
+    )
+    url_auditoria: str = Field(
+        default="http://localhost:8082",
+        description="Puerto 8082: registro de eventos (no bloqueante).",
+    )
+    url_cliente: str = Field(
+        default="http://localhost:8083",
+        description="Puerto 8083: perfil del usuario universitario.",
+    )
+    url_dashboard: str = Field(
+        default="http://localhost:8087",
+        description="Puerto 8087: visualización de resultados.",
+    )
 
-    # ── Historial comparativo ─────────────────────────────────────────────────
-    meses_historial:              int   = 3      # ventana temporal para todos los módulos
-    meses_historial_prediccion:   int   = 3      # alias explícito para predicción
-    umbral_gasto_hormiga:         float = 30.0   # monto máximo para clasificar como hormiga
-    min_recurrencias_hormiga:     int   = 3      # veces mínimas en el historial para ser hormiga
-
-
-
-    # ── Google Generative AI (Gemini) ─────────────────────────────────────────
-    gemini_api_key: str
+    # ══════════════════════════════════════════════════════════════════════════
+    # GOOGLE GEMINI
+    # ══════════════════════════════════════════════════════════════════════════
+    gemini_api_key: str = Field(
+        description="Clave API para autenticación con Google Gemini (formato HEX).",)
     gemini_modelo:  str = "gemini-2.0-flash"
-    gemini_max_tokens:        int = 500
-    gemini_temperatura:       float = 0.7        # creatividad del coach
+    gemini_max_tokens: int = Field(
+        default=500,
+        ge=100,
+        le=2048,
+        description="Tokens máximos en la respuesta del coach.",
+    )
+    gemini_temperatura: float = Field(
+        default=0.7,
+        ge=0.0,
+        le=1.0,
+        description="Creatividad del coach (0=preciso, 1=creativo).",
+    )
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # MOTOR ANALÍTICO — Parámetros para Pandas / Scikit-Learn / SciPy
+    # ══════════════════════════════════════════════════════════════════════════
     
-    # ── RabbitMQ ──────────────────────────────────────────────────────────────
+    # ── Historial general ─────────────────────────────────────────────────────
+    meses_historial: int = Field(
+        default=6,
+        ge=1,
+        le=24,
+        description="Ventana temporal máxima para análisis histórico.",
+    )
+    tamanio_pagina_transacciones: int = Field(
+        default=200,
+        ge=10,
+        le=1000,
+        description="Transacciones a consultar al núcleo financiero por petición.",
+    )
+
+    # ── Módulo 2: Predicción de Gastos (Regresión Lineal / Media Móvil) ──────
+    meses_ventana_prediccion: int = Field(
+        default=3,
+        ge=2,
+        le=12,
+        description="Meses de histórico usados para la regresión/media móvil.",
+    )
+    min_datos_regresion: int = Field(
+        default=3,
+        ge=2,
+        description="Mínimo de puntos de datos para usar regresión lineal.",
+    )
+
+    # ── Módulo 3: Detección de Anomalías (Z-Score) ───────────────────────────
+    umbral_zscore_anomalia: float = Field(
+        default=2.5,
+        ge=1.0,
+        le=5.0,
+        description="Desviaciones estándar para clasificar un gasto como anómalo.",
+    )
+
+    # ── Módulo 4: Gastos Hormiga / Suscripciones ─────────────────────────────
+    umbral_monto_hormiga: float = Field(
+        default=30.0,
+        ge=1.0,
+        description="Monto máximo (S/) para considerar una transacción 'hormiga'.",
+    )
+    min_recurrencias_hormiga: int = Field(
+        default=3,
+        ge=2,
+        description="Veces mínimas que debe repetirse para ser gasto hormiga.",
+    )
+
+        # ── Módulo 5: Capacidad de Ahorro (Regla 50/30/20) ───────────────────────
+    porcentaje_necesidades: float = Field(
+        default=50.0,
+        description="% del ingreso destinado a necesidades básicas (regla 50/30/20).",
+    )
+    porcentaje_deseos: float = Field(
+        default=30.0,
+        description="% del ingreso destinado a deseos/ocio.",
+    )
+    porcentaje_ahorro_objetivo: float = Field(
+        default=20.0,
+        description="% del ingreso objetivo de ahorro.",
+    )
+    factor_seguridad_ahorro: float = Field(
+        default=0.85,
+        ge=0.5,
+        le=1.0,
+        description="Factor de prudencia aplicado al ahorro proyectado.",
+    )
+
+    # ── Módulo 8: Presupuesto Dinámico ────────────────────────────────────────
+    dias_semana_presupuesto: int = Field(
+        default=7,
+        description="Días de la semana para distribuir el presupuesto.",
+    )
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # MENSAJERÍA (RABBITMQ)
+    # ══════════════════════════════════════════════════════════════════════════
     rabbitmq_host:     str = "localhost"
     rabbitmq_puerto:   int = 5672
     rabbitmq_usuario:  str = "guest"
@@ -67,7 +178,7 @@ class Configuracion(BaseSettings):
     cola_ia_procesamiento:   str = "cola.ia.procesamiento"
     exchange_ia:             str = "exchange.ia"
  
-    # Salida hacia Dashboard (reemplaza cola.mensajeria.whatsapp)
+    # ── Colas de salida hacia Dashboard ──────────────────────────────────────
     cola_dashboard_consejos: str = "cola.dashboard.consejos"      # consejos automáticos
     cola_dashboard_modulos:  str = "cola.dashboard.modulos"       # respuestas a módulos manuales
     exchange_dashboard:      str = "exchange.dashboard"
@@ -76,7 +187,9 @@ class Configuracion(BaseSettings):
     rabbitmq_heartbeat: int = 60
     rabbitmq_timeout: int = 300
 
-    # ── Configuración de Pydantic ─────────────────────────────────────────
+    # ══════════════════════════════════════════════════════════════════════════
+    # PYDANTIC SETTINGS
+    # ══════════════════════════════════════════════════════════════════════════
     model_config = SettingsConfigDict(
         env_file=".env.book.env",
         env_file_encoding="utf-8",
@@ -84,16 +197,50 @@ class Configuracion(BaseSettings):
         extra="ignore"  # Ignora variables extrañas en el .env
     )
 
+    # ── Validadores ───────────────────────────────────────────────────────────
+ 
+    @field_validator("entorno")
+    @classmethod
+    def validar_entorno(cls, valor: str) -> str:
+        """Restringe los entornos válidos."""
+        entornos_validos = {"desarrollo", "produccion", "pruebas"}
+        if valor.lower() not in entornos_validos:
+            raise ValueError(f"Entorno inválido. Opciones: {entornos_validos}")
+        return valor.lower()
+ 
+    @field_validator("porcentaje_necesidades", "porcentaje_deseos", "porcentaje_ahorro_objetivo")
+    @classmethod
+    def validar_porcentajes_regla(cls, valor: float) -> float:
+        """Los porcentajes deben ser positivos."""
+        if valor <= 0 or valor >= 100:
+            raise ValueError("Los porcentajes deben estar entre 0 y 100.")
+        return valor
+        # ── Propiedades calculadas ────────────────────────────────────────────────
+ 
     @property
     def nombre_eureka_mayusculas(self) -> str:
-        """Retorna el ID de la app en mayúsculas para Eureka."""
+        """ID del servicio en mayúsculas para el dashboard de Eureka."""
         return self.id_app_eureka.upper()
+ 
+    @property
+    def suma_porcentajes_regla(self) -> float:
+        """Suma de los tres porcentajes (debería ser 100)."""
+        return self.porcentaje_necesidades + self.porcentaje_deseos + self.porcentaje_ahorro_objetivo
+ 
+    @property
+    def es_produccion(self) -> bool:
+        """Acceso rápido para condicionales críticos."""
+        return self.entorno == "produccion"
 
 
 @lru_cache()
 def obtener_configuracion() -> Configuracion:
     """
-    Singleton con caché. 
-    Lru_cache garantiza que el archivo .env se lea una sola vez.
+    Singleton con caché LRU.
+    El archivo .env se lee UNA sola vez en todo el ciclo de vida del proceso.
+ 
+    Uso:
+        config = obtener_configuracion()
+        print(config.gemini_modelo)
     """
     return Configuracion()
