@@ -35,7 +35,7 @@ public class ServicioIa {
         // 1. Obtener contexto completo del cliente (Datos personales, perfil, metas, límites)
         ContextoUsuarioDTO contextoEnriquecido = clienteContexto.obtenerContexto(solicitud.getIdUsuario());
 
-// 2. Re-construir la solicitud usando tus métodos de fábrica para incluir el contexto
+        // 2. Re-construir la solicitud usando tus métodos de fábrica para incluir el contexto
         // Esto mantiene la inmutabilidad de tu @Value SolicitudIaDTO
         SolicitudIaDTO solicitudFinal;
 

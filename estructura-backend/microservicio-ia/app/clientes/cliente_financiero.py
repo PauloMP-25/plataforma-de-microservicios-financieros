@@ -4,6 +4,7 @@ Cliente HTTP para comunicación con los microservicios Java.
 Usa httpx con manejo de errores y timeouts.
 """
 
+from datetime import datetime
 from wsgiref import headers
 
 import httpx
@@ -36,27 +37,46 @@ class ClienteNucleoFinanciero:
         tipo: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
-        Obtiene el historial paginado de transacciones del usuario.
-        Endpoint: GET /api/v1/financiero/transacciones/historial
+        Obtiene el historial enviando un rango de fechas compatible con 
+        el LocalDateTime de Java.
+        Endpoint: GET /api/v1/transacciones/historial
         """
+        # ── 1. Construir el rango de fechas ──────────────────────────────────
+        # Si recibimos mes y año, calculamos el primer y último día del mes
+        desde_str = None
+        hasta_str = None
+
+        if mes and anio:
+            # Primer día del mes a las 00:00:00
+            fecha_inicio = datetime(anio, mes, 1, 0, 0, 0)
+            desde_str = fecha_inicio.isoformat() 
+
+            # Último día del mes (calculado para evitar errores de 30/31 días)
+            if mes == 12:
+                fecha_fin = datetime(anio + 1, 1, 1, 23, 59, 59)
+            else:
+                # Vamos al primer día del siguiente mes y restamos un segundo (lógica simple)
+                fecha_fin = datetime(anio, mes + 1, 1, 0, 0, 0)
+            
+            hasta_str = fecha_fin.isoformat()
+
+        # ── 2. Preparar Query Params ─────────────────────────────────────────
         params: Dict[str, Any] = {
             "usuarioId": usuario_id,
             "size": tamanio,
             "page": pagina,
         }
-        if mes:
-            params["mes"] = mes
-        if anio:
-            params["anio"] = anio
-        if tipo:
-            params["tipo"] = tipo
+        
+        if desde_str: params["desde"] = desde_str
+        if hasta_str: params["hasta"] = hasta_str
+        if tipo: params["tipo"] = tipo
 
         # Agregamos el encabezado de Authorization
         headers = {
             "Authorization": f"Bearer {token}"
         }
         
-        url = f"{self.url_base}/api/v1/financiero/transacciones/historial"
+        url = f"{self.url_base}/api/v1/transacciones/historial"
 
         try:
             with httpx.Client(timeout=self.timeout) as cliente:
@@ -91,7 +111,7 @@ class ClienteNucleoFinanciero:
     ) -> Dict[str, Any]:
         """
         Obtiene el resumen de ingresos/gastos/balance del usuario.
-        Endpoint: GET /api/v1/financiero/transacciones/resumen
+        Endpoint: GET /api/v1/transacciones/resumen
         """
         params: Dict[str, Any] = {"usuarioId": usuario_id}
         if mes:
@@ -103,7 +123,7 @@ class ClienteNucleoFinanciero:
         headers = {
             "Authorization": f"Bearer {token}"
         }
-        url = f"{self.url_base}/api/v1/financiero/transacciones/resumen"
+        url = f"{self.url_base}/api/v1/transacciones/resumen"
 
         try:
             with httpx.Client(timeout=self.timeout) as cliente:
