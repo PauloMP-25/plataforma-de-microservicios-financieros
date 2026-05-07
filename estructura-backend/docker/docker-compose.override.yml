@@ -1,0 +1,106 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+#  LUKA APP — docker-compose.override.yml
+#  Configuración ADICIONAL para entorno de DESARROLLO LOCAL.
+#
+#  Docker Compose lo aplica automáticamente sobre docker-compose.yml.
+#  En producción: usa docker-compose.prod.yml con --file explícito.
+#
+#  Diferencias clave vs producción:
+#    - Puertos de bases de datos expuestos (para conectar con DBeaver/PgAdmin)
+#    - Puertos AMQP de RabbitMQ expuestos (para testing con clientes locales)
+#    - Hot-reload desactivado (los artefactos se montan desde ./target)
+#    - Sin límites de memoria estrictos
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+services:
+
+  # ── BASES DE DATOS: exponemos puertos para herramientas externas ─────────────
+
+  postgres-usuario:
+    ports:
+      - "5433:5432"   # localhost:5433 → DBeaver/pgAdmin
+
+  postgres-cliente:
+    ports:
+      - "5434:5432"
+
+  postgres-financiero:
+    ports:
+      - "5435:5432"
+
+  postgres-auditoria:
+    ports:
+      - "5436:5432"
+
+  postgres-mensajeria:
+    ports:
+      - "5437:5432"
+
+  # ── RABBITMQ: también exponemos el puerto AMQP para testing externo ──────────
+
+  rabbitmq:
+    ports:
+      - "5672:5672"    # Puerto AMQP para clientes locales (ej: pruebas con pika)
+      - "15672:15672"  # UI Management (ya estaba)
+
+  # ── MICROSERVICIOS: desactivamos límites de RAM en desarrollo ─────────────────
+
+  ms-usuario:
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    environment:
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop   # Recrea la BD en cada arranque
+      LOGGING_LEVEL_COM_USUARIO: DEBUG
+
+  ms-cliente:
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    environment:
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+      LOGGING_LEVEL_COM_CLIENTE: DEBUG
+
+  ms-auditoria:
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+    environment:
+      LOGGING_LEVEL_COM_AUDITORIA: DEBUG
+
+  ms-mensajeria:
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+
+  ms-nucleo-financiero:
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    environment:
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+      LOGGING_LEVEL_COM_FINANCIERO: DEBUG
+
+  ms-ia:
+    deploy:
+      resources:
+        limits:
+          memory: 2G    # Más holgura en desarrollo para debuggear
+    environment:
+      ENTORNO: desarrollo
+      GEMINI_TEMPERATURA: "0.9"   # Más creatividad al iterar prompts
+
+  api-gateway:
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+    environment:
+      # En desarrollo, logueamos todas las rutas del Gateway
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD_GATEWAY: TRACE

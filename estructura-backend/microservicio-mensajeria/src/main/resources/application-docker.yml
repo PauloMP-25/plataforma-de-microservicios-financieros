@@ -5,8 +5,9 @@
 #  INSTRUCCIÓN: Coloca este archivo en src/main/resources/ de CADA microservicio
 #  Java. Las variables entre ${...} son inyectadas por docker-compose.yml.
 # ═══════════════════════════════════════════════════════════════════════════════
-
 spring:
+  application:
+    name: microservicio-mensajeria
   # ── Base de datos ────────────────────────────────────────────────────────────
   datasource:
     url: ${SPRING_DATASOURCE_URL}
@@ -65,6 +66,7 @@ eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE}
+    enabled: true
     register-with-eureka: true
     fetch-registry: true
     # Intervalo de refresco del registro (en segundos)
@@ -110,5 +112,5 @@ logging:
     root: INFO
     org.springframework.web: INFO
     org.hibernate.SQL: WARN
-    com.netflix.eureka: WARN
-    com.netflix.discovery: WARN
+    com.netflix.eureka: DEBUG
+    com.netflix.discovery: DEBUG

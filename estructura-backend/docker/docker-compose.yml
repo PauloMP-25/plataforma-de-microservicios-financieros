@@ -14,8 +14,6 @@
 #                               api-gateway (único puerto externo: 8080)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-version: "3.9"
-
 # ── VOLÚMENES NOMBRADOS (persistencia de datos) ───────────────────────────────
 volumes:
   vol-postgres-usuario:
@@ -69,14 +67,14 @@ x-postgres-common: &postgres-common
     - db-network
     - backend-network
   environment:
-    POSTGRES_USER: ${POSTGRES_USER:postgres}
-    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:adminUTP}
+    POSTGRES_USER: ${POSTGRES_USER:-postgres}
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
   healthcheck:
-    test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:postgres}"]
-    interval: 10s
-    timeout: 5s
+    test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+    interval: 30s
+    timeout: 10s
     retries: 5
-    start_period: 20s
+    start_period: 120s
   logging:
     driver: "json-file"
     options:
@@ -95,9 +93,9 @@ services:
     container_name: luka-postgres-usuario
     hostname: postgres-usuario
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:adminUTP}
-      POSTGRES_DB: ${DB_USUARIO_NAME:db_microservicio_usuario}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
+      POSTGRES_DB: ${DB_USUARIO_NAME:-db_microservicio_usuario}
     volumes:
       - vol-postgres-usuario:/var/lib/postgresql/data
     deploy:
@@ -110,9 +108,9 @@ services:
     container_name: luka-postgres-cliente
     hostname: postgres-cliente
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:adminUTP}
-      POSTGRES_DB: ${DB_CLIENTE_NAME:db_microservicio_cliente}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
+      POSTGRES_DB: ${DB_CLIENTE_NAME:-db_microservicio_cliente}
     volumes:
       - vol-postgres-cliente:/var/lib/postgresql/data
     deploy:
@@ -125,9 +123,9 @@ services:
     container_name: luka-postgres-financiero
     hostname: postgres-financiero
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:adminUTP}
-      POSTGRES_DB: ${DB_FINANCIERO_NAME:db_microservicio_financiero}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
+      POSTGRES_DB: ${DB_FINANCIERO_NAME:-db_microservicio_financiero}
     volumes:
       - vol-postgres-financiero:/var/lib/postgresql/data
     deploy:
@@ -140,9 +138,9 @@ services:
     container_name: luka-postgres-auditoria
     hostname: postgres-auditoria
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:adminUTP}
-      POSTGRES_DB: ${DB_AUDITORIA_NAME:db_microservicio_auditoria}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
+      POSTGRES_DB: ${DB_AUDITORIA_NAME:-db_microservicio_auditoria}
     volumes:
       - vol-postgres-auditoria:/var/lib/postgresql/data
     deploy:
@@ -155,9 +153,9 @@ services:
     container_name: luka-postgres-mensajeria
     hostname: postgres-mensajeria
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:adminUTP}
-      POSTGRES_DB: ${DB_MENSAJERIA_NAME:db_microservicio_mensajeria}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
+      POSTGRES_DB: ${DB_MENSAJERIA_NAME:-db_microservicio_mensajeria}
     volumes:
       - vol-postgres-mensajeria:/var/lib/postgresql/data
     deploy:
@@ -182,8 +180,8 @@ services:
       # Si necesitas conectarte desde fuera: descomenta la línea siguiente
       # - "5672:5672"
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:guest}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:guest}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
       RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-/}
       # Configura la política de retención de mensajes y logs
       RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: -rabbit log_levels [{connection,error},{default,info}]
@@ -209,8 +207,8 @@ services:
     hostname: eureka-server
     # INSTRUCCIÓN: Construye desde el directorio de tu eureka-server
     build:
-      context: ./microservicio-eureka
-      dockerfile: ../dockerfiles/Dockerfile.springboot
+      context: ../infraestructura/eureka-server
+      dockerfile: Dockerfile
     image: luka/eureka-server:latest
     ports:
       # Dashboard de Eureka accesible en http://localhost:8761
@@ -239,6 +237,21 @@ services:
       resources:
         limits:
           memory: 512M
+  # ── REDIS (Caché y Rate Limiting para el Gateway) ───────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: luka-redis
+    hostname: redis
+    restart: unless-stopped
+    networks:
+      - backend-network
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # ── MICROSERVICIO USUARIO (Puerto 8081) ───────────────────────────────────────
 
@@ -247,8 +260,8 @@ services:
     container_name: luka-ms-usuario
     hostname: ms-usuario
     build:
-      context: ./microservicio-usuario
-      dockerfile: ../dockerfiles/Dockerfile.springboot
+      context: ../microservicio-usuario
+      dockerfile: Dockerfile
       args:
            APP_PORT: 8081
     image: luka/ms-usuario:latest
@@ -279,6 +292,7 @@ services:
       SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER:-guest}
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
       SPRING_RABBITMQ_VIRTUAL_HOST: ${RABBITMQ_VHOST:-/}
+      RABBITMQ_CONNECTION_NAME: LUKA-MS-USUARIO
       # JWT
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       # JVM
@@ -301,8 +315,8 @@ services:
     container_name: luka-ms-cliente
     hostname: ms-cliente
     build:
-      context: ./microservicio-cliente
-      dockerfile: ../dockerfiles/Dockerfile.springboot
+      context: ../microservicio-cliente
+      dockerfile: Dockerfile
       args:
            APP_PORT: 8083
     image: luka/ms-cliente:latest
@@ -333,6 +347,7 @@ services:
       SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER:-guest}
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
       SPRING_RABBITMQ_VIRTUAL_HOST: ${RABBITMQ_VHOST:-/}
+      RABBITMQ_CONNECTION_NAME: LUKA-MS-CLIENTE
       # JWT
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
@@ -354,8 +369,8 @@ services:
     container_name: luka-ms-auditoria
     hostname: ms-auditoria
     build:
-      context: ./microservicio-auditoria
-      dockerfile: ../dockerfiles/Dockerfile.springboot
+      context: ../microservicio-auditoria
+      dockerfile: Dockerfile
       args:
            APP_PORT: 8082
     image: luka/ms-auditoria:latest
@@ -386,6 +401,7 @@ services:
       SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER:-guest}
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
       SPRING_RABBITMQ_VIRTUAL_HOST: ${RABBITMQ_VHOST:-/}
+      RABBITMQ_CONNECTION_NAME: LUKA-MS-AUDITORIA
       JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
@@ -405,8 +421,8 @@ services:
     container_name: luka-ms-mensajeria
     hostname: ms-mensajeria
     build:
-      context: ./microservicio-mensajeria
-      dockerfile: ../dockerfiles/Dockerfile.springboot
+      context: ../microservicio-mensajeria
+      dockerfile: Dockerfile
       args:
            APP_PORT: 8084
     image: luka/ms-mensajeria:latest
@@ -437,6 +453,7 @@ services:
       SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER:-guest}
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
       SPRING_RABBITMQ_VIRTUAL_HOST: ${RABBITMQ_VHOST:-/}
+      RABBITMQ_CONNECTION_NAME: LUKA-MS-MENSAJERIA
       JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
@@ -456,8 +473,8 @@ services:
     container_name: luka-ms-nucleo-financiero
     hostname: ms-nucleo-financiero
     build:
-      context: ./microservicio-nucleo-financiero
-      dockerfile: ../dockerfiles/Dockerfile.springboot
+      context: ../microservicio-nucleo-financiero
+      dockerfile: Dockerfile
       args:
            APP_PORT: 8085
     image: luka/ms-nucleo-financiero:latest
@@ -490,6 +507,7 @@ services:
       SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER:-guest}
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
       SPRING_RABBITMQ_VIRTUAL_HOST: ${RABBITMQ_VHOST:-/}
+      RABBITMQ_CONNECTION_NAME: LUKA-MS-NUCLEO-FINANCIERO
       # URL directa al microservicio-cliente (como fallback si Feign falla)
       URL_MICROSERVICIO_CLIENTE: http://ms-cliente:8083
       # JWT
@@ -512,8 +530,8 @@ services:
     container_name: luka-ms-ia
     hostname: ms-ia
     build:
-      context: ./microservicio-ia
-      dockerfile: ../dockerfiles/Dockerfile.ia
+      context: ../microservicio-ia
+      dockerfile: Dockerfile
       args:
            APP_PORT: 8086
     image: luka/ms-ia:latest
@@ -590,13 +608,15 @@ services:
     container_name: luka-api-gateway
     hostname: api-gateway
     build:
-      context: ./api-gateway
-      dockerfile: ../dockerfiles/Dockerfile.springboot
+      context: ../infraestructura/api-gateway
+      dockerfile: Dockerfile
       args:
            APP_PORT: 8080
     image: luka/api-gateway:latest
     depends_on:
       eureka-server:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       ms-usuario:
         condition: service_healthy

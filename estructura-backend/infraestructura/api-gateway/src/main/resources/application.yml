@@ -4,7 +4,6 @@ server:
 spring:
   application:
     name: api-gateway
-
   # ─────────────────────────────────────────────────────────────────────────
   # REDIS: Necesario para Rate Limiting
   # En desarrollo puedes correr Redis con Docker:

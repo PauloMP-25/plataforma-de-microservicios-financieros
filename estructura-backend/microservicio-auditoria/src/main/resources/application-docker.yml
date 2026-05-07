@@ -7,6 +7,8 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 
 spring:
+  application:
+    name: microservicio-auditoria
   # ── Base de datos ────────────────────────────────────────────────────────────
   datasource:
     url: ${SPRING_DATASOURCE_URL}
@@ -65,6 +67,7 @@ eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE}
+    enabled: trues
     register-with-eureka: true
     fetch-registry: true
     # Intervalo de refresco del registro (en segundos)

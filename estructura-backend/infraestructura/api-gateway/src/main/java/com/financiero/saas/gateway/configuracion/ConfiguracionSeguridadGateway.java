@@ -41,19 +41,22 @@ public class ConfiguracionSeguridadGateway {
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
-            // ✅ Sin estado: APIs REST no usan sesiones ni cookies CSRF
+            //Sin estado: APIs REST no usan sesiones ni cookies CSRF
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
 
-            // ✅ Sin sesiones: la autenticación es stateless via JWT
+            //Sin sesiones: la autenticación es stateless via JWT
             .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
 
             .authorizeExchange(exchanges -> exchanges
                 // Rutas completamente públicas a nivel de Security
                 .pathMatchers(
+                    "/v3/api-docs/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
                     "/api/v1/auth/**",
                     "/api/v1/mensajeria/otp/**",
-                    "/actuator/health"
+                    "/actuator/**"
                 ).permitAll()
                 // Todo lo demás: Security lo "permite" porque el
                 // FiltroJwtGlobal ya se encarga de la validación real.

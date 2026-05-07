@@ -57,7 +57,7 @@ public class ConfiguracionSeguridad {
                 // --- Endpoint de Activación (Público) ---
                 .requestMatchers(HttpMethod.PUT, "/api/v1/auth/activar/**").permitAll()
                 // --- Monitoreo y Documentación (Público) ---
-                .requestMatchers("/actuator/health").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers(
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
