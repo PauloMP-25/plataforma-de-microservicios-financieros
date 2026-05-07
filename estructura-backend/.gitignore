@@ -1,9 +1,41 @@
-**/target/
+# --- GENERAL & IDEs ---
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+*.log
 **/logs/
-*.gz
+
+
+# --- JAVA & SPRING (Microservicios) ---
+**/target/
+**/build/
+.metadata
+.mtj.tmp/
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+hs_err_pid*
+replay_pid*
+**/nbactions.xml
+**/nb-configuration.xml
+.nb-gradle/
+
+# ── DOCKER & INFRAESTRUCTURA ──────────────────────────────────────────────────
+
+# Ignorar archivos de secretos y configuración local
+docker/.env
+docker/docker-compose.override.yml
+
+# Ignorar datos persistentes si decidieras mapear carpetas (ej: ./data/postgres)
+**/data/
+**/logs/
 *.log
 
-venv/
-__pycache__/
-.env
-*.pyc
+# Ignorar archivos temporales de Docker/S.O.
+.docker/
+.DS_Store
+Thumbs.db

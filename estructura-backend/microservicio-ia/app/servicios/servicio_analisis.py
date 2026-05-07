@@ -29,8 +29,11 @@ Patrón de cada método público:
 
 from __future__ import annotations
 
+from datetime import datetime
 import logging
 from typing import Optional
+
+from dateutil.relativedelta import relativedelta
 
 from app.clientes.cliente_auditoria import enviar_evento_auditoria
 from app.clientes.cliente_financiero import ClienteNucleoFinanciero
@@ -154,43 +157,52 @@ class ServicioAnalisis:
     # MÓDULO 3 — Detección de Anomalías
     # ══════════════════════════════════════════════════════════════════════════
 
-    async def ejecutar_detectar_anomalias(
-        self,
-        peticion: PeticionConFiltroFecha,
-        ip_origen: str = "127.0.0.1",
+async def ejecutar_detectar_anomalias(self,peticion: PeticionConFiltroFecha,ip_origen: str = "127.0.0.1",
     ) -> RespuestaModulo:
-        """
-        Detecta transacciones inusuales mediante Z-Score sobre el historial
-        de gastos del usuario.
-        """
-        df = self._obtener_dataframe(
-            usuario_id=peticion.usuario_id,
-            token=peticion.token,
-            tamanio=peticion.tamanio_pagina,
-            mes=peticion.mes,
-            anio=peticion.anio,
-        )
+    
+    # 1. Calculamos el rango: Mes solicitado + 6 meses atrás
+    mes_final = peticion.mes or datetime.now().month
+    anio_final = peticion.anio or datetime.now().year
+    fecha_fin = datetime(anio_final, mes_final, 1) + relativedelta(months=1) - relativedelta(seconds=1)
+    # Restamos 6 meses para tener historial de referencia
+    fecha_inicio = datetime(anio_final, mes_final, 1) - relativedelta(months=6)
 
-        self._verificar_datos(df, minimo_filas=5, tipo=TipoMovimiento.GASTO)
+    # 2. Obtenemos el DataFrame con el rango extendido
+    # Nota: Usamos el cliente financiero con las fechas calculadas
+    respuesta_json = self._cliente_financiero.obtener_historial_transacciones(
+        usuario_id=peticion.usuario_id,
+        token=peticion.token,
+        tamanio=peticion.tamanio_pagina,
+        desde=fecha_inicio.isoformat(),
+        hasta=fecha_fin.isoformat()
+    )
+    df = json_a_dataframe(respuesta_json)
 
-        insight, grafico = motor_ia.analizar_anomalias(
-            df=df,
-            config=self._config,
-        )
+    # 3. Verificación de datos mínimos para el cálculo estadístico
+    self._verificar_datos(df, minimo_filas=5, tipo=TipoMovimiento.GASTO)
 
-        respuesta = self._coach.generar_respuesta(
-            usuario_id=peticion.usuario_id,
-            insight=insight,
-            grafico=grafico,
-        )
+    # 4. Llamada al motor (Ahora los nombres coinciden)
+    insight, grafico = motor_ia.analizar_anomalias(
+        df=df,
+        config=self._config,
+    )
 
-        await self._auditar(
-            usuario_id=peticion.usuario_id,
-            accion="ANOMALIAS_DETECTADAS",
-            detalles=f"Anomalías encontradas: {insight.hallazgos.get('total_anomalias', 0)}",
-            ip_origen=ip_origen,
-        )
-        return respuesta
+    # 5. Generar respuesta con el Coach (Gemini)
+    respuesta = self._coach.generar_respuesta(
+        usuario_id=peticion.usuario_id,
+        insight=insight,
+        grafico=grafico,
+    )
+
+    # 6. Auditoría
+    await self._auditar(
+        usuario_id=peticion.usuario_id,
+        accion="ANOMALIAS_DETECTADAS",
+        detalles=f"Anomalías: {insight.hallazgos.get('total_anomalias', 0)} en rango 6 meses",
+        ip_origen=ip_origen,
+    )
+    
+    return respuesta
 
     # ══════════════════════════════════════════════════════════════════════════
     # MÓDULO 4 — Optimización de Suscripciones / Gastos Hormiga

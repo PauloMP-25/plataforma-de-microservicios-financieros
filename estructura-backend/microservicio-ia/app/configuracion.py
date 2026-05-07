@@ -47,7 +47,8 @@ class Configuracion(BaseSettings):
     eureka_servidor_url: str = "http://admin:admin123@localhost:8761/eureka"
     eureka_instancia_host: str = "192.168.18.28"
     eureka_instancia_puerto: int = Field(default=8086, ge=1024, le=65535)
-
+    #Desactivamos Eureka por el momento
+    eureka_enable: bool = False
     # ══════════════════════════════════════════════════════════════════════════
     # URLs DE MICROSERVICIOS JAVA
     # ══════════════════════════════════════════════════════════════════════════

@@ -17,7 +17,8 @@ import calendar
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
 
-from app.configuracion import obtener_configuracion
+from app.configuracion import Configuracion, obtener_configuracion
+from app.modelos.esquemas import InsightAnalitico, MetadataGrafico
 from app.utilidades.preparador_datos import (
     filtrar_por_tipo,
     agrupar_por_mes,
@@ -229,7 +230,7 @@ def predecir_gastos_proximo_mes(df: pd.DataFrame) -> Dict[str, Any]:
 # MÓDULO 3: DETECTAR ANOMALÍAS FINANCIERAS
 # ══════════════════════════════════════════════════════════════════════════════
 
-def detectar_anomalias_financieras(df: pd.DataFrame) -> Dict[str, Any]:
+def analizar_anomalias(df: pd.DataFrame, config: Configuracion) -> Tuple[InsightAnalitico, MetadataGrafico]:    
     """
     Módulo 3: Detecta transacciones anómalas usando el método de Z-Score.
     Una transacción es anómala si su monto supera N desviaciones estándar

@@ -48,6 +48,13 @@ public class ConfiguracionSeguridad {
 
                 // ── Infraestructura ───────────────────────────────────────────
                 .requestMatchers("/error").permitAll()
+                                // --- Monitoreo y Documentación (Público) ---
+                .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers(
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html"
+                ).permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(filtroJwt, UsernamePasswordAuthenticationFilter.class);

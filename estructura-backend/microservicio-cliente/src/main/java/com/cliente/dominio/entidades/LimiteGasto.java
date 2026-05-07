@@ -36,8 +36,8 @@ public class LimiteGasto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(updatable = false, nullable = false)
-    private UUID id;
+        @Column(updatable = false, nullable = false)
+        private UUID id;
 
     /**
      * Referencia al usuario propietario del límite
