@@ -28,8 +28,8 @@ import java.util.UUID;
 public class AuditoriaTransaccional {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(updatable = false, nullable = false)
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     private UUID id;
 
     /** UUID del usuario que realizó la acción. */

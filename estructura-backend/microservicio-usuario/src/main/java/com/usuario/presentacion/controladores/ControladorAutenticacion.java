@@ -33,9 +33,9 @@ public class ControladorAutenticacion {
     // Activacion de Cuenta
     // =========================================================================
     @PutMapping("/activar/{usuarioId}")
-    public ResponseEntity<?> activarCuenta(@PathVariable UUID usuarioId, HttpServletRequest httpRequest) {
+    public ResponseEntity<?> activarCuenta(@PathVariable UUID usuarioId, @RequestParam(required = false) String telefono, HttpServletRequest httpRequest) {
         String ipCliente = UtilidadIp.obtenerIpRemota(httpRequest);
-        servicioAuth.activarCuenta(usuarioId, ipCliente);
+        servicioAuth.activarCuenta(usuarioId, telefono,ipCliente);
         return ResponseEntity.ok(Map.of(
                 "mensaje", "Cuenta activada correctamente",
                 "timestamp", LocalDateTime.now()
@@ -138,10 +138,11 @@ public class ControladorAutenticacion {
     // =========================================================================
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetearPassword(
+            @RequestParam UUID registroId,
             @RequestParam String codigoOtp,
             @Valid @RequestBody SolicitudRestablecerPassword solicitud) {
 
-        servicioAuth.restablecerPassword(codigoOtp, solicitud);
+        servicioAuth.restablecerPassword(registroId, codigoOtp, solicitud);
 
         return ResponseEntity.ok(Map.of(
                 "mensaje", "Contraseña restablecida con éxito.",

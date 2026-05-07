@@ -26,8 +26,8 @@ import java.util.UUID;
 public class RegistroAuditoria {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", updatable = false, nullable = false)
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     private UUID id;
 
     @Column(name = "fecha_hora", nullable = false)

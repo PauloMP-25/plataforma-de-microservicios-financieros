@@ -39,6 +39,8 @@ ENV/
 .angular/
 .editorconfig
 .eslintcache
+angular.json
+package-lock.json
 
 # ── DOCKER & INFRAESTRUCTURA ──────────────────────────────────────────────────
 

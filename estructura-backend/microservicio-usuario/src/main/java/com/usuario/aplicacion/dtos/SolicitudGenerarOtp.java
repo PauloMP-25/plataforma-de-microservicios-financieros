@@ -1,22 +1,27 @@
 package com.usuario.aplicacion.dtos;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 import java.util.UUID;
 
-/**
- * DTO para solicitar al microservicio de mensajería la generación de un código.
- */
 public record SolicitudGenerarOtp(
-        @NotNull
+        @NotNull(message = "El usuarioId es obligatorio")
         UUID usuarioId,
-        @NotNull
-        @Email
-        String email,
-        String telefono,
-        @NotNull
-        TipoVerificacion tipo, // Usamos Enums en ambos lados
-        @NotNull
-        PropositoCodigo proposito) {
 
-}
+        @NotBlank(message = "El email es obligatorio")
+        @Email(message = "Formato de email inválido")
+        String email,
+
+        @NotBlank(message = "El teléfono es obligatorio")
+        @Size(max = 9, message = "El teléfono no puede tener más de 9 caracteres")
+        String telefono, // Opcional, se llena si el tipo es SMS
+
+        @NotNull(message = "El tipo de canal es obligatorio")
+        TipoVerificacion tipo, // <--- Faltaba este campo
+
+        @NotNull(message = "El propósito es obligatorio")
+        PropositoCodigo proposito 
+) {}

@@ -31,16 +31,20 @@ public interface ClienteMensajeria {
      * @param solicitud
      */
     @PostMapping("/api/v1/mensajeria/otp/generar")
-    void generarCodigo(@RequestBody SolicitudGenerarOtp solicitud);
+    UUID generarCodigo(@RequestBody SolicitudGenerarOtp solicitud);
     
     /**
      * Valida un código de recuperación y devuelve el UUID del usuario.
      * Mapea al GET que creamos en el Controlador de Mensajería.
      * @param codigo
+     * @param usuarioId
      * @return 
      */
-    @GetMapping("/api/v1/mensajeria/otp/validar-recuperacion")
-    UUID validarCodigoYObtenerUsuario(@RequestParam("codigo") String codigo);
+    @GetMapping("/api/v1/mensajeria/validar-recuperacion")
+    UUID validarCodigoYObtenerUsuario(
+        @RequestParam("registroId") UUID registroId, 
+        @RequestParam("codigo") String codigo
+    );
     
     @PostMapping("/api/v1/mensajeria/otp/validar-limite")
     void validarLimite(@RequestBody SolicitudGenerarOtp solicitud);

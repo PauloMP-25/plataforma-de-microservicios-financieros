@@ -1,40 +1,39 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+#  LUKA APP — application-docker.yml (API GATEWAY)
+#  Perfil Spring Boot activo cuando SPRING_PROFILES_ACTIVE=docker
+# ═══════════════════════════════════════════════════════════════════════════════
+
 server:
-  port: 8090
+  port: 8080 # El puerto interno en Docker (mapeado al 8080 en el host)
 
 spring:
   application:
     name: api-gateway
+
   # ─────────────────────────────────────────────────────────────────────────
   # REDIS: Necesario para Rate Limiting
-  # En desarrollo puedes correr Redis con Docker:
-  #   docker run -d -p 6379:6379 redis:alpine
   # ─────────────────────────────────────────────────────────────────────────
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
+      host: ${REDIS_HOST:redis}
       port: ${REDIS_PORT:6379}
       connect-timeout: 2s
       timeout: 1s
-      # password: ${REDIS_PASSWORD:} # Descomentar en producción
 
   # ═══════════════════════════════════════════════════════════════════════════
   # SPRING CLOUD GATEWAY — CONFIGURACIÓN CENTRAL
   # ═══════════════════════════════════════════════════════════════════════════
   cloud:
     gateway:
-      # Tiempos de espera globales
       httpclient:
-        connect-timeout: 30000  # 30 segundos para conectar
-        response-timeout: 60s # 60 segundos para responder
-      # Descubrimiento automático: si un servicio se llama "mi-servicio"
-      # en Eureka, el Gateway crea automáticamente una ruta /mi-servicio/**
-      # Útil para tener rutas de respaldo, pero aquí las definimos manualmente
-      # para tener control total sobre paths, filtros y seguridad.
+        connect-timeout: 30000  # 30 segundos para conectar (soluciona el timeout en cold start)
+        response-timeout: 60s # 60 segundos para responder (margen amplio para el primer arranque)
+      
       discovery:
         locator:
           enabled: true
-          lower-case-service-id: true  # Convierte MICROSERVICIO-USUARIO → microservicio-usuario
-
+          lower-case-service-id: true
+      
       # ─────────────────────────────────────────────────────────────────────
       # RUTAS DEFINIDAS MANUALMENTE
       # Estructura de cada ruta:
@@ -45,25 +44,21 @@ spring:
       # ─────────────────────────────────────────────────────────────────────
       routes:
         # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-USUARIO  (Puerto 8081)                   │
-        # │  Rutas PÚBLICAS: login y registro no requieren JWT      │
+        # │  MICROSERVICIO-USUARIO  (Puerto 8081)             │
+        # │  Rutas PÚBLICAS: login y registro                 │
         # └─────────────────────────────────────────────────────────┘
         - id: servicio-usuario-auth
           uri: lb://MICROSERVICIO-USUARIO
           predicates:
             - Path=/api/v1/auth/**
           filters:
-            # StripPrefix=0: NO elimina ningún segmento del path.
-            # La petición llega como /api/v1/auth/login y se reenvía igual.
             - StripPrefix=0
-            # Añade cabecera para que el microservicio sepa que viene del Gateway
             - AddRequestHeader=X-Gateway-Source, api-gateway
-          # Sin filtro JWT: estos endpoints son públicos
           metadata:
             requiere-autenticacion: false
 
         # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-USUARIO  — Rutas protegidas              │
+        # │  MICROSERVICIO-USUARIO  — Rutas protegidas       │
         # └─────────────────────────────────────────────────────────┘
         - id: usuario-protegido
           uri: lb://MICROSERVICIO-USUARIO
@@ -78,7 +73,21 @@ spring:
             requiere-autenticacion: true
 
         # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-CLIENTE  (Puerto 8083)                   │
+        # │  MICROSERVICIO-CLIENTE  (Puerto 8083)             │
+        # │  Rutas PÚBLICAS: login y registro no requieren JWT│
+        # └─────────────────────────────────────────────────────────┘
+        - id: servicio-cliente-interno
+          uri: lb://MICROSERVICIO-CLIENTE
+          predicates:
+            - Path=/api/v1/clientes/perfil/inicial
+            - Path=/api/v1/clientes/interno/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+          metadata:
+            requiere-autenticacion: false
+        # ┌─────────────────────────────────────────────────────────┐
+        # │  MICROSERVICIO-CLIENTE  — Rutas protegidas              │
         # └─────────────────────────────────────────────────────────┘
         - id: servicio-cliente
           uri: lb://MICROSERVICIO-CLIENTE
@@ -87,7 +96,6 @@ spring:
           filters:
             - StripPrefix=0
             - AddRequestHeader=X-Gateway-Source, api-gateway
-            # Rate Limiting: máx 20 peticiones/segundo por usuario autenticado
             - name: RequestRateLimiter
               args:
                 redis-rate-limiter.replenishRate: 20
@@ -113,8 +121,8 @@ spring:
             rol-requerido: ROLE_ADMIN
 
         # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-MENSAJERIA  (Puerto 8084)                │
-        # │  Los OTP son públicos, el resto protegido               │
+        # │  MICROSERVICIO-MENSAJERIA  (Puerto 8084)          │
+        # │  Los OTP son públicos, el resto protegido         │
         # └─────────────────────────────────────────────────────────┘
         - id: servicio-mensajeria-otp
           uri: lb://MICROSERVICIO-MENSAJERIA
@@ -127,7 +135,7 @@ spring:
             requiere-autenticacion: false
 
         # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-NUCLEO-FINANCIERO  (Puerto 8085)         │
+        # │  MICROSERVICIO-NUCLEO-FINANCIERO  (Puerto 8085)   │
         # └─────────────────────────────────────────────────────────┘
         - id: servicio-nucleo-financiero
           uri: lb://MICROSERVICIO-NUCLEO-FINANCIERO
@@ -144,6 +152,17 @@ spring:
                 key-resolver: "#{@userKeyResolver}"
           metadata:
             requiere-autenticacion: true
+            
+        # ┌─────────────────────────────────────────────────────────┐
+        # │ EXCEPCIÓN: Rutas de Actuator de todos los microservicios│
+        # │ Para que Docker/K8s puedan revisar el healthcheck libres│
+        # └─────────────────────────────────────────────────────────┘
+        - id: rutas-actuator-publicas
+          uri: no://op # No redirige, solo clasifica
+          predicates:
+            - Path=/**/actuator/**
+          metadata:
+            requiere-autenticacion: false
 
       # ─────────────────────────────────────────────────────────────────────
       # CORS GLOBAL: Aplica a todas las rutas del Gateway
@@ -176,20 +195,23 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://${EUREKA_USER:admin}:${EUREKA_PASSWORD:admin123}@${EUREKA_HOST:localhost}:8761/eureka/
-    # El Gateway SÍ busca el registry para resolver lb:// en las rutas
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE}
     fetch-registry: true
     register-with-eureka: true
-    # Con qué frecuencia (ms) actualiza la caché del registry
-    registry-fetch-interval-seconds: 5
+    registry-fetch-interval-seconds: 10
+    eureka-connection-idle-timeout-seconds: 30
   instance:
+    hostname: ${EUREKA_INSTANCE_HOSTNAME:api-gateway}
     prefer-ip-address: true
-    # Tiempo que tarda Eureka en detectar que el Gateway cayó
-    lease-expiration-duration-in-seconds: 20
     lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+    health-check-url-path: /actuator/health
+    status-page-url-path: /actuator/info
+    metadata-map:
+      startup: ${random.int}
 
 # ═══════════════════════════════════════════════════════════════════════════
-# JWT: Clave compartida para validar tokens (la misma del microservicio-usuario)
+# JWT: Clave compartida para validar tokens (la de todos los ms)
 # En producción: usa variable de entorno JWT_SECRET_KEY
 # ═══════════════════════════════════════════════════════════════════════════
 app:
@@ -198,27 +220,31 @@ app:
       secret-key: ${JWT_SECRET_KEY:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
 
 # ═══════════════════════════════════════════════════════════════════════════
-# ACTUATOR
+# ACTUATOR (Health Checks)
 # ═══════════════════════════════════════════════════════════════════════════
 management:
   endpoints:
     web:
       exposure:
-        include: health, info, gateway
+        include: health,info,gateway,metrics,env
+      base-path: /actuator
   endpoint:
     health:
       show-details: always
+      probes:
+        enabled: true
     gateway:
-      enabled: true  # Expone /actuator/gateway/routes para ver rutas en tiempo real
+      enabled: true
 
 # ═══════════════════════════════════════════════════════════════════════════
 # LOGGING
 # ═══════════════════════════════════════════════════════════════════════════
 logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
   level:
+    root: INFO
     org.springframework.cloud.gateway: INFO
     org.springframework.security: WARN
-    com.financiero.saas.gateway: DEBUG
-    root: INFO
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    com.netflix.eureka: WARN
+    com.netflix.discovery: WARN

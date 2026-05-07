@@ -20,6 +20,7 @@ import com.usuario.infraestructura.clientes.ClienteMensajeria;
 import com.usuario.infraestructura.clientes.ClientePerfilExterno;
 import com.usuario.infraestructura.mensajeria.PublicadorAuditoria;
 import com.usuario.infraestructura.seguridad.ServicioJwt;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.*;
@@ -47,17 +48,29 @@ public class ServicioAutenticacion {
     // Activar la cuenta del usuario
     // =========================================================================
     @Transactional
-    public void activarCuenta(UUID usuarioId, String ipCliente) {
+    public void activarCuenta(UUID usuarioId, String telefono, String ipCliente) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("ID no encontrado"));
+
         if (!usuario.isHabilitado()) {
+            // 1. Si el usuario validó por SMS, ahora sí guardamos el teléfono en el Perfil
+            if (telefono != null && !telefono.isBlank()) {
+                try {
+                    clientePerfilExterno.actualizarTelefono(usuarioId, telefono);
+                    log.info("[MS-USUARIO] Teléfono verificado y guardado para usuario: {}", usuarioId);
+                } catch (Exception e) {
+                    log.error("No se pudo persistir el teléfono en MS-CLIENTE: {}", e.getMessage());
+                    // Dependiendo de tu lógica, podrías lanzar excepción aquí para hacer rollback
+                }
+            }
+
+            // 2. Habilitar cuenta
             usuario.setHabilitado(true);
             usuario.setCuentaNoBloqueada(true);
             usuarioRepository.save(usuario);
-            publicadorAuditoria.publicarAcceso(usuario.getId(),
-                    ipCliente,
+
+            publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente,
                     EstadoAcceso.EXITO, "CUENTA_ACTIVADA_VIA_OTP", PublicadorAuditoria.RK_ACCESO_LOGIN);
-            log.info("[MS-USUARIO] Usuario {} habilitado con éxito", usuarioId);
         }
     }
 
@@ -77,51 +90,73 @@ public class ServicioAutenticacion {
 
         usuario.setPassword(passwordEncoder.encode(solicitud.nuevoPassword()));
         usuarioRepository.save(usuario);
-        publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente, EstadoAcceso.EXITO, "CAMBIO_PASSWORD_PERFIL", PublicadorAuditoria.RK_ACCESO_LOGIN);
+        publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente, EstadoAcceso.EXITO, "CAMBIO_PASSWORD_PERFIL",
+                PublicadorAuditoria.RK_ACCESO_LOGIN);
     }
 
     // =========================================================================
     // Recuperación de Contraseña
     // =========================================================================
     @Transactional
-    public void iniciarRecuperacion(SolicitudRecuperacion solicitud) {
+    public UUID iniciarRecuperacion(SolicitudRecuperacion solicitud) {
         Usuario usuario = usuarioRepository.findByCorreoAndHabilitadoTrue(solicitud.correo())
                 .orElseThrow(() -> new IllegalArgumentException("Correo no encontrado"));
+
+        String telefonoAEnviar = solicitud.telefono();
+
+        // Si el usuario elige SMS, validamos que el teléfono coincida con el que
+        // tenemos en Perfil
+        if (solicitud.tipo() == TipoVerificacion.SMS) {
+            String telefonoRegistrado = clientePerfilExterno.obtenerTelefono(usuario.getId());
+            if (telefonoRegistrado == null || !telefonoRegistrado.equals(solicitud.telefono())) {
+                throw new IllegalArgumentException("El teléfono no coincide con nuestros registros.");
+            }
+            telefonoAEnviar = telefonoRegistrado;
+        }
+
         clienteMensajeria.validarLimite(new SolicitudGenerarOtp(
                 usuario.getId(),
                 usuario.getCorreo(),
-                null,
-                TipoVerificacion.EMAIL, PropositoCodigo.RESTABLECER_PASSWORD));
+                telefonoAEnviar,
+                solicitud.tipo(),
+                PropositoCodigo.RESTABLECER_PASSWORD));
+        
+        UUID registroId = clienteMensajeria.generarCodigo(new SolicitudGenerarOtp(
+            usuario.getId(),
+            usuario.getCorreo(),
+            telefonoAEnviar,
+            solicitud.tipo(),
+            PropositoCodigo.RESTABLECER_PASSWORD));
+
         publicadorAuditoria.publicarSolicitudOtp(new SolicitudGenerarOtp(
                 usuario.getId(),
                 usuario.getCorreo(),
-                null,
-                TipoVerificacion.EMAIL,
-                PropositoCodigo.RESTABLECER_PASSWORD
-        ));
-
-        publicadorAuditoria.publicarAcceso(usuario.getId(), "N/A", EstadoAcceso.EXITO, "INICIO_RECUPERACION_PASSWORD", PublicadorAuditoria.RK_ACCESO_LOGIN);
+                telefonoAEnviar,
+                solicitud.tipo(),
+                PropositoCodigo.RESTABLECER_PASSWORD));
+        return registroId;
     }
 
     @Transactional
-    public void restablecerPassword(String codigoOtp, SolicitudRestablecerPassword solicitud) {
+    public void restablecerPassword(UUID registroId, String codigoOtp, SolicitudRestablecerPassword solicitud) {
         if (!solicitud.contrasenasNuevasCoinciden()) {
             throw new IllegalArgumentException("Las contraseñas no coinciden");
         }
+        
+        // Pasamos el ID de la fila de la tabla del MS-Mensajería y el código
+        UUID idUsuarioConfirmado = clienteMensajeria.validarCodigoYObtenerUsuario(registroId, codigoOtp);
 
-        // El MS-Mensajería valida el código y nos devuelve el ID del usuario
-        UUID usuarioId = clienteMensajeria.validarCodigoYObtenerUsuario(codigoOtp);
-        
-        if (usuarioId == null) {
-        throw new TokenInvalidoException("No se pudo validar el código de recuperación. Intente más tarde.");
+        if (idUsuarioConfirmado == null) {
+            throw new TokenInvalidoException("Validación fallida.");
         }
-        
-        Usuario usuario = usuarioRepository.findById(usuarioId)
+
+        Usuario usuario = usuarioRepository.findById(idUsuarioConfirmado)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado tras validación OTP"));
 
         usuario.setPassword(passwordEncoder.encode(solicitud.nuevoPassword()));
         usuarioRepository.save(usuario);
-        publicadorAuditoria.publicarAcceso(usuario.getId(), "N/A", EstadoAcceso.EXITO, "RESETEO_PASSWORD_OTP", PublicadorAuditoria.RK_ACCESO_LOGIN);
+        publicadorAuditoria.publicarAcceso(usuario.getId(), "N/A", EstadoAcceso.EXITO, "RESETEO_PASSWORD_OTP",
+                PublicadorAuditoria.RK_ACCESO_LOGIN);
     }
 
     // =========================================================================
@@ -136,7 +171,8 @@ public class ServicioAutenticacion {
         usuario.setCuentaNoBloqueada(false);
         usuarioRepository.save(usuario);
 
-        publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente, EstadoAcceso.EXITO, "ELIMINACION_LOGICA_CUENTA", PublicadorAuditoria.RK_ACCESO_LOGIN);
+        publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente, EstadoAcceso.EXITO, "ELIMINACION_LOGICA_CUENTA",
+                PublicadorAuditoria.RK_ACCESO_LOGIN);
     }
 
     // =========================================================================
@@ -156,26 +192,27 @@ public class ServicioAutenticacion {
             throw new CuentaNoHabilitadaException(usuario.getCorreo());
         }
 
-        // 3. Verificar si la cuenta no está bloqueada (Opcional, si manejas LockedException)
+        // 3. Verificar si la cuenta no está bloqueada (Opcional, si manejas
+        // LockedException)
         if (!usuario.isAccountNonLocked()) {
             throw new LockedException("Su cuenta ha sido bloqueada temporalmente por seguridad.");
         }
 
-        // 4. Autenticar contraseña: Si la clave está mal, lanzará BadCredentialsException
+        // 4. Autenticar contraseña: Si la clave está mal, lanzará
+        // BadCredentialsException
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.correo(), request.password())
-        );
+                new UsernamePasswordAuthenticationToken(request.correo(), request.password()));
 
         // 5. Éxito
-        publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente, EstadoAcceso.EXITO, "LOGIN_EXITOSO", PublicadorAuditoria.RK_ACCESO_LOGIN);
+        publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente, EstadoAcceso.EXITO, "LOGIN_EXITOSO",
+                PublicadorAuditoria.RK_ACCESO_LOGIN);
 
         return RespuestaAutenticacion.of(
                 jwtService.generarToken(usuario),
                 jwtService.obtenerExpiracionJwt(),
                 usuario.getId().toString(),
                 usuario.getNombreUsuario(),
-                usuario.getRoles().stream().map(Rol::getNombre).toList()
-        );
+                usuario.getRoles().stream().map(Rol::getNombre).toList());
     }
 
     // =========================================================================
@@ -192,33 +229,22 @@ public class ServicioAutenticacion {
                 .nombreUsuario(request.nombreUsuario())
                 .correo(request.correo())
                 .password(passwordEncoder.encode(request.password()))
-                .habilitado(false)
+                .habilitado(false) // Seguirá deshabilitado hasta validar
                 .cuentaNoBloqueada(true)
                 .build();
         usuario.getRoles().add(rolBase);
-        clienteMensajeria.validarLimite(new SolicitudGenerarOtp(
-                usuario.getId(),
-                usuario.getCorreo(),
-                null,
-                TipoVerificacion.EMAIL, PropositoCodigo.ACTIVACION_CUENTA));
+
         Usuario guardado = usuarioRepository.save(usuario);
 
-        // 1. Perfil: Si esto es crítico, mantenlo síncrono o usa un try-catch
+        // Creamos el perfil inicial (síncrono o asíncrono según tu arquitectura)
         try {
             clientePerfilExterno.crearPerfilInicial(guardado.getId());
         } catch (Exception e) {
-            log.warn("MS-Cliente no disponible, el perfil se creará luego.");
+            log.warn("Perfil no creado inmediatamente: {}", e.getMessage());
         }
-        // 2. OTP: No importa si MS-Mensajería está caído, el mensaje se guarda en RabbitMQ
-        publicadorAuditoria.publicarSolicitudOtp(new SolicitudGenerarOtp(
-                guardado.getId(),
-                guardado.getCorreo(),
-                null,
-                TipoVerificacion.EMAIL,
-                PropositoCodigo.ACTIVACION_CUENTA
-        ));
 
-        publicadorAuditoria.publicarAcceso(guardado.getId(), ipCliente, EstadoAcceso.EXITO, "REGISTRO_INICIAL", PublicadorAuditoria.RK_ACCESO_LOGIN);
+        publicadorAuditoria.publicarAcceso(guardado.getId(), ipCliente, EstadoAcceso.EXITO, "REGISTRO_INICIAL",
+                PublicadorAuditoria.RK_ACCESO_LOGIN);
 
         return guardado.getId();
     }
@@ -228,7 +254,8 @@ public class ServicioAutenticacion {
     // =========================================================================
     @Transactional
     public void registrarLogout(UUID usuarioId, String ipCliente) {
-        publicadorAuditoria.publicarAcceso(usuarioId, ipCliente, EstadoAcceso.EXITO, "LOGOUT_EXITOSO", PublicadorAuditoria.RK_ACCESO_LOGIN);
+        publicadorAuditoria.publicarAcceso(usuarioId, ipCliente, EstadoAcceso.EXITO, "LOGOUT_EXITOSO",
+                PublicadorAuditoria.RK_ACCESO_LOGIN);
     }
 
     // =========================================================================
@@ -248,8 +275,38 @@ public class ServicioAutenticacion {
 
     private void validarPasswordActual(Usuario usuario, String passwordActual, String ipCliente) {
         if (!passwordEncoder.matches(passwordActual, usuario.getPassword())) {
-            publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente, EstadoAcceso.FALLO, "PASSWORD_ACTUAL_INCORRECTA", PublicadorAuditoria.RK_ACCESO_FALLO);
+            publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente, EstadoAcceso.FALLO,
+                    "PASSWORD_ACTUAL_INCORRECTA", PublicadorAuditoria.RK_ACCESO_FALLO);
             throw new IllegalArgumentException("La contraseña actual es incorrecta");
         }
+    }
+
+    @Transactional
+    public void solicitarOtpActivacion(UUID usuarioId, SolicitudGenerarOtp solicitud) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+        // NO guardamos en base de datos. Solo validamos que si es SMS, venga el
+        // teléfono.
+        if (solicitud.tipo() == TipoVerificacion.SMS
+                && (solicitud.telefono() == null || solicitud.telefono().isBlank())) {
+            throw new IllegalArgumentException("El teléfono es obligatorio para la verificación por SMS.");
+        }
+
+        // Validamos límites en el MS-Mensajería (usando el teléfono de la solicitud)
+        clienteMensajeria.validarLimite(new SolicitudGenerarOtp(
+                usuario.getId(),
+                usuario.getCorreo(),
+                solicitud.telefono(),
+                solicitud.tipo(),
+                PropositoCodigo.ACTIVACION_CUENTA));
+
+        // Publicamos para el envío (Twilio o Mail)
+        publicadorAuditoria.publicarSolicitudOtp(new SolicitudGenerarOtp(
+                usuario.getId(),
+                usuario.getCorreo(),
+                solicitud.telefono(),
+                solicitud.tipo(),
+                PropositoCodigo.ACTIVACION_CUENTA));
     }
 }
