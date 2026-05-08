@@ -14,8 +14,9 @@ import org.springframework.stereotype.Component;
 public class ClienteMensajeriaFallback implements ClienteMensajeria {
 
     @Override
-    public void generarCodigo(SolicitudGenerarOtp solicitud) {
+    public UUID generarCodigo(SolicitudGenerarOtp solicitud) {
         log.error("Fallo crítico: No se pudo conectar con ms-mensajeria para generar OTP. El mensaje quedará en cola si se usa RabbitMQ.");
+        return null;
     }
 
     @Override
