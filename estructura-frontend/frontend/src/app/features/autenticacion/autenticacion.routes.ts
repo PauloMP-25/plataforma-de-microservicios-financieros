@@ -2,16 +2,15 @@ import { Routes } from '@angular/router';
 
 export const AUTENTICACION_ROUTES: Routes = [
   {
+    path: '',
+    loadComponent: () => import('./contenedor-autenticacion/contenedor-autenticacion').then(m => m.ContenedorAutenticacion)
+  },
+  {
     path: 'iniciar-sesion',
-    loadComponent: () => import('./iniciar-sesion/iniciar-sesion').then(m => m.IniciarSesion)
+    redirectTo: ''
   },
   {
     path: 'crear-cuenta',
-    loadComponent: () => import('./crear-cuenta/crear-cuenta').then(m => m.CrearCuenta)
-  },
-  {
-    path: '',
-    redirectTo: 'iniciar-sesion',
-    pathMatch: 'full'
+    redirectTo: ''
   }
 ];
