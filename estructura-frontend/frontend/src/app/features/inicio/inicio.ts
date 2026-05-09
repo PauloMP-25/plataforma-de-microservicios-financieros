@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { ServicioTema } from '../../core/services/servicio-tema';
 
 @Component({
   selector: 'app-inicio',
@@ -12,6 +13,7 @@ import { RouterLink } from '@angular/router';
 export class Inicio {
   readonly anioActual = new Date().getFullYear();
   menuAbierto = false;
+  readonly servicioTema = inject(ServicioTema);
 
   scrollHacia(idElemento: string): void {
     this.menuAbierto = false;

@@ -173,6 +173,40 @@ $max-ancho: 1200px;
   gap: 12px;
 }
 
+// ── Botón toggle tema ──
+.inicio__btn-tema {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid $borde-sutil;
+  background: rgba(255,255,255,0.05);
+  color: $texto-secundario;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: $transicion;
+
+  &:hover {
+    border-color: $primario;
+    color: $primario-claro;
+    background: rgba(91,106,240,0.1);
+    transform: rotate(20deg);
+  }
+
+  &--movil {
+    width: 100%;
+    height: auto;
+    border-radius: $radio-sm;
+    padding: 14px;
+    justify-content: center;
+    gap: 10px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+}
+
 .inicio__menu-movil {
   display: none;
   flex-direction: column;
@@ -835,3 +869,127 @@ $max-ancho: 1200px;
   .inicio__footer-inferior { flex-direction: column; gap: 16px; text-align: center; }
   .inicio__seccion-titulo { font-size: 1.8rem; }
 }
+
+// ═══════════════════════════════════════════
+// TEMA CLARO - Sobreescrituras de la landing
+// ═══════════════════════════════════════════
+:host-context(body.tema-claro) {
+  .inicio { background: #F5F6FF; color: #1E2340; }
+
+  .inicio__nav {
+    background: rgba(245,246,255,0.85);
+    border-bottom-color: #E2E5F1;
+  }
+
+  .inicio__logo-texto { color: #1E2340; }
+
+  .inicio__enlace {
+    color: #6B7280;
+    &:hover { color: #1E2340; }
+  }
+
+  .inicio__btn--fantasma {
+    color: #6B7280;
+    &:hover { color: #1E2340; }
+  }
+
+  .inicio__btn-tema {
+    border-color: #E2E5F1;
+    background: rgba(91,106,240,0.06);
+    color: #6B7280;
+  }
+
+  .inicio__titulo { color: #1E2340; }
+
+  .inicio__subtitulo { color: #6B7280; }
+
+  .inicio__estadistica-valor { color: #1E2340; }
+  .inicio__estadistica-label { color: #9CA3AF; }
+  .inicio__estadistica-separador { background: #E2E5F1; }
+
+  .inicio__mockup-pantalla {
+    background: #FFFFFF;
+    border-color: #E2E5F1;
+    box-shadow: 0 20px 60px rgba(91,106,240,0.12);
+  }
+
+  .inicio__mockup-saludo { color: #1E2340; }
+  .inicio__mockup-fecha { color: #9CA3AF; }
+
+  .inicio__mockup-tx {
+    background: #F5F6FF;
+    .inicio__mockup-tx-info span { color: #1E2340; }
+  }
+
+  .inicio__tarjeta {
+    background: #FFFFFF;
+    border-color: #E2E5F1;
+    h3 { color: #1E2340; }
+    p { color: #6B7280; }
+    &:hover {
+      box-shadow: 0 12px 40px rgba(91,106,240,0.12);
+    }
+  }
+
+  .inicio__seccion--oscura {
+    background: #ECEEFE;
+  }
+
+  .inicio__seccion-titulo { color: #1E2340; }
+  .inicio__seccion-desc { color: #6B7280; }
+
+  .inicio__paso-contenido {
+    h3 { color: #1E2340; }
+    p { color: #6B7280; }
+  }
+
+  .inicio__paso-linea { background: #E2E5F1; }
+
+  .inicio__cta-contenido {
+    h2 { color: #1E2340; }
+    p { color: #6B7280; }
+  }
+
+  .inicio__footer {
+    border-top-color: #E2E5F1;
+  }
+
+  .inicio__footer-marca p { color: #9CA3AF; }
+
+  .inicio__footer-col {
+    h4 { color: #1E2340; }
+    a { color: #9CA3AF; &:hover { color: $primario; } }
+  }
+
+  .inicio__footer-inferior {
+    border-top-color: #E2E5F1;
+    span { color: #9CA3AF; }
+  }
+
+  .inicio__footer-redes a { color: #9CA3AF; }
+
+  .inicio__orbe { opacity: 0.04 !important; }
+
+  .inicio__rejilla {
+    background-image:
+      linear-gradient(rgba(91,106,240,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(91,106,240,0.04) 1px, transparent 1px);
+  }
+
+  .inicio__menu-desplegable {
+    background: rgba(245,246,255,0.97);
+    border-bottom-color: #E2E5F1;
+  }
+
+  .inicio__menu-desplegable-enlace {
+    color: #6B7280;
+    &:hover { background: rgba(91,106,240,0.08); color: #1E2340; }
+  }
+
+  .inicio__menu-desplegable-acciones {
+    border-top-color: #E2E5F1;
+  }
+
+  .inicio__menu-movil span { background: #1E2340; }
+}
+

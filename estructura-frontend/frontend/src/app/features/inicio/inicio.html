@@ -25,6 +25,9 @@
     </div>
 
     <div class="inicio__nav-acciones">
+      <button class="inicio__btn-tema" (click)="servicioTema.alternar()" id="btn-toggle-tema" [attr.aria-label]="servicioTema.temaOscuro() ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'">
+        <i [class]="servicioTema.temaOscuro() ? 'fas fa-sun' : 'fas fa-moon'"></i>
+      </button>
       <a routerLink="/autenticacion/iniciar-sesion" class="inicio__btn inicio__btn--fantasma" id="btn-nav-login">
         Iniciar Sesión
       </a>
@@ -54,6 +57,10 @@
       </a>
     </div>
     <div class="inicio__menu-desplegable-acciones">
+      <button class="inicio__btn-tema inicio__btn-tema--movil" (click)="servicioTema.alternar()">
+        <i [class]="servicioTema.temaOscuro() ? 'fas fa-sun' : 'fas fa-moon'"></i>
+        {{ servicioTema.temaOscuro() ? 'Tema Claro' : 'Tema Oscuro' }}
+      </button>
       <a routerLink="/autenticacion/iniciar-sesion" class="inicio__btn inicio__btn--fantasma" (click)="menuAbierto = false">
         Iniciar Sesión
       </a>
