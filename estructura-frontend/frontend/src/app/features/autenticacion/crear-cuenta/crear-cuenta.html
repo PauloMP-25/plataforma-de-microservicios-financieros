@@ -1,1 +1,111 @@
-<p>crear-cuenta works!</p>
+<section class="auth" id="pagina-registro">
+  <div class="auth__fondo">
+    <div class="auth__orbe auth__orbe--1"></div>
+    <div class="auth__orbe auth__orbe--2"></div>
+    <div class="auth__rejilla"></div>
+  </div>
+
+  <a routerLink="/inicio" class="auth__volver" id="btn-volver-inicio-registro">
+    <i class="fas fa-arrow-left"></i> Volver
+  </a>
+
+  <div class="auth__contenedor auth__contenedor--invertido">
+    <!-- Panel Lateral -->
+    <div class="auth__panel-lateral">
+      <div class="auth__lateral-contenido">
+        <h2>¡Hola de nuevo!</h2>
+        <p>Tus finanzas te esperan. Retoma el control de tu dinero y alcanza tus metas financieras.</p>
+        <a routerLink="/autenticacion/iniciar-sesion" class="auth__btn-lateral" id="btn-ir-login">
+          Iniciar Sesión
+        </a>
+      </div>
+    </div>
+
+    <!-- Panel Formulario -->
+    <div class="auth__panel-form">
+      <div class="auth__encabezado">
+        <h1>Crear Cuenta</h1>
+        <p>Únete a nosotros hoy totalmente gratis.</p>
+      </div>
+
+      <form [formGroup]="formulario" (ngSubmit)="registrar()" class="auth__formulario" id="form-registro">
+        <!-- Nombre -->
+        <div class="auth__campo">
+          <label class="auth__label">NOMBRE COMPLETO</label>
+          <div class="auth__input-grupo" [class.auth__input-grupo--error]="formulario.get('nombreUsuario')?.touched && formulario.get('nombreUsuario')?.invalid">
+            <i class="fas fa-user auth__input-icono"></i>
+            <input type="text" formControlName="nombreUsuario" placeholder="Juan Pérez" class="auth__input" id="input-nombre-registro">
+          </div>
+          <span class="auth__error" *ngIf="formulario.get('nombreUsuario')?.touched && formulario.get('nombreUsuario')?.hasError('required')">
+            El nombre es obligatorio
+          </span>
+          <span class="auth__error" *ngIf="formulario.get('nombreUsuario')?.touched && formulario.get('nombreUsuario')?.hasError('minlength')">
+            Mínimo 4 caracteres
+          </span>
+        </div>
+
+        <!-- Correo -->
+        <div class="auth__campo">
+          <label class="auth__label">CORREO ELECTRÓNICO</label>
+          <div class="auth__input-grupo" [class.auth__input-grupo--error]="formulario.get('correo')?.touched && formulario.get('correo')?.invalid">
+            <i class="fas fa-envelope auth__input-icono"></i>
+            <input type="email" formControlName="correo" placeholder="nombre&#64;ejemplo.com" class="auth__input" id="input-correo-registro">
+          </div>
+          <span class="auth__error" *ngIf="formulario.get('correo')?.touched && formulario.get('correo')?.hasError('required')">
+            El correo es obligatorio
+          </span>
+          <span class="auth__error" *ngIf="formulario.get('correo')?.touched && formulario.get('correo')?.hasError('email')">
+            Ingresa un correo válido
+          </span>
+        </div>
+
+        <!-- Contraseña -->
+        <div class="auth__campo">
+          <label class="auth__label">CONTRASEÑA</label>
+          <div class="auth__input-grupo" [class.auth__input-grupo--error]="formulario.get('password')?.touched && formulario.get('password')?.invalid">
+            <i class="fas fa-lock auth__input-icono"></i>
+            <input [type]="mostrarPassword ? 'text' : 'password'" formControlName="password" placeholder="Mínimo 6 caracteres" class="auth__input" id="input-password-registro">
+            <button type="button" class="auth__btn-ojo" (click)="alternarPassword()">
+              <i [class]="mostrarPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
+          </div>
+          <span class="auth__error" *ngIf="formulario.get('password')?.touched && formulario.get('password')?.hasError('required')">
+            La contraseña es obligatoria
+          </span>
+          <span class="auth__error" *ngIf="formulario.get('password')?.touched && formulario.get('password')?.hasError('minlength')">
+            Mínimo 6 caracteres
+          </span>
+        </div>
+
+        <!-- Confirmar Contraseña -->
+        <div class="auth__campo">
+          <label class="auth__label">CONFIRMAR CONTRASEÑA</label>
+          <div class="auth__input-grupo" [class.auth__input-grupo--error]="formulario.get('confirmarPassword')?.touched && (formulario.get('confirmarPassword')?.invalid || formulario.hasError('noCoinciden'))">
+            <i class="fas fa-lock auth__input-icono"></i>
+            <input [type]="mostrarConfirmar ? 'text' : 'password'" formControlName="confirmarPassword" placeholder="Repite tu contraseña" class="auth__input" id="input-confirmar-registro">
+            <button type="button" class="auth__btn-ojo" (click)="alternarConfirmar()">
+              <i [class]="mostrarConfirmar ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
+          </div>
+          <span class="auth__error" *ngIf="formulario.get('confirmarPassword')?.touched && formulario.get('confirmarPassword')?.hasError('required')">
+            Confirma tu contraseña
+          </span>
+          <span class="auth__error" *ngIf="formulario.get('confirmarPassword')?.touched && formulario.hasError('noCoinciden')">
+            Las contraseñas no coinciden
+          </span>
+        </div>
+
+        <!-- Botón Submit -->
+        <button type="submit" class="auth__btn-submit" [disabled]="cargando" id="btn-submit-registro">
+          <span *ngIf="!cargando">Registrarse Gratis</span>
+          <span *ngIf="cargando" class="auth__spinner"></span>
+        </button>
+
+        <!-- Error general -->
+        <div class="auth__error-general" *ngIf="errorMensaje">
+          <i class="fas fa-exclamation-circle"></i> {{ errorMensaje }}
+        </div>
+      </form>
+    </div>
+  </div>
+</section>

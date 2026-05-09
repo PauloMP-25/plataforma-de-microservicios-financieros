@@ -1,0 +1,414 @@
+/* ═══════════════════════════════════════════
+   AUTH - Estilos compartidos (Login / Registro)
+   ═══════════════════════════════════════════ */
+
+$bg-oscuro: #06070A;
+$bg-superficie: #0D0F14;
+$bg-tarjeta: #12151C;
+$borde-sutil: rgba(255,255,255,0.06);
+$texto-principal: #F1F2F6;
+$texto-secundario: #8B8FA3;
+$texto-muted: #5A5E72;
+$primario: #5B6AF0;
+$primario-claro: #7B89F5;
+$gradiente-primario: linear-gradient(135deg, #5B6AF0 0%, #9B59B6 50%, #7B89F5 100%);
+$gradiente-cta: linear-gradient(135deg, #5B6AF0 0%, #3D4EC8 100%);
+$radio: 16px;
+$radio-sm: 10px;
+$radio-full: 9999px;
+$transicion: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+$danger: #EF4444;
+
+.auth {
+  min-height: 100vh;
+  background: $bg-oscuro;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Nunito', sans-serif;
+  color: $texto-principal;
+  padding: 40px 24px;
+}
+
+// ── Fondo ──
+.auth__fondo {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.auth__orbe {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  animation: orbe-auth 12s ease-in-out infinite;
+
+  &--1 {
+    width: 500px; height: 500px;
+    background: $primario;
+    top: -150px; right: -80px;
+    opacity: 0.12;
+  }
+  &--2 {
+    width: 400px; height: 400px;
+    background: #9B59B6;
+    bottom: -120px; left: -80px;
+    opacity: 0.1;
+    animation-delay: -5s;
+  }
+}
+
+.auth__rejilla {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+
+@keyframes orbe-auth {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(20px, -15px) scale(1.05); }
+}
+
+// ── Volver ──
+.auth__volver {
+  position: absolute;
+  top: 28px; left: 32px;
+  z-index: 10;
+  color: $texto-secundario;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: $transicion;
+
+  &:hover { color: $texto-principal; }
+}
+
+// ── Contenedor principal ──
+.auth__contenedor {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: 100%;
+  max-width: 900px;
+  min-height: 560px;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid $borde-sutil;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  background: $bg-tarjeta;
+
+  &--invertido {
+    flex-direction: row-reverse;
+  }
+}
+
+// ── Panel Formulario ──
+.auth__panel-form {
+  flex: 1;
+  padding: 48px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.auth__encabezado {
+  margin-bottom: 32px;
+
+  h1 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+
+  p {
+    color: $texto-secundario;
+    font-size: 0.9rem;
+  }
+}
+
+.auth__icono-titulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1.3rem;
+  color: $primario-claro;
+  margin-bottom: 8px;
+}
+
+// ── Formulario ──
+.auth__formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.auth__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.auth__label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: $texto-secundario;
+}
+
+.auth__input-grupo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: $bg-superficie;
+  border: 1.5px solid $borde-sutil;
+  border-radius: $radio-sm;
+  padding: 0 14px;
+  transition: $transicion;
+
+  &:focus-within {
+    border-color: $primario;
+    box-shadow: 0 0 0 3px rgba(91,106,240,0.15);
+  }
+
+  &--error {
+    border-color: $danger !important;
+    box-shadow: 0 0 0 3px rgba(239,68,68,0.12) !important;
+  }
+}
+
+.auth__input-icono {
+  color: $texto-muted;
+  font-size: 0.88rem;
+  flex-shrink: 0;
+}
+
+.auth__input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: $texto-principal;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.92rem;
+  padding: 14px 0;
+  outline: none;
+
+  &::placeholder { color: $texto-muted; }
+}
+
+.auth__btn-ojo {
+  background: none;
+  border: none;
+  color: $texto-muted;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 4px;
+  transition: color 0.2s;
+
+  &:hover { color: $texto-principal; }
+}
+
+// ── Errores ──
+.auth__error {
+  font-size: 0.75rem;
+  color: $danger;
+  font-weight: 600;
+}
+
+.auth__error-general {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: $radio-sm;
+  color: $danger;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+// ── Opciones (recordarme / olvidé) ──
+.auth__opciones {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.auth__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: $texto-secundario;
+  cursor: pointer;
+
+  input { display: none; }
+}
+
+.auth__checkbox-marca {
+  width: 16px; height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid $borde-sutil;
+  background: $bg-superficie;
+  position: relative;
+  transition: $transicion;
+
+  input:checked + & {
+    background: $primario;
+    border-color: $primario;
+
+    &::after {
+      content: '✓';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 800;
+    }
+  }
+}
+
+.auth__enlace-olvide {
+  color: $primario-claro;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: $transicion;
+
+  &:hover { color: lighten($primario-claro, 10%); }
+}
+
+// ── Botón submit ──
+.auth__btn-submit {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: $radio-sm;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: $transicion;
+  background: $texto-principal;
+  color: $bg-oscuro;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255,255,255,0.15);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  i { margin-left: 6px; }
+}
+
+// ── Spinner ──
+.auth__spinner {
+  display: inline-block;
+  width: 20px; height: 20px;
+  border: 2.5px solid rgba(0,0,0,0.2);
+  border-top-color: $bg-oscuro;
+  border-radius: 50%;
+  animation: girar 0.7s linear infinite;
+}
+
+@keyframes girar {
+  to { transform: rotate(360deg); }
+}
+
+// ── Panel Lateral ──
+.auth__panel-lateral {
+  width: 340px;
+  flex-shrink: 0;
+  background: $gradiente-primario;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 70%, rgba(255,255,255,0.08) 0%, transparent 60%);
+  }
+}
+
+.auth__lateral-contenido {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+
+  h2 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 14px;
+  }
+
+  p {
+    color: rgba(255,255,255,0.8);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 28px;
+  }
+}
+
+.auth__btn-lateral {
+  display: inline-block;
+  padding: 12px 32px;
+  border-radius: $radio-full;
+  border: 2px solid rgba(255,255,255,0.4);
+  color: white;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: $transicion;
+
+  &:hover {
+    background: rgba(255,255,255,0.15);
+    border-color: white;
+    transform: translateY(-2px);
+  }
+}
+
+// ── Responsive ──
+@media (max-width: 768px) {
+  .auth__contenedor {
+    flex-direction: column !important;
+    max-width: 440px;
+  }
+
+  .auth__panel-lateral {
+    width: 100%;
+    padding: 32px 24px;
+    min-height: auto;
+  }
+
+  .auth__panel-form {
+    padding: 32px 24px;
+  }
+
+  .auth__volver {
+    top: 16px; left: 16px;
+  }
+}
