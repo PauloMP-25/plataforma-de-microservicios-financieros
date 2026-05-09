@@ -10,18 +10,18 @@
   <!-- ═══ Barra de navegación ═══ -->
   <nav class="inicio__nav" id="nav-inicio">
     <div class="inicio__nav-marca">
-      <div class="inicio__logo">
+      <a class="inicio__logo" (click)="scrollHacia('inicio-pagina')" id="logo-inicio">
         <span class="inicio__logo-icono">
           <i class="fas fa-chart-line"></i>
         </span>
         <span class="inicio__logo-texto">LUKA</span>
-      </div>
+      </a>
     </div>
 
     <div class="inicio__nav-enlaces">
-      <a href="#caracteristicas" class="inicio__enlace">Características</a>
-      <a href="#como-funciona" class="inicio__enlace">Cómo Funciona</a>
-      <a href="#seguridad" class="inicio__enlace">Seguridad</a>
+      <a (click)="scrollHacia('caracteristicas')" class="inicio__enlace">Características</a>
+      <a (click)="scrollHacia('como-funciona')" class="inicio__enlace">Cómo Funciona</a>
+      <a (click)="scrollHacia('precios')" class="inicio__enlace">Precios</a>
     </div>
 
     <div class="inicio__nav-acciones">
@@ -35,10 +35,33 @@
     </div>
 
     <!-- Menú hamburguesa (móvil) -->
-    <button class="inicio__menu-movil" id="btn-menu-movil" (click)="menuAbierto = !menuAbierto">
+    <button class="inicio__menu-movil" [class.inicio__menu-movil--activo]="menuAbierto" id="btn-menu-movil" (click)="alternarMenu()">
       <span></span><span></span><span></span>
     </button>
   </nav>
+
+  <!-- ═══ Menú desplegable móvil ═══ -->
+  <div class="inicio__menu-desplegable" [class.inicio__menu-desplegable--abierto]="menuAbierto">
+    <div class="inicio__menu-desplegable-enlaces">
+      <a (click)="scrollHacia('caracteristicas')" class="inicio__menu-desplegable-enlace">
+        <i class="fas fa-star"></i> Características
+      </a>
+      <a (click)="scrollHacia('como-funciona')" class="inicio__menu-desplegable-enlace">
+        <i class="fas fa-cogs"></i> Cómo Funciona
+      </a>
+      <a (click)="scrollHacia('precios')" class="inicio__menu-desplegable-enlace">
+        <i class="fas fa-tag"></i> Precios
+      </a>
+    </div>
+    <div class="inicio__menu-desplegable-acciones">
+      <a routerLink="/autenticacion/iniciar-sesion" class="inicio__btn inicio__btn--fantasma" (click)="menuAbierto = false">
+        Iniciar Sesión
+      </a>
+      <a routerLink="/autenticacion/crear-cuenta" class="inicio__btn inicio__btn--primario" (click)="menuAbierto = false">
+        <i class="fas fa-user-plus"></i> Crear Cuenta
+      </a>
+    </div>
+  </div>
 
   <!-- ═══ Héroe ═══ -->
   <header class="inicio__heroe" id="seccion-heroe">
@@ -63,7 +86,7 @@
           Comenzar Gratis
           <i class="fas fa-arrow-right"></i>
         </a>
-        <a href="#caracteristicas" class="inicio__btn inicio__btn--grande inicio__btn--secundario" id="btn-heroe-info">
+        <a (click)="scrollHacia('caracteristicas')" class="inicio__btn inicio__btn--grande inicio__btn--secundario" id="btn-heroe-info">
           <i class="fas fa-play-circle"></i>
           Ver Características
         </a>
@@ -251,21 +274,21 @@
   <footer class="inicio__footer" id="footer-inicio">
     <div class="inicio__footer-contenido">
       <div class="inicio__footer-marca">
-        <div class="inicio__logo">
+        <a class="inicio__logo" (click)="scrollHacia('inicio-pagina')">
           <span class="inicio__logo-icono">
             <i class="fas fa-chart-line"></i>
           </span>
           <span class="inicio__logo-texto">LUKA</span>
-        </div>
+        </a>
         <p>Tu copiloto financiero inteligente. Controla, ahorra y crece.</p>
       </div>
 
       <div class="inicio__footer-columnas">
         <div class="inicio__footer-col">
           <h4>Producto</h4>
-          <a href="#caracteristicas">Características</a>
-          <a href="#como-funciona">Cómo Funciona</a>
-          <a href="#seguridad">Seguridad</a>
+          <a (click)="scrollHacia('caracteristicas')">Características</a>
+          <a (click)="scrollHacia('como-funciona')">Cómo Funciona</a>
+          <a (click)="scrollHacia('precios')">Precios</a>
         </div>
         <div class="inicio__footer-col">
           <h4>Cuenta</h4>

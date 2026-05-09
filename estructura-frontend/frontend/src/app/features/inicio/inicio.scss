@@ -113,6 +113,9 @@ $max-ancho: 1200px;
   display: flex;
   align-items: center;
   gap: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  user-select: none;
 }
 
 .inicio__logo-icono {
@@ -146,6 +149,7 @@ $max-ancho: 1200px;
   font-weight: 600;
   transition: $transicion;
   position: relative;
+  cursor: pointer;
 
   &::after {
     content: '';
@@ -172,11 +176,12 @@ $max-ancho: 1200px;
 .inicio__menu-movil {
   display: none;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
   background: none;
   border: none;
   cursor: pointer;
-  padding: 4px;
+  padding: 6px;
+  z-index: 110;
 
   span {
     display: block;
@@ -184,6 +189,74 @@ $max-ancho: 1200px;
     background: $texto-principal;
     border-radius: 2px;
     transition: $transicion;
+    transform-origin: center;
+  }
+
+  &--activo {
+    span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+    span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+  }
+}
+
+// ── Menú desplegable móvil ──
+.inicio__menu-desplegable {
+  position: fixed;
+  top: 68px; left: 0; right: 0;
+  z-index: 99;
+  background: rgba(6,7,10,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid $borde-sutil;
+  padding: 0 24px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), padding 0.35s ease;
+
+  &--abierto {
+    max-height: 400px;
+    padding: 20px 24px 28px;
+  }
+}
+
+.inicio__menu-desplegable-enlaces {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 20px;
+}
+
+.inicio__menu-desplegable-enlace {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: $radio-sm;
+  color: $texto-secundario;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: $transicion;
+
+  i { width: 18px; text-align: center; color: $primario-claro; }
+
+  &:hover {
+    background: rgba(91,106,240,0.08);
+    color: $texto-principal;
+  }
+}
+
+.inicio__menu-desplegable-acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid $borde-sutil;
+
+  .inicio__btn {
+    justify-content: center;
+    width: 100%;
+    padding: 14px;
   }
 }
 
