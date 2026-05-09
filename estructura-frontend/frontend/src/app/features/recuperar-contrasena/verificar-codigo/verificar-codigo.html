@@ -1,1 +1,54 @@
-<p>verificar-codigo works!</p>
+<section class="recuperar" id="pagina-verificar-codigo">
+  <div class="recuperar__fondo">
+    <div class="recuperar__orbe recuperar__orbe--1"></div>
+    <div class="recuperar__orbe recuperar__orbe--2"></div>
+    <div class="recuperar__rejilla"></div>
+  </div>
+
+  <a routerLink="/recuperar-contrasena/correo" class="recuperar__volver" id="btn-volver-correo">
+    <i class="fas fa-arrow-left"></i> Volver
+  </a>
+
+  <div class="recuperar__tarjeta">
+    <div class="recuperar__contenido">
+      <div class="recuperar__icono-principal">
+        <i class="fas fa-shield-alt"></i>
+      </div>
+      <h1>Verificar Código</h1>
+      <p class="recuperar__desc">Ingresa el código de 6 dígitos que enviamos a tu correo electrónico.</p>
+      <p class="recuperar__correo-enviado" *ngIf="correoRecuperacion">{{ correoRecuperacion }}</p>
+
+      <!-- Inputs OTP -->
+      <div class="recuperar__otp-grupo" (paste)="onPegar($event)">
+        @for (digito of digitos; track $index) {
+          <input
+            #digitoInput
+            type="text"
+            inputmode="numeric"
+            maxlength="1"
+            class="recuperar__otp-input"
+            [class.recuperar__otp-input--lleno]="digitos[$index]"
+            [value]="digitos[$index]"
+            (input)="onDigitoInput($event, $index)"
+            (keydown)="onDigitoKeydown($event, $index)"
+            [attr.id]="'otp-' + $index"
+          />
+        }
+      </div>
+
+      <button type="button" class="recuperar__btn-submit" [disabled]="!codigoValido || cargando" (click)="verificarCodigo()" id="btn-verificar-codigo">
+        <span *ngIf="!cargando">Verificar Código <i class="fas fa-arrow-right"></i></span>
+        <span *ngIf="cargando" class="recuperar__spinner"></span>
+      </button>
+
+      <div class="recuperar__error-general" *ngIf="errorMensaje">
+        <i class="fas fa-exclamation-circle"></i> {{ errorMensaje }}
+      </div>
+
+      <p class="recuperar__reenviar">
+        ¿No recibiste el código?
+        <button type="button" class="recuperar__enlace-reenviar" (click)="reenviarCodigo()" id="btn-reenviar-codigo">Reenviar código</button>
+      </p>
+    </div>
+  </div>
+</section>
