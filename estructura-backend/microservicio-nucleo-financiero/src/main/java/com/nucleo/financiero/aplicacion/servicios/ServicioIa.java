@@ -5,8 +5,7 @@ import com.nucleo.financiero.aplicacion.dtos.ia.RespuestaIaDTO;
 import com.nucleo.financiero.aplicacion.dtos.ia.SolicitudIaDTO;
 import com.nucleo.financiero.infraestructura.clientes.ClienteIa;
 import com.nucleo.financiero.infraestructura.mensajeria.PublicadorAuditoria;
-import com.nucleo.infraestructura.feign.ClienteContexto;
-import java.util.UUID;
+import com.nucleo.financiero.infraestructura.clientes.ClienteContexto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,7 +35,7 @@ public class ServicioIa {
         // 1. Obtener contexto completo del cliente (Datos personales, perfil, metas, límites)
         ContextoUsuarioDTO contextoEnriquecido = clienteContexto.obtenerContexto(solicitud.getIdUsuario());
 
-// 2. Re-construir la solicitud usando tus métodos de fábrica para incluir el contexto
+        // 2. Re-construir la solicitud usando tus métodos de fábrica para incluir el contexto
         // Esto mantiene la inmutabilidad de tu @Value SolicitudIaDTO
         SolicitudIaDTO solicitudFinal;
 

@@ -2,7 +2,7 @@ import google.generativeai as genai
 import os
 
 # Coloca tu API KEY aquí para la prueba
-genai.configure(api_key="AIzaSyBQy_CcV_XMj-_xcGf_56s-MkWg5voaOyk")
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 print("--- LISTA DE MODELOS DISPONIBLES ---")
 try:

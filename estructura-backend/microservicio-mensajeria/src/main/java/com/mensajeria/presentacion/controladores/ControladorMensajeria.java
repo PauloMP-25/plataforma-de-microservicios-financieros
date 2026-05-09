@@ -62,11 +62,13 @@ public class ControladorMensajeria {
      * @return
      */
     @GetMapping("/validar-recuperacion")
-    public ResponseEntity<UUID> validarRecuperacion(@RequestParam("codigo") String codigo) {
+    public ResponseEntity<UUID> validarRecuperacion(
+            @RequestParam("usuarioId") UUID usuarioId,
+            @RequestParam("codigo") String codigo) {
 
         log.debug("[GET] /otp/validar-recuperacion — Iniciando validación de reset");
 
-        return ResponseEntity.ok(servicioMensajeria.validarCodigoYObtenerUsuario(codigo));
+        return ResponseEntity.ok(servicioMensajeria.validarCodigoYObtenerUsuario(usuarioId, codigo));
     }
 
     @PostMapping("/validar-limite")

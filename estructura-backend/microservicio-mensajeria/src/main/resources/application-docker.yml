@@ -1,0 +1,116 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+#  LUKA APP — application-docker.yml
+#  Perfil Spring Boot activo cuando SPRING_PROFILES_ACTIVE=docker
+#
+#  INSTRUCCIÓN: Coloca este archivo en src/main/resources/ de CADA microservicio
+#  Java. Las variables entre ${...} son inyectadas por docker-compose.yml.
+# ═══════════════════════════════════════════════════════════════════════════════
+spring:
+  application:
+    name: microservicio-mensajeria
+  # ── Base de datos ────────────────────────────────────────────────────────────
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      # Pool de conexiones optimizado para contenedores
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      pool-name: LukaHikariCP
+
+  # ── JPA / Hibernate ──────────────────────────────────────────────────────────
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        show_sql: false
+        # Mejora rendimiento en consultas por lotes
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+    open-in-view: false
+
+  # ── RabbitMQ ─────────────────────────────────────────────────────────────────
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:rabbitmq}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD}
+    virtual-host: ${SPRING_RABBITMQ_VIRTUAL_HOST:/}
+    listener:
+      simple:
+        acknowledge-mode: manual      # ACK manual para mayor control
+        prefetch: 1                   # Un mensaje a la vez por consumidor
+        retry:
+          enabled: true
+          initial-interval: 3000ms
+          max-attempts: 3
+          multiplier: 2.0
+    template:
+      retry:
+        enabled: true
+        initial-interval: 1000ms
+        max-attempts: 3
+
+  # ── Eureka Client ─────────────────────────────────────────────────────────────
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE}
+    enabled: true
+    register-with-eureka: true
+    fetch-registry: true
+    # Intervalo de refresco del registro (en segundos)
+    registry-fetch-interval-seconds: 10
+    eureka-connection-idle-timeout-seconds: 30
+  instance:
+    hostname: ${EUREKA_INSTANCE_HOSTNAME}
+    prefer-ip-address: false
+    # Heartbeat: cada cuánto el servicio avisa que sigue vivo
+    lease-renewal-interval-in-seconds: 10
+    # Cuánto espera Eureka antes de marcar el servicio como caído
+    lease-expiration-duration-in-seconds: 30
+    health-check-url-path: /actuator/health
+    status-page-url-path: /actuator/info
+    metadata-map:
+      startup: ${random.int}    # Fuerza re-registro si el pod se reinicia
+
+# ── Actuator (Health Checks) ───────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true   # /actuator/health/liveness y /readiness para K8s
+  health:
+    rabbitmq:
+      enabled: true
+    db:
+      enabled: true
+    diskspace:
+      enabled: false    # Innecesario en contenedores
+
+# ── Logging ────────────────────────────────────────────────────────────────────
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+  level:
+    root: INFO
+    org.springframework.web: INFO
+    org.hibernate.SQL: WARN
+    com.netflix.eureka: DEBUG
+    com.netflix.discovery: DEBUG

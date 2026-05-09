@@ -28,8 +28,8 @@ import java.util.UUID;
 public class MetaAhorro {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(updatable = false, nullable = false)
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     private UUID id;
 
     /** Referencia al usuario propietario de la meta */

@@ -30,8 +30,9 @@ import java.util.UUID;
 public class CodigoVerificacion {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
 
     /**
      * Identificador del usuario en el Microservicio-Usuario. Campo OBLIGATORIO:
@@ -72,7 +73,7 @@ public class CodigoVerificacion {
 
     // ─── Enum ────────────────────────────────────────────────────────────────
     public enum TipoVerificacion {
-        EMAIL, PHONE
+        EMAIL, SMS
     }
 
     public enum PropositoCodigo {

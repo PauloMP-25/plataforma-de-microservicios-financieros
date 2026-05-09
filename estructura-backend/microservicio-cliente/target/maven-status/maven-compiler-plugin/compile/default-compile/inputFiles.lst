@@ -1,7 +1,6 @@
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\dominio\repositorios\LimiteGastoRepositorio.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\infraestructura\seguridad\FiltroJwt.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\dominio\entidades\DatosPersonales.java
-D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\infraestructura\configuracion\ConfiguracionSeguridad.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\aplicacion\excepciones\AccesoDenegadoException.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\aplicacion\excepciones\MetaNoEncontradaException.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\aplicacion\dtos\RespuestaContextoCliente.java
@@ -40,6 +39,7 @@ D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\sr
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\infraestructura\seguridad\ServicioJwt.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\aplicacion\dtos\RegistroAuditoriaDTO.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\aplicacion\servicios\ServicioContextoCliente.java
+D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\infraestructura\seguridad\ConfiguracionSeguridad.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\aplicacion\dtos\RespuestaPerfilFinanciero.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\aplicacion\dtos\SolicitudMetaAhorro.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\aplicacion\servicios\ServicioMetaAhorro.java

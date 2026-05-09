@@ -1,8 +1,8 @@
 package com.nucleo.financiero.aplicacion.servicios;
 
-import com.nucleo.financiero.aplicacion.dtos.transacciones.TransaccionRequestDTO;
+import com.nucleo.financiero.aplicacion.dtos.transacciones.SolicitudTransaccion;
 import com.nucleo.financiero.aplicacion.dtos.transacciones.ResumenFinancieroDTO;
-import com.nucleo.financiero.aplicacion.dtos.transacciones.TransaccionDTO;
+import com.nucleo.financiero.aplicacion.dtos.transacciones.RespuestaTransaccion;
 import com.nucleo.financiero.dominio.entidades.Categoria;
 import com.nucleo.financiero.dominio.entidades.Categoria.TipoMovimiento;
 import com.nucleo.financiero.dominio.entidades.Transaccion;
@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -32,7 +33,7 @@ public class TransaccionService {
     private final PublicadorAuditoria publicadorAuditoria;
 
     @Transactional
-    public TransaccionDTO registrar(TransaccionRequestDTO request, String ipCliente) {
+    public RespuestaTransaccion registrar(SolicitudTransaccion request, String ipCliente) {
         Transaccion guardada = transaccionRepository.save(construirEntidad(request));
         log.info("Transacción registrada: {} — {} {} ({})",
                 guardada.getId(), guardada.getTipo(), guardada.getMonto(), guardada.getNombreCliente());
@@ -43,11 +44,11 @@ public class TransaccionService {
                 guardada.getMonto().toString(),
                 ipCliente
         );
-        return TransaccionDTO.desde(guardada);
+        return RespuestaTransaccion.desde(guardada);
     }
 
     @Transactional
-    public List<TransaccionDTO> registrarLote(List<TransaccionRequestDTO> solicitudes, String ipCliente) {
+    public List<RespuestaTransaccion> registrarLote(List<SolicitudTransaccion> solicitudes, String ipCliente) {
         if (solicitudes == null || solicitudes.isEmpty()) {
             throw new IllegalArgumentException("La lista de transacciones no puede estar vacía.");
         }
@@ -67,28 +68,29 @@ public class TransaccionService {
                 "Se registraron " + guardadas.size() + " transacciones exitosamente.",
                 ipCliente
         );
-        return guardadas.stream().map(TransaccionDTO::desde).collect(Collectors.toList());
+        return guardadas.stream().map(RespuestaTransaccion::desde).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public Page<TransaccionDTO> listarHistorial(
+    public Page<RespuestaTransaccion> listarHistorial(
             UUID usuarioId, TipoMovimiento tipo, UUID categoriaId,
-            Integer mes, Integer anio, Pageable paginacion,
+            LocalDateTime desde, LocalDateTime hasta, Pageable paginacion,
             String ipCliente) {
 
-        LocalDateTime[] rango = resolverRangoFechas(mes, anio);
+        // Lógica por defecto: Si no hay fechas, traer los últimos 30 días
+        if (desde == null) {
+            desde = LocalDateTime.now().minusDays(30);
+        }
+        if (hasta == null) {
+            hasta = LocalDateTime.now();
+        }
 
-        // Usamos publicarAcceso para consultas de lectura
-        publicadorAuditoria.publicarAcceso(
-                usuarioId,
-                "LISTAR_HISTORIAL",
-                "El usuario consultó su historial de transacciones.",
-                ipCliente
-        );
+        publicadorAuditoria.publicarAcceso(usuarioId, "CONSULTA_HISTORIAL",
+                "Rango: " + desde + " a " + hasta, ipCliente);
+
         return transaccionRepository.buscarConFiltros(
-                usuarioId, tipo, categoriaId,
-                rango[0], rango[1], paginacion
-        ).map(TransaccionDTO::desde);
+                usuarioId, tipo, categoriaId, desde, hasta, paginacion
+        ).map(RespuestaTransaccion::desde);
     }
 
     @Transactional(readOnly = true)
@@ -101,7 +103,7 @@ public class TransaccionService {
         BigDecimal totalGastos = transaccionRepository.sumarGastosPorPeriodo(usuarioId, desde, hasta);
         long cantidadIngresos = transaccionRepository.contarPorTipoYPeriodo(usuarioId, TipoMovimiento.INGRESO, desde, hasta);
         long cantidadGastos = transaccionRepository.contarPorTipoYPeriodo(usuarioId, TipoMovimiento.GASTO, desde, hasta);
-        
+
         publicadorAuditoria.publicarAcceso(
                 usuarioId,
                 "OBTENER_RESUMEN",
@@ -112,22 +114,30 @@ public class TransaccionService {
     }
 
     @Transactional(readOnly = true)
-    public TransaccionDTO obtenerPorId(UUID id) {
+    public RespuestaTransaccion obtenerPorId(UUID id) {
         return transaccionRepository.findById(id)
-                .map(TransaccionDTO::desde)
+                .map(RespuestaTransaccion::desde)
                 .orElseThrow(() -> new IllegalArgumentException("Transacción no encontrada con ID: " + id));
     }
 
     // ── Privados ─────────────────────────────────────────────────────────────
-    private Transaccion construirEntidad(TransaccionRequestDTO request) {
+    private Transaccion construirEntidad(SolicitudTransaccion request) {
+        if (request.categoriaId() == null) {
+            throw new IllegalArgumentException("El ID de la categoría es nulo en la petición.");
+        }
+
         Categoria categoria = categoriaRepository.findById(request.categoriaId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                "Categoría no encontrada con ID: " + request.categoriaId()));
+                .orElseThrow(() -> new NoSuchElementException("Categoría no encontrada con ID: " + request.categoriaId()));
+
+        // El error 500 puede venir de aquí si request.tipo() es nulo
+        if (request.tipo() == null) {
+            throw new IllegalArgumentException("El tipo de movimiento es obligatorio.");
+        }
 
         if (categoria.getTipo() != request.tipo()) {
-            throw new IllegalArgumentException(String.format(
-                    "La categoría '%s' es de tipo %s, pero la transacción es %s.",
-                    categoria.getNombre(), categoria.getTipo(), request.tipo()));
+            throw new IllegalStateException(String.format(
+                    "Inconsistencia: La categoría es de tipo %s pero la transacción es %s.",
+                    categoria.getTipo(), request.tipo()));
         }
 
         return Transaccion.builder()
@@ -136,8 +146,7 @@ public class TransaccionService {
                 .monto(request.monto())
                 .tipo(request.tipo())
                 .categoria(categoria)
-                .fechaTransaccion(request.fechaTransaccion() != null
-                        ? request.fechaTransaccion() : LocalDateTime.now())
+                .fechaTransaccion(LocalDateTime.now())
                 .metodoPago(request.metodoPago())
                 .etiquetas(request.etiquetas())
                 .notas(request.notas())

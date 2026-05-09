@@ -87,11 +87,33 @@ El proyecto se organiza como un **Monorepo** para facilitar la gestión del cicl
 
 ## Configuración Local
 
+Para facilitar el despliegue del ecosistema completo de **LUKA APP**, utilizamos una orquestación basada en Docker y un `Makefile` para simplificar los comandos.
+
+### Requisitos Previos
+* **Docker Desktop** (con soporte para Compose v2).
+* **Make** (Instalado vía `winget install GnuWin32.Make` en Windows).
+* **Git Bash** (Recomendado para ejecutar los comandos en Windows).
+
 1. **Clonar el repositorio:**
    `git clone https://github.com/PauloMP-25/plataforma-de-microservicios-financieros.git`
-2. **Infraestructura:** Levantar servicios de apoyo (RabbitMQ, DBs):
-   `docker-compose up -d`
-3. **Servicios:** Iniciar el ecosistema en orden: `Eureka Server` -> `Gateway` -> `Microservicios`.
+
+2. **Preparar el entorno:**
+   Entra a la carpeta de docker y genera tu archivo de secretos:
+   Ingresa a: `cd estructura-backend/docker`
+   Ejecuta ---> Con Make: `make setup` | Sin Make: `cp .env.example .env`
+
+3. **Construir las imagenes:** Este paso descarga las dependencias de Maven y Python (solo la primera vez):
+   Ejecuta ---> Con Make: `make build` | Sin Make: `docker compose build`
+
+4. **Levantar el stack:** Puedes iniciar todo el sistema con un solo comando:
+   Ejecuta ---> Con Make: `make up` | Sin Make: `docker compose up -d`
+
+5. **Opcional:** Levanta por separado.
+  `make infra` → Levanta solo la infraestructura (BD + RabbitMQ + Eureka)"
+  `make service` → Levanta solo los microservicios (asume infra ya corriendo)"
+  `make down` | `docker compose down` → Detiene y elimina contenedores (conserva volúmenes)"
+  `make restart` → down + up"
+* Nota: Todos los comandos funcionaran siempre y cuando te encuentres dentro de la carpeta "docker".
 
 ---
 ## Personas Desarrolladoras

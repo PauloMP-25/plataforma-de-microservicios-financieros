@@ -1,4 +1,4 @@
-package com.nucleo.infraestructura.feign;
+package com.nucleo.financiero.infraestructura.clientes;
 
 import com.nucleo.financiero.aplicacion.dtos.cliente.ContextoUsuarioDTO;
 import org.springframework.cloud.openfeign.FeignClient;

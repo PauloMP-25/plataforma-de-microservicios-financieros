@@ -27,8 +27,8 @@ import java.util.UUID;
 public class Transaccion {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(updatable = false, nullable = false)
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     private UUID id;
 
     @Column(name = "usuario_id", nullable = false)

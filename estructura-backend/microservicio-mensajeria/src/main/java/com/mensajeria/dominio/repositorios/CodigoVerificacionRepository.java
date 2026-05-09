@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface CodigoVerificacionRepository extends JpaRepository<CodigoVerificacion, Long> {
+public interface CodigoVerificacionRepository extends JpaRepository<CodigoVerificacion, UUID> {
 
     /**
      * Busca el código más reciente, no usado, filtrando por Usuario y
@@ -28,6 +28,8 @@ public interface CodigoVerificacionRepository extends JpaRepository<CodigoVerifi
             PropositoCodigo proposito
     );
 
+    Optional<CodigoVerificacion> findByIdAndCodigoAndUsadoFalse(UUID id, String codigo);
+    
     /**
      * Limpieza profunda: Elimina códigos expirados Y códigos ya utilizados.
      * Esto mantiene la tabla ligera y rápida.
@@ -44,7 +46,6 @@ public interface CodigoVerificacionRepository extends JpaRepository<CodigoVerifi
      * @param codigo
      * @return 
      */
-    Optional<CodigoVerificacion> findTopByCodigoAndUsadoFalseOrderByFechaCreacionDesc(String codigo);
 
     // Cuenta cuántos códigos tiene un usuario para un propósito (ej: RESTABLECER_PASSWORD)
     // que aún no han sido usados.
