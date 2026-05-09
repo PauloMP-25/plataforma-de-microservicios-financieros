@@ -25,17 +25,30 @@
     </properties>
 
     <dependencies>
+        <!-- En la sección de <dependencies> -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+
+        <!-- Generador de metadatos para que el IDE reconozca tus propiedades -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
         <!--STARTER-WEB: Starter para construir aplicaciones web RESTful utilizando Spring MVC.-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
+        <!--STARTER-SECURITY: Framework para la gestión de autenticación y autorización.-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
+        <!--STARTER-AMQP: Soporte para mensajería asíncrona utilizando el protocolo AMQP (RabbitMQ).-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-amqp</artifactId>
