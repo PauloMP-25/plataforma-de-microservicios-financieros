@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../enviroments/enviroments';
+import { environment } from '../../enviroments/environment';
 import { ResumenFinancieroDTO}  from '../models/financiero/resumen.model';
 import { CategoriaDTO, TipoMovimiento } from '../models/financiero/categoria.model';
 import { AuthService } from './auth.service';
@@ -9,7 +9,8 @@ import { AuthService } from './auth.service';
 @Injectable({ providedIn: 'root' })
 export class FinancieroService {
  
-  private base = `${environment.financieroUrl}/api/v1/financiero`;
+  private baseTransacciones = `${environment.gatewayUrl}/api/v1/transacciones`;
+  private baseCategorias    = `${environment.gatewayUrl}/api/v1/financiero/categorias`;
  
   // ── Estado reactivo ──
   resumen    = signal<ResumenFinancieroDTO | null>(null);
@@ -25,14 +26,14 @@ export class FinancieroService {
     if (mes)  params = params.set('mes',  mes);
     if (anio) params = params.set('anio', anio);
  
-    return this.http.get<ResumenFinancieroDTO>(`${this.base}/transacciones/resumen`, { params });
+    return this.http.get<ResumenFinancieroDTO>(`${this.baseTransacciones}/transacciones/resumen`, { params });
   }
  
   // ── Categorías ──
   getCategorias(tipo?: TipoMovimiento): Observable<CategoriaDTO[]> {
     let params = new HttpParams();
     if (tipo) params = params.set('tipo', tipo);
-    return this.http.get<CategoriaDTO[]>(`${this.base}/categorias`, { params });
+    return this.http.get<CategoriaDTO[]>(`${this.baseCategorias}/categorias`, { params });
   }
  
   cargarResumen(): void {

@@ -26,7 +26,7 @@ const USUARIO_KEY = 'luka_usuario';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-  private base = `${environment.usuariosUrl}/api/v1/auth`;
+  private base = `${environment.gatewayUrl}/api/v1/auth`;
 
   // ── Estado reactivo ──
   private _usuario = signal<UsuarioSesion | null>(this.cargarDesdStorage());
