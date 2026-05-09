@@ -1,1 +1,294 @@
-<p>inicio works!</p>
+<section class="inicio" id="inicio-pagina">
+  <!-- ═══ Fondo animado ═══ -->
+  <div class="inicio__fondo">
+    <div class="inicio__orbe inicio__orbe--1"></div>
+    <div class="inicio__orbe inicio__orbe--2"></div>
+    <div class="inicio__orbe inicio__orbe--3"></div>
+    <div class="inicio__rejilla"></div>
+  </div>
+
+  <!-- ═══ Barra de navegación ═══ -->
+  <nav class="inicio__nav" id="nav-inicio">
+    <div class="inicio__nav-marca">
+      <div class="inicio__logo">
+        <span class="inicio__logo-icono">
+          <i class="fas fa-chart-line"></i>
+        </span>
+        <span class="inicio__logo-texto">LUKA</span>
+      </div>
+    </div>
+
+    <div class="inicio__nav-enlaces">
+      <a href="#caracteristicas" class="inicio__enlace">Características</a>
+      <a href="#como-funciona" class="inicio__enlace">Cómo Funciona</a>
+      <a href="#seguridad" class="inicio__enlace">Seguridad</a>
+    </div>
+
+    <div class="inicio__nav-acciones">
+      <a routerLink="/autenticacion/iniciar-sesion" class="inicio__btn inicio__btn--fantasma" id="btn-nav-login">
+        Iniciar Sesión
+      </a>
+      <a routerLink="/autenticacion/crear-cuenta" class="inicio__btn inicio__btn--primario" id="btn-nav-registro">
+        <i class="fas fa-user-plus"></i>
+        Crear Cuenta
+      </a>
+    </div>
+
+    <!-- Menú hamburguesa (móvil) -->
+    <button class="inicio__menu-movil" id="btn-menu-movil" (click)="menuAbierto = !menuAbierto">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- ═══ Héroe ═══ -->
+  <header class="inicio__heroe" id="seccion-heroe">
+    <div class="inicio__heroe-contenido">
+      <div class="inicio__etiqueta">
+        <span class="inicio__etiqueta-punto"></span>
+        INTELIGENCIA FINANCIERA ACTIVA
+      </div>
+
+      <h1 class="inicio__titulo">
+        El Futuro de
+        <span class="inicio__titulo-gradiente">Tus Finanzas.</span>
+      </h1>
+
+      <p class="inicio__subtitulo">
+        Control total con inteligencia artificial. Automatiza tu presupuesto,
+        proyecta tu libertad financiera y elimina el estrés del dinero para siempre.
+      </p>
+
+      <div class="inicio__heroe-acciones">
+        <a routerLink="/autenticacion/crear-cuenta" class="inicio__btn inicio__btn--grande inicio__btn--primario" id="btn-heroe-registro">
+          Comenzar Gratis
+          <i class="fas fa-arrow-right"></i>
+        </a>
+        <a href="#caracteristicas" class="inicio__btn inicio__btn--grande inicio__btn--secundario" id="btn-heroe-info">
+          <i class="fas fa-play-circle"></i>
+          Ver Características
+        </a>
+      </div>
+
+      <div class="inicio__heroe-estadisticas">
+        <div class="inicio__estadistica">
+          <span class="inicio__estadistica-valor">10K+</span>
+          <span class="inicio__estadistica-label">Usuarios Activos</span>
+        </div>
+        <div class="inicio__estadistica-separador"></div>
+        <div class="inicio__estadistica">
+          <span class="inicio__estadistica-valor">98%</span>
+          <span class="inicio__estadistica-label">Satisfacción</span>
+        </div>
+        <div class="inicio__estadistica-separador"></div>
+        <div class="inicio__estadistica">
+          <span class="inicio__estadistica-valor">$2M+</span>
+          <span class="inicio__estadistica-label">Gestionados</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mockup flotante -->
+    <div class="inicio__heroe-visual">
+      <div class="inicio__mockup">
+        <div class="inicio__mockup-pantalla">
+          <div class="inicio__mockup-header">
+            <span class="inicio__mockup-saludo">Hola, Paulo 👋</span>
+            <span class="inicio__mockup-fecha">Mayo 2026</span>
+          </div>
+          <div class="inicio__mockup-balance">
+            <span class="inicio__mockup-balance-label">Balance Total</span>
+            <span class="inicio__mockup-balance-valor">S/ 12,450.00</span>
+          </div>
+          <div class="inicio__mockup-barras">
+            <div class="inicio__mockup-barra" style="--altura: 60%; --color: #5B6AF0;"></div>
+            <div class="inicio__mockup-barra" style="--altura: 85%; --color: #7B89F5;"></div>
+            <div class="inicio__mockup-barra" style="--altura: 45%; --color: #22C55E;"></div>
+            <div class="inicio__mockup-barra" style="--altura: 70%; --color: #F0A500;"></div>
+            <div class="inicio__mockup-barra" style="--altura: 90%; --color: #5B6AF0;"></div>
+            <div class="inicio__mockup-barra" style="--altura: 55%; --color: #7B89F5;"></div>
+          </div>
+          <div class="inicio__mockup-transacciones">
+            <div class="inicio__mockup-tx">
+              <span class="inicio__mockup-tx-icono" style="background: rgba(34,197,94,0.15); color: #22C55E;">
+                <i class="fas fa-arrow-down"></i>
+              </span>
+              <div class="inicio__mockup-tx-info">
+                <span>Salario</span>
+                <small>Hace 2 días</small>
+              </div>
+              <span class="inicio__mockup-tx-monto inicio__mockup-tx-monto--positivo">+S/ 4,200</span>
+            </div>
+            <div class="inicio__mockup-tx">
+              <span class="inicio__mockup-tx-icono" style="background: rgba(239,68,68,0.15); color: #EF4444;">
+                <i class="fas fa-shopping-cart"></i>
+              </span>
+              <div class="inicio__mockup-tx-info">
+                <span>Supermercado</span>
+                <small>Hace 3 días</small>
+              </div>
+              <span class="inicio__mockup-tx-monto inicio__mockup-tx-monto--negativo">-S/ 185</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══ Características ═══ -->
+  <section class="inicio__seccion" id="caracteristicas">
+    <div class="inicio__seccion-header">
+      <span class="inicio__seccion-etiqueta">CARACTERÍSTICAS</span>
+      <h2 class="inicio__seccion-titulo">Todo lo que necesitas para <span class="inicio__titulo-gradiente">dominar tus finanzas</span></h2>
+      <p class="inicio__seccion-desc">Herramientas inteligentes diseñadas para simplificar tu vida financiera</p>
+    </div>
+
+    <div class="inicio__tarjetas">
+      <div class="inicio__tarjeta">
+        <div class="inicio__tarjeta-icono" style="--color-icono: #5B6AF0;">
+          <i class="fas fa-chart-pie"></i>
+        </div>
+        <h3>Dashboard Inteligente</h3>
+        <p>Visualiza tus ingresos, gastos y metas en un panel interactivo con gráficos en tiempo real.</p>
+      </div>
+
+      <div class="inicio__tarjeta">
+        <div class="inicio__tarjeta-icono" style="--color-icono: #22C55E;">
+          <i class="fas fa-bullseye"></i>
+        </div>
+        <h3>Metas de Ahorro</h3>
+        <p>Define tus objetivos financieros y observa cómo la IA te ayuda a alcanzarlos más rápido.</p>
+      </div>
+
+      <div class="inicio__tarjeta">
+        <div class="inicio__tarjeta-icono" style="--color-icono: #F0A500;">
+          <i class="fas fa-wallet"></i>
+        </div>
+        <h3>Presupuestos Automáticos</h3>
+        <p>Crea presupuestos personalizados por categoría y recibe alertas cuando te acerques al límite.</p>
+      </div>
+
+      <div class="inicio__tarjeta">
+        <div class="inicio__tarjeta-icono" style="--color-icono: #EF4444;">
+          <i class="fas fa-bell"></i>
+        </div>
+        <h3>Alertas Inteligentes</h3>
+        <p>Notificaciones predictivas que te avisan antes de que ocurra un gasto innecesario.</p>
+      </div>
+
+      <div class="inicio__tarjeta">
+        <div class="inicio__tarjeta-icono" style="--color-icono: #06B6D4;">
+          <i class="fas fa-shield-alt"></i>
+        </div>
+        <h3>Seguridad Bancaria</h3>
+        <p>Encriptación de nivel bancario con autenticación de dos factores para proteger tus datos.</p>
+      </div>
+
+      <div class="inicio__tarjeta">
+        <div class="inicio__tarjeta-icono" style="--color-icono: #AB47BC;">
+          <i class="fas fa-robot"></i>
+        </div>
+        <h3>Asistente IA</h3>
+        <p>Un copiloto financiero que aprende de tus hábitos y te da recomendaciones personalizadas.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ Cómo Funciona ═══ -->
+  <section class="inicio__seccion inicio__seccion--oscura" id="como-funciona">
+    <div class="inicio__seccion-header">
+      <span class="inicio__seccion-etiqueta">CÓMO FUNCIONA</span>
+      <h2 class="inicio__seccion-titulo">Empieza en <span class="inicio__titulo-gradiente">3 simples pasos</span></h2>
+    </div>
+
+    <div class="inicio__pasos">
+      <div class="inicio__paso">
+        <div class="inicio__paso-numero">01</div>
+        <div class="inicio__paso-contenido">
+          <h3>Crea tu cuenta</h3>
+          <p>Regístrate en segundos con tu correo electrónico. Sin tarjeta de crédito requerida.</p>
+        </div>
+      </div>
+
+      <div class="inicio__paso-linea"></div>
+
+      <div class="inicio__paso">
+        <div class="inicio__paso-numero">02</div>
+        <div class="inicio__paso-contenido">
+          <h3>Conecta tus finanzas</h3>
+          <p>Agrega tus ingresos, gastos y define tus metas de ahorro personalizadas.</p>
+        </div>
+      </div>
+
+      <div class="inicio__paso-linea"></div>
+
+      <div class="inicio__paso">
+        <div class="inicio__paso-numero">03</div>
+        <div class="inicio__paso-contenido">
+          <h3>Toma el control</h3>
+          <p>Recibe insights, alertas y recomendaciones inteligentes para optimizar tu dinero.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CTA Final ═══ -->
+  <section class="inicio__cta" id="seccion-cta">
+    <div class="inicio__cta-fondo">
+      <div class="inicio__orbe inicio__orbe--cta-1"></div>
+      <div class="inicio__orbe inicio__orbe--cta-2"></div>
+    </div>
+    <div class="inicio__cta-contenido">
+      <h2>¿Listo para transformar tus finanzas?</h2>
+      <p>Únete a miles de personas que ya tomaron el control de su dinero con LUKA.</p>
+      <a routerLink="/autenticacion/crear-cuenta" class="inicio__btn inicio__btn--grande inicio__btn--cta" id="btn-cta-registro">
+        Crear Cuenta Gratis
+        <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+  </section>
+
+  <!-- ═══ Footer ═══ -->
+  <footer class="inicio__footer" id="footer-inicio">
+    <div class="inicio__footer-contenido">
+      <div class="inicio__footer-marca">
+        <div class="inicio__logo">
+          <span class="inicio__logo-icono">
+            <i class="fas fa-chart-line"></i>
+          </span>
+          <span class="inicio__logo-texto">LUKA</span>
+        </div>
+        <p>Tu copiloto financiero inteligente. Controla, ahorra y crece.</p>
+      </div>
+
+      <div class="inicio__footer-columnas">
+        <div class="inicio__footer-col">
+          <h4>Producto</h4>
+          <a href="#caracteristicas">Características</a>
+          <a href="#como-funciona">Cómo Funciona</a>
+          <a href="#seguridad">Seguridad</a>
+        </div>
+        <div class="inicio__footer-col">
+          <h4>Cuenta</h4>
+          <a routerLink="/autenticacion/iniciar-sesion">Iniciar Sesión</a>
+          <a routerLink="/autenticacion/crear-cuenta">Crear Cuenta</a>
+          <a routerLink="/recuperar-contrasena">Recuperar Contraseña</a>
+        </div>
+        <div class="inicio__footer-col">
+          <h4>Legal</h4>
+          <a href="#">Privacidad</a>
+          <a href="#">Términos</a>
+          <a href="#">Cookies</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="inicio__footer-inferior">
+      <span>© {{ anioActual }} LUKA. Todos los derechos reservados.</span>
+      <div class="inicio__footer-redes">
+        <a href="#" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+        <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+      </div>
+    </div>
+  </footer>
+</section>
