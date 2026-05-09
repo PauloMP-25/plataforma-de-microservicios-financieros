@@ -1,4 +1,4 @@
-package com.luka.commons.manejadores;
+package com.libreria.comun.manejadores;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.listener.api.RabbitListenerErrorHandler;

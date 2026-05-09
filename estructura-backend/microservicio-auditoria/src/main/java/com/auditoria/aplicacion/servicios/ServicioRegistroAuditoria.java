@@ -1,73 +1,42 @@
 package com.auditoria.aplicacion.servicios;
 
-import com.auditoria.aplicacion.dtos.RegistroAuditoriaDTO;
-import com.auditoria.aplicacion.dtos.RegistroAuditoriaRequestDTO;
-import com.auditoria.dominio.entidades.RegistroAuditoria;
-import com.auditoria.dominio.repositorios.RegistroAuditoriaRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import com.auditoria.aplicacion.dtos.RespuestaAuditoriaDetalladoDTO;
+import com.libreria.comun.dtos.EventoAccesoDTO;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
-@Service
-@RequiredArgsConstructor
-public class ServicioRegistroAuditoria {
+/**
+ * Interfaz de servicio para el registro y consulta de eventos de auditoría
+ * general.
+ * <p>
+ * Define el contrato para persistir trazas de actividad de usuario y
+ * realizar consultas históricas filtradas para el ecosistema Luka App.
+ * </p>
+ * 
+ * @author Paulo Moron
+ * @since 2026-05
+ */
+public interface ServicioRegistroAuditoria {
 
-    private final RegistroAuditoriaRepository repositorioAuditoria;
+    /**
+     * Persiste un nuevo evento de auditoría en la base de datos.
+     * <p>
+     * Se utiliza {@link EventoAccesoDTO} como contrato unificado para
+     * capturar la actividad proveniente de cualquier microservicio.
+     * </p>
+     * 
+     * @param request Datos del evento (acción, módulo, IP, etc.).
+     * @return {@link EventoAccesoDTO} con los datos persistidos e ID generado.
+     */
+    EventoAccesoDTO registrarEvento(EventoAccesoDTO request);
 
-    // ─── Escritura ────────────────────────────────────────────────────────────
-
-    @Transactional
-    public RegistroAuditoriaDTO registrarEvento(RegistroAuditoriaRequestDTO request) {
-        log.info("[AUDITORIA] Registrando evento: accion={}, modulo={}",
-                 request.accion(), request.modulo());
-
-        RegistroAuditoria entidad = convertirAEntidad(request);
-        RegistroAuditoria guardado = repositorioAuditoria.save(entidad);
-
-        log.debug("[AUDITORIA] Registro guardado con id={}", guardado.getId());
-        return convertirADTO(guardado);
-    }
-
-    // ─── Lectura ──────────────────────────────────────────────────────────────
-
-    @Transactional(readOnly = true)
-    public Page<RegistroAuditoriaDTO> listarRegistros(String modulo, Pageable paginacion) {
-        log.debug("[AUDITORIA] Consultando registros: modulo={}, nivel={}, pagina={}",
-                  modulo, paginacion.getPageNumber());
-
-        // Normalizar cadenas vacías a null para que el query los ignore
-        String moduloFiltro = (modulo != null && modulo.isBlank()) ? null : modulo;
-        return repositorioAuditoria
-                .buscarPorFiltros(moduloFiltro, paginacion)
-                .map(this::convertirADTO);
-    }
-
-    // ─── Mappers privados ─────────────────────────────────────────────────────
-
-    private RegistroAuditoria convertirAEntidad(RegistroAuditoriaRequestDTO dto) {
-        return RegistroAuditoria.builder()
-                .fechaHora(dto.fechaHora()) // null → @PrePersist asignará LocalDateTime.now()
-                .nombreUsuario(dto.nombreUsuario())
-                .accion(dto.accion())
-                .modulo(dto.modulo())
-                .ipOrigen(dto.ipOrigen())
-                .detalles(dto.detalles())
-                .build();
-    }
-
-    private RegistroAuditoriaDTO convertirADTO(RegistroAuditoria entidad) {
-        return new RegistroAuditoriaDTO(
-                entidad.getId(),
-                entidad.getFechaHora(),
-                entidad.getNombreUsuario(),
-                entidad.getAccion(),
-                entidad.getModulo(),
-                entidad.getIpOrigen(),
-                entidad.getDetalles()
-        );
-    }
+    /**
+     * Recupera el historial de auditoría enriquecido con datos de usuario.
+     * 
+     * @param modulo     Filtro opcional por microservicio.
+     * @param paginacion Metadatos de paginación.
+     * @return Página de DTOs detallados para la interfaz de usuario.
+     */
+    Page<RespuestaAuditoriaDetalladoDTO> listarRegistrosDetallados(String modulo, Pageable paginacion);
 }

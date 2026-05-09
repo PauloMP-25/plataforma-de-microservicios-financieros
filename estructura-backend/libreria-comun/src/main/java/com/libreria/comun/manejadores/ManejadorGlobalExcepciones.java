@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.libreria.comun.enums.CodigoError;
 import com.libreria.comun.excepciones.ExcepcionGlobal;
-import com.libreria.comun.excepciones.ExcepcionNoAutorizado;
 import com.libreria.comun.respuesta.ResultadoApi;
 import feign.FeignException;
 import jakarta.servlet.http.HttpServletRequest;

@@ -20,7 +20,7 @@ import org.springframework.data.domain.Page;
  * 
  * @author Paulo Moron
  */
-public record Pagina<T>(
+public record Paginacion<T>(
     List<T> contenido,
     int numeroPagina,
     int tamañoPagina,
@@ -35,8 +35,8 @@ public record Pagina<T>(
      * @param page Objeto de paginación de Spring Data.
      * @return Una nueva instancia de {@code Pagina} con los metadatos mapeados.
      */
-    public static <T> Pagina<T> desde(Page<T> page) {
-        return new Pagina<>(
+    public static <T> Paginacion<T> desde(Page<T> page) {
+        return new Paginacion<>(
             page.getContent(),
             page.getNumber(),
             page.getSize(),
