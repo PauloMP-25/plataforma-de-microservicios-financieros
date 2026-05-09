@@ -13,7 +13,7 @@ import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
-import { environment } from '../../enviroments/enviroments';
+import { environment } from '../../enviroments/environment';
 import {
   SolicitudLogin, SolicitudRegistro,
   RespuestaAutenticacion, UsuarioSesion,
@@ -26,7 +26,7 @@ const USUARIO_KEY = 'luka_usuario';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-  private base = `${environment.usuariosUrl}/api/v1/auth`;
+  private base = `${environment.gatewayUrl}/api/v1/auth`;
 
   // ── Estado reactivo ──
   private _usuario = signal<UsuarioSesion | null>(this.cargarDesdStorage());
