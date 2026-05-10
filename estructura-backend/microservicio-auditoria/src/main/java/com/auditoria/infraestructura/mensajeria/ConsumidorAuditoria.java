@@ -4,7 +4,7 @@ import com.auditoria.aplicacion.servicios.ServicioAuditoriaAcceso;
 import com.auditoria.aplicacion.servicios.ServicioAuditoriaTransaccional;
 import com.libreria.comun.dtos.EventoAccesoDTO;
 import com.libreria.comun.dtos.EventoTransaccionalDTO;
-import com.auditoria.aplicacion.dtos.AuditoriaAccesoRequestDTO;
+import com.libreria.comun.mensajeria.NombresCola;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -13,11 +13,14 @@ import org.springframework.stereotype.Component;
 /**
  * Consumidor de eventos de RabbitMQ para el microservicio de auditoría.
  * <p>
- * Centraliza la recepción de mensajes de seguridad y transacciones, utilizando
- * el manejador de errores global de la librería común para gestionar fallos.
+ * Centraliza la recepción de mensajes de seguridad y transacciones. Utiliza 
+ * los contratos de la librería común y delega el procesamiento a los servicios 
+ * especializados.
  * </p>
  * 
  * @author Paulo Moron
+ * @version 1.6
+ * @since 2026-05
  */
 @Component
 @Slf4j
@@ -28,41 +31,37 @@ public class ConsumidorAuditoria {
     private final ServicioAuditoriaTransaccional servicioTransaccional;
 
     /**
-     * Escucha eventos de acceso de todo el ecosistema.
+     * Escucha eventos de acceso (Login, Logout, Fallos) de todo el ecosistema.
+     * <p>
+     * Utiliza la constante {@link NombresCola#AUDITORIA_ACCESOS} y el manejador
+     * de errores global para garantizar la resiliencia.
+     * </p>
      * 
-     * @param evento Datos del acceso (DTO de la librería).
+     * @param evento Contrato de datos de acceso de la librería común.
      */
     @RabbitListener(
-        queues = "auditoria.acceso.queue", // O usa #{NombresCola.AUDITORIA_ACCESO}
-        errorHandler = "manejadorErroresRabbit" // Referencia al bean de la librería
+        queues = NombresCola.AUDITORIA_ACCESOS, 
+        errorHandler = "manejadorErroresRabbit"
     )
     public void procesarAcceso(EventoAccesoDTO evento) {
-        log.info("[RABBIT] Procesando evento de acceso: Usuario {}", evento.usuarioId());
-        
-        // Adaptamos el DTO de la librería al Request local del servicio
-        AuditoriaAccesoRequestDTO request = new AuditoriaAccesoRequestDTO(
-            evento.usuarioId(),
-            evento.ipOrigen(),
-            evento.navegador(),
-            evento.estado(),
-            evento.detalleError(),
-            evento.fecha()
-        );
-        
-        servicioAcceso.registrarAcceso(request);
+        log.info("[RABBIT-ACCESO] Recibido evento para usuario: {}", evento.usuarioId()); 
+        // Pasamos el evento directamente al servicio.
+        servicioAcceso.registrarAcceso(evento);
     }
 
     /**
-     * Escucha eventos de cambios en bases de datos (transacciones).
+     * Escucha eventos de cambios transaccionales en las entidades de negocio.
      * 
-     * @param evento Datos del cambio (DTO de la librería).
+     * @param evento Contrato de datos transaccionales de la librería común.
      */
     @RabbitListener(
-        queues = "auditoria.transaccional.queue", 
+        queues = NombresCola.AUDITORIA_TRANSACCIONES, 
         errorHandler = "manejadorErroresRabbit"
     )
     public void procesarTransaccion(EventoTransaccionalDTO evento) {
-        log.info("[RABBIT] Registrando traza transaccional de: {}", evento.servicioOrigen());
+        log.info("[RABBIT-TRANSAC] Registrando cambio en entidad: {} del servicio: {}", 
+                 evento.entidadAfectada(), evento.servicioOrigen());
+        
         servicioTransaccional.guardarEvento(evento);
     }
 }
