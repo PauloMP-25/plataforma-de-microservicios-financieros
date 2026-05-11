@@ -74,7 +74,7 @@ eureka:
     eureka-connection-idle-timeout-seconds: 30
   instance:
     hostname: ${EUREKA_INSTANCE_HOSTNAME}
-    prefer-ip-address: false
+    prefer-ip-address: true
     # Heartbeat: cada cuánto el servicio avisa que sigue vivo
     lease-renewal-interval-in-seconds: 10
     # Cuánto espera Eureka antes de marcar el servicio como caído

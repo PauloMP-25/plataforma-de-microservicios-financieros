@@ -15,8 +15,7 @@ public record SolicitudGenerarOtp(
         @Email(message = "Formato de email inválido")
         String email,
 
-        @NotBlank(message = "El teléfono es obligatorio")
-        @Size(max = 9, message = "El teléfono no puede tener más de 9 caracteres")
+        @Size(max = 15, message = "El teléfono no puede tener más de 15 caracteres")
         String telefono, // Opcional, se llena si el tipo es SMS
 
         @NotNull(message = "El tipo de canal es obligatorio")

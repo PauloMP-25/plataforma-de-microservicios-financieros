@@ -3,6 +3,7 @@ package com.cliente.dominio.entidades;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -61,10 +62,10 @@ public class LimiteGasto {
     private Integer porcentajeAlerta = 80;
 
     @Column(name = "fecha_inicio", nullable = false)
-    private LocalDateTime fechaInicio;
+    private LocalDate fechaInicio;
 
     @Column(name = "fecha_fin", nullable = false)
-    private LocalDateTime fechaFin;
+    private LocalDate fechaFin;
 
     @Column(nullable = false)
     private boolean activo; // Para eliminación lógica o desactivación manual
@@ -88,7 +89,7 @@ public class LimiteGasto {
     }
 
     public boolean estaVencido() {
-        return LocalDateTime.now().isAfter(fechaFin);
+        return LocalDate.now().isAfter(fechaFin);
     }
 
     /**

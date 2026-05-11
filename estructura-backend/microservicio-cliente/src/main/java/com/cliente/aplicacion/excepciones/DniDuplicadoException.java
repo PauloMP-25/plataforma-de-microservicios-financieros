@@ -1,11 +1,15 @@
 package com.cliente.aplicacion.excepciones;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import com.libreria.comun.excepciones.ExcepcionConflicto;
 
-@ResponseStatus(HttpStatus.CONFLICT)
-public class DniDuplicadoException extends RuntimeException {
+/**
+ * Excepción lanzada cuando se intenta registrar un DNI ya existente.
+ * 
+ * @author Paulo Moron
+ * @version 1.1.0
+ */
+public class DniDuplicadoException extends ExcepcionConflicto {
     public DniDuplicadoException(String dni) {
-        super("El DNI '" + dni + "' ya está registrado en el sistema.");
+        super("DNI", dni);
     }
 }

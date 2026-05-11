@@ -1,12 +1,15 @@
 package com.cliente.presentacion.controladores;
 
-import com.cliente.aplicacion.dtos.*;
+import com.cliente.aplicacion.dtos.RespuestaLimiteGasto;
+import com.cliente.aplicacion.dtos.SolicitudLimiteGasto;
 import com.cliente.aplicacion.servicios.ServicioLimiteGasto;
-import com.cliente.infraestructura.seguridad.FiltroJwt;
-import com.cliente.infraestructura.utilidades.UtilidadIp;
+import com.libreria.comun.utilidades.UtilidadIp;
+import com.libreria.comun.utilidades.UtilidadSeguridad;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
+import com.libreria.comun.respuesta.ResultadoApi;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -34,77 +37,79 @@ public class ControladorLimiteGasto {
      * Crea un nuevo límite global. Si hay uno vigente, falla. Si el actual está
      * vencido, lo desactiva automáticamente.
      *
-     * @param solicitud
-     * @param request
-     * @return
+     * @param solicitud DTO con los detalles del límite a crear
+     * @param request Petición HTTP para extraer la IP
+     * @return ResultadoApi con el límite creado
      */
     @PostMapping
-    public ResponseEntity<RespuestaLimiteGasto> crear(
+    public ResponseEntity<ResultadoApi<RespuestaLimiteGasto>> crear(
             @Valid @RequestBody SolicitudLimiteGasto solicitud,
             HttpServletRequest request) {
-        UUID uId = extraerUsuarioIdToken(request);
+        UUID usuarioToken = UtilidadSeguridad.obtenerUsuarioId();
+        String ip = UtilidadIp.obtenerIpReal(request);
+        RespuestaLimiteGasto respuesta = servicio.crear(usuarioToken, solicitud, ip);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(servicio.crear(uId, solicitud, UtilidadIp.obtenerIpRemota(request)));
+                .body(ResultadoApi.creado(respuesta, "Límite de gasto creado con éxito."));
     }
 
     /**
      * Obtiene únicamente el límite que se encuentra activo y vigente.
      *
-     * @param request
-     * @return
+     * @param request Petición HTTP para extraer la IP
+     * @return ResultadoApi con el límite de gasto activo
      */
     @GetMapping("/activo")
-    public ResponseEntity<RespuestaLimiteGasto> obtenerActivo(HttpServletRequest request) {
-        UUID uId = extraerUsuarioIdToken(request);
-        return ResponseEntity.ok(servicio.obtenerActivo(uId));
+    public ResponseEntity<ResultadoApi<RespuestaLimiteGasto>> obtenerActivo(HttpServletRequest request) {
+        UUID usuarioID = UtilidadSeguridad.obtenerUsuarioId();
+        RespuestaLimiteGasto respuesta = servicio.obtenerActivo(usuarioID);
+        return ResponseEntity.ok(ResultadoApi.exito(respuesta, "Límite activo recuperado exitosamente.", null));
     }
 
     /**
      * Actualiza parcialmente el límite global ACTIVO. Se utiliza PATCH porque
      * solo se modifican montos o porcentajes.
      *
-     * @param solicitud
-     * @param request
-     * @return
+     * @param solicitud DTO con los datos del límite a actualizar
+     * @param request Petición HTTP para extraer la IP
+     * @return ResultadoApi con el límite de gasto actualizado
      */
     @PatchMapping
-    public ResponseEntity<RespuestaLimiteGasto> actualizar(
+    public ResponseEntity<ResultadoApi<RespuestaLimiteGasto>> actualizar(
             @Valid @RequestBody SolicitudLimiteGasto solicitud,
             HttpServletRequest request) {
 
-        UUID usuarioIdToken = extraerUsuarioIdToken(request);
-        String ip = UtilidadIp.obtenerIpRemota(request);
-        return ResponseEntity.ok(
-                servicio.actualizar(usuarioIdToken, solicitud, ip));
+        UUID usuarioID = UtilidadSeguridad.obtenerUsuarioId();
+        String ip = UtilidadIp.obtenerIpReal(request);
+        RespuestaLimiteGasto respuesta = servicio.actualizar(usuarioID, solicitud, ip);
+        return ResponseEntity.ok(ResultadoApi.exito(respuesta, "Límite de gasto actualizado con éxito.", null));
     }
 
     /**
      * Lista todo el historial de límites (activos e inactivos).
-     * @param request
-     * @return 
+     * 
+     * @param request Petición HTTP para extraer la IP
+     * @return ResultadoApi con la lista de todos los límites creados
      */
     @GetMapping
-    public ResponseEntity<List<RespuestaLimiteGasto>> listarHistorial(HttpServletRequest request) {
-        UUID usuarioID = extraerUsuarioIdToken(request);
-        return ResponseEntity.ok(servicio.listarHistorial(usuarioID));
+    public ResponseEntity<ResultadoApi<List<RespuestaLimiteGasto>>> listarHistorial(HttpServletRequest request) {
+        UUID usuarioID = UtilidadSeguridad.obtenerUsuarioId();
+        List<RespuestaLimiteGasto> respuesta = servicio.listarHistorial(usuarioID);
+        return ResponseEntity.ok(ResultadoApi.exito(respuesta, "Historial de límites de gasto recuperado.", null));
     }
 
     /**
      * Realiza una eliminación lógica desactivando el límite activo. Esto
      * permite al usuario crear uno nuevo inmediatamente después.
-     * @param request
-     * @return 
+     * 
+     * @param request Petición HTTP para extraer la IP
+     * @return ResultadoApi sin contenido confirmando la eliminación
      */
     @DeleteMapping
-    public ResponseEntity<Void> desactivarLimiteActivo(HttpServletRequest request) {
-        UUID usuarioIdToken = extraerUsuarioIdToken(request);
-        String ip = UtilidadIp.obtenerIpRemota(request);
-
-        servicio.eliminar(usuarioIdToken, ip);
-        return ResponseEntity.noContent().build();
-    }
-
-    private UUID extraerUsuarioIdToken(HttpServletRequest request) {
-        return (UUID) request.getAttribute(FiltroJwt.ATTR_USUARIO_ID);
+    public ResponseEntity<ResultadoApi<Void>> desactivarLimiteActivo(HttpServletRequest request) {
+        UUID usuarioID = UtilidadSeguridad.obtenerUsuarioId();
+        String ip = UtilidadIp.obtenerIpReal(request);
+        servicio.eliminar(usuarioID, ip);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                .body(ResultadoApi.sinContenido("Límite de gasto desactivado exitosamente."));
     }
 }

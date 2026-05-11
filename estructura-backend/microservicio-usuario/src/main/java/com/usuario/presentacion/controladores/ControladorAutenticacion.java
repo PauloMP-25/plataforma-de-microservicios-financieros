@@ -1,25 +1,22 @@
 package com.usuario.presentacion.controladores;
 
+import com.libreria.comun.respuesta.ResultadoApi;
 import com.usuario.aplicacion.dtos.*;
-import com.usuario.aplicacion.servicios.ServicioAutenticacion;
+import com.usuario.aplicacion.servicios.IServicioAutenticacion;
 import com.usuario.dominio.entidades.Usuario;
-import com.usuario.infraestructura.utilidades.UtilidadIp;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Controlador de autenticación y gestión de usuarios. Proporciona endpoints
- * para el ciclo de vida del usuario y seguridad.
+ * Controlador de autenticación y gestión de usuarios.
+ * Sigue los estándares de la plataforma LUKA utilizando ResultadoApi para todas las respuestas.
  */
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -27,126 +24,150 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class ControladorAutenticacion {
 
-    private final ServicioAutenticacion servicioAuth;
+    private final IServicioAutenticacion servicioAuth;
 
-    // =========================================================================
-    // Activacion de Cuenta
-    // =========================================================================
+    /**
+     * Activa la cuenta de un usuario recién registrado validando un código OTP.
+     */
     @PutMapping("/activar/{usuarioId}")
-    public ResponseEntity<?> activarCuenta(@PathVariable UUID usuarioId, @RequestParam(required = false) String telefono, HttpServletRequest httpRequest) {
-        String ipCliente = UtilidadIp.obtenerIpRemota(httpRequest);
-        servicioAuth.activarCuenta(usuarioId, telefono,ipCliente);
-        return ResponseEntity.ok(Map.of(
-                "mensaje", "Cuenta activada correctamente",
-                "timestamp", LocalDateTime.now()
-        ));
+    public ResponseEntity<ResultadoApi<String>> activarCuenta(
+            @PathVariable UUID usuarioId, 
+            @RequestParam String codigoOtp,
+            @RequestParam(required = false) String telefono, 
+            HttpServletRequest request) {
+        
+        log.info("[API] Intento de activación para usuario: {}", usuarioId);
+        servicioAuth.activarCuenta(usuarioId, codigoOtp, telefono, request.getRemoteAddr());
+        
+        return ResponseEntity.ok(ResultadoApi.exito("OK", "Cuenta activada correctamente. Ya puede iniciar sesión."));
     }
 
-    // =========================================================================
-    // Cambiar contraseña actual
-    // =========================================================================
-    @PutMapping("/cambiar-password")
-    public ResponseEntity<?> cambiarPassword(
-            @Valid @RequestBody SolicitudCambioPassword solicitud,
-            Authentication authentication,
-            HttpServletRequest httpRequest) {
-
-        UUID usuarioId = ((Usuario) authentication.getPrincipal()).getId();
-        String ipCliente = UtilidadIp.obtenerIpRemota(httpRequest);
-
-        servicioAuth.cambiarPassword(usuarioId, solicitud, ipCliente);
-
-        return ResponseEntity.ok(Map.of(
-                "mensaje", "Tu contraseña ha sido actualizada correctamente",
-                "timestamp", LocalDateTime.now()
-        ));
+    /**
+     * Solicita un nuevo código OTP para la activación de cuenta.
+     */
+    @PostMapping("/solicitar-otp/{usuarioId}")
+    public ResponseEntity<ResultadoApi<String>> solicitarOtpActivacion(
+            @PathVariable UUID usuarioId,
+            @Valid @RequestBody SolicitudGenerarOtp solicitud) {
+        
+        log.info("[API] Solicitud de OTP de activación para usuario: {}", usuarioId);
+        servicioAuth.solicitarOtpActivacion(usuarioId, solicitud);
+        
+        return ResponseEntity.ok(ResultadoApi.exito("OTP_ENVIADO", "El código ha sido enviado a su medio de contacto."));
     }
 
-    // =========================================================================
-    // Login
-    // =========================================================================
+    /**
+     * Realiza el login del usuario y retorna el token JWT.
+     */
     @PostMapping("/login")
-    public ResponseEntity<RespuestaAutenticacion> login(
-            @Valid @RequestBody SolicitudLogin request,
-            HttpServletRequest httpRequest) {
-
-        String ipCliente = UtilidadIp.obtenerIpRemota(httpRequest);
-        RespuestaAutenticacion respuesta = servicioAuth.login(request, ipCliente);
-
-        return ResponseEntity.ok(respuesta);
+    public ResponseEntity<ResultadoApi<RespuestaAutenticacion>> login(
+            @Valid @RequestBody SolicitudLogin solicitud,
+            HttpServletRequest request) {
+        
+        log.info("[API] Intento de login para: {}", solicitud.correo());
+        RespuestaAutenticacion respuesta = servicioAuth.login(solicitud, request.getRemoteAddr());
+        
+        return ResponseEntity.ok(ResultadoApi.exito(respuesta, "Autenticación exitosa."));
     }
 
-    // =========================================================================
-    // Cerrar Sesion
-    // =========================================================================
+    /**
+     * Renueva el Access Token utilizando un Refresh Token válido.
+     */
+    @PostMapping("/refrescar-token")
+    public ResponseEntity<ResultadoApi<RespuestaAutenticacion>> refrescarToken(
+            @Valid @RequestBody SolicitudRefreshToken solicitud,
+            HttpServletRequest request) {
+        
+        log.info("[API] Solicitud de refresco de token");
+        RespuestaAutenticacion respuesta = servicioAuth.refrescarToken(solicitud, request.getRemoteAddr());
+        
+        return ResponseEntity.ok(ResultadoApi.exito(respuesta, "Token renovado exitosamente."));
+    }
+
+    /**
+     * Cierra la sesión del usuario actual e invalida el token.
+     */
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(Authentication authentication, HttpServletRequest httpRequest) {
+    public ResponseEntity<ResultadoApi<String>> logout(Authentication authentication, HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        String token = (authHeader != null && authHeader.startsWith("Bearer ")) ? authHeader.substring(7) : null;
+
         if (authentication != null && authentication.getPrincipal() instanceof Usuario usuario) {
-            String ipCliente = UtilidadIp.obtenerIpRemota(httpRequest);
-            servicioAuth.registrarLogout(usuario.getId(), ipCliente);
+            servicioAuth.registrarLogout(usuario.getId(), token, request.getRemoteAddr());
         }
-        return ResponseEntity.ok(Map.of("mensaje", "Sesión cerrada correctamente"));
+        return ResponseEntity.ok(ResultadoApi.exito("Sesión cerrada", "Sesión cerrada correctamente. El token ha sido invalidado."));
     }
 
-    // =========================================================================
-    // Eliminar cuenta
-    // =========================================================================
-    @DeleteMapping("/mi-cuenta")
-    public ResponseEntity<?> solicitarEliminacionCuenta(
-            Authentication authentication,
-            HttpServletRequest httpRequest) {
-
-        Usuario usuario = (Usuario) authentication.getPrincipal();
-        String ipCliente = UtilidadIp.obtenerIpRemota(httpRequest);
-
-        servicioAuth.eliminarCuenta(usuario.getId(), ipCliente);
-
-        return ResponseEntity.ok(Map.of(
-                "mensaje", "Su cuenta ha sido desactivada exitosamente.",
-                "timestamp", LocalDateTime.now()
-        ));
-    }
-
-    // =========================================================================
-    // Registro
-    // =========================================================================
+    /**
+     * Registra un nuevo usuario en el sistema.
+     */
     @PostMapping("/registrar")
-    public ResponseEntity<?> registrar(@Valid @RequestBody SolicitudRegistro request, HttpServletRequest httpRequest) {
-        String ipCliente = UtilidadIp.obtenerIpRemota(httpRequest);
-
-        // El servicio ahora devuelve solo el UUID
-        UUID usuarioId = servicioAuth.registrar(request, ipCliente);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                "mensaje", "Registro exitoso. Verifique su correo para activar la cuenta.",
-                "id", usuarioId,
-                "timestamp", LocalDateTime.now()
-        ));
+    public ResponseEntity<ResultadoApi<UUID>> registrar(
+            @Valid @RequestBody SolicitudRegistro solicitud, 
+            HttpServletRequest request) {
+        
+        log.info("[API] Solicitud de registro para usuario: {}", solicitud.nombreUsuario());
+        UUID usuarioId = servicioAuth.registrar(solicitud, request.getRemoteAddr());
+        
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ResultadoApi.exito(usuarioId, "Registro exitoso. Revise su correo para activar la cuenta."));
     }
 
-    // =========================================================================
-    // Recuperacion de contraseña
-    // =========================================================================
-    @PostMapping("/recuperar-password")
-    public ResponseEntity<?> solicitarRecuperacion(@Valid @RequestBody SolicitudRecuperacion solicitud) {
+    /**
+     * Inicia el flujo de recuperación de contraseña.
+     */
+    @PostMapping("/recuperar-solicitar")
+    public ResponseEntity<ResultadoApi<String>> solicitarRecuperacion(
+            @Valid @RequestBody SolicitudRecuperacion solicitud) {
+        
+        log.info("[API] Solicitud de recuperación para: {}", solicitud.correo());
         servicioAuth.iniciarRecuperacion(solicitud);
-        return ResponseEntity.ok(Map.of("mensaje", "Se ha enviado un código a su correo."));
+        
+        return ResponseEntity.ok(ResultadoApi.exito("SOLICITUD_PROCESADA", 
+            "Si el correo ingresado existe y está activo, recibirá un código de verificación en breve."));
     }
 
-    // =========================================================================
-    // Resetear contraseña por codigo de verificacion
-    // =========================================================================
-    @PostMapping("/reset-password")
-    public ResponseEntity<?> resetearPassword(
+    /**
+     * Establece una nueva contraseña tras validar el código de recuperación.
+     */
+    @PostMapping("/recuperar-confirmar")
+    public ResponseEntity<ResultadoApi<String>> resetearPassword(
             @RequestParam UUID registroId,
             @RequestParam String codigoOtp,
             @Valid @RequestBody SolicitudRestablecerPassword solicitud) {
-
+        
+        log.info("[API] Confirmación de recuperación de contraseña para registro: {}", registroId);
         servicioAuth.restablecerPassword(registroId, codigoOtp, solicitud);
+        
+        return ResponseEntity.ok(ResultadoApi.exito("PASSWORD_RESETEADO", "Su contraseña ha sido restablecida correctamente."));
+    }
 
-        return ResponseEntity.ok(Map.of(
-                "mensaje", "Contraseña restablecida con éxito.",
-                "timestamp", LocalDateTime.now()
-        ));
+    /**
+     * Permite a un usuario autenticado cambiar su contraseña.
+     */
+    @PutMapping("/cambiar-password")
+    public ResponseEntity<ResultadoApi<String>> cambiarPassword(
+            @Valid @RequestBody SolicitudCambioPassword solicitud,
+            Authentication authentication,
+            HttpServletRequest request) {
+
+        UUID usuarioId = ((Usuario) authentication.getPrincipal()).getId();
+        servicioAuth.cambiarPassword(usuarioId, solicitud, request.getRemoteAddr());
+
+        return ResponseEntity.ok(ResultadoApi.exito("PASSWORD_ACTUALIZADO", "La contraseña ha sido actualizada correctamente."));
+    }
+
+    /**
+     * Desactiva lógicamente la cuenta del usuario autenticado.
+     */
+    @DeleteMapping("/mi-cuenta")
+    public ResponseEntity<ResultadoApi<String>> eliminarCuenta(
+            Authentication authentication,
+            HttpServletRequest request) {
+
+        Usuario usuario = (Usuario) authentication.getPrincipal();
+        servicioAuth.eliminarCuenta(usuario.getId(), request.getRemoteAddr());
+
+        return ResponseEntity.ok(ResultadoApi.exito("CUENTA_ELIMINADA", "Su cuenta ha sido desactivada exitosamente."));
     }
 }

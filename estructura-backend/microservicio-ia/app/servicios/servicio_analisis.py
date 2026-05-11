@@ -35,8 +35,10 @@ from typing import Optional
 
 from dateutil.relativedelta import relativedelta
 
-from app.clientes.cliente_auditoria import enviar_evento_auditoria
-from app.clientes.cliente_financiero import ClienteNucleoFinanciero
+from app.libreria_comun.excepciones.base import LukaException, ValidacionError
+from app.libreria_comun.modelos.eventos import EventoAuditoriaDTO
+from app.libreria_comun.modelos.contexto import ContextoEstrategicoIADTO
+from app.mensajeria.publicador_auditoria import publicador_auditoria
 from app.configuracion import Configuracion, obtener_configuracion
 from app.modelos.esquemas import (
     PeticionClasificar,
@@ -45,12 +47,18 @@ from app.modelos.esquemas import (
     PeticionSimularMeta,
     RespuestaModulo,
     TipoMovimiento,
+    EstadoCoach,
 )
 from app.servicios.analitica import motor_ia
 from app.servicios.coach_ia import CoachIA
+from app.servicios.gasto_hormiga import GastoHormigaService
 from app.utilidades.preparador_datos import (
     json_a_dataframe,
     validar_datos_suficientes,
+)
+from app.clientes.luka_clients import (
+    obtener_cliente_financiero,
+    obtener_cliente_perfil
 )
 
 logger = logging.getLogger(__name__)
@@ -66,8 +74,11 @@ class ServicioAnalisis:
 
     def __init__(self) -> None:
         self._config: Configuracion = obtener_configuracion()
-        self._cliente_financiero = ClienteNucleoFinanciero()
+        self._cliente_financiero = obtener_cliente_financiero()
+        self._cliente_perfil = obtener_cliente_perfil()
         self._coach = CoachIA()
+        self._gasto_hormiga_service = GastoHormigaService()
+        self._publicador = publicador_auditoria
 
     # ══════════════════════════════════════════════════════════════════════════
     # MÓDULO 1 — Autoclasificación
@@ -553,13 +564,12 @@ async def ejecutar_detectar_anomalias(self,peticion: PeticionConFiltroFecha,ip_o
     ) -> None:
         """
         Valida que el DataFrame tenga suficientes datos para el análisis.
-        Lanza ValueError con mensaje claro si no los tiene.
-        El router lo convierte en HTTP 422.
+        Lanza ValidacionError si no los tiene.
         """
         valido, mensaje = validar_datos_suficientes(df, minimo_filas, tipo)
         if not valido:
             logger.warning("[SERVICIO] Datos insuficientes: %s", mensaje)
-            raise ValueError(mensaje)
+            raise ValidacionError(mensaje)
 
     async def _auditar(
         self,
@@ -569,18 +579,25 @@ async def ejecutar_detectar_anomalias(self,peticion: PeticionConFiltroFecha,ip_o
         ip_origen: str,
     ) -> None:
         """
-        Registra el evento en el microservicio-auditoria de forma no bloqueante.
-        Si falla, solo se loguea; nunca interrumpe la respuesta al cliente.
+        Registra el evento en microservicio-auditoria vía RabbitMQ de forma no bloqueante.
         """
         try:
-            await enviar_evento_auditoria(
-                nombre_usuario=usuario_id,
+            evento = EventoAuditoriaDTO(
+                usuario_id=usuario_id,
                 accion=accion,
-                detalles=detalles,
+                modulo="MS-IA",
                 ip_origen=ip_origen,
+                detalles=detalles
             )
+            # Publicamos de forma asíncrona
+            await self._publicador.publicar_evento(evento)
+            
         except Exception as exc:
             logger.warning(
-                "[SERVICIO] Auditoría no bloqueante falló para accion=%s: %s",
+                "[SERVICIO] Auditoría vía RabbitMQ falló para accion=%s: %s",
                 accion, str(exc),
             )
+
+def obtener_servicio_analisis() -> ServicioAnalisis:
+    """Proveedor para inyección de dependencias en FastAPI."""
+    return ServicioAnalisis()

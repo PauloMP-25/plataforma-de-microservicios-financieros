@@ -1,56 +1,63 @@
 package com.cliente.infraestructura.mensajeria;
 
-import com.cliente.aplicacion.dtos.EventoAuditoria;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.AmqpException;
+import com.libreria.comun.dtos.EventoAuditoriaDTO;
+import com.libreria.comun.dtos.EventoTransaccionalDTO;
+import com.libreria.comun.mensajeria.PublicadorEventosBase;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 /**
- * Publicador asíncrono de eventos de auditoría hacia RabbitMQ.
- *
- * <p>Publica en {@code exchange.auditoria} con routing key
+ * Publicador especializado de eventos para el Microservicio de Cliente.
+ * <p>
+ * Extiende de {@link PublicadorEventosBase} para reutilizar la infraestructura
+ * de mensajería asíncrona de la librería común, facilitando el reporte de
+ * accesos y trazabilidad transaccional.
+ * </p>
+ * <p>
+ * Publica en {@code exchange.auditoria} con routing key
  * {@code cola.auditoria}. El ms-auditoria consume de esa cola y persiste
- * el evento en la tabla {@code registros_auditoria}.</p>
- *
- * <p>Si RabbitMQ no está disponible el error se loguea pero NO se propaga
- * (patrón fire-and-forget). La operación principal ya se completó.</p>
- *
- * <p><b>IMPORTANTE:</b> {@code @Async} requiere que la llamada venga desde
- * un bean externo. Nunca llames a {@code publicar()} desde el mismo bean
- * que lo declara o Spring no creará el proxy y el método se ejecutará
- * de forma síncrona.</p>
+ * el evento en la tabla {@code registros_auditoria}.
+ * </p>
+ * 
+ * @author Paulo Moron
+ * @version 1.5
+ * @since 2026-09
  */
 @Component
-@Slf4j
-@RequiredArgsConstructor
-public class PublicadorAuditoria {
-
-    private final RabbitTemplate rabbitTemplate;
-
-    /** Nombre del exchange declarado en ConfiguracionRabbitMQ */
-    public static final String EXCHANGE_AUDITORIA  = "exchange.auditoria";
-    /** Routing key — coincide con el nombre de la cola */
-    public static final String ROUTING_KEY         = "cola.auditoria";
-    /** Módulo identificador para los logs de auditoría */
-    public static final String MODULO              = "MICROSERVICIO-CLIENTE";
+public class PublicadorAuditoria extends PublicadorEventosBase {
 
     /**
-     * Publica un evento de auditoría de forma asíncrona.
-     *
-     * @param evento objeto con todos los campos del evento
+     * Constructor que inyecta el RabbitTemplate a la clase base.
+     * 
+     * @param rabbitTemplate Cliente de RabbitMQ configurado.
      */
-    @Async
-    public void publicar(EventoAuditoria evento) {
-        try {
-            rabbitTemplate.convertAndSend(EXCHANGE_AUDITORIA, ROUTING_KEY, evento);
-            log.debug("[AUDITORIA] Publicado: accion='{}' usuario='{}' modulo='{}'",
-                    evento.accion(), evento.nombreUsuario(), evento.modulo());
-        } catch (AmqpException ex) {
-            log.error("[AUDITORIA] Fallo al publicar (no bloqueante): accion='{}' error='{}'",
-                    evento.accion(), ex.getMessage());
-        }
+    public PublicadorAuditoria(RabbitTemplate rabbitTemplate) {
+        super(rabbitTemplate);
+    }
+
+    /**
+     * Reporta un evento de forma asíncrona.
+     * <p>
+     * Utiliza la lógica de enrutamiento base para dirigir el mensaje a
+     * la cola de eventos con la etiqueta "fallo".
+     * </p>
+     * 
+     * @param dto Datos del evento de acceso (contrato de la librería).
+     */
+    public void publicarEventoExitoso(EventoAuditoriaDTO dto) {
+        this.publicarEvento(dto, "exito");
+    }
+
+    /**
+     * Reporta un evento transaccional de forma asíncrona.
+     * <p>
+     * Utiliza la lógica de enrutamiento base para dirigir el mensaje a
+     * la cola de eventos con la etiqueta "exito" o "fallo".
+     * </p>
+     * 
+     * @param dto Datos del evento de acceso (contrato de la librería).
+     */
+    public void publicarTransaccionExitosa(EventoTransaccionalDTO dto) {
+        this.publicarTransaccion(dto, dto.entidadAfectada());
     }
 }

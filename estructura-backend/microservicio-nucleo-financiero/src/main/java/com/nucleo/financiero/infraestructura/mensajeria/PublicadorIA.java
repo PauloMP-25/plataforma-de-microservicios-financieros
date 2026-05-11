@@ -1,7 +1,8 @@
 package com.nucleo.financiero.infraestructura.mensajeria;
 
-import com.nucleo.financiero.aplicacion.dtos.ia.RespuestaIaDTO;
-import com.nucleo.financiero.aplicacion.dtos.ia.SolicitudIaDTO;
+import com.libreria.comun.mensajeria.NombresExchange;
+import com.libreria.comun.dtos.RespuestaIaDTO;
+import com.libreria.comun.dtos.SolicitudIaDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
@@ -23,7 +24,7 @@ public class PublicadorIA {
         // Aquí podrías crear un DTO específico si lo deseas, 
         // o enviar la respuesta directamente.
         rabbitTemplate.convertAndSend(
-            ConfiguracionRabbitMQ.EXCHANGE_IA, 
+                NombresExchange.IA,
             "ia.analisis.resultado", // Una RK específica para resultados
             respuesta
         );

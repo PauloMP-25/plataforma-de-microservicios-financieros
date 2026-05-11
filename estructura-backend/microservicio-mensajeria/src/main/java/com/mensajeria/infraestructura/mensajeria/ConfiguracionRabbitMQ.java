@@ -1,108 +1,170 @@
 package com.mensajeria.infraestructura.mensajeria;
 
-import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
-import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
-import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.libreria.comun.mensajeria.ConfiguracionRabbitBase;
+
+/**
+ * Configuración de RabbitMQ para el microservicio de mensajería.
+ * <p>
+ * Hereda la infraestructura base (ConnectionFactory, RabbitTemplate, convertidor
+ * JSON) de {@link ConfiguracionRabbitBase} y define la topología específica de
+ * este servicio:
+ * <ul>
+ *   <li>Exchange principal: {@code exchange.mensajeria} (TopicExchange).</li>
+ *   <li>Cola OTP: {@code cola.mensajeria.otp.generar}, durable, con DLQ
+ *       configurada.</li>
+ *   <li>Dead Letter Queue: {@code cola.mensajeria.error} — recibe mensajes que
+ *       fallan 3 veces consecutivas.</li>
+ * </ul>
+ * </p>
+ *
+ * @author Paulo Moron
+ * @version 1.1.0
+ */
 @Configuration
-public class ConfiguracionRabbitMQ {
+public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
 
-    @Value("${spring.application.name:microservicio-mensajeria}")
-    private String applicationName;
-
-    @Value("${spring.rabbitmq.host:localhost}")
-    private String rabbitHost;
-
-    @Value("${spring.rabbitmq.port:5672}")
-    private int rabbitPort;
-
-    @Value("${spring.rabbitmq.username:guest}")
-    private String rabbitUsername;
-
-    @Value("${spring.rabbitmq.password:guest}")
-    private String rabbitPassword;
-
-    // Exchanges
+    // ── Exchanges ─────────────────────────────────────────────────────────────
+    /** Exchange de auditoría compartido con otros microservicios del ecosistema. */
     public static final String EXCHANGE_AUDITORIA = "exchange.auditoria";
+
+    /** Exchange propio del microservicio de mensajería. */
     public static final String EXCHANGE_MENSAJERIA = "exchange.mensajeria";
 
-    // Colas
+    /** Exchange de error (Dead Letter) al que se envían mensajes no procesables. */
+    public static final String EXCHANGE_ERROR = "exchange.mensajeria.error";
+
+    // ── Colas ─────────────────────────────────────────────────────────────────
+    /** Cola principal de generación de OTPs. */
     public static final String COLA_OTP_GENERAR = "cola.mensajeria.otp.generar";
 
-    // Routing Keys
+    /** Cola de errores (DLQ) donde llegan mensajes con 3 fallos consecutivos. */
+    public static final String COLA_ERROR = "cola.mensajeria.error";
+
+    /** Cola para envío asíncrono de emails transaccionales. */
+    public static final String COLA_EMAIL_ENVIAR = "cola.mensajeria.email.enviar";
+
+    /** Cola para envío asíncrono de SMS. */
+    public static final String COLA_SMS_ENVIAR = "cola.mensajeria.sms.enviar";
+
+    // ── Routing Keys ──────────────────────────────────────────────────────────
+    /** Routing key para solicitudes de generación de OTP. */
     public static final String RK_OTP_GENERAR = "mensaje.otp.generar";
 
-    @Bean
-    public ConnectionFactory connectionFactory() {
-        // 1. Configuramos la fábrica con tus credenciales reales
-        CachingConnectionFactory factory = new CachingConnectionFactory(rabbitHost, rabbitPort);
-        factory.setUsername(rabbitUsername);
-        factory.setPassword(rabbitPassword);
+    /** Routing key para errores y reenvíos a la DLQ. */
+    public static final String RK_ERROR = "mensaje.error";
 
-        // 2. Mantenemos tu estrategia de nombre personalizado
-        factory.setConnectionNameStrategy(connectionFactory -> applicationName);
+    // ── Exchanges ─────────────────────────────────────────────────────────────
 
-        return factory;
-    }
-
+    /**
+     * Exchange principal de mensajería del microservicio.
+     *
+     * @return {@link TopicExchange} durable con enrutamiento por patrón.
+     */
     @Bean
     public TopicExchange exchangeMensajeria() {
         return new TopicExchange(EXCHANGE_MENSAJERIA);
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
-    // SERIALIZACIÓN JSON
-    // ══════════════════════════════════════════════════════════════════════════
+    /**
+     * Exchange de error (Dead Letter Exchange) al que RabbitMQ re-enruta
+     * mensajes rechazados después de agotar los reintentos.
+     *
+     * @return {@link TopicExchange} durable para mensajes fallidos.
+     */
     @Bean
-    public Queue colaOtpGenerar() {
-        return new Queue(COLA_OTP_GENERAR, true);
+    public TopicExchange exchangeError() {
+        return new TopicExchange(EXCHANGE_ERROR);
     }
 
+    // ── Colas ─────────────────────────────────────────────────────────────────
+
+    /**
+     * Cola principal de OTP con política de Dead Letter configurada.
+     * Los mensajes rechazados 3 veces son re-enrutados automáticamente a
+     * {@code cola.mensajeria.error} para análisis posterior.
+     *
+     * @return {@link Queue} durable con {@code x-dead-letter-exchange} y
+     *         {@code x-max-requeue-limit = 3}.
+     */
+    @Bean
+    public Queue colaOtpGenerar() {
+        return QueueBuilder.durable(COLA_OTP_GENERAR)
+                .withArgument("x-dead-letter-exchange", EXCHANGE_ERROR)
+                .withArgument("x-dead-letter-routing-key", RK_ERROR)
+                .withArgument("x-max-requeue-limit", 3)
+                .build();
+    }
+
+    /**
+     * Dead Letter Queue donde aterrizan los mensajes que fallaron 3 veces.
+     * Permite inspección manual, alertas y eventual reintento controlado.
+     *
+     * @return {@link Queue} durable sin ninguna política adicional de DLQ.
+     */
+    @Bean
+    public Queue colaError() {
+        return QueueBuilder.durable(COLA_ERROR).build();
+    }
+
+    /**
+     * Cola durable para el envío asíncrono de correos electrónicos transaccionales.
+     *
+     * @return {@link Queue} durable enlazada al exchange principal.
+     */
+    @Bean
+    public Queue colaEmailEnviar() {
+        return QueueBuilder.durable(COLA_EMAIL_ENVIAR)
+                .withArgument("x-dead-letter-exchange", EXCHANGE_ERROR)
+                .withArgument("x-dead-letter-routing-key", RK_ERROR)
+                .withArgument("x-max-requeue-limit", 3)
+                .build();
+    }
+
+    /**
+     * Cola durable para el envío asíncrono de SMS.
+     *
+     * @return {@link Queue} durable enlazada al exchange principal.
+     */
+    @Bean
+    public Queue colaSmsEnviar() {
+        return QueueBuilder.durable(COLA_SMS_ENVIAR)
+                .withArgument("x-dead-letter-exchange", EXCHANGE_ERROR)
+                .withArgument("x-dead-letter-routing-key", RK_ERROR)
+                .withArgument("x-max-requeue-limit", 3)
+                .build();
+    }
+
+    // ── Bindings ──────────────────────────────────────────────────────────────
+
+    /**
+     * Enlaza la cola OTP al exchange principal con la routing key de generación.
+     *
+     * @param colaOtpGenerar   Cola declarada por {@link #colaOtpGenerar()}.
+     * @param exchangeMensajeria Exchange declarado por {@link #exchangeMensajeria()}.
+     * @return {@link Binding} que conecta cola y exchange.
+     */
     @Bean
     public Binding bindingOtpGenerar(Queue colaOtpGenerar, TopicExchange exchangeMensajeria) {
         return BindingBuilder.bind(colaOtpGenerar).to(exchangeMensajeria).with(RK_OTP_GENERAR);
     }
 
     /**
-     * Convierte automáticamente objetos Java ↔ JSON en los mensajes AMQP. Sin
-     * este bean, Spring AMQP usaría serialización binaria de Java (frágil). Con
-     * él, los mensajes son legibles desde cualquier lenguaje.
+     * Enlaza la DLQ al exchange de error con la routing key de error.
      *
-     * @return
+     * @param colaError    Cola DLQ declarada por {@link #colaError()}.
+     * @param exchangeError Exchange de error declarado por {@link #exchangeError()}.
+     * @return {@link Binding} que conecta la DLQ al exchange de error.
      */
     @Bean
-    public org.springframework.amqp.support.converter.MessageConverter convertidorMensajesJson() {
-        return new Jackson2JsonMessageConverter();
-    }
-
-    /**
-     * Configura el RabbitTemplate con el convertidor JSON. Es el cliente usado
-     * por los productores para publicar mensajes.
-     *
-     * @param connectionFactory
-     * @return
-     */
-    @Bean
-    public RabbitTemplate rabbitTemplate(org.springframework.amqp.rabbit.connection.ConnectionFactory connectionFactory) {
-        RabbitTemplate template = new RabbitTemplate(connectionFactory);
-        template.setMessageConverter(convertidorMensajesJson());
-        return template;
-    }
-
-    @Bean
-    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory connectionFactory) {
-        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
-        factory.setConnectionFactory(connectionFactory);
-        factory.setMessageConverter(convertidorMensajesJson());
-        return factory;
+    public Binding bindingError(Queue colaError, TopicExchange exchangeError) {
+        return BindingBuilder.bind(colaError).to(exchangeError).with(RK_ERROR);
     }
 }

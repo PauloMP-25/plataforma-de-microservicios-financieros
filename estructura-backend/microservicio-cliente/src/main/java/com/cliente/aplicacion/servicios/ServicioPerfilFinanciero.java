@@ -1,103 +1,35 @@
 package com.cliente.aplicacion.servicios;
 
-import com.cliente.aplicacion.dtos.*;
-import com.cliente.aplicacion.excepciones.*;
-import com.cliente.dominio.entidades.PerfilFinanciero;
-import com.cliente.dominio.repositorios.PerfilFinancieroRepositorio;
-import com.cliente.infraestructura.mensajeria.PublicadorAuditoria;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import com.cliente.aplicacion.dtos.RespuestaPerfilFinanciero;
+import com.cliente.aplicacion.dtos.SolicitudPerfilFinanciero;
 import java.util.UUID;
+
 /**
- * Lógica de negocio para el perfil financiero del cliente.
+ * Interfaz de servicio para el perfil financiero del cliente.
+ *
+ * @author Paulo Moron
+ * @version 1.1.0
  */
-@Service
-@Slf4j
-@RequiredArgsConstructor
-public class ServicioPerfilFinanciero {
-
-    private final PerfilFinancieroRepositorio repositorio;
-    private final PublicadorAuditoria publicadorAuditoria;
+public interface ServicioPerfilFinanciero {
 
     /**
-     * Crea o actualiza el perfil financiero (upsert). Si no existe, lo crea. Si
-     * existe, lo actualiza.
-     * @param usuarioIdRuta
-     * @param usuarioIdToken
-     * @param solicitud
-     * @param ipOrigen
-     * @return 
+     * Crea o actualiza el perfil financiero del usuario (upsert).
+     *
+     * @param usuarioIdRuta  ID del usuario en la ruta.
+     * @param usuarioIdToken ID del usuario autenticado vía token.
+     * @param solicitud      DTO con los datos financieros a guardar.
+     * @param ipOrigen       IP de origen del cliente.
+     * @return RespuestaPerfilFinanciero con el perfil guardado o actualizado.
      */
-    @Transactional
-    public RespuestaPerfilFinanciero guardarOActualizar(UUID usuarioIdRuta, UUID usuarioIdToken,
-            SolicitudPerfilFinanciero solicitud,
-            String ipOrigen) {
-        validarPropiedad(usuarioIdRuta, usuarioIdToken);
-
-        PerfilFinanciero perfil = repositorio.findByUsuarioId(usuarioIdRuta)
-                .orElseGet(() -> {
-                    log.info("Creando perfil financiero para usuarioId={}", usuarioIdRuta);
-                    return PerfilFinanciero.builder().usuarioId(usuarioIdRuta).build();
-                });
-
-        aplicarCambios(perfil, solicitud);
-        PerfilFinanciero guardado = repositorio.save(perfil);
-
-        publicadorAuditoria.publicar(EventoAuditoria.de(
-                usuarioIdToken.toString(), "PERFIL_FINANCIERO_ACTUALIZADO", ipOrigen,
-                "Perfil financiero guardado para usuarioId: " + usuarioIdRuta
-        ));
-
-        return convertirADTO(guardado);
-    }
+    RespuestaPerfilFinanciero guardarOActualizar(UUID usuarioIdRuta, UUID usuarioIdToken,
+            SolicitudPerfilFinanciero solicitud, String ipOrigen);
 
     /**
-     * Consulta el perfil financiero del usuario.
-     * @param usuarioIdRuta
-     * @param usuarioIdToken
-     * @return 
+     * Consulta el perfil financiero del usuario validando propiedad.
+     *
+     * @param usuarioIdRuta  ID del usuario en la ruta.
+     * @param usuarioIdToken ID del usuario autenticado vía token.
+     * @return RespuestaPerfilFinanciero con el perfil consultado.
      */
-    @Transactional(readOnly = true)
-    public RespuestaPerfilFinanciero consultar(UUID usuarioIdRuta, UUID usuarioIdToken) {
-        validarPropiedad(usuarioIdRuta, usuarioIdToken);
-        return repositorio.findByUsuarioId(usuarioIdRuta)
-                .map(this::convertirADTO)
-                .orElseThrow(() -> new DatosPersonalesNoEncontradosException(usuarioIdRuta));
-    }
-
-    // =========================================================================
-    // Soporte interno
-    // =========================================================================
-    private void validarPropiedad(UUID usuarioIdRuta, UUID usuarioIdToken) {
-        if (!usuarioIdRuta.equals(usuarioIdToken)) {
-            log.warn("Acceso denegado al perfil financiero: token={} ruta={}", usuarioIdToken, usuarioIdRuta);
-            throw new AccesoDenegadoException();
-        }
-    }
-
-    private void aplicarCambios(PerfilFinanciero e, SolicitudPerfilFinanciero d) {
-        if (d.getOcupacion() != null) {
-            e.setOcupacion(d.getOcupacion());
-        }
-        if (d.getIngresoMensual() != null) {
-            e.setIngresoMensual(d.getIngresoMensual());
-        }
-        if (d.getEstiloVida() != null) {
-            e.setEstiloVida(d.getEstiloVida());
-        }
-        if (d.getTonoIA() != null) {
-            e.setTonoIA(d.getTonoIA());
-        }
-    }
-
-    public RespuestaPerfilFinanciero convertirADTO(PerfilFinanciero e) {
-        return new RespuestaPerfilFinanciero(
-                e.getOcupacion(),
-                e.getIngresoMensual(), e.getEstiloVida(), e.getTonoIA(),
-                e.getFechaCreacion(), e.getFechaActualizacion()
-        );
-    }
+    RespuestaPerfilFinanciero consultar(UUID usuarioIdRuta, UUID usuarioIdToken);
 }

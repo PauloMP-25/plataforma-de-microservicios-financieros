@@ -68,6 +68,13 @@ class TipoGrafico(str, Enum):
     DONA = "doughnut"
     PASTEL = "pie"
     BARRA_APILADA = "bar_stacked"
+
+
+class EstadoEvento(str, Enum):
+    """Resultado de una operación para auditoría. Espejo de EstadoEvento.java."""
+    EXITOSO = "EXITOSO"
+    FALLIDO = "FALLIDO"
+    ADVERTENCIA = "ADVERTENCIA"
  
  
 class NombreModulo(str, Enum):
@@ -592,3 +599,46 @@ class ResumenMensual(BaseModel):
         if self.total_ingresos <= 0:
             return 0.0
         return round(((self.total_ingresos - self.total_gastos) / self.total_ingresos) * 100, 1)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# DTOs DE EVENTOS — Sincronización con ms-auditoria (Java)
+# ══════════════════════════════════════════════════════════════════════════════
+
+class EventoAuditoriaDTO(BaseModel):
+    """DTO para auditoría de eventos generales del sistema."""
+    usuario_id: Optional[str] = Field(default=None, alias="usuarioId")
+    accion: str
+    modulo: str
+    ip_origen: Optional[str] = Field(default=None, alias="ipOrigen", max_length=45)
+    detalles: Optional[str] = None
+    fecha: datetime = Field(default_factory=datetime.now)
+
+    model_config = {"populate_by_name": True}
+
+
+class EventoAccesoDTO(BaseModel):
+    """Representa un evento de seguridad relacionado con el acceso al sistema."""
+    usuario_id: Optional[str] = Field(default=None, alias="usuarioId")
+    ip_origen: str = Field(..., alias="ipOrigen", max_length=45)
+    navegador: Optional[str] = Field(default="LUKA-IA-SERVICE", max_length=500)
+    estado: EstadoEvento
+    detalle_error: Optional[str] = Field(default=None, alias="detalleError", max_length=500)
+    fecha: datetime = Field(default_factory=datetime.now)
+    correlation_id: Optional[str] = Field(default=None, alias="correlationId")
+
+    model_config = {"populate_by_name": True}
+
+
+class EventoTransaccionalDTO(BaseModel):
+    """Registro de cambios en entidades de negocio (Trazabilidad)."""
+    usuario_id: str = Field(..., alias="usuarioId")
+    entidad_id: str = Field(..., alias="entidadId")
+    servicio_origen: str = Field(default="ms-ia", alias="servicioOrigen")
+    entidad_afectada: str = Field(..., alias="entidadAfectada")
+    descripcion: str
+    valor_anterior: Optional[str] = Field(default=None, alias="valorAnterior")
+    valor_nuevo: Optional[str] = Field(default=None, alias="valorNuevo")
+    fecha: datetime = Field(default_factory=datetime.now)
+
+    model_config = {"populate_by_name": True}

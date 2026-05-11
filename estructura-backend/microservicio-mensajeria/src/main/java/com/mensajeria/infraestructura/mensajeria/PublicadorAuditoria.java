@@ -1,43 +1,45 @@
 package com.mensajeria.infraestructura.mensajeria;
 
-import com.mensajeria.aplicacion.dtos.AuditoriaAccesoRequestDTO; // Asegúrate de tener este DTO
-import com.mensajeria.aplicacion.dtos.EstadoAcceso;
-import java.time.LocalDateTime;
+import com.libreria.comun.dtos.EventoAuditoriaDTO;
+import com.libreria.comun.mensajeria.PublicadorEventosBase;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+/**
+ * Publicador de auditoría para mensajería.
+ * Hereda de la base para aprovechar el enrutamiento estándar.
+ * 
+ * @author Paulo Moron
+ * @version 1.1.0
+ */
 @Component
-@Slf4j
-@RequiredArgsConstructor
-public class PublicadorAuditoria {
+public class PublicadorAuditoria extends PublicadorEventosBase {
 
-    private final RabbitTemplate rabbitTemplate;
+    /**
+     * Constructor con inyección del RabbitTemplate para la clase base.
+     * 
+     * @param rabbitTemplate el template de RabbitMQ
+     */
+    public PublicadorAuditoria(RabbitTemplate rabbitTemplate) {
+        super(rabbitTemplate);
+    }
 
-    private static final String EXCHANGE = "exchange.auditoria";
-    // Routing key para eventos que no son estrictamente login/logout
-    public static final String RK_EVENTO_SEGURIDAD = "auditoria.evento.seguridad";
+    /**
+     * Publica un evento de seguridad de mensajería.
+     * 
+     * @param usuario id del usuario
+     * @param accion  acción realizada
+     * @param detalle detalle adicional
+     */
+    public void publicarEventoSeguridad(UUID usuario, String accion, String detalle) {
+        EventoAuditoriaDTO dto = EventoAuditoriaDTO.crear(
+                usuario,
+                accion,
+                "MS-MENSAJERIA",
+                "INTERNAL",
+                detalle);
 
-    @Async
-    public void publicarEvento(UUID usuario, String accion, String detalle) {
-        // Reutilizamos el DTO de auditoría para mantener el contrato con el ms-auditoria
-        AuditoriaAccesoRequestDTO dto = AuditoriaAccesoRequestDTO.of(
-                usuario, 
-                "INTERNAL", // IP interna entre microservicios
-                "MS-MENSAJERIA", 
-                EstadoAcceso.EXITO, 
-                String.format("[%s] %s", accion, detalle), 
-                LocalDateTime.now());
-
-        try {
-            rabbitTemplate.convertAndSend(EXCHANGE, RK_EVENTO_SEGURIDAD, dto);
-            log.debug("[RABBITMQ] Auditoría enviada desde Mensajería: {}", accion);
-        } catch (AmqpException ex) {
-            log.error("[RABBITMQ] Fallo al enviar auditoría: {}", ex.getMessage());
-        }
+        super.publicarEvento(dto, ".seguridad");
     }
 }

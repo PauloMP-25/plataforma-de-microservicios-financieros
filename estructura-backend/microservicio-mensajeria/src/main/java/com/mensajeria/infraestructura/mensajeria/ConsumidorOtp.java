@@ -1,7 +1,7 @@
 package com.mensajeria.infraestructura.mensajeria;
 
 import com.mensajeria.aplicacion.dtos.SolicitudGenerarCodigo;
-import com.mensajeria.aplicacion.servicios.ServicioMensajeria;
+import com.mensajeria.aplicacion.servicios.IMensajeriaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ConsumidorOtp {
 
-    private final ServicioMensajeria servicioMensajeria;
+    private final IMensajeriaService mensajeriaService;
 
     @RabbitListener(queues = ConfiguracionRabbitMQ.COLA_OTP_GENERAR)
     public void procesarSolicitudOtp(SolicitudGenerarCodigo solicitud) {
@@ -21,7 +21,7 @@ public class ConsumidorOtp {
         
         try {
             // Reutilizamos tu lógica de negocio existente
-            servicioMensajeria.generarYEnviarCodigo(solicitud);
+            mensajeriaService.generarYEnviarCodigo(solicitud);
             log.debug("[RABBITMQ] OTP procesado y enviado con éxito.");
         } catch (Exception e) {
             log.error("[RABBITMQ] Error procesando solicitud de OTP: {}", e.getMessage());
