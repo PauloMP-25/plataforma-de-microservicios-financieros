@@ -37,6 +37,7 @@ from dateutil.relativedelta import relativedelta
 
 from app.libreria_comun.excepciones.base import LukaException, ValidacionError
 from app.libreria_comun.modelos.eventos import EventoAuditoriaDTO
+from app.libreria_comun.modelos.contexto import ContextoEstrategicoIADTO
 from app.mensajeria.publicador_auditoria import publicador_auditoria
 from app.configuracion import Configuracion, obtener_configuracion
 from app.modelos.esquemas import (
@@ -46,12 +47,18 @@ from app.modelos.esquemas import (
     PeticionSimularMeta,
     RespuestaModulo,
     TipoMovimiento,
+    EstadoCoach,
 )
 from app.servicios.analitica import motor_ia
 from app.servicios.coach_ia import CoachIA
+from app.servicios.gasto_hormiga import GastoHormigaService
 from app.utilidades.preparador_datos import (
     json_a_dataframe,
     validar_datos_suficientes,
+)
+from app.clientes.luka_clients import (
+    obtener_cliente_financiero,
+    obtener_cliente_perfil
 )
 
 logger = logging.getLogger(__name__)
@@ -66,10 +73,11 @@ class ServicioAnalisis:
     """
 
     def __init__(self) -> None:
-        from app.clientes.cliente_financiero import ClienteNucleoFinanciero
         self._config: Configuracion = obtener_configuracion()
-        self._cliente_financiero = ClienteNucleoFinanciero()
+        self._cliente_financiero = obtener_cliente_financiero()
+        self._cliente_perfil = obtener_cliente_perfil()
         self._coach = CoachIA()
+        self._gasto_hormiga_service = GastoHormigaService()
         self._publicador = publicador_auditoria
 
     # ══════════════════════════════════════════════════════════════════════════
