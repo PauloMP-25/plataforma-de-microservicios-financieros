@@ -30,7 +30,16 @@ public class ConfiguracionSeguridad {
                 // Permitir acceso público a los endpoints de OTP
                 .requestMatchers("/api/v1/mensajeria/otp/**").permitAll() 
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
-                // El resto de las peticiones requerirán autenticación
+                // ── Infraestructura ───────────────────────────────────────────
+                .requestMatchers("/error").permitAll()
+                // --- Monitoreo y Documentación (Público) ---
+                .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers(
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html"
+                ).permitAll()
+                .anyRequest().authenticated()
             
             )
             .sessionManagement(session -> session

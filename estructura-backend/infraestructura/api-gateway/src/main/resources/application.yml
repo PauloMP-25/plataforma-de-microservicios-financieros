@@ -4,7 +4,6 @@ server:
 spring:
   application:
     name: api-gateway
-
   # ─────────────────────────────────────────────────────────────────────────
   # REDIS: Necesario para Rate Limiting
   # En desarrollo puedes correr Redis con Docker:
@@ -25,8 +24,8 @@ spring:
     gateway:
       # Tiempos de espera globales
       httpclient:
-        connect-timeout: 5000  # 5 segundos para conectar
-        response-timeout: 10s # 10 segundos para responder
+        connect-timeout: 30000  # 30 segundos para conectar
+        response-timeout: 60s # 60 segundos para responder
       # Descubrimiento automático: si un servicio se llama "mi-servicio"
       # en Eureka, el Gateway crea automáticamente una ruta /mi-servicio/**
       # Útil para tener rutas de respaldo, pero aquí las definimos manualmente
@@ -69,7 +68,9 @@ spring:
         - id: usuario-protegido
           uri: lb://MICROSERVICIO-USUARIO
           predicates:
-            - Path=/api/v1/usuarios/**
+            - Path=/api/v1/auth/cambiar-password
+            - Path=/api/v1/auth/mi-cuenta
+            - Path=/api/v1/auth/logout
           filters:
             - StripPrefix=0
             - AddRequestHeader=X-Gateway-Source, api-gateway

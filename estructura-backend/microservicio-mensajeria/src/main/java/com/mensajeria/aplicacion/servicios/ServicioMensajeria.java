@@ -89,33 +89,34 @@ public class ServicioMensajeria {
     // =========================================================================
     // 2. VALIDACIÓN (Registro / Activación)
     // =========================================================================
-    @Transactional
     public RespuestaValidacion validarParaActivacion(SolicitudValidarCodigo solicitud) {
-//      1. Validamos que el OTP sea correcto en nuestra base de datos (MS-Mensajería)
-        CodigoVerificacion codigo = procesarValidacionInterna(solicitud, PropositoCodigo.ACTIVACION_CUENTA);
+        // 1. Validamos que el OTP sea correcto
+        CodigoVerificacion cv = procesarValidacionInterna(solicitud, PropositoCodigo.ACTIVACION_CUENTA);
 
-        // 2. Si el código es válido, llamamos al MS-Usuarios para que cambie el estado a TRUE
-        log.info("[MS-MENSAJERIA] Solicitando activación al MS-Usuarios para el ID: {}", codigo.getUsuarioId());
+        // 2. Extraemos el teléfono de la entidad (podría ser null si validó por EMAIL)
+        String telefonoVerificado = cv.getTelefono();
 
-        clienteUsuario.activarCuenta(codigo.getUsuarioId());
+        log.info("[MS-MENSAJERIA] Solicitando activación al MS-Usuarios para el ID: {} con Tel: {}",
+                cv.getUsuarioId(), telefonoVerificado);
 
-        return new RespuestaValidacion(true, "OTP válido. Cuenta activada en el sistema de usuarios.");
+        // 3. Enviamos el ID y el teléfono verificado
+        clienteUsuario.activarCuenta(cv.getUsuarioId(), telefonoVerificado);
+
+        return new RespuestaValidacion(true, "OTP válido. Cuenta activada y teléfono sincronizado.");
     }
 
     // =========================================================================
     // 3. VALIDACIÓN (Recuperación / Reset) - Usado por MS-Usuarios
     // =========================================================================
     @Transactional
-    public UUID validarCodigoYObtenerUsuario(String codigoStr) {
+    public UUID validarCodigoYObtenerUsuario(UUID registroId, String codigoStr) {
         // Buscamos el código globalmente (el usuario no está logueado aún)
-        CodigoVerificacion cv = codigoRepository.findTopByCodigoAndUsadoFalseOrderByFechaCreacionDesc(codigoStr)
-                .orElseThrow(() -> new IllegalArgumentException("Código inválido o ya utilizado."));
+        CodigoVerificacion cv = codigoRepository
+                .findByIdAndCodigoAndUsadoFalse(registroId, codigoStr)
+                .orElseThrow(() -> new IllegalArgumentException("El código o el identificador son incorrectos."));
 
         if (cv.isExpirado()) {
             throw new IllegalStateException("El código ha expirado.");
-        }
-        if (cv.getProposito() != PropositoCodigo.RESTABLECER_PASSWORD) {
-            throw new IllegalArgumentException("Código no autorizado para este proceso.");
         }
 
         cv.setUsado(true);
@@ -152,12 +153,13 @@ public class ServicioMensajeria {
     private void verificarBloqueo(UUID uId) {
         intentoRepository.findByUsuarioId(uId).ifPresent(i -> {
             if (i.isBloqueado() && !i.bloqueoExpirado()) {
-                throw new UsuarioBloqueadoExcepcion(uId, ChronoUnit.HOURS.between(LocalDateTime.now(), i.getBloqueadoHasta()));
+                throw new UsuarioBloqueadoExcepcion(uId,
+                        ChronoUnit.HOURS.between(LocalDateTime.now(), i.getBloqueadoHasta()));
             }
         });
     }
 
-// =========================================================================
+    // =========================================================================
     // LÓGICA DE INTENTOS (Alerta de 3er Intento)
     // =========================================================================
     private boolean registrarIntentoFallido(UUID uId) {

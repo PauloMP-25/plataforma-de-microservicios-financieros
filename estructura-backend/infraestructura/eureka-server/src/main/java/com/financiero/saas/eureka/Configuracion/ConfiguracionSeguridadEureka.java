@@ -28,10 +28,14 @@ public class ConfiguracionSeguridadEureka {
                 .ignoringRequestMatchers("/eureka/**")
             )
             .authorizeHttpRequests(auth -> auth
-                // El actuator de health es público para que el Gateway
-                // y otros sistemas puedan verificar el estado.
-                .requestMatchers("/actuator/health").permitAll()
-                // Todo lo demás (dashboard, API de Eureka) requiere login.
+                // El actuator de health es público para que el Gateway y otros sistemas puedan verificar el estado.
+                // --- Monitoreo y Documentación (Público) ---
+                .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers(
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html"
+                ).permitAll()
                 .anyRequest().authenticated()
             )
             // Activa el formulario de login del dashboard web

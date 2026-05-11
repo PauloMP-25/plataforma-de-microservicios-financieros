@@ -39,8 +39,21 @@ ENV/
 .angular/
 .editorconfig
 .eslintcache
+angular.json
+package-lock.json
 
-# --- INFRAESTRUCTURA & DOCKER ---
+# ── DOCKER & INFRAESTRUCTURA ──────────────────────────────────────────────────
+
+# Ignorar archivos de secretos y configuración local
+docker/.env
+docker/docker-compose.override.yml
+
+# Ignorar datos persistentes si decidieras mapear carpetas (ej: ./data/postgres)
+**/data/
+**/logs/
+*.log
+
+# Ignorar archivos temporales de Docker/S.O.
 .docker/
 # Si usas persistencia local de datos en Docker, ignora las carpetas de datos
 # docker-data/
@@ -49,3 +62,5 @@ ENV/
 .continue/
 GEMINI.md
 graphify-out/
+.DS_Store
+Thumbs.db
