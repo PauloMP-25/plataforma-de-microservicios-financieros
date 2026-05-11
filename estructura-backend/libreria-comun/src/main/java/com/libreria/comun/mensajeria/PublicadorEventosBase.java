@@ -102,7 +102,7 @@ public class PublicadorEventosBase {
      * @param routingKey Clave de enrutamiento.
      * @param payload    Objeto a serializar como JSON.
      */
-    private void enviar(String exchange, String routingKey, Object payload) {
+    protected void enviar(String exchange, String routingKey, Object payload) {
         try {
             rabbitTemplate.convertAndSend(exchange, routingKey, payload);
             log.debug("[RABBIT-LIB] Mensaje enviado a {} con RK: {}", exchange, routingKey);
@@ -124,7 +124,7 @@ public class PublicadorEventosBase {
      * @param payload    Objeto a serializar como JSON.
      * @param headers    Mapa de headers a inyectar en el mensaje AMQP.
      */
-    private void enviarConHeaders(String exchange, String routingKey, Object payload,
+    protected void enviarConHeaders(String exchange, String routingKey, Object payload,
             Map<String, Object> headers) {
         try {
             rabbitTemplate.convertAndSend(exchange, routingKey, payload, message -> {

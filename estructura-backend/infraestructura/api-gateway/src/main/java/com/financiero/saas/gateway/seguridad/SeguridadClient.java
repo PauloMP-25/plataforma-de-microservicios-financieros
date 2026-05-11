@@ -78,10 +78,14 @@ public class SeguridadClient {
                     }
                     return false;
                 })
-                .timeout(Duration.ofMillis(500))
+                .timeout(Duration.ofMillis(300))
+                .onErrorResume(error -> {
+                    log.warn("[SEGURIDAD-CLIENTE] Latencia excedida o error en Auditoría. Fallback seguro activado.");
+                    return Mono.just(false); 
+                })
                 .flatMap(bloqueada ->
-                // Guardar en Redis con TTL de 60 segundos
-                redisTemplate.opsForValue().set(claveCache, bloqueada, Duration.ofSeconds(60))
-                        .thenReturn(bloqueada));
+                        // Guardar en Redis con TTL de 60 segundos
+                        redisTemplate.opsForValue().set(claveCache, bloqueada, Duration.ofSeconds(60))
+                                .thenReturn(bloqueada));
     }
 }

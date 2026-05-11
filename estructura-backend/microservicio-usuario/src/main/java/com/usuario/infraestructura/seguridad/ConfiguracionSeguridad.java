@@ -1,6 +1,9 @@
 package com.usuario.infraestructura.seguridad;
 
-import lombok.RequiredArgsConstructor;
+import com.libreria.comun.seguridad.ConfiguracionSeguridadBase;
+import com.libreria.comun.seguridad.FiltroJwt;
+import com.libreria.comun.seguridad.PuntoEntradaJwt;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -11,88 +14,75 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
- * Configuración central de Spring Security.
+ * Configuración de seguridad para el microservicio de usuario.
+ * Extiende de ConfiguracionSeguridadBase para heredar la configuración centralizada de la plataforma.
  */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@RequiredArgsConstructor
-public class ConfiguracionSeguridad {
+@Slf4j
+public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
 
-    private final DetallesUsuario detallesUsuarioService;
-    private final FiltroJwt filtroJwt;
-    private final FiltroRateLimitIp filtroRateLimitIp;
-    private final PuntoEntradaJwt puntoEntradaJwt;
+    private final UserDetailsService userDetailsService;
 
-    // =========================================================================
-    // Cadena de filtros
-    // =========================================================================
+    public ConfiguracionSeguridad(FiltroJwt filtroJwt, PuntoEntradaJwt puntoEntradaJwt, UserDetailsService userDetailsService) {
+        super(filtroJwt, puntoEntradaJwt);
+        this.userDetailsService = userDetailsService;
+    }
+
+    /**
+     * Configura la cadena de filtros de seguridad específica para el microservicio de usuario.
+     * 
+     * @param http Configuración HttpSecurity.
+     * @return SecurityFilterChain configurado.
+     * @throws Exception Si ocurre un error en la configuración.
+     */
     @Bean
-    public SecurityFilterChain cadenaFiltrosSeguridad(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        log.info("[SEGURIDAD] Configurando seguridad para MS-USUARIO");
+        
+        // Usamos el método base para configurar la infraestructura central (Stateless, JWT, etc)
+        super.configurarAutorizacion(http);
 
-        http
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session
-                        -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .exceptionHandling(ex
-                        -> ex.authenticationEntryPoint(puntoEntradaJwt)
-                )
-                .authorizeHttpRequests(auth -> auth
-                // --- Endpoints Públicos (Registro y Acceso) ---
+        // Añadimos las reglas específicas de este microservicio
+        http.authorizeHttpRequests(auth -> auth
+                // Endpoints Públicos de Autenticación
                 .requestMatchers(HttpMethod.POST,
                         "/api/v1/auth/login",
                         "/api/v1/auth/registrar",
                         "/api/v1/auth/recuperar-password",
                         "/api/v1/auth/reset-password"
                 ).permitAll()
-                // --- Endpoint de Activación (Público) ---
+                // Endpoint de Activación
                 .requestMatchers(HttpMethod.PUT, "/api/v1/auth/activar/**").permitAll()
-                // --- Monitoreo y Documentación (Público) ---
-                .requestMatchers("/actuator/**").permitAll()
-                .requestMatchers(
-                        "/v3/api-docs/**",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html"
-                ).permitAll()
+                // Cualquier otra ruta requiere autenticación
                 .anyRequest().authenticated()
-                )
-                .authenticationProvider(proveedorAutenticacion())
-                .addFilterBefore(filtroRateLimitIp, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(filtroJwt, UsernamePasswordAuthenticationFilter.class);
+        );
+
+        // Inyectamos el proveedor de autenticación personalizado (DB)
+        http.authenticationProvider(authenticationProvider());
 
         return http.build();
     }
 
-    // =========================================================================
-    // Beans
-    // =========================================================================
+    /**
+     * Configura el proveedor de autenticación basado en base de datos.
+     */
     @Bean
-    public AuthenticationProvider proveedorAutenticacion() {
+    public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-
-        provider.setUserDetailsService(detallesUsuarioService);
-        provider.setPasswordEncoder(codificadorPassword());
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder()); // Heredado de ConfiguracionSeguridadBase
         provider.setHideUserNotFoundExceptions(false);
         return provider;
     }
 
     @Bean
-    public AuthenticationManager gestorAutenticacion(
-            AuthenticationConfiguration config) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
-    }
-
-    @Bean
-    public static PasswordEncoder codificadorPassword() {
-        return new BCryptPasswordEncoder(12);
     }
 }

@@ -113,6 +113,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
+        <!-- ═══════════════════════════════════════════════════════
+             RESILIENCIA: Circuit Breaker reactivo para el Gateway.
+        ═══════════════════════════════════════════════════════ -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>

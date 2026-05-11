@@ -48,6 +48,13 @@ public class ServicioJwt {
     private long expiracionMs;
 
     /**
+     * @return Tiempo de vida del token en milisegundos.
+     */
+    public long obtenerExpiracionMs() {
+        return expiracionMs;
+    }
+
+    /**
      * Genera la clave de firma compatible con algoritmos HMAC-SHA decodificando
      * la clave en Base64.
      *

@@ -1,7 +1,7 @@
 package com.libreria.comun.autoconfiguracion;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.libreria.comun.manejadores.ManejadorGlobalExcepciones;
+import com.libreria.comun.manejadores.ManejadorGlobalExcepcionesBase;
 import com.libreria.comun.mensajeria.ConfiguracionRabbitBase;
 import com.libreria.comun.mensajeria.PublicadorEventosBase;
 import com.libreria.comun.seguridad.FiltroJwt;
@@ -16,12 +16,13 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 /**
  * Registro automático de los componentes de la librería LUKA COMMONS.
  * <p>
- * Gracias a esta configuración, los microservicios solo necesitan incluir 
- * la dependencia para tener acceso a la seguridad, mensajería y manejo de errores.
+ * Gracias a esta configuración, los microservicios solo necesitan incluir
+ * la dependencia para tener acceso a la seguridad, mensajería y manejo de
+ * errores.
  * </p>
  */
 @AutoConfiguration
-@Import({ConfiguracionRabbitBase.class}) // Importamos la base de Rabbit
+@Import({ ConfiguracionRabbitBase.class }) // Importamos la base de Rabbit
 public class LukaConfiguracion {
 
     @Bean
@@ -44,8 +45,9 @@ public class LukaConfiguracion {
 
     @Bean
     @ConditionalOnMissingBean
-    public ManejadorGlobalExcepciones manejadorGlobalExcepciones() {
-        return new ManejadorGlobalExcepciones();
+    public ManejadorGlobalExcepcionesBase manejadorGlobalExcepciones() {
+        return new ManejadorGlobalExcepcionesBase() {
+        };
     }
 
     @Bean

@@ -13,36 +13,26 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.List;
 
 /**
- * Interceptor centralizado para la gestión de excepciones en LUKA APP.
+ * Clase base para la gestión de excepciones en el ecosistema LUKA APP.
  * <p>
- * Utiliza {@link RestControllerAdvice} para capturar errores de todos los
- * controladores y transformarlos en un formato {@link ResultadoApi}
- * estandarizado en español.
+ * Proporciona implementaciones estándar para errores comunes (Feign, Validaciones, Errores Globales).
+ * Los microservicios DEBEN extender de esta clase y anotar su implementación local con 
+ * {@code @RestControllerAdvice}.
  * </p>
  *
  * @author Paulo Moron
  */
 @Slf4j
-@RestControllerAdvice
-public class ManejadorGlobalExcepciones {
+public abstract class ManejadorGlobalExcepcionesBase {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    protected final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * Maneja excepciones de comunicación entre microservicios (Feign).
-     * <p>
-     * Intenta extraer el mensaje de error original enviado por el microservicio
-     * destino.
-     * </p>
-     *
-     * @param ex  La excepción capturada.
-     * @param req Información de la petición HTTP.
-     * @return Respuesta estructurada con el código HTTP correspondiente.
      */
     @ExceptionHandler(FeignException.class)
     public ResponseEntity<ResultadoApi<?>> manejarFeignException(FeignException ex, HttpServletRequest req) {
@@ -68,19 +58,10 @@ public class ManejadorGlobalExcepciones {
 
     /**
      * Captura toda la jerarquía de excepciones propias de LUKA APP.
-     * <p>
-     * Utiliza polimorfismo para extraer el código semántico y el mensaje
-     * configurado en cada excepción concreta.
-     * </p>
-     *
-     * @param ex  La excepción capturada.
-     * @param req Información de la petición HTTP.
-     * @return Respuesta estructurada con el código HTTP correspondiente.
      */
     @SuppressWarnings("null")
     @ExceptionHandler(ExcepcionGlobal.class)
     public ResponseEntity<ResultadoApi<?>> manejarExcepcionLuka(ExcepcionGlobal ex, HttpServletRequest req) {
-
         CodigoError cod = ex.getError();
         HttpStatus status = cod.getStatus();
 
@@ -98,12 +79,7 @@ public class ManejadorGlobalExcepciones {
     }
 
     /**
-     * Traduce los errores de validación de Bean Validation (@Valid) a mensajes
-     * amigables.
-     *
-     * @param ex  Excepción de argumentos no válidos.
-     * @param req Información de la petición HTTP.
-     * @return Respuesta con estado 400 y lista detallada de errores de campo.
+     * Traduce los errores de validación de Bean Validation (@Valid) a mensajes amigables.
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ResultadoApi<?>> manejarValidacion(MethodArgumentNotValidException ex,
@@ -118,16 +94,7 @@ public class ManejadorGlobalExcepciones {
     }
 
     /**
-     * Captura cualquier excepción no controlada para evitar fugas de
-     * información técnica.
-     * <p>
-     * Loguea el stacktrace completo para depuración interna pero devuelve un
-     * mensaje genérico y seguro al cliente.
-     * </p>
-     *
-     * @param ex  Excepción general.
-     * @param req Información de la petición HTTP.
-     * @return Respuesta con estado 500.
+     * Captura cualquier excepción no controlada.
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ResultadoApi<?>> manejarErrorInesperado(Exception ex, HttpServletRequest req) {
