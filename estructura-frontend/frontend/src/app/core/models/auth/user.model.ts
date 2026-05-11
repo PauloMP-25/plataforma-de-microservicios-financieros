@@ -1,5 +1,4 @@
 // =============================================
-// LUKA - Models alineados al backend real
 // microservicio-usuarios  → puerto 8081
 // microservicio-nucleo-financiero → puerto 8085
 // =============================================
@@ -19,14 +18,14 @@ export interface SolicitudRegistro {
 
 export interface RespuestaAutenticacion {
   tokenAcceso:   string;
-  tipoToken:     string;   // "Bearer"
+  tipoToken:     string;   
   expiraEn:      number;
-  idUsuario:     string;   // UUID como string
+  idUsuario:     string;   
   nombreUsuario: string;
   roles:         string[];
 }
 
-// ── Usuario en sesión (construido desde RespuestaAutenticacion) ──
+// ── Usuario en sesión ──
 export interface UsuarioSesion {
   id:           string;
   nombreUsuario: string;
