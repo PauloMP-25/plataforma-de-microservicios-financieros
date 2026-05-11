@@ -9,6 +9,16 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import java.util.List;
 
+/**
+ * Cargador de datos iniciales para el entorno de ejecución.
+ * <p>
+ * Implementa {@link CommandLineRunner} para insertar un catálogo base de categorías
+ * financieras (Ingresos/Gastos) si no existen previamente en la base de datos.
+ * Esto asegura que el sistema tenga una base operativa mínima al iniciar.
+ * </p>
+ * 
+ * @author Luka-Dev-Backend
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -35,6 +45,7 @@ public class CargadorDatosIniciales implements CommandLineRunner {
         new Object[]{"Otros Ingresos",          "Ingresos no categorizados",               "plus-circle",     TipoMovimiento.INGRESO}
     );
 
+    @SuppressWarnings("null")
     @Override
     public void run(String... args) {
         int creadas = 0;

@@ -26,8 +26,8 @@ spring:
   cloud:
     gateway:
       httpclient:
-        connect-timeout: 30000  # 30 segundos para conectar (soluciona el timeout en cold start)
-        response-timeout: 60s # 60 segundos para responder (margen amplio para el primer arranque)
+        connect-timeout: 30000
+        response-timeout: 5s 
       
       discovery:
         locator:
@@ -36,16 +36,10 @@ spring:
       
       # ─────────────────────────────────────────────────────────────────────
       # RUTAS DEFINIDAS MANUALMENTE
-      # Estructura de cada ruta:
-      #   id:        Identificador único (para logs y debugging)
-      #   uri:       lb://NOMBRE-EN-EUREKA  (lb = load balanced)
-      #   predicates: Condición para que esta ruta aplique
-      #   filters:   Transformaciones que se aplican a la petición/respuesta
       # ─────────────────────────────────────────────────────────────────────
       routes:
         # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-USUARIO  (Puerto 8081)             │
-        # │  Rutas PÚBLICAS: login y registro                 │
+        # │  MICROSERVICIO-USUARIO                                  │
         # └─────────────────────────────────────────────────────────┘
         - id: servicio-usuario-auth
           uri: lb://MICROSERVICIO-USUARIO
@@ -54,12 +48,13 @@ spring:
           filters:
             - StripPrefix=0
             - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: usuarioCB
+                fallbackUri: forward:/fallback
           metadata:
             requiere-autenticacion: false
 
-        # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-USUARIO  — Rutas protegidas       │
-        # └─────────────────────────────────────────────────────────┘
         - id: usuario-protegido
           uri: lb://MICROSERVICIO-USUARIO
           predicates:
@@ -69,12 +64,15 @@ spring:
           filters:
             - StripPrefix=0
             - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: usuarioCB
+                fallbackUri: forward:/fallback
           metadata:
             requiere-autenticacion: true
 
         # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-CLIENTE  (Puerto 8083)             │
-        # │  Rutas PÚBLICAS: login y registro no requieren JWT│
+        # │  MICROSERVICIO-CLIENTE                                  │
         # └─────────────────────────────────────────────────────────┘
         - id: servicio-cliente-interno
           uri: lb://MICROSERVICIO-CLIENTE
@@ -84,11 +82,13 @@ spring:
           filters:
             - StripPrefix=0
             - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: clienteCB
+                fallbackUri: forward:/fallback
           metadata:
             requiere-autenticacion: false
-        # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-CLIENTE  — Rutas protegidas              │
-        # └─────────────────────────────────────────────────────────┘
+
         - id: servicio-cliente
           uri: lb://MICROSERVICIO-CLIENTE
           predicates:
@@ -102,12 +102,15 @@ spring:
                 redis-rate-limiter.burstCapacity: 40
                 redis-rate-limiter.requestedTokens: 1
                 key-resolver: "#{@userKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: clienteCB
+                fallbackUri: forward:/fallback
           metadata:
             requiere-autenticacion: true
 
         # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-AUDITORIA  (Puerto 8082)                 │
-        # │  Solo accesible para ROLE_ADMIN desde el exterior       │
+        # │  MICROSERVICIO-AUDITORIA                                │
         # └─────────────────────────────────────────────────────────┘
         - id: servicio-auditoria
           uri: lb://MICROSERVICIO-AUDITORIA
@@ -116,13 +119,16 @@ spring:
           filters:
             - StripPrefix=0
             - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: auditoriaCB
+                fallbackUri: forward:/fallback
           metadata:
             requiere-autenticacion: true
             rol-requerido: ROLE_ADMIN
 
         # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-MENSAJERIA  (Puerto 8084)          │
-        # │  Los OTP son públicos, el resto protegido         │
+        # │  MICROSERVICIO-MENSAJERIA                               │
         # └─────────────────────────────────────────────────────────┘
         - id: servicio-mensajeria-otp
           uri: lb://MICROSERVICIO-MENSAJERIA
@@ -131,11 +137,15 @@ spring:
           filters:
             - StripPrefix=0
             - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: mensajeriaCB
+                fallbackUri: forward:/fallback
           metadata:
             requiere-autenticacion: false
 
         # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-NUCLEO-FINANCIERO  (Puerto 8085)   │
+        # │  MICROSERVICIO-NUCLEO-FINANCIERO                        │
         # └─────────────────────────────────────────────────────────┘
         - id: servicio-nucleo-financiero
           uri: lb://MICROSERVICIO-NUCLEO-FINANCIERO
@@ -150,6 +160,10 @@ spring:
                 redis-rate-limiter.burstCapacity: 20
                 redis-rate-limiter.requestedTokens: 1
                 key-resolver: "#{@userKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: financieroCB
+                fallbackUri: forward:/fallback
           metadata:
             requiere-autenticacion: true
             

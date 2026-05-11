@@ -1,12 +1,16 @@
 package com.cliente.aplicacion.excepciones;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import com.libreria.comun.excepciones.ExcepcionRecursoNoEncontrado;
 import java.util.UUID;
 
-@ResponseStatus(HttpStatus.NOT_FOUND)
-public class MetaNoEncontradaException extends RuntimeException {
+/**
+ * Excepción lanzada cuando no se encuentra una meta de ahorro.
+ * 
+ * @author Paulo Moron
+ * @version 1.1.0
+ */
+public class MetaNoEncontradaException extends ExcepcionRecursoNoEncontrado {
     public MetaNoEncontradaException(UUID metaId) {
-        super("No existe la meta de ahorro con id: " + metaId);
+        super("la meta de ahorro", metaId);
     }
 }

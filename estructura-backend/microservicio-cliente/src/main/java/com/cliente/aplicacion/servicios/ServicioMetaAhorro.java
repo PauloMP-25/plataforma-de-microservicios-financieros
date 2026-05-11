@@ -1,185 +1,71 @@
 package com.cliente.aplicacion.servicios;
 
-import com.cliente.aplicacion.dtos.*;
-import com.cliente.aplicacion.excepciones.*;
-import com.cliente.dominio.entidades.MetaAhorro;
-import com.cliente.dominio.repositorios.MetaAhorroRepositorio;
-import com.cliente.infraestructura.mensajeria.PublicadorAuditoria;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import com.cliente.aplicacion.dtos.RespuestaMetaAhorro;
+import com.cliente.aplicacion.dtos.SolicitudMetaAhorro;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
- * Lógica de negocio para la gestión de metas de ahorro.
+ * Interfaz de servicio para la gestión de metas de ahorro.
  *
- * Publica eventos a RabbitMQ: - META_CREADA → cuando se crea una nueva meta -
- * META_COMPLETADA → cuando montoActual >= montoObjetivo
+ * @author Paulo Moron
+ * @version 1.1.0
  */
-@Service
-@Slf4j
-@RequiredArgsConstructor
-public class ServicioMetaAhorro {
-
-    private final MetaAhorroRepositorio repositorio;
-    private final PublicadorAuditoria publicadorAuditoria;
+public interface ServicioMetaAhorro {
 
     /**
-     * Crea una nueva meta de ahorro para el usuario. Publica el evento
-     * META_CREADA.
+     * Crea una nueva meta de ahorro para el usuario.
      *
-     * @param usuarioIdToken
-     * @param solicitud
-     * @param ipOrigen
-     * @return
+     * @param usuarioIdToken ID del usuario autenticado.
+     * @param solicitud      DTO con los datos de la meta a crear.
+     * @param ipOrigen       IP de origen del cliente.
+     * @return RespuestaMetaAhorro con la meta creada.
      */
-    @Transactional
-    public RespuestaMetaAhorro crear(UUID usuarioIdToken, SolicitudMetaAhorro solicitud,
-            String ipOrigen) {
-        MetaAhorro meta = MetaAhorro.builder()
-                .usuarioId(usuarioIdToken)
-                .nombre(solicitud.getNombre())
-                .montoObjetivo(solicitud.getMontoObjetivo())
-                .montoActual(solicitud.getMontoActual() != null
-                        ? solicitud.getMontoActual()
-                        : BigDecimal.ZERO)
-                .fechaLimite(solicitud.getFechaLimite())
-                .completada(false)
-                .build();
-
-        MetaAhorro guardada = repositorio.save(meta);
-
-        // Publicar evento META_CREADA (asíncrono)
-        publicadorAuditoria.publicar(EventoAuditoria.de(
-                usuarioIdToken.toString(), "META_CREADA", ipOrigen,
-                String.format("Meta creada: '%s' — objetivo: S/ %.2f",
-                        guardada.getNombre(), guardada.getMontoObjetivo())
-        ));
-
-        log.info("Meta creada: id={} usuario={} nombre='{}'",
-                guardada.getId(), usuarioIdToken, guardada.getNombre());
-
-        return convertirADTO(guardada);
-    }
+    RespuestaMetaAhorro crear(UUID usuarioIdToken, SolicitudMetaAhorro solicitud, String ipOrigen);
 
     /**
-     * Actualiza el progreso (monto actual) de una meta existente. Si la meta se
-     * completa en esta actualización, publica META_COMPLETADA.
+     * Actualiza el progreso (monto actual) de una meta existente.
      *
-     * @param metaId
-     * @param usuarioIdToken
-     * @param nuevoMontoActual
-     * @param ipOrigen
-     * @return
+     * @param metaId           ID de la meta a actualizar.
+     * @param usuarioIdToken   ID del usuario autenticado.
+     * @param nuevoMontoActual Nuevo monto ahorrado hasta el momento.
+     * @param ipOrigen         IP de origen del cliente.
+     * @return RespuestaMetaAhorro con la meta actualizada.
      */
-    @Transactional
-    public RespuestaMetaAhorro actualizarProgreso(UUID metaId, UUID usuarioIdToken,
-            BigDecimal nuevoMontoActual,
-            String ipOrigen) {
-        MetaAhorro meta = obtenerYValidarPropiedad(metaId, usuarioIdToken);
-        meta.setMontoActual(nuevoMontoActual);
-
-        boolean recienCompletada = meta.evaluarYMarcarCompletada();
-        MetaAhorro actualizada = repositorio.save(meta);
-
-        if (recienCompletada) {
-            publicadorAuditoria.publicar(EventoAuditoria.de(
-                    usuarioIdToken.toString(), "META_COMPLETADA", ipOrigen,
-                    String.format("¡Meta '%s' alcanzada! S/ %.2f de S/ %.2f",
-                            actualizada.getNombre(),
-                            actualizada.getMontoActual(),
-                            actualizada.getMontoObjetivo())
-            ));
-            log.info("Meta completada: id={} nombre='{}'", metaId, actualizada.getNombre());
-        }
-
-        return convertirADTO(actualizada);
-    }
+    RespuestaMetaAhorro actualizarProgreso(UUID metaId, UUID usuarioIdToken, BigDecimal nuevoMontoActual, String ipOrigen);
 
     /**
      * Lista todas las metas del usuario (activas e inactivas).
      *
-     * @param usuarioIdToken
-     * @return
+     * @param usuarioIdToken ID del usuario autenticado.
+     * @return Lista de RespuestaMetaAhorro.
      */
-    @Transactional(readOnly = true)
-    public List<RespuestaMetaAhorro> listar(UUID usuarioIdToken) {
-        return repositorio.findByUsuarioIdOrderByFechaCreacionDesc(usuarioIdToken)
-                .stream()
-                .map(this::convertirADTO)
-                .collect(Collectors.toList());
-    }
+    List<RespuestaMetaAhorro> listar(UUID usuarioIdToken);
 
     /**
-     * Lista solo las metas activas (no completadas), ordenadas por fecha
-     * límite.
+     * Lista solo las metas activas (no completadas), ordenadas por fecha límite.
      *
-     * @param usuarioIdToken
-     * @return
+     * @param usuarioIdToken ID del usuario autenticado.
+     * @return Lista de RespuestaMetaAhorro con las metas activas.
      */
-    @Transactional(readOnly = true)
-    public List<RespuestaMetaAhorro> listarActivas(UUID usuarioIdToken) {
-        return repositorio.findMetasActivasOrdenadas(usuarioIdToken)
-                .stream()
-                .map(this::convertirADTO)
-                .collect(Collectors.toList());
-    }
+    List<RespuestaMetaAhorro> listarActivas(UUID usuarioIdToken);
 
     /**
-     * Consulta una meta por id validando que pertenece al usuario.
+     * Consulta una meta específica validando que pertenece al usuario.
      *
-     * @param metaId
-     * @param usuarioIdToken
-     * @return
+     * @param metaId         ID de la meta a consultar.
+     * @param usuarioIdToken ID del usuario autenticado.
+     * @return RespuestaMetaAhorro con la meta consultada.
      */
-    @Transactional(readOnly = true)
-    public RespuestaMetaAhorro consultar(UUID metaId, UUID usuarioIdToken) {
-        return convertirADTO(obtenerYValidarPropiedad(metaId, usuarioIdToken));
-    }
+    RespuestaMetaAhorro consultar(UUID metaId, UUID usuarioIdToken);
 
     /**
      * Elimina una meta de ahorro del usuario.
      *
-     * @param metaId
-     * @param usuarioIdToken
-     * @param ipOrigen
+     * @param metaId         ID de la meta a eliminar.
+     * @param usuarioIdToken ID del usuario autenticado.
+     * @param ipOrigen       IP de origen del cliente.
      */
-    @Transactional
-    public void eliminar(UUID metaId, UUID usuarioIdToken, String ipOrigen) {
-        MetaAhorro meta = obtenerYValidarPropiedad(metaId, usuarioIdToken);
-        repositorio.delete(meta);
-        log.info("Meta eliminada: id={} usuario={}", metaId, usuarioIdToken);
-
-        publicadorAuditoria.publicar(EventoAuditoria.de(
-                usuarioIdToken.toString(), "META_ELIMINADA", ipOrigen,
-                String.format("Meta eliminada: '%s'", meta.getNombre())
-        ));
-    }
-
-    // =========================================================================
-    // Soporte interno
-    // =========================================================================
-    private MetaAhorro obtenerYValidarPropiedad(UUID metaId, UUID usuarioIdToken) {
-        MetaAhorro meta = repositorio.findById(metaId)
-                .orElseThrow(() -> new MetaNoEncontradaException(metaId));
-        if (!meta.getUsuarioId().equals(usuarioIdToken)) {
-            throw new AccesoDenegadoException();
-        }
-        return meta;
-    }
-
-    public RespuestaMetaAhorro convertirADTO(MetaAhorro m) {
-        return new RespuestaMetaAhorro(
-                m.getId(), m.getNombre(),
-                m.getMontoObjetivo(), m.getMontoActual(),
-                m.calcularPorcentajeProgreso(), // ← lógica de dominio
-                m.getFechaLimite(), m.getCompletada(),
-                m.getFechaCreacion(), m.getFechaActualizacion()
-        );
-    }
+    void eliminar(UUID metaId, UUID usuarioIdToken, String ipOrigen);
 }

@@ -188,6 +188,19 @@ class Configuracion(BaseSettings):
     rabbitmq_heartbeat: int = 60
     rabbitmq_timeout: int = 300
 
+    # ── Cola de sincronización (recepción de contexto desde ms-cliente) ───────
+    cola_ia_sincronizacion_contexto: str = "cola.ia.sincronizacion.contexto"
+    exchange_cliente_actualizaciones: str = "exchange.cliente.actualizaciones"
+    rk_perfil_actualizado: str = "cliente.perfil.actualizado"
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # REDIS (Caché de Contexto IA)
+    # ══════════════════════════════════════════════════════════════════════════
+    redis_host: str = "localhost"
+    redis_port: int = 6379
+    redis_db: int = 0
+    redis_password: str = ""
+
     # ══════════════════════════════════════════════════════════════════════════
     # PYDANTIC SETTINGS
     # ══════════════════════════════════════════════════════════════════════════

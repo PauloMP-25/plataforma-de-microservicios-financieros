@@ -19,8 +19,8 @@ import reactor.core.publisher.Mono;
  *
  * El Gateway usa Netty (servidor reactivo WebFlux), NO Tomcat (bloqueante).
  * Por eso:
- *  - @EnableWebSecurity + HttpSecurity → para aplicaciones MVC/bloqueantes
- *  - @EnableWebFluxSecurity + ServerHttpSecurity → para WebFlux/Gateway
+ * - @EnableWebSecurity + HttpSecurity → para aplicaciones MVC/bloqueantes
+ * - @EnableWebFluxSecurity + ServerHttpSecurity → para WebFlux/Gateway
  *
  * Si usas HttpSecurity aquí, Spring lanzará un error de contexto porque
  * no hay un DispatcherServlet, hay un DispatcherHandler reactivo.
@@ -29,9 +29,9 @@ import reactor.core.publisher.Mono;
  *
  * La validación JWT real la hace FiltroJwtGlobal.
  * Esta clase solo:
- *  1. Deshabilita CSRF (innecesario en APIs REST stateless)
- *  2. Configura qué rutas son públicas a nivel de Security
- *  3. Maneja el 401 de forma consistente con el resto de la app
+ * 1. Deshabilita CSRF (innecesario en APIs REST stateless)
+ * 2. Configura qué rutas son públicas a nivel de Security
+ * 3. Maneja el 401 de forma consistente con el resto de la app
  */
 @Configuration
 @EnableWebFluxSecurity
@@ -41,38 +41,36 @@ public class ConfiguracionSeguridadGateway {
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
-            //Sin estado: APIs REST no usan sesiones ni cookies CSRF
-            .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                // Sin estado: APIs REST no usan sesiones ni cookies CSRF
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
 
-            //Sin sesiones: la autenticación es stateless via JWT
-            .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
-            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+                // Sin sesiones: la autenticación es stateless via JWT
+                .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
+                .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
 
-            .authorizeExchange(exchanges -> exchanges
-                // Rutas completamente públicas a nivel de Security
-                .pathMatchers(
-                    "/v3/api-docs/**",
-                    "/swagger-ui/**",
-                    "/swagger-ui.html",
-                    "/api/v1/auth/**",
-                    "/api/v1/mensajeria/otp/**",
-                    "/actuator/**"
-                ).permitAll()
-                // Todo lo demás: Security lo "permite" porque el
-                // FiltroJwtGlobal ya se encarga de la validación real.
-                // Si dejáramos .authenticated() aquí, necesitaríamos
-                // implementar un ReactiveAuthenticationManager completo.
-                .anyExchange().permitAll()
-            )
+                .authorizeExchange(exchanges -> exchanges
+                        // Rutas completamente públicas a nivel de Security
+                        .pathMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/api/v1/auth/**",
+                                "/api/v1/mensajeria/otp/**",
+                                "/actuator/**")
+                        .permitAll()
+                        // Todo lo demás: Security lo "permite" porque el
+                        // FiltroJwtGlobal ya se encarga de la validación real.
+                        // Si dejáramos .authenticated() aquí, necesitaríamos
+                        // implementar un ReactiveAuthenticationManager completo.
+                        .anyExchange().permitAll())
 
-            // Respuesta personalizada para 401 (cuando Security lo rechaza)
-            .exceptionHandling(ex -> ex
-                .authenticationEntryPoint((exchange, e) -> {
-                    exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-                    return exchange.getResponse().setComplete();
-                })
-            )
-            .build();
+                // Respuesta personalizada para 401 (cuando Security lo rechaza)
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((exchange, e) -> {
+                            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                            return exchange.getResponse().setComplete();
+                        }))
+                .build();
     }
 
     /**
@@ -80,20 +78,21 @@ public class ConfiguracionSeguridadGateway {
      *
      * Determina qué "clave" identifica al usuario para el rate limiter.
      * Estrategia:
-     *  1. Si hay token JWT → usar el usuarioId del claim (usuarios autenticados)
-     *  2. Si no → usar la IP del cliente (peticiones públicas como login)
+     * 1. Si hay token JWT → usar el usuarioId del claim (usuarios autenticados)
+     * 2. Si no → usar la IP del cliente (peticiones públicas como login)
      *
      * Esto previene que un usuario autenticado consuma el cupo de otro,
      * y que ataques de fuerza bruta desde una IP no afecten a otros.
+     * 
      * @param servicioJwt
-     * @return 
+     * @return
      */
     @Bean
     public KeyResolver userKeyResolver(ServicioJwtGateway servicioJwt) {
         return exchange -> {
             String authHeader = exchange.getRequest()
-                .getHeaders()
-                .getFirst(HttpHeaders.AUTHORIZATION);
+                    .getHeaders()
+                    .getFirst(HttpHeaders.AUTHORIZATION);
 
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String token = authHeader.substring(7);
@@ -109,11 +108,11 @@ public class ConfiguracionSeguridadGateway {
             }
 
             // Fallback: usar IP del cliente
+            @SuppressWarnings("null")
             String ip = exchange.getRequest().getRemoteAddress() != null
-                ? exchange.getRequest().getRemoteAddress().getAddress().getHostAddress()
-                : "unknown";
+                    ? exchange.getRequest().getRemoteAddress().getAddress().getHostAddress()
+                    : "unknown";
             return Mono.just("ip:" + ip);
         };
     }
 }
-

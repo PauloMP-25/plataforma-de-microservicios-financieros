@@ -1,7 +1,7 @@
 package com.mensajeria.aplicacion.dtos;
 
-import com.mensajeria.dominio.entidades.CodigoVerificacion.TipoVerificacion;
 import com.mensajeria.dominio.entidades.CodigoVerificacion.PropositoCodigo;
+import com.mensajeria.dominio.entidades.CodigoVerificacion.TipoVerificacion;
 import jakarta.validation.constraints.*;
 import java.util.UUID;
 

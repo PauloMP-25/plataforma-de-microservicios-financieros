@@ -57,3 +57,10 @@ docker/docker-compose.override.yml
 .docker/
 .DS_Store
 Thumbs.db
+# Si usas persistencia local de datos en Docker, ignora las carpetas de datos
+# docker-data/
+# --- AGENTES DE IA ---
+.agent/
+GEMINI.md
+graphify-out/
+.continue/

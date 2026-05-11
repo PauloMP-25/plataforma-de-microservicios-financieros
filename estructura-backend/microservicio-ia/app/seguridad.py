@@ -30,7 +30,12 @@ def validar_token(
     if credenciales is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"error": "NO_AUTORIZADO", "mensaje": "Se requiere un token JWT válido."}
+            detail={
+                "exito": False,
+                "estado": 401,
+                "error": "ACCESO_NO_AUTORIZADO",
+                "mensaje": "Se requiere un token JWT válido."
+            }
         )
 
     config = obtener_configuracion()
@@ -38,6 +43,7 @@ def validar_token(
 
     try:
         # Convertimos la clave HEX de Java a bytes que Python entiende
+        # Java genera el secreto como una cadena Hexadecimal
         clave_bytes = binascii.unhexlify(config.jwt_clave_secreta)
 
         payload = jwt.decode(
@@ -46,22 +52,43 @@ def validar_token(
             algorithms=[config.jwt_algoritmo],
             options={"verify_exp": True}
         )
+        
+        # Validación extra: el payload debe contener usuarioId
+        if "usuarioId" not in payload and "sub" not in payload:
+            logger.error("[SEGURIDAD] Token válido pero sin identificación de usuario.")
+            raise jwt.InvalidTokenError("Token malformado: falta usuarioId")
+
         return payload
 
     except jwt.ExpiredSignatureError:
+        logger.warning("[SEGURIDAD] Intento de acceso con token expirado.")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"error": "TOKEN_EXPIRADO", "mensaje": "El token ha expirado."}
+            detail={
+                "exito": False,
+                "estado": 401,
+                "error": "TOKEN_EXPIRADO",
+                "mensaje": "Su sesión ha expirado. Por favor, inicie sesión nuevamente."
+            }
         )
-    except jwt.InvalidTokenError:
+    except (jwt.InvalidTokenError, binascii.Error) as e:
+        logger.error(f"[SEGURIDAD] Token inválido o clave secreta mal configurada: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"error": "TOKEN_INVALIDO", "mensaje": "El token es inválido."}
+            detail={
+                "exito": False,
+                "estado": 401,
+                "error": "TOKEN_INVALIDO",
+                "mensaje": "El token de seguridad es inválido."
+            }
         )
 
 def obtener_usuario_id(payload: dict) -> str:
-    """Extrae el ID del usuario del token decodificado."""
-    return payload.get("usuarioId")
+    """
+    Extrae el ID del usuario del token decodificado.
+    Busca 'usuarioId' (estándar LUKA) o 'sub' como fallback.
+    """
+    return payload.get("usuarioId") or payload.get("sub")
 
 def requerir_rol(rol_necesario: str):
     """

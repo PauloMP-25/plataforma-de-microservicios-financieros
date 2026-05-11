@@ -35,6 +35,14 @@
     </properties>
     <dependencies>
         <!-- ═══════════════════════════════════════════════════════
+             LIBRERIA COMUN.
+        ═══════════════════════════════════════════════════════ -->
+        <dependency>
+            <groupId>com.financiero.saas</groupId>
+            <artifactId>libreria-comun</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <!-- ═══════════════════════════════════════════════════════
              GATEWAY: Motor de enrutamiento reactivo basado en Netty.
         ═══════════════════════════════════════════════════════ -->
         <dependency>
@@ -104,6 +112,13 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <!-- ═══════════════════════════════════════════════════════
+             RESILIENCIA: Circuit Breaker reactivo para el Gateway.
+        ═══════════════════════════════════════════════════════ -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
         </dependency>
     </dependencies>
     <dependencyManagement>

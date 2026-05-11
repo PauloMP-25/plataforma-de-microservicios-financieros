@@ -13,6 +13,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Repositorio para la gestión persistente de transacciones financieras.
+ * <p>
+ * Contiene consultas personalizadas (JPQL) para el filtrado dinámico de historial
+ * y el cálculo de agregados financieros (sumas y conteos) por periodos de tiempo.
+ * </p>
+ * 
+ * @author Luka-Dev-Backend
+ * @version 1.1.0
+ */
 @Repository
 public interface TransaccionRepository extends JpaRepository<Transaccion, UUID> {
 
