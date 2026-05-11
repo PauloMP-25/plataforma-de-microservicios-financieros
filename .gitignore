@@ -44,3 +44,8 @@ ENV/
 .docker/
 # Si usas persistencia local de datos en Docker, ignora las carpetas de datos
 # docker-data/
+
+.agent/
+.continue/
+GEMINI.md
+graphify-out/
