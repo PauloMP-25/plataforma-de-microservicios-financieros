@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ConfiguracionRabbitBase {
 
-    @Value("${spring.application.name:luka-service}")
+    @Value("${spring.application.name:LUKA-RABBITMQ}")
     private String applicationName;
 
     @Value("${spring.rabbitmq.host:localhost}")
@@ -40,10 +40,13 @@ public class ConfiguracionRabbitBase {
     private String rabbitPassword;
 
     /**
-     * Configura la conexión con el broker RabbitMQ asignando el nombre del 
-     * microservicio a la conexión para facilitar el monitoreo en el Management Plugin.
-     * @return 
+     * Configura la conexión con el broker RabbitMQ asignando el nombre del
+     * microservicio a la conexión para facilitar el monitoreo en el Management
+     * Plugin.
+     * 
+     * @return
      */
+    @SuppressWarnings("null")
     @Bean
     public ConnectionFactory connectionFactory() {
         CachingConnectionFactory factory = new CachingConnectionFactory(rabbitHost, rabbitPort);
@@ -54,9 +57,11 @@ public class ConfiguracionRabbitBase {
     }
 
     /**
-     * Convertidor de mensajes a JSON. 
-     * Esencial para que Python (IA) pueda leer los mensajes enviados desde Java.
-     * @return 
+     * Convierte automáticamente objetos Java ↔ JSON en los mensajes AMQP. Sin
+     * este bean, Spring AMQP usaría serialización binaria de Java (frágil). Con
+     * él, los mensajes son legibles desde cualquier lenguaje.
+     *
+     * @return
      */
     @Bean
     public MessageConverter jsonMessageConverter() {
@@ -64,10 +69,13 @@ public class ConfiguracionRabbitBase {
     }
 
     /**
-     * Template de Rabbit pre-configurado con el convertidor JSON.
+     * Configura el RabbitTemplate con el convertidor JSON.
+     * Es el cliente usado por los productores para publicar mensajes.
+     *
      * @param connectionFactory
-     * @return 
+     * @return
      */
+    @SuppressWarnings("null")
     @Bean
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
@@ -76,10 +84,11 @@ public class ConfiguracionRabbitBase {
     }
 
     /**
-     * Fábrica de contenedores para los @RabbitListener.
-     * Configura un prefetchCount de 1 para garantizar un balanceo de carga justo entre hilos.
+     * Fábrica de contenedores para los @RabbitListener con el convertidor JSON.
+     * Es el cliente usado por los consumidores para escuchar mensajes.
+     *
      * @param connectionFactory
-     * @return 
+     * @return
      */
     @Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory connectionFactory) {

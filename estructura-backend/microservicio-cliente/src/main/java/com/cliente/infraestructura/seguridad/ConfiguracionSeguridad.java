@@ -1,37 +1,52 @@
 package com.cliente.infraestructura.seguridad;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Bean;
+import com.libreria.comun.seguridad.ConfiguracionSeguridadBase;
+import com.libreria.comun.seguridad.FiltroJwt;
+import com.libreria.comun.seguridad.PuntoEntradaJwt;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Configuración de seguridad específica para el microservicio de cliente.
+ * <p>
+ * Extiende de {@link ConfiguracionSeguridadBase} para heredar la gestión de JWT
+ * y define los permisos de acceso a los endpoints de cliente.
+ * </p>
+ * 
+ * @author Paulo Moron
+ * @since 2026-09
+ */
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
-@RequiredArgsConstructor
-public class ConfiguracionSeguridad {
+public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
 
-    private final FiltroJwt       filtroJwt;
-    private final PuntoEntradaJwt puntoEntradaJwt;
+    /**
+     * Constructor que inyecta las dependencias de seguridad de la librería común.
+     *
+     * @param filtroJwt       Filtro JWT para validación de tokens.
+     * @param puntoEntradaJwt Punto de entrada para respuestas de error 401.
+     */
+    public ConfiguracionSeguridad(FiltroJwt filtroJwt, PuntoEntradaJwt puntoEntradaJwt) {
+        super(filtroJwt, puntoEntradaJwt);
+    }
 
-    @Bean
-    public SecurityFilterChain cadenaFiltros(HttpSecurity http) throws Exception {
-        http
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .exceptionHandling(ex -> ex.authenticationEntryPoint(puntoEntradaJwt))
-            .authorizeHttpRequests(auth -> auth
-
+    /**
+     * Define la configuración común de la cadena de filtros.
+     * Los microservicios deben llamar a este método y añadir sus rutas específicas.
+     *
+     * @param http Configuración de seguridad de Spring.
+     * @return {@link HttpSecurity} configurado.
+     * @throws Exception Si ocurre un error en la configuración.
+     */
+    @Override
+    protected HttpSecurity configurarAutorizacion(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests(auth -> auth
                 // ── Endpoints internos (comunicación inter-microservicio) ──────
                 .requestMatchers(HttpMethod.POST, "/api/v1/clientes/perfil/inicial").permitAll()
-                .requestMatchers(HttpMethod.GET,  "/api/v1/clientes/interno/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/clientes/interno/**").permitAll()
 
                 // ── Perfil de datos personales ────────────────────────────────
                 .requestMatchers(HttpMethod.PUT, "/api/v1/clientes/perfil/**").authenticated()
@@ -48,17 +63,14 @@ public class ConfiguracionSeguridad {
 
                 // ── Infraestructura ───────────────────────────────────────────
                 .requestMatchers("/error").permitAll()
-                                // --- Monitoreo y Documentación (Público) ---
+                // --- Monitoreo y Documentación (Público) ---
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers(
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
-                        "/swagger-ui.html"
-                ).permitAll()
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(filtroJwt, UsernamePasswordAuthenticationFilter.class);
-
-        return http.build();
+                        "/swagger-ui.html")
+                .permitAll()
+                .anyRequest().authenticated());
+        return super.configurarAutorizacion(http);
     }
 }

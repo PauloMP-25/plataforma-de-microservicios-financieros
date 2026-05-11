@@ -1,8 +1,8 @@
 package com.auditoria.presentacion.controladores;
 
-import com.auditoria.aplicacion.dtos.AuditoriaAccesoDTO;
 import com.auditoria.aplicacion.servicios.ServicioAuditoriaAcceso;
-import com.auditoria.aplicacion.servicios.ServicioRegistroAuditoria;
+import com.libreria.comun.dtos.EventoAccesoDTO;
+import com.libreria.comun.respuesta.Paginacion;
 import com.libreria.comun.respuesta.ResultadoApi;
 
 import lombok.RequiredArgsConstructor;
@@ -41,14 +41,14 @@ public class AuditoriaAccesoControlador {
      * @return {@link ResponseEntity} con el {@link ResultadoApi} y metadatos de paginación.
      */
     @GetMapping
-    public ResponseEntity<ResultadoApi<List<AuditoriaAccesoDTO>>> listarTodo(
+    public ResponseEntity<ResultadoApi<List<EventoAccesoDTO>>> listarTodo(
             @RequestParam(defaultValue = "0") int pagina,
             @RequestParam(defaultValue = "20") int tamanio) {
 
         int tamanioSeguro = Math.min(tamanio, 100);
-        Page<AuditoriaAccesoDTO> resultadoPage = servicio.listarTodo(PageRequest.of(pagina, tamanioSeguro));
+        Page<EventoAccesoDTO> resultadoPage = servicio.listarTodo(PageRequest.of(pagina, tamanioSeguro));
         
-        Paginacion<AuditoriaAccesoDTO> metadata = Paginacion.desde(resultadoPage);
+        Paginacion<EventoAccesoDTO> metadata = Paginacion.desde(resultadoPage);
 
         return ResponseEntity.ok(
             ResultadoApi.exito(
@@ -67,13 +67,13 @@ public class AuditoriaAccesoControlador {
      * @return {@link ResponseEntity} con el resultado paginado para el usuario indicado.
      */
     @GetMapping("/usuario/{usuarioId}")
-    public ResponseEntity<ResultadoApi<List<AuditoriaAccesoDTO>>> obtenerPorUsuario(
+    public ResponseEntity<ResultadoApi<List<EventoAccesoDTO>>> obtenerPorUsuario(
             @PathVariable UUID usuarioId,
             @RequestParam(defaultValue = "0") int pagina) {
 
-        Page<AuditoriaAccesoDTO> resultadoPage = servicio.listarPorUsuario(usuarioId, PageRequest.of(pagina, 20));
+        Page<EventoAccesoDTO> resultadoPage = servicio.listarPorUsuario(usuarioId, PageRequest.of(pagina, 20));
         
-        Paginacion<AuditoriaAccesoDTO> metadata = Paginacion.desde(resultadoPage);
+        Paginacion<EventoAccesoDTO> metadata = Paginacion.desde(resultadoPage);
         String mensaje = String.format("Registros de acceso para el usuario %s recuperados.", usuarioId);
 
         return ResponseEntity.ok(

@@ -3,7 +3,7 @@ package com.auditoria.aplicacion.servicios.implementacion;
 import com.auditoria.aplicacion.dtos.RespuestaVerificacionIpDTO;
 import com.auditoria.aplicacion.excepciones.IpBloqueadaException;
 import com.auditoria.aplicacion.servicios.ServicioSeguridadAuditoria;
-import com.auditoria.dominio.entidades.AuditoriaAcceso.EstadoAcceso;
+import com.libreria.comun.enums.EstadoEvento;
 import com.auditoria.dominio.entidades.ListaNegraIp;
 import com.auditoria.dominio.repositorios.AuditoriaAccesoRepository;
 import com.auditoria.dominio.repositorios.ListaNegraIpRepository;
@@ -15,9 +15,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
- * Implementación de la lógica de protección contra fuerza bruta y gestión de lista negra.
+ * Implementación de la lógica de protección contra fuerza bruta y gestión de
+ * lista negra.
  * <p>
  * Utiliza una ventana deslizante de tiempo y un umbral de intentos fallidos
  * configurables para determinar el bloqueo automático de atacantes.
@@ -48,8 +50,7 @@ public class ServicioSeguridadAuditoriaImpl implements ServicioSeguridadAuditori
         LocalDateTime ventanaDesde = LocalDateTime.now().minusMinutes(ventanaMinutos);
 
         long fallosRecientes = repositorioAcceso.contarIntentosPorIpYEstadoDesde(
-                ipOrigen, EstadoAcceso.FALLO, ventanaDesde
-        );
+                ipOrigen, EstadoEvento.FALLO, ventanaDesde);
 
         log.debug("[SEGURIDAD] Evaluación de IP: {}. Fallos: {}/{}", ipOrigen, fallosRecientes, maxIntentosFallidos);
 
@@ -69,7 +70,7 @@ public class ServicioSeguridadAuditoriaImpl implements ServicioSeguridadAuditori
     }
 
     @Override
-    @Scheduled(fixedRate = 600000) // Cada 10 minutos
+    @Scheduled(fixedRate = 3600000) // Cada 60 minutos
     @Transactional
     public void limpiarBloqueosExpirados() {
         int eliminados = repositorioListaNegra.eliminarBloqueoExpirados(LocalDateTime.now());
@@ -83,7 +84,7 @@ public class ServicioSeguridadAuditoriaImpl implements ServicioSeguridadAuditori
      */
     private void bloquearIp(String ip, long intentos) {
         LocalDateTime ahora = LocalDateTime.now();
-        ListaNegraIp registro = repositorioListaNegra.findById(ip)
+        ListaNegraIp registro = repositorioListaNegra.findById(Objects.requireNonNull(ip))
                 .orElse(ListaNegraIp.builder().ip(ip).fechaBloqueo(ahora).build());
 
         registro.setMotivo(String.format("Bloqueo automático: %d intentos fallidos.", intentos));

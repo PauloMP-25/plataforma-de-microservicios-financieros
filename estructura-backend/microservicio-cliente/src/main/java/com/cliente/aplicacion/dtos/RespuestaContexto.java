@@ -12,11 +12,10 @@ import java.util.UUID;
  * cliente en una sola llamada Feign.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record RespuestaContextoCliente(
-        UUID usuarioId,
-        RespuestaDatosPersonales datosPersonales,
-        RespuestaPerfilFinanciero perfilFinanciero,
-        List<RespuestaMetaAhorro> metas,
-        RespuestaLimiteGasto limiteGasto) {
-
+public record RespuestaContexto(
+                UUID usuarioId,
+                RespuestaDatosPersonales datosPersonales,
+                RespuestaPerfilFinanciero perfilFinanciero,
+                List<RespuestaMetaAhorro> metas,
+                RespuestaLimiteGasto limiteGasto) {
 }

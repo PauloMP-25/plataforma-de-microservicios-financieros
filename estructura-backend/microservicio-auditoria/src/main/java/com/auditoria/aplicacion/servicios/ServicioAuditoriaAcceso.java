@@ -1,6 +1,7 @@
 package com.auditoria.aplicacion.servicios;
 
 import com.libreria.comun.dtos.EventoAccesoDTO;
+import com.libreria.comun.enums.EstadoEvento;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,9 +23,10 @@ public interface ServicioAuditoriaAcceso {
      * Registra un nuevo intento de acceso (éxito o fallo).
      * 
      * @param dto Datos del intento de acceso.
+     * @param EstadoAcceso Estado del login del usuario
      * @return El registro persistido en formato DTO.
      */
-    EventoAccesoDTO registrarAcceso(EventoAccesoDTO dto);
+    EventoAccesoDTO registrarAcceso(EventoAccesoDTO dto, EstadoEvento estado);
 
     /**
      * Recupera una lista paginada de todos los accesos registrados.

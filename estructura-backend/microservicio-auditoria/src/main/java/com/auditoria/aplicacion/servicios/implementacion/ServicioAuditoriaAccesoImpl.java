@@ -3,7 +3,7 @@ package com.auditoria.aplicacion.servicios.implementacion;
 import com.auditoria.aplicacion.servicios.ServicioAuditoriaAcceso;
 import com.auditoria.aplicacion.servicios.ServicioSeguridadAuditoria;
 import com.auditoria.dominio.entidades.AuditoriaAcceso;
-import com.auditoria.dominio.entidades.AuditoriaAcceso.EstadoAcceso;
+import com.libreria.comun.enums.EstadoEvento;
 import com.auditoria.dominio.repositorios.AuditoriaAccesoRepository;
 import com.libreria.comun.dtos.EventoAccesoDTO;
 
@@ -15,12 +15,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
  * Implementación concreta del servicio de auditoría de acceso.
  * <p>
- * Gestiona el ciclo de vida de los registros de acceso y colabora con el 
+ * Gestiona el ciclo de vida de los registros de acceso y colabora con el
  * servicio de seguridad para la detección de anomalías.
  * </p>
  * 
@@ -36,7 +37,7 @@ public class ServicioAuditoriaAccesoImpl implements ServicioAuditoriaAcceso {
 
     @Override
     @Transactional
-    public EventoAccesoDTO registrarAcceso(EventoAccesoDTO dto) {
+    public EventoAccesoDTO registrarAcceso(EventoAccesoDTO dto, EstadoEvento estado) {
         log.info("[AUDITORIA-ACCESO] Registrando: {} para IP: {}", dto.estado(), dto.ipOrigen());
 
         AuditoriaAcceso entidad = AuditoriaAcceso.builder()
@@ -47,21 +48,19 @@ public class ServicioAuditoriaAccesoImpl implements ServicioAuditoriaAcceso {
                 .detalleError(dto.detalleError())
                 .fecha(dto.fecha() != null ? dto.fecha() : LocalDateTime.now())
                 .build();
-
-        AuditoriaAcceso guardado = repositorio.save(entidad);
+        AuditoriaAcceso guardado = repositorio.save(Objects.requireNonNull(entidad));
 
         // Si es un fallo, delegamos la lógica de bloqueo al servicio de seguridad
-        if (dto.estado() == EstadoAcceso.FALLO) {
+        if (dto.estado() == EstadoEvento.FALLO) {
             servicioSeguridad.verificarIntentoFallido(dto.ipOrigen());
         }
-
         return convertirADTO(guardado);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<EventoAccesoDTO> listarTodo(Pageable paginacion) {
-        return repositorio.findAll(paginacion).map(this::convertirADTO);
+        return repositorio.findAll(Objects.requireNonNull(paginacion)).map(this::convertirADTO);
     }
 
     @Override
@@ -87,8 +86,7 @@ public class ServicioAuditoriaAccesoImpl implements ServicioAuditoriaAcceso {
      */
     private EventoAccesoDTO convertirADTO(AuditoriaAcceso e) {
         return new EventoAccesoDTO(
-                e.getId(), e.getUsuarioId(), e.getIpOrigen(),
-                e.getNavegador(), e.getEstado(), e.getDetalleError(), e.getFecha()
-        );
+                e.getUsuarioId(), e.getIpOrigen(),
+                e.getNavegador(), e.getEstado(), e.getDetalleError(), e.getFecha());
     }
 }

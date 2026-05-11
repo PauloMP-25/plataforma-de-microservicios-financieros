@@ -3,7 +3,6 @@ package com.libreria.comun.seguridad;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,22 +35,21 @@ public abstract class ConfiguracionSeguridadBase {
      * @return {@link SecurityFilterChain} configurado.
      * @throws Exception Si ocurre un error en la configuración.
      */
-    protected HttpSecurity configurarBase(HttpSecurity http) throws Exception {
+    protected HttpSecurity configurarAutorizacion(HttpSecurity http) throws Exception {
         return http
-                .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(puntoEntradaJwt))
                 .authorizeHttpRequests(auth -> auth
                         // Rutas transversales de infraestructura
                         .requestMatchers("/actuator/**", "/error/**").permitAll()
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                )
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll())
                 .addFilterBefore(filtroJwt, UsernamePasswordAuthenticationFilter.class);
     }
 
     /**
      * Bean de codificación de contraseñas único para toda la plataforma.
      * Se usa BCrypt con fuerza 12 para máxima seguridad.
+     * 
      * @return password
      */
     @Bean

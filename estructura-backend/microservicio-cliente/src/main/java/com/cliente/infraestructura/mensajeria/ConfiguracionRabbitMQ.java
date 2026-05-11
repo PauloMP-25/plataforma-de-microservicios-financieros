@@ -1,121 +1,206 @@
 package com.cliente.infraestructura.mensajeria;
 
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.DirectExchange;
-import org.springframework.amqp.core.QueueBuilder;
-import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
-import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
-import org.springframework.beans.factory.annotation.Value;
+import com.libreria.comun.mensajeria.ConfiguracionRabbitBase;
+import com.libreria.comun.mensajeria.NombresCola;
+import com.libreria.comun.mensajeria.NombresExchange;
+import com.libreria.comun.mensajeria.RoutingKeys;
+import org.springframework.amqp.core.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuración de la topología de RabbitMQ para el Microservicio de Cliente.
+ * <p>
+ * Esta clase extiende de {@link ConfiguracionRabbitBase} para heredar la
+ * infraestructura base (conexión, serialización JSON) y define la estructura
+ * de Exchanges, Colas y Bindings utilizando las constantes de la librería común.
+ * </p>
+ * 
+ * @author Paulo Moron
+ * @version 1.4
+ * @since 2026-09
+ */
 @Configuration
-public class ConfiguracionRabbitMQ {
+public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
 
-    @Value("${spring.application.name:microservicio-mensajeria}")
-    private String applicationName;
+    // =========================================================================
+    // EXCHANGES
+    // =========================================================================
 
-    @Value("${spring.rabbitmq.host:localhost}")
-    private String rabbitHost;
-
-    @Value("${spring.rabbitmq.port:5672}")
-    private int rabbitPort;
-
-    @Value("${spring.rabbitmq.username:guest}")
-    private String rabbitUsername;
-
-    @Value("${spring.rabbitmq.password:guest}")
-    private String rabbitPassword;
-
-    // ── Nombres de recursos ────────────────────────────────────────────────────
-    public static final String EXCHANGE_AUDITORIA = "exchange.auditoria";
-    public static final String COLA_AUDITORIA = "cola.auditoria";
-    public static final String ROUTING_KEY = "cola.auditoria";
-
-    @Bean
-    public ConnectionFactory connectionFactory() {
-        // 1. Configuramos la fábrica con tus credenciales reales
-        CachingConnectionFactory factory = new CachingConnectionFactory(rabbitHost, rabbitPort);
-        factory.setUsername(rabbitUsername);
-        factory.setPassword(rabbitPassword);
-
-        // 2. Mantenemos tu estrategia de nombre personalizado
-        factory.setConnectionNameStrategy(connectionFactory -> applicationName);
-
-        return factory;
-    }
-
-    // ── Cola y Exchange ────────────────────────────────────────────────────────
     /**
-     * Cola durable: sobrevive a reinicios del broker.
-     * @return 
+     * Define el Exchange principal de tipo Topic para el enrutamiento de auditoría.
+     * 
+     * @return {@link TopicExchange} configurado como durable.
      */
     @Bean
-    public Queue colaAuditoria() {
-        return QueueBuilder
-                .durable(COLA_AUDITORIA)
+    public TopicExchange exchangeAuditoria() {
+        return ExchangeBuilder
+                .topicExchange(NombresExchange.AUDITORIA)
+                .durable(true)
                 .build();
     }
 
     /**
-     * Exchange de tipo Direct para enrutamiento exacto por routing key.
-     * @return 
+     * Define el Dead Letter Exchange (DLX) para gestionar mensajes fallidos.
+     * 
+     * @return {@link DirectExchange} configurado como durable.
      */
     @Bean
-    public DirectExchange exchangeAuditoria() {
-        return new DirectExchange(EXCHANGE_AUDITORIA);
+    public DirectExchange exchangeAuditoriaDlq() {
+        return ExchangeBuilder
+                .directExchange(NombresExchange.AUDITORIA_DLX)
+                .durable(true)
+                .build();
     }
 
+    // =========================================================================
+    // COLAS PRINCIPALES (Con soporte para DLQ)
+    // =========================================================================
+
     /**
-     * Enlaza la cola al exchange con la routing key correspondiente.
-     * @param colaAuditoria
-     * @param exchangeAuditoria
-     * @return 
+     * Configura la cola para otros eventos con redirección a DLQ y TTL.
+     * 
+     * @return {@link Queue} con argumentos de Dead Lettering y tiempo de vida de 10
+     *         min.
      */
     @Bean
-    public Binding bindingAuditoria(Queue colaAuditoria, DirectExchange exchangeAuditoria) {
+    public Queue colaAuditoria() {
+        return QueueBuilder
+                .durable(NombresCola.AUDITORIA_EVENTOS)
+                .withArgument("x-dead-letter-exchange", NombresExchange.AUDITORIA_DLX)
+                .withArgument("x-dead-letter-routing-key", RoutingKeys.DLQ_AUDITORIA_EVENTO)
+                .withArgument("x-message-ttl", 600000)
+                .build();
+    }
+
+    // =========================================================================
+    // DEAD LETTER QUEUES (DLQ)
+    // =========================================================================
+
+    /**
+     * Define la cola física donde se almacenarán los mensajes de eventos que
+     * fallen.
+     * 
+     * @return {@link Queue} durable para persistencia de fallos.
+     */
+    @Bean
+    public Queue colaEventosDlq() {
+        return QueueBuilder
+                .durable(NombresCola.AUDITORIA_EVENTOS_DLQ)
+                .build();
+    }
+
+    // =========================================================================
+    // BINDINGS (Vinculaciones)
+    // =========================================================================
+
+    /**
+     * Vincula la cola de eventos al exchange principal mediante su Routing Key.
+     * 
+     * @param colaEventos       Bean de la cola de eventos.
+     * @param exchangeAuditoria Bean del exchange de auditoría.
+     * @return {@link Binding} que establece la ruta de mensajes de acceso.
+     */
+    @Bean
+    public Binding bindingEventos(Queue colaEventos, TopicExchange exchangeAuditoria) {
         return BindingBuilder
-                .bind(colaAuditoria)
+                .bind(colaEventos)
                 .to(exchangeAuditoria)
-                .with(ROUTING_KEY);
+                .with(RoutingKeys.AUDITORIA_EVENTO_ALL);
+    }
+
+    // =========================================================================
+    // SINCRONIZACIÓN CLIENTE → IA (Tiempo Real)
+    // =========================================================================
+
+    /**
+     * Exchange de tipo Topic para la sincronización de cambios del cliente.
+     *
+     * @return {@link TopicExchange} durable para sincronización.
+     */
+    @Bean
+    public TopicExchange exchangeClienteActualizaciones() {
+        return ExchangeBuilder
+                .topicExchange(NombresExchange.CLIENTE_ACTUALIZACIONES)
+                .durable(true)
+                .build();
     }
 
     /**
-     * Convierte automáticamente objetos Java ↔ JSON en los mensajes AMQP. Sin
-     * este bean, Spring AMQP usaría serialización binaria de Java (frágil). Con
-     * él, los mensajes son legibles desde cualquier lenguaje.
+     * Dead Letter Exchange (DLX) para mensajes de sincronización fallidos.
      *
-     * @return
+     * @return {@link DirectExchange} durable para mensajes de error.
      */
     @Bean
-    public org.springframework.amqp.support.converter.MessageConverter convertidorMensajesJson() {
-        return new Jackson2JsonMessageConverter();
+    public DirectExchange exchangeClienteActualizacionesDlx() {
+        return ExchangeBuilder
+                .directExchange(NombresExchange.CLIENTE_ACTUALIZACIONES_DLX)
+                .durable(true)
+                .build();
     }
 
     /**
-     * Configura el RabbitTemplate con el convertidor JSON. Es el cliente usado
-     * por los productores para publicar mensajes.
+     * Cola donde el ms-ia recibe las actualizaciones del contexto financiero.
+     * <p>
+     * Configurada con Dead Letter Exchange y TTL. Si un mensaje falla tras
+     * 3 reintentos (controlados por el consumidor Python), se redirige a
+     * {@code cola.ia.sincronizacion.error} para análisis posterior.
+     * </p>
      *
-     * @param connectionFactory
-     * @return
+     * @return {@link Queue} durable con soporte para DLQ.
      */
     @Bean
-    public RabbitTemplate rabbitTemplate(org.springframework.amqp.rabbit.connection.ConnectionFactory connectionFactory) {
-        RabbitTemplate template = new RabbitTemplate(connectionFactory);
-        template.setMessageConverter(convertidorMensajesJson());
-        return template;
+    public Queue colaSincronizacionContexto() {
+        return QueueBuilder
+                .durable(NombresCola.IA_SINCRONIZACION_CONTEXTO)
+                .withArgument("x-dead-letter-exchange", NombresExchange.CLIENTE_ACTUALIZACIONES_DLX)
+                .withArgument("x-dead-letter-routing-key", NombresCola.IA_SINCRONIZACION_ERROR)
+                .withArgument("x-message-ttl", 600000) // 10 minutos
+                .build();
     }
 
+    /**
+     * Cola de error donde se almacenan los mensajes de sincronización
+     * que no pudieron ser procesados exitosamente.
+     *
+     * @return {@link Queue} durable para persistencia de fallos.
+     */
     @Bean
-    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory connectionFactory) {
-        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
-        factory.setConnectionFactory(connectionFactory);
-        factory.setMessageConverter(convertidorMensajesJson());
-        return factory;
+    public Queue colaSincronizacionError() {
+        return QueueBuilder
+                .durable(NombresCola.IA_SINCRONIZACION_ERROR)
+                .build();
+    }
+
+    /**
+     * Vincula la cola de sincronización al exchange de actualizaciones de cliente.
+     *
+     * @param colaSincronizacionContexto     Bean de la cola de sincronización.
+     * @param exchangeClienteActualizaciones Bean del exchange de actualizaciones.
+     * @return {@link Binding} con routing key {@code cliente.perfil.actualizado}.
+     */
+    @Bean
+    public Binding bindingSincronizacionIA(Queue colaSincronizacionContexto,
+            TopicExchange exchangeClienteActualizaciones) {
+        return BindingBuilder
+                .bind(colaSincronizacionContexto)
+                .to(exchangeClienteActualizaciones)
+                .with(RoutingKeys.CLIENTE_PERFIL_ACTUALIZADO);
+    }
+
+    /**
+     * Vincula la cola de error al DLX de sincronización.
+     *
+     * @param colaSincronizacionError          Bean de la cola de error.
+     * @param exchangeClienteActualizacionesDlx Bean del DLX.
+     * @return {@link Binding} directo a la cola de error.
+     */
+    @Bean
+    public Binding bindingSincronizacionDlq(Queue colaSincronizacionError,
+            DirectExchange exchangeClienteActualizacionesDlx) {
+        return BindingBuilder
+                .bind(colaSincronizacionError)
+                .to(exchangeClienteActualizacionesDlx)
+                .with(NombresCola.IA_SINCRONIZACION_ERROR);
     }
 }

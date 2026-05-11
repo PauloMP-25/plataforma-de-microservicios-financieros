@@ -1,6 +1,7 @@
 package com.libreria.comun.dtos;
 
-import com.libreria.comun.enums.EstadoAcceso;
+import com.libreria.comun.enums.EstadoEvento;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -32,7 +33,7 @@ public record EventoAccesoDTO(
     String navegador,
 
     @NotNull(message = "El estado de acceso es obligatorio")
-    EstadoAcceso estado,
+    EstadoEvento estado,
 
     @Size(max = 500)
     String detalleError,
@@ -42,7 +43,7 @@ public record EventoAccesoDTO(
     /**
      * Factory method para crear una instancia rápidamente con la fecha actual.
      */
-    public static EventoAccesoDTO de(UUID usuarioId, String ip, EstadoAcceso estado, String detalle) {
+    public static EventoAccesoDTO de(UUID usuarioId, String ip, EstadoEvento estado, String detalle) {
         return new EventoAccesoDTO(usuarioId, ip, "LUKA-APP-CLIENT", estado, detalle, LocalDateTime.now());
     }
 }

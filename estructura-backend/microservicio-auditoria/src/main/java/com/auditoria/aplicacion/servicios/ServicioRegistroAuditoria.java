@@ -1,7 +1,7 @@
 package com.auditoria.aplicacion.servicios;
 
 import com.auditoria.aplicacion.dtos.RespuestaAuditoriaDetalladoDTO;
-import com.libreria.comun.dtos.EventoAccesoDTO;
+import com.libreria.comun.dtos.EventoAuditoriaDTO;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,14 +22,14 @@ public interface ServicioRegistroAuditoria {
     /**
      * Persiste un nuevo evento de auditoría en la base de datos.
      * <p>
-     * Se utiliza {@link EventoAccesoDTO} como contrato unificado para
+     * Se utiliza {@link EventoAuditoriaDTO} como contrato unificado para
      * capturar la actividad proveniente de cualquier microservicio.
      * </p>
      * 
      * @param request Datos del evento (acción, módulo, IP, etc.).
-     * @return {@link EventoAccesoDTO} con los datos persistidos e ID generado.
+     * @return {@link EventoAuditoriaDTO} con los datos persistidos e ID generado.
      */
-    EventoAccesoDTO registrarEvento(EventoAccesoDTO request);
+    EventoAuditoriaDTO registrarEvento(EventoAuditoriaDTO request);
 
     /**
      * Recupera el historial de auditoría enriquecido con datos de usuario.

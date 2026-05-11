@@ -4,14 +4,11 @@ import com.auditoria.aplicacion.dtos.RespuestaAuditoriaDetalladoDTO;
 import com.auditoria.aplicacion.servicios.ServicioRegistroAuditoria;
 import com.auditoria.dominio.entidades.RegistroAuditoria;
 import com.auditoria.dominio.repositorios.RegistroAuditoriaRepository;
-import com.libreria.comun.dtos.EventoAccesoDTO;
-import com.libreria.comun.utilidades.UtilidadSeguridad; // Importamos la utilidad de la librería
+import com.libreria.comun.dtos.EventoAuditoriaDTO;
+import com.libreria.comun.utilidades.UtilidadSeguridad;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.UUID;
-import java.time.LocalDateTime;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,14 +34,14 @@ public class ServicioRegistroAuditoriaImpl implements ServicioRegistroAuditoria 
 
     @Override
     @Transactional
-    public EventoAccesoDTO registrarEvento(EventoAccesoDTO request) {
+    public EventoAuditoriaDTO registrarEvento(EventoAuditoriaDTO request) {
         log.info("[AUDITORIA] Registrando evento para usuario ID: {}", request.usuarioId());
 
         RegistroAuditoria entidad = convertirAEntidad(request);
         
         // Si el correo no viene en el evento, intentamos obtenerlo del token actual si existe
-        if (entidad.getNombreUsuario() == null || entidad.getNombreUsuario().isBlank()) {
-            entidad.setNombreUsuario(UtilidadSeguridad.obtenerEmailUsuario());
+        if (entidad.getUsuarioId() == null) {
+            entidad.setUsuarioId(UtilidadSeguridad.obtenerUsuarioId());
         }
 
         repositorioAuditoria.save(entidad);
@@ -69,34 +66,23 @@ public class ServicioRegistroAuditoriaImpl implements ServicioRegistroAuditoria 
     private RespuestaAuditoriaDetalladoDTO convertirARespuestaDetallada(RegistroAuditoria entidad) {
         return new RespuestaAuditoriaDetalladoDTO(
                 entidad.getId(),
-                entidad.getFechaHora(),
-                // Intentamos parsear el UUID si es posible, si no, generamos uno o enviamos null
-                intentarParsearUUID(entidad.getNombreUsuario()), 
-                entidad.getNombreUsuario(), // Aquí ya tenemos el email guardado
-                "Usuario Sistema", // Este dato suele venir de ms-usuarios
+                entidad.getUsuarioId(),
+                UtilidadSeguridad.obtenerUsuarioEmail(),
                 entidad.getAccion(),
                 entidad.getModulo(),
                 entidad.getIpOrigen(),
-                entidad.getDetalles()
+                entidad.getDetalles(),
+                entidad.getFechaHora()
         );
     }
 
-    private RegistroAuditoria convertirAEntidad(EventoAccesoDTO dto) {
+    private RegistroAuditoria convertirAEntidad(EventoAuditoriaDTO dto) {
         return RegistroAuditoria.builder()
-                .fechaHora(dto.fecha() != null ? dto.fecha() : LocalDateTime.now())
-                .nombreUsuario(dto.usuarioId() != null ? dto.usuarioId().toString() : UtilidadSeguridad.obtenerEmailUsuario())
+                .usuarioId(dto.usuarioId() != null ? dto.usuarioId() : UtilidadSeguridad.obtenerUsuarioId())
                 .accion("ACCESO_SISTEMA")
                 .modulo(dto.modulo() != null ? dto.modulo() : "AUDITORIA")
                 .ipOrigen(dto.ipOrigen())
-                .detalles(dto.detalleError())
+                .detalles(dto.detalles())
                 .build();
-    }
-
-    private UUID intentarParsearUUID(String valor) {
-        try {
-            return UUID.fromString(valor);
-        } catch (Exception e) {
-            return null; 
-        }
     }
 }

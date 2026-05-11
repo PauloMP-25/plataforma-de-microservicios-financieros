@@ -15,6 +15,10 @@ public final class NombresExchange {
     public static final String MENSAJERIA = "exchange.mensajeria";
     /** Exchange para actualizaciones en tiempo real hacia el Dashboard */
     public static final String DASHBOARD = "exchange.dashboard";
+    /** Exchange para sincronización de cambios del cliente hacia consumidores (IA, Dashboard) */
+    public static final String CLIENTE_ACTUALIZACIONES = "exchange.cliente.actualizaciones";
+    /** Dead Letter Exchange para mensajes fallidos de sincronización de cliente */
+    public static final String CLIENTE_ACTUALIZACIONES_DLX = "exchange.cliente.actualizaciones.dlq";
 
     private NombresExchange() {} // Previene instanciación
 }

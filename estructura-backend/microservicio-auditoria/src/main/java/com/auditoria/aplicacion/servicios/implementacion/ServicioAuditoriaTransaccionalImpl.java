@@ -16,7 +16,8 @@ import java.util.UUID;
 /**
  * Implementación concreta del servicio de auditoría transaccional.
  * <p>
- * Realiza el mapeo entre las entidades de persistencia y los DTOs de la librería común.
+ * Realiza el mapeo entre las entidades de persistencia y los DTOs de la
+ * librería común.
  * </p>
  * 
  * @author Paulo Moron
@@ -27,21 +28,21 @@ public class ServicioAuditoriaTransaccionalImpl implements ServicioAuditoriaTran
 
     private final AuditoriaTransaccionalRepository repositorio;
 
+    @SuppressWarnings("null")
     @Override
     @Transactional
     public EventoTransaccionalDTO guardarEvento(EventoTransaccionalDTO dto) {
         AuditoriaTransaccional entidad = AuditoriaTransaccional.builder()
                 .usuarioId(dto.usuarioId())
+                .entidadId(dto.entidadId())
                 .servicioOrigen(dto.servicioOrigen())
                 .entidadAfectada(dto.entidadAfectada())
-                .entidadId(dto.entidadId())
+                .descripcion(dto.descripcion())
                 .valorAnterior(dto.valorAnterior())
                 .valorNuevo(dto.valorNuevo())
-                .fecha(dto.fecha() != null ? dto.fecha() : LocalDateTime.now())
                 .build();
 
-        entidad = repositorio.save(entidad);
-        
+        repositorio.save(entidad);
         return mapearADto(entidad);
     }
 
@@ -54,7 +55,8 @@ public class ServicioAuditoriaTransaccionalImpl implements ServicioAuditoriaTran
 
     @Override
     @Transactional(readOnly = true)
-    public Page<EventoTransaccionalDTO> buscarConFiltros(String servicio, LocalDateTime desde, LocalDateTime hasta, Pageable pageable) {
+    public Page<EventoTransaccionalDTO> buscarConFiltros(String servicio, LocalDateTime desde, LocalDateTime hasta,
+            Pageable pageable) {
         return repositorio.buscarConFiltros(servicio, desde, hasta, pageable)
                 .map(this::mapearADto);
     }
@@ -65,12 +67,12 @@ public class ServicioAuditoriaTransaccionalImpl implements ServicioAuditoriaTran
     private EventoTransaccionalDTO mapearADto(AuditoriaTransaccional e) {
         return new EventoTransaccionalDTO(
                 e.getUsuarioId(),
+                e.getEntidadId(),
                 e.getServicioOrigen(),
                 e.getEntidadAfectada(),
-                e.getEntidadId(),
+                e.getDescripcion(),
                 e.getValorAnterior(),
                 e.getValorNuevo(),
-                e.getFecha()
-        );
+                e.getFecha());
     }
 }

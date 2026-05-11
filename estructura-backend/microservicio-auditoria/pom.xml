@@ -34,7 +34,9 @@
         <start-class>com.auditoria.MicroservicioAuditoriaApplication</start-class>
     </properties>
     <dependencies>
-        <!-- Librearia Comun -->
+        <!-- ═══════════════════════════════════════════════════════
+             LIBRERIA COMUN.
+        ═══════════════════════════════════════════════════════ -->
         <dependency>
             <groupId>com.financiero.saas</groupId>
             <artifactId>libreria-comun</artifactId>

@@ -29,6 +29,7 @@ from app.clientes.cliente_eureka import desregistrar_de_eureka, registrar_en_eur
 from app.configuracion import obtener_configuracion
 from app.excepciones import IA_BaseException
 from app.mensajeria.consumidor_ia import ConsumidorIA
+from app.mensajeria.escuchador_sincronizacion_ia import EscuchadorSincronizacionIA
 from app.routers import analisis  # ← Router v4 con los 10 módulos independientes
 
 
@@ -49,6 +50,8 @@ config = obtener_configuracion()
 # ══════════════════════════════════════════════════════════════════════════ 
 _consumidor: ConsumidorIA | None = None
 _consumidor_activo: bool = False
+_escuchador_sync: EscuchadorSincronizacionIA | None = None
+_escuchador_sync_activo: bool = False
 
 # ══════════════════════════════════════════════════════════════════════════════
 # CONSUMIDOR RABBITMQ — hilo daemon
@@ -79,6 +82,44 @@ def _iniciar_consumidor_rabbitmq() -> None:
         logger.error(
             "[MAIN] No se pudo iniciar el ConsumidorIA: %s. "
             "El microservicio HTTP funcionará sin procesamiento de eventos RabbitMQ.",
+            str(exc),
+        )
+
+
+def _iniciar_escuchador_sincronizacion() -> None:
+    """
+    Arranca el EscuchadorSincronizacionIA en un hilo daemon.
+
+    Crea un cliente Redis y lo inyecta al escuchador. El hilo daemon
+    consume de `cola.ia.sincronizacion.contexto` y actualiza la caché
+    Redis en tiempo real cuando el ms-cliente publica cambios.
+    """
+    global _escuchador_sync, _escuchador_sync_activo
+    try:
+        import redis
+        redis_client = redis.Redis(
+            host=config.redis_host,
+            port=config.redis_port,
+            db=config.redis_db,
+            password=config.redis_password or None,
+            decode_responses=True,
+        )
+        _escuchador_sync = EscuchadorSincronizacionIA(redis_client)
+        hilo = threading.Thread(
+            target=_escuchador_sync.iniciar,
+            name="hilo-sync-contexto-ia",
+            daemon=True,
+        )
+        hilo.start()
+        _escuchador_sync_activo = True
+        logger.info(
+            "[MAIN] Escuchador de sincronización IA iniciado en hilo '%s'.", hilo.name
+        )
+    except Exception as exc:
+        _escuchador_sync_activo = False
+        logger.error(
+            "[MAIN] No se pudo iniciar el EscuchadorSincronizacionIA: %s. "
+            "La sincronización de contexto no estará activa.",
             str(exc),
         )
 
@@ -121,6 +162,7 @@ async def lifespan(app: FastAPI):
     # --- REGISTRO EN EUREKA ---
     await registrar_en_eureka(config)
     _iniciar_consumidor_rabbitmq()
+    _iniciar_escuchador_sincronizacion()
     
     yield # ── La app está corriendo ──────────────────────────────────────────
 
@@ -133,7 +175,14 @@ async def lifespan(app: FastAPI):
             logger.info("[MAIN] ConsumidorIA detenido correctamente.")
         except Exception as exc:
             logger.warning("[MAIN] Error al detener el ConsumidorIA: %s", str(exc))
- 
+
+    if _escuchador_sync:
+        try:
+            _escuchador_sync.detener()
+            logger.info("[MAIN] EscuchadorSincronizacionIA detenido correctamente.")
+        except Exception as exc:
+            logger.warning("[MAIN] Error al detener el EscuchadorSincronizacionIA: %s", str(exc))
+
     await desregistrar_de_eureka()
     logger.info("[MAIN] Microservicio IA de LUKA detenido correctamente.")
 
@@ -286,6 +335,12 @@ async def health_check() -> dict:
             "broker": f"{config.rabbitmq_host}:{config.rabbitmq_puerto}",
             "cola": config.cola_ia_procesamiento,
             "descripcion": "Procesando eventos" if _consumidor_activo else "Sin conexión al broker",
+        },
+        "sync_contexto_ia": {
+            "estado": "UP" if _escuchador_sync_activo else "DEGRADADO",
+            "cola": config.cola_ia_sincronizacion_contexto,
+            "redis": f"{config.redis_host}:{config.redis_port}",
+            "descripcion": "Sincronización activa" if _escuchador_sync_activo else "Sin sincronización",
         },
     }
  

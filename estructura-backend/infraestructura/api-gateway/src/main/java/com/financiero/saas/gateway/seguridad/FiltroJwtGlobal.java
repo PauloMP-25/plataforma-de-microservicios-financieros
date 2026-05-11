@@ -4,8 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
-import org.springframework.cloud.gateway.route.Route;
-import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
@@ -15,33 +13,53 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
+
+import com.libreria.comun.enums.CodigoError;
+
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
 
+/**
+ * Filtro global perimetral para el API Gateway.
+ * <p>
+ * Implementa la validación de seguridad en dos fases:
+ * 1. Verifica de forma reactiva si la IP origen está bloqueada por ataques.
+ * 2. Valida y desencripta el token JWT para peticiones a rutas protegidas.
+ * </p>
+ * 
+ * @author Paulo Moron
+ * @version 1.1.0
+ * @since 2026-05-10
+ */
 @Component
 @Slf4j
 @RequiredArgsConstructor
 public class FiltroJwtGlobal implements GlobalFilter, Ordered {
 
     private final ServicioJwtGateway servicioJwt;
+    private final SeguridadClient seguridadClient;
 
-        @Override
+    @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getURI().getPath();
-        String ipCliente = exchange.getRequest().getRemoteAddress().getAddress().getHostAddress();
+        String ipCliente = extraerIp(exchange.getRequest());
 
-        log.debug("Verificando petición: [{} {}] desde IP: {}", request.getMethod(), path, ipCliente);
+        log.debug("Verificando petición: [{} {}] desde IP: {}", exchange.getRequest().getMethod(), path, ipCliente);
 
-        // --- 1. ¿IP BLOQUEADA? (Estrategia de Seguridad Robusta) ---
-        // TODO: Aquí llamaremos a un servicio que consulte Redis
-        // if (servicioBloqueo.estaBloqueada(ipCliente)) { 
-        //    return responderError(exchange, HttpStatus.FORBIDDEN, "IP_BLOQUEADA", "Demasiados intentos fallidos.");
-        // }
+        // 1. ¿IP BLOQUEADA? (Estrategia de Seguridad Robusta con Redis)
+        return seguridadClient.estaBloqueada(ipCliente)
+                .flatMap(bloqueada -> {
+                    if (Boolean.TRUE.equals(bloqueada)) {
+                        log.warn("[SEGURIDAD] Rechazando petición de IP bloqueada: {}", ipCliente);
+                        return responderError(exchange, HttpStatus.FORBIDDEN, "ACCESO_DENEGADO",
+                                "Acceso denegado por políticas de seguridad");
+                    }
+                    return continuarValidacionJwt(exchange, chain, path);
+                });
+    }
 
+    private Mono<Void> continuarValidacionJwt(ServerWebExchange exchange, GatewayFilterChain chain, String path) {
         // 2. RUTAS PÚBLICAS (Login, Registro)
         if (esRutaPublica(path)) {
             return chain.filter(exchange);
@@ -72,38 +90,45 @@ public class FiltroJwtGlobal implements GlobalFilter, Ordered {
         return chain.filter(exchange.mutate().request(requestModificada).build());
     }
 
-    @Override
-    private boolean esRutaPublica(String path) {
-        return path.contains("/auth/") || path.contains("/v3/api-docs");
+    @SuppressWarnings("null")
+    private String extraerIp(ServerHttpRequest request) {
+        String xForwardedFor = request.getHeaders().getFirst("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+            // X-Forwarded-For puede contener múltiples IPs, la primera es el origen
+            return xForwardedFor.split(",")[0].trim();
+        }
+        if (request.getRemoteAddress() != null && request.getRemoteAddress().getAddress() != null) {
+            return request.getRemoteAddress().getAddress().getHostAddress();
+        }
+        return "IP_DESCONOCIDA";
     }
 
     // Usamos nuestro ResultadoApi de la librería para el error del Gateway
     private Mono<Void> responderError(ServerWebExchange exchange, CodigoError cod, String msg) {
+        return responderError(exchange, cod.getStatus(), cod.name(), msg);
+    }
+
+    @SuppressWarnings("null")
+    private Mono<Void> responderError(ServerWebExchange exchange, HttpStatus status, String error, String msg) {
         ServerHttpResponse response = exchange.getResponse();
-        response.setStatusCode(cod.getStatus());
+        response.setStatusCode(status);
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
         // Creamos el formato de la librería manualmente porque Gateway es reactivo
         String cuerpo = String.format(
-            "{\"exito\": false, \"estado\": %d, \"error\": \"%s\", \"mensaje\": \"%s\", \"ruta\": \"%s\"}",
-            cod.getStatus().value(), cod.name(), msg, exchange.getRequest().getURI().getPath()
-        );
+                "{\"exito\": false, \"estado\": %d, \"error\": \"%s\", \"mensaje\": \"%s\", \"ruta\": \"%s\"}",
+                status.value(), error, msg, exchange.getRequest().getURI().getPath());
 
         DataBuffer buffer = response.bufferFactory().wrap(cuerpo.getBytes(StandardCharsets.UTF_8));
         return response.writeWith(Mono.just(buffer));
     }
 
     @Override
-    public int getOrder() { return Ordered.HIGHEST_PRECEDENCE; }
-}
+    public int getOrder() {
+        return Ordered.HIGHEST_PRECEDENCE;
+    }
 
-
-@Component
-@Slf4j
-@RequiredArgsConstructor
-public class FiltroJwtGlobal implements GlobalFilter, Ordered {
-
-    // Usamos el servicio de la LIBRERÍA-COMUN
-    private final ServicioJwt servicioJwt; 
-
+    private boolean esRutaPublica(String path) {
+        return path.contains("/auth/") || path.contains("/v3/api-docs");
+    }
 }

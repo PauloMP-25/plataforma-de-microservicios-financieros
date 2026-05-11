@@ -6,7 +6,7 @@ import lombok.Getter;
  * Catálogo de estados posibles para un intento de autenticación o acceso.
  */
 @Getter
-public enum EstadoAcceso {
+public enum EstadoEvento {
     /** El usuario ingresó correctamente. */
     EXITO,
     /** Las credenciales fueron incorrectas o el token inválido. */

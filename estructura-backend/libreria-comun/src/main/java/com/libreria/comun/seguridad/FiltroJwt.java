@@ -41,18 +41,17 @@ public class FiltroJwt extends OncePerRequestFilter {
      * Proceso principal de filtrado. Extrae el token e inyecta la autenticación
      * si es válido.
      *
-     * @param request Objeto con la información de la petición HTTP.
-     * @param response Objeto para gestionar la respuesta HTTP.
+     * @param request     Objeto con la información de la petición HTTP.
+     * @param response    Objeto para gestionar la respuesta HTTP.
      * @param filterChain Cadena de filtros de seguridad.
      * @throws ServletException Si ocurre un error en el servlet.
-     * @throws IOException Si ocurre un error de entrada/salida.
+     * @throws IOException      Si ocurre un error de entrada/salida.
      */
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain
-    ) throws ServletException, IOException {
+            @NonNull FilterChain filterChain) throws ServletException, IOException {
 
         final String cabeceraAuth = request.getHeader(CABECERA_AUTH);
 
@@ -78,12 +77,12 @@ public class FiltroJwt extends OncePerRequestFilter {
                             .roles(servicioJwt.extraerRoles(jwt))
                             .build();
 
-                    // 2. Creamos el token de autenticación usando el objeto 'detalles' como Principal
+                    // 2. Creamos el token de autenticación usando el objeto 'detalles' como
+                    // Principal
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             detalles,
                             null,
-                            detalles.getAuthorities()
-                    );
+                            detalles.getAuthorities());
 
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
@@ -111,7 +110,7 @@ public class FiltroJwt extends OncePerRequestFilter {
      * @return true si la ruta es pública y no debe filtrarse.
      */
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
+    protected boolean shouldNotFilter(@SuppressWarnings("null") HttpServletRequest request) {
         String path = request.getServletPath();
         return path.startsWith("/api/v1/auth/")
                 || path.startsWith("/v3/api-docs")

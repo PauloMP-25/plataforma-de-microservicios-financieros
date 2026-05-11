@@ -40,7 +40,7 @@ public class ManejadorGlobalExcepciones {
      * destino.
      * </p>
      *
-     * @param ex La excepción capturada.
+     * @param ex  La excepción capturada.
      * @param req Información de la petición HTTP.
      * @return Respuesta estructurada con el código HTTP correspondiente.
      */
@@ -73,10 +73,11 @@ public class ManejadorGlobalExcepciones {
      * configurado en cada excepción concreta.
      * </p>
      *
-     * @param ex La excepción capturada.
+     * @param ex  La excepción capturada.
      * @param req Información de la petición HTTP.
      * @return Respuesta estructurada con el código HTTP correspondiente.
      */
+    @SuppressWarnings("null")
     @ExceptionHandler(ExcepcionGlobal.class)
     public ResponseEntity<ResultadoApi<?>> manejarExcepcionLuka(ExcepcionGlobal ex, HttpServletRequest req) {
 
@@ -100,18 +101,20 @@ public class ManejadorGlobalExcepciones {
      * Traduce los errores de validación de Bean Validation (@Valid) a mensajes
      * amigables.
      *
-     * @param ex Excepción de argumentos no válidos.
+     * @param ex  Excepción de argumentos no válidos.
      * @param req Información de la petición HTTP.
      * @return Respuesta con estado 400 y lista detallada de errores de campo.
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ResultadoApi<?>> manejarValidacion(MethodArgumentNotValidException ex, HttpServletRequest req) {
+    public ResponseEntity<ResultadoApi<?>> manejarValidacion(MethodArgumentNotValidException ex,
+            HttpServletRequest req) {
         List<String> errores = ex.getBindingResult().getFieldErrors().stream()
                 .map(e -> String.format("Campo '%s': %s", e.getField(), e.getDefaultMessage()))
                 .toList();
 
         return ResponseEntity.badRequest()
-                .body(ResultadoApi.fallaConDetalles(CodigoError.ERROR_VALIDACION, "Datos de entrada inválidos.", req.getRequestURI(), errores));
+                .body(ResultadoApi.fallaConDetalles(CodigoError.ERROR_VALIDACION, "Datos de entrada inválidos.",
+                        req.getRequestURI(), errores));
     }
 
     /**
@@ -122,7 +125,7 @@ public class ManejadorGlobalExcepciones {
      * mensaje genérico y seguro al cliente.
      * </p>
      *
-     * @param ex Excepción general.
+     * @param ex  Excepción general.
      * @param req Información de la petición HTTP.
      * @return Respuesta con estado 500.
      */
@@ -131,6 +134,7 @@ public class ManejadorGlobalExcepciones {
         log.error("Error no controlado en {}: {}", req.getRequestURI(), ex.getMessage(), ex);
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ResultadoApi.falla(CodigoError.ERROR_INTERNO, "Ocurrió un fallo inesperado en el servidor.", req.getRequestURI()));
+                .body(ResultadoApi.falla(CodigoError.ERROR_INTERNO, "Ocurrió un fallo inesperado en el servidor.",
+                        req.getRequestURI()));
     }
 }

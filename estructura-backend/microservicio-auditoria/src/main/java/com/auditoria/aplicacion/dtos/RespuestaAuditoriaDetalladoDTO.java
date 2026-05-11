@@ -1,19 +1,20 @@
 package com.auditoria.aplicacion.dtos;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.UUID;
 
 /**
  * DTO enriquecido para la visualización administrativa de auditoría.
  * <p>
- * A diferencia de los eventos internos, este objeto incluye información 
+ * A diferencia de los eventos internos, este objeto incluye información
  * de identidad (email, nombre) para facilitar la gestión en el Dashboard.
  * </p>
  * 
  * @param id             Identificador único del registro.
  * @param fechaHora      Instante exacto del evento.
  * @param usuarioId      UUID del usuario asociado.
- * @param emailUsuario   Correo electrónico del usuario (para identificación rápida).
+ * @param emailUsuario   Correo electrónico del usuario (para identificación
+ *                       rápida).
  * @param nombreCompleto Nombre y apellidos del usuario.
  * @param accion         Descripción de la operación realizada.
  * @param modulo         Microservicio de origen.
@@ -24,13 +25,12 @@ import java.util.UUID;
  * @since 2026-05
  */
 public record RespuestaAuditoriaDetalladoDTO(
-    UUID id,
-    LocalDateTime fechaHora,
-    UUID usuarioId,
-    String emailUsuario,
-    String nombreCompleto,
-    String accion,
-    String modulo,
-    String ipOrigen,
-    String detalles
-) {}
+        UUID id,
+        UUID usuarioId,
+        String emailUsuario,
+        String accion,
+        String modulo,
+        String ipOrigen,
+        String detalles,
+        LocalDate fechaHora) {
+}

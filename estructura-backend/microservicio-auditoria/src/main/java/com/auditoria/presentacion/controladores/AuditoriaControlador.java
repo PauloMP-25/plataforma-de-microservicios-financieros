@@ -2,10 +2,8 @@ package com.auditoria.presentacion.controladores;
 
 import com.auditoria.aplicacion.dtos.RespuestaAuditoriaDetalladoDTO;
 import com.auditoria.aplicacion.servicios.ServicioRegistroAuditoria;
-import com.libreria.comun.dtos.EventoAccesoDTO;
 import com.libreria.comun.respuesta.Paginacion;
 import com.libreria.comun.respuesta.ResultadoApi;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,25 +31,6 @@ import java.util.List;
 public class AuditoriaControlador {
 
         private final ServicioRegistroAuditoria servicioAuditoria;
-
-        /**
-         * Registra un nuevo evento de auditoría.
-         * <p>
-         * Utiliza el {@link EventoAccesoDTO} de la librería común como contrato
-         * de entrada para asegurar compatibilidad con otros microservicios.
-         * </p>
-         * 
-         * @param request Datos del evento provenientes de la librería común.
-         * @return {@link ResponseEntity} con el resultado de la operación.
-         */
-        @PostMapping("/registrar")
-        public ResponseEntity<ResultadoApi<EventoAccesoDTO>> registrarEvento(
-                        @Valid @RequestBody EventoAccesoDTO request) {
-
-                EventoAccesoDTO creado = servicioAuditoria.registrarEvento(request);
-                return ResponseEntity.status(201).body(
-                                ResultadoApi.creado(creado, "Evento de auditoría registrado correctamente."));
-        }
 
         /**
          * Consulta el histórico detallado de auditoría para el Frontend.

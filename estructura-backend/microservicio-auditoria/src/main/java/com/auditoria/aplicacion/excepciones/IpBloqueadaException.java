@@ -4,8 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * Excepción de negocio lanzada cuando se detecta actividad desde una dirección IP 
- * que se encuentra en la lista negra activa.
+ * Excepción de negocio lanzada cuando se detecta actividad desde una dirección IP que se encuentra en la lista negra activa.
  * <p>
  * Devuelve un estado HTTP 429 (Too Many Requests) al cliente o Gateway.
  * </p>

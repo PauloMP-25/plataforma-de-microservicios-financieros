@@ -24,15 +24,16 @@ public class ManejadorErroresRabbit implements RabbitListenerErrorHandler {
      * Intercepta y procesa los errores ocurridos durante la ejecución de un
      * listener.
      *
-     * @param msg El mensaje original de RabbitMQ (formato
-     * org.springframework.amqp.core).
-     * @param channel El canal de RabbitMQ para operaciones manuales (ack/nack).
-     * @param message El mensaje convertido al formato de mensajería de Spring.
+     * @param msg       El mensaje original de RabbitMQ (formato
+     *                  org.springframework.amqp.core).
+     * @param channel   El canal de RabbitMQ para operaciones manuales (ack/nack).
+     * @param message   El mensaje convertido al formato de mensajería de Spring.
      * @param exception La excepción capturada durante el procesamiento.
      * @return null para indicar que la excepción ha sido consumida, o lanza una
-     * excepción para reintento.
+     *         excepción para reintento.
      * @throws Exception Si ocurre un error durante el manejo del fallo.
      */
+    @SuppressWarnings("null")
     @Override
     public Object handleError(org.springframework.amqp.core.Message msg,
             com.rabbitmq.client.Channel channel,
@@ -40,12 +41,15 @@ public class ManejadorErroresRabbit implements RabbitListenerErrorHandler {
             ListenerExecutionFailedException exception) throws Exception {
 
         Throwable causa = exception.getCause();
-        String routingKey = (String) message.getHeaders().get(org.springframework.amqp.support.AmqpHeaders.RECEIVED_ROUTING_KEY);
+        String routingKey = (String) message.getHeaders()
+                .get(org.springframework.amqp.support.AmqpHeaders.RECEIVED_ROUTING_KEY);
 
-        // Si es un error de código (NullPointer, etc), no reintentamos para no bloquear la cola
+        // Si es un error de código (NullPointer, etc), no reintentamos para no bloquear
+        // la cola
         if (causa instanceof IllegalArgumentException || causa instanceof NullPointerException) {
             log.error("[LUKA-DLQ] Error fatal en {}. Enviando a DLQ: {}", routingKey, causa.getMessage());
-            throw new org.springframework.amqp.AmqpRejectAndDontRequeueException("Error de lógica, mensaje descartado", causa);
+            throw new org.springframework.amqp.AmqpRejectAndDontRequeueException("Error de lógica, mensaje descartado",
+                    causa);
         }
 
         log.error("[LUKA-REINTENTO] Error transitorio en {}. Reencolando...", routingKey);

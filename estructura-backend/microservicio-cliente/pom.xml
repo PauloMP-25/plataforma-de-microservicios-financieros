@@ -34,6 +34,14 @@
         <start-class>com.cliente.MicroservicioClienteApplication</start-class>
     </properties>
     <dependencies>
+        <!-- ═══════════════════════════════════════════════════════
+             LIBRERIA COMUN.
+        ═══════════════════════════════════════════════════════ -->
+        <dependency>
+            <groupId>com.financiero.saas</groupId>
+            <artifactId>libreria-comun</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
         <!--SPRINGDOC-OPENAPI-UI: Generador automático de documentación Swagger/OpenAPI para los endpoints.-->
         <dependency>
             <groupId>org.springdoc</groupId>
@@ -92,7 +100,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
