@@ -45,16 +45,39 @@ public record ResultadoApi<T>(
     // FÁBRICAS DE ÉXITO (HTTP 2xx)
     // =========================================================================
     /**
-     * Crea una respuesta de éxito estándar (HTTP 200 OK).
+     * Crea una respuesta de éxito estándar (HTTP 200 OK) con datos y mensaje.
      *
      * @param <T>     Tipo de dato.
      * @param datos   Carga útil de la respuesta.
      * @param mensaje Descripción de la operación exitosa.
-     * @param pagina  Número de página solicitado en metodos GET.
+     * @param pagina  Información de paginación si aplica.
      * @return Instancia de ResultadoApi parametrizada.
      */
     public static <T> ResultadoApi<T> exito(T datos, String mensaje, Paginacion<?> pagina) {
         return new ResultadoApi<>(true, 200, null, mensaje, datos, null, pagina, null, LocalDateTime.now());
+    }
+
+    /**
+     * Crea una respuesta de éxito estándar (HTTP 200 OK) con datos y mensaje.
+     *
+     * @param <T>     Tipo de dato.
+     * @param datos   Carga útil de la respuesta.
+     * @param mensaje Descripción de la operación exitosa.
+     * @return Instancia de ResultadoApi parametrizada.
+     */
+    public static <T> ResultadoApi<T> exito(T datos, String mensaje) {
+        return exito(datos, mensaje, null);
+    }
+
+    /**
+     * Crea una respuesta de éxito estándar (HTTP 200 OK) solo con datos.
+     *
+     * @param <T>   Tipo de dato.
+     * @param datos Carga útil de la respuesta.
+     * @return Instancia de ResultadoApi parametrizada.
+     */
+    public static <T> ResultadoApi<T> exito(T datos) {
+        return exito(datos, "Operación realizada con éxito", null);
     }
 
     /**

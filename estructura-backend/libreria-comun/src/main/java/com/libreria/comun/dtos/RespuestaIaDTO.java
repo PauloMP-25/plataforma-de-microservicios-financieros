@@ -1,23 +1,71 @@
 package com.libreria.comun.dtos;
 
-import java.util.Map;
-import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.util.List;
 
 /**
- * Contrato de respuesta generado por el microservicio de IA.
- * <p>
- * Contiene el resultado del procesamiento, consejos generados y metadatos 
- * del estado del modelo de lenguaje.
- * </p>
- * 
- * @param usuarioId    Usuario al que pertenece el análisis.
- * @param resultado    Resumen textual del análisis o consejo del Coach.
- * @param predicciones Mapa de valores predichos (ej: {"comida": 450.0, "ocio": 120.0}).
- * @param estadoCoach  Estado del procesamiento (ej: "EXITOSO", "ERROR_GEMINI").
+ * Respuesta enriquecida del microservicio de IA.
  */
-public record RespuestaIaDTO(
-    UUID usuarioId,
-    String resultado,
-    Map<String, Object> predicciones,
-    String estadoCoach
-) {}
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class RespuestaIaDTO {
+
+    private String id;
+
+    @JsonProperty("id_usuario")
+    private String idUsuario;
+
+    @JsonProperty("consejo_texto")
+    private String consejoTexto;
+
+    @JsonProperty("tipo_modulo")
+    private String tipoModulo;
+
+    @JsonProperty("fecha_generacion")
+    private String fechaGeneracion;
+
+    @JsonProperty("metadata_grafico")
+    private MetadataGraficoDTO metadataGrafico;
+
+    @JsonProperty("kpi_principal")
+    private Double kpiPrincipal;
+
+    @JsonProperty("kpi_label")
+    private String kpiLabel;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class MetadataGraficoDTO {
+        @JsonProperty("tipo_grafico")
+        private String tipoGrafico;
+        private String titulo;
+        private List<PuntoGraficoDTO> datos;
+        @JsonProperty("datos_aux")
+        private List<PuntoGraficoDTO> datosAux;
+        private String unidad;
+        @JsonProperty("meta_linea")
+        private Double metaLinea;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class PuntoGraficoDTO {
+        private String etiqueta;
+        private double valor;
+        private String color;
+    }
+}

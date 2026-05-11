@@ -1,37 +1,46 @@
 package com.libreria.comun.dtos;
 
-import jakarta.validation.constraints.NotBlank;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.libreria.comun.enums.ModuloIa;
+import com.libreria.comun.enums.TipoSolicitudIa;
 import jakarta.validation.constraints.NotNull;
-import java.time.LocalDate;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.util.List;
 import java.util.UUID;
 
 /**
- * Contrato de solicitud para el análisis de Inteligencia Artificial.
- * <p>
- * Define los parámetros necesarios para que el motor de IA (Gemini/Python) 
- * procese la información financiera de un usuario en un rango de tiempo específico.
- * </p>
- * 
- * @param usuarioId      Identificador único del usuario a analizar.
- * @param tipoAnalisis   Categoría del análisis (ej: "PREDICCION", "CATEGORIZACION", "COACH").
- * @param fechaInicio    Fecha desde la cual se tomarán los datos.
- * @param fechaFin       Fecha hasta la cual se tomarán los datos.
- * @param incluirDetalles Indica si se requiere un desglose profundo en la respuesta.
- * 
- * @author Paulo Moron
+ * Payload completo enviado al microservicio de IA (Python/Gemini).
  */
-public record SolicitudIaDTO(
-    @NotNull(message = "El usuarioId es obligatorio")
-    UUID usuarioId,
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class SolicitudIaDTO {
 
-    @NotBlank(message = "El tipo de análisis es obligatorio")
-    String tipoAnalisis,
+    @NotNull(message = "El id_usuario es obligatorio")
+    @JsonProperty("id_usuario")
+    private UUID usuarioId;
 
-    @NotNull(message = "La fecha de inicio es obligatoria")
-    LocalDate fechaInicio,
+    @NotNull(message = "El tipo_solicitud es obligatorio")
+    @JsonProperty("tipo_solicitud")
+    private TipoSolicitudIa tipoSolicitud;
 
-    @NotNull(message = "La fecha de fin es obligatoria")
-    LocalDate fechaFin,
+    @JsonProperty("modulo_solicitado")
+    private ModuloIa moduloSolicitado;
 
-    boolean incluirDetalles
-) {}
+    @JsonProperty("historial_mensual")
+    private List<ResumenMesDTO> historialMensual;
+
+    @JsonProperty("contexto")
+    private ContextoUsuarioDTO contexto;
+
+    // Métodos de compatibilidad con código existente que usa getters antiguos
+    public UUID getIdUsuario() {
+        return usuarioId;
+    }
+}

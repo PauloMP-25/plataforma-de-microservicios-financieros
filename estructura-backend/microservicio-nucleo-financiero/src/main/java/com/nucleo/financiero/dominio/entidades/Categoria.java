@@ -4,6 +4,16 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.util.UUID;
 
+/**
+ * Entidad de dominio que representa una categoría de gasto o ingreso.
+ * <p>
+ * Permite organizar los movimientos financieros del usuario (ej: Alimentación,
+ * Sueldo, Entretenimiento) para facilitar el análisis por parte de la IA.
+ * </p>
+ * 
+ * @author Luka-Dev-Backend
+ * @version 1.1.0
+ */
 @Entity
 @Table(
     name = "categorias",
@@ -38,8 +48,13 @@ public class Categoria {
     @Column(nullable = false, length = 10)
     private TipoMovimiento tipo;
 
+    /**
+     * Define la naturaleza financiera de la categoría.
+     */
     public enum TipoMovimiento {
+        /** Entradas de dinero al patrimonio del usuario */
         INGRESO,
+        /** Salidas o flujos negativos de dinero */
         GASTO
     }
 }

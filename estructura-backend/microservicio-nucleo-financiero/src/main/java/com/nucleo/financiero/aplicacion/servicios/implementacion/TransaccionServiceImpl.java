@@ -1,8 +1,9 @@
-package com.nucleo.financiero.aplicacion.servicios;
+package com.nucleo.financiero.aplicacion.servicios.implementacion;
 
 import com.nucleo.financiero.aplicacion.dtos.transacciones.SolicitudTransaccion;
 import com.nucleo.financiero.aplicacion.dtos.transacciones.ResumenFinancieroDTO;
 import com.nucleo.financiero.aplicacion.dtos.transacciones.RespuestaTransaccion;
+import com.nucleo.financiero.aplicacion.servicios.ITransaccionService;
 import com.nucleo.financiero.dominio.entidades.Categoria;
 import com.nucleo.financiero.dominio.entidades.Categoria.TipoMovimiento;
 import com.nucleo.financiero.dominio.entidades.Transaccion;
@@ -23,17 +24,29 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Implementación de {@link ITransaccionService} para la gestión de movimientos financieros.
+ * <p>
+ * Aplica lógica de negocio para la validación, persistencia y auditoría de transacciones,
+ * integrando repositorios de dominio y publicadores de eventos.
+ * </p>
+ *
+ * @author Luka-Dev-Backend
+ * @version 1.2.0
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class TransaccionService {
+public class TransaccionServiceImpl implements ITransaccionService {
 
     private final TransaccionRepository transaccionRepository;
     private final CategoriaRepository categoriaRepository;
     private final PublicadorAuditoria publicadorAuditoria;
 
+    @Override
     @Transactional
     public RespuestaTransaccion registrar(SolicitudTransaccion request, String ipCliente) {
+        @SuppressWarnings("null")
         Transaccion guardada = transaccionRepository.save(construirEntidad(request));
         log.info("Transacción registrada: {} — {} {} ({})",
                 guardada.getId(), guardada.getTipo(), guardada.getMonto(), guardada.getNombreCliente());
@@ -47,6 +60,7 @@ public class TransaccionService {
         return RespuestaTransaccion.desde(guardada);
     }
 
+    @Override
     @Transactional
     public List<RespuestaTransaccion> registrarLote(List<SolicitudTransaccion> solicitudes, String ipCliente) {
         if (solicitudes == null || solicitudes.isEmpty()) {
@@ -60,8 +74,10 @@ public class TransaccionService {
         List<Transaccion> entidades = solicitudes.stream()
                 .map(this::construirEntidad)
                 .collect(Collectors.toList());
+        @SuppressWarnings("null")
         List<Transaccion> guardadas = transaccionRepository.saveAll(entidades);
         log.info("Lote completado: {} transacciones guardadas", guardadas.size());
+        
         publicadorAuditoria.publicarAcceso(
                 guardadas.get(0).getUsuarioId(),
                 "REGISTRO_LOTE_TRANSACCIONES",
@@ -71,13 +87,13 @@ public class TransaccionService {
         return guardadas.stream().map(RespuestaTransaccion::desde).collect(Collectors.toList());
     }
 
+    @Override
     @Transactional(readOnly = true)
     public Page<RespuestaTransaccion> listarHistorial(
             UUID usuarioId, TipoMovimiento tipo, UUID categoriaId,
             LocalDateTime desde, LocalDateTime hasta, Pageable paginacion,
             String ipCliente) {
 
-        // Lógica por defecto: Si no hay fechas, traer los últimos 30 días
         if (desde == null) {
             desde = LocalDateTime.now().minusDays(30);
         }
@@ -93,6 +109,7 @@ public class TransaccionService {
         ).map(RespuestaTransaccion::desde);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public ResumenFinancieroDTO obtenerResumen(UUID usuarioId, Integer mes, Integer anio, String ipCliente) {
         LocalDateTime[] rango = resolverRangoFechas(mes, anio);
@@ -113,6 +130,8 @@ public class TransaccionService {
         return ResumenFinancieroDTO.calcular(desde, hasta, totalIngresos, totalGastos, cantidadIngresos, cantidadGastos);
     }
 
+    @SuppressWarnings("null")
+    @Override
     @Transactional(readOnly = true)
     public RespuestaTransaccion obtenerPorId(UUID id) {
         return transaccionRepository.findById(id)
@@ -120,16 +139,24 @@ public class TransaccionService {
                 .orElseThrow(() -> new IllegalArgumentException("Transacción no encontrada con ID: " + id));
     }
 
-    // ── Privados ─────────────────────────────────────────────────────────────
+    /**
+     * Construye una entidad de dominio {@link Transaccion} a partir de una solicitud DTO.
+     * Realiza validaciones de integridad entre categoría y tipo de movimiento.
+     * 
+     * @param request Datos de la solicitud.
+     * @return Entidad de dominio construida.
+     * @throws NoSuchElementException Si la categoría no existe.
+     * @throws IllegalStateException Si hay inconsistencia entre categoría y tipo.
+     */
     private Transaccion construirEntidad(SolicitudTransaccion request) {
         if (request.categoriaId() == null) {
             throw new IllegalArgumentException("El ID de la categoría es nulo en la petición.");
         }
 
+        @SuppressWarnings("null")
         Categoria categoria = categoriaRepository.findById(request.categoriaId())
                 .orElseThrow(() -> new NoSuchElementException("Categoría no encontrada con ID: " + request.categoriaId()));
 
-        // El error 500 puede venir de aquí si request.tipo() es nulo
         if (request.tipo() == null) {
             throw new IllegalArgumentException("El tipo de movimiento es obligatorio.");
         }
@@ -153,6 +180,13 @@ public class TransaccionService {
                 .build();
     }
 
+    /**
+     * Resuelve el rango de fechas para un mes y año específicos.
+     * 
+     * @param mes Mes (1-12).
+     * @param anio Año (ej: 2026).
+     * @return Array con fecha inicio [0] y fecha fin [1].
+     */
     private LocalDateTime[] resolverRangoFechas(Integer mes, Integer anio) {
         if (mes == null && anio == null) {
             return new LocalDateTime[]{null, null};
