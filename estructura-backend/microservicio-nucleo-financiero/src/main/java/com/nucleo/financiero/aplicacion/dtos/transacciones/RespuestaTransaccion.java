@@ -1,42 +1,47 @@
 package com.nucleo.financiero.aplicacion.dtos.transacciones;
 
-import com.nucleo.financiero.dominio.entidades.Categoria.TipoMovimiento;
 import com.nucleo.financiero.dominio.entidades.Transaccion;
-import com.nucleo.financiero.dominio.entidades.Transaccion.MetodoPago;
+import lombok.Builder;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * DTO de salida que representa una transacción persistida.
+ *
+ * @param id               ID único de la transacción.
+ * @param monto            Monto de la operación.
+ * @param tipo             Tipo (INGRESO/GASTO).
+ * @param categoria        Nombre de la categoría asociada.
+ * @param fechaTransaccion Fecha efectiva del movimiento.
+ * @param metodoPago       Forma de pago utilizada.
+ * @param etiquetas        Metadatos asociados.
+ */
+@Builder
 public record RespuestaTransaccion(
-    UUID id,
-    UUID usuarioId,
-    String nombreCliente,
-    BigDecimal monto,
-    TipoMovimiento tipo,
-    UUID categoriaId,
-    String categoriaNombre,
-    String categoriaIcono,
-    LocalDateTime fechaTransaccion,
-    MetodoPago metodoPago,
-    String etiquetas,
-    String notas,
-    LocalDateTime fechaRegistro
+        UUID id,
+        BigDecimal monto,
+        String tipo,
+        String categoria,
+        LocalDateTime fechaTransaccion,
+        String metodoPago,
+        String etiquetas
 ) {
-    public static RespuestaTransaccion desde(Transaccion entidad) {
-        return new RespuestaTransaccion(
-            entidad.getId(),
-            entidad.getUsuarioId(),
-            entidad.getNombreCliente(),
-            entidad.getMonto(),
-            entidad.getTipo(),
-            entidad.getCategoria().getId(),
-            entidad.getCategoria().getNombre(),
-            entidad.getCategoria().getIcono(),
-            entidad.getFechaTransaccion(),
-            entidad.getMetodoPago(),
-            entidad.getEtiquetas(),
-            entidad.getNotas(),
-            entidad.getFechaRegistro()
-        );
+    /**
+     * Mapea una entidad {@link Transaccion} a este DTO de respuesta.
+     * 
+     * @param t Entidad de dominio.
+     * @return DTO de respuesta transaccional.
+     */
+    public static RespuestaTransaccion desde(Transaccion t) {
+        return RespuestaTransaccion.builder()
+                .id(t.getId())
+                .monto(t.getMonto())
+                .tipo(t.getTipo().name())
+                .categoria(t.getCategoria().getNombre())
+                .fechaTransaccion(t.getFechaTransaccion())
+                .metodoPago(t.getMetodoPago().name())
+                .etiquetas(t.getEtiquetas())
+                .build();
     }
 }

@@ -1,121 +1,70 @@
 package com.auditoria.infraestructura.mensajeria;
 
-import com.auditoria.aplicacion.dtos.AuditoriaAccesoRequestDTO;
-import com.auditoria.aplicacion.dtos.AuditoriaTransaccionalRequestDTO;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.AmqpException;
+import com.libreria.comun.mensajeria.PublicadorEventosBase;
+import com.libreria.comun.dtos.EventoAccesoDTO;
+import com.libreria.comun.dtos.EventoAuditoriaDTO;
+import com.libreria.comun.dtos.EventoTransaccionalDTO;
+import com.libreria.comun.enums.EstadoEvento;
+
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 /**
- * Publicador de eventos de auditoría hacia RabbitMQ.
- *
- * Este componente es utilizado por los OTROS microservicios del ecosistema
- * cuando necesitan reportar eventos de seguridad o cambios de datos al
- * microservicio de auditoría de forma desacoplada y asíncrona.
- *
- * USO TÍPICO:
- *  - Microservicio-Usuario  → reportar login/logout via publicarAcceso()
- *  - Microservicio-Financiero → reportar cambios de transacciones via publicarCambio()
- *  - API Gateway → reportar intentos bloqueados via publicarAcceso()
- *
- * Routing Keys usadas:
- *   "auditoria.acceso.login"           → cola.auditoria.accesos
- *   "auditoria.acceso.logout"          → cola.auditoria.accesos
- *   "auditoria.transaccion.creacion"   → cola.auditoria.transacciones
- *   "auditoria.transaccion.actualizacion" → cola.auditoria.transacciones
+ * Publicador especializado de eventos para el Microservicio de Auditoría.
+ * <p>
+ * Extiende de {@link PublicadorEventosBase} para reutilizar la infraestructura
+ * de mensajería asíncrona de la librería común, facilitando el reporte de accesos y trazabilidad transaccional.
+ * </p>
+ * 
+ * @author Paulo Moron
+ * @version 1.5
+ * @since 2026-05
  */
 @Component
-@Slf4j
-@RequiredArgsConstructor
-public class PublicadorAuditoria {
-
-    private final RabbitTemplate rabbitTemplate;
-
-    // ── Routing Keys concretas (sufijos del patrón auditoria.acceso.#) ────────
-    public static final String RK_ACCESO_LOGIN    = "auditoria.acceso.login";
-    public static final String RK_ACCESO_LOGOUT   = "auditoria.acceso.logout";
-    public static final String RK_ACCESO_FALLO    = "auditoria.acceso.fallo";
-
-    public static final String RK_TRANSAC_CREACION      = "auditoria.transaccion.creacion";
-    public static final String RK_TRANSAC_ACTUALIZACION = "auditoria.transaccion.actualizacion";
-    public static final String RK_TRANSAC_ELIMINACION   = "auditoria.transaccion.eliminacion";
-
-    // ══════════════════════════════════════════════════════════════════════════
-    // PUBLICACIÓN DE EVENTOS DE ACCESO
-    // ══════════════════════════════════════════════════════════════════════════
+public class PublicadorAuditoria extends PublicadorEventosBase {
 
     /**
-     * Publica un evento de acceso en el exchange de auditoría de forma asíncrona.
-     * La anotación @Async garantiza que el hilo del microservicio llamante no
-     * se bloquea esperando la confirmación del broker.
-     *
-     * @param dto        Datos del evento de acceso
-     * @param routingKey Routing key específica (usar constantes RK_ACCESO_*)
+     * Constructor que inyecta el RabbitTemplate a la clase base.
+     * 
+     * @param rabbitTemplate Cliente de RabbitMQ configurado.
      */
-    @Async
-    public void publicarAcceso(AuditoriaAccesoRequestDTO dto, String routingKey) {
-        try {
-            rabbitTemplate.convertAndSend(
-                    ConfiguracionRabbitMQ.EXCHANGE_AUDITORIA,
-                    routingKey,
-                    dto
-            );
-            log.debug(
-                "[PUBLICADOR] Evento de acceso publicado — routingKey='{}', ip='{}', estado='{}'",
-                routingKey, dto.ipOrigen(), dto.estado()
-            );
-        } catch (AmqpException ex) {
-            // No propagamos: la auditoría es informativa, no debe bloquear el flujo principal
-            log.error(
-                "[PUBLICADOR] Fallo al publicar evento de acceso (no bloqueante) " +
-                "— routingKey='{}', ip='{}', error='{}'",
-                routingKey, dto.ipOrigen(), ex.getMessage()
-            );
-        }
+    public PublicadorAuditoria(RabbitTemplate rabbitTemplate) {
+        super(rabbitTemplate);
     }
 
     /**
-     * Atajo para publicar un intento de login fallido.
-     * @param dto
+     * Reporta un intento de inicio de sesión de forma asíncrona.
+     * <p>
+     * Utiliza la lógica de enrutamiento base para dirigir el mensaje a
+     * la cola de accesos con la etiqueta "exito" o "fallo", "bloqueado","logout".
+     * </p>
+     * 
+     * @param dto Datos del evento de acceso (contrato de la librería).
      */
-    @Async
-    public void publicarLoginFallido(AuditoriaAccesoRequestDTO dto) {
-        publicarAcceso(dto, RK_ACCESO_FALLO);
+    public void registrarAcceso(EventoAccesoDTO dto, EstadoEvento estado) {
+        this.publicarAcceso(dto, estado);
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
-    // PUBLICACIÓN DE EVENTOS TRANSACCIONALES
-    // ══════════════════════════════════════════════════════════════════════════
+    /**
+     * Reporta un evento de forma asíncrona.
+     * <p>
+     * Utiliza la lógica de enrutamiento base para dirigir el mensaje a
+     * la cola de eventos con la etiqueta "fallo" o "exito".
+     * </p>
+     * 
+     * @param dto Datos del evento de acceso (contrato de la librería).
+     */
+    public void registrarEvento(EventoAuditoriaDTO dto) {
+        this.publicarEvento(dto, "exito");
+    }
 
     /**
-     * Publica un evento de cambio en una entidad de negocio.
-     * Garantiza trazabilidad completa para auditorías de cumplimiento (PCIDSS, SOX).
-     *
-     * @param dto        Datos del cambio (con valorAnterior/valorNuevo en JSON)
-     * @param routingKey Routing key específica (usar constantes RK_TRANSAC_*)
+     * Reporta la creación de un nuevo registro transaccional.
+     * 
+     * @param dto     Datos del cambio transaccional.
+     * @param entidad Nombre de la entidad (ej: "usuario", "auditoria").
      */
-    @Async
-    public void publicarCambio(AuditoriaTransaccionalRequestDTO dto, String routingKey) {
-        try {
-            rabbitTemplate.convertAndSend(
-                    ConfiguracionRabbitMQ.EXCHANGE_AUDITORIA,
-                    routingKey,
-                    dto
-            );
-            log.debug(
-                "[PUBLICADOR] Cambio transaccional publicado — routingKey='{}', " +
-                "entidad='{}', id='{}'",
-                routingKey, dto.entidadAfectada(), dto.entidadId()
-            );
-        } catch (AmqpException ex) {
-            log.error(
-                "[PUBLICADOR] Fallo al publicar cambio transaccional (no bloqueante) " +
-                "— entidad='{}', id='{}', error='{}'",
-                dto.entidadAfectada(), dto.entidadId(), ex.getMessage()
-            );
-        }
+    public void reportarCreacionTransaccional(EventoTransaccionalDTO dto, String entidad) {
+        this.publicarTransaccion(dto, entidad);
     }
 }

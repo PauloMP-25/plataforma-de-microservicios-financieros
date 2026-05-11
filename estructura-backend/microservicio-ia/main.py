@@ -27,9 +27,12 @@ from fastapi.responses import JSONResponse
  
 from app.clientes.cliente_eureka import desregistrar_de_eureka, registrar_en_eureka
 from app.configuracion import obtener_configuracion
-from app.excepciones import IA_BaseException
+from app.libreria_comun.excepciones.base import LukaException
+from app.libreria_comun.excepciones.handler import luka_exception_handler
+from app.libreria_comun.seguridad.middleware import TraceabilityMiddleware
 from app.mensajeria.consumidor_ia import ConsumidorIA
-from app.routers import analisis  # ← Router v4 con los 10 módulos independientes
+from app.mensajeria.escuchador_sincronizacion_ia import EscuchadorSincronizacionIA
+from app.routers import analisis
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -49,6 +52,8 @@ config = obtener_configuracion()
 # ══════════════════════════════════════════════════════════════════════════ 
 _consumidor: ConsumidorIA | None = None
 _consumidor_activo: bool = False
+_escuchador_sync: EscuchadorSincronizacionIA | None = None
+_escuchador_sync_activo: bool = False
 
 # ══════════════════════════════════════════════════════════════════════════════
 # CONSUMIDOR RABBITMQ — hilo daemon
@@ -79,6 +84,44 @@ def _iniciar_consumidor_rabbitmq() -> None:
         logger.error(
             "[MAIN] No se pudo iniciar el ConsumidorIA: %s. "
             "El microservicio HTTP funcionará sin procesamiento de eventos RabbitMQ.",
+            str(exc),
+        )
+
+
+def _iniciar_escuchador_sincronizacion() -> None:
+    """
+    Arranca el EscuchadorSincronizacionIA en un hilo daemon.
+
+    Crea un cliente Redis y lo inyecta al escuchador. El hilo daemon
+    consume de `cola.ia.sincronizacion.contexto` y actualiza la caché
+    Redis en tiempo real cuando el ms-cliente publica cambios.
+    """
+    global _escuchador_sync, _escuchador_sync_activo
+    try:
+        import redis
+        redis_client = redis.Redis(
+            host=config.redis_host,
+            port=config.redis_port,
+            db=config.redis_db,
+            password=config.redis_password or None,
+            decode_responses=True,
+        )
+        _escuchador_sync = EscuchadorSincronizacionIA(redis_client)
+        hilo = threading.Thread(
+            target=_escuchador_sync.iniciar,
+            name="hilo-sync-contexto-ia",
+            daemon=True,
+        )
+        hilo.start()
+        _escuchador_sync_activo = True
+        logger.info(
+            "[MAIN] Escuchador de sincronización IA iniciado en hilo '%s'.", hilo.name
+        )
+    except Exception as exc:
+        _escuchador_sync_activo = False
+        logger.error(
+            "[MAIN] No se pudo iniciar el EscuchadorSincronizacionIA: %s. "
+            "La sincronización de contexto no estará activa.",
             str(exc),
         )
 
@@ -121,6 +164,7 @@ async def lifespan(app: FastAPI):
     # --- REGISTRO EN EUREKA ---
     await registrar_en_eureka(config)
     _iniciar_consumidor_rabbitmq()
+    _iniciar_escuchador_sincronizacion()
     
     yield # ── La app está corriendo ──────────────────────────────────────────
 
@@ -133,7 +177,14 @@ async def lifespan(app: FastAPI):
             logger.info("[MAIN] ConsumidorIA detenido correctamente.")
         except Exception as exc:
             logger.warning("[MAIN] Error al detener el ConsumidorIA: %s", str(exc))
- 
+
+    if _escuchador_sync:
+        try:
+            _escuchador_sync.detener()
+            logger.info("[MAIN] EscuchadorSincronizacionIA detenido correctamente.")
+        except Exception as exc:
+            logger.warning("[MAIN] Error al detener el EscuchadorSincronizacionIA: %s", str(exc))
+
     await desregistrar_de_eureka()
     logger.info("[MAIN] Microservicio IA de LUKA detenido correctamente.")
 
@@ -141,8 +192,17 @@ async def lifespan(app: FastAPI):
 # APLICACIÓN FASTAPI
 # ══════════════════════════════════════════════════════════════════════════════
 app = FastAPI(
-    title="LUKA — Microservicio de Inteligencia Artificial Financiera",
+    title=config.id_app_eureka,
+    version="4.0.0",
     description="""
+""",
+    lifespan=lifespan
+)
+
+# ── MIDDLEWARES ───────────────────────────────────────────────────────────────
+app.add_middleware(TraceabilityMiddleware)
+
+app.description = """
 ## Motor de Análisis Financiero para Universitarios
  
 Microservicio IA de la plataforma **LUKA**, diseñada para ayudar a
@@ -188,61 +248,10 @@ app.add_middleware(
 # ══════════════════════════════════════════════════════════════════════════════
 # MANEJADORES GLOBALES DE EXCEPCIONES
 # ══════════════════════════════════════════════════════════════════════════════
-@app.exception_handler(IA_BaseException)
-async def manejador_ia_especifico(request: Request, exc: IA_BaseException) -> JSONResponse:
-    """
-    Captura todas las excepciones que heredan de IA_BaseException.
-    Determina el código HTTP según el código de error interno.
-    """
-    logger.error(
-        "[EXCEPTION] [%s] en %s: %s",
-        exc.codigo, request.url.path, exc.mensaje,
-    )
- 
-    # Mapeo de códigos internos → HTTP status
-    codigo_http = status.HTTP_500_INTERNAL_SERVER_ERROR
-    if "GEMINI_429" in exc.codigo:
-        codigo_http = status.HTTP_503_SERVICE_UNAVAILABLE
-    elif "GEMINI_SAFETY" in exc.codigo:
-        codigo_http = status.HTTP_422_UNPROCESSABLE_ENTITY
-    elif "GEMINI_401" in exc.codigo:
-        codigo_http = status.HTTP_503_SERVICE_UNAVAILABLE
-    elif "DATA_400" in exc.codigo:
-        codigo_http = status.HTTP_422_UNPROCESSABLE_ENTITY
-    elif "MODULE_404" in exc.codigo:
-        codigo_http = status.HTTP_404_NOT_FOUND
-    elif "CONFIG" in exc.codigo or "RABBIT" in exc.codigo:
-        codigo_http = status.HTTP_500_INTERNAL_SERVER_ERROR
- 
-    return JSONResponse(
-        status_code=codigo_http,
-        content={
-            "estado": codigo_http,
-            "codigo_error": exc.codigo,
-            "mensaje": exc.mensaje,
-            "detalles": str(exc.detalles) if exc.detalles else None,
-            "timestamp": exc.timestamp,
-            "ruta": str(request.url.path),
-        },
-    )
 
-@app.exception_handler(Exception)
-async def manejador_global_fallback(request: Request, exc: Exception) -> JSONResponse:
-    """Manejador de última instancia para errores no controlados."""
-    logger.error(
-        "[EXCEPTION] FALLO CRÍTICO en %s: %s",
-        request.url.path, str(exc), exc_info=True,
-    )
-    return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={
-            "estado": 500,
-            "codigo_error": "IA_UNKNOWN_CRITICAL",
-            "mensaje": "Error interno no controlado en el motor de IA.",
-            "timestamp": datetime.now().isoformat(),
-            "ruta": str(request.url.path),
-        },
-    )
+# Registramos el manejador de la librería común para excepciones de negocio y generales
+app.add_exception_handler(LukaException, luka_exception_handler)
+app.add_exception_handler(Exception, luka_exception_handler)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -286,6 +295,12 @@ async def health_check() -> dict:
             "broker": f"{config.rabbitmq_host}:{config.rabbitmq_puerto}",
             "cola": config.cola_ia_procesamiento,
             "descripcion": "Procesando eventos" if _consumidor_activo else "Sin conexión al broker",
+        },
+        "sync_contexto_ia": {
+            "estado": "UP" if _escuchador_sync_activo else "DEGRADADO",
+            "cola": config.cola_ia_sincronizacion_contexto,
+            "redis": f"{config.redis_host}:{config.redis_port}",
+            "descripcion": "Sincronización activa" if _escuchador_sync_activo else "Sin sincronización",
         },
     }
  

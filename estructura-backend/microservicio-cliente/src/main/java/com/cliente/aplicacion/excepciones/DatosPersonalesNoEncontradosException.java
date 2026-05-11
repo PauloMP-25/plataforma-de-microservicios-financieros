@@ -1,12 +1,16 @@
 package com.cliente.aplicacion.excepciones;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import com.libreria.comun.excepciones.ExcepcionRecursoNoEncontrado;
 import java.util.UUID;
 
-@ResponseStatus(HttpStatus.NOT_FOUND)
-public class DatosPersonalesNoEncontradosException extends RuntimeException {
+/**
+ * Excepción lanzada cuando no se encuentran los datos personales.
+ * 
+ * @author Paulo Moron
+ * @version 1.1.0
+ */
+public class DatosPersonalesNoEncontradosException extends ExcepcionRecursoNoEncontrado {
     public DatosPersonalesNoEncontradosException(UUID usuarioId) {
-        super("No existen datos personales para el usuarioId: " + usuarioId);
+        super("los datos personales", usuarioId);
     }
 }
