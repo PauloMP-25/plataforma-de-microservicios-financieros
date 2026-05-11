@@ -24,7 +24,8 @@ import com.libreria.comun.enums.EstadoEvento;
 @Table(name = "auditoria_accesos", indexes = {
         @Index(name = "idx_acceso_ip_fecha", columnList = "ip_origen, fecha"),
         @Index(name = "idx_acceso_usuario_id", columnList = "usuario_id"),
-        @Index(name = "idx_acceso_estado", columnList = "estado")
+        @Index(name = "idx_acceso_estado", columnList = "estado"),
+        @Index(name = "idx_acceso_correlation", columnList = "correlation_id", unique = true)
 })
 @Getter
 @Setter
@@ -77,6 +78,12 @@ public class AuditoriaAcceso {
      */
     @Column(name = "detalle_error", length = 500)
     private String detalleError;
+
+    /**
+     * Identificador de correlación para garantizar la idempotencia del registro.
+     */
+    @Column(name = "correlation_id", unique = true, length = 100)
+    private String correlationId;
 
     /**
      * Fecha y hora exacta en la que se produjo el intento de acceso.

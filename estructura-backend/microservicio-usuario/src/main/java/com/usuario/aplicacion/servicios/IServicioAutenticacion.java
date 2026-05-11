@@ -10,13 +10,14 @@ import java.util.UUID;
 public interface IServicioAutenticacion {
 
     /**
-     * Activa la cuenta de un usuario mediante la verificación de sus datos.
+     * Activa la cuenta de un usuario mediante la verificación de sus datos y un código OTP.
      * 
      * @param usuarioId ID del usuario a activar.
+     * @param codigoOtp Código de verificación.
      * @param telefono  Teléfono opcional a vincular.
      * @param ipCliente Dirección IP de origen para auditoría.
      */
-    void activarCuenta(UUID usuarioId, String telefono, String ipCliente);
+    void activarCuenta(UUID usuarioId, String codigoOtp, String telefono, String ipCliente);
 
     /**
      * Cambia la contraseña de un usuario autenticado.
@@ -62,6 +63,15 @@ public interface IServicioAutenticacion {
     RespuestaAutenticacion login(SolicitudLogin request, String ipCliente);
 
     /**
+     * Renueva el token de acceso utilizando un refresh token válido.
+     * 
+     * @param solicitud DTO con el refresh token.
+     * @param ipCliente Dirección IP de origen para auditoría.
+     * @return Nueva respuesta de autenticación.
+     */
+    RespuestaAutenticacion refrescarToken(SolicitudRefreshToken solicitud, String ipCliente);
+
+    /**
      * Registra un nuevo usuario en la plataforma deshabilitado por defecto.
      * 
      * @param request   DTO con los datos de registro.
@@ -71,12 +81,13 @@ public interface IServicioAutenticacion {
     UUID registrar(SolicitudRegistro request, String ipCliente);
 
     /**
-     * Registra el evento de cierre de sesión.
+     * Registra el evento de cierre de sesión e invalida el token.
      * 
      * @param usuarioId ID del usuario.
+     * @param token     Token JWT a invalidar.
      * @param ipCliente Dirección IP de origen para auditoría.
      */
-    void registrarLogout(UUID usuarioId, String ipCliente);
+    void registrarLogout(UUID usuarioId, String token, String ipCliente);
 
     /**
      * Solicita un nuevo código OTP para la activación de cuenta.

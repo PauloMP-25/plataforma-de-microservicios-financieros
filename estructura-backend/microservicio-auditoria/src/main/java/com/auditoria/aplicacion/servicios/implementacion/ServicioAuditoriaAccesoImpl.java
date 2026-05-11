@@ -38,6 +38,12 @@ public class ServicioAuditoriaAccesoImpl implements ServicioAuditoriaAcceso {
     @Override
     @Transactional
     public EventoAccesoDTO registrarAcceso(EventoAccesoDTO dto, EstadoEvento estado) {
+        // Idempotencia: Verificar si el evento ya fue procesado
+        if (dto.correlationId() != null && repositorio.existsByCorrelationId(dto.correlationId())) {
+            log.warn("[AUDITORIA-IDEMPOTENCIA] Evento ya procesado, ignorando: {}", dto.correlationId());
+            return dto;
+        }
+
         log.info("[AUDITORIA-ACCESO] Registrando: {} para IP: {}", dto.estado(), dto.ipOrigen());
 
         AuditoriaAcceso entidad = AuditoriaAcceso.builder()
@@ -47,6 +53,7 @@ public class ServicioAuditoriaAccesoImpl implements ServicioAuditoriaAcceso {
                 .estado(dto.estado())
                 .detalleError(dto.detalleError())
                 .fecha(dto.fecha() != null ? dto.fecha() : LocalDateTime.now())
+                .correlationId(dto.correlationId())
                 .build();
         AuditoriaAcceso guardado = repositorio.save(Objects.requireNonNull(entidad));
 
@@ -87,6 +94,6 @@ public class ServicioAuditoriaAccesoImpl implements ServicioAuditoriaAcceso {
     private EventoAccesoDTO convertirADTO(AuditoriaAcceso e) {
         return new EventoAccesoDTO(
                 e.getUsuarioId(), e.getIpOrigen(),
-                e.getNavegador(), e.getEstado(), e.getDetalleError(), e.getFecha());
+                e.getNavegador(), e.getEstado(), e.getDetalleError(), e.getFecha(), e.getCorrelationId());
     }
 }

@@ -27,10 +27,12 @@ from fastapi.responses import JSONResponse
  
 from app.clientes.cliente_eureka import desregistrar_de_eureka, registrar_en_eureka
 from app.configuracion import obtener_configuracion
-from app.excepciones import IA_BaseException
+from app.libreria_comun.excepciones.base import LukaException
+from app.libreria_comun.excepciones.handler import luka_exception_handler
+from app.libreria_comun.seguridad.middleware import TraceabilityMiddleware
 from app.mensajeria.consumidor_ia import ConsumidorIA
 from app.mensajeria.escuchador_sincronizacion_ia import EscuchadorSincronizacionIA
-from app.routers import analisis  # ← Router v4 con los 10 módulos independientes
+from app.routers import analisis
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -190,8 +192,17 @@ async def lifespan(app: FastAPI):
 # APLICACIÓN FASTAPI
 # ══════════════════════════════════════════════════════════════════════════════
 app = FastAPI(
-    title="LUKA — Microservicio de Inteligencia Artificial Financiera",
+    title=config.id_app_eureka,
+    version="4.0.0",
     description="""
+""",
+    lifespan=lifespan
+)
+
+# ── MIDDLEWARES ───────────────────────────────────────────────────────────────
+app.add_middleware(TraceabilityMiddleware)
+
+app.description = """
 ## Motor de Análisis Financiero para Universitarios
  
 Microservicio IA de la plataforma **LUKA**, diseñada para ayudar a
@@ -237,61 +248,10 @@ app.add_middleware(
 # ══════════════════════════════════════════════════════════════════════════════
 # MANEJADORES GLOBALES DE EXCEPCIONES
 # ══════════════════════════════════════════════════════════════════════════════
-@app.exception_handler(IA_BaseException)
-async def manejador_ia_especifico(request: Request, exc: IA_BaseException) -> JSONResponse:
-    """
-    Captura todas las excepciones que heredan de IA_BaseException.
-    Determina el código HTTP según el código de error interno.
-    """
-    logger.error(
-        "[EXCEPTION] [%s] en %s: %s",
-        exc.codigo, request.url.path, exc.mensaje,
-    )
- 
-    # Mapeo de códigos internos → HTTP status
-    codigo_http = status.HTTP_500_INTERNAL_SERVER_ERROR
-    if "GEMINI_429" in exc.codigo:
-        codigo_http = status.HTTP_503_SERVICE_UNAVAILABLE
-    elif "GEMINI_SAFETY" in exc.codigo:
-        codigo_http = status.HTTP_422_UNPROCESSABLE_ENTITY
-    elif "GEMINI_401" in exc.codigo:
-        codigo_http = status.HTTP_503_SERVICE_UNAVAILABLE
-    elif "DATA_400" in exc.codigo:
-        codigo_http = status.HTTP_422_UNPROCESSABLE_ENTITY
-    elif "MODULE_404" in exc.codigo:
-        codigo_http = status.HTTP_404_NOT_FOUND
-    elif "CONFIG" in exc.codigo or "RABBIT" in exc.codigo:
-        codigo_http = status.HTTP_500_INTERNAL_SERVER_ERROR
- 
-    return JSONResponse(
-        status_code=codigo_http,
-        content={
-            "estado": codigo_http,
-            "codigo_error": exc.codigo,
-            "mensaje": exc.mensaje,
-            "detalles": str(exc.detalles) if exc.detalles else None,
-            "timestamp": exc.timestamp,
-            "ruta": str(request.url.path),
-        },
-    )
 
-@app.exception_handler(Exception)
-async def manejador_global_fallback(request: Request, exc: Exception) -> JSONResponse:
-    """Manejador de última instancia para errores no controlados."""
-    logger.error(
-        "[EXCEPTION] FALLO CRÍTICO en %s: %s",
-        request.url.path, str(exc), exc_info=True,
-    )
-    return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={
-            "estado": 500,
-            "codigo_error": "IA_UNKNOWN_CRITICAL",
-            "mensaje": "Error interno no controlado en el motor de IA.",
-            "timestamp": datetime.now().isoformat(),
-            "ruta": str(request.url.path),
-        },
-    )
+# Registramos el manejador de la librería común para excepciones de negocio y generales
+app.add_exception_handler(LukaException, luka_exception_handler)
+app.add_exception_handler(Exception, luka_exception_handler)
 
 
 # ══════════════════════════════════════════════════════════════════════════════

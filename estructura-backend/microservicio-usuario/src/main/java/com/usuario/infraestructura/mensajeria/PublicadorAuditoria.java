@@ -35,13 +35,16 @@ public class PublicadorAuditoria extends PublicadorEventosBase {
      * @param detalle   Información adicional.
      */
     public void publicarAcceso(UUID usuarioId, String ipCliente, EstadoEvento estado, String detalle) {
+        String correlationId = UUID.randomUUID().toString(); // Fallback
+        
         EventoAccesoDTO evento = new EventoAccesoDTO(
                 usuarioId,
                 ipCliente,
                 "LUKA-AUTH-SERVICE",
                 estado,
                 detalle,
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                correlationId
         );
         
         log.info("[AUDITORIA] Publicando evento de acceso: {} para usuario: {}", estado, usuarioId);
@@ -64,5 +67,27 @@ public class PublicadorAuditoria extends PublicadorEventosBase {
 
         // Usamos el método de envío con headers heredado de la clase base
         super.enviarConHeaders(NombresExchange.MENSAJERIA, RoutingKeys.MENSAJERIA_OTP_GENERAR, dto, headers);
+    }
+
+    /**
+     * Envía una notificación de seguridad (ej. aviso de cambio de contraseña) a ms-mensajeria.
+     * 
+     * @param usuarioId ID del usuario afectado.
+     * @param correo    Correo para enviar el aviso.
+     * @param accion    Descripción de la acción (ej. "CAMBIO_PASSWORD").
+     */
+    public void publicarNotificacionSeguridad(UUID usuarioId, String correo, String accion) {
+        log.info("[RABBITMQ] Publicando notificación de seguridad: {} para {}", accion, usuarioId);
+        
+        Map<String, Object> mensaje = Map.of(
+                "usuarioId", usuarioId.toString(),
+                "correo", correo,
+                "accion", accion,
+                "fecha", LocalDateTime.now().toString()
+        );
+
+        Map<String, Object> headers = Map.of("x-evento-tipo", "NOTIFICACION_SEGURIDAD");
+        
+        super.enviarConHeaders(NombresExchange.MENSAJERIA, "notificacion.seguridad", mensaje, headers);
     }
 }

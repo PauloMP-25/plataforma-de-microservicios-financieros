@@ -70,4 +70,9 @@ public interface AuditoriaAccesoRepository extends JpaRepository<AuditoriaAcceso
     @org.springframework.data.jpa.repository.Modifying
     @org.springframework.transaction.annotation.Transactional
     int eliminarRegistrosAnterioresA(@Param("umbral") LocalDateTime umbral);
+
+    /**
+     * Verifica si ya existe un registro con el mismo identificador de correlación.
+     */
+    boolean existsByCorrelationId(String correlationId);
 }

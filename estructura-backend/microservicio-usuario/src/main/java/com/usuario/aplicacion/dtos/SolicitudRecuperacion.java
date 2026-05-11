@@ -8,7 +8,7 @@ public record SolicitudRecuperacion(
         @NotBlank(message = "El correo es obligatorio")
         @Email(message = "Formato de correo inválido")
         String correo,
-        @NotBlank(message = "El teléfono es obligatorio")
+
         String telefono,
         
         @NotNull(message = "El tipo de canal es obligatorio")

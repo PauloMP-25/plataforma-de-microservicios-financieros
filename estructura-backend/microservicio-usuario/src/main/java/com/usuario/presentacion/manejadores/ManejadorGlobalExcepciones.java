@@ -25,10 +25,13 @@ public class ManejadorGlobalExcepciones extends ManejadorGlobalExcepcionesBase {
     /**
      * Captura errores de credenciales inválidas (Login fallido).
      */
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ResultadoApi<Void>> manejarCredencialesInvalidas(BadCredentialsException ex,
-            WebRequest request) {
-        log.warn("Intento de login con credenciales inválidas: {}", ex.getMessage());
+    @ExceptionHandler({
+        BadCredentialsException.class, 
+        UsuarioNoEncontradoException.class, 
+        CredencialesInvalidasException.class
+    })
+    public ResponseEntity<ResultadoApi<Void>> manejarCredencialesInvalidas(Exception ex, WebRequest request) {
+        log.warn("Fallo de autenticación: {}", ex.getMessage());
         return crearRespuestaError(
                 CodigoError.CREDENCIALES_INVALIDAS,
                 "El correo o la contraseña son incorrectos.",

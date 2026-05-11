@@ -48,10 +48,23 @@ public class ServicioJwt {
     private long expiracionMs;
 
     /**
+     * Tiempo de vida del token de refresco (7 días por defecto).
+     */
+    @Value("${luka.jwt.refresh-expiracion-ms:604800000}")
+    private long expiracionRefreshMs;
+
+    /**
      * @return Tiempo de vida del token en milisegundos.
      */
     public long obtenerExpiracionMs() {
         return expiracionMs;
+    }
+
+    /**
+     * @return Tiempo de vida del token de refresco en milisegundos.
+     */
+    public long obtenerExpiracionRefreshMs() {
+        return expiracionRefreshMs;
     }
 
     /**
@@ -66,28 +79,41 @@ public class ServicioJwt {
     }
 
     /**
-     * Genera un token JWT firmado para un usuario autenticado a partir de su
-     * {@link UserDetails}.
+     * Genera un token JWT firmado para un usuario autenticado.
      *
      * @param userDetails Entidad que representa al usuario autenticado.
-     * @param claimsExtra Mapa con datos adicionales (ej. usuarioId, correo)
-     * para incluir en el payload.
+     * @param claimsExtra Mapa con datos adicionales.
      * @return String que representa el token JWT compacto.
      */
     public String generarToken(UserDetails userDetails, Map<String, Object> claimsExtra) {
+        return generarTokenConExpiracion(userDetails, claimsExtra, expiracionMs);
+    }
+
+    /**
+     * Genera un Refresh Token con mayor tiempo de vida y sin roles.
+     *
+     * @param userDetails Datos del usuario.
+     * @return Token JWT de larga duración.
+     */
+    public String generarRefreshToken(UserDetails userDetails) {
+        return generarTokenConExpiracion(userDetails, new HashMap<>(), expiracionRefreshMs);
+    }
+
+    private String generarTokenConExpiracion(UserDetails userDetails, Map<String, Object> claimsExtra, long durationMs) {
         Map<String, Object> claims = new HashMap<>(claimsExtra);
 
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .toList();
-
-        claims.put("roles", roles);
+        if (durationMs == expiracionMs) {
+            List<String> roles = userDetails.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .toList();
+            claims.put("roles", roles);
+        }
 
         return Jwts.builder()
                 .claims(claims)
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expiracionMs))
+                .expiration(new Date(System.currentTimeMillis() + durationMs))
                 .signWith(obtenerClaveFirma())
                 .compact();
     }

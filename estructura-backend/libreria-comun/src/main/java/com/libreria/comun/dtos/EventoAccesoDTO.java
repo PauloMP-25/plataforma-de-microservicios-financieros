@@ -38,12 +38,14 @@ public record EventoAccesoDTO(
     @Size(max = 500)
     String detalleError,
 
-    LocalDateTime fecha
+    LocalDateTime fecha,
+
+    String correlationId
 ) {
     /**
      * Factory method para crear una instancia rápidamente con la fecha actual.
      */
-    public static EventoAccesoDTO de(UUID usuarioId, String ip, EstadoEvento estado, String detalle) {
-        return new EventoAccesoDTO(usuarioId, ip, "LUKA-APP-CLIENT", estado, detalle, LocalDateTime.now());
+    public static EventoAccesoDTO de(UUID usuarioId, String ip, EstadoEvento estado, String detalle, String correlationId) {
+        return new EventoAccesoDTO(usuarioId, ip, "LUKA-APP-CLIENT", estado, detalle, LocalDateTime.now(), correlationId);
     }
 }
