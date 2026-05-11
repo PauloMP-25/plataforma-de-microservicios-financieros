@@ -52,16 +52,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
-        <!--STARTER-VALIDATION: Soporte para validaciones de datos mediante anotaciones (JSR-303).-->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
-        </dependency>
-        <!--STARTER-WEB: Starter para construir aplicaciones web RESTful utilizando Spring MVC.-->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
         <!--POSTGRESQL: Driver de conexión para la base de datos PostgreSQL.-->
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -73,11 +63,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
-        </dependency>
-        <!-- AMQP / RabbitMQ: Mensajería asíncrona con Spring -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-amqp</artifactId>
         </dependency>
         <!-- Jackson Databind: necesario para Jackson2JsonMessageConverter -->
         <!-- (ya incluido transitivamente por spring-boot-starter-web,     -->

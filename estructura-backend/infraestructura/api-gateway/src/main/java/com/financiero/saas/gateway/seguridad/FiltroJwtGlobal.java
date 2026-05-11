@@ -1,5 +1,6 @@
 package com.financiero.saas.gateway.seguridad;
 
+import com.libreria.comun.enums.CodigoError;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -13,11 +14,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
-
-import com.libreria.comun.enums.CodigoError;
-
 import reactor.core.publisher.Mono;
-
 import java.nio.charset.StandardCharsets;
 
 /**
