@@ -252,6 +252,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
 
   # ── MICROSERVICIO USUARIO (Puerto 8081) ───────────────────────────────────────
 
@@ -260,8 +265,8 @@ services:
     container_name: luka-ms-usuario
     hostname: ms-usuario
     build:
-      context: ../microservicio-usuario
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: microservicio-usuario/Dockerfile
       args:
            APP_PORT: 8081
     image: luka/ms-usuario:latest
@@ -306,7 +311,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 768M
+          memory: 512M
+
 
   # ── MICROSERVICIO CLIENTE (Puerto 8083) ───────────────────────────────────────
 
@@ -315,8 +321,8 @@ services:
     container_name: luka-ms-cliente
     hostname: ms-cliente
     build:
-      context: ../microservicio-cliente
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: microservicio-cliente/Dockerfile
       args:
            APP_PORT: 8083
     image: luka/ms-cliente:latest
@@ -360,7 +366,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 768M
+          memory: 512M
+
 
   # ── MICROSERVICIO AUDITORIA (Puerto 8082) ─────────────────────────────────────
 
@@ -369,8 +376,8 @@ services:
     container_name: luka-ms-auditoria
     hostname: ms-auditoria
     build:
-      context: ../microservicio-auditoria
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: microservicio-auditoria/Dockerfile
       args:
            APP_PORT: 8082
     image: luka/ms-auditoria:latest
@@ -421,8 +428,8 @@ services:
     container_name: luka-ms-mensajeria
     hostname: ms-mensajeria
     build:
-      context: ../microservicio-mensajeria
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: microservicio-mensajeria/Dockerfile
       args:
            APP_PORT: 8084
     image: luka/ms-mensajeria:latest
@@ -473,8 +480,8 @@ services:
     container_name: luka-ms-nucleo-financiero
     hostname: ms-nucleo-financiero
     build:
-      context: ../microservicio-nucleo-financiero
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: microservicio-nucleo-financiero/Dockerfile
       args:
            APP_PORT: 8085
     image: luka/ms-nucleo-financiero:latest
@@ -522,7 +529,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 768M
+          memory: 512M
+
 
   # ── MICROSERVICIO IA FINANCIERA (Puerto 8086) ─────────────────────────────────
 
@@ -608,8 +616,8 @@ services:
     container_name: luka-api-gateway
     hostname: api-gateway
     build:
-      context: ../infraestructura/api-gateway
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: infraestructura/api-gateway/Dockerfile
       args:
            APP_PORT: 8080
     image: luka/api-gateway:latest

@@ -22,7 +22,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
  * </p>
  */
 @AutoConfiguration
-@Import({ ConfiguracionRabbitBase.class }) // Importamos la base de Rabbit
+@Import({ ConfiguracionRabbitBase.class })
 public class LukaConfiguracion {
 
     @Bean

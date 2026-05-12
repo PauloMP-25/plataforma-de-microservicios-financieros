@@ -307,6 +307,14 @@ class PerfilUsuario(BaseModel):
         description="Nombre del universitario (ej: 'Paulo'). "
                     "Gemini lo usará para personalizar el saludo.",
     )
+    edad: Optional[int] = Field(
+        default=None,
+        description="Edad del usuario.",
+    )
+    ocupacion: Optional[str] = Field(
+        default="Estudiante",
+        description="Ocupación o carrera (ej: 'Estudiante de Sistemas', 'Practicante').",
+    )
     carrera: Optional[str] = Field(
         default=None,
         description="Carrera universitaria (ej: 'Ingeniería de Sistemas').",
@@ -543,6 +551,10 @@ class RespuestaModulo(BaseModel):
             "Estado del coach IA. EXITOSO si el consejo está disponible. "
             "Cualquier otro valor indica el motivo por el que consejo es None."
         ),
+    )
+    usando_fallback: bool = Field(
+        default=False,
+        description="Indica si el consejo es una plantilla de fallback por caída de Gemini.",
     )
  
     # ── Datos calculados por el Motor Analítico — siempre presentes ───────────

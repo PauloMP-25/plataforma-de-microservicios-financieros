@@ -24,7 +24,8 @@ from app.modelos.esquemas import (
     PeticionSimularMeta,
     RespuestaModulo,
 )
-from app.servicios.servicio_analisis import ServicioAnalisis, obtener_servicio_analisis
+from app.servicios.core.servicio_analisis import ServicioAnalisis, obtener_servicio_analisis
+
 
 logger = logging.getLogger(__name__)
 

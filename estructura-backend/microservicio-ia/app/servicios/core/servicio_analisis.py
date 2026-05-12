@@ -50,8 +50,9 @@ from app.modelos.esquemas import (
     EstadoCoach,
 )
 from app.servicios.analitica import motor_ia
-from app.servicios.coach_ia import CoachIA
-from app.servicios.gasto_hormiga import GastoHormigaService
+from app.servicios.ia.coach_ia import CoachIA
+from app.servicios.modulos.gasto_hormiga import GastoHormigaService
+
 from app.utilidades.preparador_datos import (
     json_a_dataframe,
     validar_datos_suficientes,
@@ -107,9 +108,13 @@ class ServicioAnalisis:
             monto=peticion.transaccion.monto,
         )
 
+        # Obtener perfil para personalización del Coach
+        perfil = self._cliente_perfil.obtener_perfil_usuario(peticion.usuario_id, peticion.token)
+
         respuesta = self._coach.generar_respuesta(
             usuario_id=peticion.usuario_id,
             insight=insight,
+            perfil=perfil,
             grafico=None,
         )
 
@@ -150,9 +155,11 @@ class ServicioAnalisis:
             config=self._config,
         )
 
+        perfil = self._cliente_perfil.obtener_perfil_usuario(peticion.usuario_id, peticion.token)
         respuesta = self._coach.generar_respuesta(
             usuario_id=peticion.usuario_id,
             insight=insight,
+            perfil=perfil,
             grafico=grafico,
         )
 
@@ -199,9 +206,11 @@ async def ejecutar_detectar_anomalias(self,peticion: PeticionConFiltroFecha,ip_o
     )
 
     # 5. Generar respuesta con el Coach (Gemini)
+    perfil = self._cliente_perfil.obtener_perfil_usuario(peticion.usuario_id, peticion.token)
     respuesta = self._coach.generar_respuesta(
         usuario_id=peticion.usuario_id,
         insight=insight,
+        perfil=perfil,
         grafico=grafico,
     )
 
@@ -243,9 +252,11 @@ async def ejecutar_detectar_anomalias(self,peticion: PeticionConFiltroFecha,ip_o
             config=self._config,
         )
 
+        perfil = self._cliente_perfil.obtener_perfil_usuario(peticion.usuario_id, peticion.token)
         respuesta = self._coach.generar_respuesta(
             usuario_id=peticion.usuario_id,
             insight=insight,
+            perfil=perfil,
             grafico=grafico,
         )
 
@@ -285,9 +296,11 @@ async def ejecutar_detectar_anomalias(self,peticion: PeticionConFiltroFecha,ip_o
             config=self._config,
         )
 
+        perfil = self._cliente_perfil.obtener_perfil_usuario(peticion.usuario_id, peticion.token)
         respuesta = self._coach.generar_respuesta(
             usuario_id=peticion.usuario_id,
             insight=insight,
+            perfil=perfil,
             grafico=grafico,
         )
 
@@ -330,9 +343,11 @@ async def ejecutar_detectar_anomalias(self,peticion: PeticionConFiltroFecha,ip_o
             aporte_mensual_deseado=peticion.aporte_mensual_deseado,
         )
 
+        perfil = self._cliente_perfil.obtener_perfil_usuario(peticion.usuario_id, peticion.token)
         respuesta = self._coach.generar_respuesta(
             usuario_id=peticion.usuario_id,
             insight=insight,
+            perfil=perfil,
             grafico=grafico,
         )
 
@@ -374,9 +389,11 @@ async def ejecutar_detectar_anomalias(self,peticion: PeticionConFiltroFecha,ip_o
             config=self._config,
         )
 
+        perfil = self._cliente_perfil.obtener_perfil_usuario(peticion.usuario_id, peticion.token)
         respuesta = self._coach.generar_respuesta(
             usuario_id=peticion.usuario_id,
             insight=insight,
+            perfil=perfil,
             grafico=grafico,
         )
 
@@ -417,9 +434,11 @@ async def ejecutar_detectar_anomalias(self,peticion: PeticionConFiltroFecha,ip_o
             config=self._config,
         )
 
+        perfil = self._cliente_perfil.obtener_perfil_usuario(peticion.usuario_id, peticion.token)
         respuesta = self._coach.generar_respuesta(
             usuario_id=peticion.usuario_id,
             insight=insight,
+            perfil=perfil,
             grafico=grafico,
         )
 
@@ -464,9 +483,11 @@ async def ejecutar_detectar_anomalias(self,peticion: PeticionConFiltroFecha,ip_o
             recurrente=peticion.recurrente,
         )
 
+        perfil = self._cliente_perfil.obtener_perfil_usuario(peticion.usuario_id, peticion.token)
         respuesta = self._coach.generar_respuesta(
             usuario_id=peticion.usuario_id,
             insight=insight,
+            perfil=perfil,
             grafico=grafico,
         )
 
@@ -507,9 +528,11 @@ async def ejecutar_detectar_anomalias(self,peticion: PeticionConFiltroFecha,ip_o
             config=self._config,
         )
 
+        perfil = self._cliente_perfil.obtener_perfil_usuario(peticion.usuario_id, peticion.token)
         respuesta = self._coach.generar_respuesta(
             usuario_id=peticion.usuario_id,
             insight=insight,
+            perfil=perfil,
             grafico=grafico,
         )
 

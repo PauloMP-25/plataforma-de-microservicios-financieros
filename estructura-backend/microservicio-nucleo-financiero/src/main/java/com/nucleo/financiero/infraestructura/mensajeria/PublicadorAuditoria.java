@@ -70,7 +70,8 @@ public class PublicadorAuditoria extends PublicadorEventosBase {
                                 usuarioId,
                                 ip,
                                 EstadoEvento.EXITO,
-                                detalleCompleto);
+                                detalleCompleto,
+                                null);
 
                 super.publicarAcceso(dto, EstadoEvento.EXITO);
         }
