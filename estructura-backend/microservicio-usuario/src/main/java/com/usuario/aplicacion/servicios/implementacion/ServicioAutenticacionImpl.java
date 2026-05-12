@@ -3,8 +3,20 @@ package com.usuario.aplicacion.servicios.implementacion;
 import com.libreria.comun.enums.EstadoEvento;
 import com.libreria.comun.excepciones.ExcepcionNoAutorizado;
 import com.libreria.comun.seguridad.ServicioJwt;
-import com.usuario.aplicacion.dtos.*;
-import com.usuario.aplicacion.excepciones.*;
+import com.usuario.aplicacion.dtos.PropositoCodigo;
+import com.usuario.aplicacion.dtos.RespuestaAutenticacion;
+import com.usuario.aplicacion.dtos.SolicitudCambioPassword;
+import com.usuario.aplicacion.dtos.SolicitudLogin;
+import com.usuario.aplicacion.dtos.SolicitudRecuperacion;
+import com.usuario.aplicacion.dtos.SolicitudRefreshToken;
+import com.usuario.aplicacion.dtos.SolicitudRegistro;
+import com.usuario.aplicacion.dtos.SolicitudRestablecerPassword;
+import com.usuario.aplicacion.dtos.SolicitudGenerarOtp;
+import com.usuario.aplicacion.dtos.TipoVerificacion;
+import com.usuario.aplicacion.excepciones.CredencialesInvalidasException;
+import com.usuario.aplicacion.excepciones.CuentaNoHabilitadaException;
+import com.usuario.aplicacion.excepciones.TokenInvalidoException;
+import com.usuario.aplicacion.excepciones.UsuarioNoEncontradoException;
 import com.usuario.aplicacion.servicios.IServicioAutenticacion;
 import com.usuario.dominio.entidades.Rol;
 import com.usuario.dominio.entidades.Usuario;
@@ -17,7 +29,9 @@ import com.usuario.infraestructura.mensajeria.PublicadorAuditoria;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.security.authentication.*;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +40,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * Implementación del servicio de autenticación.
@@ -48,6 +61,7 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
     private final PublicadorAuditoria publicadorAuditoria;
     private final StringRedisTemplate redisTemplate;
 
+    @SuppressWarnings("null")
     @Override
     @Transactional
     public void activarCuenta(UUID usuarioId, String codigoOtp, String telefono, String ipCliente) {
@@ -139,6 +153,7 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
         return generarRespuestaAuth(usuario);
     }
 
+    @SuppressWarnings("null")
     @Override
     @Transactional
     public void registrarLogout(UUID usuarioId, String token, String ipCliente) {
@@ -150,6 +165,7 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
         publicadorAuditoria.publicarAcceso(usuarioId, ipCliente, EstadoEvento.EXITO, "LOGOUT_EXITOSO");
     }
 
+    @SuppressWarnings("null")
     @Override
     @Transactional
     public void cambiarPassword(UUID usuarioId, SolicitudCambioPassword solicitud, String ipCliente) {
@@ -258,6 +274,7 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
             throw new IllegalStateException("Correo en uso");
     }
 
+    @SuppressWarnings("null")
     @Override
     public void eliminarCuenta(UUID usuarioId, String ipCliente) {
         Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow();
@@ -266,6 +283,7 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
         publicadorAuditoria.publicarAcceso(usuarioId, ipCliente, EstadoEvento.EXITO, "CUENTA_ELIMINADA");
     }
 
+    @SuppressWarnings("null")
     @Override
     public void solicitarOtpActivacion(UUID usuarioId, SolicitudGenerarOtp solicitud) {
         Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow();

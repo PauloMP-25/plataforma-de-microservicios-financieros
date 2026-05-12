@@ -23,19 +23,19 @@ services:
 
   postgres-cliente:
     ports:
-      - "5433:5432"
+      - "5434:5432"
 
   postgres-financiero:
     ports:
-      - "5433:5432"
+      - "5435:5432"
 
   postgres-auditoria:
     ports:
-      - "5433:5432"
+      - "5436:5432"
 
   postgres-mensajeria:
     ports:
-      - "5433:5432"
+      - "5437:5432"
 
   # ── RABBITMQ: también exponemos el puerto AMQP para testing externo ──────────
 
@@ -47,6 +47,8 @@ services:
   # ── MICROSERVICIOS: desactivamos límites de RAM en desarrollo ─────────────────
 
   ms-usuario:
+    ports:
+      - "8081:8081"
     deploy:
       resources:
         limits:

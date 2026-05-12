@@ -45,6 +45,7 @@ public class ServicioSeguridadAuditoriaImpl implements ServicioSeguridadAuditori
     @Value("${auditoria.seguridad.bloqueo-minutos:30}")
     private long bloqueoMinutos;
 
+    @SuppressWarnings("null")
     @Override
     @Transactional
     public void verificarIntentoFallido(String ipOrigen) {

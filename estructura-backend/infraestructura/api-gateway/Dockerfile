@@ -4,21 +4,24 @@
 #  Estrategia: Build en JDK completo → Runtime en JRE Alpine (ligero)
 # ═══════════════════════════════════════════════════════════════════
 
-# ── ETAPA 1: BUILD (Usamos Maven directamente) ───────────────────────────────
+# ── ETAPA 1: BUILD (Instalamos libreria-comun y luego el Gateway) ──────────
 FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
 
 WORKDIR /build
 
-# Copiamos el pom.xml para descargar las dependencias
-COPY pom.xml .
+# 1. Primero instalamos la librería común localmente en el contenedor
+COPY libreria-comun ./libreria-comun
+RUN cd libreria-comun && mvn install -DskipTests -B
+
+# 2. Ahora preparamos el api-gateway
+WORKDIR /build/infraestructura/api-gateway
+COPY infraestructura/api-gateway/pom.xml .
 
 # Descargamos dependencias (esta capa se cachea)
 RUN mvn dependency:go-offline -B
 
 # Copiamos el código fuente y compilamos
-COPY src ./src
-
-# Compilamos usando mvn directamente en lugar de ./mvnw
+COPY infraestructura/api-gateway/src ./src
 RUN mvn package -DskipTests -B
 
 # Extraemos las capas (esta parte sigue igual)

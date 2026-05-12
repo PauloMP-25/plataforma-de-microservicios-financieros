@@ -89,6 +89,13 @@ class Configuracion(BaseSettings):
     )
 
     # ══════════════════════════════════════════════════════════════════════════
+    # CIRCUIT BREAKER (Resilience4j style)
+    # ══════════════════════════════════════════════════════════════════════════
+    cb_failure_rate_threshold: float = 50.0
+    cb_wait_duration_open_state_seconds: int = 30
+    cb_sliding_window_size: int = 10
+
+    # ══════════════════════════════════════════════════════════════════════════
     # MOTOR ANALÍTICO — Parámetros para Pandas / Scikit-Learn / SciPy
     # ══════════════════════════════════════════════════════════════════════════
     
@@ -194,12 +201,22 @@ class Configuracion(BaseSettings):
     rk_perfil_actualizado: str = "cliente.perfil.actualizado"
 
     # ══════════════════════════════════════════════════════════════════════════
+    # BASE DE DATOS (Persistencia de Caché IA)
+    # ══════════════════════════════════════════════════════════════════════════
+    db_host: str = "localhost"
+    db_port: int = 5432
+    db_usuario: str = "postgres"
+    db_password: str = "postgres"
+    db_nombre: str = "luka_ia"
+
+    # ══════════════════════════════════════════════════════════════════════════
     # REDIS (Caché de Contexto IA)
     # ══════════════════════════════════════════════════════════════════════════
     redis_host: str = "localhost"
     redis_port: int = 6379
     redis_db: int = 0
     redis_password: str = ""
+    redis_ttl_segundos: int = 3600  # 1 hora por defecto
 
     # ══════════════════════════════════════════════════════════════════════════
     # PYDANTIC SETTINGS

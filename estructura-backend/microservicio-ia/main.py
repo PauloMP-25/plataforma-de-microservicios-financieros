@@ -33,6 +33,7 @@ from app.libreria_comun.seguridad.middleware import TraceabilityMiddleware
 from app.mensajeria.consumidor_ia import ConsumidorIA
 from app.mensajeria.escuchador_sincronizacion_ia import EscuchadorSincronizacionIA
 from app.routers import analisis
+from app.persistencia.database import inicializar_db
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -54,6 +55,8 @@ _consumidor: ConsumidorIA | None = None
 _consumidor_activo: bool = False
 _escuchador_sync: EscuchadorSincronizacionIA | None = None
 _escuchador_sync_activo: bool = False
+_escuchador_cambio: EscuchadorCambioDatosIA | None = None
+_escuchador_cambio_activo: bool = False
 
 # ══════════════════════════════════════════════════════════════════════════════
 # CONSUMIDOR RABBITMQ — hilo daemon
@@ -88,15 +91,13 @@ def _iniciar_consumidor_rabbitmq() -> None:
         )
 
 
-def _iniciar_escuchador_sincronizacion() -> None:
+def _iniciar_escuchadores_adicionales() -> None:
     """
-    Arranca el EscuchadorSincronizacionIA en un hilo daemon.
-
-    Crea un cliente Redis y lo inyecta al escuchador. El hilo daemon
-    consume de `cola.ia.sincronizacion.contexto` y actualiza la caché
-    Redis en tiempo real cuando el ms-cliente publica cambios.
+    Arranca los escuchadores de sincronización e invalidación en hilos daemon.
     """
-    global _escuchador_sync, _escuchador_sync_activo
+    global _escuchador_sync, _escuchador_sync_activo, _escuchador_cambio, _escuchador_cambio_activo
+    
+    # 1. Sincronización de Perfil (Redis)
     try:
         import redis
         redis_client = redis.Redis(
@@ -107,23 +108,22 @@ def _iniciar_escuchador_sincronizacion() -> None:
             decode_responses=True,
         )
         _escuchador_sync = EscuchadorSincronizacionIA(redis_client)
-        hilo = threading.Thread(
-            target=_escuchador_sync.iniciar,
-            name="hilo-sync-contexto-ia",
-            daemon=True,
-        )
-        hilo.start()
+        threading.Thread(target=_escuchador_sync.iniciar, name="hilo-sync-perfil", daemon=True).start()
         _escuchador_sync_activo = True
-        logger.info(
-            "[MAIN] Escuchador de sincronización IA iniciado en hilo '%s'.", hilo.name
-        )
+        logger.info("[MAIN] Escuchador de sincronización de perfil iniciado.")
     except Exception as exc:
         _escuchador_sync_activo = False
-        logger.error(
-            "[MAIN] No se pudo iniciar el EscuchadorSincronizacionIA: %s. "
-            "La sincronización de contexto no estará activa.",
-            str(exc),
-        )
+        logger.error(f"[MAIN] Error iniciando sync perfil: {exc}")
+
+    # 2. Invalidación de Caché (Datos Financieros)
+    try:
+        _escuchador_cambio = EscuchadorCambioDatosIA()
+        threading.Thread(target=_escuchador_cambio.iniciar, name="hilo-invalidacion-cache", daemon=True).start()
+        _escuchador_cambio_activo = True
+        logger.info("[MAIN] Escuchador de invalidación de caché iniciado.")
+    except Exception as exc:
+        _escuchador_cambio_activo = False
+        logger.error(f"[MAIN] Error iniciando sync caché: {exc}")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # LIFECYCLE — startup / shutdown
@@ -162,9 +162,10 @@ async def lifespan(app: FastAPI):
     logger.info("═" * 65)
 
     # --- REGISTRO EN EUREKA ---
+    inicializar_db()
     await registrar_en_eureka(config)
     _iniciar_consumidor_rabbitmq()
-    _iniciar_escuchador_sincronizacion()
+    _iniciar_escuchadores_adicionales()
     
     yield # ── La app está corriendo ──────────────────────────────────────────
 

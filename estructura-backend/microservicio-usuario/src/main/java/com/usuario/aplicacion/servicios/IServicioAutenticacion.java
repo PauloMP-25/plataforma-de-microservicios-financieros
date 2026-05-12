@@ -10,7 +10,8 @@ import java.util.UUID;
 public interface IServicioAutenticacion {
 
     /**
-     * Activa la cuenta de un usuario mediante la verificación de sus datos y un código OTP.
+     * Activa la cuenta de un usuario mediante la verificación de sus datos y un
+     * código OTP.
      * 
      * @param usuarioId ID del usuario a activar.
      * @param codigoOtp Código de verificación.
@@ -22,9 +23,9 @@ public interface IServicioAutenticacion {
     /**
      * Cambia la contraseña de un usuario autenticado.
      * 
-     * @param usuarioId  ID del usuario.
-     * @param solicitud  DTO con las contraseñas actual y nueva.
-     * @param ipCliente  Dirección IP de origen para auditoría.
+     * @param usuarioId ID del usuario.
+     * @param solicitud DTO con las contraseñas actual y nueva.
+     * @param ipCliente Dirección IP de origen para auditoría.
      */
     void cambiarPassword(UUID usuarioId, SolicitudCambioPassword solicitud, String ipCliente);
 
