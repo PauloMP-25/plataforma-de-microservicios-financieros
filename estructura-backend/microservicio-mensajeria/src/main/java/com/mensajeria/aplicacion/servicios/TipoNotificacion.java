@@ -24,5 +24,10 @@ public enum TipoNotificacion {
      * La clave {@code "destinatario"} del mapa de variables debe contener el
      * número de teléfono en formato E.164.
      */
-    SMS
+    SMS,
+
+    /**
+     * Notificación enviada por WhatsApp mediante Meta Cloud API.
+     */
+    WHATSAPP
 }

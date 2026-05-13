@@ -17,6 +17,7 @@ Cambios respecto a v3:
 
 import logging
 import threading
+import asyncio
 from contextlib import asynccontextmanager
 from datetime import datetime
  
@@ -32,6 +33,7 @@ from app.libreria_comun.excepciones.handler import luka_exception_handler
 from app.libreria_comun.seguridad.middleware import TraceabilityMiddleware
 from app.mensajeria.consumidor_ia import ConsumidorIA
 from app.mensajeria.escuchador_sincronizacion_ia import EscuchadorSincronizacionIA
+from app.mensajeria.escuchador_cambio_datos_ia import EscuchadorCambioDatosIA
 from app.routers import analisis
 from app.persistencia.database import inicializar_db
 
@@ -166,6 +168,11 @@ async def lifespan(app: FastAPI):
     await registrar_en_eureka(config)
     _iniciar_consumidor_rabbitmq()
     _iniciar_escuchadores_adicionales()
+
+    # --- JOB DE MONITOREO DE COSTOS ---
+    from app.servicios.ia.alerta_costos import job_monitoreo_costos
+    asyncio.create_task(job_monitoreo_costos())
+    logger.info("[MAIN] Job de monitoreo de costos iniciado.")
     
     yield # ── La app está corriendo ──────────────────────────────────────────
 
@@ -228,12 +235,7 @@ El sistema separa claramente dos responsabilidades:
 | 9 | `POST /simular-escenario` | Impacto de un cambio hipotético en el presupuesto |
 | 10 | `POST /reporte-completo` | Reporte ejecutivo mensual con score de salud financiera |
 | — | `POST /analisis-completo` | Dashboard principal: reporte completo con todos los KPIs |
-    """,
-    version="4.0.0",
-    lifespan=lifespan,
-    docs_url="/docs",
-    redoc_url="/redoc",
-)
+"""
 
 # ══════════════════════════════════════════════════════════════════════════════
 # CORS: Permitir todas las orígenes en desarrollo, restringir en producción
@@ -270,7 +272,7 @@ app.include_router(analisis.router)
     description="Verifica que el microservicio, el motor analítico y el consumidor RabbitMQ estén operativos.",
 )
 
-async def health_check() -> dict:
+async def health() -> dict:
     """
     Endpoint de health check compatible con el servidor Eureka y el API Gateway.
  
@@ -312,6 +314,7 @@ async def health_check() -> dict:
         estado_global = "DEGRADADO"
  
     return {
+        "status": estado_global,
         "estado": estado_global,
         "servicio": config.nombre_app,
         "version": config.version_app,

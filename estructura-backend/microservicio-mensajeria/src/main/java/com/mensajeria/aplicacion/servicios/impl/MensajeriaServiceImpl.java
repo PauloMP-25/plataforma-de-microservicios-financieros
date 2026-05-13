@@ -119,9 +119,11 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
         );
 
         // 2. Resolvemos el canal y el destino
-        TipoNotificacion tipoEnvio = (solicitud.tipo() == TipoVerificacion.EMAIL) 
-                ? TipoNotificacion.EMAIL 
-                : TipoNotificacion.SMS;
+        TipoNotificacion tipoEnvio = switch (solicitud.tipo()) {
+            case EMAIL -> TipoNotificacion.EMAIL;
+            case SMS -> TipoNotificacion.SMS;
+            case WHATSAPP -> TipoNotificacion.WHATSAPP;
+        };
 
         String destino = (solicitud.tipo() == TipoVerificacion.EMAIL) 
                 ? solicitud.email() 
@@ -133,10 +135,11 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
         String detalleAudit = String.format("OTP solicitado para %s vía %s",
                 solicitud.proposito(), solicitud.tipo());
 
-        if (solicitud.tipo() == TipoVerificacion.SMS) {
+        if (solicitud.tipo() == TipoVerificacion.SMS || solicitud.tipo() == TipoVerificacion.WHATSAPP) {
             detalleAudit += " — número: " + enmascararTelefono(solicitud.telefono());
 
-            // Si es recuperación por SMS, sincronizar teléfono con fallback de Resilience4j
+            // Si es recuperación por un canal telefónico, sincronizar con fallback de
+            // Resilience4j
             if (solicitud.proposito() == PropositoCodigo.RESTABLECER_PASSWORD) {
                 String resultado = usuarioFeignClient.sincronizarTelefono(
                         solicitud.usuarioId(), solicitud.telefono());

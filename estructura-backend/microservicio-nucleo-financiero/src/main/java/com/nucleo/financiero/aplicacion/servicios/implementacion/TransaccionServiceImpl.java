@@ -87,6 +87,7 @@ public class TransaccionServiceImpl implements ITransaccionService {
         return guardadas.stream().map(RespuestaTransaccion::desde).collect(Collectors.toList());
     }
 
+    @SuppressWarnings("null")
     @Override
     @Transactional(readOnly = true)
     public Page<RespuestaTransaccion> listarHistorial(
@@ -104,9 +105,13 @@ public class TransaccionServiceImpl implements ITransaccionService {
         publicadorAuditoria.publicarAcceso(usuarioId, "CONSULTA_HISTORIAL",
                 "Rango: " + desde + " a " + hasta, ipCliente);
 
-        return transaccionRepository.buscarConFiltros(
-                usuarioId, tipo, categoriaId, desde, hasta, paginacion
-        ).map(RespuestaTransaccion::desde);
+        org.springframework.data.jpa.domain.Specification<Transaccion> specs = org.springframework.data.jpa.domain.Specification
+                .where(com.nucleo.financiero.dominio.especificaciones.TransaccionSpecs.porUsuario(usuarioId))
+                .and(com.nucleo.financiero.dominio.especificaciones.TransaccionSpecs.porTipo(tipo))
+                .and(com.nucleo.financiero.dominio.especificaciones.TransaccionSpecs.porCategoria(categoriaId))
+                .and(com.nucleo.financiero.dominio.especificaciones.TransaccionSpecs.entreFechas(desde, hasta));
+
+        return transaccionRepository.findAll(specs, paginacion).map(RespuestaTransaccion::desde);
     }
 
     @Override

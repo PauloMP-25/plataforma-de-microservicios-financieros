@@ -53,11 +53,20 @@ public class ServicioAuditoriaTransaccionalImpl implements ServicioAuditoriaTran
                 .map(this::mapearADto);
     }
 
+    @SuppressWarnings("null")
     @Override
     @Transactional(readOnly = true)
     public Page<EventoTransaccionalDTO> buscarConFiltros(String servicio, LocalDateTime desde, LocalDateTime hasta,
             Pageable pageable) {
-        return repositorio.buscarConFiltros(servicio, desde, hasta, pageable)
+
+        // Composición dinámica de criterios usando Specification Pattern
+        org.springframework.data.jpa.domain.Specification<AuditoriaTransaccional> spec = org.springframework.data.jpa.domain.Specification
+                .where(
+                        com.auditoria.dominio.especificaciones.AuditoriaSpecs.transaccionPorServicio(servicio))
+                .and(
+                        com.auditoria.dominio.especificaciones.AuditoriaSpecs.transaccionEntreFechas(desde, hasta));
+
+        return repositorio.findAll(spec, pageable)
                 .map(this::mapearADto);
     }
 

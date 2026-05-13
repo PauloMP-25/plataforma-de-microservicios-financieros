@@ -6,6 +6,7 @@ import com.libreria.comun.excepciones.ExcepcionAccesoDenegado;
 import com.cliente.aplicacion.excepciones.DatosPersonalesNoEncontradosException;
 import com.cliente.aplicacion.excepciones.DniDuplicadoException;
 import com.cliente.aplicacion.eventos.EventoContextoActualizado;
+import com.cliente.aplicacion.servicios.ServicioContexto;
 import com.cliente.aplicacion.servicios.ServicioDatosPersonales;
 import com.cliente.dominio.entidades.DatosPersonales;
 import com.cliente.dominio.repositorios.DatosPersonalesRepositorio;
@@ -35,6 +36,7 @@ public class ServicioDatosPersonalesImpl implements ServicioDatosPersonales {
     private final DatosPersonalesRepositorio repositorio;
     private final PublicadorAuditoria publicadorAuditoria;
     private final ApplicationEventPublisher eventPublisher;
+    private final ServicioContexto servicioContexto;
 
     /**
      * Crea un perfil inicial vacío de datos personales para un usuario.
@@ -127,6 +129,20 @@ public class ServicioDatosPersonalesImpl implements ServicioDatosPersonales {
      * @param e Entidad de dominio {@link DatosPersonales}.
      * @return {@link RespuestaDatosPersonales} convertido.
      */
+    @Override
+    @Transactional
+    public void actualizarTelefono(UUID usuarioId, String telefono) {
+        log.info("Actualizando teléfono verificado para usuario: {}", usuarioId);
+        DatosPersonales datos = repositorio.findByUsuarioId(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Perfil no encontrado para usuario: " + usuarioId));
+
+        datos.setTelefono(telefono);
+        repositorio.save(datos);
+
+        // Refrescar contexto para IA
+        servicioContexto.refrescarContextoRedis(usuarioId);
+    }
+
     @Override
     public RespuestaDatosPersonales convertirADTO(DatosPersonales e) {
         return new RespuestaDatosPersonales(

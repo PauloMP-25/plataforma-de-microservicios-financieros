@@ -37,6 +37,10 @@ services:
     ports:
       - "5437:5432"
 
+  postgres-ia:
+    ports:
+      - "5438:5432"
+
   # ── RABBITMQ: también exponemos el puerto AMQP para testing externo ──────────
 
   rabbitmq:

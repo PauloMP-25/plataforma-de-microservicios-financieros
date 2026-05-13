@@ -39,4 +39,18 @@ public interface NotificacionService {
      *             si el proveedor externo (SMTP, Twilio) rechaza el envío.
      */
     void enviar(TipoNotificacion tipo, String destinatario, Map<String, Object> variables);
+
+    /**
+     * Envía un correo electrónico al administrador del sistema para alertas
+     * críticas.
+     * No utiliza plantillas de usuario para garantizar la entrega de logs técnicos.
+     *
+     * @param destinatario Email del administrador.
+     * @param asunto       Asunto del correo.
+     * @param cuerpo       Contenido del mensaje (Texto plano o HTML).
+     * @param esHtml       Indica si el cuerpo debe procesarse como HTML.
+     */
+    default void enviarEmailAdministrador(String destinatario, String asunto, String cuerpo, boolean esHtml) {
+        throw new UnsupportedOperationException("Este canal no soporta el envío de emails administrativos.");
+    }
 }

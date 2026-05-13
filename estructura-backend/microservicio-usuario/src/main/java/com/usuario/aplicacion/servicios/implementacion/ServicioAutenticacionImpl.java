@@ -73,12 +73,17 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
             return; // Idempotencia
         }
 
-        // 1. Validar OTP vía microservicio de mensajería
-        UUID idConfirmado = clienteMensajeria.validarCodigoYObtenerUsuario(usuarioId, codigoOtp);
-        if (idConfirmado == null) {
-            publicadorAuditoria.publicarAcceso(usuarioId, ipCliente, EstadoEvento.FALLO,
-                    "ACTIVACION_FALLIDA_OTP_INVALIDO");
-            throw new TokenInvalidoException("Código de activación inválido o expirado.");
+        // 1. Validar OTP vía microservicio de mensajería (Solo si viene el código)
+        if (codigoOtp != null && !codigoOtp.isBlank()) {
+            UUID idConfirmado = clienteMensajeria.validarCodigoYObtenerUsuario(usuarioId, codigoOtp);
+            if (idConfirmado == null) {
+                publicadorAuditoria.publicarAcceso(usuarioId, ipCliente, EstadoEvento.FALLO,
+                        "ACTIVACION_FALLIDA_OTP_INVALIDO");
+                throw new TokenInvalidoException("Código de activación inválido o expirado.");
+            }
+        } else {
+            log.info("[AUTH-ACT] Activación directa solicitada para usuario: {} (OTP ya validado o no requerido)",
+                    usuarioId);
         }
 
         // 2. Sincronizar teléfono si se proporcionó
@@ -285,10 +290,30 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
 
     @SuppressWarnings("null")
     @Override
+    @Transactional
     public void solicitarOtpActivacion(UUID usuarioId, SolicitudGenerarOtp solicitud) {
         Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow();
         publicadorAuditoria.publicarSolicitudOtp(new SolicitudGenerarOtp(
                 usuario.getId(), usuario.getCorreo(), solicitud.telefono(), solicitud.tipo(),
                 PropositoCodigo.ACTIVACION_CUENTA));
+    }
+
+    @Override
+    @Transactional
+    public void sincronizarTelefono(UUID usuarioId, String telefono) {
+        log.info("[AUTH-SYNC] Sincronizando teléfono verificado para usuario: {}", usuarioId);
+
+        // 1. Sincronizar con MS-CLIENTE
+        if (telefono != null && !telefono.isBlank()) {
+            try {
+                clientePerfilExterno.actualizarTelefono(usuarioId, telefono);
+                log.info("[AUTH-SYNC] Teléfono sincronizado exitosamente con MS-CLIENTE.");
+            } catch (Exception e) {
+                log.error("[AUTH-SYNC] Error sincronizando teléfono con MS-CLIENTE: {}", e.getMessage());
+            }
+        }
+
+        // 2. Registrar evento de auditoría interna si fuera necesario (opcional)
+        publicadorAuditoria.publicarAcceso(usuarioId, "SISTEMA-SYNC", EstadoEvento.EXITO, "TELEFONO_SINCRONIZADO_OTP");
     }
 }

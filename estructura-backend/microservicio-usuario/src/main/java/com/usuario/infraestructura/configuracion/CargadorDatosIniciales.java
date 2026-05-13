@@ -18,11 +18,12 @@ public class CargadorDatosIniciales implements CommandLineRunner {
     public void run(String... args) {
 
         crearRolSiNoExiste(Rol.NombreRol.ROLE_FREE);
-        crearRolSiNoExiste(Rol.NombreRol.ROLE_MID);
+        crearRolSiNoExiste(Rol.NombreRol.ROLE_PRO);
         crearRolSiNoExiste(Rol.NombreRol.ROLE_PREMIUM);
         crearRolSiNoExiste(Rol.NombreRol.ROLE_ADMIN);
+        crearRolSiNoExiste(Rol.NombreRol.ROLE_ADMINISTRADOR);
 
-        log.info("---- VERIFICACIÓN DE ROLES COMPLETADA ----");
+        log.info("---- VERIFICACIÓN DE ROLES (LUKA V4) COMPLETADA ----");
     }
 
     private void crearRolSiNoExiste(Rol.NombreRol nombreRol) {

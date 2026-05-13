@@ -34,19 +34,23 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
     }
 
     /**
-     * Define la configuración común de la cadena de filtros.
-     * Los microservicios deben llamar a este método y añadir sus rutas específicas.
-     *
+     * Define la configuración de la cadena de filtros de seguridad.
+     * 
      * @param http Configuración de seguridad de Spring.
-     * @return {@link HttpSecurity} configurado.
+     * @return {@link SecurityFilterChain} configurado.
      * @throws Exception Si ocurre un error en la configuración.
      */
+    @org.springframework.context.annotation.Bean
+    public org.springframework.security.web.SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return configurarAutorizacion(http).build();
+    }
+
     @Override
     protected HttpSecurity configurarAutorizacion(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
                 // ── Endpoints internos (comunicación inter-microservicio) ──────
-                .requestMatchers(HttpMethod.POST, "/api/v1/clientes/perfil/inicial").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v1/clientes/interno/**").permitAll()
+                // Se permiten todos los métodos para /interno/ ya que es comunicación de confianza
+                .requestMatchers("/api/v1/clientes/interno/**").permitAll()
 
                 // ── Perfil de datos personales ────────────────────────────────
                 .requestMatchers(HttpMethod.PUT, "/api/v1/clientes/perfil/**").authenticated()

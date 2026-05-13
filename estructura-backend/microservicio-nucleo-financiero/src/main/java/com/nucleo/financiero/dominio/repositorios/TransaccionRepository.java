@@ -2,8 +2,6 @@ package com.nucleo.financiero.dominio.repositorios;
 
 import com.nucleo.financiero.dominio.entidades.Categoria.TipoMovimiento;
 import com.nucleo.financiero.dominio.entidades.Transaccion;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,28 +22,11 @@ import java.util.UUID;
  * @version 1.1.0
  */
 @Repository
-public interface TransaccionRepository extends JpaRepository<Transaccion, UUID> {
+public interface TransaccionRepository extends JpaRepository<Transaccion, UUID>,
+    org.springframework.data.jpa.repository.JpaSpecificationExecutor<Transaccion> {
 
     List<Transaccion> findTop10ByUsuarioIdOrderByFechaTransaccionDesc(UUID usuarioId);
-    
-    @Query("""
-        SELECT t FROM Transaccion t
-        JOIN FETCH t.categoria c
-        WHERE t.usuarioId = :usuarioId
-          AND (CAST(:tipo AS string) IS NULL OR t.tipo = :tipo)
-          AND (CAST(:categoriaId AS uuid) IS NULL OR c.id = :categoriaId)
-          AND (CAST(:desde AS localdatetime) IS NULL OR t.fechaTransaccion >= :desde)
-          AND (CAST(:hasta AS localdatetime) IS NULL OR t.fechaTransaccion <= :hasta)
-        ORDER BY t.fechaTransaccion DESC
-        """)
-    Page<Transaccion> buscarConFiltros(
-            @Param("usuarioId") UUID usuarioId,
-            @Param("tipo") TipoMovimiento tipo,
-            @Param("categoriaId") UUID categoriaId,
-            @Param("desde") LocalDateTime desde,
-            @Param("hasta") LocalDateTime hasta,
-            Pageable paginacion
-    );
+
 
     @Query("""
         SELECT COALESCE(SUM(t.monto), 0)

@@ -26,7 +26,7 @@ public interface ServicioAuditoriaAcceso {
      * @param EstadoAcceso Estado del login del usuario
      * @return El registro persistido en formato DTO.
      */
-    EventoAccesoDTO registrarAcceso(EventoAccesoDTO dto, EstadoEvento estado);
+    EventoAccesoDTO registrarAcceso(EventoAccesoDTO dto);
 
     /**
      * Recupera una lista paginada de todos los accesos registrados.

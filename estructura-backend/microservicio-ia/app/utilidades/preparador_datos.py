@@ -199,7 +199,7 @@ def filtrar_por_categoria(df: pd.DataFrame, categoria: str) -> pd.DataFrame:
 def agrupar_por_mes(df: pd.DataFrame, tipo: Optional[TipoMovimiento] = None) -> pd.DataFrame:
     """
     Agrupa transacciones por año-mes y suma los montos.
-    Fundamental para análisis de estacionalidad y predicción.
+    Fundamental para análisis estadístico y predicción.
 
     Parámetros
     ----------
@@ -259,7 +259,6 @@ def agrupar_por_categoria(
 def calcular_estadisticas_basicas(df: pd.DataFrame) -> Dict[str, float]:
     """
     Calcula métricas financieras descriptivas del DataFrame completo.
-    Resultado usado como base del InsightAnalitico.
 
     Retorna
     -------

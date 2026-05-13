@@ -73,7 +73,7 @@ public class CodigoVerificacion {
 
     // ─── Enum ────────────────────────────────────────────────────────────────
     public enum TipoVerificacion {
-        EMAIL, SMS
+        EMAIL, SMS, WHATSAPP
     }
 
     public enum PropositoCodigo {

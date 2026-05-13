@@ -88,6 +88,11 @@ class Configuracion(BaseSettings):
         description="Creatividad del coach (0=preciso, 1=creativo).",
     )
 
+    # ── Control de Costos ──────────────────────────────────────────────────────
+    gemini_costo_input_1m: float = 0.35   # USD por 1M tokens (Flash 1.5)
+    gemini_costo_output_1m: float = 1.05  # USD por 1M tokens (Flash 1.5)
+    umbral_alerta_costo_diario_usd: float = 2.70 # S/10 aprox
+
     # ══════════════════════════════════════════════════════════════════════════
     # CIRCUIT BREAKER (Resilience4j style)
     # ══════════════════════════════════════════════════════════════════════════
@@ -166,6 +171,10 @@ class Configuracion(BaseSettings):
         description="Factor de prudencia aplicado al ahorro proyectado.",
     )
 
+    # ── Cuotas Módulo Clasificación (On-the-Fly) ──────────────────────────────
+    cuota_clasif_premium_semanal: int = 20
+    cuota_clasif_pro_semanal: int = 10
+
     # ── Módulo 8: Presupuesto Dinámico ────────────────────────────────────────
     dias_semana_presupuesto: int = Field(
         default=7,
@@ -184,6 +193,7 @@ class Configuracion(BaseSettings):
     # ── Colas RabbitMQ ────────────────────────────────────────────────────────
     # Entrada
     cola_ia_procesamiento:   str = "cola.ia.procesamiento"
+    cola_ia_clasificacion:   str = "q.ia.clasificacion"  # Nueva cola para On-the-Fly
     exchange_ia:             str = "exchange.ia"
  
     # ── Colas de salida hacia Dashboard ──────────────────────────────────────

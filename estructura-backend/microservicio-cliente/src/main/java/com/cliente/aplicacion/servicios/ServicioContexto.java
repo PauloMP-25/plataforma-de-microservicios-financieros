@@ -27,6 +27,15 @@ public interface ServicioContexto {
     ContextoEstrategicoIADTO obtenerContextoFinanciero(UUID usuarioId);
 
     /**
+     * Retorna el contexto completo consolidado del usuario (Perfil, Metas, Límites).
+     * Utilizado por el ms-nucleo-financiero para enriquecer solicitudes de IA.
+     * 
+     * @param usuarioId ID del usuario
+     * @return DTO con toda la información de contexto.
+     */
+    com.libreria.comun.dtos.ContextoUsuarioDTO obtenerContextoCompleto(UUID usuarioId);
+
+    /**
      * Refresca asíncronamente el contexto de la IA en Redis.
      * 
      * @param usuarioId ID del usuario

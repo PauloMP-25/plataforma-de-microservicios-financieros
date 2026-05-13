@@ -42,7 +42,7 @@ public class ServicioSeguridadAuditoriaImpl implements ServicioSeguridadAuditori
     @Value("${auditoria.seguridad.ventana-minutos:10}")
     private long ventanaMinutos;
 
-    @Value("${auditoria.seguridad.bloqueo-minutos:30}")
+    @Value("${auditoria.seguridad.bloqueo-minutos:60}")
     private long bloqueoMinutos;
 
     @SuppressWarnings("null")

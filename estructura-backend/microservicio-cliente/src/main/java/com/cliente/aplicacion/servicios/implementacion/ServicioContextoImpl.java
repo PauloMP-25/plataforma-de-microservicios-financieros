@@ -7,7 +7,6 @@ import com.cliente.dominio.repositorios.LimiteGastoRepositorio;
 import com.cliente.dominio.repositorios.MetaAhorroRepositorio;
 import com.cliente.dominio.repositorios.PerfilFinancieroRepositorio;
 
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,47 +45,48 @@ public class ServicioContextoImpl implements ServicioContexto {
     public ContextoEstrategicoIADTO obtenerContextoFinanciero(UUID usuarioId) {
         log.debug("Construyendo contexto estratégico ligero para IA, usuarioId={}", usuarioId);
 
-        // 1. Nombres
+        // 1. Obtener el contexto completo para evitar múltiples queries dispersas
+        com.libreria.comun.dtos.ContextoUsuarioDTO completo = obtenerContextoCompleto(usuarioId);
+
+        // 2. Recuperar nombres (esto no está en el DTO común pero es necesario para el
+        // saludo)
         String nombres = repoDatosPersonales.findByUsuarioId(usuarioId)
                 .map(com.cliente.dominio.entidades.DatosPersonales::getNombres)
                 .orElse("Usuario");
 
-        // 2. Perfil Financiero (Ocupación, Ingreso, Tono IA)
-        String ocupacion = "No especificado";
-        java.math.BigDecimal ingresoMensual = java.math.BigDecimal.ZERO;
-        String tonoIA = "Amigable"; // Default
+        // 3. Extraer datos del perfil
+        var perfil = completo.getPerfilFinanciero();
+        String ocupacion = (perfil != null && perfil.getOcupacion() != null) ? perfil.getOcupacion()
+                        : "No especificado";
+        java.math.BigDecimal ingresoMensual = (perfil != null && perfil.getIngresoMensual() != null)
+                        ? perfil.getIngresoMensual()
+                        : java.math.BigDecimal.ZERO;
+        String tonoIA = (perfil != null && perfil.getTonoIA() != null) ? perfil.getTonoIA() : "Amigable";
 
-        java.util.Optional<com.cliente.dominio.entidades.PerfilFinanciero> perfilOpt = repoPerfilFinanciero
-                .findByUsuarioId(usuarioId);
-        if (perfilOpt.isPresent()) {
-            com.cliente.dominio.entidades.PerfilFinanciero p = perfilOpt.get();
-            if (p.getOcupacion() != null)
-                ocupacion = p.getOcupacion();
-            if (p.getIngresoMensual() != null)
-                ingresoMensual = p.getIngresoMensual();
-            if (p.getTonoIA() != null)
-                tonoIA = p.getTonoIA();
-        }
-
-        // 3. Meta con mayor progreso
+        // 4. Determinar la meta principal (la de mayor progreso)
         java.math.BigDecimal porcentajeMeta = java.math.BigDecimal.ZERO;
         String nombreMeta = "Sin metas activas";
 
-        List<com.cliente.dominio.entidades.MetaAhorro> metas = repoMetaAhorro.findMetasActivasOrdenadas(usuarioId);
-        if (!metas.isEmpty()) {
-            com.cliente.dominio.entidades.MetaAhorro mejorMeta = metas.stream()
-                    .max(java.util.Comparator
-                            .comparing(com.cliente.dominio.entidades.MetaAhorro::calcularPorcentajeProgreso))
-                    .orElse(metas.get(0));
+        if (completo.getMetas() != null && !completo.getMetas().isEmpty()) {
+                var mejorMeta = completo.getMetas().stream()
+                                .filter(m -> m.getMontoObjetivo() != null
+                                                && m.getMontoObjetivo().compareTo(java.math.BigDecimal.ZERO) > 0)
+                                .max(java.util.Comparator.comparing(m -> m.getMontoActual()
+                                                .multiply(new java.math.BigDecimal("100"))
+                                                .divide(m.getMontoObjetivo(), 2, java.math.RoundingMode.HALF_UP)))
+                                .orElse(null);
 
-            porcentajeMeta = mejorMeta.calcularPorcentajeProgreso();
-            nombreMeta = mejorMeta.getNombre();
-        }
+            if (mejorMeta != null) {
+                    porcentajeMeta = mejorMeta.getMontoActual().multiply(new java.math.BigDecimal("100"))
+                                    .divide(mejorMeta.getMontoObjetivo(), 2, java.math.RoundingMode.HALF_UP);
+                    nombreMeta = mejorMeta.getNombre();
+            }
+    }
 
-        // 4. Límite de Gasto (porcentaje de alerta)
-        Integer alertaGasto = repoLimiteGasto.findByUsuarioIdAndActivoTrue(usuarioId)
-                .map(com.cliente.dominio.entidades.LimiteGasto::getPorcentajeAlerta)
-                .orElse(80); // Default 80%
+        // 5. Límite de Gasto
+        Integer alertaGasto = (completo.getLimiteGlobal() != null)
+                        ? completo.getLimiteGlobal().getPorcentajeAlerta()
+                        : 80;
 
         return new ContextoEstrategicoIADTO(
                 nombres,
@@ -96,6 +96,48 @@ public class ServicioContextoImpl implements ServicioContexto {
                 porcentajeMeta,
                 nombreMeta,
                 alertaGasto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public com.libreria.comun.dtos.ContextoUsuarioDTO obtenerContextoCompleto(UUID usuarioId) {
+            log.debug("Consolidando contexto completo para usuarioId={}", usuarioId);
+
+            // 1. Perfil Financiero
+            var perfilDTO = repoPerfilFinanciero.findByUsuarioId(usuarioId)
+                            .map(p -> com.libreria.comun.dtos.ContextoUsuarioDTO.PerfilFinancieroDTO.builder()
+                                            .ocupacion(p.getOcupacion())
+                                            .ingresoMensual(p.getIngresoMensual())
+                                            .tonoIA(p.getTonoIA())
+                                            .nivelRiesgo(p.getEstiloVida())
+                                            .build())
+                            .orElse(null);
+
+            // 2. Metas de Ahorro (Corregido findByUsuarioId)
+            var metasDTO = repoMetaAhorro.findByUsuarioIdOrderByFechaCreacionDesc(usuarioId).stream()
+                            .map(m -> com.libreria.comun.dtos.ContextoUsuarioDTO.MetaAhorroDTO.builder()
+                                            .nombre(m.getNombre())
+                                            .montoObjetivo(m.getMontoObjetivo())
+                                            .montoActual(m.getMontoActual())
+                                            .fechaMeta(m.getFechaLimite() != null ? m.getFechaLimite().toString()
+                                                            : null)
+                                            .build())
+                            .collect(java.util.stream.Collectors.toList());
+
+            // 3. Límite Global
+            var limiteDTO = repoLimiteGasto.findByUsuarioIdAndActivoTrue(usuarioId)
+                            .map(l -> com.libreria.comun.dtos.ContextoUsuarioDTO.LimiteGlobalDTO.builder()
+                                            .montoLimite(l.getMontoLimite())
+                                            .porcentajeAlerta(l.getPorcentajeAlerta())
+                                            .build())
+                            .orElse(null);
+
+            return com.libreria.comun.dtos.ContextoUsuarioDTO.builder()
+                            .idUsuario(usuarioId)
+                            .perfilFinanciero(perfilDTO)
+                            .metas(metasDTO)
+                            .limiteGlobal(limiteDTO)
+                            .build();
     }
 
     @SuppressWarnings("null")

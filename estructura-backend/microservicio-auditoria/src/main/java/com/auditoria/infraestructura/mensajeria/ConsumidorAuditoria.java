@@ -6,7 +6,6 @@ import com.auditoria.aplicacion.servicios.ServicioRegistroAuditoria;
 import com.libreria.comun.dtos.EventoAccesoDTO;
 import com.libreria.comun.dtos.EventoAuditoriaDTO;
 import com.libreria.comun.dtos.EventoTransaccionalDTO;
-import com.libreria.comun.enums.EstadoEvento;
 import com.libreria.comun.mensajeria.NombresCola;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,10 +43,10 @@ public class ConsumidorAuditoria {
      * @param evento Contrato de datos de acceso de la librería común.
      */
     @RabbitListener(queues = NombresCola.AUDITORIA_ACCESOS, errorHandler = "manejadorErroresRabbit")
-    public void procesarAcceso(EventoAccesoDTO evento, EstadoEvento estado) {
+    public void procesarAcceso(EventoAccesoDTO evento) {
         log.info("[RABBIT-ACCESO] Recibido evento para usuario: {}", evento.usuarioId());
         // Pasamos el evento directamente al servicio.
-        servicioAcceso.registrarAcceso(evento, estado);
+        servicioAcceso.registrarAcceso(evento);
     }
 
     /**

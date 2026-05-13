@@ -31,8 +31,8 @@ public class ControladorAutenticacion {
      */
     @PutMapping("/activar/{usuarioId}")
     public ResponseEntity<ResultadoApi<String>> activarCuenta(
-            @PathVariable UUID usuarioId, 
-            @RequestParam String codigoOtp,
+            @PathVariable UUID usuarioId,
+            @RequestParam(required = false) String codigoOtp,
             @RequestParam(required = false) String telefono, 
             HttpServletRequest request) {
         

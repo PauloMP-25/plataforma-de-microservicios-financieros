@@ -21,7 +21,19 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Slf4j
-public class SmsServiceImpl implements ISmsService {
+public class SmsServiceImpl implements ISmsService, com.mensajeria.aplicacion.servicios.CanalNotificacionStrategy {
+
+    @Override
+    public void enviar(String destinatario, java.util.Map<String, Object> variables) {
+        String codigo = (String) variables.get("codigo");
+        this.enviarCodigoVerificacion(destinatario, codigo);
+    }
+
+    @Override
+    public boolean soporta(com.mensajeria.aplicacion.servicios.TipoNotificacion tipo) {
+        return tipo == com.mensajeria.aplicacion.servicios.TipoNotificacion.SMS;
+    }
+
 
     /** SID de la cuenta Twilio, leído desde la variable de entorno {@code TWILIO_ACCOUNT_SID}. */
     @Value("${twilio.account.sid}")

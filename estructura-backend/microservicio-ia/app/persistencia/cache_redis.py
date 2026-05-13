@@ -73,3 +73,24 @@ class CacheRedis:
             self._client.delete(f"ia:consejo:{hash_datos}")
         except Exception as e:
             logger.warning(f"[CACHE-REDIS] Error al eliminar: {e}")
+
+    # ── Métodos Genéricos ──────────────────────────────────────────────────────
+
+    def obtener(self, clave: str) -> Optional[str]:
+        """Obtiene un valor plano por su clave."""
+        if not self._client:
+            return None
+        try:
+            return self._client.get(clave)
+        except Exception as e:
+            logger.warning(f"[CACHE-REDIS] Error al obtener clave {clave}: {e}")
+            return None
+
+    def guardar(self, clave: str, valor: any, ex: int = None):
+        """Guarda un valor plano con tiempo de expiración opcional."""
+        if not self._client:
+            return
+        try:
+            self._client.set(clave, valor, ex=ex)
+        except Exception as e:
+            logger.warning(f"[CACHE-REDIS] Error al guardar clave {clave}: {e}")

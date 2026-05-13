@@ -42,10 +42,6 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 # ══════════════════════════════════════════════════════════════════════════════
 # ENUMERACIONES COMPARTIDAS
 # ══════════════════════════════════════════════════════════════════════════════
-
-# ══════════════════════════════════════════════════════════════════════════════
-# ENUMERACIONES COMPARTIDAS
-# ══════════════════════════════════════════════════════════════════════════════
  
 class TipoMovimiento(str, Enum):
     """Discrimina si una transacción es un ingreso o un gasto."""
@@ -79,20 +75,16 @@ class EstadoEvento(str, Enum):
  
 class NombreModulo(str, Enum):
     """
-    Identifica el módulo de análisis.
-    Usado para auditoría, logging y routing en el Dashboard.
+    Identifica el módulo de análisis activo.
     """
-    CLASIFICAR = "CLASIFICAR"
+    GASTO_HORMIGA = "GASTO_HORMIGA"
     PREDECIR_GASTOS = "PREDECIR_GASTOS"
-    DETECTAR_ANOMALIAS = "DETECTAR_ANOMALIAS"
-    HABITOS_SEMANA = "HABITOS_SEMANA"
-    OPTIMIZAR_SUSCRIPCIONES = "OPTIMIZAR_SUSCRIPCIONES"
-    CAPACIDAD_AHORRO = "CAPACIDAD_AHORRO"
+    HABITOS_FINANCIEROS = "HABITOS_FINANCIEROS"
     SIMULAR_META = "SIMULAR_META"
-    ESTACIONALIDAD = "ESTACIONALIDAD"
-    PRESUPUESTO_DINAMICO = "PRESUPUESTO_DINAMICO"
-    SIMULAR_ESCENARIO = "SIMULAR_ESCENARIO"
     REPORTE_COMPLETO = "REPORTE_COMPLETO"
+    RETO_AHORRO_DINAMICO = "RETO_AHORRO_DINAMICO"
+    ANALISIS_ESTILO_VIDA = "ANALISIS_ESTILO_VIDA"
+    AUTO_CLASIFICACION = "AUTO_CLASIFICACION"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -105,11 +97,27 @@ class PeticionBase(BaseModel):
     Todos los endpoints heredan de esta clase.
     """
     usuario_id: str = Field(
-        ...,
-        min_length=1,
-        description="UUID o identificador único del usuario universitario.",
-        examples=["550e8400-e29b-41d4-a716-446655440000"],
+        default="N/A", 
+        description="UUID del usuario obtenido del JWT."
     )
+
+class SolicitudClasificacionDTO(BaseModel):
+    """DTO para el flujo de Auto-Clasificación On-the-Fly."""
+    id_temporal: str
+    tipo_movimiento: str  # INGRESO / GASTO
+    etiquetas: Optional[str] = ""
+    notas: Optional[str] = ""
+
+class RespuestaClasificacionDTO(BaseModel):
+    """Respuesta con las 3 sugerencias de la IA."""
+    id_temporal: str
+    sugerencias: List[str]
+    usando_fallback: bool = False
+
+class PeticionConFiltroFecha(PeticionBase, FiltroDeFecha):
+    """
+    Petición estándar para módulos que analizan el historial con filtros temporales.
+    """
     token: str = Field(
         ...,
         min_length=10,
@@ -189,10 +197,13 @@ class PeticionClasificar(PeticionBase):
 class PeticionConFiltroFecha(PeticionBase, FiltroDeFecha):
     """
     Petición estándar para módulos que analizan el historial con filtros temporales.
-    Usada por: PredecirGastos, DetectarAnomalias, OptimizarSuscripciones,
-               CapacidadAhorro, Estacionalidad, PresupuestoDinamico, ReporteCompleto.
+    Usada por: GastoHormiga, PredecirGastos, HabitosFinancieros,
+               ReporteCompleto.
     """
-    pass
+    frecuencia: Optional[str] = Field(
+        default="SEMANAL", 
+        description="Frecuencia para retos: SEMANAL, QUINCENAL, MENSUAL."
+    )
 
 
 # ── Módulo 6: Simulación de Meta de Ahorro ───────────────────────────────────
@@ -306,6 +317,10 @@ class PerfilUsuario(BaseModel):
         default=None,
         description="Nombre del universitario (ej: 'Paulo'). "
                     "Gemini lo usará para personalizar el saludo.",
+    )
+    rol: str = Field(
+        default="FREE",
+        description="Rol del usuario (BASIC, PRO, PREMIUM). Determina la cuota diaria.",
     )
     edad: Optional[int] = Field(
         default=None,

@@ -156,6 +156,25 @@ spring:
           metadata:
             requiere-autenticacion: true
 
+        # ┌─────────────────────────────────────────────────────────┐
+        # │  MICROSERVICIO-IA  (Puerto 8086)                        │
+        # └─────────────────────────────────────────────────────────┘
+        - id: servicio-ia
+          uri: lb://MICROSERVICIO-IA
+          predicates:
+            - Path=/api/v1/ia/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            # Filtro de Cuota Dinámica (Módulo 8)
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 1
+                redis-rate-limiter.burstCapacity: 1
+                key-resolver: "#{@userKeyResolver}"
+          metadata:
+            requiere-autenticacion: true
+
       # ─────────────────────────────────────────────────────────────────────
       # CORS GLOBAL: Aplica a todas las rutas del Gateway
       # ─────────────────────────────────────────────────────────────────────

@@ -60,4 +60,15 @@ public class ControladorInterno {
         log.debug("Solicitud interna de contexto estratégico de IA para usuarioId={}", usuarioId);
         return ResponseEntity.ok(servicio.obtenerContextoFinanciero(usuarioId));
     }
+
+    /**
+     * Retorna el contexto consolidado completo del usuario.
+     * Utilizado por ms-nucleo-financiero.
+     */
+    @GetMapping("/contexto/{usuarioId}")
+    public ResponseEntity<com.libreria.comun.dtos.ContextoUsuarioDTO> obtenerContexto(
+            @PathVariable UUID usuarioId) {
+        log.debug("Solicitud interna de contexto completo para usuarioId={}", usuarioId);
+        return ResponseEntity.ok(servicio.obtenerContextoCompleto(usuarioId));
+    }
 }

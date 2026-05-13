@@ -96,7 +96,7 @@ public class ConfiguracionRabbitBase {
         factory.setConnectionFactory(connectionFactory);
         factory.setMessageConverter(jsonMessageConverter());
         factory.setPrefetchCount(1);
-        factory.setAcknowledgeMode(AcknowledgeMode.AUTO);
+        factory.setAcknowledgeMode(AcknowledgeMode.MANUAL);
         return factory;
     }
 }

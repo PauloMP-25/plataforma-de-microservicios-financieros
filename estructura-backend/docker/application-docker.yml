@@ -73,7 +73,7 @@ eureka:
     eureka-connection-idle-timeout-seconds: 30
   instance:
     hostname: ${EUREKA_INSTANCE_HOSTNAME}
-    prefer-ip-address: false
+    prefer-ip-address: true
     # Heartbeat: cada cuánto el servicio avisa que sigue vivo
     lease-renewal-interval-in-seconds: 10
     # Cuánto espera Eureka antes de marcar el servicio como caído
@@ -109,7 +109,7 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
   level:
     root: INFO
-    org.springframework.web: INFO
-    org.hibernate.SQL: WARN
-    com.netflix.eureka: WARN
-    com.netflix.discovery: WARN
+    "org.springframework.web": INFO
+    "org.hibernate.SQL": WARN
+    "com.netflix.eureka": WARN
+    "com.netflix.discovery": WARN

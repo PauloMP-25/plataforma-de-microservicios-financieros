@@ -18,6 +18,7 @@ from typing import Optional
 
 import pika
 import pika.exceptions
+import asyncio
 from pika import BasicProperties
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.spec import Basic
@@ -28,8 +29,8 @@ from app.modelos.esquemas import (
     RespuestaModulo,
     PeticionConFiltroFecha,  # Usaremos este como DTO genérico para eventos
 )
-from app.servicios.coach_ia import CoachIA
-from app.excepciones import BrokerComunicacionError, ContratoDatosError
+from app.servicios.ia.coach_ia import CoachIA
+from app.utilidades.excepciones import BrokerComunicacionError, ContratoDatosError
 
 logger = logging.getLogger(__name__)
 
@@ -130,16 +131,54 @@ class ConsumidorIA:
             self._canal.queue_declare(queue=cola, durable=True)
             self._canal.queue_bind(queue=cola, exchange=cfg.exchange_dashboard, routing_key=cola)
         
-        # ── Registrar callback ────────────────────────────────────────────────
+        # ── Cola de Clasificación On-the-Fly ──────────────────────────────────
+        self._canal.queue_declare(queue=cfg.cola_ia_clasificacion, durable=True)
+        self._canal.queue_bind(
+            queue=cfg.cola_ia_clasificacion,
+            exchange=cfg.exchange_ia,
+            routing_key=cfg.cola_ia_clasificacion
+        )
+
+        # ── Registrar callbacks ───────────────────────────────────────────────
         self._canal.basic_consume(queue=cfg.cola_ia_procesamiento, on_message_callback=self._callback)
+        self._canal.basic_consume(queue=cfg.cola_ia_clasificacion, on_message_callback=self._callback_clasificacion)
 
         logger.info(
-            "[CONSUMIDOR-v3] Topología declarada | "
-            "entrada: %s | salida: %s / %s",
-            cfg.cola_ia_procesamiento,
-            cfg.cola_dashboard_consejos,
-            cfg.cola_dashboard_modulos,
+            "[CONSUMIDOR-v4] Topología declarada | "
+            "entrada: %s, %s | salida: %s",
+            cfg.cola_ia_procesamiento, cfg.cola_ia_clasificacion,
+            cfg.exchange_dashboard
         )
+
+    def _callback_clasificacion(self, ch, method, properties, body):
+        """Procesa solicitudes de clasificación en tiempo real (Sincronizado con asyncio)."""
+        try:
+            datos = json.loads(body)
+            from app.modelos.esquemas import SolicitudClasificacionDTO, NombreModulo
+            solicitud = SolicitudClasificacionDTO(**datos)
+            
+            # 1. Verificar Cuota (Asumimos el rol PRO para usuarios habilitados en esta cola)
+            # Nota: En una implementación real, el mensaje debería traer el rol del usuario.
+            rol_usuario = datos.get("rol", "PRO") 
+            self._coach._verificar_cuota_diaria(datos.get("usuario_id", "N/A"), NombreModulo.AUTO_CLASIFICACION, rol_usuario)
+            
+            from app.servicios.ia.clasificador_ia import ClasificadorIAService
+            clasificador = ClasificadorIAService()
+            
+            # 2. Ejecutar la corrutina asíncrona de forma síncrona
+            respuesta = asyncio.run(clasificador.clasificar(solicitud))
+            
+            ch.basic_publish(
+                exchange=self.EXCHANGE_IA,
+                routing_key="ia.clasificacion.resultado",
+                body=json.dumps(respuesta.model_dump())
+            )
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+            logger.info(f"[CLASIFICADOR] Sugerencias enviadas para ID: {solicitud.id_temporal}")
+            
+        except Exception as e:
+            logger.error(f"[CONSUMIDOR] Error en clasificación: {e}")
+            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
 
     #-- Cierre de conexión ───────────────────────────────────────────────────
     def _cerrar(self) -> None:

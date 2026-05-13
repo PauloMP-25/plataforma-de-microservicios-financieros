@@ -8,6 +8,14 @@
 spring:
   application:
     name: microservicio-mensajeria
+  # ── Redis ────────────────────────────────────────────────────────────────────
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:redis}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      password: ${SPRING_REDIS_PASSWORD:}
+      connect-timeout: 2s
+      timeout: 1s
   # ── Base de datos ────────────────────────────────────────────────────────────
   datasource:
     url: ${SPRING_DATASOURCE_URL}
@@ -110,7 +118,27 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
   level:
     root: INFO
-    org.springframework.web: INFO
-    org.hibernate.SQL: WARN
-    com.netflix.eureka: DEBUG
-    com.netflix.discovery: DEBUG
+    "org.springframework.web": INFO
+    "org.hibernate.SQL": WARN
+    "com.netflix.eureka": WARN
+    "com.netflix.discovery": WARN
+
+# ── Seguridad JWT (Configuración Luka) ─────────────────────────────────────────
+luka:
+  jwt:
+    clave-secreta: ${JWT_SECRET_KEY}
+
+# ── Notificaciones Externas ────────────────────────────────────────────────────
+twilio:
+  account:
+    sid: ${TWILIO_ACCOUNT_SID}
+  auth:
+    token: ${TWILIO_AUTH_TOKEN}
+  phone:
+    number: ${TWILIO_PHONE_NUMBER}
+
+whatsapp:
+  api:
+    token: ${WHATSAPP_API_TOKEN}
+    phone-number-id: ${WHATSAPP_PHONE_ID}
+    version: ${WHATSAPP_API_VERSION:v19.0}

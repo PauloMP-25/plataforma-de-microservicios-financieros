@@ -54,11 +54,14 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
                 .requestMatchers(HttpMethod.POST,
                         "/api/v1/auth/login",
                         "/api/v1/auth/registrar",
-                        "/api/v1/auth/recuperar-password",
-                        "/api/v1/auth/reset-password"
+                        "/api/v1/auth/recuperar-solicitar",
+                        "/api/v1/auth/recuperar-confirmar"
                 ).permitAll()
-                // Endpoint de Activación
-                .requestMatchers(HttpMethod.PUT, "/api/v1/auth/activar/**").permitAll()
+                // Endpoint de Activación y Sincronización Interna
+                .requestMatchers(HttpMethod.PUT, 
+                        "/api/v1/auth/activar/**",
+                        "/api/v1/datos-personales/**"
+                ).permitAll()
                 // Cualquier otra ruta requiere autenticación
                 .anyRequest().authenticated()
         );

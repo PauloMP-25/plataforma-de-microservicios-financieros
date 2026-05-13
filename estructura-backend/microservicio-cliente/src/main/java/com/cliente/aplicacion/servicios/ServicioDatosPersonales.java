@@ -48,10 +48,9 @@ public interface ServicioDatosPersonales {
     public RespuestaDatosPersonales consultar(UUID usuarioIdRuta, UUID usuarioIdToken);
 
     /**
-     * Convierte una entidad al DTO de respuesta.
-     *
-     * @param datos Información del cliente
-     * @return RespuestaDatosPersonales DTO de respuesta.
+     * Actualiza solo el teléfono del usuario (uso interno para sincronización OTP).
      */
+    void actualizarTelefono(UUID usuarioId, String telefono);
+
     public RespuestaDatosPersonales convertirADTO(DatosPersonales datos);
 }

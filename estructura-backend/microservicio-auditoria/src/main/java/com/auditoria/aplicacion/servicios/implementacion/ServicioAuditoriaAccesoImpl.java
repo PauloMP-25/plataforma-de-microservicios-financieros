@@ -37,7 +37,7 @@ public class ServicioAuditoriaAccesoImpl implements ServicioAuditoriaAcceso {
 
     @Override
     @Transactional
-    public EventoAccesoDTO registrarAcceso(EventoAccesoDTO dto, EstadoEvento estado) {
+    public EventoAccesoDTO registrarAcceso(EventoAccesoDTO dto) {
         // Idempotencia: Verificar si el evento ya fue procesado
         if (dto.correlationId() != null && repositorio.existsByCorrelationId(dto.correlationId())) {
             log.warn("[AUDITORIA-IDEMPOTENCIA] Evento ya procesado, ignorando: {}", dto.correlationId());

@@ -97,4 +97,13 @@ public interface IServicioAutenticacion {
      * @param solicitud DTO con el medio de envío.
      */
     void solicitarOtpActivacion(UUID usuarioId, SolicitudGenerarOtp solicitud);
+
+    /**
+     * Sincroniza el teléfono verificado de un usuario, usualmente después de una
+     * validación OTP exitosa en el ms-mensajeria.
+     * 
+     * @param usuarioId ID del usuario.
+     * @param telefono  Número de teléfono verificado.
+     */
+    void sincronizarTelefono(UUID usuarioId, String telefono);
 }

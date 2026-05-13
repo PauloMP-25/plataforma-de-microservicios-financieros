@@ -26,6 +26,8 @@ volumes:
     driver: local
   vol-postgres-mensajeria:
     driver: local
+  vol-postgres-ia:
+    driver: local
   vol-rabbitmq-data:
     driver: local
   vol-rabbitmq-logs:
@@ -158,6 +160,21 @@ services:
       POSTGRES_DB: ${DB_MENSAJERIA_NAME:-db_microservicio_mensajeria}
     volumes:
       - vol-postgres-mensajeria:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  postgres-ia:
+    <<: *postgres-common
+    container_name: luka-postgres-ia
+    hostname: postgres-ia
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
+      POSTGRES_DB: ${DB_IA_NAME:-db_microservicio_ia}
+    volumes:
+      - vol-postgres-ia:/var/lib/postgresql/data
     deploy:
       resources:
         limits:
@@ -298,6 +315,9 @@ services:
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
       SPRING_RABBITMQ_VIRTUAL_HOST: ${RABBITMQ_VHOST:-/}
       RABBITMQ_CONNECTION_NAME: LUKA-MS-USUARIO
+      # Redis
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
       # JWT
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       # JVM
@@ -354,6 +374,9 @@ services:
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
       SPRING_RABBITMQ_VIRTUAL_HOST: ${RABBITMQ_VHOST:-/}
       RABBITMQ_CONNECTION_NAME: LUKA-MS-CLIENTE
+      # Redis
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
       # JWT
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
@@ -409,6 +432,11 @@ services:
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
       SPRING_RABBITMQ_VIRTUAL_HOST: ${RABBITMQ_VHOST:-/}
       RABBITMQ_CONNECTION_NAME: LUKA-MS-AUDITORIA
+      # Redis
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      # JWT
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
@@ -461,6 +489,14 @@ services:
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
       SPRING_RABBITMQ_VIRTUAL_HOST: ${RABBITMQ_VHOST:-/}
       RABBITMQ_CONNECTION_NAME: LUKA-MS-MENSAJERIA
+      # Redis
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      # JWT
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      # WhatsApp
+      WHATSAPP_API_TOKEN: ${WHATSAPP_API_TOKEN}
+      WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
       JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
@@ -547,6 +583,8 @@ services:
     networks:
       - backend-network
     depends_on:
+      postgres-ia:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
       eureka-server:
@@ -575,6 +613,10 @@ services:
       RABBITMQ_CONNECTION_NAME: luka-ms-ia
       RABBITMQ_HEARTBEAT: 60
       RABBITMQ_TIMEOUT: 300
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
 
       # ── URLs de microservicios Java ──────────────────────────────────────
       URL_NUCLEO_FINANCIERO: http://ms-nucleo-financiero:8085
@@ -589,6 +631,13 @@ services:
       MESES_HISTORIAL: 6
       UMBRAL_GASTO_HORMIGA: 30.0
       UMBRAL_ANOMALIA: 2.0
+
+      # ── Base de Datos (Persistencia IA / Caché L2) ────────────────────────
+      DB_HOST: postgres-ia
+      DB_PORT: 5432
+      DB_USUARIO: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
+      DB_NOMBRE: ${DB_IA_NAME:-db_microservicio_ia}
 
       # ── Python ───────────────────────────────────────────────────────────
       PYTHONUNBUFFERED: "1"
@@ -653,6 +702,9 @@ services:
       SPRING_MAIN_WEB_APPLICATION_TYPE: reactive
       # JWT para validación en el Gateway
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       # CORS (ajusta los orígenes permitidos en producción)
       SPRING_CLOUD_GATEWAY_GLOBALCORS_CORSCONFIGURATIONS_[/**]_ALLOWEDORIGINS: "*"
       SPRING_CLOUD_GATEWAY_GLOBALCORS_CORSCONFIGURATIONS_[/**]_ALLOWEDMETHODS: "GET,POST,PUT,DELETE,OPTIONS,PATCH"

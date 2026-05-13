@@ -8,7 +8,7 @@
 
 spring:
   application:
-    name: microservicio-financiero
+    name: microservicio-nucleo-financiero
   # ── Base de datos ────────────────────────────────────────────────────────────
   datasource:
     url: ${SPRING_DATASOURCE_URL}
@@ -111,7 +111,12 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
   level:
     root: INFO
-    org.springframework.web: INFO
-    org.hibernate.SQL: WARN
-    com.netflix.eureka: WARN
-    com.netflix.discovery: WARN
+    "org.springframework.web": INFO
+    "org.hibernate.SQL": WARN
+    "com.netflix.eureka": WARN
+    "com.netflix.discovery": WARN
+
+# ── Seguridad JWT (Configuración Luka) ─────────────────────────────────────────
+luka:
+  jwt:
+    clave-secreta: ${JWT_SECRET_KEY}

@@ -51,7 +51,11 @@ public class ServicioRegistroAuditoriaImpl implements ServicioRegistroAuditoria 
     @Override
     @Transactional(readOnly = true)
     public Page<RespuestaAuditoriaDetalladoDTO> listarRegistrosDetallados(String modulo, Pageable paginacion) {
-        Page<RegistroAuditoria> entidades = repositorioAuditoria.buscarPorFiltros(modulo, paginacion);
+        // Usamos Specification Pattern para filtrado dinámico desacoplado
+        @SuppressWarnings("null")
+        Page<RegistroAuditoria> entidades = repositorioAuditoria.findAll(
+                com.auditoria.dominio.especificaciones.AuditoriaSpecs.registroPorModulo(modulo),
+                paginacion);
 
         return entidades.map(this::convertirARespuestaDetallada);
     }
