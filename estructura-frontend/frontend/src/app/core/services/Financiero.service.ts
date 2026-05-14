@@ -26,14 +26,14 @@ export class FinancieroService {
     if (mes)  params = params.set('mes',  mes);
     if (anio) params = params.set('anio', anio);
  
-    return this.http.get<ResumenFinancieroDTO>(`${this.baseTransacciones}/transacciones/resumen`, { params });
+    return this.http.get<ResumenFinancieroDTO>(`${this.baseTransacciones}/resumen`, { params });
   }
  
   // ── Categorías ──
   getCategorias(tipo?: TipoMovimiento): Observable<CategoriaDTO[]> {
     let params = new HttpParams();
     if (tipo) params = params.set('tipo', tipo);
-    return this.http.get<CategoriaDTO[]>(`${this.baseCategorias}/categorias`, { params });
+    return this.http.get<CategoriaDTO[]>(this.baseCategorias, { params });
   }
  
   cargarResumen(): void {
