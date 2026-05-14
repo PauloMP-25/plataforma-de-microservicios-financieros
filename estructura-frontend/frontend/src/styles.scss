@@ -182,3 +182,23 @@ body {
 .anim-fade-up   { animation: fadeInUp 0.5s ease both; }
 .anim-float     { animation: float 3s ease-in-out infinite; }
 .anim-pulse     { animation: pulse-soft 2s ease-in-out infinite; }
+
+/* ═══════════════════════════════════════════
+   TEMA CLARO - Variables alternativas
+   Se activa cuando body tiene la clase .tema-claro
+   ═══════════════════════════════════════════ */
+body.tema-claro {
+  --bg-body:              #F5F6FF;
+  --bg-card:              #FFFFFF;
+  --bg-sidebar:           #FFFFFF;
+  --text-primary:         #1E2340;
+  --text-secondary:       #6B7280;
+  --text-muted:           #9CA3AF;
+  --border-color:         #E2E5F1;
+  --shadow-sm:            0 2px 8px rgba(91,106,240,0.06);
+  --shadow-md:            0 4px 20px rgba(91,106,240,0.1);
+  --shadow-lg:            0 8px 40px rgba(91,106,240,0.14);
+
+  /* Scrollbar claro */
+  &::-webkit-scrollbar-thumb { background: #D1D5E8; }
+}
