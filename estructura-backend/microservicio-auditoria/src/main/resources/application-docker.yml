@@ -9,6 +9,10 @@
 spring:
   application:
     name: microservicio-auditoria
+
+server:
+  port: 8082
+
   # ── Redis ────────────────────────────────────────────────────────────────────
   data:
     redis:

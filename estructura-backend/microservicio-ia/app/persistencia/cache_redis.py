@@ -19,6 +19,7 @@ class CacheRedis:
                 port=config.redis_port,
                 db=config.redis_db,
                 password=config.redis_password or None,
+                ssl=config.redis_ssl,
                 decode_responses=True
             )
             self._client.ping()

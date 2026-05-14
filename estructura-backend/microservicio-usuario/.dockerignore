@@ -1,0 +1,14 @@
+﻿target/
+*.jar
+*.war
+*.ear
+.mvn/
+mvnw
+mvnw.cmd
+.git/
+.gitignore
+.vscode/
+.idea/
+*.bak
+*.old
+src/test/

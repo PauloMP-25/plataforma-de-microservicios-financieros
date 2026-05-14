@@ -15,10 +15,13 @@ spring:
   # ─────────────────────────────────────────────────────────────────────────
   data:
     redis:
-      host: ${REDIS_HOST:redis}
+      host: ${REDIS_HOST:trusting-arachnid-122931.upstash.io}
       port: ${REDIS_PORT:6379}
-      connect-timeout: 2s
-      timeout: 1s
+      password: ${REDIS_PASSWORD:gQAAAAAAAeAzAAIgcDE2YjMzMzJjOGNhNGQ0ZGJjYjdlZjllYzcyODliOTg0MA}
+      connect-timeout: 5s
+      timeout: 3s
+      ssl:
+        enabled: true
 
   # ═══════════════════════════════════════════════════════════════════════════
   # SPRING CLOUD GATEWAY — CONFIGURACIÓN CENTRAL

@@ -1,0 +1,39 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+#  LUKA APP — .dockerignore (Microservicio IA)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Entornos virtuales
+venv/
+env/
+.env
+.venv/
+
+# Testing y Cobertura
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+pytest.ini
+resultado_test.txt
+
+# Caché de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Documentación y otros
+docs/
+Readme.md
+*.bak
+*.old
+
+# IDEs
+.vscode/
+.idea/
+.git/
+.gitignore
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db

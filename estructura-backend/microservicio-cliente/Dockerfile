@@ -60,10 +60,10 @@ COPY --from=builder --chown=lukaapp:lukaapp /build/extracted/application/ ./
 USER lukaapp
 
 # Puerto expuesto (cada servicio puede sobreescribirlo con --build-arg)
-ARG APP_PORT=8080
+ARG APP_PORT=8081
+ENV APP_PORT=${APP_PORT}
 EXPOSE ${APP_PORT}
 
-# Health check interno del contenedor
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:${APP_PORT}/actuator/health || exit 1
 

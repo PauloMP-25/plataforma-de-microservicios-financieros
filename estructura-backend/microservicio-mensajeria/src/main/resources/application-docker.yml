@@ -8,6 +8,10 @@
 spring:
   application:
     name: microservicio-mensajeria
+
+server:
+  port: 8084
+
   # ── Redis ────────────────────────────────────────────────────────────────────
   data:
     redis:
@@ -18,9 +22,9 @@ spring:
       timeout: 1s
   # ── Base de datos ────────────────────────────────────────────────────────────
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://ep-super-king-aqa9cmhx-pooler.c-8.us-east-1.aws.neon.tech/db_microservicio_mensajeria?sslmode=require}
+    username: ${SPRING_DATASOURCE_USERNAME:neondb_owner}
+    password: ${SPRING_DATASOURCE_PASSWORD:npg_fRA6mI4navZs}
     driver-class-name: org.postgresql.Driver
     hikari:
       # Pool de conexiones optimizado para contenedores

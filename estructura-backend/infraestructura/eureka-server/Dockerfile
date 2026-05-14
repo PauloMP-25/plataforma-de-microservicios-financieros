@@ -55,7 +55,7 @@ COPY --from=builder --chown=lukaapp:lukaapp /build/extracted/application/ ./
 USER lukaapp
 
 # Puerto expuesto (cada servicio puede sobreescribirlo con --build-arg)
-ARG APP_PORT=8080
+ARG APP_PORT=8761
 EXPOSE ${APP_PORT}
 
 # Health check interno del contenedor

@@ -9,6 +9,10 @@
 spring:
   application:
     name: microservicio-nucleo-financiero
+
+server:
+  port: 8085
+
   # ── Base de datos ────────────────────────────────────────────────────────────
   datasource:
     url: ${SPRING_DATASOURCE_URL}

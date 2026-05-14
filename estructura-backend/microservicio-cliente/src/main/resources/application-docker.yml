@@ -9,11 +9,15 @@
 spring:
   application:
     name: microservicio-cliente
+
+server:
+  port: 8083
+
   # ── Base de datos ────────────────────────────────────────────────────────────
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://ep-super-king-aqa9cmhx-pooler.c-8.us-east-1.aws.neon.tech/db_microservicio_cliente?sslmode=require}
+    username: ${SPRING_DATASOURCE_USERNAME:neondb_owner}
+    password: ${SPRING_DATASOURCE_PASSWORD:npg_fRA6mI4navZs}
     driver-class-name: org.postgresql.Driver
     hikari:
       # Pool de conexiones optimizado para contenedores
@@ -66,16 +70,16 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE}
-    enabled: true
-    register-with-eureka: true
-    fetch-registry: true
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka}
+    enabled: ${EUREKA_ENABLED:true}
+    register-with-eureka: ${EUREKA_ENABLED:true}
+    fetch-registry: ${EUREKA_ENABLED:true}
     # Intervalo de refresco del registro (en segundos)
     registry-fetch-interval-seconds: 10
     eureka-connection-idle-timeout-seconds: 30
   instance:
-    hostname: ${EUREKA_INSTANCE_HOSTNAME}
-    prefer-ip-address: true
+    hostname: ${EUREKA_INSTANCE_HOSTNAME:localhost}
+    prefer-ip-address: ${EUREKA_INSTANCE_PREFER_IP_ADDRESS:false}
     # Heartbeat: cada cuánto el servicio avisa que sigue vivo
     lease-renewal-interval-in-seconds: 10
     # Cuánto espera Eureka antes de marcar el servicio como caído

@@ -217,15 +217,16 @@ class Configuracion(BaseSettings):
     db_port: int = 5432
     db_usuario: str = "postgres"
     db_password: str = "postgres"
-    db_nombre: str = "luka_ia"
+    db_nombre: str = "db_microservicio_ia"
 
     # ══════════════════════════════════════════════════════════════════════════
     # REDIS (Caché de Contexto IA)
     # ══════════════════════════════════════════════════════════════════════════
-    redis_host: str = "localhost"
+    redis_host: str = "trusting-arachnid-122931.upstash.io"
     redis_port: int = 6379
     redis_db: int = 0
-    redis_password: str = ""
+    redis_password: str = "gQAAAAAAAeAzAAIgcDE2YjMzMzJjOGNhNGQ0ZGJjYjdlZjllYzcyODliOTg0MA"
+    redis_ssl: bool = True
     redis_ttl_segundos: int = 3600  # 1 hora por defecto
 
     # ══════════════════════════════════════════════════════════════════════════
