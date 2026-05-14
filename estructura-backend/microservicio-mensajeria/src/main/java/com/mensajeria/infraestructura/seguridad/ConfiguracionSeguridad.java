@@ -5,6 +5,7 @@ import com.libreria.comun.seguridad.FiltroJwt;
 import com.libreria.comun.seguridad.PuntoEntradaJwt;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -55,17 +56,27 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
      */
     @Bean
     public SecurityFilterChain cadenaFiltrosSeguridad(HttpSecurity http) throws Exception {
-        return configurarAutorizacion(http)
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/mensajeria/otp/**").permitAll()
-                        .anyRequest().authenticated()
-                        // --- Monitoreo y Documentación (Público) ---
-                        .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers(
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html")
-                        .permitAll())
-                .build();
+        super.configurarAutorizacion(http);
+
+        // 2. Añadimos las reglas específicas del microservicio
+        http.authorizeHttpRequests(auth -> auth
+                // Rutas públicas de este microservicio
+                .requestMatchers("/api/v1/clientes/interno/**").permitAll()
+
+                // --- Monitoreo y Documentación ---
+                // Nota: Tu librería ya tiene esto, pero ponerlo aquí explícitamente no falla
+                // siempre y cuando se haga ANTES del anyRequest.
+                .requestMatchers("/actuator/**", "/error/**").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
+                // Rutas protegidas
+                .requestMatchers(HttpMethod.GET, "/api/v1/clientes/perfil/**").authenticated()
+                .requestMatchers("/api/v1/clientes/metas/**").authenticated()
+
+                // 3. EL CIERRE TOTAL SIEMPRE AL FINAL
+                .anyRequest().authenticated()
+        );
+
+        return http.build();
     }
 }

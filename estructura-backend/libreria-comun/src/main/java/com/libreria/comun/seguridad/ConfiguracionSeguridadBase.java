@@ -37,14 +37,11 @@ public abstract class ConfiguracionSeguridadBase {
      */
     protected HttpSecurity configurarAutorizacion(HttpSecurity http) throws Exception {
         return http
+                    .csrf(csrf -> csrf.disable()) // Asegúrate de deshabilitar CSRF si es Stateless
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(puntoEntradaJwt))
-                .authorizeHttpRequests(auth -> auth
-                        // Rutas transversales de infraestructura
-                        .requestMatchers("/actuator/**", "/error/**").permitAll()
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll())
+                    .exceptionHandling(ex -> ex.authenticationEntryPoint(puntoEntradaJwt))
                 .addFilterBefore(filtroJwt, UsernamePasswordAuthenticationFilter.class);
-    }
+        }
 
     /**
      * Bean de codificación de contraseñas único para toda la plataforma.

@@ -19,7 +19,8 @@ import org.springframework.security.web.SecurityFilterChain;
 
 /**
  * Configuración de seguridad para el microservicio de usuario.
- * Extiende de ConfiguracionSeguridadBase para heredar la configuración centralizada de la plataforma.
+ * Extiende de ConfiguracionSeguridadBase para heredar la configuración
+ * centralizada de la plataforma.
  */
 @Configuration
 @EnableWebSecurity
@@ -29,13 +30,15 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
 
     private final UserDetailsService userDetailsService;
 
-    public ConfiguracionSeguridad(FiltroJwt filtroJwt, PuntoEntradaJwt puntoEntradaJwt, UserDetailsService userDetailsService) {
+    public ConfiguracionSeguridad(FiltroJwt filtroJwt, PuntoEntradaJwt puntoEntradaJwt,
+            UserDetailsService userDetailsService) {
         super(filtroJwt, puntoEntradaJwt);
         this.userDetailsService = userDetailsService;
     }
 
     /**
-     * Configura la cadena de filtros de seguridad específica para el microservicio de usuario.
+     * Configura la cadena de filtros de seguridad específica para el microservicio
+     * de usuario.
      * 
      * @param http Configuración HttpSecurity.
      * @return SecurityFilterChain configurado.
@@ -43,37 +46,35 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        log.info("[SEGURIDAD] Configurando seguridad para MS-USUARIO");
-        
-        // Usamos el método base para configurar la infraestructura central (Stateless, JWT, etc)
+
+        // 1. Configuramos la base (JWT, Stateless, Exception handling)
         super.configurarAutorizacion(http);
 
-        // Añadimos las reglas específicas de este microservicio
+        // 2. Definimos las reglas de este microservicio (De lo más específico a lo
+        // general)
         http.authorizeHttpRequests(auth -> auth
                 // Endpoints Públicos de Autenticación
                 .requestMatchers(HttpMethod.POST,
                         "/api/v1/auth/login",
                         "/api/v1/auth/registrar",
                         "/api/v1/auth/recuperar-solicitar",
-                        "/api/v1/auth/recuperar-confirmar"
-                ).permitAll()
-                                // --- Monitoreo y Documentación (Público) ---
-                .requestMatchers("/actuator/**").permitAll()
-                .requestMatchers(
-                        "/v3/api-docs/**",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html")
+                        "/api/v1/auth/recuperar-confirmar")
                 .permitAll()
-                // Endpoint de Activación y Sincronización Interna
-                .requestMatchers(HttpMethod.PUT, 
-                        "/api/v1/auth/activar/**",
-                        "/api/v1/datos-personales/**"
-                ).permitAll()
-                // Cualquier otra ruta requiere autenticación
-                .anyRequest().authenticated()
-        );
 
-        // Inyectamos el proveedor de autenticación personalizado (DB)
+                // Monitoreo y Documentación (Público)
+                .requestMatchers("/actuator/**", "/error/**").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
+                // Endpoint de Activación y Sincronización Interna
+                .requestMatchers(HttpMethod.PUT,
+                        "/api/v1/auth/activar/**",
+                        "/api/v1/datos-personales/**")
+                .permitAll()
+
+                // 3. BLOQUEO TOTAL AL FINAL
+                .anyRequest().authenticated());
+
+        // Inyectamos el proveedor de autenticación personalizado
         http.authenticationProvider(authenticationProvider());
 
         return http.build();
