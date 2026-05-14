@@ -7,6 +7,7 @@ import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -37,11 +38,16 @@ public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
         return new DirectExchange(EXCHANGE_AUDITORIA);
     }
 
+
     /**
      * Realiza el enlace entre la cola y el exchange de auditoría.
+     * Se agrega @Qualifier para evitar ambigüedad con otros beans de tipo Queue o
+     * DirectExchange.
      */
     @Bean
-    public Binding bindingAuditoria(Queue colaAuditoria, DirectExchange exchangeAuditoria) {
+    public Binding bindingAuditoria(
+            @Qualifier("colaAuditoria") Queue colaAuditoria,
+            @Qualifier("exchangeAuditoria") DirectExchange exchangeAuditoria) {
         return BindingBuilder
                 .bind(colaAuditoria)
                 .to(exchangeAuditoria)

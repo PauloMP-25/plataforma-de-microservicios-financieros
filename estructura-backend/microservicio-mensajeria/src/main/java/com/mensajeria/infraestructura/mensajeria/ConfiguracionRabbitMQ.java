@@ -5,6 +5,7 @@ import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -13,15 +14,16 @@ import com.libreria.comun.mensajeria.ConfiguracionRabbitBase;
 /**
  * Configuración de RabbitMQ para el microservicio de mensajería.
  * <p>
- * Hereda la infraestructura base (ConnectionFactory, RabbitTemplate, convertidor
+ * Hereda la infraestructura base (ConnectionFactory, RabbitTemplate,
+ * convertidor
  * JSON) de {@link ConfiguracionRabbitBase} y define la topología específica de
  * este servicio:
  * <ul>
- *   <li>Exchange principal: {@code exchange.mensajeria} (TopicExchange).</li>
- *   <li>Cola OTP: {@code cola.mensajeria.otp.generar}, durable, con DLQ
- *       configurada.</li>
- *   <li>Dead Letter Queue: {@code cola.mensajeria.error} — recibe mensajes que
- *       fallan 3 veces consecutivas.</li>
+ * <li>Exchange principal: {@code exchange.mensajeria} (TopicExchange).</li>
+ * <li>Cola OTP: {@code cola.mensajeria.otp.generar}, durable, con DLQ
+ * configurada.</li>
+ * <li>Dead Letter Queue: {@code cola.mensajeria.error} — recibe mensajes que
+ * fallan 3 veces consecutivas.</li>
  * </ul>
  * </p>
  *
@@ -147,24 +149,65 @@ public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
     /**
      * Enlaza la cola OTP al exchange principal con la routing key de generación.
      *
-     * @param colaOtpGenerar   Cola declarada por {@link #colaOtpGenerar()}.
-     * @param exchangeMensajeria Exchange declarado por {@link #exchangeMensajeria()}.
+     * @param colaOtpGenerar     Cola declarada por {@link #colaOtpGenerar()}.
+     * @param exchangeMensajeria Exchange declarado por
+     *                           {@link #exchangeMensajeria()}.
      * @return {@link Binding} que conecta cola y exchange.
      */
     @Bean
-    public Binding bindingOtpGenerar(Queue colaOtpGenerar, TopicExchange exchangeMensajeria) {
-        return BindingBuilder.bind(colaOtpGenerar).to(exchangeMensajeria).with(RK_OTP_GENERAR);
+    public Binding bindingOtpGenerar(
+            @Qualifier("colaOtpGenerar") Queue colaOtpGenerar,
+            @Qualifier("exchangeMensajeria") TopicExchange exchangeMensajeria) {
+        return BindingBuilder
+                .bind(colaOtpGenerar)
+                .to(exchangeMensajeria)
+                .with(RK_OTP_GENERAR);
+    }
+
+    /**
+     * Enlaza la cola de Email al exchange principal.
+     * Los mensajes enviados con la routing key "mensaje.email.enviar" llegarán
+     * aquí.
+     */
+    @Bean
+    public Binding bindingEmailEnviar(
+            @Qualifier("colaEmailEnviar") Queue colaEmailEnviar,
+            @Qualifier("exchangeMensajeria") TopicExchange exchangeMensajeria) {
+        return BindingBuilder
+                .bind(colaEmailEnviar)
+                .to(exchangeMensajeria)
+                .with("mensaje.email.enviar"); // Puedes usar una constante si ya la tienes definida
+    }
+
+    /**
+     * Enlaza la cola de SMS al exchange principal.
+     * Los mensajes enviados con la routing key "mensaje.sms.enviar" llegarán aquí.
+     */
+    @Bean
+    public Binding bindingSmsEnviar(
+            @Qualifier("colaSmsEnviar") Queue colaSmsEnviar,
+            @Qualifier("exchangeMensajeria") TopicExchange exchangeMensajeria) {
+        return BindingBuilder
+                .bind(colaSmsEnviar)
+                .to(exchangeMensajeria)
+                .with("mensaje.sms.enviar"); // Puedes usar una constante si ya la tienes definida
     }
 
     /**
      * Enlaza la DLQ al exchange de error con la routing key de error.
      *
-     * @param colaError    Cola DLQ declarada por {@link #colaError()}.
-     * @param exchangeError Exchange de error declarado por {@link #exchangeError()}.
+     * @param colaError     Cola DLQ declarada por {@link #colaError()}.
+     * @param exchangeError Exchange de error declarado por
+     *                      {@link #exchangeError()}.
      * @return {@link Binding} que conecta la DLQ al exchange de error.
      */
     @Bean
-    public Binding bindingError(Queue colaError, TopicExchange exchangeError) {
-        return BindingBuilder.bind(colaError).to(exchangeError).with(RK_ERROR);
+    public Binding bindingError(
+            @Qualifier("colaError") Queue colaError,
+            @Qualifier("exchangeError") TopicExchange exchangeError) {
+        return BindingBuilder
+                .bind(colaError)
+                .to(exchangeError)
+                .with(RK_ERROR);
     }
 }
