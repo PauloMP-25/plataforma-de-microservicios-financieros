@@ -16,7 +16,7 @@
 
 // ── Contenedores Deslizantes ──
 .auth__formulario-contenedor {
-  width: 55%;
+  width: 50%;
   position: relative;
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   background: $bg-tarjeta;
@@ -24,7 +24,7 @@
 }
 
 .auth__lateral-contenedor {
-  width: 45%;
+  width: 50%;
   position: relative;
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   background: $gradiente-primario;
@@ -106,14 +106,22 @@
 // ── Estado "Registro" (Animación Slide) ──
 .mostrar-registro {
   .auth__formulario-contenedor {
-    // Mueve a la derecha (45% de 900px = 405px)
-    // 45 / 55 = 81.81%
-    transform: translateX(81.818%);
+    // Ambos paneles son 50%, el cruce es perfecto
+    transform: translateX(100%);
   }
   .auth__lateral-contenedor {
-    // Mueve a la izquierda (55% de 900px = 495px)
-    // -55 / 45 = -122.22%
-    transform: translateX(-122.222%);
+    transform: translateX(-100%);
+  }
+}
+
+// ── Estado "Verificar" y "Exito" (misma posición que registro) ──
+.mostrar-verificar,
+.mostrar-exito {
+  .auth__formulario-contenedor {
+    transform: translateX(100%);
+  }
+  .auth__lateral-contenedor {
+    transform: translateX(-100%);
   }
 }
 

@@ -55,3 +55,7 @@ docker/docker-compose.override.yml
 .docker/
 .DS_Store
 Thumbs.db
+
+# Graphify output and cache
+graphify-out/
+.graphify_cache/

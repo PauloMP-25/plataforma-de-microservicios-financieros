@@ -7,10 +7,12 @@ export const AUTENTICACION_ROUTES: Routes = [
   },
   {
     path: 'iniciar-sesion',
-    redirectTo: ''
+    loadComponent: () => import('./contenedor-autenticacion/contenedor-autenticacion').then(m => m.ContenedorAutenticacion),
+    data: { vista: 'login' }
   },
   {
     path: 'crear-cuenta',
-    redirectTo: ''
+    loadComponent: () => import('./contenedor-autenticacion/contenedor-autenticacion').then(m => m.ContenedorAutenticacion),
+    data: { vista: 'registro' }
   }
 ];

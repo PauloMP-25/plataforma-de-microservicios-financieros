@@ -34,6 +34,30 @@
     </span>
   </div>
 
+  <!-- Toggle Celular -->
+  <div class="auth__toggle-celular">
+    <label class="auth__checkbox" id="toggle-verificar-sms">
+      <input type="checkbox" [checked]="usarCelular" (change)="alternarCelular()" tabindex="-1">
+      <span class="auth__checkbox-marca"></span>
+      <span class="auth__checkbox-texto">Verificar cuenta por SMS</span>
+    </label>
+  </div>
+
+  <!-- Campo Celular (condicional) -->
+  <div class="auth__campo auth__campo--celular" *ngIf="usarCelular">
+    <label class="auth__label">NÚMERO DE CELULAR</label>
+    <div class="auth__input-grupo" [class.auth__input-grupo--error]="formulario.get('celular')?.touched && formulario.get('celular')?.invalid">
+      <i class="fas fa-mobile-alt auth__input-icono"></i>
+      <input type="tel" formControlName="celular" placeholder="+51 999 999 999" class="auth__input" id="input-celular-registro">
+    </div>
+    <span class="auth__error" *ngIf="formulario.get('celular')?.touched && formulario.get('celular')?.hasError('required')">
+      El número de celular es obligatorio
+    </span>
+    <span class="auth__error" *ngIf="formulario.get('celular')?.touched && formulario.get('celular')?.hasError('pattern')">
+      Ingresa un número válido (7-15 dígitos)
+    </span>
+  </div>
+
   <!-- Contraseña -->
   <div class="auth__campo">
     <label class="auth__label">CONTRASEÑA</label>

@@ -343,3 +343,66 @@ $exito: #22C55E;
   .recuperar__otp-grupo { gap: 6px; }
   .recuperar__volver { top: 16px; left: 16px; }
 }
+
+// ── Tema Claro Overrides ──
+:host-context(body.tema-claro) {
+  .recuperar {
+    background: #F5F6FF;
+    color: #1A1D24;
+  }
+  
+  .recuperar__tarjeta {
+    background: #FFFFFF;
+    border-color: #E2E5F1;
+    box-shadow: 0 20px 60px rgba(91,106,240,0.12);
+  }
+
+  .recuperar__volver {
+    color: #5A5E72;
+    &:hover { color: #1E293B; }
+  }
+
+  h1 {
+    color: #1E293B;
+  }
+  
+  .recuperar__desc,
+  .recuperar__label {
+    color: #64748B;
+  }
+  
+  .recuperar__input {
+    color: #1E293B;
+    &::placeholder {
+      color: #94A3B8;
+    }
+  }
+  
+  .recuperar__input-grupo {
+    background: #F8FAFC;
+    border-color: #E2E8F0;
+    
+    &:focus-within {
+      border-color: $primario;
+    }
+  }
+
+  .recuperar__otp-input {
+    background: #F8FAFC;
+    border-color: #E2E8F0;
+    color: #1E293B;
+
+    &:focus {
+      border-color: $primario;
+    }
+    &--lleno {
+      border-color: $primario-claro;
+      background: rgba(91,106,240,0.06);
+    }
+  }
+  
+  .recuperar__btn-submit {
+    background: #1E293B;
+    color: #FFFFFF;
+  }
+}

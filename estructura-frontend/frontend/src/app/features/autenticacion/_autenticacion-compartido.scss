@@ -412,3 +412,47 @@ $danger: #EF4444;
     top: 16px; left: 16px;
   }
 }
+
+// ── Tema Claro Overrides ──
+:host-context(body.tema-claro) {
+  .auth__encabezado h1 {
+    color: #1E293B;
+  }
+  
+  .auth__encabezado p,
+  .auth__label,
+  .auth__checkbox-texto {
+    color: #64748B;
+  }
+  
+  .auth__input {
+    color: #1E293B;
+    &::placeholder {
+      color: #94A3B8;
+    }
+  }
+  
+  .auth__input-grupo {
+    background: #F8FAFC;
+    border-color: #E2E8F0;
+    
+    &:focus-within {
+      border-color: $primario;
+    }
+  }
+  
+  .auth__btn-submit {
+    background: #1E293B;
+    color: #FFFFFF;
+  }
+  
+  .auth__checkbox-marca {
+    background: #F8FAFC;
+    border-color: #CBD5E1;
+  }
+  
+  input:checked + .auth__checkbox-marca {
+    background: $primario;
+    border-color: $primario;
+  }
+}
