@@ -31,10 +31,10 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
      * Construye la configuración inyectando el filtro JWT y el punto de entrada
      * de la librería común mediante inyección por constructor.
      *
-     * @param filtroJwt        Filtro centralizado que valida el token JWT en cada
-     *                         petición autenticada.
-     * @param puntoEntradaJwt  Manejador que devuelve HTTP 401 en JSON cuando no
-     *                         hay token o es inválido.
+     * @param filtroJwt       Filtro centralizado que valida el token JWT en cada
+     *                        petición autenticada.
+     * @param puntoEntradaJwt Manejador que devuelve HTTP 401 en JSON cuando no
+     *                        hay token o es inválido.
      */
     public ConfiguracionSeguridad(FiltroJwt filtroJwt, PuntoEntradaJwt puntoEntradaJwt) {
         super(filtroJwt, puntoEntradaJwt);
@@ -59,7 +59,13 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/mensajeria/otp/**").permitAll()
                         .anyRequest().authenticated()
-                )
+                        // --- Monitoreo y Documentación (Público) ---
+                        .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html")
+                        .permitAll())
                 .build();
     }
 }

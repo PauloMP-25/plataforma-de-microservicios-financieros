@@ -13,7 +13,8 @@ import org.springframework.security.web.SecurityFilterChain;
 
 /**
  * Configuración de Seguridad para el Núcleo Financiero.
- * Extiende de {@link ConfiguracionSeguridadBase} para heredar la lógica de autenticación JWT.
+ * Extiende de {@link ConfiguracionSeguridadBase} para heredar la lógica de
+ * autenticación JWT.
  * Define reglas de autorización específicas para este microservicio.
  *
  * @author Luka-Dev-Backend
@@ -29,7 +30,9 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
     }
 
     /**
-     * Define la cadena de filtros de seguridad específica para el Núcleo Financiero.
+     * Define la cadena de filtros de seguridad específica para el Núcleo
+     * Financiero.
+     * 
      * @param http Configuración de seguridad
      * @return SecurityFilterChain configurado
      * @throws Exception Si ocurre un error en la configuración
@@ -46,8 +49,14 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/v1/financiero/categorias/**").hasAnyRole("USUARIO", "ADMIN")
                 .requestMatchers("/api/v1/financiero/transacciones/**").hasAnyRole("USUARIO", "ADMIN")
-                .anyRequest().authenticated()
-        );
+                // --- Monitoreo y Documentación (Público) ---
+                .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers(
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html")
+                .permitAll()
+                .anyRequest().authenticated());
 
         return http.build();
     }

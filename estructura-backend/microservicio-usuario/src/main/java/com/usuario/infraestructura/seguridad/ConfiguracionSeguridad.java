@@ -57,6 +57,13 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
                         "/api/v1/auth/recuperar-solicitar",
                         "/api/v1/auth/recuperar-confirmar"
                 ).permitAll()
+                                // --- Monitoreo y Documentación (Público) ---
+                .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers(
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html")
+                .permitAll()
                 // Endpoint de Activación y Sincronización Interna
                 .requestMatchers(HttpMethod.PUT, 
                         "/api/v1/auth/activar/**",

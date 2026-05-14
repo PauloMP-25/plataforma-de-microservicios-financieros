@@ -46,11 +46,18 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
         http.authorizeHttpRequests(auth -> auth
                 // Endpoints públicos o de infraestructura
                 .requestMatchers("/api/v1/auditoria/seguridad/verificar-ip/**").permitAll()
-                
+
                 // Las consultas detalladas de auditoría solo para administradores
                 .requestMatchers(HttpMethod.GET, "/api/v1/auditoria/accesos/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/v1/auditoria/registros/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/v1/auditoria/transacciones/**").hasRole("ADMIN")
+                // --- Monitoreo y Documentación (Público) ---
+                .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers(
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html")
+                .permitAll()
 
                 // El resto de rutas heredadas (Swagger, Actuator) y autenticación general
                 .anyRequest().authenticated());
