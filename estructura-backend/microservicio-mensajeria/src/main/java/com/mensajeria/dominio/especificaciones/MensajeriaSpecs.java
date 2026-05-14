@@ -1,7 +1,7 @@
 package com.mensajeria.dominio.especificaciones;
 
 import com.mensajeria.dominio.entidades.CodigoVerificacion;
-import com.mensajeria.dominio.entidades.CodigoVerificacion.PropositoCodigo;
+import com.libreria.comun.enums.PropositoCodigo;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;

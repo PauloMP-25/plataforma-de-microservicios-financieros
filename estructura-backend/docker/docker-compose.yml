@@ -49,7 +49,7 @@ networks:
   db-network:
     driver: bridge
     name: luka-db
-    internal: true   # ← sin acceso a Internet, solo entre contenedores
+    internal: true # ← sin acceso a Internet, solo entre contenedores
 
 # ── FRAGMENTOS REUTILIZABLES (YAML Anchors) ───────────────────────────────────
 x-spring-common: &spring-common
@@ -72,7 +72,7 @@ x-postgres-common: &postgres-common
     POSTGRES_USER: ${POSTGRES_USER:-postgres}
     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
   healthcheck:
-    test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+    test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}" ]
     interval: 30s
     timeout: 10s
     retries: 5
@@ -206,7 +206,7 @@ services:
       - vol-rabbitmq-data:/var/lib/rabbitmq
       - vol-rabbitmq-logs:/var/log/rabbitmq
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      test: [ "CMD", "rabbitmq-diagnostics", "check_port_connectivity" ]
       interval: 15s
       timeout: 10s
       retries: 10
@@ -243,9 +243,7 @@ services:
       EUREKA_SERVER_EVICTION_INTERVAL_TIMER_IN_MS: 5000
       JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=70.0 -XX:+UseG1GC"
     healthcheck:
-      test: ["CMD", "curl", "-f", "-u",
-             "${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}",
-             "http://localhost:8761/actuator/health"]
+      test: [ "CMD", "curl", "-f", "-u", "${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}", "http://localhost:8761/actuator/health" ]
       interval: 20s
       timeout: 10s
       retries: 10
@@ -265,7 +263,7 @@ services:
     ports:
       - "6379:6379"
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -273,7 +271,6 @@ services:
       resources:
         limits:
           memory: 256M
-
 
   # ── MICROSERVICIO USUARIO (Puerto 8081) ───────────────────────────────────────
 
@@ -285,7 +282,7 @@ services:
       context: ..
       dockerfile: microservicio-usuario/Dockerfile
       args:
-           APP_PORT: 8081
+        APP_PORT: 8081
     image: luka/ms-usuario:latest
     depends_on:
       postgres-usuario:
@@ -323,7 +320,7 @@ services:
       # JVM
       JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -332,7 +329,6 @@ services:
       resources:
         limits:
           memory: 512M
-
 
   # ── MICROSERVICIO CLIENTE (Puerto 8083) ───────────────────────────────────────
 
@@ -344,7 +340,7 @@ services:
       context: ..
       dockerfile: microservicio-cliente/Dockerfile
       args:
-           APP_PORT: 8083
+        APP_PORT: 8083
     image: luka/ms-cliente:latest
     depends_on:
       postgres-cliente:
@@ -381,7 +377,7 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8083/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -390,7 +386,6 @@ services:
       resources:
         limits:
           memory: 512M
-
 
   # ── MICROSERVICIO AUDITORIA (Puerto 8082) ─────────────────────────────────────
 
@@ -402,7 +397,7 @@ services:
       context: ..
       dockerfile: microservicio-auditoria/Dockerfile
       args:
-           APP_PORT: 8082
+        APP_PORT: 8082
     image: luka/ms-auditoria:latest
     depends_on:
       postgres-auditoria:
@@ -439,7 +434,7 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8082/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -459,7 +454,7 @@ services:
       context: ..
       dockerfile: microservicio-mensajeria/Dockerfile
       args:
-           APP_PORT: 8084
+        APP_PORT: 8084
     image: luka/ms-mensajeria:latest
     depends_on:
       postgres-mensajeria:
@@ -499,7 +494,7 @@ services:
       WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
       JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8084/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -519,7 +514,7 @@ services:
       context: ..
       dockerfile: microservicio-nucleo-financiero/Dockerfile
       args:
-           APP_PORT: 8085
+        APP_PORT: 8085
     image: luka/ms-nucleo-financiero:latest
     depends_on:
       postgres-financiero:
@@ -557,7 +552,7 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8085/actuator/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8085/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -566,7 +561,6 @@ services:
       resources:
         limits:
           memory: 512M
-
 
   # ── MICROSERVICIO IA FINANCIERA (Puerto 8086) ─────────────────────────────────
 
@@ -577,7 +571,7 @@ services:
       context: ../microservicio-ia
       dockerfile: Dockerfile
       args:
-           APP_PORT: 8086
+        APP_PORT: 8086
     image: luka/ms-ia:latest
     restart: unless-stopped
     networks:
@@ -643,7 +637,7 @@ services:
       PYTHONUNBUFFERED: "1"
       TZ: America/Lima
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8086/actuator/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8086/actuator/health" ]
       interval: 30s
       timeout: 15s
       retries: 5
@@ -656,7 +650,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G  # numpy/pandas/scikit-learn necesitan más RAM
+          memory: 1G # numpy/pandas/scikit-learn necesitan más RAM
 
   # ── API GATEWAY (Puerto 8080 — ÚNICO PUNTO DE ENTRADA EXTERNO) ──────────────
 
@@ -668,7 +662,7 @@ services:
       context: ..
       dockerfile: infraestructura/api-gateway/Dockerfile
       args:
-           APP_PORT: 8080
+        APP_PORT: 8080
     image: luka/api-gateway:latest
     depends_on:
       eureka-server:
@@ -711,7 +705,7 @@ services:
       SPRING_CLOUD_GATEWAY_GLOBALCORS_CORSCONFIGURATIONS_[/**]_ALLOWEDHEADERS: "*"
       JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 5

@@ -2,7 +2,7 @@ package com.mensajeria.aplicacion.servicios.impl;
 
 import com.mensajeria.aplicacion.excepciones.MensajeriaExternaException;
 import com.mensajeria.aplicacion.servicios.IEmailService;
-import com.mensajeria.dominio.entidades.CodigoVerificacion.PropositoCodigo;
+import com.libreria.comun.enums.PropositoCodigo;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;

@@ -1,32 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" 
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
-         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.4.4</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath /> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.financiero.saas</groupId>
     <artifactId>microservicio-auditoria</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>microservicio-auditoria</name>
     <description>Recopila de forma centralizada cada acción realizada en el sistema para trazabilidad y seguridad.</description>
-    <url/>
+    <url />
     <licenses>
-        <license/>
+        <license />
     </licenses>
     <developers>
-        <developer/>
+        <developer />
     </developers>
     <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
+        <connection />
+        <developerConnection />
+        <tag />
+        <url />
     </scm>
     <properties>
         <java.version>21</java.version>
@@ -35,49 +34,52 @@
     </properties>
     <dependencies>
         <!-- ═══════════════════════════════════════════════════════
-             LIBRERIA COMUN.
+            LIBRERIA COMUN.
         ═══════════════════════════════════════════════════════ -->
         <dependency>
             <groupId>com.financiero.saas</groupId>
             <artifactId>libreria-comun</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
-        <!--STARTER-NETFLIX-EUREKA-CLIENT: Cliente para el registro y descubrimiento de servicios con Eureka.-->
+        <!--STARTER-NETFLIX-EUREKA-CLIENT:
+        Cliente para el registro y descubrimiento de servicios con Eureka.-->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
-        <!--STARTER-DATA-JPA: Abstracción para el acceso a datos y persistencia con Hibernate.-->
+        <!--STARTER-DATA-JPA:
+        Abstracción para el acceso a datos y persistencia con Hibernate.-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
-        <!--POSTGRESQL: Driver de conexión para la base de datos PostgreSQL.-->
+        <!--POSTGRESQL:
+        Driver de conexión para la base de datos PostgreSQL.-->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <!--LOMBOK: Biblioteca para reducir código repetitivo (Boilerplate) como Getters y Setters.-->
+        <!--LOMBOK:
+        Biblioteca para reducir código repetitivo (Boilerplate) como Getters y Setters.-->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
         <!-- Jackson Databind: necesario para Jackson2JsonMessageConverter -->
-        <!-- (ya incluido transitivamente por spring-boot-starter-web,     -->
-        <!--  pero se declara explícitamente para mayor claridad)          -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
- 
+
         <!-- Soporte de tipos Java 8+ (UUID, LocalDateTime) en Jackson -->
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
-        <!--SPRINGDOC-OPENAPI-UI: Generador automático de documentación Swagger/OpenAPI para los endpoints.-->
+        <!--SPRINGDOC-OPENAPI-UI:
+        Generador automático de documentación Swagger/OpenAPI para los endpoints.-->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
