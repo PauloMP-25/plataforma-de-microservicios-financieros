@@ -1,5 +1,7 @@
 package com.mensajeria.dominio.entidades;
 
+import com.libreria.comun.enums.PropositoCodigo;
+import com.libreria.comun.enums.TipoVerificacion;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -71,16 +73,7 @@ public class CodigoVerificacion {
     @Column(name = "fecha_uso")
     private LocalDateTime fechaUso;
 
-    // ─── Enum ────────────────────────────────────────────────────────────────
-    public enum TipoVerificacion {
-        EMAIL, SMS, WHATSAPP
-    }
-
-    public enum PropositoCodigo {
-        ACTIVACION_CUENTA, RESTABLECER_PASSWORD
-    }
-
-    // ─── Lifecycle ───────────────────────────────────────────────────────────
+    // Lifecycle
     @PrePersist
     protected void alCrear() {
         fechaCreacion = LocalDateTime.now();

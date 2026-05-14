@@ -21,7 +21,7 @@ x-env-common: &env-common
   SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
   SPRING_RABBITMQ_VIRTUAL_HOST: ${RABBITMQ_VHOST}
   # Eureka
-  EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://${EUREKA_USER}:${EUREKA_PASSWORD}@eureka-server:8761/eureka
+  EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://${EUREKA_USER}:${EUREKA_PASSWORD}@eureka-server:8761/eureka/
   # JVM Optimization
   JAVA_OPTS: "-Xms128m -Xmx384m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
 
@@ -32,6 +32,7 @@ services:
     container_name: luka-eureka
     build:
       context: ../infraestructura/eureka-server
+      dockerfile: Dockerfile.local
     ports:
       - "${EUREKA_DASHBOARD_PORT:-8761}:8761"
     environment:
@@ -51,8 +52,8 @@ services:
     <<: *spring-base
     container_name: luka-ms-usuario
     build:
-      context: ..
-      dockerfile: microservicio-usuario/Dockerfile
+      context: ../microservicio-usuario
+      dockerfile: Dockerfile.local
     environment:
       <<: *env-common
       SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_usuario?sslmode=require
@@ -74,14 +75,17 @@ services:
     <<: *spring-base
     container_name: luka-ms-cliente
     build:
-      context: ..
-      dockerfile: microservicio-cliente/Dockerfile
+      context: ../microservicio-cliente
+      dockerfile: Dockerfile.local
     environment:
       <<: *env-common
       SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_cliente?sslmode=require
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      WHATSAPP_TOKEN: ${WHATSAPP_TOKEN}
+      WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
+      WHATSAPP_API_VERSION: ${WHATSAPP_API_VERSION}
     depends_on:
       - eureka-server
     deploy:
@@ -93,14 +97,17 @@ services:
     <<: *spring-base
     container_name: luka-ms-mensajeria
     build:
-      context: ..
-      dockerfile: microservicio-mensajeria/Dockerfile
+      context: ../microservicio-mensajeria
+      dockerfile: Dockerfile.local
     environment:
       <<: *env-common
       SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_mensajeria?sslmode=require
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      WHATSAPP_TOKEN: ${WHATSAPP_TOKEN}
+      WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
+      WHATSAPP_API_VERSION: ${WHATSAPP_API_VERSION}
     depends_on:
       - eureka-server
     deploy:
@@ -142,8 +149,8 @@ services:
     <<: *spring-base
     container_name: luka-ms-auditoria
     build:
-      context: ..
-      dockerfile: microservicio-auditoria/Dockerfile
+      context: ../microservicio-auditoria
+      dockerfile: Dockerfile.local
     environment:
       <<: *env-common
       SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_auditoria?sslmode=require
@@ -161,14 +168,17 @@ services:
     <<: *spring-base
     container_name: luka-ms-nucleo-financiero
     build:
-      context: ..
-      dockerfile: microservicio-nucleo-financiero/Dockerfile
+      context: ../microservicio-nucleo-financiero
+      dockerfile: Dockerfile.local
     environment:
       <<: *env-common
       SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_financiero?sslmode=require
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      WHATSAPP_TOKEN: ${WHATSAPP_TOKEN}
+      WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
+      WHATSAPP_API_VERSION: ${WHATSAPP_API_VERSION}
     depends_on:
       - eureka-server
     deploy:
@@ -180,8 +190,8 @@ services:
     <<: *spring-base
     container_name: luka-gateway
     build:
-      context: ..
-      dockerfile: infraestructura/api-gateway/Dockerfile
+      context: ../infraestructura/api-gateway
+      dockerfile: Dockerfile.local
     ports:
       - "${GATEWAY_PORT:-8080}:8080"
     environment:

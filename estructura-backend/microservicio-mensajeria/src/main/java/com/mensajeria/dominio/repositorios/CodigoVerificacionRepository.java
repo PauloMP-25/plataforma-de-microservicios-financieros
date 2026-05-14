@@ -1,7 +1,7 @@
 package com.mensajeria.dominio.repositorios;
 
 import com.mensajeria.dominio.entidades.CodigoVerificacion;
-import com.mensajeria.dominio.entidades.CodigoVerificacion.PropositoCodigo;
+import com.libreria.comun.enums.PropositoCodigo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;

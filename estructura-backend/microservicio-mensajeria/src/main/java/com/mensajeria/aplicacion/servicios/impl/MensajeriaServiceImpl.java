@@ -1,11 +1,11 @@
 package com.mensajeria.aplicacion.servicios.impl;
 
+import com.libreria.comun.enums.PropositoCodigo;
+import com.libreria.comun.enums.TipoVerificacion;
 import com.mensajeria.aplicacion.dtos.*;
 import com.mensajeria.aplicacion.excepciones.LimiteCodigosExcedidoException;
 import com.mensajeria.aplicacion.excepciones.UsuarioBloqueadoExcepcion;
 import com.mensajeria.dominio.entidades.CodigoVerificacion;
-import com.mensajeria.dominio.entidades.CodigoVerificacion.PropositoCodigo;
-import com.mensajeria.dominio.entidades.CodigoVerificacion.TipoVerificacion;
 import com.mensajeria.dominio.entidades.IntentoValidacion;
 import com.mensajeria.dominio.repositorios.CodigoVerificacionRepository;
 import com.mensajeria.dominio.repositorios.IntentoValidacionRepository;
@@ -89,6 +89,17 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
     @SuppressWarnings("null")
     @Transactional
     public RespuestaGeneracion generarYEnviarCodigo(SolicitudGenerarCodigo solicitud) {
+        // Validación condicional según el canal
+        if (solicitud.tipo() == com.libreria.comun.enums.TipoVerificacion.EMAIL) {
+            if (solicitud.email() == null || solicitud.email().isBlank()) {
+                throw new IllegalArgumentException("El email es obligatorio para el canal EMAIL");
+            }
+        } else {
+            if (solicitud.telefono() == null || solicitud.telefono().isBlank()) {
+                throw new IllegalArgumentException("El teléfono es obligatorio para el canal " + solicitud.tipo());
+            }
+        }
+
         verificarBloqueo(solicitud.usuarioId());
         verificarLimiteDiario(solicitud.usuarioId(), solicitud.proposito());
 

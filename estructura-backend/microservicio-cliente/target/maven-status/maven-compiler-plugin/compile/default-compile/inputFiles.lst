@@ -1,4 +1,5 @@
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\aplicacion\servicios\implementacion\ServicioMetaAhorroImpl.java
+D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\presentacion\controladores\ControladorSincronizacionInterna.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\dominio\repositorios\LimiteGastoRepositorio.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\aplicacion\servicios\implementacion\ServicioLimiteGastoImpl.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\aplicacion\servicios\implementacion\ServicioContextoImpl.java
@@ -11,8 +12,10 @@ D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\sr
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\dominio\entidades\PerfilFinanciero.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\presentacion\controladores\ControladorMetaAhorro.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\aplicacion\servicios\implementacion\ServicioDatosPersonalesImpl.java
+D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\presentacion\manejadores\ManejadorGlobalExcepciones.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\dominio\repositorios\DatosPersonalesRepositorio.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\infraestructura\mensajeria\ConfiguracionRabbitMQ.java
+D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\dominio\especificaciones\MetaAhorroSpecs.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\aplicacion\dtos\RespuestaLimiteGasto.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\dominio\repositorios\MetaAhorroRepositorio.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\aplicacion\excepciones\LimiteGastoNoEncontradoException.java

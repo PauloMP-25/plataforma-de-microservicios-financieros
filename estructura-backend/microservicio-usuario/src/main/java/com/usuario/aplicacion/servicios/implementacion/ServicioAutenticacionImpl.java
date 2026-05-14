@@ -3,7 +3,7 @@ package com.usuario.aplicacion.servicios.implementacion;
 import com.libreria.comun.enums.EstadoEvento;
 import com.libreria.comun.excepciones.ExcepcionNoAutorizado;
 import com.libreria.comun.seguridad.ServicioJwt;
-import com.usuario.aplicacion.dtos.PropositoCodigo;
+import com.libreria.comun.enums.PropositoCodigo;
 import com.usuario.aplicacion.dtos.RespuestaAutenticacion;
 import com.usuario.aplicacion.dtos.SolicitudCambioPassword;
 import com.usuario.aplicacion.dtos.SolicitudLogin;
@@ -12,7 +12,7 @@ import com.usuario.aplicacion.dtos.SolicitudRefreshToken;
 import com.usuario.aplicacion.dtos.SolicitudRegistro;
 import com.usuario.aplicacion.dtos.SolicitudRestablecerPassword;
 import com.usuario.aplicacion.dtos.SolicitudGenerarOtp;
-import com.usuario.aplicacion.dtos.TipoVerificacion;
+import com.libreria.comun.enums.TipoVerificacion;
 import com.usuario.aplicacion.excepciones.CredencialesInvalidasException;
 import com.usuario.aplicacion.excepciones.CuentaNoHabilitadaException;
 import com.usuario.aplicacion.excepciones.TokenInvalidoException;
@@ -229,7 +229,7 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
         }
 
         Usuario usuario = usuarioOpt.get();
-        String telefonoAEnviar = (solicitud.tipo() == TipoVerificacion.SMS)
+        String telefonoAEnviar = (solicitud.tipo() == TipoVerificacion.SMS || solicitud.tipo() == TipoVerificacion.WHATSAPP)
                 ? clientePerfilExterno.obtenerTelefono(usuario.getId())
                 : null;
 

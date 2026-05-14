@@ -32,9 +32,16 @@ public class WhatsAppServiceImpl implements IWhatsAppService, com.mensajeria.apl
     @Override
     public void enviar(String destinatario, Map<String, Object> variables) {
         String codigo = (String) variables.get("codigo");
-        // Para WhatsApp usamos la plantilla de autenticación
+        com.libreria.comun.enums.PropositoCodigo proposito = (com.libreria.comun.enums.PropositoCodigo) variables.get("proposito");
+        
+        // Seleccionamos la plantilla basada en el propósito
+        String plantilla = (proposito == com.libreria.comun.enums.PropositoCodigo.RESTABLECER_PASSWORD)
+                ? whatsAppConfig.getTemplates().getRecovery()
+                : whatsAppConfig.getTemplates().getRegistration();
+
+        // Para WhatsApp usamos la plantilla de autenticación (el código es el parámetro {{1}})
         Map<String, String> waVariables = Map.of("1", codigo);
-        this.enviarMensajeTemplate(destinatario, "otp_verification", waVariables);
+        this.enviarMensajeTemplate(destinatario, plantilla, waVariables);
     }
 
     @Override
@@ -44,28 +51,28 @@ public class WhatsAppServiceImpl implements IWhatsAppService, com.mensajeria.apl
 
 
     private final RestTemplate restTemplate;
-
-    @Value("${whatsapp.api.token:}")
-    private String apiToken;
-
-    @Value("${whatsapp.api.phone-number-id:}")
-    private String phoneNumberId;
-
-    @Value("${whatsapp.api.version:v19.0}")
-    private String apiVersion;
-
-    private static final String META_URL_TEMPLATE = "https://graph.facebook.com/%s/%s/messages";
+    private final com.mensajeria.infraestructura.configuracion.WhatsAppConfig whatsAppConfig;
 
     @SuppressWarnings("null")
     @Override
     public void enviarMensajeTemplate(String telefono, String plantilla, Map<String, String> variables) {
+        // 1. Validar formato de teléfono antes de gastar API
+        if (!esNumeroValido(telefono)) {
+            log.error("[WHATSAPP] Formato de teléfono inválido: {}. Se requiere E.164 (ej. 51943455686)", telefono);
+            throw new com.mensajeria.aplicacion.excepciones.TelefonoInvalidoException("El número " + telefono + " no tiene el formato internacional requerido.");
+        }
+
+        String apiToken = whatsAppConfig.getApi().getToken();
+        String phoneNumberId = whatsAppConfig.getApi().getPhoneId();
+
         if (apiToken == null || apiToken.isEmpty() || phoneNumberId == null || phoneNumberId.isEmpty()) {
             log.warn("[WHATSAPP] Credenciales no configuradas. Saltando envío.");
             return;
         }
 
         try {
-            String url = String.format(META_URL_TEMPLATE, apiVersion, phoneNumberId);
+            // Construcción de la URL usando la base de la configuración + el phoneId
+            String url = String.format("%s/%s/messages", whatsAppConfig.getApi().getUrl(), phoneNumberId);
             
             // Construcción del JSON para Meta Cloud API
             Map<String, Object> body = new HashMap<>();
@@ -77,7 +84,7 @@ public class WhatsAppServiceImpl implements IWhatsAppService, com.mensajeria.apl
             template.put("name", plantilla);
             
             Map<String, String> language = new HashMap<>();
-            language.put("code", "es"); // Por defecto español
+            language.put("code", whatsAppConfig.getTemplates().getLanguage()); 
             template.put("language", language);
 
             // Componentes (Placeholders {{1}}, {{2}}, etc)
@@ -126,8 +133,11 @@ public class WhatsAppServiceImpl implements IWhatsAppService, com.mensajeria.apl
 
     @Override
     public boolean esNumeroValido(String telefono) {
-        // WhatsApp requiere formato E.164 sin el símbolo '+' para Meta API
-        return telefono != null && telefono.matches("^\\d{10,15}$");
+        // WhatsApp requiere formato E.164 (ej: 51943455686)
+        // Debe tener entre 10 y 15 dígitos y no contener letras.
+        if (telefono == null) return false;
+        String limpio = limpiarTelefono(telefono);
+        return limpio.matches("^\\d{10,15}$");
     }
 
     private String limpiarTelefono(String telefono) {

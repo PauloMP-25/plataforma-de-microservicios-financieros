@@ -141,8 +141,14 @@ twilio:
   phone:
     number: ${TWILIO_PHONE_NUMBER}
 
-whatsapp:
-  api:
-    token: ${WHATSAPP_API_TOKEN}
-    phone-number-id: ${WHATSAPP_PHONE_ID}
-    version: ${WHATSAPP_API_VERSION:v19.0}
+# ── CONFIGURACIÓN WHATSAPP CLOUD API (LUKA) ────────────────────────────────────
+luka:
+  whatsapp:
+    api:
+      url: ${WHATSAPP_API_URL:https://graph.facebook.com/v20.0}
+      phone-id: ${WHATSAPP_PHONE_ID:1194188753768160}
+      token: ${WHATSAPP_TOKEN}
+    templates:
+      registration: ${WHATSAPP_TEMPLATE_REGISTRATION:codigo_registro_luka}
+      recovery: ${WHATSAPP_TEMPLATE_RECOVERY:recuperacion_password_luka}
+      language: ${WHATSAPP_TEMPLATE_LANGUAGE:es}

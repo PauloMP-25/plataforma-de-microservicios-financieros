@@ -1,6 +1,6 @@
 package com.mensajeria.aplicacion.servicios;
 
-import com.mensajeria.dominio.entidades.CodigoVerificacion.PropositoCodigo;
+import com.libreria.comun.enums.PropositoCodigo;
 
 /**
  * Contrato del servicio principal de mensajería y OTP.

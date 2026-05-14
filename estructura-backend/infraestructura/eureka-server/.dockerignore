@@ -1,5 +1,5 @@
-﻿target/
-*.jar
+# target/
+# *.jar
 *.war
 *.ear
 .mvn/

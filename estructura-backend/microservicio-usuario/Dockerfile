@@ -74,9 +74,9 @@ ENTRYPOINT ["dumb-init", "--"]
 #   -XX:+UseG1GC                   → recolector G1 equilibrado para microservicios
 #   -Djava.security.egd            → inicio más rápido evitando bloqueos de /dev/random
 CMD ["java", \
-     "-XX:+UseContainerSupport", \
-     "-XX:MaxRAMPercentage=75.0", \
-     "-XX:+UseG1GC", \
-     "-Djava.security.egd=file:/dev/./urandom", \
-     "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:docker}", \
-     "org.springframework.boot.loader.launch.JarLauncher"]
+    "-XX:+UseContainerSupport", \
+    "-XX:MaxRAMPercentage=75.0", \
+    "-XX:+UseG1GC", \
+    "-Djava.security.egd=file:/dev/./urandom", \
+    "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:docker}", \
+    "org.springframework.boot.loader.launch.JarLauncher"]

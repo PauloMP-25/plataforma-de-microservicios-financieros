@@ -41,6 +41,16 @@
             <groupId>com.financiero.saas</groupId>
             <artifactId>libreria-comun</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-web</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-security</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- ═══════════════════════════════════════════════════════
              GATEWAY: Motor de enrutamiento reactivo basado en Netty.
