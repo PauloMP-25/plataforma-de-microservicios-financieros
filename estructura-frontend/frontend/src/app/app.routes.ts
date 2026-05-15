@@ -2,13 +2,25 @@ import { Routes } from '@angular/router';
 import { Layout } from './layout/layout/layout/layout';
 
 export const routes: Routes = [
+  // ── Rutas Públicas ──
+  {
+    path: 'inicio',
+    loadComponent: () => import('./features/inicio/inicio').then(m => m.Inicio)
+  },
+  {
+    path: 'autenticacion',
+    loadChildren: () => import('./features/autenticacion/autenticacion.routes').then(m => m.AUTENTICACION_ROUTES)
+  },
+  {
+    path: 'recuperar-contrasena',
+    loadChildren: () => import('./features/recuperar-contrasena/recuperar-contrasena.routes').then(m => m.RECUPERAR_CONTRASENA_ROUTES)
+  },
+
+  // ── Rutas Privadas (Dashboard) ──
   {
     path: '',
     component: Layout,
-    children: [
-
-
-      // ── Dashboard ──
+    children: [      // ── Dashboard ──
       {
         path: 'dashboard',
         loadChildren: () =>
@@ -66,13 +78,13 @@ export const routes: Routes = [
 
       {
         path: '',
-        redirectTo: 'dashboard',
+        redirectTo: '/inicio',
         pathMatch: 'full'
-      },
-
+      }
     ]
   },
-
-
-
+  {
+    path: '**',
+    redirectTo: '/inicio'
+  }
 ];

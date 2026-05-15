@@ -66,6 +66,7 @@ docker-data/
 .agent/
 GEMINI.md
 graphify-out/
+.graphify_cache/
 .continue/
 
 # --- CARPETAS ---

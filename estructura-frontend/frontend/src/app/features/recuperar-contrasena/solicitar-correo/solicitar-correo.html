@@ -1,0 +1,58 @@
+<section class="recuperar" id="pagina-solicitar-correo">
+  <div class="recuperar__fondo">
+    <div class="recuperar__orbe recuperar__orbe--1"></div>
+    <div class="recuperar__orbe recuperar__orbe--2"></div>
+    <div class="recuperar__rejilla"></div>
+  </div>
+
+  <a routerLink="/autenticacion/iniciar-sesion" class="recuperar__volver" id="btn-volver-login">
+    <i class="fas fa-arrow-left"></i> Volver al login
+  </a>
+
+  <div class="recuperar__tarjeta">
+    <!-- Estado: Formulario -->
+    <div *ngIf="!enviado" class="recuperar__contenido">
+      <div class="recuperar__icono-principal">
+        <i class="fas fa-key"></i>
+      </div>
+      <h1>Recupera tu cuenta</h1>
+      <p class="recuperar__desc">Introduce tu correo electrónico y te enviaremos un código de verificación para restablecer tu contraseña.</p>
+
+      <form [formGroup]="formulario" (ngSubmit)="enviarSolicitud()" class="recuperar__formulario" id="form-solicitar-correo">
+        <div class="recuperar__campo">
+          <label class="recuperar__label">CORREO ELECTRÓNICO</label>
+          <div class="recuperar__input-grupo" [class.recuperar__input-grupo--error]="formulario.get('correo')?.touched && formulario.get('correo')?.invalid">
+            <i class="fas fa-envelope recuperar__input-icono"></i>
+            <input type="email" formControlName="correo" placeholder="nombre&#64;ejemplo.com" class="recuperar__input" id="input-correo-recuperar">
+          </div>
+          <span class="recuperar__error" *ngIf="formulario.get('correo')?.touched && formulario.get('correo')?.hasError('required')">
+            El correo es obligatorio
+          </span>
+          <span class="recuperar__error" *ngIf="formulario.get('correo')?.touched && formulario.get('correo')?.hasError('email')">
+            Ingresa un correo válido
+          </span>
+        </div>
+
+        <button type="submit" class="recuperar__btn-submit" [disabled]="cargando" id="btn-enviar-correo">
+          <span *ngIf="!cargando">Continuar <i class="fas fa-arrow-right"></i></span>
+          <span *ngIf="cargando" class="recuperar__spinner"></span>
+        </button>
+
+        <div class="recuperar__error-general" *ngIf="errorMensaje">
+          <i class="fas fa-exclamation-circle"></i> {{ errorMensaje }}
+        </div>
+      </form>
+    </div>
+
+    <!-- Estado: Enviado -->
+    <div *ngIf="enviado" class="recuperar__contenido recuperar__contenido--exito">
+      <div class="recuperar__icono-principal recuperar__icono-principal--exito">
+        <i class="fas fa-check"></i>
+      </div>
+      <h1>¡Código enviado!</h1>
+      <p class="recuperar__desc">Revisa tu bandeja de entrada. Te hemos enviado un código de 6 dígitos.</p>
+      <p class="recuperar__correo-enviado">{{ formulario.value.correo }}</p>
+      <p class="recuperar__redireccion">Redirigiendo automáticamente...</p>
+    </div>
+  </div>
+</section>
