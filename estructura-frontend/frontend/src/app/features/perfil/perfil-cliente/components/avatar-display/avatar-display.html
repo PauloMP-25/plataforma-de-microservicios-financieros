@@ -1,0 +1,23 @@
+<div
+  class="avatar-display"
+  [class.avatar-display--loading]="loading()"
+  [style.width]="avatarSizePx()"
+  [style.height]="avatarSizePx()"
+>
+  @if (loading()) {
+    <div class="avatar-display__skeleton"></div>
+  } @else {
+    <img
+      class="avatar-display__figura"
+      [src]="figuraSrc()"
+      [alt]="'Figura ' + avatarConfig().figura"
+    />
+
+    <img
+      class="avatar-display__accesorio"
+      [src]="accesorioSrc()"
+      [alt]="'Accesorio ' + (avatarConfig().accesorio ?? '')"
+    />
+  }
+</div>
+

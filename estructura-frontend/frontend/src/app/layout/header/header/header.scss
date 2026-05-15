@@ -1,20 +1,20 @@
 // ══════════════════════════════════════════════
 // VARIABLES & CONFIG
-// ══════════════════════════════════════════════
+
 $header-height: 70px;
-$primary-color: #4f46e5; // Puedes cambiarlo por tu color de marca
-$danger-color: #ef4444;
-$text-main: #1f2937;
-$text-muted: #6b7280;
-$bg-white: #ffffff;
-$border-color: #e5e7eb;
+$primary-color: var(--accent-primary); // Tema global
+$danger-color: var(--color-danger);
+$text-main: var(--text-primary);
+$text-muted: var(--text-secondary);
+$bg-white: var(--bg-card);
+$border-color: var(--border-color);
 $shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 $transition: all 0.2s ease-in-out;
 
 // ══════════════════════════════════════════════
 // HEADER PRINCIPAL
-// ══════════════════════════════════════════════
+
 .luka-header {
   height: $header-height;
   display: flex;
@@ -83,7 +83,7 @@ $transition: all 0.2s ease-in-out;
     position: relative;
 
     &:hover {
-      background: #f3f4f6;
+      background: var(--bg-surface-soft);
       color: $primary-color;
     }
 
@@ -159,14 +159,14 @@ $transition: all 0.2s ease-in-out;
     }
   }
 
-  .notif-list {
+    .notif-list {
     list-style: none; padding: 0; margin: 0;
     max-height: 300px; overflow-y: auto;
 
     .notif-item {
       display: flex; gap: 12px; padding: 12px;
-      border-bottom: 1px solid #f9fafb;
-      &.unread { background: #f0f7ff; }
+      border-bottom: 1px solid var(--border-color);
+      &.unread { background: var(--bg-surface-soft); }
 
       .notif-icon {
         width: 35px; height: 35px; border-radius: 50%;
@@ -193,7 +193,7 @@ $transition: all 0.2s ease-in-out;
   border-radius: 8px;
   transition: $transition;
 
-  &:hover { background: #f3f4f6; }
+  &:hover { background: var(--bg-surface-soft); }
 
   .avatar-letter {
     width: 36px; height: 36px; background: $primary-color;
@@ -202,17 +202,17 @@ $transition: all 0.2s ease-in-out;
     font-weight: bold;
   }
 
-  .avatar-meta {
-    text-align: left;
-    .avatar-name { display: block; font-weight: 600; font-size: 0.9rem; }
-    .avatar-plan { font-size: 0.75rem; color: #059669; display: flex; align-items: center; gap: 4px; }
-  }
+    .avatar-meta {
+      text-align: left;
+      .avatar-name { display: block; font-weight: 600; font-size: 0.9rem; }
+      .avatar-plan { font-size: 0.75rem; color: var(--color-success); display: flex; align-items: center; gap: 4px; }
+    }
   .avatar-chevron { font-size: 0.7rem; color: $text-muted; }
 }
 
 .user-panel {
   &-hero {
-    padding: 1.5rem; background: linear-gradient(135deg, $primary-color, #818cf8);
+    padding: 1.5rem; background: linear-gradient(135deg, $primary-color, color-mix(in srgb, $primary-color 70%, white));
     color: white; display: flex; align-items: center; gap: 12px;
     
     .hero-avatar {
@@ -233,6 +233,7 @@ $transition: all 0.2s ease-in-out;
       width: 100%; text-align: left; background: none; border: none; cursor: pointer;
 
       &:hover { background: #f9fafb; }
+      &:hover { background: var(--bg-surface-soft); }
       &-icon { font-size: 1.1rem; color: $text-muted; width: 20px; }
       p { margin: 0; font-size: 0.9rem; font-weight: 500; }
       small { color: $text-muted; display: block; }

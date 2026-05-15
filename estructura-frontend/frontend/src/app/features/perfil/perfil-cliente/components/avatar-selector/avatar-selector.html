@@ -1,0 +1,68 @@
+<section class="avatar-selector">
+  <div class="avatar-selector__tabs" role="tablist" aria-label="Selector de avatar">
+    <button
+      type="button"
+      class="avatar-selector__tab"
+      [class.avatar-selector__tab--active]="tabActiva() === 'figura'"
+      (click)="cambiarTab('figura')"
+    >
+      Figura
+    </button>
+
+    <button
+      type="button"
+      class="avatar-selector__tab"
+      [class.avatar-selector__tab--active]="tabActiva() === 'accesorio'"
+      (click)="cambiarTab('accesorio')"
+    >
+      Accesorio
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="avatar-selector__skeleton-grid">
+      @for (item of [1, 2, 3, 4]; track item) {
+        <div class="avatar-selector__skeleton-item"></div>
+      }
+    </div>
+  } @else {
+    @if (tabActiva() === 'figura') {
+      <div class="avatar-selector__grid">
+        @for (figura of figuras(); track figura) {
+          <button
+            type="button"
+            class="avatar-selector__item"
+            [class.avatar-selector__item--selected]="figuraSeleccionada() === figura"
+            (click)="seleccionarFigura(figura)"
+          >
+            <img [src]="getFiguraSrc(figura)" [alt]="figura" />
+            <span>{{ figura }}</span>
+          </button>
+        }
+      </div>
+    } @else {
+      <div class="avatar-selector__grid">
+        @for (accesorio of accesorios(); track accesorio) {
+          <button
+            type="button"
+            class="avatar-selector__item"
+            [class.avatar-selector__item--selected]="accesorioSeleccionado() === accesorio"
+            (click)="seleccionarAccesorio(accesorio)"
+          >
+            <img [src]="getAccesorioSrc(accesorio)" [alt]="accesorio" />
+            <span>{{ accesorio }}</span>
+          </button>
+        }
+      </div>
+    }
+  }
+
+  @if (mensajeError()) {
+    <p class="avatar-selector__error">{{ mensajeError() }}</p>
+  }
+
+  <button type="button" class="avatar-selector__save" (click)="guardarCambios()">
+    Guardar Cambios
+  </button>
+</section>
+

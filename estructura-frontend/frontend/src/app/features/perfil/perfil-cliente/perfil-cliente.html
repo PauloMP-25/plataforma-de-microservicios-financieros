@@ -1,1 +1,104 @@
-<p>perfil-cliente works!</p>
+
+<section class="perfil-cliente">
+  <div class="perfil-cliente__layout">
+    <article class="perfil-cliente__card perfil-cliente__card--principal">
+      @if (loading()) {
+        <div class="perfil-cliente__skeleton perfil-cliente__skeleton--avatar"></div>
+        <div class="perfil-cliente__skeleton-grid">
+          @for (item of [1, 2, 3, 4, 5]; track item) {
+            <div class="perfil-cliente__skeleton"></div>
+          }
+        </div>
+      } @else {
+        <section class="perfil-cliente__avatar-col">
+          <app-avatar-display [avatarConfig]="avatarConfig()" [loading]="false" [size]="300" />
+          <button type="button" class="perfil-cliente__edit-avatar" (click)="abrirModalAvatar()">
+            Editar Avatar
+          </button>
+        </section>
+
+        <section class="perfil-cliente__info-col">
+          <header class="perfil-cliente__header">
+            <h1 class="perfil-cliente__title">Información básica</h1>
+          </header>
+
+          <div class="perfil-cliente__info-grid perfil-cliente__info-grid--single">
+            @for (campo of informacionBasica(); track campo.label) {
+              <div class="perfil-cliente__field">
+                <span class="perfil-cliente__label">{{ campo.label }}</span>
+                <span class="perfil-cliente__value">{{ campo.value }}</span>
+              </div>
+            }
+          </div>
+
+          @if (mensajeExito()) {
+            <p class="perfil-cliente__success" role="status">{{ mensajeExito() }}</p>
+          }
+        </section>
+      }
+    </article>
+
+    <article class="perfil-cliente__card perfil-cliente__card--insignias">
+      <header class="perfil-cliente__header">
+        <h2 class="perfil-cliente__title-seccion">Insignias Conseguidas</h2>
+      </header>
+
+      <div class="perfil-cliente__filtros" role="tablist" aria-label="Filtros de insignias">
+        @for (filtro of filtrosInsignias; track filtro) {
+          <button
+            type="button"
+            class="perfil-cliente__filtro-pill"
+            [class.perfil-cliente__filtro-pill--active]="filtroActivo() === filtro"
+            (click)="cambiarFiltroInsignias(filtro)"
+          >
+            {{ filtro }}
+          </button>
+        }
+      </div>
+
+      <div class="perfil-cliente__insignias-grid">
+        @for (insignia of insigniasFiltradas(); track insignia.titulo) {
+          <article class="perfil-cliente__insignia-item">
+            <div class="perfil-cliente__insignia-icono-wrap">
+              <img [src]="insignia.imagen" [alt]="insignia.titulo" class="perfil-cliente__insignia-icono" />
+            </div>
+            <h3 class="perfil-cliente__insignia-titulo">{{ insignia.titulo }}</h3>
+            <p class="perfil-cliente__insignia-descripcion">{{ insignia.descripcion }}</p>
+            <span
+              class="perfil-cliente__insignia-estado"
+              [class.perfil-cliente__insignia-estado--completado]="insignia.completado"
+            >
+              {{ insignia.completado ? 'COMPLETADO' : 'NO COMPLETADO' }}
+            </span>
+          </article>
+        }
+      </div>
+    </article>
+  </div>
+
+  @if (modalAbierto()) {
+    <div class="perfil-cliente__modal-backdrop" (click)="cerrarModalAvatar()">
+      <div class="perfil-cliente__modal" (click)="$event.stopPropagation()">
+        <div class="perfil-cliente__modal-header">
+          <h2>Editar Avatar</h2>
+          <button type="button" class="perfil-cliente__close" (click)="cerrarModalAvatar()">×</button>
+        </div>
+
+        <div class="perfil-cliente__modal-layout">
+          <section class="perfil-cliente__modal-preview">
+            <h3>Vista previa</h3>
+            <app-avatar-display [avatarConfig]="avatarConfig()" [loading]="false" [size]="300" />
+          </section>
+
+          <section class="perfil-cliente__modal-selector">
+            <app-avatar-selector
+              [avatarConfig]="avatarConfig()"
+              [loading]="loading()"
+              (save)="guardarAvatar($event)"
+            />
+          </section>
+        </div>
+      </div>
+    </div>
+  }
+</section>

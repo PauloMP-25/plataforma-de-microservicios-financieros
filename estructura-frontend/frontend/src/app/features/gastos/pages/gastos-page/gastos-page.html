@@ -1,1 +1,141 @@
-<p>gastos-page works!</p>
+<section class="gastos-page">
+  <header class="gastos-page__header">
+    <h1>Gestión de Gastos</h1>
+    <p>Controla tus salidas de dinero, diarias y recurrentes.</p>
+  </header>
+
+  <div class="gastos-page__acciones-top">
+    <button type="button" class="gastos-page__btn gastos-page__btn--principal" (click)="abrirModal()">+ Nuevo Registrar Gasto</button>
+    <button type="button" class="gastos-page__btn" [class.is-active]="tabActiva() === 'transacciones'" (click)="seleccionarTab('transacciones')">Transacciones</button>
+    <button type="button" class="gastos-page__btn" [class.is-active]="tabActiva() === 'analisis'" (click)="seleccionarTab('analisis')">Análisis</button>
+    <button type="button" class="gastos-page__btn" [class.is-active]="tabActiva() === 'presupuestos'" (click)="seleccionarTab('presupuestos')">Presupuestos</button>
+  </div>
+
+  <div class="gastos-page__kpis">
+    <article class="gastos-page__kpi gastos-page__kpi--rojo">
+      <span>TOTAL GASTADO</span>
+      <strong>S/ {{ totalGastado().toFixed(2) }}</strong>
+    </article>
+    <article class="gastos-page__kpi gastos-page__kpi--verde">
+      <span>SALDO ACTUAL</span>
+      <strong>S/ 0.00</strong>
+    </article>
+  </div>
+
+  <div class="gastos-page__toolbar">
+    <input
+      type="search"
+      placeholder="Buscar gasto"
+      [value]="terminoBusqueda()"
+      (input)="actualizarBusqueda($any($event.target).value)"
+      aria-label="Buscar gasto"
+    />
+    <button type="button" class="gastos-page__btn-tool">Exportar Excel</button>
+    <button type="button" class="gastos-page__btn-tool">PDF</button>
+    <button type="button" class="gastos-page__btn-tool">Filtrar</button>
+  </div>
+
+  <div class="gastos-page__bloques">
+    <section class="gastos-page__bloque">
+      <header>
+        <h3>Pendiente</h3>
+        <span>Total S/ {{ totalPendiente().toFixed(2) }}</span>
+      </header>
+      <div class="gastos-page__estado-vacio">
+        <p>No hay gastos registrados</p>
+      </div>
+    </section>
+
+    <section class="gastos-page__bloque">
+      <header>
+        <h3>Pagado</h3>
+        <span>Total S/ {{ totalPagado().toFixed(2) }}</span>
+      </header>
+
+      @if (cargando()) {
+        <div class="gastos-page__estado-vacio">
+          <p>Cargando gastos...</p>
+        </div>
+      } @else {
+        @if (gastosPagados().length === 0) {
+          <div class="gastos-page__estado-vacio">
+            <p>No hay gastos registrados</p>
+          </div>
+        } @else {
+          <ul class="gastos-page__lista">
+            @for (gasto of gastosPagados(); track gasto.id) {
+              <li>
+                <div>
+                  <strong>{{ gasto.categoriaNombre }}</strong>
+                  <small>{{ gasto.fechaTransaccion }}</small>
+                </div>
+                <div class="gastos-page__monto">S/ {{ gasto.monto.toFixed(2) }}</div>
+              </li>
+            }
+          </ul>
+        }
+      }
+    </section>
+  </div>
+
+  <button type="button" class="gastos-page__fab" (click)="abrirModal()" aria-label="Agregar gasto">+</button>
+
+  @if (modalAbierto()) {
+    <div class="gastos-page__overlay" (click)="cerrarModal()">
+      <div class="gastos-page__modal" (click)="$event.stopPropagation()">
+        <header class="gastos-page__modal-header">
+          <h2>Registrar gasto</h2>
+          <button type="button" class="gastos-page__close" (click)="cerrarModal()">×</button>
+        </header>
+
+        <div class="gastos-page__form-grid">
+          <label>
+            Categoría
+            <select [value]="categoria()" (change)="categoria.set($any($event.target).value)">
+              <option value="">Selecciona una categoría</option>
+              @for (cat of categoriasDisponibles; track cat.id) {
+                <option [value]="cat.id">{{ cat.nombre }}</option>
+              }
+            </select>
+            @if (errores()['categoria']) { <small class="gastos-page__error">{{ errores()['categoria'] }}</small> }
+          </label>
+
+          <label>
+            Monto
+            <input type="number" min="0" step="0.01" [value]="monto()" (input)="monto.set($any($event.target).value)" />
+            @if (errores()['monto']) { <small class="gastos-page__error">{{ errores()['monto'] }}</small> }
+          </label>
+
+          <label class="gastos-page__form-col-full">
+            Descripción
+            <textarea rows="3" [value]="descripcion()" (input)="descripcion.set($any($event.target).value)"></textarea>
+            @if (errores()['descripcion']) { <small class="gastos-page__error">{{ errores()['descripcion'] }}</small> }
+          </label>
+
+          <label>
+            Fecha
+            <input type="date" [value]="fecha()" (input)="fecha.set($any($event.target).value)" />
+            @if (errores()['fecha']) { <small class="gastos-page__error">{{ errores()['fecha'] }}</small> }
+          </label>
+
+          <fieldset>
+            <legend>Tipo</legend>
+            <label><input type="radio" name="frecuencia" [checked]="tipoFrecuencia() === 'DIARIO'" (change)="tipoFrecuencia.set('DIARIO')" /> Diario</label>
+            <label><input type="radio" name="frecuencia" [checked]="tipoFrecuencia() === 'RECURRENTE'" (change)="tipoFrecuencia.set('RECURRENTE')" /> Recurrente</label>
+          </fieldset>
+        </div>
+
+        @if (mensajeFormulario()) {
+          <p class="gastos-page__error gastos-page__error--global">{{ mensajeFormulario() }}</p>
+        }
+
+        <footer class="gastos-page__modal-actions">
+          <button type="button" class="gastos-page__btn-cancel" (click)="cerrarModal()">Cancelar</button>
+          <button type="button" class="gastos-page__btn-save" [disabled]="guardandoGasto()" (click)="guardarGasto()">
+            {{ guardandoGasto() ? 'Guardando...' : 'Guardar' }}
+          </button>
+        </footer>
+      </div>
+    </div>
+  }
+</section>
