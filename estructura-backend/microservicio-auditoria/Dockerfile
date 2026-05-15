@@ -10,18 +10,18 @@ FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
 WORKDIR /build
 
 # 1. Primero instalamos la librería común localmente en el contenedor
-COPY libreria-comun ./libreria-comun
+COPY estructura-backend/libreria-comun ./libreria-comun
 RUN cd libreria-comun && mvn install -DskipTests -B
 
 # 2. Ahora preparamos el microservicio-auditoria
 WORKDIR /build/microservicio-auditoria
-COPY microservicio-auditoria/pom.xml .
+COPY estructura-backend/microservicio-auditoria/pom.xml .
 
 # Descargamos dependencias (esta capa se cachea)
 RUN mvn dependency:go-offline -B
 
 # Copiamos el código fuente y compilamos
-COPY microservicio-auditoria/src ./src
+COPY estructura-backend/microservicio-auditoria/src ./src
 
 # Compilamos usando mvn directamente
 RUN mvn package -DskipTests -B
@@ -60,7 +60,7 @@ COPY --from=builder --chown=lukaapp:lukaapp /build/extracted/application/ ./
 USER lukaapp
 
 # Puerto expuesto (cada servicio puede sobreescribirlo con --build-arg)
-ARG APP_PORT=8080
+ARG APP_PORT=8082
 EXPOSE ${APP_PORT}
 
 # Health check interno del contenedor
@@ -76,9 +76,9 @@ ENTRYPOINT ["dumb-init", "--"]
 #   -XX:+UseG1GC                   → recolector G1 equilibrado para microservicios
 #   -Djava.security.egd            → inicio más rápido evitando bloqueos de /dev/random
 CMD ["java", \
-     "-XX:+UseContainerSupport", \
-     "-XX:MaxRAMPercentage=75.0", \
-     "-XX:+UseG1GC", \
-     "-Djava.security.egd=file:/dev/./urandom", \
-     "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:docker}", \
-     "org.springframework.boot.loader.launch.JarLauncher"]
+    "-XX:+UseContainerSupport", \
+    "-XX:MaxRAMPercentage=75.0", \
+    "-XX:+UseG1GC", \
+    "-Djava.security.egd=file:/dev/./urandom", \
+    "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:docker}", \
+    "org.springframework.boot.loader.launch.JarLauncher"]

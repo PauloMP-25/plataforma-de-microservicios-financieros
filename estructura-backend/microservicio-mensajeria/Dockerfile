@@ -10,18 +10,18 @@ FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
 WORKDIR /build
 
 # 1. Primero instalamos la librería común localmente en el contenedor
-COPY libreria-comun ./libreria-comun
+COPY estructura-backend/libreria-comun ./libreria-comun
 RUN cd libreria-comun && mvn install -DskipTests -B
 
 # 2. Ahora preparamos el microservicio-mensajeria
 WORKDIR /build/microservicio-mensajeria
-COPY microservicio-mensajeria/pom.xml .
+COPY estructura-backend/microservicio-mensajeria/pom.xml .
 
 # Descargamos dependencias (esta capa se cachea)
 RUN mvn dependency:go-offline -B
 
 # Copiamos el código fuente y compilamos
-COPY microservicio-mensajeria/src ./src
+COPY estructura-backend/microservicio-mensajeria/src ./src
 
 # Compilamos usando mvn directamente
 RUN mvn package -DskipTests -B
@@ -60,7 +60,7 @@ COPY --from=builder --chown=lukaapp:lukaapp /build/extracted/application/ ./
 USER lukaapp
 
 # Puerto expuesto (cada servicio puede sobreescribirlo con --build-arg)
-ARG APP_PORT=8080
+ARG APP_PORT=8084
 EXPOSE ${APP_PORT}
 
 # Health check interno del contenedor

@@ -41,30 +41,32 @@ public class ConfiguracionSeguridadGateway {
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
-                // Sin estado: APIs REST no usan sesiones ni cookies CSRF
+                // 1. Configuramos la base (Stateless, Sin sesiones)
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
-
-                // Sin sesiones: la autenticación es stateless via JWT
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
 
+                // 2. Definimos las reglas del Gateway (De lo más específico a lo general)
                 .authorizeExchange(exchanges -> exchanges
-                        // Rutas completamente públicas a nivel de Security
+                        // Monitoreo y Documentación (Público)
                         .pathMatchers(
+                                "/actuator/**",
+                                "/error/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/api/v1/auth/**",
-                                "/api/v1/mensajeria/otp/**",
-                                "/actuator/**")
+                                "/swagger-ui.html")
                         .permitAll()
-                        // Todo lo demás: Security lo "permite" porque el
-                        // FiltroJwtGlobal ya se encarga de la validación real.
-                        // Si dejáramos .authenticated() aquí, necesitaríamos
-                        // implementar un ReactiveAuthenticationManager completo.
+
+                        // Endpoints Públicos de Negocio
+                        .pathMatchers(
+                                "/api/v1/auth/**",
+                                "/api/v1/mensajeria/otp/**")
+                        .permitAll()
+
+                        // 3. BLOQUEO TOTAL (Security lo permite porque FiltroJwtGlobal valida)
                         .anyExchange().permitAll())
 
-                // Respuesta personalizada para 401 (cuando Security lo rechaza)
+                // Respuesta personalizada para 401
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((exchange, e) -> {
                             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);

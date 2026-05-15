@@ -21,28 +21,22 @@ public class ConfiguracionSeguridadEureka {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            // Sin esto, los microservicios clientes NO pueden registrarse
-            // porque sus peticiones POST de heartbeat fallan con 403.
-            .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/eureka/**")
-            )
-            .authorizeHttpRequests(auth -> auth
-                // El actuator de health es público para que el Gateway y otros sistemas puedan verificar el estado.
-                // --- Monitoreo y Documentación (Público) ---
-                .requestMatchers("/actuator/**").permitAll()
-                .requestMatchers(
-                        "/v3/api-docs/**",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html"
-                ).permitAll()
+        // 1. Configuración de infraestructura Eureka
+        http.csrf(csrf -> csrf.ignoringRequestMatchers("/eureka/**"));
+
+        // 2. Reglas de acceso (Monitoreo y Dashboard)
+        http.authorizeHttpRequests(auth -> auth
+                // Monitoreo y Documentación (Público)
+                .requestMatchers("/actuator/**", "/error/**").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
+                // Dashboard y registro requieren autenticación
                 .anyRequest().authenticated()
-            )
-            // Activa el formulario de login del dashboard web
-            .formLogin(Customizer.withDefaults())
-            // Activa HTTP Basic para que los clientes Eureka puedan
-            // autenticarse en la URL de registro
-            .httpBasic(Customizer.withDefaults());
+        );
+
+        // 3. Mecanismos de Autenticación
+        http.formLogin(Customizer.withDefaults()) // Dashboard web
+                .httpBasic(Customizer.withDefaults()); // Clientes Eureka
 
         return http.build();
     }

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../enviroments/enviroments';
+import { environment } from '../../enviroments/environment';
 import { AuthService } from './auth.service';
 import {
   TransaccionDTO,

@@ -17,4 +17,5 @@ public record SolicitudGenerarOtp(
 
         @NotNull(message = "El propósito es obligatorio")
                 com.libreria.comun.enums.PropositoCodigo proposito
-) {}
+) {
+}

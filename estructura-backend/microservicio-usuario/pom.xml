@@ -76,27 +76,7 @@
             <version>2.8.5</version>
         </dependency>
 
-        <!-- TESTING -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>postgresql</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>rabbitmq</artifactId>
-            <scope>test</scope>
-        </dependency>
+
         <!-- REDIS: Para Blacklist de JWT (Logout) y caché -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -107,6 +87,11 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+        <!-- ACTUATOR: Render consultara el endpoint de salud del microservicio -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
     </dependencies>
     <dependencyManagement>

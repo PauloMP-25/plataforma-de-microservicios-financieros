@@ -30,31 +30,37 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
     }
 
     /**
-     * Define la cadena de filtros de seguridad.
-     * Inyecta la configuración base y añade reglas específicas del negocio.
+     * Configura la cadena de filtros de seguridad específica para el microservicio
+     * de auditoría.
+     * 
+     * @param http Configuración HttpSecurity.
+     * @return SecurityFilterChain configurado.
+     * @throws Exception Si ocurre un error en la configuración.
      */
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return configurarAutorizacion(http).build();
-    }
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-    @Override
-    protected HttpSecurity configurarAutorizacion(HttpSecurity http) throws Exception {
-        // Desactivamos CSRF ya que usamos JWT (Stateless)
-        http.csrf(csrf -> csrf.disable());
+        // 1. Configuramos la base (JWT, Stateless, Exception handling)
+        super.configurarAutorizacion(http);
 
+        // 2. Definimos las reglas de este microservicio (De lo más específico a lo
+        // general)
         http.authorizeHttpRequests(auth -> auth
                 // Endpoints públicos o de infraestructura
                 .requestMatchers("/api/v1/auditoria/seguridad/verificar-ip/**").permitAll()
-                
+
                 // Las consultas detalladas de auditoría solo para administradores
                 .requestMatchers(HttpMethod.GET, "/api/v1/auditoria/accesos/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/v1/auditoria/registros/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/v1/auditoria/transacciones/**").hasRole("ADMIN")
 
-                // El resto de rutas heredadas (Swagger, Actuator) y autenticación general
+                // Monitoreo y Documentación (Público)
+                .requestMatchers("/actuator/**", "/error/**").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
+                // 3. BLOQUEO TOTAL AL FINAL
                 .anyRequest().authenticated());
 
-        return super.configurarAutorizacion(http);
+        return http.build();
     }
 }

@@ -39,8 +39,19 @@ export interface SolicitudRecuperacion {
   correo: string;
 }
 
-export interface NuevoPasswordDTO {
-  codigoOtp:        string;
-  nuevoPassword:    string;
+export interface SolicitudCambioPassword {
+  passwordActual: string;
+  nuevoPassword: string;
   confirmarPassword: string;
+}
+
+export interface SolicitudRestablecerPassword {
+  nuevoPassword: string;
+  confirmarPassword: string;
+}
+
+export interface SolicitudResetPassword {
+  registroId: string;
+  codigoOtp: string;
+  payload: SolicitudRestablecerPassword;
 }

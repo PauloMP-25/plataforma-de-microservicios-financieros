@@ -8,12 +8,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
  * Configuración de Seguridad para el Núcleo Financiero.
- * Extiende de {@link ConfiguracionSeguridadBase} para heredar la lógica de autenticación JWT.
+ * Extiende de {@link ConfiguracionSeguridadBase} para heredar la lógica de
+ * autenticación JWT.
  * Define reglas de autorización específicas para este microservicio.
  *
  * @author Luka-Dev-Backend
@@ -29,25 +29,32 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
     }
 
     /**
-     * Define la cadena de filtros de seguridad específica para el Núcleo Financiero.
+     * Configura la cadena de filtros de seguridad específica para el microservicio
+     * de núcleo financiero.
+     * 
      * @param http Configuración de seguridad
      * @return SecurityFilterChain configurado
      * @throws Exception Si ocurre un error en la configuración
      */
     @Bean
-    public SecurityFilterChain cadenaFiltros(HttpSecurity http) throws Exception {
-        // Deshabilitar CSRF (estándar para APIs Stateless)
-        http.csrf(AbstractHttpConfigurer::disable);
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        // Aplicar configuración base (JWT, Actuator, Swagger)
-        configurarAutorizacion(http);
+        // 1. Configuramos la base (JWT, Stateless, Exception handling)
+        super.configurarAutorizacion(http);
 
-        // Añadir reglas de autorización específicas del dominio financiero
+        // 2. Definimos las reglas de este microservicio (De lo más específico a lo
+        // general)
         http.authorizeHttpRequests(auth -> auth
+                // Endpoints de negocio financiero
                 .requestMatchers("/api/v1/financiero/categorias/**").hasAnyRole("USUARIO", "ADMIN")
                 .requestMatchers("/api/v1/financiero/transacciones/**").hasAnyRole("USUARIO", "ADMIN")
-                .anyRequest().authenticated()
-        );
+
+                // Monitoreo y Documentación (Público)
+                .requestMatchers("/actuator/**", "/error/**").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
+                // 3. BLOQUEO TOTAL AL FINAL
+                .anyRequest().authenticated());
 
         return http.build();
     }
