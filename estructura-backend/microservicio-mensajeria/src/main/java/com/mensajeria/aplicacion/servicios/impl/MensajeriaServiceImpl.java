@@ -15,7 +15,7 @@ import com.mensajeria.aplicacion.servicios.NotificacionService;
 import com.mensajeria.aplicacion.servicios.TipoNotificacion;
 import java.util.Map;
 import com.mensajeria.infraestructura.clientes.ClienteUsuario;
-import com.mensajeria.infraestructura.clientes.UsuarioFeignClient;
+import com.mensajeria.infraestructura.clientes.ClienteActualizarTelefono;
 import com.mensajeria.infraestructura.mensajeria.PublicadorAuditoria;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +50,7 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
     private final NotificacionService notificacionService;
     private final IThrottlingService throttlingService;
     private final ClienteUsuario clienteUsuario;
-    private final UsuarioFeignClient usuarioFeignClient;
+    private final ClienteActualizarTelefono usuarioFeignClient;
     private final PublicadorAuditoria publicadorAuditoria;
 
     private static final SecureRandom RANDOM = new SecureRandom();

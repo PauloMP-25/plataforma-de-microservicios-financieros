@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**
- * Fallback de Resilience4j para {@link UsuarioFeignClient}.
+ * Fallback de Resilience4j para {@link ClienteActualizarTelefono}.
  * <p>
  * Si el ms-usuario no responde o falla, esta implementación es invocada
  * automáticamente. El flujo de negocio <strong>no muere</strong>: el OTP ya
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Slf4j
-public class UsuarioFeignClientFallback implements UsuarioFeignClient {
+public class ClienteActualizarTelefonoFallback implements ClienteActualizarTelefono {
 
     /**
      * Fallback del endpoint de sincronización de teléfono.

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  * </p>
  * <p>
  * Si el ms-usuario no responde, Resilience4j activa
- * {@link UsuarioFeignClientFallback}, que devuelve
+ * {@link ClienteActualizarTelefonoFallback}, que devuelve
  * {@code "SINCRONIZACION_PENDIENTE"} sin bloquear el flujo del usuario.
  * </p>
  *
@@ -31,9 +31,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(
     name = "microservicio-usuario",
     url = "${microservicio.usuario.url:http://localhost:8081}",
-    fallback = UsuarioFeignClientFallback.class
+    fallback = ClienteActualizarTelefonoFallback.class
 )
-public interface UsuarioFeignClient {
+public interface ClienteActualizarTelefono {
 
     /**
      * Actualiza el número de teléfono verificado del usuario en el ms-usuario.

@@ -4,10 +4,12 @@ import com.libreria.comun.seguridad.ConfiguracionSeguridadBase;
 import com.libreria.comun.seguridad.FiltroJwt;
 import com.libreria.comun.seguridad.PuntoEntradaJwt;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 
 /**
  * Configuración de seguridad específica para el microservicio de cliente.
@@ -34,47 +36,45 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
     }
 
     /**
-     * Define la configuración de la cadena de filtros de seguridad.
+     * Configura la cadena de filtros de seguridad específica para el microservicio
+     * de cliente.
      * 
      * @param http Configuración de seguridad de Spring.
      * @return {@link SecurityFilterChain} configurado.
      * @throws Exception Si ocurre un error en la configuración.
      */
-    @org.springframework.context.annotation.Bean
-    public org.springframework.security.web.SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return configurarAutorizacion(http).build();
-    }
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-    @Override
-    protected HttpSecurity configurarAutorizacion(HttpSecurity http) throws Exception {
+        // 1. Configuramos la base (JWT, Stateless, Exception handling)
+        super.configurarAutorizacion(http);
+
+        // 2. Definimos las reglas de este microservicio (De lo más específico a lo
+        // general)
         http.authorizeHttpRequests(auth -> auth
-                // ── Endpoints internos (comunicación inter-microservicio) ──────
-                // Se permiten todos los métodos para /interno/ ya que es comunicación de confianza
+                // Endpoints internos (comunicación inter-microservicio)
                 .requestMatchers("/api/v1/clientes/interno/**").permitAll()
 
-                // ── Perfil de datos personales ────────────────────────────────
+                // Perfil de datos personales
                 .requestMatchers(HttpMethod.PUT, "/api/v1/clientes/perfil/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/clientes/perfil/**").authenticated()
 
-                // ── Perfil financiero ─────────────────────────────────────────
+                // Perfil financiero
                 .requestMatchers("/api/v1/clientes/perfil-financiero/**").authenticated()
 
-                // ── Metas de ahorro ───────────────────────────────────────────
+                // Metas de ahorro
                 .requestMatchers("/api/v1/clientes/metas/**").authenticated()
 
-                // ── Límites de gasto ──────────────────────────────────────────
+                // Límites de gasto
                 .requestMatchers("/api/v1/clientes/limites/**").authenticated()
 
-                // ── Infraestructura ───────────────────────────────────────────
-                .requestMatchers("/error").permitAll()
-                // --- Monitoreo y Documentación (Público) ---
-                .requestMatchers("/actuator/**").permitAll()
-                .requestMatchers(
-                        "/v3/api-docs/**",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html")
-                .permitAll()
+                // Monitoreo y Documentación (Público)
+                .requestMatchers("/actuator/**", "/error/**").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
+                // 3. BLOQUEO TOTAL AL FINAL
                 .anyRequest().authenticated());
-        return super.configurarAutorizacion(http);
+
+        return http.build();
     }
 }

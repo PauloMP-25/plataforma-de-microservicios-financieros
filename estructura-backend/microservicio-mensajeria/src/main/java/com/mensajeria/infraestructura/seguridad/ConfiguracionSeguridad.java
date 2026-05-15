@@ -5,7 +5,6 @@ import com.libreria.comun.seguridad.FiltroJwt;
 import com.libreria.comun.seguridad.PuntoEntradaJwt;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -49,33 +48,36 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
      * que son públicos por diseño (el usuario aún no está autenticado cuando
      * solicita o valida su OTP).
      * </p>
-     *
+     * 
      * @param http Objeto de configuración de Spring Security.
      * @return {@link SecurityFilterChain} con las reglas de este microservicio.
      * @throws Exception si la configuración de Spring Security falla.
      */
     @Bean
-    public SecurityFilterChain cadenaFiltrosSeguridad(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+        // 1. Configuramos la base (JWT, Stateless, Exception handling)
         super.configurarAutorizacion(http);
 
-        // 2. Añadimos las reglas específicas del microservicio
+        // 2. Definimos las reglas de este microservicio (De lo más específico a lo
+        // general)
         http.authorizeHttpRequests(auth -> auth
-                // Rutas públicas de este microservicio
-                .requestMatchers("/api/v1/clientes/interno/**").permitAll()
+                // Rutas públicas comunicacion interna
+                .requestMatchers("/api/v1/auth/**").permitAll()
+                .requestMatchers("/api/v1/datos-personales/**").permitAll()
 
-                // --- Monitoreo y Documentación ---
-                // Nota: Tu librería ya tiene esto, pero ponerlo aquí explícitamente no falla
-                // siempre y cuando se haga ANTES del anyRequest.
+                // Endpoints de OTP son públicos (se validan internamente por UUID/Código)
+                .requestMatchers("/api/v1/mensajeria/otp/**").permitAll()
+
+                // Endpoints de administración requerirán ADMIN
+                .requestMatchers("/api/v1/mensajeria/admin/**").hasRole("ADMIN")
+
+                // Monitoreo y Documentación (Público)
                 .requestMatchers("/actuator/**", "/error/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
-                // Rutas protegidas
-                .requestMatchers(HttpMethod.GET, "/api/v1/clientes/perfil/**").authenticated()
-                .requestMatchers("/api/v1/clientes/metas/**").authenticated()
-
-                // 3. EL CIERRE TOTAL SIEMPRE AL FINAL
-                .anyRequest().authenticated()
-        );
+                // 3. BLOQUEO TOTAL AL FINAL
+                .anyRequest().authenticated());
 
         return http.build();
     }
