@@ -17,7 +17,9 @@ import { environment } from '../../enviroments/environment';
 import {
   SolicitudLogin, SolicitudRegistro,
   RespuestaAutenticacion, UsuarioSesion,
-  SolicitudRecuperacion, NuevoPasswordDTO
+  SolicitudRecuperacion,
+  SolicitudCambioPassword,
+  SolicitudResetPassword
 } from '../models/auth/user.model';
 
 const TOKEN_KEY   = 'luka_token';
@@ -58,8 +60,23 @@ export class AuthService {
   }
 
   // ── Reset password ──
-  resetPassword(dto: NuevoPasswordDTO): Observable<any> {
-    return this.http.post(`${this.base}/reset-password`, dto);
+  resetPassword(dto: SolicitudResetPassword): Observable<any> {
+    const params = new URLSearchParams({
+      registroId: dto.registroId,
+      codigoOtp: dto.codigoOtp
+    });
+
+    return this.http.post(`${this.base}/reset-password?${params.toString()}`, dto.payload);
+  }
+
+  // ── Cambiar password (usuario autenticado) ──
+  cambiarPassword(solicitud: SolicitudCambioPassword): Observable<any> {
+    return this.http.put(`${this.base}/cambiar-password`, solicitud);
+  }
+
+  // ── Logout backend ──
+  cerrarSesionBackend(): Observable<any> {
+    return this.http.post(`${this.base}/logout`, {});
   }
 
   // ── Logout ──
