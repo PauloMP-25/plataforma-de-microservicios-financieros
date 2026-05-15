@@ -186,6 +186,28 @@ services:
         limits:
           memory: 450M
 
+  ms-pagos:
+    <<: *spring-base
+    container_name: luka-ms-pago
+    build:
+      context: ../microservicio-pago
+      dockerfile: Dockerfile.local
+    environment:
+      <<: *env-common
+      SERVER_PORT: 8087
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_pagos?sslmode=require
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+    depends_on:
+      - eureka-server
+    deploy:
+      resources:
+        limits:
+          memory: 450M
+
   api-gateway:
     <<: *spring-base
     container_name: luka-gateway
