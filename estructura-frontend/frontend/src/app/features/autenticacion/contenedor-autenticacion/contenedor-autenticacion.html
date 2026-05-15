@@ -1,0 +1,82 @@
+<section class="auth" id="pagina-auth">
+  <!-- Fondo global animado -->
+  <div class="auth__fondo">
+    <div class="auth__orbe auth__orbe--1"></div>
+    <div class="auth__orbe auth__orbe--2"></div>
+    <div class="auth__rejilla"></div>
+  </div>
+
+  <a routerLink="/inicio" class="auth__volver" id="btn-volver-inicio">
+    <i class="fas fa-arrow-left"></i> Volver al inicio
+  </a>
+
+  <!-- Contenedor Maestro -->
+  <div class="auth__contenedor-maestro"
+       [class.mostrar-registro]="vistaActual === 'registro'"
+       [class.mostrar-verificar]="vistaActual === 'verificar'"
+       [class.mostrar-exito]="vistaActual === 'exito'">
+    
+    <!-- Panel de Formularios (Deslizante) -->
+    <div class="auth__formulario-contenedor">
+      <!-- Login -->
+      <div class="auth__formulario-interior" [class.activo]="vistaActual === 'login'">
+        <app-iniciar-sesion></app-iniciar-sesion>
+      </div>
+      <!-- Registro -->
+      <div class="auth__formulario-interior" [class.activo]="vistaActual === 'registro'">
+        <app-crear-cuenta (registroExitoso)="onRegistroExitoso($event)"></app-crear-cuenta>
+      </div>
+      <!-- Verificar Código (post-registro) -->
+      <div class="auth__formulario-interior" [class.activo]="vistaActual === 'verificar'">
+        <app-verificar-codigo
+          [embebido]="true"
+          [medioVerificacion]="medioVerificacion"
+          [destinoVerificacion]="destinoVerificacion"
+          (codigoVerificado)="onCodigoVerificado($event)">
+        </app-verificar-codigo>
+      </div>
+      <!-- Éxito -->
+      <div class="auth__formulario-interior" [class.activo]="vistaActual === 'exito'" style="text-align: center;">
+        <div class="auth__icono-titulo" style="font-size: 3rem; color: #22C55E; margin: 0 auto 16px;">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h1 style="font-family: 'Poppins', sans-serif; font-size: 1.8rem; font-weight: 800; margin-bottom: 10px;">¡Cuenta Creada Exitosamente!</h1>
+        <p style="color: #8B8FA3; font-size: 0.95rem; margin-bottom: 32px;">Tu cuenta ha sido verificada. Ya puedes iniciar sesión y comenzar a dominar tus finanzas.</p>
+        <button class="auth__btn-submit" (click)="cambiarVista('login')" id="btn-ir-login-exito">
+          Ir a Iniciar Sesión <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Panel Lateral Informativo (Deslizante) -->
+    <div class="auth__lateral-contenedor">
+      <!-- Lateral para Login -->
+      <div class="auth__lateral-interior" [class.activo]="vistaActual === 'login'">
+        <h2>¿Listo para el control?</h2>
+        <p>Únete a miles de usuarios que ya dominan sus finanzas con IA. Tu libertad financiera comienza aquí.</p>
+        <button class="auth__btn-lateral" (click)="cambiarVista('registro')" id="btn-ir-registro">
+          Crear Cuenta
+        </button>
+      </div>
+      
+      <!-- Lateral para Registro -->
+      <div class="auth__lateral-interior" [class.activo]="vistaActual === 'registro'">
+        <h2>¡Hola de nuevo!</h2>
+        <p>Tus finanzas te esperan. Retoma el control de tu dinero y alcanza tus metas financieras.</p>
+        <button class="auth__btn-lateral" (click)="cambiarVista('login')" id="btn-ir-login">
+          Iniciar Sesión
+        </button>
+      </div>
+
+      <!-- Lateral para Verificación y Éxito -->
+      <div class="auth__lateral-interior" [class.activo]="vistaActual === 'verificar' || vistaActual === 'exito'">
+        <h2>{{ vistaActual === 'exito' ? '¡Todo listo!' : '¡Casi listo!' }}</h2>
+        <p>{{ vistaActual === 'exito' ? 'Bienvenido a la plataforma. Tu viaje hacia la libertad financiera comienza ahora.' : 'Solo falta verificar tu cuenta para empezar a dominar tus finanzas con inteligencia artificial.' }}</p>
+        <button class="auth__btn-lateral" (click)="cambiarVista('login')" id="btn-ir-login-desde-lateral" *ngIf="vistaActual !== 'exito'">
+          Ya tengo cuenta
+        </button>
+      </div>
+    </div>
+
+  </div>
+</section>
