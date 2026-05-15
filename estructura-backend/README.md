@@ -12,6 +12,7 @@ Esta carpeta contiene la lógica de negocio, servicios de infraestructura y mód
 | `microservicio-auditoria` | Registro centralizado de eventos y trazabilidad. | Java / Spring Boot |
 | `microservicio-ia` | Análisis de transacciones, detección de anomalías y predicciones. | Python / Flask-FastAPI |
 | `microservicio-mensajeria` | Gestión de notificaciones, OTP (Twilio) y correos (Gmail). | Java / Spring Boot |
+| `microservicio-pago` | Gestión de pagos y suscripciones mediante Stripe. | Java / Spring Boot |
 
 ## Requisitos previos
 

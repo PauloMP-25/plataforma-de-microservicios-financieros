@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: ms-pagos
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://ep-super-king-aqa9cmhx-pooler.c-8.us-east-1.aws.neon.tech/db_microservicio_pagos?sslmode=require}
+    username: ${DATABASE_USER:neondb_owner}
+    password: ${DATABASE_PASSWORD:npg_fRA6mI4navZs}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+  rabbitmq:
+    host: ${RABBIT_HOST:localhost}
+    port: ${RABBIT_PORT:5672}
+    username: ${RABBIT_USER:guest}
+    password: ${RABBIT_PASS:guest}
+
+server:
+  port: 8087
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
+
+luka:
+  jwt:
+    clave-secreta: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    expiracion-ms: 86400000
+
+stripe:
+  api-key: ${STRIPE_SECRET_KEY}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET}
+  success-url: ${FRONTEND_URL:http://localhost:3000}/suscripcion/exito
+  cancel-url: ${FRONTEND_URL:http://localhost:3000}/suscripcion/cancelado

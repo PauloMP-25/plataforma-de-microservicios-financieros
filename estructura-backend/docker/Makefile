@@ -52,7 +52,7 @@ local-infra:
 
 local-ms:
 	@echo "$(CYAN)▶ Iniciando Etapa 2: Microservicios Core...$(NC)"
-	$(COMPOSE_LOCAL) up -d ms-usuario ms-cliente ms-mensajeria ms-auditoria
+	$(COMPOSE_LOCAL) up -d ms-usuario ms-cliente ms-mensajeria ms-auditoria ms-pagos
 	@echo "$(GREEN)✔ Microservicios Core iniciados.$(NC)"
 
 local-ia:
