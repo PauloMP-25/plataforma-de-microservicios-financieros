@@ -9,8 +9,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
 @Repository
-public interface MetaAhorroRepositorio extends JpaRepository<MetaAhorro, UUID> {
+public interface MetaAhorroRepositorio extends JpaRepository<MetaAhorro, UUID>, JpaSpecificationExecutor<MetaAhorro> {
 
     List<MetaAhorro> findByUsuarioIdOrderByFechaCreacionDesc(UUID usuarioId);
 

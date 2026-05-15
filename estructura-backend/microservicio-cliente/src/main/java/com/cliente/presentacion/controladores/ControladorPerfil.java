@@ -1,11 +1,14 @@
 package com.cliente.presentacion.controladores;
 
-import com.cliente.aplicacion.dtos.*;
+import com.cliente.aplicacion.dtos.RespuestaDatosPersonales;
+import com.cliente.aplicacion.dtos.SolicitudDatosPersonales;
 import com.cliente.aplicacion.servicios.ServicioDatosPersonales;
-import com.cliente.infraestructura.seguridad.FiltroJwt;
-import com.cliente.infraestructura.utilidades.UtilidadIp;
+import com.libreria.comun.utilidades.UtilidadIp;
+import com.libreria.comun.utilidades.UtilidadSeguridad;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import com.libreria.comun.respuesta.ResultadoApi;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -18,9 +21,9 @@ import java.util.UUID;
  * Controlador para la gestión del perfil de datos personales del cliente.
  *
  * Rutas:
- *   POST   /api/v1/clientes/perfil/inicial          → crea perfil vacío (llamado por IAM)
- *   PUT    /api/v1/clientes/perfil/{usuarioId}       → actualizar datos personales
- *   GET    /api/v1/clientes/perfil/{usuarioId}       → consultar datos personales
+ * POST /api/v1/clientes/perfil/inicial → crea perfil vacío (llamado por IAM)
+ * PUT /api/v1/clientes/perfil/{usuarioId} → actualizar datos personales
+ * GET /api/v1/clientes/perfil/{usuarioId} → consultar datos personales
  */
 @RestController
 @RequestMapping("/api/v1/clientes/perfil")
@@ -33,52 +36,54 @@ public class ControladorPerfil {
     /**
      * Crea el perfil vacío inicial tras el registro.
      * Endpoint interno — sin autenticación JWT (permitAll en seguridad).
-     * @param usuarioId
-     * @return 
+     * 
+     * @param usuarioId ID del usuario
+     * @return ResultadoApi con el perfil inicial creado
      */
     @PostMapping("/inicial")
-    public ResponseEntity<RespuestaDatosPersonales> crearPerfilInicial(
+    public ResponseEntity<ResultadoApi<RespuestaDatosPersonales>> crearPerfilInicial(
             @RequestParam UUID usuarioId) {
         log.info("Creando perfil inicial para usuarioId={}", usuarioId);
+        RespuestaDatosPersonales respuesta = servicio.crearPerfil(usuarioId);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(servicio.crearPerfil(usuarioId));
+                .body(ResultadoApi.creado(respuesta, "Perfil inicial creado exitosamente."));
     }
 
     /**
      * Actualiza los datos personales del cliente autenticado.
-     * @param usuarioId
-     * @param solicitud
-     * @param request
-     * @return 
+     * 
+     * @param usuarioId Identificador del usuario en la ruta
+     * @param solicitud DTO con los datos personales a actualizar
+     * @param request   Petición HTTP para extraer la IP
+     * @return ResultadoApi con el perfil actualizado
      */
-    @PutMapping
-    public ResponseEntity<RespuestaDatosPersonales> actualizar(
+    @PutMapping("/{usuarioId}")
+    public ResponseEntity<ResultadoApi<RespuestaDatosPersonales>> actualizar(
             @PathVariable UUID usuarioId,
             @Valid @RequestBody SolicitudDatosPersonales solicitud,
             HttpServletRequest request) {
 
-        UUID usuarioIdToken = extraerUsuarioIdToken(request);
-        String ip           = UtilidadIp.obtenerIpRemota(request);
-        return ResponseEntity.ok(servicio.actualizar(usuarioId, usuarioIdToken, solicitud, ip));
+        UUID usuarioToken = UtilidadSeguridad.obtenerUsuarioId();
+        String ip = UtilidadIp.obtenerIpReal(request);
+        RespuestaDatosPersonales respuesta = servicio.actualizar(usuarioId, usuarioToken, solicitud, ip);
+        return ResponseEntity.ok(ResultadoApi.exito(respuesta, "Datos personales actualizados con éxito.", null));
     }
 
     /**
      * Consulta los datos personales del cliente autenticado.
-     * @param usuarioId
-     * @param request
-     * @return 
+     * 
+     * @param usuarioId Identificador del usuario en la ruta
+     * @param request   Petición HTTP
+     * @return ResultadoApi con los datos personales del perfil
      */
-    @GetMapping
-    public ResponseEntity<RespuestaDatosPersonales> consultar(
+    @GetMapping("/{usuarioId}")
+    public ResponseEntity<ResultadoApi<RespuestaDatosPersonales>> consultar(
             @PathVariable UUID usuarioId,
             HttpServletRequest request) {
 
-        UUID usuarioIdToken = extraerUsuarioIdToken(request);
-        return ResponseEntity.ok(servicio.consultar(usuarioId, usuarioIdToken));
-    }
-
-    private UUID extraerUsuarioIdToken(HttpServletRequest request) {
-        return (UUID) request.getAttribute(FiltroJwt.ATTR_USUARIO_ID);
+        UUID usuarioID = UtilidadSeguridad.obtenerUsuarioId();
+        RespuestaDatosPersonales respuesta = servicio.consultar(usuarioId, usuarioID);
+        return ResponseEntity.ok(ResultadoApi.exito(respuesta, "Datos personales recuperados.", null));
     }
 }

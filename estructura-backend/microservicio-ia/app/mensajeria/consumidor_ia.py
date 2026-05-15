@@ -1,28 +1,14 @@
 """
-mensajeria/consumidor_ia.py  ·  v3 — Dual-Mode Consumer + Dashboard Routing
+mensajeria/consumidor_ia.py  ·  v4 — Refactorizado para IA Centrada en Datos
 ══════════════════════════════════════════════════════════════════════════════
-Consumidor RabbitMQ que maneja DOS tipos de eventos:
- 
-  TRANSACCION_RECIENTE → disparado automáticamente por el nucleo-financiero
-        └── Respuesta publicada en: cola.dashboard.consejos
- 
-  CONSULTA_MODULO      → disparado manualmente desde un botón del Dashboard
-        └── Respuesta publicada en: cola.dashboard.modulos
- 
-Flujo del callback:
-  1. Deserializar EventoAnalisisIA (v3 con historial_mensual)
-  2. Resolver tipo de solicitud (automático vs manual)
-  3. Delegar a CoachIA.analizar(evento) → ResultadoAnalisisIA
-  4. Publicar ResultadoAnalisisIA en la cola correcta
-  5. Delegar persistencia al PublicadorDashboard
-  6. ACK / NACK según resultado
- 
-Estrategia ACK/NACK:
-  JSON inválido           → ACK + descarta  (irrecuperable)
-  id_usuario ausente      → ACK + descarta  (irrecuperable)
-  CoachIA retorna None    → NACK sin requeue (evita bucle, va a dead-letter)
-  Error de publicación    → NACK con requeue (error transitorio)
-  Éxito completo          → ACK
+Consumidor RabbitMQ adaptado a la v4 de LUKA. 
+Maneja la orquestación asíncrona disparada por el nucleo-financiero o el Dashboard.
+
+Cambios v4:
+  - Usa 'RespuestaModulo' en lugar del antiguo 'ResultadoAnalisisIA'.
+  - Soporta el campo 'estado_coach' para informar fallos de Gemini al Dashboard.
+  - Integrado con 'ServicioAnalisis' (o el nuevo CoachIA refactorizado).
+  - Mapeo de colas dinámico según la configuración centralizada.
 ══════════════════════════════════════════════════════════════════════════════
 """
 
@@ -32,18 +18,19 @@ from typing import Optional
 
 import pika
 import pika.exceptions
+import asyncio
 from pika import BasicProperties
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.spec import Basic
 
 from app.configuracion import obtener_configuracion
-from app.modelos.evento_analisis import (
-    EventoAnalisisIA,
-    ResultadoAnalisisIA,
-    TipoSolicitud,
+from app.modelos.esquemas import (
+    NombreModulo,
+    RespuestaModulo,
+    PeticionConFiltroFecha,  # Usaremos este como DTO genérico para eventos
 )
-from app.servicios.coach_ia import CoachIA
-from app.excepciones import BrokerComunicacionError, ContratoDatosError
+from app.servicios.ia.coach_ia import CoachIA
+from app.utilidades.excepciones import BrokerComunicacionError, ContratoDatosError
 
 logger = logging.getLogger(__name__)
 
@@ -144,16 +131,54 @@ class ConsumidorIA:
             self._canal.queue_declare(queue=cola, durable=True)
             self._canal.queue_bind(queue=cola, exchange=cfg.exchange_dashboard, routing_key=cola)
         
-        # ── Registrar callback ────────────────────────────────────────────────
+        # ── Cola de Clasificación On-the-Fly ──────────────────────────────────
+        self._canal.queue_declare(queue=cfg.cola_ia_clasificacion, durable=True)
+        self._canal.queue_bind(
+            queue=cfg.cola_ia_clasificacion,
+            exchange=cfg.exchange_ia,
+            routing_key=cfg.cola_ia_clasificacion
+        )
+
+        # ── Registrar callbacks ───────────────────────────────────────────────
         self._canal.basic_consume(queue=cfg.cola_ia_procesamiento, on_message_callback=self._callback)
+        self._canal.basic_consume(queue=cfg.cola_ia_clasificacion, on_message_callback=self._callback_clasificacion)
 
         logger.info(
-            "[CONSUMIDOR-v3] Topología declarada | "
-            "entrada: %s | salida: %s / %s",
-            cfg.cola_ia_procesamiento,
-            cfg.cola_dashboard_consejos,
-            cfg.cola_dashboard_modulos,
+            "[CONSUMIDOR-v4] Topología declarada | "
+            "entrada: %s, %s | salida: %s",
+            cfg.cola_ia_procesamiento, cfg.cola_ia_clasificacion,
+            cfg.exchange_dashboard
         )
+
+    def _callback_clasificacion(self, ch, method, properties, body):
+        """Procesa solicitudes de clasificación en tiempo real (Sincronizado con asyncio)."""
+        try:
+            datos = json.loads(body)
+            from app.modelos.esquemas import SolicitudClasificacionDTO, NombreModulo
+            solicitud = SolicitudClasificacionDTO(**datos)
+            
+            # 1. Verificar Cuota (Asumimos el rol PRO para usuarios habilitados en esta cola)
+            # Nota: En una implementación real, el mensaje debería traer el rol del usuario.
+            rol_usuario = datos.get("rol", "PRO") 
+            self._coach._verificar_cuota_diaria(datos.get("usuario_id", "N/A"), NombreModulo.AUTO_CLASIFICACION, rol_usuario)
+            
+            from app.servicios.ia.clasificador_ia import ClasificadorIAService
+            clasificador = ClasificadorIAService()
+            
+            # 2. Ejecutar la corrutina asíncrona de forma síncrona
+            respuesta = asyncio.run(clasificador.clasificar(solicitud))
+            
+            ch.basic_publish(
+                exchange=self.EXCHANGE_IA,
+                routing_key="ia.clasificacion.resultado",
+                body=json.dumps(respuesta.model_dump())
+            )
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+            logger.info(f"[CLASIFICADOR] Sugerencias enviadas para ID: {solicitud.id_temporal}")
+            
+        except Exception as e:
+            logger.error(f"[CONSUMIDOR] Error en clasificación: {e}")
+            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
 
     #-- Cierre de conexión ───────────────────────────────────────────────────
     def _cerrar(self) -> None:
@@ -168,116 +193,55 @@ class ConsumidorIA:
     # ── Callback principal ────────────────────────────────────────────────────
 
     def _callback(self, canal, metodo, propiedades, cuerpo) -> None:
-        """Orquestación del análisis y ruteo de salida."""
-        """
-        Punto de entrada para cada mensaje de cola.ia.procesamiento.
-        Orquesta el flujo completo y garantiza que siempre se emite ACK o NACK.
-        """
+        """Procesa el mensaje recibido."""
         tag = metodo.delivery_tag
-        logger.info(
-            "[CALLBACK] Mensaje recibido | tag=%s | %d bytes", tag, len(cuerpo)
-        )
         try:
-            # ── 1. Deserializar ───────────────────────────────────────────────────
-            evento = self._deserializar(cuerpo, tag, canal)
-            if not evento: return  # ACK ya emitido dentro de _deserializar
+            # 1. Deserializar usando los nuevos esquemas v4
+            # Nota: El mensaje de Rabbit debe convertirse en un DTO de Petición
+            datos = json.loads(cuerpo)
+            peticion = PeticionConFiltroFecha(**datos)
             
-            logger.info(
-                "[CALLBACK] Evento válido | usuario=%s | tipo=%s | módulo=%s | historial=%d meses",
-                evento.id_usuario,
-                evento.tipo_solicitud.value,
-                evento.modulo_solicitado.value if evento.modulo_solicitado else "AUTO",
-                len(evento.historial_mensual),
-            )
+            logger.info(f"[CALLBACK] Analizando usuario {peticion.usuario_id}...")
 
-            # ── 2. Analizar con CoachIA + Gemini ──────────────────────────────────
-            resultado = self._coach.analizar(evento)
-            if not resultado:
-                logger.error(
-                    "[CALLBACK] CoachIA no generó resultado para usuario=%s. NACK sin requeue.",
-                    evento.id_usuario,
-                )
-                canal.basic_nack(delivery_tag=tag, requeue=False)
-                return
+            # 2. Delegar análisis (esto invoca el motor analítico + Gemini)
+            # Adaptamos para que acepte el DTO de v4
+            resultado: RespuestaModulo = self._coach.analizar_v4(peticion)
 
-            # ── 3. Publicar en la cola correcta del Dashboard ─────────────────────
-            cola_destino = self._resolver_cola_destino(evento)
-            
-            # 4. Publicación y persistencia (si falla, requeue para intentar más tarde)
+            # 3. Resolver ruteo (Automático vs Manual)
+            # Usamos una lógica simple: si viene con módulo específico, va a 'modulos'
+            cola_destino = self._config.cola_dashboard_modulos if peticion.mes else self._config.cola_dashboard_consejos
+
+            # 4. Publicar y confirmar
             if self._publicar_resultado(canal, resultado, cola_destino):
                 canal.basic_ack(delivery_tag=tag)
             else:
                 canal.basic_nack(delivery_tag=tag, requeue=True)
-                logger.info(
-                    "[CALLBACK] OK | usuario=%s | módulo=%s | cola=%s | ACK",
-                    resultado.id_usuario,
-                    resultado.tipo_modulo.value,
-                    cola_destino,
-                )
 
-        except ContratoDatosError:
-            # Si el dato está roto, no sirve de nada reintentar. ACK para eliminar de la cola.
-            logger.error("[CALLBACK] Contrato inválido. Descartando mensaje.")
-            canal.basic_ack(delivery_tag=metodo.delivery_tag)
+        except (json.JSONDecodeError, TypeError, ContratoDatosError) as exc:
+            logger.error(f"[CALLBACK] Mensaje malformado descartado: {exc}")
+            canal.basic_ack(delivery_tag=tag) # Ack para limpiar basura
         except Exception as exc:
-            logger.error(f"[CALLBACK] Error inesperado: {exc}")
-            canal.basic_nack(delivery_tag=metodo.delivery_tag, requeue=True)
+            logger.error(f"[CALLBACK] Error inesperado: {exc}", exc_info=True)
+            canal.basic_nack(delivery_tag=tag, requeue=True)
 
-    # ── Métodos de soporte ────────────────────────────────────────────────────
-    def _deserializar(self, cuerpo: bytes, tag: int, canal: BlockingChannel) -> Optional[EventoAnalisisIA]:
-        """
-        Deserializa el cuerpo del mensaje. Si falla → ACK + descarta.
-        Valida además que id_usuario esté presente.
-        Usa el modelo y lanza nuestra excepción personalizada si falla."""
+    def _publicar_resultado(self, canal, resultado: RespuestaModulo, cola_destino: str) -> bool:
+        """Serializa y publica el objeto RespuestaModulo."""
         try:
-            return EventoAnalisisIA.desde_json(cuerpo)
-        
-        except Exception as exc:
-            raise ContratoDatosError("El mensaje de Java no coincide con el modelo IA", detalles=str(exc))
-
-
-    def _resolver_cola_destino(self, evento: EventoAnalisisIA) -> str:
-        """
-        TRANSACCION_RECIENTE → cola.dashboard.consejos  (widget de últimos consejos)
-        CONSULTA_MODULO      → cola.dashboard.modulos   (widget del módulo específico)
-        """
-        if evento.tipo_solicitud == TipoSolicitud.CONSULTA_MODULO:
-            return self._config.cola_dashboard_modulos
-        return self._config.cola_dashboard_consejos
-    
-    def _publicar_resultado(self, canal, resultado: ResultadoAnalisisIA, cola_destino: str) -> bool:
-        """
-        Serializa ResultadoAnalisisIA y lo publica en el exchange del Dashboard.
-        """
-        try: 
+            body = json.dumps(resultado.a_dict_serializable(), ensure_ascii=False).encode("utf-8")
             canal.basic_publish(
                 exchange=self._config.exchange_dashboard,
                 routing_key=cola_destino,
-                body=json.dumps(resultado.a_dict_serializable(), ensure_ascii=False).encode("utf-8"),
+                body=body,
                 properties=BasicProperties(
-                    delivery_mode=2,                    # persistente
+                    delivery_mode=2,
                     content_type="application/json",
-                    content_encoding="utf-8",
                     headers={
-                        "tipo_modulo":   resultado.tipo_modulo.value,
-                        "id_usuario":    resultado.id_usuario,
-                        "version":       "3.0",
-                    },
+                        "modulo": resultado.modulo.value,
+                        "estado_coach": resultado.estado_coach.value
+                    }
                 ),
-            )
-            logger.info(
-                "[PUBLICAR] ResultadoAnalisisIA publicado | "
-                "cola=%s | módulo=%s | usuario=%s | kpi=%s %s",
-                cola_destino,
-                resultado.tipo_modulo.value,
-                resultado.id_usuario,
-                resultado.kpi_principal,
-                resultado.kpi_label or "",
             )
             return True
         except Exception as exc:
-            logger.error(
-                "[PUBLICAR] Error publicando en '%s': %s",
-                cola_destino, str(exc), exc_info=True,
-            )
+            logger.error(f"[PUBLICAR] Fallo: {exc}")
             return False

@@ -1,16 +1,16 @@
 package com.cliente.aplicacion.excepciones;
 
 import java.util.UUID;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import com.libreria.comun.excepciones.ExcepcionRecursoNoEncontrado;
 
 /**
- *
- * @author user
+ * Excepción lanzada cuando no se encuentra un límite de gasto.
+ * 
+ * @author Paulo Moron
+ * @version 1.1.0
  */
-@ResponseStatus(HttpStatus.NOT_FOUND)
-public class LimiteGastoNoEncontradoException extends RuntimeException {
+public class LimiteGastoNoEncontradoException extends ExcepcionRecursoNoEncontrado {
     public LimiteGastoNoEncontradoException(UUID usuarioId) {
-        super("No existe un limite de gasto activo para el usuario con id: " + usuarioId);
+        super("el límite de gasto", usuarioId);
     }
 }

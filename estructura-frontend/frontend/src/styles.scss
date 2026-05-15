@@ -1,1 +1,204 @@
 /* You can add global styles to this file, and also import other style files */
+/* =============================================
+   LUKA - Estilos Globales
+   Sistema de Gastos Personales
+   ============================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
+
+/* ── Variables ── */
+:root {
+  /* Colores principales */
+  --color-primary:        #5B6AF0;
+  --color-primary-light:  #7B89F5;
+  --color-primary-dark:   #3D4EC8;
+  --color-primary-soft:   #EEF0FE;
+
+  --color-accent:         #F0A500;
+  --color-accent-light:   #FFD166;
+  --color-accent-soft:    #FFF8E7;
+
+  --color-success:        #22C55E;
+  --color-success-soft:   #DCFCE7;
+  --color-danger:         #EF4444;
+  --color-danger-soft:    #FEE2E2;
+  --color-warning:        #F59E0B;
+  --color-warning-soft:   #FEF3C7;
+  --color-info:           #06B6D4;
+  --color-info-soft:      #CFFAFE;
+
+  /* Categorías */
+  --color-food:           #FF7043;
+  --color-food-soft:      #FBE9E7;
+  --color-transport:      #42A5F5;
+  --color-transport-soft: #E3F2FD;
+  --color-study:          #66BB6A;
+  --color-study-soft:     #E8F5E9;
+  --color-leisure:        #AB47BC;
+  --color-leisure-soft:   #F3E5F5;
+  --color-health:         #26C6DA;
+  --color-health-soft:    #E0F7FA;
+  --color-home:           #FFA726;
+  --color-home-soft:      #FFF3E0;
+
+  /* Grises / Neutros */
+  --bg-body:              #F5F6FF;
+  --bg-card:              #FFFFFF;
+  --bg-sidebar:           #FFFFFF;
+  --text-primary:         #1E2340;
+  --text-secondary:       #6B7280;
+  --text-muted:           #9CA3AF;
+  --border-color:         #E8EAFF;
+  --shadow-sm:            0 2px 8px rgba(91,106,240,0.08);
+  --shadow-md:            0 4px 20px rgba(91,106,240,0.12);
+  --shadow-lg:            0 8px 40px rgba(91,106,240,0.18);
+
+  /* Tipografías */
+  --font-main:            'Nunito', sans-serif;
+  --font-heading:         'Poppins', sans-serif;
+
+  /* Radios */
+  --radius-sm:            8px;
+  --radius-md:            14px;
+  --radius-lg:            20px;
+  --radius-xl:            28px;
+  --radius-full:          9999px;
+
+  /* Transiciones */
+  --transition:           all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce:    all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Sidebar */
+  --sidebar-width:        260px;
+  --header-height:        72px;
+}
+
+/* ── Reset & Base ── */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-main);
+  background: var(--bg-body);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Scrollbar personalizado ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: var(--radius-full);
+  &:hover { background: var(--color-primary-light); }
+}
+
+/* ── Utilidades ── */
+.text-primary   { color: var(--color-primary) !important; }
+.text-success   { color: var(--color-success) !important; }
+.text-danger    { color: var(--color-danger) !important; }
+.text-warning   { color: var(--color-warning) !important; }
+.text-muted     { color: var(--text-muted) !important; }
+.text-secondary { color: var(--text-secondary) !important; }
+
+.fw-600 { font-weight: 600; }
+.fw-700 { font-weight: 700; }
+.fw-800 { font-weight: 800; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+
+  &.badge-success  { background: var(--color-success-soft); color: var(--color-success); }
+  &.badge-danger   { background: var(--color-danger-soft);  color: var(--color-danger);  }
+  &.badge-warning  { background: var(--color-warning-soft); color: var(--color-warning); }
+  &.badge-info     { background: var(--color-info-soft);    color: var(--color-info);    }
+  &.badge-primary  { background: var(--color-primary-soft); color: var(--color-primary); }
+}
+
+/* ── Tarjeta base ── */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+}
+
+/* ── Animaciones globales ── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes pulse-soft {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.05); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px);   }
+  50%       { transform: translateY(-8px);  }
+}
+@keyframes paw-pop {
+  0%   { transform: scale(0) rotate(-20deg); opacity: 0; }
+  70%  { transform: scale(1.2) rotate(5deg); }
+  100% { transform: scale(1) rotate(0deg);   opacity: 1; }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.anim-fade-up   { animation: fadeInUp 0.5s ease both; }
+.anim-float     { animation: float 3s ease-in-out infinite; }
+.anim-pulse     { animation: pulse-soft 2s ease-in-out infinite; }
+
+/* ═══════════════════════════════════════════
+   TEMA CLARO - Variables alternativas
+   Se activa cuando body tiene la clase .tema-claro
+   ═══════════════════════════════════════════ */
+body.tema-claro {
+  --bg-body:              #F5F6FF;
+  --bg-card:              #FFFFFF;
+  --bg-sidebar:           #FFFFFF;
+  --text-primary:         #1E2340;
+  --text-secondary:       #6B7280;
+  --text-muted:           #9CA3AF;
+  --border-color:         #E2E5F1;
+  --shadow-sm:            0 2px 8px rgba(91,106,240,0.06);
+  --shadow-md:            0 4px 20px rgba(91,106,240,0.1);
+  --shadow-lg:            0 8px 40px rgba(91,106,240,0.14);
+
+  /* Scrollbar claro */
+  &::-webkit-scrollbar-thumb { background: #D1D5E8; }
+}

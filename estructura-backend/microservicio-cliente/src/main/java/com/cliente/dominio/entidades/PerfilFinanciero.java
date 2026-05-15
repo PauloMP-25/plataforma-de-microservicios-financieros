@@ -27,8 +27,8 @@ import java.util.UUID;
 public class PerfilFinanciero {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(updatable = false, nullable = false)
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     private UUID id;
 
     /** Referencia al usuario del microservicio IAM */

@@ -1,141 +1,54 @@
 package com.mensajeria.presentacion.manejadores;
 
-import com.mensajeria.aplicacion.excepciones.CodigoExpiradoException;
-import com.mensajeria.aplicacion.excepciones.CodigoPendienteNotFoundException;
-import com.mensajeria.aplicacion.excepciones.LimiteCodigosExcedidoException;
-import com.mensajeria.aplicacion.excepciones.UsuarioBloqueadoExcepcion;
+import com.libreria.comun.manejadores.ManejadorGlobalExcepcionesBase;
+import com.libreria.comun.enums.CodigoError;
+import com.libreria.comun.respuesta.ResultadoApi;
+import com.mensajeria.aplicacion.excepciones.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
-import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 /**
- * Manejador global de excepciones del Microservicio-Mensajería. Garantiza
- * respuestas de error estructuradas y consistentes.
+ * Manejador global de excepciones para el microservicio de mensajería.
+ * Extiende de la base de la librería común y especializa errores de OTP y límites de envío.
  */
 @RestControllerAdvice
 @Slf4j
-public class ManejadorGlobalExcepciones {
+public class ManejadorGlobalExcepciones extends ManejadorGlobalExcepcionesBase {
 
-    // ─── IP / Usuario bloqueado ───────────────────────────────────────────────
+    @ExceptionHandler({
+        CodigoExpiradoException.class,
+        CodigoInvalidoException.class,
+        CodigoPendienteNotFoundException.class
+    })
+    public ResponseEntity<ResultadoApi<Void>> manejarErroresCodigo(RuntimeException ex, WebRequest request) {
+        return crearRespuestaError(CodigoError.TOKEN_INVALIDO, ex.getMessage(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler({
+        LimiteCodigosExcedidoException.class,
+        LimiteIntentosExcedidoException.class
+    })
+    public ResponseEntity<ResultadoApi<Void>> manejarLimitesExcedidos(RuntimeException ex, WebRequest request) {
+        return crearRespuestaError(CodigoError.LIMITE_DIARIO_EXCEDIDO, ex.getMessage(), HttpStatus.TOO_MANY_REQUESTS, request);
+    }
+
     @ExceptionHandler(UsuarioBloqueadoExcepcion.class)
-    public ResponseEntity<Map<String, Object>> manejarUsuarioBloqueado(
-            UsuarioBloqueadoExcepcion ex, WebRequest request) {
-
-        log.warn("Usuario bloqueado — usuarioId: {}, horasRestantes: {}",
-                ex.getUsuarioId(), ex.getHorasRestantes());
-
-        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                .body(cuerpoError(429, "USUARIO_BLOQUEADO",
-                        ex.getMessage(), extraerRuta(request)));
+    public ResponseEntity<ResultadoApi<Void>> manejarUsuarioBloqueado(UsuarioBloqueadoExcepcion ex, WebRequest request) {
+        return crearRespuestaError(CodigoError.CUENTA_BLOQUEADA, ex.getMessage(), HttpStatus.LOCKED, request);
     }
 
-    // ─── Validaciones @Valid ──────────────────────────────────────────────────
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> manejarErroresValidacion(
-            MethodArgumentNotValidException ex, WebRequest request) {
-
-        List<String> detalles = ex.getBindingResult().getAllErrors().stream()
-                .map(error -> {
-                    if (error instanceof FieldError fe) {
-                        return String.format("'%s': %s", fe.getField(), fe.getDefaultMessage());
-                    }
-                    return error.getDefaultMessage();
-                })
-                .collect(Collectors.toList());
-
-        log.debug("Errores de validación: {}", detalles);
-
-        Map<String, Object> cuerpo = cuerpoError(400, "ERROR_VALIDACION",
-                "Error en los datos enviados.", extraerRuta(request));
-        cuerpo.put("detalles", detalles);
-
-        return ResponseEntity.badRequest().body(cuerpo);
+    @ExceptionHandler(MensajeriaExternaException.class)
+    public ResponseEntity<ResultadoApi<Void>> manejarErrorExterno(MensajeriaExternaException ex, WebRequest request) {
+        return crearRespuestaError(CodigoError.ERROR_INTERNO, "Error en el proveedor de mensajería: " + ex.getMessage(), HttpStatus.SERVICE_UNAVAILABLE, request);
     }
 
-    // ─── Errores de negocio ───────────────────────────────────────────────────
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> manejarArgumentoInvalido(
-            IllegalArgumentException ex, WebRequest request) {
-
-        return ResponseEntity.badRequest()
-                .body(cuerpoError(400, "SOLICITUD_INCORRECTA",
-                        ex.getMessage(), extraerRuta(request)));
-    }
-
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<Map<String, Object>> manejarEstadoInvalido(
-            IllegalStateException ex, WebRequest request) {
-
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(cuerpoError(409, "CONFLICTO",
-                        ex.getMessage(), extraerRuta(request)));
-    }
-
-    // ─── Catch-all ────────────────────────────────────────────────────────────
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> manejarErrorGeneral(
-            Exception ex, WebRequest request) {
-
-        log.error("Error inesperado: {}", ex.getMessage(), ex);
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(cuerpoError(500, "ERROR_INTERNO",
-                        "Ha ocurrido un error interno. Intente nuevamente más tarde.",
-                        extraerRuta(request)));
-    }
-
-    // ─── Límite de solicitudes (Anti-Spam) ────────────────────────────────────
-    @ExceptionHandler(LimiteCodigosExcedidoException.class)
-    public ResponseEntity<Map<String, Object>> manejarLimiteExcedido(
-            LimiteCodigosExcedidoException ex, WebRequest request) {
-
-        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS) // 429
-                .body(cuerpoError(429, "LIMITE_DIARIO_EXCEDIDO",
-                        ex.getMessage(), extraerRuta(request)));
-    }
-
-    // ─── Código Expirado ──────────────────────────────────────────────────────
-    @ExceptionHandler(CodigoExpiradoException.class)
-    public ResponseEntity<Map<String, Object>> manejarCodigoExpirado(
-            CodigoExpiradoException ex, WebRequest request) {
-        return ResponseEntity.status(HttpStatus.GONE) // 410
-                .body(cuerpoError(410, "CODIGO_VENCIDO",
-                        "El código ha expirado. Por favor, solicita uno nuevo.", extraerRuta(request)));
-    }
-
-    // ─── Código no encontrado o Incorrecto ─────────────────────────────────────
-    @ExceptionHandler(CodigoPendienteNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> manejarCodigoNoEncontrado(
-            CodigoPendienteNotFoundException ex, WebRequest request) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND) // 404
-                .body(cuerpoError(404, "CODIGO_INVALIDO",
-                        "El código ingresado no existe o ya fue utilizado.", extraerRuta(request)));
-    }
-
-    // ─── Helpers ─────────────────────────────────────────────────────────────
-    private Map<String, Object> cuerpoError(int estado, String error,
-            String mensaje, String ruta) {
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("estado", estado);
-        body.put("error", error);
-        body.put("mensaje", mensaje);
-        body.put("ruta", ruta);
-        body.put("fechaHora", LocalDateTime.now().toString());
-        return body;
-    }
-
-    private String extraerRuta(WebRequest request) {
-        return request.getDescription(false).replace("uri=", "");
+    @SuppressWarnings("null")
+    private ResponseEntity<ResultadoApi<Void>> crearRespuestaError(CodigoError cod, String msg, HttpStatus status, WebRequest req) {
+        String path = req.getDescription(false).replace("uri=", "");
+        return ResponseEntity.status(status).body(ResultadoApi.falla(cod, msg, path));
     }
 }

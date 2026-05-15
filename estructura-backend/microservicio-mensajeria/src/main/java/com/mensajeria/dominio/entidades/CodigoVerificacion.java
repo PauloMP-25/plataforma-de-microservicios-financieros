@@ -1,5 +1,7 @@
 package com.mensajeria.dominio.entidades;
 
+import com.libreria.comun.enums.PropositoCodigo;
+import com.libreria.comun.enums.TipoVerificacion;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -30,8 +32,9 @@ import java.util.UUID;
 public class CodigoVerificacion {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
 
     /**
      * Identificador del usuario en el Microservicio-Usuario. Campo OBLIGATORIO:
@@ -70,16 +73,7 @@ public class CodigoVerificacion {
     @Column(name = "fecha_uso")
     private LocalDateTime fechaUso;
 
-    // ─── Enum ────────────────────────────────────────────────────────────────
-    public enum TipoVerificacion {
-        EMAIL, PHONE
-    }
-
-    public enum PropositoCodigo {
-        ACTIVACION_CUENTA, RESTABLECER_PASSWORD
-    }
-
-    // ─── Lifecycle ───────────────────────────────────────────────────────────
+    // Lifecycle
     @PrePersist
     protected void alCrear() {
         fechaCreacion = LocalDateTime.now();

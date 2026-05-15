@@ -25,9 +25,10 @@ import java.util.UUID;
 public class DatosPersonales {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(updatable = false, nullable = false)
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     private UUID id;
+    
 
     /** Referencia al usuario del microservicio IAM — único y obligatorio */
     @Column(name = "usuario_id", nullable = false, unique = true)

@@ -142,6 +142,9 @@ CREATE TABLE intentos_validacion_otp (
 ## Hitos implementados
 
 - [x] Arquitectura Limpia (Dominio / Aplicación / Infraestructura / Presentación)
+- [x] Patrón **Strategy** puro en el despacho de notificaciones (Email, SMS, WhatsApp)
+- [x] Patrón **Specification** para auditoría dinámica de códigos OTP
+- [x] Seguridad estandarizada LUKA (JWT + SecurityFilterChain)
 - [x] Entidad `CodigoVerificacion` con `usuarioId` (UUID) obligatorio
 - [x] Entidad `IntentoValidacion` para bloqueo por usuarioId
 - [x] `ServicioMensajeria` — generación, validación, bloqueo, activación

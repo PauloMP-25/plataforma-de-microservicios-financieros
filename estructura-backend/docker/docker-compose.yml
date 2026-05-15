@@ -1,0 +1,716 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+#  LUKA APP — Docker Compose v3.9
+#  Stack completo: 6 Microservicios + Gateway + Eureka + RabbitMQ + PostgreSQL
+#
+#  Jerarquía de arranque:
+#    PostgreSQL(s) ──► RabbitMQ ──► Eureka
+#                                     │
+#              ┌──────────────────────┼──────────────────────┐
+#              ▼                      ▼                       ▼
+#     ms-usuario              ms-auditoria             ms-cliente
+#     ms-mensajeria           ms-nucleo-financiero      ms-ia
+#              └──────────────────────┬──────────────────────┘
+#                                     ▼
+#                               api-gateway (único puerto externo: 8080)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ── VOLÚMENES NOMBRADOS (persistencia de datos) ───────────────────────────────
+volumes:
+  vol-postgres-usuario:
+    driver: local
+  vol-postgres-cliente:
+    driver: local
+  vol-postgres-financiero:
+    driver: local
+  vol-postgres-auditoria:
+    driver: local
+  vol-postgres-mensajeria:
+    driver: local
+  vol-postgres-ia:
+    driver: local
+  vol-rabbitmq-data:
+    driver: local
+  vol-rabbitmq-logs:
+    driver: local
+  vol-eureka-data:
+    driver: local
+
+# ── REDES ─────────────────────────────────────────────────────────────────────
+networks:
+  # Red principal: todos los microservicios se comunican aquí
+  backend-network:
+    driver: bridge
+    name: luka-backend
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+  # Red de base de datos: aislada, solo accesible por sus microservicios dueños
+  db-network:
+    driver: bridge
+    name: luka-db
+    internal: true # ← sin acceso a Internet, solo entre contenedores
+
+# ── FRAGMENTOS REUTILIZABLES (YAML Anchors) ───────────────────────────────────
+x-spring-common: &spring-common
+  restart: unless-stopped
+  networks:
+    - backend-network
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+x-postgres-common: &postgres-common
+  image: postgres:16-alpine
+  restart: unless-stopped
+  networks:
+    - db-network
+    - backend-network
+  environment:
+    POSTGRES_USER: ${POSTGRES_USER:-postgres}
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
+  healthcheck:
+    test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}" ]
+    interval: 30s
+    timeout: 10s
+    retries: 5
+    start_period: 120s
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "5m"
+      max-file: "2"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  SERVICIOS
+# ═══════════════════════════════════════════════════════════════════════════════
+services:
+
+  # ── BASES DE DATOS POSTGRESQL ──────────────────────────────────────────────
+
+  postgres-usuario:
+    <<: *postgres-common
+    container_name: luka-postgres-usuario
+    hostname: postgres-usuario
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
+      POSTGRES_DB: ${DB_USUARIO_NAME:-db_microservicio_usuario}
+    volumes:
+      - vol-postgres-usuario:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  postgres-cliente:
+    <<: *postgres-common
+    container_name: luka-postgres-cliente
+    hostname: postgres-cliente
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
+      POSTGRES_DB: ${DB_CLIENTE_NAME:-db_microservicio_cliente}
+    volumes:
+      - vol-postgres-cliente:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  postgres-financiero:
+    <<: *postgres-common
+    container_name: luka-postgres-financiero
+    hostname: postgres-financiero
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
+      POSTGRES_DB: ${DB_FINANCIERO_NAME:-db_microservicio_financiero}
+    volumes:
+      - vol-postgres-financiero:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  postgres-auditoria:
+    <<: *postgres-common
+    container_name: luka-postgres-auditoria
+    hostname: postgres-auditoria
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
+      POSTGRES_DB: ${DB_AUDITORIA_NAME:-db_microservicio_auditoria}
+    volumes:
+      - vol-postgres-auditoria:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  postgres-mensajeria:
+    <<: *postgres-common
+    container_name: luka-postgres-mensajeria
+    hostname: postgres-mensajeria
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
+      POSTGRES_DB: ${DB_MENSAJERIA_NAME:-db_microservicio_mensajeria}
+    volumes:
+      - vol-postgres-mensajeria:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  postgres-ia:
+    <<: *postgres-common
+    container_name: luka-postgres-ia
+    hostname: postgres-ia
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
+      POSTGRES_DB: ${DB_IA_NAME:-db_microservicio_ia}
+    volumes:
+      - vol-postgres-ia:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  # ── RABBITMQ (Mensajería Asíncrona) ──────────────────────────────────────────
+
+  rabbitmq:
+    # rabbitmq:3-management incluye el plugin de administración web
+    image: rabbitmq:3.13-management-alpine
+    container_name: luka-rabbitmq
+    hostname: rabbitmq
+    restart: unless-stopped
+    networks:
+      - backend-network
+    ports:
+      # UI de administración accesible en http://localhost:15672
+      - "${RABBITMQ_UI_PORT:-15672}:15672"
+      # Puerto AMQP interno (NO expuesto al host, solo para contenedores)
+      # Si necesitas conectarte desde fuera: descomenta la línea siguiente
+      # - "5672:5672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-/}
+      # Configura la política de retención de mensajes y logs
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: -rabbit log_levels [{connection,error},{default,info}]
+    volumes:
+      - vol-rabbitmq-data:/var/lib/rabbitmq
+      - vol-rabbitmq-logs:/var/log/rabbitmq
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "check_port_connectivity" ]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  # ── EUREKA SERVER (Service Discovery) ────────────────────────────────────────
+
+  eureka-server:
+    <<: *spring-common
+    container_name: luka-eureka-server
+    hostname: eureka-server
+    # INSTRUCCIÓN: Construye desde el directorio de tu eureka-server
+    build:
+      context: ../infraestructura/eureka-server
+      dockerfile: Dockerfile
+    image: luka/eureka-server:latest
+    ports:
+      # Dashboard de Eureka accesible en http://localhost:8761
+      - "${EUREKA_DASHBOARD_PORT:-8761}:8761"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8761
+      # Modo standalone: Eureka no intenta registrarse a sí mismo
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"
+      EUREKA_CLIENT_FETCH_REGISTRY: "false"
+      # Autenticación básica para el dashboard
+      EUREKA_ADMIN_USER: ${EUREKA_USER:-admin}
+      EUREKA_ADMIN_PASSWORD: ${EUREKA_PASSWORD:-admin123}
+      # Reducimos el tiempo de expiración para detección rápida de fallos
+      EUREKA_SERVER_EVICTION_INTERVAL_TIMER_IN_MS: 5000
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=70.0 -XX:+UseG1GC"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "-u", "${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}", "http://localhost:8761/actuator/health" ]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+  # ── REDIS (Caché y Rate Limiting para el Gateway) ───────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: luka-redis
+    hostname: redis
+    restart: unless-stopped
+    networks:
+      - backend-network
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  # ── MICROSERVICIO USUARIO (Puerto 8081) ───────────────────────────────────────
+
+  ms-usuario:
+    <<: *spring-common
+    container_name: luka-ms-usuario
+    hostname: ms-usuario
+    build:
+      context: ..
+      dockerfile: microservicio-usuario/Dockerfile
+      args:
+        APP_PORT: 8081
+    image: luka/ms-usuario:latest
+    depends_on:
+      postgres-usuario:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8081
+      # Base de datos
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-usuario:5432/${DB_USUARIO_NAME:-db_microservicio_usuario}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      # Eureka
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}@eureka-server:8761/eureka
+      EUREKA_INSTANCE_HOSTNAME: ms-usuario
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      SPRING_APPLICATION_NAME: microservicio-usuario
+      # RabbitMQ
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER:-guest}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      SPRING_RABBITMQ_VIRTUAL_HOST: ${RABBITMQ_VHOST:-/}
+      RABBITMQ_CONNECTION_NAME: LUKA-MS-USUARIO
+      # Redis
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      # JWT
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      # JVM
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  # ── MICROSERVICIO CLIENTE (Puerto 8083) ───────────────────────────────────────
+
+  ms-cliente:
+    <<: *spring-common
+    container_name: luka-ms-cliente
+    hostname: ms-cliente
+    build:
+      context: ..
+      dockerfile: microservicio-cliente/Dockerfile
+      args:
+        APP_PORT: 8083
+    image: luka/ms-cliente:latest
+    depends_on:
+      postgres-cliente:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8083
+      # Base de datos
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-cliente:5432/${DB_CLIENTE_NAME:-db_microservicio_cliente}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      # Eureka
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}@eureka-server:8761/eureka
+      EUREKA_INSTANCE_HOSTNAME: ms-cliente
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      SPRING_APPLICATION_NAME: microservicio-cliente
+      # RabbitMQ
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER:-guest}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      SPRING_RABBITMQ_VIRTUAL_HOST: ${RABBITMQ_VHOST:-/}
+      RABBITMQ_CONNECTION_NAME: LUKA-MS-CLIENTE
+      # Redis
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      # JWT
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8083/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  # ── MICROSERVICIO AUDITORIA (Puerto 8082) ─────────────────────────────────────
+
+  ms-auditoria:
+    <<: *spring-common
+    container_name: luka-ms-auditoria
+    hostname: ms-auditoria
+    build:
+      context: ..
+      dockerfile: microservicio-auditoria/Dockerfile
+      args:
+        APP_PORT: 8082
+    image: luka/ms-auditoria:latest
+    depends_on:
+      postgres-auditoria:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8082
+      # Base de datos
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-auditoria:5432/${DB_AUDITORIA_NAME:-db_microservicio_auditoria}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      # Eureka
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}@eureka-server:8761/eureka
+      EUREKA_INSTANCE_HOSTNAME: ms-auditoria
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      SPRING_APPLICATION_NAME: microservicio-auditoria
+      # RabbitMQ (consumidor de la cola de auditoría)
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER:-guest}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      SPRING_RABBITMQ_VIRTUAL_HOST: ${RABBITMQ_VHOST:-/}
+      RABBITMQ_CONNECTION_NAME: LUKA-MS-AUDITORIA
+      # Redis
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      # JWT
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8082/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  # ── MICROSERVICIO MENSAJERIA (Puerto 8084) ────────────────────────────────────
+
+  ms-mensajeria:
+    <<: *spring-common
+    container_name: luka-ms-mensajeria
+    hostname: ms-mensajeria
+    build:
+      context: ..
+      dockerfile: microservicio-mensajeria/Dockerfile
+      args:
+        APP_PORT: 8084
+    image: luka/ms-mensajeria:latest
+    depends_on:
+      postgres-mensajeria:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8084
+      # Base de datos
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-mensajeria:5432/${DB_MENSAJERIA_NAME:-db_microservicio_mensajeria}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      # Eureka
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}@eureka-server:8761/eureka
+      EUREKA_INSTANCE_HOSTNAME: ms-mensajeria
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      SPRING_APPLICATION_NAME: microservicio-mensajeria
+      # RabbitMQ
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER:-guest}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      SPRING_RABBITMQ_VIRTUAL_HOST: ${RABBITMQ_VHOST:-/}
+      RABBITMQ_CONNECTION_NAME: LUKA-MS-MENSAJERIA
+      # Redis
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      # JWT
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      # WhatsApp
+      WHATSAPP_API_TOKEN: ${WHATSAPP_API_TOKEN}
+      WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8084/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  # ── MICROSERVICIO NUCLEO FINANCIERO (Puerto 8085) ─────────────────────────────
+
+  ms-nucleo-financiero:
+    <<: *spring-common
+    container_name: luka-ms-nucleo-financiero
+    hostname: ms-nucleo-financiero
+    build:
+      context: ..
+      dockerfile: microservicio-nucleo-financiero/Dockerfile
+      args:
+        APP_PORT: 8085
+    image: luka/ms-nucleo-financiero:latest
+    depends_on:
+      postgres-financiero:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      ms-cliente:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8085
+      # Base de datos
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-financiero:5432/${DB_FINANCIERO_NAME:-db_microservicio_financiero}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      # Eureka (para descubrir ms-cliente via Feign)
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}@eureka-server:8761/eureka
+      EUREKA_INSTANCE_HOSTNAME: ms-nucleo-financiero
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      SPRING_APPLICATION_NAME: microservicio-nucleo-financiero
+      # RabbitMQ (publica en exchange.ia tras cada transacción)
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER:-guest}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      SPRING_RABBITMQ_VIRTUAL_HOST: ${RABBITMQ_VHOST:-/}
+      RABBITMQ_CONNECTION_NAME: LUKA-MS-NUCLEO-FINANCIERO
+      # URL directa al microservicio-cliente (como fallback si Feign falla)
+      URL_MICROSERVICIO_CLIENTE: http://ms-cliente:8083
+      # JWT
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8085/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  # ── MICROSERVICIO IA FINANCIERA (Puerto 8086) ─────────────────────────────────
+
+  ms-ia:
+    container_name: luka-ms-ia
+    hostname: ms-ia
+    build:
+      context: ../microservicio-ia
+      dockerfile: Dockerfile
+      args:
+        APP_PORT: 8086
+    image: luka/ms-ia:latest
+    restart: unless-stopped
+    networks:
+      - backend-network
+    depends_on:
+      postgres-ia:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      ms-nucleo-financiero:
+        condition: service_healthy
+    environment:
+      # ── Identidad en Eureka ──────────────────────────────────────────────
+      EUREKA_SERVIDOR_URL: http://${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}@eureka-server:8761/eureka
+      EUREKA_INSTANCIA_HOST: ms-ia
+      EUREKA_INSTANCIA_PUERTO: 8086
+      ID_APP_EUREKA: microservicio-ia
+
+      # ── Google Gemini (CRÍTICO: requiere API key real) ───────────────────
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODELO: gemini-2.0-flash
+      GEMINI_MAX_TOKENS: 500
+      GEMINI_TEMPERATURA: 0.7
+
+      # ── RabbitMQ ─────────────────────────────────────────────────────────
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PUERTO: 5672
+      RABBITMQ_USUARIO: ${RABBITMQ_USER:-guest}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_VHOST: ${RABBITMQ_VHOST:-/}
+      RABBITMQ_CONNECTION_NAME: luka-ms-ia
+      RABBITMQ_HEARTBEAT: 60
+      RABBITMQ_TIMEOUT: 300
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+
+      # ── URLs de microservicios Java ──────────────────────────────────────
+      URL_NUCLEO_FINANCIERO: http://ms-nucleo-financiero:8085
+      URL_AUDITORIA: http://ms-auditoria:8082
+      URL_CLIENTE: http://ms-cliente:8083
+
+      # ── Seguridad JWT (compartido con Java) ──────────────────────────────
+      JWT_CLAVE_SECRETA: ${JWT_SECRET_KEY}
+      JWT_ALGORITMO: HS256
+
+      # ── Parámetros de análisis IA ─────────────────────────────────────────
+      MESES_HISTORIAL: 6
+      UMBRAL_GASTO_HORMIGA: 30.0
+      UMBRAL_ANOMALIA: 2.0
+
+      # ── Base de Datos (Persistencia IA / Caché L2) ────────────────────────
+      DB_HOST: postgres-ia
+      DB_PORT: 5432
+      DB_USUARIO: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
+      DB_NOMBRE: ${DB_IA_NAME:-db_microservicio_ia}
+
+      # ── Python ───────────────────────────────────────────────────────────
+      PYTHONUNBUFFERED: "1"
+      TZ: America/Lima
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8086/actuator/health" ]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 1G # numpy/pandas/scikit-learn necesitan más RAM
+
+  # ── API GATEWAY (Puerto 8080 — ÚNICO PUNTO DE ENTRADA EXTERNO) ──────────────
+
+  api-gateway:
+    <<: *spring-common
+    container_name: luka-api-gateway
+    hostname: api-gateway
+    build:
+      context: ..
+      dockerfile: infraestructura/api-gateway/Dockerfile
+      args:
+        APP_PORT: 8080
+    image: luka/api-gateway:latest
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ms-usuario:
+        condition: service_healthy
+      ms-cliente:
+        condition: service_healthy
+      ms-auditoria:
+        condition: service_healthy
+      ms-mensajeria:
+        condition: service_healthy
+      ms-nucleo-financiero:
+        condition: service_healthy
+      ms-ia:
+        condition: service_healthy
+    ports:
+      # ← ÚNICO PUERTO EXPUESTO AL MUNDO EXTERIOR
+      - "${GATEWAY_PORT:-8080}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8080
+      SPRING_APPLICATION_NAME: api-gateway
+      # Eureka: el Gateway descubre los servicios dinámicamente
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}@eureka-server:8761/eureka
+      EUREKA_INSTANCE_HOSTNAME: api-gateway
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      # Spring Cloud Gateway usa Reactor Netty (reactor, no servlet)
+      SPRING_MAIN_WEB_APPLICATION_TYPE: reactive
+      # JWT para validación en el Gateway
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      # CORS (ajusta los orígenes permitidos en producción)
+      SPRING_CLOUD_GATEWAY_GLOBALCORS_CORSCONFIGURATIONS_[/**]_ALLOWEDORIGINS: "*"
+      SPRING_CLOUD_GATEWAY_GLOBALCORS_CORSCONFIGURATIONS_[/**]_ALLOWEDMETHODS: "GET,POST,PUT,DELETE,OPTIONS,PATCH"
+      SPRING_CLOUD_GATEWAY_GLOBALCORS_CORSCONFIGURATIONS_[/**]_ALLOWEDHEADERS: "*"
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    deploy:
+      resources:
+        limits:
+          memory: 512M

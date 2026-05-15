@@ -4,7 +4,6 @@ server:
 spring:
   application:
     name: api-gateway
-
   # ─────────────────────────────────────────────────────────────────────────
   # REDIS: Necesario para Rate Limiting
   # En desarrollo puedes correr Redis con Docker:
@@ -25,8 +24,8 @@ spring:
     gateway:
       # Tiempos de espera globales
       httpclient:
-        connect-timeout: 5000  # 5 segundos para conectar
-        response-timeout: 10s # 10 segundos para responder
+        connect-timeout: 30000  # 30 segundos para conectar
+        response-timeout: 60s # 60 segundos para responder
       # Descubrimiento automático: si un servicio se llama "mi-servicio"
       # en Eureka, el Gateway crea automáticamente una ruta /mi-servicio/**
       # Útil para tener rutas de respaldo, pero aquí las definimos manualmente
@@ -54,12 +53,23 @@ spring:
           predicates:
             - Path=/api/v1/auth/**
           filters:
-            # StripPrefix=0: NO elimina ningún segmento del path.
-            # La petición llega como /api/v1/auth/login y se reenvía igual.
             - StripPrefix=0
-            # Añade cabecera para que el microservicio sepa que viene del Gateway
             - AddRequestHeader=X-Gateway-Source, api-gateway
-          # Sin filtro JWT: estos endpoints son públicos
+            # ─────────────────────────────────────────────────────────
+            # CIRCUIT BREAKER: Protege contra caídas del MS-USUARIO
+            # ─────────────────────────────────────────────────────────
+            - name: CircuitBreaker
+              args:
+                name: loginCircuitBreaker
+                fallbackUri: forward:/fallback/login
+            # ─────────────────────────────────────────────────────────
+            # RATE LIMITER: Protección contra ataques de fuerza bruta
+            # ─────────────────────────────────────────────────────────
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 3
+                redis-rate-limiter.burstCapacity: 5
+                key-resolver: "#{@userKeyResolver}"
           metadata:
             requiere-autenticacion: false
 
@@ -69,7 +79,9 @@ spring:
         - id: usuario-protegido
           uri: lb://MICROSERVICIO-USUARIO
           predicates:
-            - Path=/api/v1/usuarios/**
+            - Path=/api/v1/auth/cambiar-password
+            - Path=/api/v1/auth/mi-cuenta
+            - Path=/api/v1/auth/logout
           filters:
             - StripPrefix=0
             - AddRequestHeader=X-Gateway-Source, api-gateway
@@ -144,6 +156,25 @@ spring:
           metadata:
             requiere-autenticacion: true
 
+        # ┌─────────────────────────────────────────────────────────┐
+        # │  MICROSERVICIO-IA  (Puerto 8086)                        │
+        # └─────────────────────────────────────────────────────────┘
+        - id: servicio-ia
+          uri: lb://MICROSERVICIO-IA
+          predicates:
+            - Path=/api/v1/ia/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            # Filtro de Cuota Dinámica (Módulo 8)
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 1
+                redis-rate-limiter.burstCapacity: 1
+                key-resolver: "#{@userKeyResolver}"
+          metadata:
+            requiere-autenticacion: true
+
       # ─────────────────────────────────────────────────────────────────────
       # CORS GLOBAL: Aplica a todas las rutas del Gateway
       # ─────────────────────────────────────────────────────────────────────
@@ -197,7 +228,17 @@ app:
       secret-key: ${JWT_SECRET_KEY:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
 
 # ═══════════════════════════════════════════════════════════════════════════
-# ACTUATOR
+# LOGGING
+# ═══════════════════════════════════════════════════════════════════════════
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    org.springframework.security: WARN
+    com.financiero.saas.gateway: DEBUG
+    root: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
 # ═══════════════════════════════════════════════════════════════════════════
 management:
   endpoints:
@@ -211,13 +252,24 @@ management:
       enabled: true  # Expone /actuator/gateway/routes para ver rutas en tiempo real
 
 # ═══════════════════════════════════════════════════════════════════════════
-# LOGGING
+# RESILIENCE4J: Configuración de Circuit Breaker
 # ═══════════════════════════════════════════════════════════════════════════
-logging:
-  level:
-    org.springframework.cloud.gateway: INFO
-    org.springframework.security: WARN
-    com.financiero.saas.gateway: DEBUG
-    root: INFO
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 10
+        permitted-number-of-calls-in-half-open-state: 3
+        wait-duration-in-open-state: 5s
+        failure-rate-threshold: 50
+        event-consumer-buffer-size: 10
+    instances:
+      loginCircuitBreaker:
+        base-config: default
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 5s
+    instances:
+      loginCircuitBreaker:
+        base-config: default
