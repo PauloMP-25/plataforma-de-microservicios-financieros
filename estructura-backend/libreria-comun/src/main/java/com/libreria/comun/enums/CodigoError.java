@@ -44,6 +44,8 @@ public enum CodigoError {
     TOKEN_INVALIDO(HttpStatus.BAD_REQUEST),
     PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST),
     SOLICITUD_INCORRECTA(HttpStatus.BAD_REQUEST),
+    PAGO_RECHAZADO(HttpStatus.BAD_REQUEST),
+    PLAN_NO_SOPORTADO(HttpStatus.BAD_REQUEST),
 
     // 502 - External Error
     ERROR_SERVICIO_EXTERNO(HttpStatus.BAD_GATEWAY),

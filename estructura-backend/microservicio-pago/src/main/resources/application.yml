@@ -1,14 +1,14 @@
 spring:
   application:
-    name: ms-pagos
+    name: microservicio-pago
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://ep-super-king-aqa9cmhx-pooler.c-8.us-east-1.aws.neon.tech/db_microservicio_pagos?sslmode=require}
-    username: ${DATABASE_USER:neondb_owner}
-    password: ${DATABASE_PASSWORD:npg_fRA6mI4navZs}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/db_luka_pagos}
+    username: ${DATABASE_USER:postgres}
+    password: ${DATABASE_PASSWORD:adminUTP}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: false
     properties:
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -24,7 +24,7 @@ server:
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
+      defaultZone: ${EUREKA_URL:http://admin:admin123@localhost:8761/eureka/}
 
 luka:
   jwt:

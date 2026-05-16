@@ -25,6 +25,11 @@ public final class RoutingKeys {
     // Sincronización Cliente → IA
     public static final String CLIENTE_PERFIL_ACTUALIZADO = "cliente.perfil.actualizado";
 
+    // Pagos
+    public static final String PAGO_EXITOSO = "pago.suscripcion.exitoso";
+    public static final String PAGO_REEMBOLSO = "pago.suscripcion.reembolso";
+    public static final String PAGO_FALLIDO = "pago.suscripcion.fallido";
+
     private RoutingKeys() {
     }
 }

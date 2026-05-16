@@ -175,6 +175,42 @@ spring:
           metadata:
             requiere-autenticacion: true
 
+        # ┌─────────────────────────────────────────────────────────┐
+        # │  MICROSERVICIO-PAGO  (Puerto 8087)                      │
+        # │  Webhook PÚBLICO, resto PROTEGIDO                       │
+        # └─────────────────────────────────────────────────────────┘
+        - id: servicio-pagos-webhook
+          uri: lb://MICROSERVICIO-PAGO
+          predicates:
+            - Path=/api/v1/pagos/webhook/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+          metadata:
+            requiere-autenticacion: false
+
+        - id: servicio-pagos-usuarios
+          uri: lb://MICROSERVICIO-PAGO
+          predicates:
+            - Path=/api/v1/pagos/checkout/**
+            - Path=/api/v1/pagos/mi-suscripcion/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+          metadata:
+            requiere-autenticacion: true
+
+        - id: servicio-pagos-admin
+          uri: lb://MICROSERVICIO-PAGO
+          predicates:
+            - Path=/api/v1/pagos/admin/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+          metadata:
+            requiere-autenticacion: true
+            rol-requerido: ROLE_ADMIN
+
       # ─────────────────────────────────────────────────────────────────────
       # CORS GLOBAL: Aplica a todas las rutas del Gateway
       # ─────────────────────────────────────────────────────────────────────
