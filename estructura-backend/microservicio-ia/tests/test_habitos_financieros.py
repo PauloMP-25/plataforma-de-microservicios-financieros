@@ -14,7 +14,15 @@ from app.utilidades.excepciones import HistorialInsuficienteError
 
 def test_habitos_semanal_exito():
     service = HabitosFinancierosService()
-    contexto = ContextoEstrategicoIADTO(nombres="Paulo", meta_principal="Laptop")
+    contexto = ContextoEstrategicoIADTO(
+        nombres="Paulo",
+        ocupacion="Ingeniero",
+        ingreso_mensual=5000.0,
+        tono_ia="AMIGABLE",
+        porcentaje_meta_principal=50.0,
+        porcentaje_alerta_gasto=80,
+        nombre_meta_principal="Laptop"
+    )
     
     # 25 transacciones en la última semana
     hoy = datetime.now()
@@ -41,7 +49,14 @@ def test_habitos_insuficiente():
     df = pd.DataFrame([{"fecha": datetime.now(), "tipo": "GASTO", "monto": 10.0, "categoria": "X"}] * 10)
     
     with pytest.raises(HistorialInsuficienteError):
-        service.ejecutar_calculos(df, ContextoEstrategicoIADTO(nombres="X"))
+        service.ejecutar_calculos(df, ContextoEstrategicoIADTO(
+            nombres="X",
+            ocupacion="Estudiante",
+            ingreso_mensual=1000.0,
+            tono_ia="AMIGABLE",
+            porcentaje_meta_principal=10.0,
+            porcentaje_alerta_gasto=90
+        ))
     print("[OK] Test Hábitos Insuficiente validado")
 
 if __name__ == "__main__":

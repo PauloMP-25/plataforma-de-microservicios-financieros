@@ -77,11 +77,11 @@
         </dependency>
 
 
-        <!-- REDIS: Para Blacklist de JWT (Logout) y caché -->
+        <!-- REDIS: Para Blacklist de JWT (Logout) y caché 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>
+        </dependency> -->
 
         <!-- OPENFEIGN: Para comunicación síncrona entre microservicios -->
         <dependency>

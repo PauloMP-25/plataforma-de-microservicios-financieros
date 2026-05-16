@@ -18,6 +18,7 @@ export class ContenedorAutenticacion implements OnInit {
   /** Datos del registro para el paso de verificación */
   medioVerificacion: 'correo' | 'celular' = 'correo';
   destinoVerificacion = '';
+  usuarioId = '';
 
   constructor(private route: ActivatedRoute) {}
 
@@ -35,9 +36,10 @@ export class ContenedorAutenticacion implements OnInit {
   }
 
   /** Maneja el registro exitoso y muestra la verificación de código */
-  onRegistroExitoso(datos: { medio: 'correo' | 'celular'; destino: string }): void {
+  onRegistroExitoso(datos: { medio: 'correo' | 'celular'; destino: string; usuarioId: string }): void {
     this.medioVerificacion = datos.medio;
     this.destinoVerificacion = datos.destino;
+    this.usuarioId = datos.usuarioId;
     this.vistaActual = 'verificar';
   }
 

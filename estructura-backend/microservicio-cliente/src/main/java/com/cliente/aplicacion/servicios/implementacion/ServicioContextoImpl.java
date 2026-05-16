@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.data.redis.core.StringRedisTemplate;
+//import org.springframework.data.redis.core.StringRedisTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.cliente.infraestructura.mensajeria.PublicadorSincronizacionIA;
 
@@ -36,7 +36,7 @@ public class ServicioContextoImpl implements ServicioContexto {
     private final MetaAhorroRepositorio repoMetaAhorro;
     private final LimiteGastoRepositorio repoLimiteGasto;
 
-    private final StringRedisTemplate redisTemplate;
+    //private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
     private final PublicadorSincronizacionIA publicadorSincronizacionIA;
 
@@ -148,8 +148,8 @@ public class ServicioContextoImpl implements ServicioContexto {
             log.info("Refrescando contexto IA en Redis para usuarioId={}", usuarioId);
             ContextoEstrategicoIADTO contexto = obtenerContextoFinanciero(usuarioId);
             String redisKey = "ia:contexto:" + usuarioId;
-            redisTemplate.opsForValue().set(redisKey, objectMapper.writeValueAsString(contexto),
-                    java.time.Duration.ofHours(1));
+            //redisTemplate.opsForValue().set(redisKey, objectMapper.writeValueAsString(contexto),
+                    //java.time.Duration.ofHours(1));
 
             // Publicar a RabbitMQ para sincronización en tiempo real con ms-ia
             publicadorSincronizacionIA.publicarActualizacionContexto(usuarioId, contexto);

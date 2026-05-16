@@ -1,21 +1,24 @@
 package com.usuario.infraestructura.mensajeria;
 
-import com.libreria.comun.mensajeria.ConfiguracionRabbitBase;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
+import org.springframework.amqp.core.TopicExchange;
 import org.springframework.context.annotation.Bean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Configuración de RabbitMQ para el microservicio de usuario.
- * Extiende de ConfiguracionRabbitBase para heredar la infraestructura de conexión y serialización JSON.
+ * Configuración de la topología de RabbitMQ para el microservicio de usuario.
+ * <p>
+ * Los beans de infraestructura (ConnectionFactory, RabbitTemplate,
+ * MessageConverter)
+ * son provistos automáticamente por {@code libreria-comun}.
+ * </p>
  */
 @Configuration
-public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
+public class ConfiguracionRabbitMQ {
 
     // Nombres de Exchange y Colas para Auditoría
     public static final String EXCHANGE_AUDITORIA = "exchange.auditoria";
@@ -34,20 +37,22 @@ public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
      * Define el exchange de auditoría de tipo Direct.
      */
     @Bean
-    public DirectExchange exchangeAuditoria() {
-        return new DirectExchange(EXCHANGE_AUDITORIA);
+    public TopicExchange exchangeAuditoria() {
+        return new TopicExchange(EXCHANGE_AUDITORIA);
     }
-
 
     /**
      * Realiza el enlace entre la cola y el exchange de auditoría.
      * Se agrega @Qualifier para evitar ambigüedad con otros beans de tipo Queue o
      * DirectExchange.
+     * @param colaAuditoria
+     * @param exchangeAuditoria
+     * @return 
      */
     @Bean
     public Binding bindingAuditoria(
             @Qualifier("colaAuditoria") Queue colaAuditoria,
-            @Qualifier("exchangeAuditoria") DirectExchange exchangeAuditoria) {
+            @Qualifier("exchangeAuditoria") TopicExchange exchangeAuditoria) {
         return BindingBuilder
                 .bind(colaAuditoria)
                 .to(exchangeAuditoria)

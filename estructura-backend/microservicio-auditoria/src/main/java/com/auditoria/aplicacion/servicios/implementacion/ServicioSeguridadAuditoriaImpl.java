@@ -34,7 +34,8 @@ public class ServicioSeguridadAuditoriaImpl implements ServicioSeguridadAuditori
 
     private final AuditoriaAccesoRepository repositorioAcceso;
     private final ListaNegraIpRepository repositorioListaNegra;
-    private final org.springframework.data.redis.core.RedisTemplate<String, Object> redisTemplate;
+    // private final org.springframework.data.redis.core.RedisTemplate<String,
+    // Object> redisTemplate;
 
     @Value("${auditoria.seguridad.max-intentos-fallidos:3}")
     private int maxIntentosFallidos;
@@ -59,7 +60,8 @@ public class ServicioSeguridadAuditoriaImpl implements ServicioSeguridadAuditori
         if (fallosRecientes >= maxIntentosFallidos) {
             bloquearIp(ipOrigen, fallosRecientes);
             // Sincronizar con Redis para el Gateway
-            redisTemplate.opsForValue().set("bloqueo:ip:" + ipOrigen, true, java.time.Duration.ofMinutes(bloqueoMinutos));
+            // redisTemplate.opsForValue().set("bloqueo:ip:" + ipOrigen, true,
+            // java.time.Duration.ofMinutes(bloqueoMinutos));
             log.info("[SEGURIDAD-REDIS] IP sincronizada en caché de bloqueo: {}", ipOrigen);
             
             throw new IpBloqueadaException(ipOrigen);

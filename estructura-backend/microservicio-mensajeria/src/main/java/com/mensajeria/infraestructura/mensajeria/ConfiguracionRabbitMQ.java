@@ -9,15 +9,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.libreria.comun.mensajeria.ConfiguracionRabbitBase;
-
 /**
  * Configuración de RabbitMQ para el microservicio de mensajería.
  * <p>
- * Hereda la infraestructura base (ConnectionFactory, RabbitTemplate,
- * convertidor
- * JSON) de {@link ConfiguracionRabbitBase} y define la topología específica de
- * este servicio:
+ * Define la topología específica de este servicio:
  * <ul>
  * <li>Exchange principal: {@code exchange.mensajeria} (TopicExchange).</li>
  * <li>Cola OTP: {@code cola.mensajeria.otp.generar}, durable, con DLQ
@@ -31,7 +26,7 @@ import com.libreria.comun.mensajeria.ConfiguracionRabbitBase;
  * @version 1.1.0
  */
 @Configuration
-public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
+public class ConfiguracionRabbitMQ {
 
     // ── Exchanges ─────────────────────────────────────────────────────────────
     /** Exchange de auditoría compartido con otros microservicios del ecosistema. */

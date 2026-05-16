@@ -6,6 +6,7 @@ import com.auditoria.aplicacion.servicios.ServicioRegistroAuditoria;
 import com.libreria.comun.dtos.EventoAccesoDTO;
 import com.libreria.comun.dtos.EventoAuditoriaDTO;
 import com.libreria.comun.dtos.EventoTransaccionalDTO;
+import com.libreria.comun.dtos.EventoPagoExitosoDTO;
 import com.libreria.comun.mensajeria.NombresCola;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +46,6 @@ public class ConsumidorAuditoria {
     @RabbitListener(queues = NombresCola.AUDITORIA_ACCESOS, errorHandler = "manejadorErroresRabbit")
     public void procesarAcceso(EventoAccesoDTO evento) {
         log.info("[RABBIT-ACCESO] Recibido evento para usuario: {}", evento.usuarioId());
-        // Pasamos el evento directamente al servicio.
         servicioAcceso.registrarAcceso(evento);
     }
 
@@ -61,7 +61,6 @@ public class ConsumidorAuditoria {
     @RabbitListener(queues = NombresCola.AUDITORIA_EVENTOS, errorHandler = "manejadorErroresRabbit")
     public void procesarEvento(EventoAuditoriaDTO evento) {
         log.info("[RABBIT-ACCESO] Recibido evento para usuario: {}", evento.usuarioId());
-        // Pasamos el evento directamente al servicio.
         servicioRegistro.registrarEvento(evento);
     }
 
@@ -74,7 +73,27 @@ public class ConsumidorAuditoria {
     public void procesarTransaccion(EventoTransaccionalDTO evento) {
         log.info("[RABBIT-TRANSAC] Registrando cambio en entidad: {} del servicio: {}",
                 evento.entidadAfectada(), evento.servicioOrigen());
-
         servicioTransaccional.guardarEvento(evento);
+    }
+
+    /**
+     * Escucha eventos de pago exitoso para generar auditoría financiera.
+     * Corregido para usar EventoTransaccionalDTO.crear()
+     */
+    @RabbitListener(queues = NombresCola.PAGOS_EXITOSOS, errorHandler = "manejadorErroresRabbit")
+    public void manejarPagoExitoso(EventoPagoExitosoDTO evento) {
+        log.info("[RABBIT-PAGOS] Registrando auditoría de pago para usuario: {}", evento.usuarioId());
+
+        // Corregido: Usando .crear() en lugar de .builder()
+        EventoTransaccionalDTO auditoria = EventoTransaccionalDTO.crear(
+                evento.usuarioId(),
+                evento.pagoId(),
+                "microservicio-pago",
+                "suscripcion",
+                "Actualización de plan a: " + evento.planNuevo(),
+                "FREE",
+                evento.planNuevo());
+
+        servicioTransaccional.guardarEvento(auditoria);
     }
 }

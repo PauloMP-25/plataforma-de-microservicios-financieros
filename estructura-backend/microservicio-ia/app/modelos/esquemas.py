@@ -114,33 +114,6 @@ class RespuestaClasificacionDTO(BaseModel):
     sugerencias: List[str]
     usando_fallback: bool = False
 
-class PeticionConFiltroFecha(PeticionBase, FiltroDeFecha):
-    """
-    Petición estándar para módulos que analizan el historial con filtros temporales.
-    """
-    token: str = Field(
-        ...,
-        min_length=10,
-        description="JWT Bearer token emitido por microservicio-usuario.",
-    )
-    tamanio_pagina: int = Field(
-        default=200,
-        ge=10,
-        le=1000,
-        description="Número máximo de transacciones a recuperar.",
-    )
- 
-    model_config = {"str_strip_whitespace": True}
- 
-    @field_validator("usuario_id")
-    @classmethod
-    def validar_usuario_id(cls, valor: str) -> str:
-        """Evita IDs vacíos después de limpiar espacios."""
-        if not valor.strip():
-            raise ValueError("El usuario_id no puede estar vacío.")
-        return valor.strip()
-
-
 class FiltroDeFecha(BaseModel):
     """
     Mixin de filtros temporales opcionales.
@@ -165,6 +138,37 @@ class FiltroDeFecha(BaseModel):
         if self.mes is not None and self.anio is None:
             raise ValueError("Si se especifica 'mes', también se debe especificar 'anio'.")
         return self
+
+class PeticionConFiltroFecha(PeticionBase, FiltroDeFecha):
+    """
+    Petición estándar para módulos que analizan el historial con filtros temporales.
+    """
+    token: str = Field(
+        ...,
+        min_length=10,
+        description="JWT Bearer token emitido por microservicio-usuario.",
+    )
+    tamanio_pagina: int = Field(
+        default=200,
+        ge=10,
+        le=1000,
+        description="Número máximo de transacciones a recuperar.",
+    )
+    
+    frecuencia: Optional[str] = Field(
+        default="SEMANAL", 
+        description="Frecuencia para retos: SEMANAL, QUINCENAL, MENSUAL."
+    )
+ 
+    model_config = {"str_strip_whitespace": True}
+ 
+    @field_validator("usuario_id")
+    @classmethod
+    def validar_usuario_id(cls, valor: str) -> str:
+        """Evita IDs vacíos después de limpiar espacios."""
+        if not valor.strip():
+            raise ValueError("El usuario_id no puede estar vacío.")
+        return valor.strip()
 
 
 # ── Módulo 1: Autoclasificación ───────────────────────────────────────────────
@@ -192,18 +196,6 @@ class PeticionClasificar(PeticionBase):
     )
 
 
-# ── Módulos 2, 3, 4, 5, 7, 8, 10: Con filtro de fecha ───────────────────────
- 
-class PeticionConFiltroFecha(PeticionBase, FiltroDeFecha):
-    """
-    Petición estándar para módulos que analizan el historial con filtros temporales.
-    Usada por: GastoHormiga, PredecirGastos, HabitosFinancieros,
-               ReporteCompleto.
-    """
-    frecuencia: Optional[str] = Field(
-        default="SEMANAL", 
-        description="Frecuencia para retos: SEMANAL, QUINCENAL, MENSUAL."
-    )
 
 
 # ── Módulo 6: Simulación de Meta de Ahorro ───────────────────────────────────

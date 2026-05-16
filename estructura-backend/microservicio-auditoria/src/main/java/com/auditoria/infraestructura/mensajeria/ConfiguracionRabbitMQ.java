@@ -1,19 +1,18 @@
 package com.auditoria.infraestructura.mensajeria;
 
-import com.libreria.comun.mensajeria.ConfiguracionRabbitBase;
 import com.libreria.comun.mensajeria.NombresCola;
 import com.libreria.comun.mensajeria.NombresExchange;
 import com.libreria.comun.mensajeria.RoutingKeys;
 import org.springframework.amqp.core.*;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
  * Configuración de la topología de RabbitMQ para el Microservicio de Auditoría.
  * <p>
- * Esta clase extiende de {@link ConfiguracionRabbitBase} para heredar la
- * infraestructura base (conexión, serialización JSON) y define la estructura
- * de Exchanges, Colas y Bindings utilizando las constantes de la librería común.
+ * Define la estructura de Exchanges, Colas y Bindings utilizando las constantes
+ * de la librería común.
  * </p>
  * 
  * @author Paulo Moron
@@ -21,7 +20,7 @@ import org.springframework.context.annotation.Configuration;
  * @since 2026-05
  */
 @Configuration
-public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
+public class ConfiguracionRabbitMQ {
 
     // =========================================================================
     // EXCHANGES
@@ -157,7 +156,9 @@ public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
      * @return {@link Binding} que establece la ruta de mensajes de acceso.
      */
     @Bean
-    public Binding bindingAccesos(Queue colaAccesos, TopicExchange exchangeAuditoria) {
+    public Binding bindingAccesos(
+                    @Qualifier("colaAccesos") Queue colaAccesos,
+                    @Qualifier("exchangeAuditoria") TopicExchange exchangeAuditoria) {
         return BindingBuilder
                 .bind(colaAccesos)
                 .to(exchangeAuditoria)
@@ -172,9 +173,11 @@ public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
      * @return {@link Binding} que establece la ruta de mensajes de acceso.
      */
     @Bean
-    public Binding bindingEventos(Queue colaEventos, TopicExchange exchangeAuditoria) {
+    public Binding bindingEventos(
+                    @Qualifier("colaAuditoria") Queue colaAuditoria,
+                    @Qualifier("exchangeAuditoria") TopicExchange exchangeAuditoria) {
         return BindingBuilder
-                .bind(colaEventos)
+                        .bind(colaAuditoria)
                 .to(exchangeAuditoria)
                 .with(RoutingKeys.AUDITORIA_EVENTO_ALL);
     }
@@ -187,7 +190,9 @@ public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
      * @return {@link Binding} para eventos de cambio de entidades.
      */
     @Bean
-    public Binding bindingTransacciones(Queue colaTransacciones, TopicExchange exchangeAuditoria) {
+    public Binding bindingTransacciones(
+                    @Qualifier("colaTransacciones") Queue colaTransacciones,
+                    @Qualifier("exchangeAuditoria") TopicExchange exchangeAuditoria) {
         return BindingBuilder
                 .bind(colaTransacciones)
                 .to(exchangeAuditoria)
@@ -202,7 +207,9 @@ public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
      * @return {@link Binding} para el enrutamiento de mensajes rechazados.
      */
     @Bean
-    public Binding bindingAccesosDlq(Queue colaAccesosDlq, DirectExchange exchangeAuditoriaDlq) {
+    public Binding bindingAccesosDlq(
+                    @Qualifier("colaAccesosDlq") Queue colaAccesosDlq,
+                    @Qualifier("exchangeAuditoriaDlq") DirectExchange exchangeAuditoriaDlq) {
         return BindingBuilder
                 .bind(colaAccesosDlq)
                 .to(exchangeAuditoriaDlq)
@@ -217,7 +224,9 @@ public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
      * @return {@link Binding} para el enrutamiento de mensajes rechazados.
      */
     @Bean
-    public Binding bindingEventosDlq(Queue colaEventosDlq, DirectExchange exchangeAuditoriaDlq) {
+    public Binding bindingEventosDlq(
+                    @Qualifier("colaEventosDlq") Queue colaEventosDlq,
+                    @Qualifier("exchangeAuditoriaDlq") DirectExchange exchangeAuditoriaDlq) {
         return BindingBuilder
                 .bind(colaEventosDlq)
                 .to(exchangeAuditoriaDlq)
@@ -232,7 +241,9 @@ public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
      * @return {@link Binding} para el enrutamiento de mensajes rechazados.
      */
     @Bean
-    public Binding bindingTransaccionesDlq(Queue colaTransaccionesDlq, DirectExchange exchangeAuditoriaDlq) {
+    public Binding bindingTransaccionesDlq(
+                    @Qualifier("colaTransaccionesDlq") Queue colaTransaccionesDlq,
+                    @Qualifier("exchangeAuditoriaDlq") DirectExchange exchangeAuditoriaDlq) {
         return BindingBuilder
                 .bind(colaTransaccionesDlq)
                 .to(exchangeAuditoriaDlq)

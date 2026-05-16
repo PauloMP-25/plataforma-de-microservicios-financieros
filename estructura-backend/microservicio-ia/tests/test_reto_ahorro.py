@@ -15,7 +15,15 @@ from app.utilidades.excepciones import HistorialInsuficienteError
 def test_reto_flujo_completo():
     service = RetoAhorroDinamicoService()
     usuario_id = "test_user_77"
-    contexto = ContextoEstrategicoIADTO(nombres="Paulo", meta_principal="Laptop")
+    contexto = ContextoEstrategicoIADTO(
+        nombres="Paulo",
+        ocupacion="Ingeniero",
+        ingreso_mensual=5000.0,
+        tono_ia="AMIGABLE",
+        porcentaje_meta_principal=50.0,
+        porcentaje_alerta_gasto=80,
+        nombre_meta_principal="Laptop"
+    )
     
     # 1. Simular 25 transacciones para pasar el mínimo de 20
     hoy = datetime.now()
@@ -44,7 +52,14 @@ def test_reto_insuficiente():
     df = pd.DataFrame([{"fecha": datetime.now(), "tipo": "GASTO", "monto": 10.0, "categoria": "X"}] * 5)
     
     with pytest.raises(HistorialInsuficienteError):
-        service.ejecutar_calculos(df, ContextoEstrategicoIADTO(nombres="X"))
+        service.ejecutar_calculos(df, ContextoEstrategicoIADTO(
+            nombres="X",
+            ocupacion="Estudiante",
+            ingreso_mensual=1000.0,
+            tono_ia="AMIGABLE",
+            porcentaje_meta_principal=10.0,
+            porcentaje_alerta_gasto=90
+        ))
     print("[OK] Test Reto Insuficiente validado")
 
 if __name__ == "__main__":

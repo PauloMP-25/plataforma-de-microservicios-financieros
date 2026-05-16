@@ -4,6 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Clase principal del Microservicio de Pagos.
@@ -15,9 +16,10 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  * @author Luka-Dev-Backend
  * @version 1.0.0
  */
-@SpringBootApplication
 @EnableDiscoveryClient
+@SpringBootApplication(scanBasePackages = {"com.pagos", "com.libreria.comun"})
 @EnableFeignClients
+@EnableScheduling
 public class MicroservicioPagosApplication {
 
     public static void main(String[] args) {
