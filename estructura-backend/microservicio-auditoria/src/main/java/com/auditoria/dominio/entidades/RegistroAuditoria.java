@@ -29,7 +29,7 @@ import java.util.UUID;
 @Table(name = "registros_auditoria", indexes = {
         @Index(name = "idx_auditoria_modulo", columnList = "modulo"),
         @Index(name = "idx_auditoria_fecha", columnList = "fecha_hora"),
-        @Index(name = "idx_auditoria_usuario", columnList = "nombre_usuario")
+        @Index(name = "idx_auditoria_modulo_fecha", columnList = "modulo, fecha_hora")
 })
 @Getter
 @Setter

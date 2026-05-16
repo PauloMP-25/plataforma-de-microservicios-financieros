@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-iniciar-sesion',
@@ -16,7 +17,11 @@ export class IniciarSesion {
   cargando = false;
   errorMensaje = '';
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private authService: AuthService
+  ) {
     this.formulario = this.fb.group({
       correo: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required]]
@@ -35,17 +40,25 @@ export class IniciarSesion {
     this.cargando = true;
     this.errorMensaje = '';
 
-    // TODO: Conectar con servicio de autenticación del backend
     const solicitudLogin = {
       correo: this.formulario.value.correo,
       password: this.formulario.value.password
     };
 
-    console.log('SolicitudLogin:', solicitudLogin);
-    // Simular respuesta por ahora
-    setTimeout(() => {
-      this.cargando = false;
-      // this.router.navigate(['/dashboard']);
-    }, 1500);
+    this.authService.login(solicitudLogin).subscribe({
+      next: (resp) => {
+        this.cargando = false;
+        if (resp.exito) {
+          this.router.navigate(['/dashboard']);
+        } else {
+          this.errorMensaje = resp.mensaje || 'Error al iniciar sesión';
+        }
+      },
+      error: (err) => {
+        this.cargando = false;
+        this.errorMensaje = err.error?.mensaje || 'Error de conexión con el servidor';
+        console.error('Error Login:', err);
+      }
+    });
   }
 }

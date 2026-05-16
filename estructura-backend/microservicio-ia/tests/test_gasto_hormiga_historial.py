@@ -14,7 +14,15 @@ from app.utilidades.excepciones import HistorialInsuficienteError
 
 def test_gasto_hormiga_exito():
     service = DeteccionGastosHormigaService()
-    contexto = ContextoEstrategicoIADTO(nombres="Paulo", meta_principal="Laptop", rol="PRO")
+    contexto = ContextoEstrategicoIADTO(
+        nombres="Paulo",
+        ocupacion="Ingeniero",
+        ingreso_mensual=5000.0,
+        tono_ia="AMIGABLE",
+        porcentaje_meta_principal=50.0,
+        porcentaje_alerta_gasto=80,
+        nombre_meta_principal="Laptop"
+    )
     
     # 1. Simular 20 txs mes actual + 20 txs mes anterior
     data = []
@@ -35,7 +43,14 @@ def test_gasto_hormiga_exito():
 
 def test_gasto_hormiga_insuficiente():
     service = DeteccionGastosHormigaService()
-    contexto = ContextoEstrategicoIADTO(nombres="Paulo")
+    contexto = ContextoEstrategicoIADTO(
+        nombres="Paulo",
+        ocupacion="Estudiante",
+        ingreso_mensual=1000.0,
+        tono_ia="AMIGABLE",
+        porcentaje_meta_principal=10.0,
+        porcentaje_alerta_gasto=90
+    )
     
     # Solo 5 transacciones
     data = [{"fecha": datetime.now(), "tipo": "GASTO", "monto": 5.0, "categoria": "Dulces"}] * 5

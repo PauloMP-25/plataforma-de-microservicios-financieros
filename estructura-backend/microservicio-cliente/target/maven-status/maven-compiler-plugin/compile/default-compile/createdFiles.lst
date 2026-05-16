@@ -3,6 +3,7 @@ com\cliente\dominio\entidades\MetaAhorro$MetaAhorroBuilder.class
 com\cliente\dominio\repositorios\LimiteGastoRepositorio.class
 com\cliente\dominio\entidades\PerfilFinanciero.class
 com\cliente\dominio\repositorios\DatosPersonalesRepositorio.class
+com\cliente\dominio\especificaciones\MetaAhorroSpecs.class
 com\cliente\aplicacion\excepciones\ClienteNoEncontradoException.class
 com\cliente\aplicacion\servicios\ServicioLimiteGasto.class
 com\cliente\presentacion\controladores\ControladorMetaAhorro.class
@@ -29,6 +30,7 @@ com\cliente\presentacion\controladores\ControladorInterno.class
 com\cliente\dominio\entidades\DatosPersonales.class
 com\cliente\aplicacion\servicios\implementacion\ServicioPerfilFinancieroImpl.class
 com\cliente\aplicacion\excepciones\LimiteGastoNoEncontradoException.class
+com\cliente\presentacion\controladores\ControladorSincronizacionInterna.class
 com\cliente\infraestructura\mensajeria\PublicadorAuditoria.class
 com\cliente\presentacion\controladores\ControladorPerfilFinanciero.class
 com\cliente\presentacion\controladores\ControladorLimiteGasto.class
@@ -44,6 +46,7 @@ com\cliente\aplicacion\servicios\ServicioPerfilFinanciero.class
 com\cliente\aplicacion\dtos\RespuestaContexto.class
 com\cliente\aplicacion\servicios\implementacion\ServicioContextoImpl.class
 com\cliente\dominio\entidades\DatosPersonales$DatosPersonalesBuilder.class
+com\cliente\presentacion\manejadores\ManejadorGlobalExcepciones.class
 com\cliente\aplicacion\servicios\ServicioMetaAhorro.class
 com\cliente\aplicacion\dtos\RespuestaLimiteGasto.class
 com\cliente\aplicacion\servicios\implementacion\ServicioDatosPersonalesImpl.class

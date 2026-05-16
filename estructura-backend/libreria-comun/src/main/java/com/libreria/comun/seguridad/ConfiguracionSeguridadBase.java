@@ -8,6 +8,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.List;
 
 /**
  * Configuración base de seguridad para el ecosistema LUKA APP.
@@ -17,6 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  * 2. Configura el Punto de Entrada para errores 401 en JSON.
  * 3. Inyecta el Filtro JWT centralizado.
  * 4. Define rutas de infraestructura comunes (Swagger, Actuator).
+ * 5. Habilita CORS para permitir peticiones desde el frontend.
  * </p>
  *
  * @author Paulo Moron
@@ -37,11 +42,36 @@ public abstract class ConfiguracionSeguridadBase {
      */
     protected HttpSecurity configurarAutorizacion(HttpSecurity http) throws Exception {
         return http
-                    .csrf(csrf -> csrf.disable()) // Asegúrate de deshabilitar CSRF si es Stateless
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                    .exceptionHandling(ex -> ex.authenticationEntryPoint(puntoEntradaJwt))
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(puntoEntradaJwt))
                 .addFilterBefore(filtroJwt, UsernamePasswordAuthenticationFilter.class);
-        }
+    }
+
+    /**
+     * Configuración de CORS permitiendo orígenes de desarrollo.
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        // Permitir orígenes de desarrollo comunes
+        configuration.setAllowedOrigins(List.of(
+            "http://localhost:4200", 
+            "http://localhost:4201", 
+            "http://localhost:61878", // Puerto dinámico detectado
+            "http://localhost:5173"   // Vite
+        ));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers"));
+        configuration.setExposedHeaders(List.of("Authorization"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 
     /**
      * Bean de codificación de contraseñas único para toda la plataforma.

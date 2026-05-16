@@ -15,7 +15,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  * @author Luka-Dev-Backend
  * @version 1.0.0
  */
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"com.pagos", "com.libreria.comun"})
 @EnableDiscoveryClient
 @EnableFeignClients
 public class MicroservicioPagosApplication {

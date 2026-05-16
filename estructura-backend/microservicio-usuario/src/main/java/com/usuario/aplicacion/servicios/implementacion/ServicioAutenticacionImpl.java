@@ -214,6 +214,15 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
         Usuario guardado = usuarioRepository.save(usuario);
         publicadorAuditoria.publicarAcceso(guardado.getId(), ipCliente, EstadoEvento.EXITO, "REGISTRO_INICIAL");
 
+        // Disparamos la generación del código de activación vía RabbitMQ
+        publicadorAuditoria.publicarSolicitudOtp(new SolicitudGenerarOtp(
+                guardado.getId(),
+                guardado.getCorreo(),
+                null, // Teléfono opcional en registro base
+                TipoVerificacion.EMAIL,
+                PropositoCodigo.ACTIVACION_CUENTA
+        ));
+
         return guardado.getId();
     }
 

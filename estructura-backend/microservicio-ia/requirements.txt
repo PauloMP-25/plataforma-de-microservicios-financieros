@@ -31,3 +31,4 @@ PyJWT==2.9.0
 httpx==0.27.2
 sse-starlette==2.1.3
 tqdm==4.66.5
+aio-pika==9.4.3

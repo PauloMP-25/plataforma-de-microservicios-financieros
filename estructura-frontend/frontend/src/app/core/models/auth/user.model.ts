@@ -44,3 +44,13 @@ export interface NuevoPasswordDTO {
   nuevoPassword:    string;
   confirmarPassword: string;
 }
+
+// ── Envoltura de Respuesta API ──
+export interface ResultadoApi<T> {
+  exito:   boolean;
+  estado:  number;
+  error?:  string;
+  mensaje: string;
+  datos:   T;
+}
+
