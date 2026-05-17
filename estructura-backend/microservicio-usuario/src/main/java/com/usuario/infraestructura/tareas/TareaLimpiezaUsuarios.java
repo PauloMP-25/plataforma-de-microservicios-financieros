@@ -1,4 +1,4 @@
-package com.usuario.infraestructura.configuracion;
+package com.usuario.infraestructura.tareas;
 
 import com.usuario.dominio.repositorios.UsuarioRepository;
 import org.springframework.scheduling.annotation.Scheduled;

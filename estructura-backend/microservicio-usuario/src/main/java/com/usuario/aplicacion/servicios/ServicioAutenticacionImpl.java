@@ -1,23 +1,23 @@
-package com.usuario.aplicacion.servicios.implementacion;
+package com.usuario.aplicacion.servicios;
 
 import com.libreria.comun.enums.EstadoEvento;
 import com.libreria.comun.excepciones.ExcepcionNoAutorizado;
 import com.libreria.comun.seguridad.ServicioJwt;
 import com.libreria.comun.enums.PropositoCodigo;
-import com.usuario.aplicacion.dtos.RespuestaAutenticacion;
-import com.usuario.aplicacion.dtos.SolicitudCambioPassword;
-import com.usuario.aplicacion.dtos.SolicitudLogin;
-import com.usuario.aplicacion.dtos.SolicitudRecuperacion;
-import com.usuario.aplicacion.dtos.SolicitudRefreshToken;
-import com.usuario.aplicacion.dtos.SolicitudRegistro;
-import com.usuario.aplicacion.dtos.SolicitudRestablecerPassword;
-import com.usuario.aplicacion.dtos.SolicitudGenerarOtp;
+import com.usuario.aplicacion.dtos.respuestas.RespuestaAutenticacion;
+import com.usuario.aplicacion.dtos.solicitudes.SolicitudCambioPassword;
+import com.usuario.aplicacion.dtos.solicitudes.SolicitudLogin;
+import com.usuario.aplicacion.dtos.solicitudes.SolicitudRecuperacion;
+import com.usuario.aplicacion.dtos.solicitudes.SolicitudRefreshToken;
+import com.usuario.aplicacion.dtos.solicitudes.SolicitudRegistro;
+import com.usuario.aplicacion.dtos.solicitudes.SolicitudRestablecerPassword;
+import com.usuario.aplicacion.dtos.solicitudes.SolicitudGenerarOtp;
 import com.libreria.comun.enums.TipoVerificacion;
 import com.usuario.aplicacion.excepciones.CredencialesInvalidasException;
 import com.usuario.aplicacion.excepciones.CuentaNoHabilitadaException;
 import com.usuario.aplicacion.excepciones.TokenInvalidoException;
 import com.usuario.aplicacion.excepciones.UsuarioNoEncontradoException;
-import com.usuario.aplicacion.servicios.IServicioAutenticacion;
+import com.usuario.aplicacion.puertos.IServicioAutenticacion;
 import com.usuario.dominio.entidades.Rol;
 import com.usuario.dominio.entidades.Usuario;
 import com.usuario.dominio.repositorios.RolRepository;
@@ -28,7 +28,8 @@ import com.usuario.infraestructura.mensajeria.PublicadorAuditoria;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-//import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import java.util.concurrent.TimeUnit;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -39,7 +40,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.HashMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Implementación del servicio de autenticación.
@@ -59,7 +59,7 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
     private final ClientePerfilExterno clientePerfilExterno;
     private final ClienteMensajeria clienteMensajeria;
     private final PublicadorAuditoria publicadorAuditoria;
-    //private final StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
     @SuppressWarnings("null")
     @Override
@@ -143,29 +143,28 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
         Usuario usuario = usuarioRepository.findByCorreo(correo)
                 .orElseThrow(() -> new ExcepcionNoAutorizado("USUARIO_NO_ENCONTRADO"));
 
-//        // Validar rotación de tokens (Blacklist de refresh tokens usados)
-//        String key = "REFRESH_TOKEN:" + refreshToken;
-//        if (Boolean.TRUE.equals(redisTemplate.hasKey(key))) {
-//            log.error("[AUTH-REF] Intento de reutilizar Refresh Token invalidado por rotación!");
-//            publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente, EstadoEvento.FALLO, "REUSO_TOKEN_DETECTADO");
-//            throw new ExcepcionNoAutorizado("TOKEN_REUTILIZADO");
-//        }
-//
-//        // Invalidar el token anterior (Rotación)
-//        redisTemplate.opsForValue().set(key, "USADO", jwtService.obtenerExpiracionRefreshMs(), TimeUnit.MILLISECONDS);
+        // Validar rotación de tokens (Blacklist de refresh tokens usados)
+        String key = "REFRESH_TOKEN:" + refreshToken;
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(key))) {
+            log.error("[AUTH-REF] Intento de reutilizar Refresh Token invalidado por rotación!");
+            publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente, EstadoEvento.FALLO, "REUSO_TOKEN_DETECTADO");
+            throw new ExcepcionNoAutorizado("TOKEN_REUTILIZADO");
+        }
+
+        // Invalidar el token anterior (Rotación)
+        redisTemplate.opsForValue().set(key, "USADO", jwtService.obtenerExpiracionRefreshMs(), TimeUnit.MILLISECONDS);
 
         publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente, EstadoEvento.EXITO, "TOKEN_REFRESCADO");
         return generarRespuestaAuth(usuario);
     }
 
-    @SuppressWarnings("null")
     @Override
     @Transactional
     public void registrarLogout(UUID usuarioId, String token, String ipCliente) {
         if (token != null) {
             // Añadir a Blacklist en Redis
             String key = "BLACKLIST_JWT:" + token;
-//            redisTemplate.opsForValue().set(key, usuarioId.toString(), 24, TimeUnit.HOURS);
+            redisTemplate.opsForValue().set(key, usuarioId.toString(), 24, TimeUnit.HOURS);
         }
         publicadorAuditoria.publicarAcceso(usuarioId, ipCliente, EstadoEvento.EXITO, "LOGOUT_EXITOSO");
     }
@@ -220,8 +219,7 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
                 guardado.getCorreo(),
                 null, // Teléfono opcional en registro base
                 TipoVerificacion.EMAIL,
-                PropositoCodigo.ACTIVACION_CUENTA
-        ));
+                PropositoCodigo.ACTIVACION_CUENTA));
 
         return guardado.getId();
     }
@@ -238,9 +236,10 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
         }
 
         Usuario usuario = usuarioOpt.get();
-        String telefonoAEnviar = (solicitud.tipo() == TipoVerificacion.SMS || solicitud.tipo() == TipoVerificacion.WHATSAPP)
-                ? clientePerfilExterno.obtenerTelefono(usuario.getId())
-                : null;
+        String telefonoAEnviar = (solicitud.tipo() == TipoVerificacion.SMS
+                || solicitud.tipo() == TipoVerificacion.WHATSAPP)
+                        ? clientePerfilExterno.obtenerTelefono(usuario.getId())
+                        : null;
 
         publicadorAuditoria.publicarSolicitudOtp(new SolicitudGenerarOtp(
                 usuario.getId(), usuario.getCorreo(), telefonoAEnviar, solicitud.tipo(),

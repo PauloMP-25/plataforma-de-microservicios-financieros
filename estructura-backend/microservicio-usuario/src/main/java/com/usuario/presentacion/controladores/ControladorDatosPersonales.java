@@ -1,7 +1,7 @@
 package com.usuario.presentacion.controladores;
 
 import com.libreria.comun.respuesta.ResultadoApi;
-import com.usuario.aplicacion.servicios.IServicioAutenticacion;
+import com.usuario.aplicacion.puertos.IServicioAutenticacion;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

@@ -1,6 +1,6 @@
 package com.usuario.infraestructura.clientes;
 
-import com.usuario.aplicacion.dtos.SolicitudGenerarOtp;
+import com.usuario.aplicacion.dtos.solicitudes.SolicitudGenerarOtp;
 import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;

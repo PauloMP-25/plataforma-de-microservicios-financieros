@@ -1,4 +1,4 @@
-package com.usuario.aplicacion.dtos;
+package com.usuario.aplicacion.dtos.respuestas;
 
 import java.util.List;
 

@@ -1,6 +1,6 @@
 package com.usuario.infraestructura.clientes;
 
-import com.usuario.aplicacion.dtos.SolicitudGenerarOtp;
+import com.usuario.aplicacion.dtos.solicitudes.SolicitudGenerarOtp;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

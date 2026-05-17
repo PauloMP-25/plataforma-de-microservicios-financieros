@@ -1,4 +1,4 @@
-package com.usuario.aplicacion.dtos;
+package com.usuario.aplicacion.dtos.solicitudes;
 
 import jakarta.validation.constraints.NotNull;
 

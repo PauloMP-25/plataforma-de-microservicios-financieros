@@ -1,6 +1,7 @@
-package com.usuario.aplicacion.servicios;
+package com.usuario.aplicacion.puertos;
 
-import com.usuario.aplicacion.dtos.*;
+import com.usuario.aplicacion.dtos.solicitudes.*;
+import com.usuario.aplicacion.dtos.respuestas.*;
 import java.util.UUID;
 
 /**

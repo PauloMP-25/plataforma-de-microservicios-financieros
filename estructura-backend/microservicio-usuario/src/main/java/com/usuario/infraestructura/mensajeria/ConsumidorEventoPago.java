@@ -2,7 +2,7 @@ package com.usuario.infraestructura.mensajeria;
 
 import com.libreria.comun.dtos.EventoPagoExitosoDTO;
 import com.libreria.comun.mensajeria.NombresCola;
-import com.usuario.aplicacion.servicios.IServicioRol;
+import com.usuario.aplicacion.puertos.IServicioRol;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;

@@ -44,12 +44,4 @@ public class Rol {
         ROLE_PRO,
         ROLE_PREMIUM
     }
-
-    /**
-     * Helper para obtener el enum a partir del nombre del rol.
-     * @return El enum correspondiente.
-     */
-    public NombreRol getNombreAsEnum() {
-        return NombreRol.valueOf(this.nombre);
-    }
 }

@@ -1,4 +1,4 @@
-package com.usuario.aplicacion.servicios;
+package com.usuario.aplicacion.puertos;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

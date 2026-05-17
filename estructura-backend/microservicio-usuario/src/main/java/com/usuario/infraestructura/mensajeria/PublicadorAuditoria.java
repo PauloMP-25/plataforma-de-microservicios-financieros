@@ -5,7 +5,7 @@ import com.libreria.comun.enums.EstadoEvento;
 import com.libreria.comun.mensajeria.NombresExchange;
 import com.libreria.comun.mensajeria.RoutingKeys;
 import com.libreria.comun.mensajeria.PublicadorEventosBase;
-import com.usuario.aplicacion.dtos.SolicitudGenerarOtp;
+import com.usuario.aplicacion.dtos.solicitudes.SolicitudGenerarOtp;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;

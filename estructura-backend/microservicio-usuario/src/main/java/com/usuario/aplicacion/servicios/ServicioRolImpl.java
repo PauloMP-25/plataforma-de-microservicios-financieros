@@ -1,6 +1,6 @@
-package com.usuario.aplicacion.servicios.implementacion;
+package com.usuario.aplicacion.servicios;
 
-import com.usuario.aplicacion.servicios.IServicioRol;
+import com.usuario.aplicacion.puertos.IServicioRol;
 import com.usuario.dominio.entidades.Rol;
 import com.usuario.dominio.entidades.Usuario;
 import com.usuario.dominio.repositorios.RolRepository;

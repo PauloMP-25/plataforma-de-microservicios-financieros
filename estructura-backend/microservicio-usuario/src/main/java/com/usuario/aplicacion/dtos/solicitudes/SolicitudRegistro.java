@@ -1,4 +1,4 @@
-package com.usuario.aplicacion.dtos;
+package com.usuario.aplicacion.dtos.solicitudes;
 
 import com.usuario.dominio.validaciones.ValidarPassword;
 import jakarta.validation.constraints.Email;

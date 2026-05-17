@@ -1,8 +1,9 @@
 package com.usuario.presentacion.controladores;
 
 import com.libreria.comun.respuesta.ResultadoApi;
-import com.usuario.aplicacion.dtos.*;
-import com.usuario.aplicacion.servicios.IServicioAutenticacion;
+import com.usuario.aplicacion.dtos.solicitudes.*;
+import com.usuario.aplicacion.dtos.respuestas.*;
+import com.usuario.aplicacion.puertos.IServicioAutenticacion;
 import com.usuario.dominio.entidades.Usuario;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;

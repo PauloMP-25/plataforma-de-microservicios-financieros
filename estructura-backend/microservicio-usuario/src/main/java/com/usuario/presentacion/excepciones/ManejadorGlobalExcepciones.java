@@ -1,4 +1,4 @@
-package com.usuario.presentacion.manejadores;
+package com.usuario.presentacion.excepciones;
 
 import com.libreria.comun.manejadores.ManejadorGlobalExcepcionesBase;
 import com.libreria.comun.enums.CodigoError;
