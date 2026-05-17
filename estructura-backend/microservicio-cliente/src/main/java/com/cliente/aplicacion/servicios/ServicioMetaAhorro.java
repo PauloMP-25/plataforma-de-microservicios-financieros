@@ -68,4 +68,15 @@ public interface ServicioMetaAhorro {
      * @param ipOrigen       IP de origen del cliente.
      */
     void eliminar(UUID metaId, UUID usuarioIdToken, String ipOrigen);
+
+    /**
+     * Filtra dinámicamente las metas de ahorro del usuario utilizando Specifications.
+     *
+     * @param usuarioIdToken ID del usuario autenticado.
+     * @param completada     Filtro opcional para el estado completado.
+     * @param venceAntes     Filtro opcional de fecha límite superior.
+     * @param progresoBajo   Filtro opcional de progreso de ahorro inferior (montoActual/montoObjetivo < progresoBajo).
+     * @return Lista de RespuestaMetaAhorro que coinciden con los criterios.
+     */
+    List<RespuestaMetaAhorro> buscar(UUID usuarioIdToken, Boolean completada, java.time.LocalDate venceAntes, Double progresoBajo);
 }

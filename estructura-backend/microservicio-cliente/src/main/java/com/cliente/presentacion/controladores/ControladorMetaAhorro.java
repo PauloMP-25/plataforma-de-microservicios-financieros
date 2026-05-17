@@ -89,6 +89,25 @@ public class ControladorMetaAhorro {
     }
 
     /**
+     * Filtra dinámicamente las metas de ahorro del usuario utilizando el Specification Pattern.
+     * 
+     * @param completada Filtro opcional de completado
+     * @param venceAntes Filtro opcional de fecha límite
+     * @param progresoBajo Filtro opcional de porcentaje de progreso (0.00 a 100.00)
+     * @return ResultadoApi con la lista de metas filtradas
+     */
+    @GetMapping("/filtrar")
+    public ResponseEntity<ResultadoApi<List<RespuestaMetaAhorro>>> filtrar(
+            @RequestParam(required = false) Boolean completada,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate venceAntes,
+            @RequestParam(required = false) Double progresoBajo) {
+
+        UUID usuarioID = UtilidadSeguridad.obtenerUsuarioId();
+        List<RespuestaMetaAhorro> respuesta = servicio.buscar(usuarioID, completada, venceAntes, progresoBajo);
+        return ResponseEntity.ok(ResultadoApi.exito(respuesta, "Metas de ahorro filtradas dinámicamente con éxito.", null));
+    }
+
+    /**
      * Consulta una meta específica del usuario.
      * 
      * @param metaId Identificador único de la meta

@@ -35,6 +35,9 @@ import java.util.stream.Collectors;
  */
 import com.cliente.aplicacion.eventos.EventoContextoActualizado;
 import org.springframework.context.ApplicationEventPublisher;
+import com.cliente.dominio.especificaciones.MetaAhorroSpecs;
+import org.springframework.data.jpa.domain.Specification;
+import java.time.LocalDate;
 
 @Service
 @Slf4j
@@ -219,5 +222,30 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
                 m.calcularPorcentajeProgreso(), // ← lógica de dominio
                 m.getFechaLimite(), m.getCompletada(),
                 m.getFechaCreacion(), m.getFechaActualizacion());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RespuestaMetaAhorro> buscar(UUID usuarioIdToken, Boolean completada, LocalDate venceAntes, Double progresoBajo) {
+        log.debug("Filtrando metas de ahorro dinámicamente para usuarioId={}", usuarioIdToken);
+
+        // 1. Criterio base: la meta debe pertenecer al usuario autenticado
+        Specification<MetaAhorro> specs = MetaAhorroSpecs.perteneceAUsuario(usuarioIdToken);
+
+        // 2. Filtros opcionales combinados dinámicamente
+        if (completada != null) {
+            specs = specs.and(MetaAhorroSpecs.estaCompletada(completada));
+        }
+        if (venceAntes != null) {
+            specs = specs.and(MetaAhorroSpecs.venceAntesDe(venceAntes));
+        }
+        if (progresoBajo != null) {
+            specs = specs.and(MetaAhorroSpecs.tieneProgresoBajo(progresoBajo));
+        }
+
+        // 3. Ejecutar consulta usando la especificación compilada
+        return repositorio.findAll(specs).stream()
+                .map(this::convertirADTO)
+                .collect(Collectors.toList());
     }
 }

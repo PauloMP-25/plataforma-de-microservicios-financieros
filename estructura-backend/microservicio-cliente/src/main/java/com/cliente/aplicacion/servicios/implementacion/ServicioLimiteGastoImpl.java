@@ -54,10 +54,10 @@ public class ServicioLimiteGastoImpl implements ServicioLimiteGasto {
             if (!limite.estaVencido()) {
                 throw new LimiteGastoException("Ya tienes un límite global activo y vigente.");
             }
-            // Si está vencido, lo desactivamos para permitir el nuevo
-            limite.setActivo(false);
-            repositorio.save(limite);
         });
+
+        // Desactivación eficiente por lote en la base de datos
+        repositorio.desactivarLimitesAnteriores(usuarioIdToken);
 
         LimiteGasto nuevo = LimiteGasto.builder()
                 .usuarioId(usuarioIdToken)
