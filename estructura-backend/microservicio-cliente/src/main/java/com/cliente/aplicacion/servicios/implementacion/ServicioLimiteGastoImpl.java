@@ -172,6 +172,7 @@ public class ServicioLimiteGastoImpl implements ServicioLimiteGasto {
                                 usuarioId, "ALERTA_PRESUPUESTO_GLOBAL", "MS-CLIENTE", ipOrigen,
                                 String.format("Gasto total S/ %.2f alcanzó el %d%% de tu presupuesto global S/ %.2f",
                                         gastoTotalActual, limite.getPorcentajeAlerta(), limite.getMontoLimite())));
+                        return true;
                     }
                     return false;
                 })
