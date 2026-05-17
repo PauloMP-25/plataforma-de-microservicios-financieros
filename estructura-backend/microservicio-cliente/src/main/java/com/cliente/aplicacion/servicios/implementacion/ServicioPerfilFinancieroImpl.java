@@ -121,17 +121,17 @@ public class ServicioPerfilFinancieroImpl implements ServicioPerfilFinanciero {
      * @param d DTO con los campos a aplicar.
      */
     private void aplicarCambios(PerfilFinanciero e, SolicitudPerfilFinanciero d) {
-        if (d.getOcupacion() != null) {
-            e.setOcupacion(d.getOcupacion());
+        if (d.ocupacion() != null) {
+            e.setOcupacion(d.ocupacion());
         }
-        if (d.getIngresoMensual() != null) {
-            e.setIngresoMensual(d.getIngresoMensual());
+        if (d.ingresoMensual() != null) {
+            e.setIngresoMensual(d.ingresoMensual());
         }
-        if (d.getEstiloVida() != null) {
-            e.setEstiloVida(d.getEstiloVida());
+        if (d.estiloVida() != null) {
+            e.setEstiloVida(d.estiloVida());
         }
-        if (d.getTonoIA() != null) {
-            e.setTonoIA(d.getTonoIA());
+        if (d.tonoIA() != null) {
+            e.setTonoIA(d.tonoIA());
         }
     }
 

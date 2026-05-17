@@ -90,7 +90,7 @@ public class ServicioDatosPersonalesImpl implements ServicioDatosPersonales {
         DatosPersonales datos = repositorio.findByUsuarioId(usuarioIdRuta)
                 .orElseThrow(() -> new DatosPersonalesNoEncontradosException(usuarioIdRuta));
 
-        validarDniUnico(solicitud.getDni(), datos);
+        validarDniUnico(solicitud.dni(), datos);
         aplicarCambios(datos, solicitud);
         datos.setDatosCompletos(datos.evaluarDatosCompletos());
 
@@ -193,32 +193,32 @@ public class ServicioDatosPersonalesImpl implements ServicioDatosPersonales {
      * @param d DTO {@link SolicitudDatosPersonales} con los nuevos valores.
      */
     private void aplicarCambios(DatosPersonales e, SolicitudDatosPersonales d) {
-        if (d.getDni() != null) {
-            e.setDni(d.getDni());
+        if (d.dni() != null) {
+            e.setDni(d.dni());
         }
-        if (d.getNombres() != null) {
-            e.setNombres(d.getNombres());
+        if (d.nombres() != null) {
+            e.setNombres(d.nombres());
         }
-        if (d.getApellidos() != null) {
-            e.setApellidos(d.getApellidos());
+        if (d.apellidos() != null) {
+            e.setApellidos(d.apellidos());
         }
-        if (d.getGenero() != null) {
-            e.setGenero(d.getGenero());
+        if (d.genero() != null) {
+            e.setGenero(d.genero());
         }
-        if (d.getEdad() != null) {
-            e.setEdad(d.getEdad());
+        if (d.edad() != null) {
+            e.setEdad(d.edad());
         }
-        if (d.getTelefono() != null) {
-            e.setTelefono(d.getTelefono());
+        if (d.telefono() != null) {
+            e.setTelefono(d.telefono());
         }
-        if (d.getFotoPerfilUrl() != null) {
-            e.setFotoPerfilUrl(d.getFotoPerfilUrl());
+        if (d.fotoPerfilUrl() != null) {
+            e.setFotoPerfilUrl(d.fotoPerfilUrl());
         }
-        if (d.getPais() != null) {
-            e.setPais(d.getPais());
+        if (d.pais() != null) {
+            e.setPais(d.pais());
         }
-        if (d.getCiudad() != null) {
-            e.setCiudad(d.getCiudad());
+        if (d.ciudad() != null) {
+            e.setCiudad(d.ciudad());
         }
     }
 }

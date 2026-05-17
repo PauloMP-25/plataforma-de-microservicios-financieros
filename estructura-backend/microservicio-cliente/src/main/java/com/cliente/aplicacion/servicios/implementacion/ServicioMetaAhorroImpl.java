@@ -64,12 +64,12 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
             String ipOrigen) {
         MetaAhorro meta = MetaAhorro.builder()
                 .usuarioId(usuarioIdToken)
-                .nombre(solicitud.getNombre())
-                .montoObjetivo(solicitud.getMontoObjetivo())
-                .montoActual(solicitud.getMontoActual() != null
-                        ? solicitud.getMontoActual()
+                .nombre(solicitud.nombre())
+                .montoObjetivo(solicitud.montoObjetivo())
+                .montoActual(solicitud.montoActual() != null
+                        ? solicitud.montoActual()
                         : BigDecimal.ZERO)
-                .fechaLimite(solicitud.getFechaLimite())
+                .fechaLimite(solicitud.fechaLimite())
                 .completada(false)
                 .build();
 

@@ -43,7 +43,6 @@ com\cliente\aplicacion\dtos\SolicitudLimiteGasto.class
 com\cliente\MicroservicioClienteApplication.class
 com\cliente\aplicacion\dtos\RespuestaDatosPersonales.class
 com\cliente\aplicacion\servicios\ServicioPerfilFinanciero.class
-com\cliente\aplicacion\dtos\RespuestaContexto.class
 com\cliente\aplicacion\servicios\implementacion\ServicioContextoImpl.class
 com\cliente\dominio\entidades\DatosPersonales$DatosPersonalesBuilder.class
 com\cliente\presentacion\manejadores\ManejadorGlobalExcepciones.class

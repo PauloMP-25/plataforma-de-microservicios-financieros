@@ -20,7 +20,6 @@ D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\sr
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\dominio\repositorios\MetaAhorroRepositorio.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\aplicacion\excepciones\LimiteGastoNoEncontradoException.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\aplicacion\servicios\ServicioContexto.java
-D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\aplicacion\dtos\RespuestaContexto.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\aplicacion\dtos\RespuestaDatosPersonales.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\presentacion\controladores\ControladorInterno.java
 D:\proyecto-desarrollo-web-integrado\estructura-backend\microservicio-cliente\src\main\java\com\cliente\aplicacion\servicios\ServicioDatosPersonales.java

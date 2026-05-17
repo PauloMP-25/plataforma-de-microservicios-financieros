@@ -61,8 +61,8 @@ public class ServicioLimiteGastoImpl implements ServicioLimiteGasto {
 
         LimiteGasto nuevo = LimiteGasto.builder()
                 .usuarioId(usuarioIdToken)
-                .montoLimite(solicitud.getMontoLimite())
-                .porcentajeAlerta(solicitud.getPorcentajeAlerta() != null ? solicitud.getPorcentajeAlerta() : 80)
+                .montoLimite(solicitud.montoLimite())
+                .porcentajeAlerta(solicitud.porcentajeAlerta() != null ? solicitud.porcentajeAlerta() : 80)
                 .fechaInicio(LocalDate.now())
                 .fechaFin(LocalDate.now().plusMonths(1))
                 .activo(true)
@@ -94,11 +94,11 @@ public class ServicioLimiteGastoImpl implements ServicioLimiteGasto {
             throw new IllegalStateException("El límite actual ha vencido y no se puede modificar. Crea uno nuevo.");
         }
 
-        if (solicitud.getMontoLimite() != null) {
-            limite.setMontoLimite(solicitud.getMontoLimite());
+        if (solicitud.montoLimite() != null) {
+            limite.setMontoLimite(solicitud.montoLimite());
         }
-        if (solicitud.getPorcentajeAlerta() != null) {
-            limite.setPorcentajeAlerta(solicitud.getPorcentajeAlerta());
+        if (solicitud.porcentajeAlerta() != null) {
+            limite.setPorcentajeAlerta(solicitud.porcentajeAlerta());
         }
 
         LimiteGasto actualizado = repositorio.save(limite);

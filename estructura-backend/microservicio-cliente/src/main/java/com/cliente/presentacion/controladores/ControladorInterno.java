@@ -27,7 +27,7 @@ import java.util.UUID;
  * public interface ClienteContextoFeign {
  *
  *     @GetMapping("/api/v1/clientes/interno/contexto/{usuarioId}")
- *     RespuestaContexto obtenerContexto(@PathVariable UUID usuarioId);
+ *     com.libreria.comun.dtos.ContextoUsuarioDTO obtenerContexto(@PathVariable UUID usuarioId);
  * 
  *     @GetMapping("/api/v1/clientes/interno/contexto-ia/{usuarioId}")
  *     ContextoEstrategicoIADTO obtenerContextoIA(@PathVariable UUID usuarioId);
