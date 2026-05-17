@@ -1,5 +1,8 @@
 package com.usuario.infraestructura.mensajeria;
 
+import com.libreria.comun.mensajeria.NombresCola;
+import com.libreria.comun.mensajeria.NombresExchange;
+import com.libreria.comun.mensajeria.RoutingKeys;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
@@ -13,32 +16,33 @@ import org.springframework.context.annotation.Configuration;
  * Configuración de la topología de RabbitMQ para el microservicio de usuario.
  * <p>
  * Los beans de infraestructura (ConnectionFactory, RabbitTemplate,
- * MessageConverter)
- * son provistos automáticamente por {@code libreria-comun}.
+ * MessageConverter) son provistos automáticamente por {@code libreria-comun}.
+ * Utiliza centralizadamente las colas, exchanges y routing keys de la librería
+ * común,
+ * configurando exchanges de tipo Topic para máxima flexibilidad y
+ * escalabilidad.
  * </p>
  */
 @Configuration
 public class ConfiguracionRabbitMQ {
 
-    // Nombres de Exchange y Colas para Auditoría
-    public static final String EXCHANGE_AUDITORIA = "exchange.auditoria";
-    public static final String COLA_AUDITORIA = "cola.auditoria";
-    public static final String ROUTING_KEY_AUDITORIA = "cola.auditoria";
-
     /**
-     * Define la cola de auditoría de forma duradera.
+     * Define la cola de auditoría de accesos de forma duradera enlazada a su DLX.
      */
     @Bean
     public Queue colaAuditoria() {
-        return QueueBuilder.durable(COLA_AUDITORIA).build();
+        return QueueBuilder.durable(NombresCola.AUDITORIA_ACCESOS)
+                .withArgument("x-dead-letter-exchange", NombresExchange.AUDITORIA_DLX)
+                .withArgument("x-dead-letter-routing-key", RoutingKeys.DLQ_AUDITORIA_ACCESO)
+                .build();
     }
 
     /**
-     * Define el exchange de auditoría de tipo Direct.
+     * Define el exchange de auditoría de tipo Topic.
      */
     @Bean
     public TopicExchange exchangeAuditoria() {
-        return new TopicExchange(EXCHANGE_AUDITORIA);
+        return new TopicExchange(NombresExchange.AUDITORIA);
     }
 
     /**
@@ -56,6 +60,36 @@ public class ConfiguracionRabbitMQ {
         return BindingBuilder
                 .bind(colaAuditoria)
                 .to(exchangeAuditoria)
-                .with(ROUTING_KEY_AUDITORIA);
+                .with(RoutingKeys.AUDITORIA_ACCESO_ALL);
+    }
+
+    /**
+     * Define la cola de Dead Letter Queue (DLQ) para auditoría de accesos.
+     */
+    @Bean
+    public Queue colaAuditoriaDlq() {
+        return QueueBuilder.durable(NombresCola.AUDITORIA_ACCESOS_DLQ).build();
+    }
+
+    /**
+     * Define el Dead Letter Exchange (DLX) de tipo Topic para auditoría.
+     */
+    @Bean
+    public TopicExchange dlxAuditoria() {
+        return new TopicExchange(NombresExchange.AUDITORIA_DLX);
+    }
+
+    /**
+     * Realiza el enlace entre la cola DLQ y el Dead Letter Exchange usando patrones
+     * Topic.
+     */
+    @Bean
+    public Binding bindingAuditoriaDlq(
+            @Qualifier("colaAuditoriaDlq") Queue colaAuditoriaDlq,
+            @Qualifier("dlxAuditoria") TopicExchange dlxAuditoria) {
+        return BindingBuilder
+                .bind(colaAuditoriaDlq)
+                .to(dlxAuditoria)
+                .with(RoutingKeys.DLQ_AUDITORIA_ACCESO);
     }
 }

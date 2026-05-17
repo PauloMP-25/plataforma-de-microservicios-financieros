@@ -10,9 +10,6 @@ spring:
   application:
     name: microservicio-usuario
 
-server:
-  port: 8081
-
   # ── Redis ────────────────────────────────────────────────────────────────────
   data:
     redis:
@@ -75,6 +72,9 @@ server:
         enabled: true
         initial-interval: 1000ms
         max-attempts: 3
+
+server:
+  port: 8081
 
   # ── Eureka Client ─────────────────────────────────────────────────────────────
 eureka:

@@ -91,6 +91,45 @@ public class ManejadorGlobalExcepciones extends ManejadorGlobalExcepcionesBase {
     }
 
     /**
+     * Captura errores de IP bloqueada por intentos fallidos recurrentes.
+     */
+    @ExceptionHandler(IpBloqueadaException.class)
+    public ResponseEntity<ResultadoApi<Void>> manejarIpBloqueada(IpBloqueadaException ex, WebRequest request) {
+        log.warn("Bloqueo de IP de seguridad activado para la IP: {} por {} minutos", ex.getDireccionIp(), ex.getMinutosParaDesbloqueo());
+        return crearRespuestaError(
+                CodigoError.IP_BLOQUEADA,
+                ex.getMessage(),
+                HttpStatus.TOO_MANY_REQUESTS,
+                request);
+    }
+
+    /**
+     * Captura errores cuando el correo o el nombre de usuario ya existen en el sistema.
+     */
+    @ExceptionHandler(UsuarioYaExisteException.class)
+    public ResponseEntity<ResultadoApi<Void>> manejarUsuarioYaExiste(UsuarioYaExisteException ex, WebRequest request) {
+        log.warn("Registro fallido por usuario duplicado: {}", ex.getMessage());
+        return crearRespuestaError(
+                CodigoError.USUARIO_DUPLICADO,
+                ex.getMessage(),
+                HttpStatus.CONFLICT,
+                request);
+    }
+
+    /**
+     * Captura errores cuando las nuevas contraseñas del usuario no coinciden durante el cambio.
+     */
+    @ExceptionHandler(ContrasenasNoCoincidenException.class)
+    public ResponseEntity<ResultadoApi<Void>> manejarContrasenasNoCoinciden(ContrasenasNoCoincidenException ex, WebRequest request) {
+        log.warn("Cambio de contraseña fallido: {}", ex.getMessage());
+        return crearRespuestaError(
+                CodigoError.PASSWORD_MISMATCH,
+                ex.getMessage(),
+                HttpStatus.BAD_REQUEST,
+                request);
+    }
+
+    /**
      * Método auxiliar para construir respuestas estandarizadas usando ResultadoApi.
      */
     @SuppressWarnings("null")

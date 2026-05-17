@@ -1,4 +1,4 @@
-package com.usuario.infraestructura.seguridad;
+package com.usuario.infraestructura.configuracion;
 
 import com.libreria.comun.seguridad.ConfiguracionSeguridadBase;
 import com.libreria.comun.seguridad.FiltroJwt;
@@ -70,6 +70,9 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
                         "/api/v1/auth/activar/**",
                         "/api/v1/datos-personales/**")
                 .permitAll()
+
+                // Endpoints de Administración (Privados para ADMIN)
+                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
 
                 // 3. BLOQUEO TOTAL AL FINAL
                 .anyRequest().authenticated());

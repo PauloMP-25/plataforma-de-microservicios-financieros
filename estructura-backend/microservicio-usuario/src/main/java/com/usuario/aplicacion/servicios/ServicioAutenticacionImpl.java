@@ -13,10 +13,12 @@ import com.usuario.aplicacion.dtos.solicitudes.SolicitudRegistro;
 import com.usuario.aplicacion.dtos.solicitudes.SolicitudRestablecerPassword;
 import com.usuario.aplicacion.dtos.solicitudes.SolicitudGenerarOtp;
 import com.libreria.comun.enums.TipoVerificacion;
+import com.usuario.aplicacion.excepciones.ContrasenasNoCoincidenException;
 import com.usuario.aplicacion.excepciones.CredencialesInvalidasException;
 import com.usuario.aplicacion.excepciones.CuentaNoHabilitadaException;
 import com.usuario.aplicacion.excepciones.TokenInvalidoException;
 import com.usuario.aplicacion.excepciones.UsuarioNoEncontradoException;
+import com.usuario.aplicacion.excepciones.UsuarioYaExisteException;
 import com.usuario.aplicacion.puertos.IServicioAutenticacion;
 import com.usuario.dominio.entidades.Rol;
 import com.usuario.dominio.entidades.Usuario;
@@ -182,7 +184,7 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
         }
 
         if (!solicitud.contrasenasNuevasCoinciden()) {
-            throw new IllegalArgumentException("Las contraseñas nuevas no coinciden");
+            throw new ContrasenasNoCoincidenException();
         }
 
         usuario.setPassword(passwordEncoder.encode(solicitud.nuevoPassword()));
@@ -282,9 +284,9 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
 
     private void validarDisponibilidad(SolicitudRegistro request) {
         if (usuarioRepository.existsByNombreUsuario(request.nombreUsuario()))
-            throw new IllegalStateException("Usuario en uso");
+            throw new UsuarioYaExisteException("nombreUsuario", request.nombreUsuario());
         if (usuarioRepository.existsByCorreo(request.correo()))
-            throw new IllegalStateException("Correo en uso");
+            throw new UsuarioYaExisteException("correo", request.correo());
     }
 
     @SuppressWarnings("null")

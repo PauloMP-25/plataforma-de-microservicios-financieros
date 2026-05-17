@@ -1,4 +1,4 @@
-package com.usuario.infraestructura.configuracion;
+package com.usuario.infraestructura.tareas;
 
 import com.usuario.dominio.entidades.Rol;
 import com.usuario.dominio.repositorios.RolRepository;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class CargadorDatosIniciales implements CommandLineRunner {
+public class TareaCargarDatosIniciales implements CommandLineRunner {
 
     private final RolRepository repositorioRol;
 
