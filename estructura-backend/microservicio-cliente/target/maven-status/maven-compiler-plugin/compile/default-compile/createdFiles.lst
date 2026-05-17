@@ -30,7 +30,6 @@ com\cliente\presentacion\controladores\ControladorInterno.class
 com\cliente\dominio\entidades\DatosPersonales.class
 com\cliente\aplicacion\servicios\implementacion\ServicioPerfilFinancieroImpl.class
 com\cliente\aplicacion\excepciones\LimiteGastoNoEncontradoException.class
-com\cliente\presentacion\controladores\ControladorSincronizacionInterna.class
 com\cliente\infraestructura\mensajeria\PublicadorAuditoria.class
 com\cliente\presentacion\controladores\ControladorPerfilFinanciero.class
 com\cliente\presentacion\controladores\ControladorLimiteGasto.class
