@@ -48,6 +48,13 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- DOTENV: Carga automáticamente archivos .env locales para desarrollo local sin quemar credenciales -->
+        <dependency>
+            <groupId>me.paulschwarz</groupId>
+            <artifactId>dotenv-spring-boot-starter</artifactId>
+            <version>4.0.0</version>
+        </dependency>
+
         <!-- PERSISTENCIA -->
         <dependency>
             <groupId>org.postgresql</groupId>
