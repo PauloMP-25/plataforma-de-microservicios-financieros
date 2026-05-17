@@ -5,6 +5,7 @@ import com.libreria.comun.mensajeria.NombresExchange;
 import com.libreria.comun.mensajeria.RoutingKeys;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
@@ -34,6 +35,7 @@ public class ConfiguracionRabbitMQ {
         return QueueBuilder.durable(NombresCola.AUDITORIA_ACCESOS)
                 .withArgument("x-dead-letter-exchange", NombresExchange.AUDITORIA_DLX)
                 .withArgument("x-dead-letter-routing-key", RoutingKeys.DLQ_AUDITORIA_ACCESO)
+                .withArgument("x-message-ttl", 600000)
                 .build();
     }
 
@@ -72,21 +74,21 @@ public class ConfiguracionRabbitMQ {
     }
 
     /**
-     * Define el Dead Letter Exchange (DLX) de tipo Topic para auditoría.
+     * Define el Dead Letter Exchange (DLX) de tipo Direct para auditoría para coincidir con RabbitMQ.
      */
     @Bean
-    public TopicExchange dlxAuditoria() {
-        return new TopicExchange(NombresExchange.AUDITORIA_DLX);
+    public DirectExchange dlxAuditoria() {
+        return new DirectExchange(NombresExchange.AUDITORIA_DLX);
     }
 
     /**
      * Realiza el enlace entre la cola DLQ y el Dead Letter Exchange usando patrones
-     * Topic.
+     * Direct.
      */
     @Bean
     public Binding bindingAuditoriaDlq(
             @Qualifier("colaAuditoriaDlq") Queue colaAuditoriaDlq,
-            @Qualifier("dlxAuditoria") TopicExchange dlxAuditoria) {
+            @Qualifier("dlxAuditoria") DirectExchange dlxAuditoria) {
         return BindingBuilder
                 .bind(colaAuditoriaDlq)
                 .to(dlxAuditoria)

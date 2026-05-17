@@ -3,7 +3,6 @@ package com.usuario.aplicacion.servicios;
 import com.libreria.comun.enums.EstadoEvento;
 import com.libreria.comun.excepciones.ExcepcionNoAutorizado;
 import com.libreria.comun.seguridad.ServicioJwt;
-import com.libreria.comun.enums.PropositoCodigo;
 import com.usuario.aplicacion.dtos.respuestas.RespuestaAutenticacion;
 import com.usuario.aplicacion.dtos.solicitudes.SolicitudCambioPassword;
 import com.usuario.aplicacion.dtos.solicitudes.SolicitudLogin;
@@ -12,6 +11,7 @@ import com.usuario.aplicacion.dtos.solicitudes.SolicitudRefreshToken;
 import com.usuario.aplicacion.dtos.solicitudes.SolicitudRegistro;
 import com.usuario.aplicacion.dtos.solicitudes.SolicitudRestablecerPassword;
 import com.usuario.aplicacion.dtos.solicitudes.SolicitudGenerarOtp;
+import com.usuario.aplicacion.fabricas.FabricaSolicitudOtp;
 import com.libreria.comun.enums.TipoVerificacion;
 import com.usuario.aplicacion.excepciones.ContrasenasNoCoincidenException;
 import com.usuario.aplicacion.excepciones.CredencialesInvalidasException;
@@ -20,6 +20,7 @@ import com.usuario.aplicacion.excepciones.TokenInvalidoException;
 import com.usuario.aplicacion.excepciones.UsuarioNoEncontradoException;
 import com.usuario.aplicacion.excepciones.UsuarioYaExisteException;
 import com.usuario.aplicacion.puertos.IServicioAutenticacion;
+import com.usuario.aplicacion.puertos.IServicioPerfilCache;
 import com.usuario.dominio.entidades.Rol;
 import com.usuario.dominio.entidades.Usuario;
 import com.usuario.dominio.repositorios.RolRepository;
@@ -59,6 +60,7 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
     private final ServicioJwt jwtService;
     private final PasswordEncoder passwordEncoder;
     private final ClientePerfilExterno clientePerfilExterno;
+    private final IServicioPerfilCache servicioPerfilCache;
     private final ClienteMensajeria clienteMensajeria;
     private final PublicadorAuditoria publicadorAuditoria;
     private final StringRedisTemplate redisTemplate;
@@ -160,6 +162,7 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
         return generarRespuestaAuth(usuario);
     }
 
+    @SuppressWarnings("null")
     @Override
     @Transactional
     public void registrarLogout(UUID usuarioId, String token, String ipCliente) {
@@ -216,12 +219,7 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
         publicadorAuditoria.publicarAcceso(guardado.getId(), ipCliente, EstadoEvento.EXITO, "REGISTRO_INICIAL");
 
         // Disparamos la generación del código de activación vía RabbitMQ
-        publicadorAuditoria.publicarSolicitudOtp(new SolicitudGenerarOtp(
-                guardado.getId(),
-                guardado.getCorreo(),
-                null, // Teléfono opcional en registro base
-                TipoVerificacion.EMAIL,
-                PropositoCodigo.ACTIVACION_CUENTA));
+        publicadorAuditoria.publicarSolicitudOtp(FabricaSolicitudOtp.paraActivacionRegistroInicial(guardado));
 
         return guardado.getId();
     }
@@ -240,12 +238,12 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
         Usuario usuario = usuarioOpt.get();
         String telefonoAEnviar = (solicitud.tipo() == TipoVerificacion.SMS
                 || solicitud.tipo() == TipoVerificacion.WHATSAPP)
-                        ? clientePerfilExterno.obtenerTelefono(usuario.getId())
+                        ? servicioPerfilCache.obtenerTelefono(usuario.getId())
                         : null;
 
-        publicadorAuditoria.publicarSolicitudOtp(new SolicitudGenerarOtp(
-                usuario.getId(), usuario.getCorreo(), telefonoAEnviar, solicitud.tipo(),
-                PropositoCodigo.RESTABLECER_PASSWORD));
+        publicadorAuditoria
+                .publicarSolicitudOtp(
+                        FabricaSolicitudOtp.paraRecuperacionPassword(usuario, solicitud.tipo(), telefonoAEnviar));
 
         return UUID.randomUUID();
     }
@@ -303,9 +301,8 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
     @Transactional
     public void solicitarOtpActivacion(UUID usuarioId, SolicitudGenerarOtp solicitud) {
         Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow();
-        publicadorAuditoria.publicarSolicitudOtp(new SolicitudGenerarOtp(
-                usuario.getId(), usuario.getCorreo(), solicitud.telefono(), solicitud.tipo(),
-                PropositoCodigo.ACTIVACION_CUENTA));
+        publicadorAuditoria.publicarSolicitudOtp(
+                FabricaSolicitudOtp.paraReenvioActivacionManual(usuario, solicitud.tipo(), solicitud.telefono()));
     }
 
     @Override

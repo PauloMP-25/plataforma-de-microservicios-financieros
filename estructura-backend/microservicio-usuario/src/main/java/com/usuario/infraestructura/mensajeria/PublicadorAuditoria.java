@@ -32,14 +32,17 @@ public class PublicadorAuditoria extends PublicadorEventosBase {
 
     private final RepositorioBandejaSalidaAuditoria repositorioOutbox;
     private final ObjectMapper objectMapper;
+    private final PublicadorAmqpAsincrono publicadorAmqpAsincrono;
 
     public PublicadorAuditoria(
             RabbitTemplate rabbitTemplate,
             RepositorioBandejaSalidaAuditoria repositorioOutbox,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            PublicadorAmqpAsincrono publicadorAmqpAsincrono) {
         super(rabbitTemplate);
         this.repositorioOutbox = repositorioOutbox;
         this.objectMapper = objectMapper;
+        this.publicadorAmqpAsincrono = publicadorAmqpAsincrono;
     }
 
     /**
@@ -47,6 +50,7 @@ public class PublicadorAuditoria extends PublicadorEventosBase {
      * Persiste primero en la base de datos de forma transaccional,
      * e intenta publicarlo de forma inmediata en RabbitMQ.
      */
+    @SuppressWarnings("null")
     @Transactional
     public void publicarAcceso(UUID usuarioId, String ipCliente, EstadoEvento estado, String detalle) {
         String correlationId = UUID.randomUUID().toString();
@@ -54,8 +58,8 @@ public class PublicadorAuditoria extends PublicadorEventosBase {
         EventoAccesoDTO evento = new EventoAccesoDTO(
                 usuarioId,
                 ipCliente,
-                "LUKA-AUTH-SERVICE",
-                estado,
+                "MICROSERVICIO-USUARIO",
+                        estado,
                 detalle,
                 LocalDateTime.now(),
                 correlationId
@@ -80,20 +84,21 @@ public class PublicadorAuditoria extends PublicadorEventosBase {
         outbox = repositorioOutbox.save(outbox);
         log.info("[OUTBOX] Registro de acceso persistido en DB (ID: {}, Estado: {})", outbox.getId(), estado);
 
-        // 2. Intentar la entrega inmediata a RabbitMQ
-        try {
-            super.publicarAcceso(evento, estado);
-
-            // 3. Confirmar la publicación si no hay excepciones
-            outbox.setProcesado(true);
-            outbox.setFechaProceso(LocalDateTime.now());
-            repositorioOutbox.save(outbox);
-            log.info("[OUTBOX-SUCCESS] Evento de acceso enviado a RabbitMQ y confirmado en DB para ID: {}",
-                    outbox.getId());
-        } catch (Exception e) {
-            log.warn(
-                    "[OUTBOX-AMQP-ERROR] RabbitMQ inasequible de forma inmediata para Acceso. ID Outbox: {}. Se encolará para reintento. Error: {}",
-                    outbox.getId(), e.getMessage());
+        // 2. Intentar la entrega asíncrona a RabbitMQ tras el commit exitoso de la
+        // transacción
+        final UUID outboxId = outbox.getId();
+        if (org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()) {
+            org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                    new org.springframework.transaction.support.TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            publicadorAmqpAsincrono.enviarAccesoAsincrono(evento, estado, outboxId);
+                        }
+                    });
+        } else {
+            // Si por alguna razón no hay transacción activa, lo publicamos asíncronamente
+            // de inmediato
+            publicadorAmqpAsincrono.enviarAccesoAsincrono(evento, estado, outboxId);
         }
     }
 
@@ -103,6 +108,7 @@ public class PublicadorAuditoria extends PublicadorEventosBase {
      * Persiste primero en la base de datos de forma transaccional,
      * e intenta publicarlo de forma inmediata en RabbitMQ.
      */
+    @SuppressWarnings("null")
     @Transactional
     public void publicarTransaccion(
             UUID usuarioId,
@@ -115,8 +121,8 @@ public class PublicadorAuditoria extends PublicadorEventosBase {
         EventoTransaccionalDTO evento = EventoTransaccionalDTO.crear(
                 usuarioId,
                 entidadId,
-                "LUKA-AUTH-SERVICE",
-                entidad,
+                "microservicio-usuario",
+                        entidad,
                 descripcion,
                 valorAnterior,
                 valorNuevo);
@@ -140,20 +146,21 @@ public class PublicadorAuditoria extends PublicadorEventosBase {
         outbox = repositorioOutbox.save(outbox);
         log.info("[OUTBOX] Registro transaccional persistido en DB (ID: {}, Entidad: {})", outbox.getId(), entidad);
 
-        // 2. Intentar la entrega inmediata a RabbitMQ
-        try {
-            super.publicarTransaccion(evento, entidad);
-
-            // 3. Confirmar la publicación si no hay excepciones
-            outbox.setProcesado(true);
-            outbox.setFechaProceso(LocalDateTime.now());
-            repositorioOutbox.save(outbox);
-            log.info("[OUTBOX-SUCCESS] Evento transaccional enviado a RabbitMQ y confirmado en DB para ID: {}",
-                    outbox.getId());
-        } catch (Exception e) {
-            log.warn(
-                    "[OUTBOX-AMQP-ERROR] RabbitMQ inasequible de forma inmediata para Transacción. ID Outbox: {}. Se encolará para reintento. Error: {}",
-                    outbox.getId(), e.getMessage());
+        // 2. Intentar la entrega asíncrona a RabbitMQ tras el commit exitoso de la
+        // transacción
+        final UUID outboxId = outbox.getId();
+        if (org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()) {
+            org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                    new org.springframework.transaction.support.TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            publicadorAmqpAsincrono.enviarTransaccionAsincrono(evento, entidad, outboxId);
+                        }
+                    });
+        } else {
+            // Si por alguna razón no hay transacción activa, lo publicamos asíncronamente
+            // de inmediato
+            publicadorAmqpAsincrono.enviarTransaccionAsincrono(evento, entidad, outboxId);
         }
     }
 
@@ -162,6 +169,7 @@ public class PublicadorAuditoria extends PublicadorEventosBase {
      * Persiste primero en la base de datos de forma transaccional,
      * e intenta publicarlo de forma inmediata en RabbitMQ.
      */
+    @SuppressWarnings("null")
     @Transactional
     public void publicarEventoGeneral(
             UUID usuarioId,
@@ -170,11 +178,15 @@ public class PublicadorAuditoria extends PublicadorEventosBase {
             String ipOrigen,
             String detalles) {
 
+        String moduloFinal = modulo.toLowerCase().startsWith("usuario-servicio")
+                ? modulo.toLowerCase()
+                : "usuario-servicio-" + modulo.toLowerCase();
+
         EventoAuditoriaDTO evento = EventoAuditoriaDTO.crear(
                 usuarioId,
                 accion,
-                modulo,
-                ipOrigen,
+                moduloFinal,
+                        ipOrigen,
                 detalles);
 
         String payloadJson;
@@ -197,20 +209,21 @@ public class PublicadorAuditoria extends PublicadorEventosBase {
         log.info("[OUTBOX] Registro de auditoría general persistido en DB (ID: {}, Accion: {})", outbox.getId(),
                 accion);
 
-        // 2. Intentar la entrega inmediata a RabbitMQ
-        try {
-            super.publicarEvento(evento, accion);
-
-            // 3. Confirmar la publicación si no hay excepciones
-            outbox.setProcesado(true);
-            outbox.setFechaProceso(LocalDateTime.now());
-            repositorioOutbox.save(outbox);
-            log.info("[OUTBOX-SUCCESS] Evento de auditoría general enviado a RabbitMQ y confirmado en DB para ID: {}",
-                    outbox.getId());
-        } catch (Exception e) {
-            log.warn(
-                    "[OUTBOX-AMQP-ERROR] RabbitMQ inasequible de forma inmediata para Auditoría General. ID Outbox: {}. Se encolará para reintento. Error: {}",
-                    outbox.getId(), e.getMessage());
+        // 2. Intentar la entrega asíncrona a RabbitMQ tras el commit exitoso de la
+        // transacción
+        final UUID outboxId = outbox.getId();
+        if (org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()) {
+            org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                    new org.springframework.transaction.support.TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            publicadorAmqpAsincrono.enviarEventoGeneralAsincrono(evento, accion, outboxId);
+                        }
+                    });
+        } else {
+            // Si por alguna razón no hay transacción activa, lo publicamos asíncronamente
+            // de inmediato
+            publicadorAmqpAsincrono.enviarEventoGeneralAsincrono(evento, accion, outboxId);
         }
     }
 
