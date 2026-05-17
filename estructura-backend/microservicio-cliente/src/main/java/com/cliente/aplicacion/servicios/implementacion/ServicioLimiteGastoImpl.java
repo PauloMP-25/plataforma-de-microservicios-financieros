@@ -91,7 +91,7 @@ public class ServicioLimiteGastoImpl implements ServicioLimiteGasto {
                 .orElseThrow(() -> new LimiteGastoNoEncontradoException(usuarioId));
 
         if (limite.estaVencido()) {
-            throw new IllegalStateException("El límite actual ha vencido y no se puede modificar. Crea uno nuevo.");
+            throw new LimiteGastoException("El límite actual ha vencido y no se puede modificar. Crea uno nuevo.");
         }
 
         if (solicitud.montoLimite() != null) {
@@ -144,7 +144,7 @@ public class ServicioLimiteGastoImpl implements ServicioLimiteGasto {
     @Transactional
     public void eliminar(UUID usuarioId, String ip) {
         LimiteGasto limite = repositorio.findByUsuarioIdAndActivoTrue(usuarioId)
-                .orElseThrow(() -> new DatosPersonalesNoEncontradosException(usuarioId));
+                .orElseThrow(() -> new LimiteGastoNoEncontradoException(usuarioId));
 
         limite.setActivo(false);
         repositorio.save(limite);
