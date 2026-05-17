@@ -32,7 +32,28 @@ luka:
     expiracion-ms: 86400000
 
 stripe:
-  api-key: ${STRIPE_SECRET_KEY}
-  webhook-secret: ${STRIPE_WEBHOOK_SECRET}
+  # Se añade ":sk_test_..." como respaldo por si no existe la variable de entorno
+  api-key: ${STRIPE_SECRET_KEY:sk_test_coloca_aqui_tu_clave_si_no_usas_variable}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_mock_secret}
   success-url: ${FRONTEND_URL:http://localhost:3000}/suscripcion/exito
   cancel-url: ${FRONTEND_URL:http://localhost:3000}/suscripcion/cancelado
+  
+  # ============================================
+# LOGGING (CONVERTIDO A FORMATO YAML)
+# ============================================
+logging:
+  level:
+    root: INFO
+    com:
+      pagos: DEBUG # Cambiado de com.usuario a com.pagos por ser el paquete de este servicio
+    org:
+      springframework:
+        security: INFO
+        transaction: INFO
+        web: INFO
+        amqp:
+          rabbit: INFO
+      hibernate:
+        SQL: INFO
+  pattern:
+    console: "%d{HH:mm:ss} %-5p - %msg%n"
