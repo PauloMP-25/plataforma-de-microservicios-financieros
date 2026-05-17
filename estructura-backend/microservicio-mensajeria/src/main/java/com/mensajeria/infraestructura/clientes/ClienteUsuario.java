@@ -16,22 +16,19 @@ import org.springframework.web.bind.annotation.RequestParam;
  * NOTA: El endpoint confirmar-email es público en el ms-usuario (ver
  * ConfiguracionSeguridad), por lo que no se requiere JWT.
  */
-@FeignClient(
-        name = "microservicio-usuario",
-        url = "${microservicio.usuario.url:http://localhost:8081}"
-)
+@FeignClient(name = "microservicio-usuario", contextId = "clienteUsuario", url = "${microservicio.usuario.url:http://localhost:8081}")
 public interface ClienteUsuario {
 
     /**
      * Activa la cuenta del usuario por su ID. Mapea al nuevo endpoint PUT en
      * MS-Usuario.
+     * 
      * @param usuarioId
      * @param telefono
-     * @return 
+     * @return
      */
     @PutMapping("/api/v1/auth/activar/{usuarioId}")
     String activarCuenta(
-        @PathVariable("usuarioId") UUID usuarioId, 
-        @RequestParam("telefono") String telefono
-    );
+            @PathVariable("usuarioId") UUID usuarioId,
+            @RequestParam("telefono") String telefono);
 }

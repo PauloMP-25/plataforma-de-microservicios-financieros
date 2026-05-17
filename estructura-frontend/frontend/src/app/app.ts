@@ -1,5 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { AvatarService } from './core/services/avatar.service';
 
 @Component({
   selector: 'app-root',
@@ -9,5 +10,11 @@ import { RouterOutlet } from '@angular/router';
   
 })
 export class App {
+  private readonly avatarService = inject(AvatarService);
+
   protected readonly title = signal('frontend');
+
+  constructor() {
+    this.avatarService.loadAvatar();
+  }
 }

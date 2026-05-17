@@ -15,6 +15,11 @@ public final class NombresCola {
     public static final String IA_SINCRONIZACION_ERROR = "cola.ia.sincronizacion.error";
     public static final String DASHBOARD_CONSEJOS = "cola.dashboard.consejos";
     public static final String MENSAJERIA_OTP = "cola.mensajeria.otp";
+    public static final String CLIENTE_IA_SINCRO = "cola.cliente.ia.sincronizacion";
+
+    // Pagos
+    public static final String PAGOS_EXITOSOS = "cola.pagos.exitosos";
+    public static final String PAGOS_REEMBOLSO = "cola.pagos.reembolso";
 
     private NombresCola() {
     }

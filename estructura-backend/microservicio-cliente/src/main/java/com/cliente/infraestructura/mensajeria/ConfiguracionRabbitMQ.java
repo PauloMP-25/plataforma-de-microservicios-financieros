@@ -1,6 +1,5 @@
 package com.cliente.infraestructura.mensajeria;
 
-import com.libreria.comun.mensajeria.ConfiguracionRabbitBase;
 import com.libreria.comun.mensajeria.NombresCola;
 import com.libreria.comun.mensajeria.NombresExchange;
 import com.libreria.comun.mensajeria.RoutingKeys;
@@ -12,10 +11,8 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Configuración de la topología de RabbitMQ para el Microservicio de Cliente.
  * <p>
- * Esta clase extiende de {@link ConfiguracionRabbitBase} para heredar la
- * infraestructura base (conexión, serialización JSON) y define la estructura
- * de Exchanges, Colas y Bindings utilizando las constantes de la librería
- * común.
+ * Define la estructura de Exchanges, Colas y Bindings utilizando las constantes
+ * de la librería común.
  * </p>
  * 
  * @author Paulo Moron
@@ -23,7 +20,7 @@ import org.springframework.context.annotation.Configuration;
  * @since 2026-09
  */
 @Configuration
-public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
+public class ConfiguracionRabbitMQ {
 
     // =========================================================================
     // EXCHANGES

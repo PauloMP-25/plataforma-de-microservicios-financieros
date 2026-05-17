@@ -11,13 +11,12 @@
 :root {
   /* Colores principales */
   --color-primary:        #5B6AF0;
+  --accent-primary:       #5B6AF0;
   --color-primary-light:  #7B89F5;
   --color-primary-dark:   #3D4EC8;
   --color-primary-soft:   #EEF0FE;
 
-  --color-accent:         #F0A500;
-  --color-accent-light:   #FFD166;
-  --color-accent-soft:    #FFF8E7;
+
 
   --color-success:        #22C55E;
   --color-success-soft:   #DCFCE7;
@@ -54,6 +53,10 @@
   --shadow-md:            0 4px 20px rgba(91,106,240,0.12);
   --shadow-lg:            0 8px 40px rgba(91,106,240,0.18);
 
+  /* Extras de tema global */
+  --bg-surface-soft:      #F0F4FF;
+  --color-accent-soft-2:  #E8FFF7;
+
   /* Tipografías */
   --font-main:            'Nunito', sans-serif;
   --font-heading:         'Poppins', sans-serif;
@@ -71,7 +74,23 @@
 
   /* Sidebar */
   --sidebar-width:        260px;
-  --header-height:        72px;
+  --header-height:        0px;
+}
+
+/* Tema oscuro global */
+body.theme-dark {
+  --bg-body:              #0F172A;
+  --bg-card:              #131D33;
+  --bg-sidebar:           #0F1A30;
+  --text-primary:         #E5ECFF;
+  --text-secondary:       #A9B6D3;
+  --text-muted:           #8290AF;
+  --border-color:         #253553;
+  --shadow-sm:            0 2px 10px rgba(5, 10, 20, 0.35);
+  --shadow-md:            0 8px 24px rgba(5, 10, 20, 0.45);
+  --shadow-lg:            0 16px 38px rgba(5, 10, 20, 0.5);
+  --bg-surface-soft:      #16243E;
+  --color-accent-soft-2:  #133F39;
 }
 
 /* ── Reset & Base ── */

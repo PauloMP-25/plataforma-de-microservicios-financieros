@@ -1,7 +1,6 @@
 package com.auditoria.aplicacion.servicios;
 
 import com.libreria.comun.dtos.EventoAccesoDTO;
-import com.libreria.comun.enums.EstadoEvento;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

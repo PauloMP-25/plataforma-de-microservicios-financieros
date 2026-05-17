@@ -19,6 +19,8 @@ public final class NombresExchange {
     public static final String CLIENTE_ACTUALIZACIONES = "exchange.cliente.actualizaciones";
     /** Dead Letter Exchange para mensajes fallidos de sincronización de cliente */
     public static final String CLIENTE_ACTUALIZACIONES_DLX = "exchange.cliente.actualizaciones.dlq";
+    /** Exchange para eventos de pago y suscripciones */
+    public static final String PAGOS = "exchange.pagos";
 
     private NombresExchange() {} // Previene instanciación
 }

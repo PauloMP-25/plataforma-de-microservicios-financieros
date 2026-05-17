@@ -2,6 +2,7 @@ import { Component, ViewChildren, QueryList, ElementRef, Input, Output, EventEmi
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-verificar-codigo',
@@ -13,6 +14,8 @@ import { RouterLink, Router } from '@angular/router';
 export class VerificarCodigo {
   @ViewChildren('digitoInput') digitoInputs!: QueryList<ElementRef>;
 
+  /** ID del usuario para activación (opcional si es para recuperación) */
+  @Input() usuarioId = '';
   /** Medio de verificación: 'correo' o 'celular' */
   @Input() medioVerificacion: 'correo' | 'celular' = 'correo';
   /** Destino al que se envió el código (email o teléfono) */
@@ -32,7 +35,10 @@ export class VerificarCodigo {
   errorMensaje = '';
   correoRecuperacion = '';
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {
     // Intenta cargar el correo si viene del flujo de recuperar contraseña
     this.correoRecuperacion = sessionStorage.getItem('correo-recuperacion') || '';
   }
@@ -96,20 +102,42 @@ export class VerificarCodigo {
     this.cargando = true;
     this.errorMensaje = '';
 
-    // Guardar código verificado
-    console.log('Código OTP:', this.codigoCompleto);
-    sessionStorage.setItem('codigo-otp', this.codigoCompleto);
+    const codigo = this.codigoCompleto;
+    sessionStorage.setItem('codigo-otp', codigo);
 
-    // TODO: Validar el código con el backend
-    setTimeout(() => {
-      this.cargando = false;
-      // Si tiene listeners, emitir evento; si no, navegar
-      if (this.codigoVerificado.observed) {
-        this.codigoVerificado.emit(this.codigoCompleto);
-      } else {
-        this.router.navigate([this.rutaSiguiente]);
-      }
-    }, 1000);
+    // Si tenemos usuarioId, es flujo de activación de cuenta
+    if (this.usuarioId) {
+      const telefono = this.medioVerificacion === 'celular' ? this.destinoVerificacion : undefined;
+      
+      this.authService.activarCuenta(this.usuarioId, codigo, telefono).subscribe({
+        next: (resp) => {
+          this.cargando = false;
+          if (resp.exito) {
+            this.emitirYRedirigir(codigo);
+          } else {
+            this.errorMensaje = resp.mensaje || 'Código inválido';
+          }
+        },
+        error: (err) => {
+          this.cargando = false;
+          this.errorMensaje = err.error?.mensaje || 'Error al validar código';
+        }
+      });
+    } else {
+      // Flujo de recuperación de contraseña u otros (sin validación directa aquí por ahora)
+      setTimeout(() => {
+        this.cargando = false;
+        this.emitirYRedirigir(codigo);
+      }, 1000);
+    }
+  }
+
+  private emitirYRedirigir(codigo: string): void {
+    if (this.codigoVerificado.observed) {
+      this.codigoVerificado.emit(codigo);
+    } else {
+      this.router.navigate([this.rutaSiguiente]);
+    }
   }
 
   reenviarCodigo(): void {

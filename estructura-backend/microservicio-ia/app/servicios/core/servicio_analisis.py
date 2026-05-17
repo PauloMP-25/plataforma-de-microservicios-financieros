@@ -35,7 +35,7 @@ from app.clientes.luka_clients import obtener_cliente_financiero, obtener_client
 
 # Motores Modulares
 from app.servicios.modulos.deteccion_gastos_hormiga import DeteccionGastosHormigaService
-from app.servicios.modulos.predecir_gastos import PrediccionGastosService
+from app.servicios.modulos.predecir_gastos import PredecirGastosService
 from app.servicios.modulos.reporte_completo import ReporteCompletoService
 from app.servicios.modulos.habitos_financieros import HabitosFinancierosService
 from app.servicios.modulos.simular_meta import SimularMetaService
@@ -54,7 +54,7 @@ class ServicioAnalisis:
         # REGISTRY DE MÓDULOS (Abierto a extensión, cerrado a modificación)
         self._modulos = {
             NombreModulo.GASTO_HORMIGA: DeteccionGastosHormigaService(),
-            NombreModulo.PREDECIR_GASTOS: PrediccionGastosService(),
+            NombreModulo.PREDECIR_GASTOS: PredecirGastosService(),
             NombreModulo.REPORTE_COMPLETO: ReporteCompletoService(),
             NombreModulo.HABITOS_FINANCIEROS: HabitosFinancierosService(),
             NombreModulo.SIMULAR_META: SimularMetaService(),

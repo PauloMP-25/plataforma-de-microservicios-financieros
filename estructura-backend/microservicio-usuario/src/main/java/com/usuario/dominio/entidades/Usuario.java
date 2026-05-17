@@ -64,6 +64,13 @@ public class Usuario implements UserDetails {
     @Builder.Default
     private Set<Rol> roles = new HashSet<>();
 
+    @Column(name = "plan_actual", length = 20)
+    @Builder.Default
+    private String planActual = "FREE";
+
+    @Column(name = "fecha_vencimiento_plan")
+    private LocalDateTime fechaVencimientoPlan;
+
     @Override
     public boolean isAccountNonLocked() {
         return this.cuentaNoBloqueada;

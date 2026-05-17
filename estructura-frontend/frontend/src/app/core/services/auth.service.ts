@@ -17,56 +17,57 @@ import { environment } from '../../enviroments/environment';
 import {
   SolicitudLogin, SolicitudRegistro,
   RespuestaAutenticacion, UsuarioSesion,
-  SolicitudRecuperacion,
-  SolicitudCambioPassword,
-  SolicitudResetPassword
+  SolicitudRecuperacion, SolicitudCambioPassword,
+  ResultadoApi
 } from '../models/auth/user.model';
 
-const TOKEN_KEY   = 'luka_token';
+const TOKEN_KEY = 'luka_token';
 const USUARIO_KEY = 'luka_usuario';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-  private base = `${environment.gatewayUrl}/api/v1/auth`;
+  private base = `${environment.msusuario}/api/v1/auth`;
 
   // ── Estado reactivo ──
   private _usuario = signal<UsuarioSesion | null>(this.cargarDesdStorage());
-  usuario   = this._usuario.asReadonly();
-  logueado  = computed(() => !!this._usuario());
+  usuario = this._usuario.asReadonly();
+  logueado = computed(() => !!this._usuario());
   esPremium = computed(() => this._usuario()?.roles?.includes('PREMIUM') ?? false);
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router) { }
 
   // ── Login ──
-  login(solicitud: SolicitudLogin): Observable<RespuestaAutenticacion> {
-    return this.http.post<RespuestaAutenticacion>(`${this.base}/login`, solicitud)
-      .pipe(tap(resp => this.guardarSesion(resp)));
+  login(solicitud: SolicitudLogin): Observable<ResultadoApi<RespuestaAutenticacion>> {
+    return this.http.post<ResultadoApi<RespuestaAutenticacion>>(`${this.base}/login`, solicitud)
+      .pipe(tap(resp => {
+        if (resp.exito) {
+          this.guardarSesion(resp.datos);
+        }
+      }));
   }
 
   // ── Registro ──
-  registrar(solicitud: SolicitudRegistro): Observable<any> {
-    return this.http.post(`${this.base}/registrar`, solicitud);
+  registrar(solicitud: SolicitudRegistro): Observable<ResultadoApi<string>> {
+    return this.http.post<ResultadoApi<string>>(`${this.base}/registrar`, solicitud);
   }
 
   // ── Activar cuenta ──
-  activarCuenta(usuarioId: string): Observable<any> {
-    return this.http.put(`${this.base}/activar/${usuarioId}`, null);
+  activarCuenta(usuarioId: string, codigoOtp: string, telefono?: string): Observable<ResultadoApi<string>> {
+    const params: any = { codigoOtp };
+    if (telefono) params.telefono = telefono;
+    return this.http.put<ResultadoApi<string>>(`${this.base}/activar/${usuarioId}`, null, { params });
   }
 
   // ── Recuperar password ──
-  solicitarRecuperacion(solicitud: SolicitudRecuperacion): Observable<any> {
-    return this.http.post(`${this.base}/recuperar-password`, solicitud);
+  solicitarRecuperacion(solicitud: any): Observable<ResultadoApi<string>> {
+    return this.http.post<ResultadoApi<string>>(`${this.base}/recuperar-solicitar`, solicitud);
   }
 
   // ── Reset password ──
-  resetPassword(dto: SolicitudResetPassword): Observable<any> {
-    const params = new URLSearchParams({
-      registroId: dto.registroId,
-      codigoOtp: dto.codigoOtp
-    });
-
-    return this.http.post(`${this.base}/reset-password?${params.toString()}`, dto.payload);
+  resetPassword(registroId: string, codigoOtp: string, dto: any): Observable<ResultadoApi<string>> {
+    const params = { registroId, codigoOtp };
+    return this.http.post<ResultadoApi<string>>(`${this.base}/recuperar-confirmar`, dto, { params });
   }
 
   // ── Cambiar password (usuario autenticado) ──
@@ -76,8 +77,8 @@ export class AuthService {
 
   // ── Logout backend ──
   cerrarSesionBackend(): Observable<any> {
-    return this.http.post(`${this.base}/logout`, {});
-  }
+    return this.http.post(`${this.base}/logout`, {})
+  };
 
   // ── Logout ──
   logout(): void {
@@ -95,13 +96,13 @@ export class AuthService {
   // ── Privados ──
   private guardarSesion(resp: RespuestaAutenticacion): void {
     const sesion: UsuarioSesion = {
-      id:            resp.idUsuario,
+      id: resp.idUsuario,
       nombreUsuario: resp.nombreUsuario,
-      roles:         resp.roles,
-      token:         resp.tokenAcceso,
-      expiraEn:      resp.expiraEn
+      roles: resp.roles,
+      token: resp.tokenAcceso,
+      expiraEn: resp.expiraEn
     };
-    localStorage.setItem(TOKEN_KEY,   resp.tokenAcceso);
+    localStorage.setItem(TOKEN_KEY, resp.tokenAcceso);
     localStorage.setItem(USUARIO_KEY, JSON.stringify(sesion));
     this._usuario.set(sesion);
   }

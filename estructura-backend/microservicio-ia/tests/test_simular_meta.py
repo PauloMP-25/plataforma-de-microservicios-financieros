@@ -12,7 +12,15 @@ from app.libreria_comun.modelos.contexto import ContextoEstrategicoIADTO
 
 def test_simulacion_hibrida_exito():
     service = SimularMetaService()
-    contexto = ContextoEstrategicoIADTO(nombres="Paulo", meta_principal="Laptop")
+    contexto = ContextoEstrategicoIADTO(
+        nombres="Paulo",
+        ocupacion="Ingeniero",
+        ingreso_mensual=5000.0,
+        tono_ia="AMIGABLE",
+        porcentaje_meta_principal=50.0,
+        porcentaje_alerta_gasto=80,
+        nombre_meta_principal="Laptop"
+    )
     
     # 35 transacciones en un periodo corto
     hoy = datetime.now()
@@ -40,7 +48,14 @@ def test_simulacion_insuficiente():
     # Solo 5 transacciones y 1 día de historial
     df = pd.DataFrame([{"fecha": datetime.now(), "tipo": "GASTO", "monto": 10.0, "categoria": "X"}] * 5)
     
-    metricas = service.ejecutar_calculos(df, ContextoEstrategicoIADTO(nombres="X"))
+    metricas = service.ejecutar_calculos(df, ContextoEstrategicoIADTO(
+        nombres="X",
+        ocupacion="Estudiante",
+        ingreso_mensual=1000.0,
+        tono_ia="AMIGABLE",
+        porcentaje_meta_principal=10.0,
+        porcentaje_alerta_gasto=90
+    ))
     assert metricas["es_viable"] is False
     assert "razon_insuficiencia" in metricas
     print("[OK] Test Simulación Insuficiente validado")

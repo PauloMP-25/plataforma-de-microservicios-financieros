@@ -1,12 +1,13 @@
 package com.pagos.dominio.entidades;
 
+import com.pagos.aplicacion.enums.EstadoPago;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -16,7 +17,10 @@ import java.util.UUID;
  * @author LUKA APP Team
  */
 @Entity
-@Table(name = "pagos")
+@Table(name = "pagos", indexes = {
+    @Index(name = "idx_pago_usuario", columnList = "usuario_id"),
+    @Index(name = "idx_pago_estado", columnList = "estado")
+})
 @Getter
 @Setter
 @Builder
@@ -30,19 +34,6 @@ public class Pago {
 
     @Column(name = "usuario_id", nullable = false)
     private UUID usuarioId;
-
-    @Column(name = "email_usuario")
-    private String emailUsuario;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "plan_solicitado", nullable = false, length = 20)
-    private PlanSuscripcion planSolicitado;
-
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal monto;
-
-    @Column(nullable = false, length = 3)
-    private String moneda;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -60,6 +51,12 @@ public class Pago {
 
     @Column(name = "fecha_fin_plan")
     private LocalDateTime fechaFinPlan;
+
+    @OneToMany(mappedBy = "pago", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DetallePago> detalles;
+
+    @OneToOne(mappedBy = "pago", cascade = CascadeType.ALL)
+    private Boleta boleta;
 
     @CreationTimestamp
     @Column(name = "fecha_creacion", updatable = false)

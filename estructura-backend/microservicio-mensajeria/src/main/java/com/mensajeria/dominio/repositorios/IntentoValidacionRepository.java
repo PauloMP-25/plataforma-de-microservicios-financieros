@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface IntentoValidacionRepository extends JpaRepository<IntentoValidacion, Long> {
+public interface IntentoValidacionRepository extends JpaRepository<IntentoValidacion, UUID> {
 
     Optional<IntentoValidacion> findByUsuarioId(UUID usuarioId);
 

@@ -1,1 +1,147 @@
-<p>configuracion-page works!</p>
+<section class="configuracion">
+  <header class="configuracion__header">
+    <h1>Configuración</h1>
+    <p>Personaliza tu experiencia y asegura tu cuenta.</p>
+  </header>
+
+  <div class="configuracion__grid">
+    <article class="configuracion__card">
+      <div class="configuracion__card-header">
+        <h2>Apariencia</h2>
+        <p>Personaliza el estilo de la app.</p>
+      </div>
+
+      <div class="configuracion__apariencia-grid">
+        <section class="configuracion__panel" [style.--accent-color]="colorPrincipal()">
+          <h3>Tema</h3>
+          <div class="configuracion__segmentado">
+            <button
+              type="button"
+              [class.is-active]="tema() === 'oscuro'"
+              (click)="seleccionarTema('oscuro')"
+            >
+              <i class="fa-solid fa-moon"></i>
+              Oscuro
+            </button>
+            <button
+              type="button"
+              [class.is-active]="tema() === 'claro'"
+              (click)="seleccionarTema('claro')"
+            >
+              <i class="fa-solid fa-sun"></i>
+              Claro
+            </button>
+          </div>
+        </section>
+
+        <section class="configuracion__panel">
+          <h3>Color principal</h3>
+          <div class="configuracion__colores">
+            @for (color of coloresDisponibles; track color) {
+              <button
+                type="button"
+                [style.background]="color"
+                [class.is-active]="colorPrincipal() === color"
+                (click)="seleccionarColor(color)"
+                aria-label="Seleccionar color"
+              ></button>
+            }
+          </div>
+
+          <h3>Vista previa</h3>
+          <div class="configuracion__preview" [style.--previewColor]="colorPrincipal()">
+            <p class="configuracion__preview-title">Saldo total</p>
+            <p class="configuracion__preview-value">S/ 2,450.00</p>
+            <p class="configuracion__preview-caption">Tus finanzas, tu futuro.</p>
+          </div>
+        </section>
+      </div>
+    </article>
+
+    <article class="configuracion__card">
+      <div class="configuracion__card-header">
+        <h2>Información de la cuenta</h2>
+        <p>Administra tu información personal.</p>
+      </div>
+
+      <section class="configuracion__panel" [style.--accent-color]="colorPrincipal()">
+        <div class="configuracion__perfil-head">
+          <div class="configuracion__perfil-avatar">
+            <img [src]="'/assets/avatares/figuras/' + avatarService.avatarConfig().figura + '.png'" [alt]="avatarService.avatarConfig().figura" />
+          </div>
+          <div>
+            <h3>{{ (perfil()?.nombres ?? 'Usuario') + ' ' + (perfil()?.apellidos ?? '') }}</h3>
+            <p>{{ perfil()?.telefono || 'Sin teléfono registrado' }}</p>
+          </div>
+          <button type="button" class="configuracion__cta" (click)="abrirModalEditarPerfil()">Editar perfil</button>
+        </div>
+
+        <ul class="configuracion__perfil-lista">
+          <li><span>Correo electrónico</span><strong>{{ authService.usuario()?.nombreUsuario || 'No disponible' }}</strong></li>
+          <li><span>Ciudad</span><strong>{{ perfil()?.ciudad || 'No especificado' }}</strong></li>
+          <li><span>Fecha de registro</span><strong>{{ perfil()?.fechaCreacion || 'No disponible' }}</strong></li>
+        </ul>
+
+        @if (mensajePerfil()) {
+          <p class="configuracion__mensaje">{{ mensajePerfil() }}</p>
+        }
+      </section>
+    </article>
+
+    <article class="configuracion__card">
+      <div class="configuracion__card-header">
+        <h2>Privacidad y legal</h2>
+      </div>
+      <section class="configuracion__panel">
+        <ul class="configuracion__links-lista">
+          <li><a href="#" (click)="$event.preventDefault()">Política de privacidad</a></li>
+          <li><a href="#" (click)="$event.preventDefault()">Términos y condiciones</a></li>
+        </ul>
+      </section>
+    </article>
+
+    <article class="configuracion__card">
+      <div class="configuracion__card-header">
+        <h2>Soporte</h2>
+      </div>
+      <section class="configuracion__panel">
+        <ul class="configuracion__links-lista">
+          <li><a href="#" (click)="$event.preventDefault()">Centro de ayuda</a></li>
+          <li><a href="#" (click)="$event.preventDefault()">Contactar soporte</a></li>
+          <li><a href="#" (click)="$event.preventDefault()">Reportar un problema</a></li>
+        </ul>
+      </section>
+    </article>
+
+  </div>
+
+  @if (modalEditarPerfilAbierto()) {
+    <div class="configuracion__modal-backdrop" (click)="cerrarModalEditarPerfil()">
+      <div class="configuracion__modal" [style.--accent-color]="colorPrincipal()" (click)="$event.stopPropagation()">
+        <header class="configuracion__modal-header">
+          <h3>Editar perfil</h3>
+          <button type="button" class="configuracion__close" (click)="cerrarModalEditarPerfil()">×</button>
+        </header>
+
+        <div class="configuracion__modal-avatar">
+          <div class="configuracion__perfil-avatar configuracion__perfil-avatar--large">
+            <img [src]="'/assets/avatares/figuras/' + avatarService.avatarConfig().figura + '.png'" [alt]="avatarService.avatarConfig().figura" />
+          </div>
+          <p>Avatar actual: {{ avatarService.avatarConfig().figura }}</p>
+        </div>
+
+        <div class="configuracion__form-grid">
+          <input type="text" placeholder="Nombres" [value]="formNombres()" (input)="formNombres.set($any($event.target).value)" />
+          <input type="text" placeholder="Apellidos" [value]="formApellidos()" (input)="formApellidos.set($any($event.target).value)" />
+          <input type="text" placeholder="Teléfono" [value]="formTelefono()" (input)="formTelefono.set($any($event.target).value)" />
+          <input type="text" placeholder="Dirección" [value]="formDireccion()" (input)="formDireccion.set($any($event.target).value)" />
+          <input type="text" placeholder="Ciudad" [value]="formCiudad()" (input)="formCiudad.set($any($event.target).value)" />
+        </div>
+
+        <button type="button" class="configuracion__cta" [disabled]="guardandoPerfil()" (click)="guardarPerfil()">
+          {{ guardandoPerfil() ? 'Guardando...' : 'Guardar cambios' }}
+        </button>
+      </div>
+    </div>
+  }
+</section>

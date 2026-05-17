@@ -19,20 +19,18 @@ import org.springframework.web.bind.annotation.RequestParam;
  * {@code "SINCRONIZACION_PENDIENTE"} sin bloquear el flujo del usuario.
  * </p>
  *
- * <p><strong>⚠ Contrato pendiente:</strong> El endpoint
+ * <p>
+ * <strong>⚠ Contrato pendiente:</strong> El endpoint
  * {@code PUT /api/v1/datos-personales/telefono/{usuarioId}} debe ser creado
  * en el {@code microservicio-usuario} antes del primer despliegue conjunto.
  * Mientras no exista, el fallback capturará el 404 automáticamente.
- * Responsable: equipo de ms-usuario. Referencia: ADR-MENSAJERIA-001.</p>
+ * Responsable: equipo de ms-usuario. Referencia: ADR-MENSAJERIA-001.
+ * </p>
  *
  * @author Paulo Moron
  * @version 1.1.0
  */
-@FeignClient(
-    name = "microservicio-usuario",
-    url = "${microservicio.usuario.url:http://localhost:8081}",
-    fallback = ClienteActualizarTelefonoFallback.class
-)
+@FeignClient(name = "microservicio-usuario", contextId = "clienteActualizarTelefono", url = "${microservicio.usuario.url:http://localhost:8081}", fallback = ClienteActualizarTelefonoFallback.class)
 public interface ClienteActualizarTelefono {
 
     /**
@@ -52,7 +50,6 @@ public interface ClienteActualizarTelefono {
      */
     @PutMapping("/api/v1/datos-personales/telefono/{usuarioId}")
     String sincronizarTelefono(
-        @PathVariable("usuarioId") UUID usuarioId,
-        @RequestParam("telefono") String telefono
-    );
+            @PathVariable("usuarioId") UUID usuarioId,
+            @RequestParam("telefono") String telefono);
 }

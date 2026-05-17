@@ -2,10 +2,10 @@ package com.auditoria.infraestructura.configuracion;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
+//import org.springframework.data.redis.connection.RedisConnectionFactory;
+//import org.springframework.data.redis.core.RedisTemplate;
+//import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+//import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 /**
  * Configuración de Redis para el microservicio de auditoría.
@@ -21,20 +21,21 @@ public class ConfiguracionRedis {
      * Template para sincronizar bloqueos de IP.
      * Usa String para la clave y un serializador compatible para el valor.
      */
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(factory);
+    // @Bean
+    // public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory
+    // factory) {
+    // RedisTemplate<String, Object> template = new RedisTemplate<>();
+    // template.setConnectionFactory(factory);
         
         // Claves siempre como String
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setHashKeySerializer(new StringRedisSerializer());
+        // template.setKeySerializer(new StringRedisSerializer());
+        // template.setHashKeySerializer(new StringRedisSerializer());
         
         // Valores como JSON o String para compatibilidad
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+        // template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        // template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
         
-        template.afterPropertiesSet();
-        return template;
-    }
+        // template.afterPropertiesSet();
+        // return template;
+        // }
 }

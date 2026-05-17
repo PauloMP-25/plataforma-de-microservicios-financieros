@@ -3,6 +3,8 @@ package com.usuario.dominio.entidades;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.UUID;
+
 /**
  * Entidad de Rol. Define los niveles de acceso disponibles en el sistema.
  * <p>
@@ -22,8 +24,9 @@ import lombok.*;
 public class Rol {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
 
     /**
      * Nombre del rol. Convención Spring Security: prefijo ROLE_.

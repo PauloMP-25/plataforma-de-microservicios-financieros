@@ -27,8 +27,9 @@ import java.util.UUID;
 public class IntentoValidacion {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
 
     @Column(name = "usuario_id", nullable = false, unique = true, updatable = false)
     private UUID usuarioId;

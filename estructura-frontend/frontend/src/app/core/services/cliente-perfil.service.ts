@@ -24,6 +24,10 @@ export class ClientePerfilService {
     return this.http.get<RespuestaDatosPersonales>(`${this.basePerfil}/${usuarioId}`);
   }
 
+  obtenerPerfil(usuarioId: string): Observable<RespuestaDatosPersonales> {
+    return this.consultarPerfil(usuarioId);
+  }
+
   actualizarPerfil(usuarioId: string, payload: SolicitudDatosPersonales): Observable<RespuestaDatosPersonales> {
     return this.http.put<RespuestaDatosPersonales>(`${this.basePerfil}/${usuarioId}`, payload);
   }
