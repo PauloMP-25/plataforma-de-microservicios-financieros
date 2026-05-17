@@ -18,6 +18,8 @@ com\cliente\aplicacion\excepciones\DatosPersonalesNoEncontradosException.class
 com\cliente\aplicacion\servicios\implementacion\ServicioLimiteGastoImpl.class
 com\cliente\aplicacion\dtos\SolicitudDatosPersonales.class
 com\cliente\aplicacion\dtos\RespuestaPerfilFinanciero.class
+com\cliente\infraestructura\configuracion\PropiedadesJwt.class
+com\cliente\infraestructura\tareas\TareaDesactivacionLimitesVencidos.class
 com\cliente\presentacion\controladores\ControladorPerfil.class
 com\cliente\infraestructura\mensajeria\ConfiguracionRabbitMQ.class
 com\cliente\aplicacion\servicios\ServicioDatosPersonales.class
@@ -42,9 +44,11 @@ com\cliente\aplicacion\dtos\SolicitudLimiteGasto.class
 com\cliente\MicroservicioClienteApplication.class
 com\cliente\aplicacion\dtos\RespuestaDatosPersonales.class
 com\cliente\aplicacion\servicios\ServicioPerfilFinanciero.class
+com\cliente\infraestructura\configuracion\PropiedadesInfraestructura$NucleoFinanciero.class
 com\cliente\aplicacion\servicios\implementacion\ServicioContextoImpl.class
 com\cliente\dominio\entidades\DatosPersonales$DatosPersonalesBuilder.class
 com\cliente\infraestructura\clientes\ClienteNucleoFinanciero.class
+com\cliente\infraestructura\configuracion\PropiedadesInfraestructura.class
 com\cliente\presentacion\manejadores\ManejadorGlobalExcepciones.class
 com\cliente\aplicacion\servicios\ServicioMetaAhorro.class
 com\cliente\aplicacion\dtos\RespuestaLimiteGasto.class
