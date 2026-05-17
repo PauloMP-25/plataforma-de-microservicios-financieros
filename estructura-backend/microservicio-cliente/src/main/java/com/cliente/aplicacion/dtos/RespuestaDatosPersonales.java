@@ -13,6 +13,7 @@ public record RespuestaDatosPersonales(
         String        genero,
         Integer       edad,
         String        telefono,
+        String        fotoPerfilUrl,
         String        pais,
         String        ciudad,
         Boolean       datosCompletos,

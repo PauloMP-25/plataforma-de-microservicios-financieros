@@ -148,6 +148,7 @@ public class ServicioDatosPersonalesImpl implements ServicioDatosPersonales {
         return new RespuestaDatosPersonales(
                 e.getDni(), e.getNombres(), e.getApellidos(),
                 e.getGenero(), e.getEdad(), e.getTelefono(),
+                e.getFotoPerfilUrl(),
                 e.getPais(), e.getCiudad(), e.getDatosCompletos(),
                 e.getFechaCreacion(), e.getFechaActualizacion());
     }
