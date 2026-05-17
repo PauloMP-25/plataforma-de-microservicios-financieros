@@ -101,6 +101,7 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
             BigDecimal nuevoMontoActual,
             String ipOrigen) {
         MetaAhorro meta = obtenerYValidarPropiedad(metaId, usuarioIdToken);
+        BigDecimal montoAnterior = meta.getMontoActual();
         meta.setMontoActual(nuevoMontoActual);
 
         boolean recienCompletada = meta.evaluarYMarcarCompletada();
@@ -113,8 +114,16 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
                             actualizada.getNombre(),
                             actualizada.getMontoActual(),
                             actualizada.getMontoObjetivo()),
-                    meta.getMontoActual() + "", actualizada.getMontoActual() + ""));
+                    montoAnterior + "", actualizada.getMontoActual() + ""));
             log.info("Meta completada: id={} nombre='{}'", metaId, actualizada.getNombre());
+        } else {
+            publicadorAuditoria.publicarTransaccionExitosa(EventoTransaccionalDTO.crear(
+                    usuarioIdToken, metaId, "MS-CLIENTE", "META_AHORRO",
+                    String.format("Progreso de ahorro actualizado para la meta '%s': S/ %.2f de S/ %.2f",
+                            actualizada.getNombre(),
+                            actualizada.getMontoActual(),
+                            actualizada.getMontoObjetivo()),
+                    montoAnterior + "", actualizada.getMontoActual() + ""));
         }
 
         eventPublisher.publishEvent(new EventoContextoActualizado(usuarioIdToken, "META_AHORRO_PROGRESO"));
@@ -182,8 +191,8 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
         publicadorAuditoria.publicarTransaccionExitosa(EventoTransaccionalDTO.crear(
                 usuarioIdToken, metaId, "MS-CLIENTE", "META AHORRO",
                 String.format("Meta eliminada: '%s'", meta.getNombre()), "ACTIVO", "DESACTIVADO"));
-        log.info("Meta eliminada y contexto sincronizado para usuario: {}", usuarioIdToken);
         eventPublisher.publishEvent(new EventoContextoActualizado(usuarioIdToken, "META_AHORRO_ELIMINADA"));
+        log.info("Meta eliminada y contexto sincronizado para usuario: {}", usuarioIdToken);
     }
 
     // =========================================================================

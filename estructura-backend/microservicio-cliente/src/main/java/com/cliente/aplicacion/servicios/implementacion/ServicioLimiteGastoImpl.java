@@ -2,7 +2,6 @@ package com.cliente.aplicacion.servicios.implementacion;
 
 import com.cliente.aplicacion.dtos.RespuestaLimiteGasto;
 import com.cliente.aplicacion.dtos.SolicitudLimiteGasto;
-import com.cliente.aplicacion.excepciones.DatosPersonalesNoEncontradosException;
 import com.cliente.aplicacion.excepciones.LimiteGastoException;
 import com.cliente.aplicacion.excepciones.LimiteGastoNoEncontradoException;
 import com.cliente.aplicacion.servicios.ServicioContexto;
@@ -12,7 +11,7 @@ import com.cliente.dominio.repositorios.LimiteGastoRepositorio;
 import com.cliente.infraestructura.mensajeria.PublicadorAuditoria;
 import com.libreria.comun.dtos.EventoAuditoriaDTO;
 import com.libreria.comun.dtos.EventoTransaccionalDTO;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -115,7 +114,7 @@ public class ServicioLimiteGastoImpl implements ServicioLimiteGasto {
      * @return Lista de RespuestaLimiteGasto
      */
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public List<RespuestaLimiteGasto> listarHistorial(UUID usuarioId) {
         // Asumiendo que el repo tiene un método findByUsuarioIdOrderByFechaCreacionDesc
         return repositorio.findByUsuarioIdOrderByFechaCreacionDesc(usuarioId)
@@ -129,7 +128,7 @@ public class ServicioLimiteGastoImpl implements ServicioLimiteGasto {
      * @return RespuestaLimiteGasto DTO de respuesta
      */
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public RespuestaLimiteGasto obtenerActivo(UUID usuarioId) {
         return repositorio.findByUsuarioIdAndActivoTrue(usuarioId)
                 .map(this::convertirADTO)

@@ -67,7 +67,8 @@ public class LimiteGasto {
     private LocalDate fechaFin;
 
     @Column(nullable = false)
-    private boolean activo; // Para eliminación lógica o desactivación manual
+    @Builder.Default
+    private boolean activo = true; // Para eliminación lógica o desactivación manual
 
     @Column(name = "fecha_creacion", nullable = false, updatable = false)
     private LocalDateTime fechaCreacion;
