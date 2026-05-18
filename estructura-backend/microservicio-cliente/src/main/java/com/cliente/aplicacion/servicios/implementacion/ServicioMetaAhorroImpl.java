@@ -108,7 +108,7 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
 
         if (recienCompletada) {
             publicadorAuditoria.publicarTransaccionExitosa(EventoTransaccionalDTO.crear(
-                    usuarioIdToken, metaId, "MS-FINANCIERO", "META_AHORRO",
+                    usuarioIdToken, metaId, "MS-CLIENTE", "META_AHORRO",
                     String.format("¡Meta '%s' alcanzada! S/ %.2f de S/ %.2f",
                             actualizada.getNombre(),
                             actualizada.getMontoActual(),
@@ -187,7 +187,7 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
         repositorio.delete(meta);
         log.info("Meta eliminada: id={} usuario={}", metaId, usuarioIdToken);
         publicadorAuditoria.publicarTransaccionExitosa(EventoTransaccionalDTO.crear(
-                usuarioIdToken, metaId, "MS-CLIENTE", "META AHORRO",
+                usuarioIdToken, metaId, "MS-CLIENTE", "META_AHORRO",
                 String.format("Meta eliminada: '%s'", meta.getNombre()), "ACTIVO", "DESACTIVADO"));
         eventPublisher.publishEvent(new EventoContextoActualizado(usuarioIdToken, "META_AHORRO_ELIMINADA"));
         log.info("Meta eliminada y contexto sincronizado para usuario: {}", usuarioIdToken);
