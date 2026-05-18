@@ -54,8 +54,9 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
         // 2. Definimos las reglas de este microservicio (De lo más específico a lo
         // general)
         http.authorizeHttpRequests(auth -> auth
-                // Endpoints internos (comunicación inter-microservicio)
+                // Endpoints internos y creación inicial de perfil (comunicación inter-microservicio)
                 .requestMatchers("/api/v1/clientes/interno/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/clientes/perfil/inicial").permitAll()
 
                 // Perfil de datos personales
                 .requestMatchers(HttpMethod.PUT, "/api/v1/clientes/perfil/**").authenticated()

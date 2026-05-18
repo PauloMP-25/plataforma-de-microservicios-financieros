@@ -104,4 +104,12 @@ public abstract class ManejadorGlobalExcepcionesBase {
                 .body(ResultadoApi.falla(CodigoError.ERROR_INTERNO, "Ocurrió un fallo inesperado en el servidor.",
                         req.getRequestURI()));
     }
+
+    /**
+     * Helper centralizado para construir respuestas de error uniformes en todo el ecosistema.
+     */
+    @SuppressWarnings("null")
+    protected <T> ResponseEntity<ResultadoApi<T>> crearRespuestaError(CodigoError cod, String msg, HttpStatus status, String path) {
+        return ResponseEntity.status(status).body(ResultadoApi.falla(cod, msg, path));
+    }
 }
