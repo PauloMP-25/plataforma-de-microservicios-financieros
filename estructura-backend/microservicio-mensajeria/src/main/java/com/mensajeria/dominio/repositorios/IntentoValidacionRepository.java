@@ -14,6 +14,7 @@ import java.util.UUID;
 @Repository
 public interface IntentoValidacionRepository extends JpaRepository<IntentoValidacion, UUID> {
 
+    @org.springframework.cache.annotation.Cacheable(value="bloqueos-otp", key="#usuarioId", unless="#result == null")
     Optional<IntentoValidacion> findByUsuarioId(UUID usuarioId);
     
     java.util.List<IntentoValidacion> findByBloqueadoTrue();

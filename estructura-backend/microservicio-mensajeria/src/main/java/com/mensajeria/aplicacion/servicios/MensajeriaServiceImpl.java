@@ -150,7 +150,7 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
         // Mover el cv.setUsado(true) a después de que activarCuenta() confirme éxito — no antes.
         cv.setUsado(true);
         cv.setFechaUso(LocalDateTime.now());
-        resetearIntentos(solicitud.usuarioId());
+        reiniciarIntentos(cv.getUsuarioId());
         codigoRepository.save(cv);
 
         return new RespuestaValidacion(true, "OTP válido. Cuenta activada y teléfono sincronizado.");
@@ -176,7 +176,7 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
 
         cv.setUsado(true);
         cv.setFechaUso(LocalDateTime.now());
-        resetearIntentos(cv.getUsuarioId());
+        reiniciarIntentos(cv.getUsuarioId());
 
         return cv.getUsuarioId();
     }
@@ -279,7 +279,8 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
      *
      * @param uId UUID del usuario cuyo registro de intentos debe reiniciarse.
      */
-    private void resetearIntentos(UUID uId) {
+    @org.springframework.cache.annotation.CacheEvict(value="bloqueos-otp", key="#uId")
+    public void reiniciarIntentos(UUID uId) {
         intentoRepository.findByUsuarioId(uId).ifPresent(i -> {
             i.reiniciar();
             intentoRepository.save(i);

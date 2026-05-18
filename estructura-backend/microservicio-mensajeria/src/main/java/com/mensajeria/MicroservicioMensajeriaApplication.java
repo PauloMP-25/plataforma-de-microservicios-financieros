@@ -20,6 +20,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableAsync
 @EnableScheduling
 @EnableFeignClients
+@org.springframework.cache.annotation.EnableCaching
 @ComponentScan(basePackages = {
         "com.mensajeria",
         "com.libreria.comun"

@@ -33,6 +33,7 @@ public class NotificacionDispatcherImpl implements NotificacionService, Notifica
     private final IEmailService emailService; // Mantener para métodos específicos de admin
 
     @Override
+    @org.springframework.scheduling.annotation.Async("notificacionExecutor")
     public void enviar(TipoNotificacion tipo, String destinatario, Map<String, Object> variables) {
         log.debug("[DISPATCHER] Buscando estrategia para canal: {}", tipo);
 

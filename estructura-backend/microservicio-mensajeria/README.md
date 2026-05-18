@@ -90,12 +90,26 @@ TWILIO_PHONE_NUMBER=+15005550006
 
 ---
 
+## Configuración operacional
+
+Las siguientes propiedades se pueden ajustar en `application.properties` (o vía variables de entorno en Docker) para tunear el comportamiento del microservicio en producción.
+
+| Propiedad | Descripción | Rango Recomendado | Valor por defecto |
+|-----------|-------------|-------------------|-------------------|
+| `mensajeria.otp.expiracion-minutos` | Tiempo de vida del código OTP antes de expirar | 5 - 15 | `10` |
+| `mensajeria.otp.max-intentos` | Número máximo de intentos fallidos antes de bloquear la cuenta | 3 - 5 | `3` |
+| `mensajeria.otp.bloqueo-horas` | Tiempo de castigo para una cuenta bloqueada | 1 - 24 | `10` |
+| `mensajeria.desbloqueo.intervalo-ms` | Frecuencia de la tarea que desbloquea usuarios | 300000 - 3600000 | `900000` (15m) |
+| `mensajeria.outbox.reintento-ms` | Frecuencia de reintento de envío de eventos a RabbitMQ | 10000 - 300000 | `60000` (1m) |
+
+---
+
 ## Dependencias de otros microservicios
 
 | Servicio | Puerto | Uso |
 |----------|--------|-----|
 | microservicio-usuario | 8081 | Activar cuenta vía Feign (GET /api/v1/auth/confirmar-email) |
-| microservicio-auditoría | 8082 | Reportar eventos OTP vía RestTemplate async |
+| microservicio-auditoría | 8082 | Reportar eventos OTP vía RabbitMQ async (Patrón Outbox) |
 
 ---
 
@@ -151,7 +165,7 @@ CREATE TABLE intentos_validacion_otp (
 - [x] `EmailService` con HTML enriquecido (JavaMail)
 - [x] `SmsService` con Twilio (inicialización lazy)
 - [x] `ClienteUsuario` (Feign) → activa cuenta en ms-usuario
-- [x] `ClienteAuditoria` (RestTemplate @Async) → reporta a ms-auditoría
+- [x] `PublicadorAuditoria` (RabbitMQ + Outbox) → reporta a ms-auditoría
 - [x] `@Scheduled` de limpieza cada 24h + desbloqueo cada 15min
 - [x] Manejador global de excepciones con respuestas estructuradas
 - [x] Tests unitarios con Mockito (generación, validación, bloqueo)
