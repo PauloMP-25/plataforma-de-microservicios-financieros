@@ -1,9 +1,9 @@
-package com.auditoria.aplicacion.servicios;
+package com.auditoria.aplicacion.puertos;
 
 import com.auditoria.aplicacion.dtos.RespuestaVerificacionIpDTO;
 
 /**
- * Interfaz encargada de la política de seguridad y defensa perimetral.
+ * Interfaz de puerto encargada de la política de seguridad y defensa perimetral.
  * <p>
  * Define los métodos para evaluar ataques de fuerza bruta, gestionar el bloqueo
  * de IPs y verificar el estado de las mismas frente a la lista negra.

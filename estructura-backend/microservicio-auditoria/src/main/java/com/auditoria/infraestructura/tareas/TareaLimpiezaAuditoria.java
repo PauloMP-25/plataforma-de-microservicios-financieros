@@ -1,7 +1,7 @@
 package com.auditoria.infraestructura.tareas;
 
-import com.auditoria.aplicacion.servicios.ServicioAuditoriaAcceso;
-import com.auditoria.aplicacion.servicios.ServicioSeguridadAuditoria;
+import com.auditoria.aplicacion.puertos.ServicioAuditoriaAcceso;
+import com.auditoria.aplicacion.puertos.ServicioSeguridadAuditoria;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

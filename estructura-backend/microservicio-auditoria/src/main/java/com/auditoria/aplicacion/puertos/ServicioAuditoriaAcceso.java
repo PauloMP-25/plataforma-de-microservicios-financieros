@@ -1,13 +1,12 @@
-package com.auditoria.aplicacion.servicios;
+package com.auditoria.aplicacion.puertos;
 
 import com.libreria.comun.dtos.EventoAccesoDTO;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import java.util.UUID;
 
 /**
- * Interfaz de servicio para la gestión de auditorías de acceso.
+ * Interfaz de puerto para la gestión de auditorías de acceso.
  * <p>
  * Se encarga exclusivamente de la persistencia, consulta y mantenimiento 
  * de los registros de inicio de sesión y actividad de usuarios.
@@ -22,7 +21,6 @@ public interface ServicioAuditoriaAcceso {
      * Registra un nuevo intento de acceso (éxito o fallo).
      * 
      * @param dto Datos del intento de acceso.
-     * @param EstadoAcceso Estado del login del usuario
      * @return El registro persistido en formato DTO.
      */
     EventoAccesoDTO registrarAcceso(EventoAccesoDTO dto);

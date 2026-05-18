@@ -1,8 +1,8 @@
 package com.auditoria.infraestructura.mensajeria;
 
-import com.auditoria.aplicacion.servicios.ServicioAuditoriaAcceso;
-import com.auditoria.aplicacion.servicios.ServicioAuditoriaTransaccional;
-import com.auditoria.aplicacion.servicios.ServicioRegistroAuditoria;
+import com.auditoria.aplicacion.puertos.ServicioAuditoriaAcceso;
+import com.auditoria.aplicacion.puertos.ServicioAuditoriaTransaccional;
+import com.auditoria.aplicacion.puertos.ServicioRegistroAuditoria;
 import com.libreria.comun.dtos.EventoAccesoDTO;
 import com.libreria.comun.dtos.EventoAuditoriaDTO;
 import com.libreria.comun.dtos.EventoTransaccionalDTO;
@@ -102,14 +102,15 @@ public class ConsumidorAuditoria {
     public void manejarPagoExitoso(EventoPagoExitosoDTO evento, Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag) throws java.io.IOException {
         log.info("[RABBIT-PAGOS] Registrando auditoría de pago para usuario: {}", evento.usuarioId());
 
-        // Corregido: Usando .crear() y "pago" en lugar de "suscripcion" por consistencia semántica con pagoId
+        String planAnterior = servicioTransaccional.obtenerUltimoPlanUsuario(evento.usuarioId());
+
         EventoTransaccionalDTO auditoria = EventoTransaccionalDTO.crear(
                 evento.usuarioId(),
                 evento.pagoId(),
                 "microservicio-pago",
                 "pago",
                 "Actualización de plan a: " + evento.planNuevo(),
-                "FREE",
+                planAnterior,
                 evento.planNuevo());
 
         servicioTransaccional.guardarEvento(auditoria);

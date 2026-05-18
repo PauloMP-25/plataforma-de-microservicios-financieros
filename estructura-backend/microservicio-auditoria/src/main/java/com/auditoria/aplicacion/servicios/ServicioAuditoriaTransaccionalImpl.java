@@ -1,6 +1,6 @@
-package com.auditoria.aplicacion.servicios.implementacion;
+package com.auditoria.aplicacion.servicios;
 
-import com.auditoria.aplicacion.servicios.ServicioAuditoriaTransaccional;
+import com.auditoria.aplicacion.puertos.ServicioAuditoriaTransaccional;
 import com.auditoria.dominio.entidades.AuditoriaTransaccional;
 import com.auditoria.dominio.repositorios.AuditoriaTransaccionalRepository;
 import com.libreria.comun.dtos.EventoTransaccionalDTO;
@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * Implementación concreta del servicio de auditoría transaccional.
+ * Implementación del servicio de auditoría transaccional.
  * <p>
  * Realiza el mapeo entre las entidades de persistencia y los DTOs de la
  * librería común.
@@ -83,5 +83,13 @@ public class ServicioAuditoriaTransaccionalImpl implements ServicioAuditoriaTran
                 e.getValorAnterior(),
                 e.getValorNuevo(),
                 e.getFecha());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public String obtenerUltimoPlanUsuario(UUID usuarioId) {
+        return repositorio.findFirstByUsuarioIdAndEntidadAfectadaOrderByFechaDesc(usuarioId, "pago")
+                .map(AuditoriaTransaccional::getValorNuevo)
+                .orElse("FREE");
     }
 }

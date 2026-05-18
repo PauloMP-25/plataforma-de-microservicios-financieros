@@ -1,13 +1,12 @@
-package com.auditoria.aplicacion.servicios;
+package com.auditoria.aplicacion.puertos;
 
 import com.auditoria.aplicacion.dtos.RespuestaAuditoriaDetalladoDTO;
 import com.libreria.comun.dtos.EventoAuditoriaDTO;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 /**
- * Interfaz de servicio para el registro y consulta de eventos de auditoría
+ * Interfaz de puerto para el registro y consulta de eventos de auditoría
  * general.
  * <p>
  * Define el contrato para persistir trazas de actividad de usuario y

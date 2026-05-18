@@ -38,4 +38,16 @@ public interface AuditoriaTransaccionalRepository extends JpaRepository<Auditori
             String entidadAfectada,
             UUID entidadId,
             Pageable paginacion);
+
+    /**
+     * Recupera el registro transaccional más reciente de un usuario y entidad afectada.
+     * Utilizado para resolver dinámicamente el valor anterior de un plan financiero.
+     * 
+     * @param usuarioId        Identificador del usuario.
+     * @param entidadAfectada  Nombre de la entidad afectada.
+     * @return El registro transaccional opcional más reciente.
+     */
+    java.util.Optional<AuditoriaTransaccional> findFirstByUsuarioIdAndEntidadAfectadaOrderByFechaDesc(
+            UUID usuarioId,
+            String entidadAfectada);
 }

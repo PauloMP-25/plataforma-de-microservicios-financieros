@@ -1,8 +1,8 @@
-package com.auditoria.aplicacion.servicios.implementacion;
+package com.auditoria.aplicacion.servicios;
 
 import com.auditoria.aplicacion.dtos.RespuestaVerificacionIpDTO;
 import com.auditoria.aplicacion.excepciones.IpBloqueadaException;
-import com.auditoria.aplicacion.servicios.ServicioSeguridadAuditoria;
+import com.auditoria.aplicacion.puertos.ServicioSeguridadAuditoria;
 import com.auditoria.infraestructura.configuracion.PropiedadesSeguridad;
 import com.libreria.comun.enums.EstadoEvento;
 import com.auditoria.dominio.entidades.ListaNegraIp;

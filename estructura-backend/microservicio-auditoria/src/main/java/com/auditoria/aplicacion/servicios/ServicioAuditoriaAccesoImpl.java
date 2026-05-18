@@ -1,7 +1,7 @@
-package com.auditoria.aplicacion.servicios.implementacion;
+package com.auditoria.aplicacion.servicios;
 
-import com.auditoria.aplicacion.servicios.ServicioAuditoriaAcceso;
-import com.auditoria.aplicacion.servicios.ServicioSeguridadAuditoria;
+import com.auditoria.aplicacion.puertos.ServicioAuditoriaAcceso;
+import com.auditoria.aplicacion.puertos.ServicioSeguridadAuditoria;
 import com.auditoria.dominio.entidades.AuditoriaAcceso;
 import com.libreria.comun.enums.EstadoEvento;
 import com.auditoria.dominio.repositorios.AuditoriaAccesoRepository;
@@ -19,7 +19,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Implementación concreta del servicio de auditoría de acceso.
+ * Implementación del servicio de auditoría de acceso.
  * <p>
  * Gestiona el ciclo de vida de los registros de acceso y colabora con el
  * servicio de seguridad para la detección de anomalías.
@@ -34,8 +34,6 @@ public class ServicioAuditoriaAccesoImpl implements ServicioAuditoriaAcceso {
 
     private final AuditoriaAccesoRepository repositorio;
     private final ServicioSeguridadAuditoria servicioSeguridad;
-
-
 
     @Override
     @Transactional
@@ -89,8 +87,6 @@ public class ServicioAuditoriaAccesoImpl implements ServicioAuditoriaAcceso {
         }
         return eliminados;
     }
-
-
 
     /**
      * Mapea la entidad de persistencia al DTO de auditoría de acceso.

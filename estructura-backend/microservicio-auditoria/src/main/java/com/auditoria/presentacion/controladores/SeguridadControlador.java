@@ -1,7 +1,7 @@
 package com.auditoria.presentacion.controladores;
 
 import com.auditoria.aplicacion.dtos.RespuestaVerificacionIpDTO;
-import com.auditoria.aplicacion.servicios.ServicioSeguridadAuditoria;
+import com.auditoria.aplicacion.puertos.ServicioSeguridadAuditoria;
 import com.auditoria.dominio.entidades.ListaNegraIp;
 import com.libreria.comun.respuesta.Paginacion;
 import com.libreria.comun.respuesta.ResultadoApi;

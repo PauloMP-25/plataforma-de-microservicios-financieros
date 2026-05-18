@@ -1,6 +1,6 @@
 package com.auditoria.presentacion.controladores;
 
-import com.auditoria.aplicacion.servicios.ServicioAuditoriaAcceso;
+import com.auditoria.aplicacion.puertos.ServicioAuditoriaAcceso;
 import com.libreria.comun.dtos.EventoAccesoDTO;
 import com.libreria.comun.respuesta.Paginacion;
 import com.libreria.comun.respuesta.ResultadoApi;

@@ -1,7 +1,7 @@
-package com.auditoria.aplicacion.servicios.implementacion;
+package com.auditoria.aplicacion.servicios;
 
 import com.auditoria.aplicacion.dtos.RespuestaAuditoriaDetalladoDTO;
-import com.auditoria.aplicacion.servicios.ServicioRegistroAuditoria;
+import com.auditoria.aplicacion.puertos.ServicioRegistroAuditoria;
 import com.auditoria.dominio.entidades.RegistroAuditoria;
 import com.auditoria.dominio.repositorios.RegistroAuditoriaRepository;
 import com.libreria.comun.dtos.EventoAuditoriaDTO;
