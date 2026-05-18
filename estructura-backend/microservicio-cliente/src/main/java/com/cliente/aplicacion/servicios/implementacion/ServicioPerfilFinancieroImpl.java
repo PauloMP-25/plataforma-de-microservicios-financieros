@@ -53,7 +53,6 @@ public class ServicioPerfilFinancieroImpl implements ServicioPerfilFinanciero {
      * @return {@link RespuestaPerfilFinanciero} con los datos del perfil guardado.
      * @throws ExcepcionAccesoDenegado si el usuario del token no coincide con la ruta.
      */
-    @SuppressWarnings("null")
     @Override
     @Transactional
     public RespuestaPerfilFinanciero guardarOActualizar(UUID usuarioIdRuta, UUID usuarioIdToken,
@@ -107,7 +106,7 @@ public class ServicioPerfilFinancieroImpl implements ServicioPerfilFinanciero {
      * @throws ExcepcionAccesoDenegado si los IDs no coinciden.
      */
     private void validarPropiedad(UUID usuarioIdRuta, UUID usuarioIdToken) {
-        if (!usuarioIdRuta.equals(usuarioIdToken)) {
+        if (usuarioIdRuta == null || usuarioIdToken == null || !usuarioIdRuta.equals(usuarioIdToken)) {
             log.warn("Acceso denegado al perfil financiero: token={} ruta={}", usuarioIdToken, usuarioIdRuta);
             throw new ExcepcionAccesoDenegado();
         }

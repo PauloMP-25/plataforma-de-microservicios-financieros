@@ -42,13 +42,15 @@ public class ServicioLimiteGastoImpl implements ServicioLimiteGasto {
      * @param ipOrigen IP del cliente
      * @return RespuestaLimiteGasto con el límite creado
      */
-    @SuppressWarnings("null")
     @Override
     @Transactional
     public RespuestaLimiteGasto crear(UUID usuarioIdToken,
             SolicitudLimiteGasto solicitud,
             String ipOrigen) {
 
+        if (usuarioIdToken == null || solicitud == null) {
+            throw new IllegalArgumentException("El ID de usuario y la solicitud no pueden ser nulos.");
+        }
         repositorio.findByUsuarioIdAndActivoTrue(usuarioIdToken).ifPresent((LimiteGasto limite) -> {
             if (!limite.estaVencido()) {
                 throw new LimiteGastoException("Ya tienes un límite global activo y vigente.");

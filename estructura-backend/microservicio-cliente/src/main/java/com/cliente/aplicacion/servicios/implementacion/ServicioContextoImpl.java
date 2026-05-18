@@ -144,9 +144,12 @@ public class ServicioContextoImpl implements ServicioContexto {
                             .build();
     }
 
-    @SuppressWarnings("null")
     @Override
     public void refrescarContextoRedis(UUID usuarioId) {
+        if (usuarioId == null) {
+            log.warn("Intento de refresco de contexto en Redis con usuarioId nulo.");
+            return;
+        }
         try {
             log.info("Refrescando contexto IA en Redis para usuarioId={}", usuarioId);
             ContextoEstrategicoIADTO contexto = obtenerContextoFinanciero(usuarioId);

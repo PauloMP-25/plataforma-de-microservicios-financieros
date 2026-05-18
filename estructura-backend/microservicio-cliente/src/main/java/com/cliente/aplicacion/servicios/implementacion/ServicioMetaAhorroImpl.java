@@ -57,7 +57,6 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
      * @param ipOrigen       IP del cliente
      * @return RespuestaMetaAhorro con la meta creada
      */
-    @SuppressWarnings("null")
     @Override
     @Transactional
     public RespuestaMetaAhorro crear(UUID usuarioIdToken, SolicitudMetaAhorro solicitud,
@@ -181,7 +180,6 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
      * @param usuarioIdToken ID del usuario
      * @param ipOrigen       IP del cliente
      */
-    @SuppressWarnings("null")
     @Override
     @Transactional
     public void eliminar(UUID metaId, UUID usuarioIdToken, String ipOrigen) {
@@ -207,11 +205,13 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
      * @throws MetaNoEncontradaException si la meta no existe.
      * @throws ExcepcionAccesoDenegado   si la meta pertenece a otro usuario.
      */
-    @SuppressWarnings("null")
     private MetaAhorro obtenerYValidarPropiedad(UUID metaId, UUID usuarioIdToken) {
+        if (metaId == null || usuarioIdToken == null) {
+            throw new IllegalArgumentException("Los identificadores de meta y token no pueden ser nulos");
+        }
         MetaAhorro meta = repositorio.findById(metaId)
                 .orElseThrow(() -> new MetaNoEncontradaException(metaId));
-        if (!meta.getUsuarioId().equals(usuarioIdToken)) {
+        if (meta.getUsuarioId() == null || !meta.getUsuarioId().equals(usuarioIdToken)) {
             throw new ExcepcionAccesoDenegado();
         }
         return meta;

@@ -45,7 +45,6 @@ public class ServicioDatosPersonalesImpl implements ServicioDatosPersonales {
      * @param usuarioId ID del usuario para el cual se crea el perfil.
      * @return {@link RespuestaDatosPersonales} con el perfil creado o existente.
      */
-    @SuppressWarnings("null")
     @Override
     @Transactional
     public RespuestaDatosPersonales crearPerfil(UUID usuarioId) {
