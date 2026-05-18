@@ -44,5 +44,5 @@ public interface ClienteMensajeria {
     );
     
     @PostMapping("/api/v1/mensajeria/otp/validar-limite")
-    void validarLimite(@RequestBody SolicitudGenerarOtp solicitud);
+    void validarLimite(@RequestBody com.usuario.aplicacion.dtos.solicitudes.SolicitudVerificarLimite solicitud);
 }

@@ -28,7 +28,7 @@ public class ClienteMensajeriaFallback implements ClienteMensajeria {
     }
 
     @Override
-    public void validarLimite(SolicitudGenerarOtp solicitud) {
+    public void validarLimite(com.usuario.aplicacion.dtos.solicitudes.SolicitudVerificarLimite solicitud) {
         log.warn("MS-Mensajería offline: Saltando validación de límite de OTP para no bloquear al usuario.");
         // Al ser void, simplemente no hace nada y permite que el flujo continúe
     }

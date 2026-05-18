@@ -1,11 +1,11 @@
-package com.mensajeria.aplicacion.dtos.solicitudes;
+package com.usuario.aplicacion.dtos.solicitudes;
 
 import com.libreria.comun.enums.PropositoCodigo;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 /**
- * DTO mínimo para verificar las restricciones de límite de envío de OTP.
+ * DTO para verificar restricciones de límites de envío de OTP en ms-mensajeria.
  */
 public record SolicitudVerificarLimite(
     @NotNull(message = "El usuarioId es obligatorio")

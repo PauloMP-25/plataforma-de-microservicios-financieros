@@ -1,8 +1,6 @@
 package com.mensajeria.presentacion.controladores;
 
-import com.mensajeria.aplicacion.dtos.solicitudes.SolicitudGenerarCodigo;
-import com.mensajeria.aplicacion.dtos.solicitudes.SolicitudRecuperacion;
-import com.mensajeria.aplicacion.dtos.solicitudes.SolicitudValidarCodigo;
+import com.mensajeria.aplicacion.dtos.solicitudes.*;
 import com.mensajeria.aplicacion.dtos.respuestas.RespuestaGeneracion;
 import com.mensajeria.aplicacion.dtos.respuestas.RespuestaValidacion;
 import com.mensajeria.aplicacion.puertos.IMensajeriaService;
@@ -118,7 +116,7 @@ public class ControladorMensajeria {
      */
     @PostMapping("/validar-limite")
     public ResponseEntity<ResultadoApi<Void>> validarLimite(
-            @RequestBody SolicitudGenerarCodigo solicitud) {
+            @Valid @RequestBody SolicitudVerificarLimite solicitud) {
 
         mensajeriaService.verificarRestricciones(solicitud.usuarioId(), solicitud.proposito());
         return ResponseEntity.ok(ResultadoApi.sinContenido("Restricciones verificadas exitosamente"));

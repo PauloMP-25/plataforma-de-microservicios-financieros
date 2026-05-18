@@ -57,17 +57,7 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    /** Tiempo de vigencia del OTP en minutos, configurable por entorno. */
-    @Value("${mensajeria.otp.expiracion-minutos:10}")
-    private int expiracionMinutos;
-
-    /** Máximo de intentos de validación fallidos antes de bloqueo temporal. */
-    @Value("${mensajeria.otp.max-intentos:3}")
-    private int maxIntentos;
-
-    /** Horas de bloqueo tras exceder los intentos fallidos. */
-    @Value("${mensajeria.otp.bloqueo-horas:10}")
-    private long bloqueoHoras;
+    private final com.mensajeria.infraestructura.configuracion.PropiedadesOtp propiedadesOtp;
 
     // =========================================================================
     // 1. GENERACIÓN Y ENVÍO
@@ -121,7 +111,7 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
                 .codigo(codigo)
                 .tipo(solicitud.tipo())
                 .proposito(solicitud.proposito())
-                .fechaExpiracion(LocalDateTime.now().plusMinutes(expiracionMinutos))
+                .fechaExpiracion(LocalDateTime.now().plusMinutes(propiedadesOtp.getExpiracionMinutos()))
                 .build();
 
         codigoRepository.save(entidad);
@@ -270,14 +260,14 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
 
         if (cv.isExpirado()) {
             if (registrarIntentoFallido(sol.usuarioId())) {
-                throw new UsuarioBloqueadoExcepcion(sol.usuarioId(), bloqueoHoras);
+                throw new UsuarioBloqueadoExcepcion(sol.usuarioId(), propiedadesOtp.getBloqueoHoras());
             }
             throw new CodigoExpiradoException();
         }
 
         if (!cv.getCodigo().equals(sol.codigo())) {
             if (registrarIntentoFallido(sol.usuarioId())) {
-                throw new UsuarioBloqueadoExcepcion(sol.usuarioId(), bloqueoHoras);
+                throw new UsuarioBloqueadoExcepcion(sol.usuarioId(), propiedadesOtp.getBloqueoHoras());
             }
             throw new CodigoInvalidoException("código incorrecto");
         }
@@ -317,13 +307,13 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
         if (intentosActuales == 2) {
             registrarAuditoria(uId, "OTP_ADVERTENCIA",
                     "Segundo intento fallido. El próximo error bloqueará la cuenta por "
-                            + bloqueoHoras + " hora(s).");
+                            + propiedadesOtp.getBloqueoHoras() + " hora(s).");
         }
 
-        if (intentosActuales >= maxIntentos) {
-            i.bloquear(bloqueoHoras);
+        if (intentosActuales >= propiedadesOtp.getMaxIntentos()) {
+            i.bloquear(propiedadesOtp.getBloqueoHoras());
             registrarAuditoria(uId, "USUARIO_BLOQUEADO",
-                    "Máximo de " + maxIntentos + " intentos alcanzado. Cuenta suspendida temporalmente.");
+                    "Máximo de " + propiedadesOtp.getMaxIntentos() + " intentos alcanzado. Cuenta suspendida temporalmente.");
         }
 
         intentoRepository.save(i);

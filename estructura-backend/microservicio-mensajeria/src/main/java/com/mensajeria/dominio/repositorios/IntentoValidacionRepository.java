@@ -15,6 +15,9 @@ import java.util.UUID;
 public interface IntentoValidacionRepository extends JpaRepository<IntentoValidacion, UUID> {
 
     Optional<IntentoValidacion> findByUsuarioId(UUID usuarioId);
+    
+    java.util.List<IntentoValidacion> findByBloqueadoTrue();
+
 
     /**
      * Desbloquea masivamente a los usuarios cuyo tiempo de castigo terminó. Es
