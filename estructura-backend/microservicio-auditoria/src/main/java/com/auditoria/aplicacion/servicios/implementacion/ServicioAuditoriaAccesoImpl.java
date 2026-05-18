@@ -35,6 +35,8 @@ public class ServicioAuditoriaAccesoImpl implements ServicioAuditoriaAcceso {
     private final AuditoriaAccesoRepository repositorio;
     private final ServicioSeguridadAuditoria servicioSeguridad;
 
+
+
     @Override
     @Transactional
     public EventoAccesoDTO registrarAcceso(EventoAccesoDTO dto) {
@@ -87,6 +89,8 @@ public class ServicioAuditoriaAccesoImpl implements ServicioAuditoriaAcceso {
         }
         return eliminados;
     }
+
+
 
     /**
      * Mapea la entidad de persistencia al DTO de auditoría de acceso.

@@ -10,7 +10,6 @@ import com.auditoria.dominio.repositorios.ListaNegraIpRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,8 +33,7 @@ public class ServicioSeguridadAuditoriaImpl implements ServicioSeguridadAuditori
 
     private final AuditoriaAccesoRepository repositorioAcceso;
     private final ListaNegraIpRepository repositorioListaNegra;
-    // private final org.springframework.data.redis.core.RedisTemplate<String,
-    // Object> redisTemplate;
+    private final org.springframework.data.redis.core.RedisTemplate<String, Object> redisTemplate;
 
     @Value("${auditoria.seguridad.max-intentos-fallidos:3}")
     private int maxIntentosFallidos;
@@ -60,8 +58,8 @@ public class ServicioSeguridadAuditoriaImpl implements ServicioSeguridadAuditori
         if (fallosRecientes >= maxIntentosFallidos) {
             bloquearIp(ipOrigen, fallosRecientes);
             // Sincronizar con Redis para el Gateway
-            // redisTemplate.opsForValue().set("bloqueo:ip:" + ipOrigen, true,
-            // java.time.Duration.ofMinutes(bloqueoMinutos));
+            redisTemplate.opsForValue().set("bloqueo:ip:" + ipOrigen, true,
+                    java.time.Duration.ofMinutes(bloqueoMinutos));
             log.info("[SEGURIDAD-REDIS] IP sincronizada en caché de bloqueo: {}", ipOrigen);
             
             throw new IpBloqueadaException(ipOrigen);
@@ -77,7 +75,6 @@ public class ServicioSeguridadAuditoriaImpl implements ServicioSeguridadAuditori
     }
 
     @Override
-    @Scheduled(fixedRate = 3600000) // Cada 60 minutos
     @Transactional
     public void limpiarBloqueosExpirados() {
         int eliminados = repositorioListaNegra.eliminarBloqueoExpirados(LocalDateTime.now());
