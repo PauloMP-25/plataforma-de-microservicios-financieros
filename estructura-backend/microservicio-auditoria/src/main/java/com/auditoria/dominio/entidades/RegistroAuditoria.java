@@ -73,6 +73,12 @@ public class RegistroAuditoria {
     private String ipOrigen;
 
     /**
+     * Identificador de correlación único para el seguimiento de la petición de extremo a extremo.
+     */
+    @Column(name = "correlation_id", length = 100)
+    private String correlationId;
+
+    /**
      * Información adicional detallada sobre el evento en formato de texto libre o
      * JSON.
      */

@@ -68,24 +68,43 @@ public class ServicioRegistroAuditoriaImpl implements ServicioRegistroAuditoria 
      * </p>
      */
     private RespuestaAuditoriaDetalladoDTO convertirARespuestaDetallada(RegistroAuditoria entidad) {
+        String emailUsuario = "N/A";
+        try {
+            // Evitamos NPE y fugas de información comprobando si el usuario auditado es el mismo que está autenticado
+            java.util.UUID authUsuarioId = UtilidadSeguridad.obtenerUsuarioId();
+            if (authUsuarioId != null && authUsuarioId.equals(entidad.getUsuarioId())) {
+                emailUsuario = UtilidadSeguridad.obtenerUsuarioEmail();
+            }
+        } catch (Exception e) {
+            log.debug("[AUDITORIA] No se pudo obtener el email del contexto de seguridad: {}", e.getMessage());
+        }
+
         return new RespuestaAuditoriaDetalladoDTO(
                 entidad.getId(),
                 entidad.getUsuarioId(),
-                UtilidadSeguridad.obtenerUsuarioEmail(),
+                emailUsuario,
                 entidad.getAccion(),
                 entidad.getModulo(),
                 entidad.getIpOrigen(),
+                entidad.getCorrelationId(),
                 entidad.getDetalles(),
                 entidad.getFechaHora()
         );
     }
 
     private RegistroAuditoria convertirAEntidad(EventoAuditoriaDTO dto) {
+        // Intentamos obtener el correlationId de MDC (Mapped Diagnostic Context)
+        String correlationId = org.slf4j.MDC.get("correlationId");
+        if (correlationId == null) {
+            correlationId = org.slf4j.MDC.get("traceId");
+        }
+
         return RegistroAuditoria.builder()
                 .usuarioId(dto.usuarioId() != null ? dto.usuarioId() : UtilidadSeguridad.obtenerUsuarioId())
-                .accion("ACCESO_SISTEMA")
+                .accion(dto.accion() != null ? dto.accion() : "ACCESO_SISTEMA")
                 .modulo(dto.modulo() != null ? dto.modulo() : "AUDITORIA")
                 .ipOrigen(dto.ipOrigen())
+                .correlationId(correlationId)
                 .detalles(dto.detalles())
                 .build();
     }
