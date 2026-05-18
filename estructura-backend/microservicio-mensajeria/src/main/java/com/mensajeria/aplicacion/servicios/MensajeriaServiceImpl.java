@@ -2,6 +2,7 @@ package com.mensajeria.aplicacion.servicios;
 
 import com.libreria.comun.enums.PropositoCodigo;
 import com.libreria.comun.enums.TipoVerificacion;
+import com.libreria.comun.respuesta.ResultadoApi;
 import com.mensajeria.aplicacion.dtos.solicitudes.SolicitudGenerarCodigo;
 import com.mensajeria.aplicacion.dtos.solicitudes.SolicitudValidarCodigo;
 import com.mensajeria.aplicacion.dtos.respuestas.RespuestaGeneracion;
@@ -9,6 +10,7 @@ import com.mensajeria.aplicacion.dtos.respuestas.RespuestaValidacion;
 import com.mensajeria.aplicacion.excepciones.*;
 import com.mensajeria.dominio.entidades.CodigoVerificacion;
 import com.mensajeria.dominio.entidades.IntentoValidacion;
+import com.mensajeria.dominio.especificaciones.MensajeriaSpecs;
 import com.mensajeria.dominio.repositorios.CodigoVerificacionRepository;
 import com.mensajeria.dominio.repositorios.IntentoValidacionRepository;
 import com.mensajeria.aplicacion.puertos.IMensajeriaService;
@@ -19,6 +21,9 @@ import com.mensajeria.infraestructura.clientes.ClienteUsuario;
 import com.mensajeria.infraestructura.clientes.ClienteActualizarTelefono;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -108,9 +113,9 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
             // Si es recuperación por un canal telefónico, sincronizar con fallback de
             // Resilience4j
             if (solicitud.proposito() == PropositoCodigo.RESTABLECER_PASSWORD) {
-                String resultado = usuarioFeignClient.sincronizarTelefono(
+                ResultadoApi<String> resultado = usuarioFeignClient.sincronizarTelefono(
                         solicitud.usuarioId(), solicitud.telefono());
-                if ("SINCRONIZACION_PENDIENTE".equals(resultado)) {
+                if (resultado != null && "SINCRONIZACION_PENDIENTE".equals(resultado.datos())) {
                     log.warn("[FEIGN] Sincronización de teléfono pendiente para usuario: {}",
                             solicitud.usuarioId());
                 }
@@ -306,5 +311,25 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
             throw new LimiteCodigosExcedidoException(
                     "Has alcanzado el límite de 3 solicitudes diarias para este trámite. Inténtalo mañana.");
         }
+    }
+
+    // =========================================================================
+    // 5. BÚSQUEDA DINÁMICA — SPECIFICATION PATTERN (Auditoría)
+    // =========================================================================
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Page<CodigoVerificacion> buscarCodigos(UUID usuarioId, PropositoCodigo proposito,
+            Boolean usado, LocalDateTime inicio,
+            LocalDateTime fin, Pageable pageable) {
+        Specification<CodigoVerificacion> spec = Specification.where(MensajeriaSpecs.porUsuario(usuarioId))
+                .and(MensajeriaSpecs.porProposito(proposito))
+                .and(MensajeriaSpecs.estaUsado(usado))
+                .and(MensajeriaSpecs.creadoEntre(inicio, fin));
+
+        return codigoRepository.findAll(spec, pageable);
     }
 }

@@ -77,4 +77,16 @@ public interface IMensajeriaService {
      *             si ya superó el límite diario.
      */
     void verificarRestricciones(java.util.UUID usuarioId, PropositoCodigo proposito);
+
+    /**
+     * Busca códigos de verificación dinámicamente utilizando Specifications.
+     * Método administrativo para auditoría de OTPs históricos.
+     */
+    org.springframework.data.domain.Page<com.mensajeria.dominio.entidades.CodigoVerificacion> buscarCodigos(
+            java.util.UUID usuarioId,
+            PropositoCodigo proposito,
+            Boolean usado,
+            java.time.LocalDateTime inicio,
+            java.time.LocalDateTime fin,
+            org.springframework.data.domain.Pageable pageable);
 }

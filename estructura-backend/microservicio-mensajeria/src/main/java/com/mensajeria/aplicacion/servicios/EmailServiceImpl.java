@@ -51,10 +51,16 @@ public class EmailServiceImpl implements IEmailService, CanalNotificacionStrateg
         this.templateEngine = templateEngine;
     }
 
-    @SuppressWarnings("null")
     @Override
     public void enviarEmail(String email, PropositoCodigo proposito, String codigo, Map<String, Object> variables) {
-        String nombreApp = (String) variables.getOrDefault("appName", appName);
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("El email destino no puede ser nulo o vacío.");
+        }
+        if (proposito == null) {
+            throw new IllegalArgumentException("El propósito no puede ser nulo.");
+        }
+        
+        String nombreApp = variables != null ? (String) variables.getOrDefault("appName", appName) : appName;
 
         try {
             String plantilla = resolverPlantilla(proposito);
@@ -85,9 +91,11 @@ public class EmailServiceImpl implements IEmailService, CanalNotificacionStrateg
         }
     }
 
-    @SuppressWarnings("null")
     @Override
     public void enviarEmailAdministrador(String destinatario, String asunto, String cuerpo, boolean esHtml) {
+        if (destinatario == null || destinatario.isBlank()) {
+            throw new IllegalArgumentException("El destinatario no puede ser nulo o vacío.");
+        }
         try {
             MimeMessage mensaje = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");

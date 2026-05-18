@@ -26,7 +26,7 @@ public class ManejadorGlobalExcepciones extends ManejadorGlobalExcepcionesBase {
         TelefonoInvalidoException.class
     })
     public ResponseEntity<ResultadoApi<Void>> manejarErroresCodigo(RuntimeException ex, WebRequest request) {
-        return crearRespuestaError(CodigoError.TOKEN_INVALIDO, ex.getMessage(), HttpStatus.BAD_REQUEST, request);
+        return crearRespuestaError(CodigoError.TOKEN_INVALIDO, ex.getMessage(), HttpStatus.BAD_REQUEST, getPath(request));
     }
 
     @ExceptionHandler({
@@ -34,22 +34,20 @@ public class ManejadorGlobalExcepciones extends ManejadorGlobalExcepcionesBase {
         LimiteIntentosExcedidoException.class
     })
     public ResponseEntity<ResultadoApi<Void>> manejarLimitesExcedidos(RuntimeException ex, WebRequest request) {
-        return crearRespuestaError(CodigoError.LIMITE_DIARIO_EXCEDIDO, ex.getMessage(), HttpStatus.TOO_MANY_REQUESTS, request);
+        return crearRespuestaError(CodigoError.LIMITE_DIARIO_EXCEDIDO, ex.getMessage(), HttpStatus.TOO_MANY_REQUESTS, getPath(request));
     }
 
     @ExceptionHandler(UsuarioBloqueadoExcepcion.class)
     public ResponseEntity<ResultadoApi<Void>> manejarUsuarioBloqueado(UsuarioBloqueadoExcepcion ex, WebRequest request) {
-        return crearRespuestaError(CodigoError.CUENTA_BLOQUEADA, ex.getMessage(), HttpStatus.TOO_MANY_REQUESTS, request);
+        return crearRespuestaError(CodigoError.CUENTA_BLOQUEADA, ex.getMessage(), HttpStatus.TOO_MANY_REQUESTS, getPath(request));
     }
 
     @ExceptionHandler(MensajeriaExternaException.class)
     public ResponseEntity<ResultadoApi<Void>> manejarErrorExterno(MensajeriaExternaException ex, WebRequest request) {
-        return crearRespuestaError(CodigoError.ERROR_INTERNO, "Error en el proveedor de mensajería: " + ex.getMessage(), HttpStatus.SERVICE_UNAVAILABLE, request);
+        return crearRespuestaError(CodigoError.ERROR_INTERNO, "Error en el proveedor de mensajería: " + ex.getMessage(), HttpStatus.SERVICE_UNAVAILABLE, getPath(request));
     }
 
-    @SuppressWarnings("null")
-    private ResponseEntity<ResultadoApi<Void>> crearRespuestaError(CodigoError cod, String msg, HttpStatus status, WebRequest req) {
-        String path = req.getDescription(false).replace("uri=", "");
-        return ResponseEntity.status(status).body(ResultadoApi.falla(cod, msg, path));
+    private String getPath(WebRequest request) {
+        return request.getDescription(false).replace("uri=", "");
     }
 }

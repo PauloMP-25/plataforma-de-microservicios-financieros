@@ -89,6 +89,18 @@ public class MensajeriaServiceAuditoriaDecorator implements IMensajeriaService {
     public void verificarRestricciones(UUID usuarioId, PropositoCodigo proposito) {
         servicioReal.verificarRestricciones(usuarioId, proposito);
     }
+
+    /**
+     * Delega la búsqueda dinámica directamente al servicio real.
+     * No requiere auditoría al ser una operación de solo lectura administrativa.
+     */
+    @Override
+    public org.springframework.data.domain.Page<com.mensajeria.dominio.entidades.CodigoVerificacion> buscarCodigos(
+            UUID usuarioId, PropositoCodigo proposito, Boolean usado,
+            java.time.LocalDateTime inicio, java.time.LocalDateTime fin,
+            org.springframework.data.domain.Pageable pageable) {
+        return servicioReal.buscarCodigos(usuarioId, proposito, usado, inicio, fin, pageable);
+    }
     
     private String enmascararTelefono(String tel) {
         if (tel == null || tel.length() < 4)

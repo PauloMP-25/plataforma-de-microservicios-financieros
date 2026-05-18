@@ -54,9 +54,15 @@ public class WhatsAppServiceImpl implements IWhatsAppService, CanalNotificacionS
     private final RestTemplate restTemplate;
     private final com.mensajeria.infraestructura.configuracion.WhatsAppConfig whatsAppConfig;
 
-    @SuppressWarnings("null")
     @Override
     public void enviarMensajeTemplate(String telefono, String plantilla, Map<String, String> variables) {
+        if (telefono == null || telefono.isBlank()) {
+            throw new IllegalArgumentException("El teléfono destino no puede ser nulo o vacío.");
+        }
+        if (plantilla == null || plantilla.isBlank()) {
+            throw new IllegalArgumentException("La plantilla de WhatsApp no puede ser nula.");
+        }
+        
         // 1. Validar formato de teléfono antes de gastar API
         if (!esNumeroValido(telefono)) {
             log.error("[WHATSAPP] Formato de teléfono inválido: {}. Se requiere E.164 (ej. 51943455686)", telefono);

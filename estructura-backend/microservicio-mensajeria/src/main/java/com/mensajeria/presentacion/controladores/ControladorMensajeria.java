@@ -4,14 +4,21 @@ import com.mensajeria.aplicacion.dtos.solicitudes.*;
 import com.mensajeria.aplicacion.dtos.respuestas.RespuestaGeneracion;
 import com.mensajeria.aplicacion.dtos.respuestas.RespuestaValidacion;
 import com.mensajeria.aplicacion.puertos.IMensajeriaService;
+import com.mensajeria.dominio.entidades.CodigoVerificacion;
+import com.libreria.comun.enums.PropositoCodigo;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.libreria.comun.respuesta.ResultadoApi;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -25,7 +32,7 @@ import java.util.UUID;
  * </p>
  *
  * @author Paulo Moron
- * @version 1.1.0
+ * @version 1.2.0
  */
 @RestController
 @RequestMapping("/api/v1/mensajeria/otp")
@@ -120,6 +127,46 @@ public class ControladorMensajeria {
 
         mensajeriaService.verificarRestricciones(solicitud.usuarioId(), solicitud.proposito());
         return ResponseEntity.ok(ResultadoApi.sinContenido("Restricciones verificadas exitosamente"));
+    }
+
+    // =========================================================================
+    // ENDPOINT ADMINISTRATIVO — BÚSQUEDA DINÁMICA (Specification Pattern)
+    // =========================================================================
+
+    /**
+     * Busca códigos de verificación OTP de forma dinámica cruzando filtros.
+     * <p>
+     * Endpoint administrativo protegido por {@code ROLE_ADMIN} (vía SecurityConfig)
+     * que consume el Specification Pattern de {@code MensajeriaSpecs} para auditar
+     * el historial de OTPs de cualquier usuario con combinaciones de filtros.
+     * </p>
+     *
+     * @param usuarioId Filtra por ID del usuario (opcional).
+     * @param proposito Filtra por propósito: ACTIVACION_CUENTA o RESTABLECER_PASSWORD (opcional).
+     * @param usado     Filtra por estado de uso del OTP (opcional).
+     * @param inicio    Fecha inicio del rango de creación (opcional, ISO format).
+     * @param fin       Fecha fin del rango de creación (opcional, ISO format).
+     * @param pagina    Número de página (0-indexed, default 0).
+     * @param tamanio   Elementos por página (default 20).
+     * @return HTTP 200 con {@link ResultadoApi} envolviendo la página de resultados.
+     */
+    @GetMapping("/buscar")
+    public ResponseEntity<ResultadoApi<Page<CodigoVerificacion>>> buscarCodigos(
+            @RequestParam(required = false) UUID usuarioId,
+            @RequestParam(required = false) PropositoCodigo proposito,
+            @RequestParam(required = false) Boolean usado,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fin,
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "20") int tamanio) {
+
+        log.debug("[GET] /otp/buscar — usuarioId: {}, proposito: {}, usado: {}", usuarioId, proposito, usado);
+
+        Page<CodigoVerificacion> resultados = mensajeriaService.buscarCodigos(
+                usuarioId, proposito, usado, inicio, fin,
+                PageRequest.of(pagina, tamanio, Sort.by(Sort.Direction.DESC, "fechaCreacion")));
+
+        return ResponseEntity.ok(ResultadoApi.exito(resultados, "Búsqueda de OTPs completada", null));
     }
 }
 

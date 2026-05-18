@@ -5,6 +5,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import com.libreria.comun.respuesta.ResultadoApi;
 
 /**
  * Feign Client para la sincronización de datos personales con el ms-usuario.
@@ -49,7 +50,7 @@ public interface ClienteActualizarTelefono {
      *         {@code "SINCRONIZACION_PENDIENTE"} si el servicio no responde.
      */
     @PutMapping("/api/v1/datos-personales/telefono/{usuarioId}")
-    String sincronizarTelefono(
+    ResultadoApi<String> sincronizarTelefono(
             @PathVariable("usuarioId") UUID usuarioId,
             @RequestParam("telefono") String telefono);
 }

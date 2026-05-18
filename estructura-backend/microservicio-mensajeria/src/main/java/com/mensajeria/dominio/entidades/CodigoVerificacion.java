@@ -43,7 +43,7 @@ public class CodigoVerificacion {
     @Column(name = "usuario_id", nullable = false, updatable = false)
     private UUID usuarioId;
 
-    @Column(nullable = false, length = 150)
+    @Column(nullable = true, length = 150)
     private String email;
 
     @Column(name = "telefono", length = 20)
