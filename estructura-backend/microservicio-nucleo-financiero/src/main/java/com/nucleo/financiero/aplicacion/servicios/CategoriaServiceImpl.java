@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.libreria.comun.excepciones.ExcepcionRecursoNoEncontrado;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -69,16 +70,14 @@ public class CategoriaServiceImpl implements ICategoriaService {
     public CategoriaDTO obtenerPorId(UUID id) {
         return categoriaRepository.findById(id)
                 .map(CategoriaDTO::desde)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Categoría no encontrada con ID: " + id));
+                .orElseThrow(() -> new ExcepcionRecursoNoEncontrado("Categoria", id));
     }
 
     @Override
     @Transactional
     public CategoriaDTO actualizar(UUID id, CategoriaRequestDTO request) {
         Categoria existente = categoriaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Categoría no encontrada con ID: " + id));
+                .orElseThrow(() -> new ExcepcionRecursoNoEncontrado("Categoria", id));
 
         categoriaRepository.findByNombreIgnoreCase(request.nombre())
                 .filter(c -> !c.getId().equals(id))
@@ -101,7 +100,7 @@ public class CategoriaServiceImpl implements ICategoriaService {
     @Transactional
     public void eliminar(UUID id) {
         if (!categoriaRepository.existsById(id)) {
-            throw new IllegalArgumentException("Categoría no encontrada con ID: " + id);
+            throw new ExcepcionRecursoNoEncontrado("Categoria", id);
         }
         categoriaRepository.deleteById(id);
         log.info("Categoría eliminada: {}", id);

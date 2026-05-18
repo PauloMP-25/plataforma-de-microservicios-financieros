@@ -19,8 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import com.libreria.comun.excepciones.ExcepcionRecursoNoEncontrado;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -141,7 +141,7 @@ public class TransaccionServiceImpl implements ITransaccionService {
     public RespuestaTransaccion obtenerPorId(UUID id) {
         return transaccionRepository.findById(id)
                 .map(RespuestaTransaccion::desde)
-                .orElseThrow(() -> new IllegalArgumentException("Transacción no encontrada con ID: " + id));
+                .orElseThrow(() -> new ExcepcionRecursoNoEncontrado("Transaccion", id));
     }
 
     /**
@@ -160,7 +160,7 @@ public class TransaccionServiceImpl implements ITransaccionService {
 
         @SuppressWarnings("null")
         Categoria categoria = categoriaRepository.findById(request.categoriaId())
-                .orElseThrow(() -> new NoSuchElementException("Categoría no encontrada con ID: " + request.categoriaId()));
+                .orElseThrow(() -> new ExcepcionRecursoNoEncontrado("Categoria", request.categoriaId()));
 
         if (request.tipo() == null) {
             throw new IllegalArgumentException("El tipo de movimiento es obligatorio.");
@@ -193,10 +193,6 @@ public class TransaccionServiceImpl implements ITransaccionService {
      * @return Array con fecha inicio [0] y fecha fin [1].
      */
     private LocalDateTime[] resolverRangoFechas(Integer mes, Integer anio) {
-        if (mes == null && anio == null) {
-            return new LocalDateTime[]{null, null};
-        }
-
         int anioResuelto = (anio != null) ? anio : LocalDateTime.now().getYear();
         int mesResuelto = (mes != null) ? mes : LocalDateTime.now().getMonthValue();
         YearMonth periodo = YearMonth.of(anioResuelto, mesResuelto);

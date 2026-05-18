@@ -45,7 +45,6 @@ public class CargadorDatosIniciales implements CommandLineRunner {
         new Object[]{"Otros Ingresos",          "Ingresos no categorizados",               "plus-circle",     TipoMovimiento.INGRESO}
     );
 
-    @SuppressWarnings("null")
     @Override
     public void run(String... args) {
         int creadas = 0;

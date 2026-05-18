@@ -1,6 +1,7 @@
 package com.nucleo.financiero.infraestructura.mensajeria;
 
 import com.libreria.comun.dtos.EventoPagoExitosoDTO;
+import com.libreria.comun.excepciones.ExcepcionRecursoNoEncontrado;
 import com.libreria.comun.mensajeria.NombresCola;
 import com.nucleo.financiero.aplicacion.dtos.solicitudes.SolicitudTransaccion;
 import com.nucleo.financiero.aplicacion.puertos.ITransaccionService;
@@ -39,7 +40,7 @@ public class ConsumidorEventoPago {
             // Primero se intenta con "Otros Ingresos", de lo contrario se utiliza "Salario" (ambas creadas por defecto).
             Categoria categoria = categoriaRepository.findByNombreIgnoreCase("Otros Ingresos")
                     .or(() -> categoriaRepository.findByNombreIgnoreCase("Salario"))
-                    .orElseThrow(() -> new IllegalStateException("No se encontró una categoría por defecto para procesar el pago."));
+                    .orElseThrow(() -> new IllegalArgumentException("No se encontró una categoría por defecto para procesar el pago."));
 
             UUID categoriaId = categoria.getId();
 
@@ -56,10 +57,11 @@ public class ConsumidorEventoPago {
 
             servicioTransaccion.registrar(ingreso, "SYSTEM-PAGOS");
             log.info("[FINANCIERO-SUCCESS] Ingreso registrado para usuario: {}", evento.usuarioId());
+        } catch (IllegalArgumentException | ExcepcionRecursoNoEncontrado e) {
+            log.error("[FINANCIERO-ERROR] Error de negocio al procesar pago (no se relanza): {}", e.getMessage());
         } catch (Exception e) {
-            log.error("[FINANCIERO-ERROR] No se pudo registrar el ingreso: {}", e.getMessage());
-            // No relanzamos para evitar bucles si la categoría no existe, 
-            // pero en producción esto debería gestionarse con una DLQ.
+            log.error("[FINANCIERO-FATAL] Error de infraestructura o inesperado (se relanza a RabbitMQ/DLQ): {}", e.getMessage(), e);
+            throw e;
         }
     }
 }
