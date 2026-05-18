@@ -56,6 +56,8 @@ networks:
 # ── FRAGMENTOS REUTILIZABLES (YAML Anchors) ───────────────────────────────────
 x-spring-common: &spring-common
   restart: unless-stopped
+  env_file:
+    - ../.env
   networks:
     - backend-network
   logging:
@@ -67,6 +69,8 @@ x-spring-common: &spring-common
 x-postgres-common: &postgres-common
   image: postgres:16-alpine
   restart: unless-stopped
+  env_file:
+    - ../.env
   networks:
     - db-network
     - backend-network
@@ -205,6 +209,8 @@ services:
     container_name: luka-rabbitmq
     hostname: rabbitmq
     restart: unless-stopped
+    env_file:
+      - ../.env
     networks:
       - backend-network
     ports:
@@ -275,6 +281,8 @@ services:
     container_name: luka-redis
     hostname: redis
     restart: unless-stopped
+    env_file:
+      - ../.env
     networks:
       - backend-network
     ports:
@@ -591,6 +599,8 @@ services:
         APP_PORT: 8086
     image: luka/ms-ia:latest
     restart: unless-stopped
+    env_file:
+      - ../.env
     networks:
       - backend-network
     depends_on:
