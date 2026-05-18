@@ -1,12 +1,14 @@
 package com.mensajeria.infraestructura.mensajeria.consumidores;
 
 import com.mensajeria.infraestructura.mensajeria.ConfiguracionRabbitMQ;
-
 import com.libreria.comun.dtos.SolicitudEmailDTO;
 import com.mensajeria.aplicacion.servicios.canales.NotificacionService;
+import com.rabbitmq.client.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.support.AmqpHeaders;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 /**
@@ -21,7 +23,10 @@ public class ConsumidorEmail {
     private final NotificacionService notificacionService;
 
     @RabbitListener(queues = ConfiguracionRabbitMQ.COLA_EMAIL_ENVIAR)
-    public void procesarEnvioEmail(SolicitudEmailDTO solicitud) {
+    public void procesarEnvioEmail(
+            SolicitudEmailDTO solicitud,
+            Channel channel,
+            @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag) throws Exception {
         log.info("[AMQP] Recibida solicitud de email para: {}", solicitud.destinatario());
         
         try {
@@ -32,10 +37,11 @@ public class ConsumidorEmail {
                 solicitud.esHtml()
             );
             log.info("[AMQP] Alerta administrativa enviada a: {}", solicitud.destinatario());
+            channel.basicAck(deliveryTag, false);
         } catch (Exception e) {
             log.error("[AMQP] Error al procesar email: {}", e.getMessage());
-            // El mensaje se irá a la DLQ si falla (configurado en RabbitConfig)
-            throw e;
+            // Rechazamos el mensaje enviándolo a la DLQ (requeue = false) para evitar re-entregas infinitas
+            channel.basicNack(deliveryTag, false, false);
         }
     }
 }

@@ -11,6 +11,7 @@ import com.usuario.aplicacion.dtos.solicitudes.SolicitudRefreshToken;
 import com.usuario.aplicacion.dtos.solicitudes.SolicitudRegistro;
 import com.usuario.aplicacion.dtos.solicitudes.SolicitudRestablecerPassword;
 import com.usuario.aplicacion.dtos.solicitudes.SolicitudGenerarOtp;
+import com.usuario.aplicacion.dtos.solicitudes.SolicitudValidarRecuperacion;
 import com.usuario.aplicacion.fabricas.FabricaSolicitudOtp;
 import com.libreria.comun.enums.TipoVerificacion;
 import com.usuario.aplicacion.excepciones.ContrasenasNoCoincidenException;
@@ -79,7 +80,7 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
 
         // 1. Validar OTP vía microservicio de mensajería (Solo si viene el código)
         if (codigoOtp != null && !codigoOtp.isBlank()) {
-            UUID idConfirmado = clienteMensajeria.validarCodigoYObtenerUsuario(usuarioId, codigoOtp);
+            UUID idConfirmado = clienteMensajeria.validarCodigoYObtenerUsuario(new SolicitudValidarRecuperacion(usuarioId, codigoOtp));
             if (idConfirmado == null) {
                 publicadorAuditoria.publicarAcceso(usuarioId, ipCliente, EstadoEvento.FALLO,
                         "ACTIVACION_FALLIDA_OTP_INVALIDO");
@@ -251,7 +252,7 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
     @Override
     @Transactional
     public void restablecerPassword(UUID registroId, String codigoOtp, SolicitudRestablecerPassword solicitud) {
-        UUID userId = clienteMensajeria.validarCodigoYObtenerUsuario(registroId, codigoOtp);
+        UUID userId = clienteMensajeria.validarCodigoYObtenerUsuario(new SolicitudValidarRecuperacion(registroId, codigoOtp));
         if (userId == null)
             throw new TokenInvalidoException("Código inválido");
 

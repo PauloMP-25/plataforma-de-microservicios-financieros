@@ -1,6 +1,7 @@
 package com.mensajeria.presentacion.controladores;
 
 import com.mensajeria.aplicacion.dtos.solicitudes.SolicitudGenerarCodigo;
+import com.mensajeria.aplicacion.dtos.solicitudes.SolicitudRecuperacion;
 import com.mensajeria.aplicacion.dtos.solicitudes.SolicitudValidarCodigo;
 import com.mensajeria.aplicacion.dtos.respuestas.RespuestaGeneracion;
 import com.mensajeria.aplicacion.dtos.respuestas.RespuestaValidacion;
@@ -89,18 +90,16 @@ public class ControladorMensajeria {
      * usuario propietario del código antes de emitir el token de reset.
      * </p>
      *
-     * @param usuarioId UUID del registro OTP usado como identificador del proceso.
-     * @param codigo    Código OTP de 6 dígitos ingresado por el usuario.
+     * @param solicitud DTO con el usuarioId (registroId) y el codigo OTP.
      * @return HTTP 200 con el UUID del usuario validado, listo para el reset.
      */
-    @GetMapping("/validar-recuperacion")
+    @PostMapping("/validar-recuperacion")
     public ResponseEntity<ResultadoApi<UUID>> validarRecuperacion(
-            @RequestParam("usuarioId") UUID usuarioId,
-            @RequestParam("codigo") String codigo) {
+            @Valid @RequestBody SolicitudRecuperacion solicitud) {
 
-        log.debug("[GET] /otp/validar-recuperacion — iniciando validación de reset");
+        log.debug("[POST] /otp/validar-recuperacion — iniciando validación de reset");
 
-        UUID usuarioValidado = mensajeriaService.validarCodigoYObtenerUsuario(usuarioId, codigo);
+        UUID usuarioValidado = mensajeriaService.validarCodigoYObtenerUsuario(solicitud.usuarioId(), solicitud.codigo());
         return ResponseEntity.ok(ResultadoApi.exito(usuarioValidado, "Usuario validado exitosamente", null));
     }
 
