@@ -12,9 +12,9 @@ import jakarta.validation.constraints.NotBlank;
 @Getter
 @Setter
 @Validated
-@ConfigurationProperties(prefix = "microservicio")
+@ConfigurationProperties(prefix = "microservicio.ia")
 public class PropiedadesInfraestructura {
 
     @NotBlank(message = "La URL de integración con el microservicio de IA ('microservicio.ia.url') no puede estar vacía.")
-    private String iaUrl;
+    private String url;
 }
