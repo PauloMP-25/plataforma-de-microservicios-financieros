@@ -1,16 +1,15 @@
 package com.cliente.presentacion.controladores;
 
-import com.cliente.aplicacion.dtos.RespuestaMetaAhorro;
-import com.cliente.aplicacion.dtos.SolicitudMetaAhorro;
-import com.cliente.aplicacion.servicios.ServicioMetaAhorro;
+import com.cliente.aplicacion.dtos.respuestas.RespuestaMetaAhorro;
+import com.cliente.aplicacion.dtos.solicitudes.SolicitudMetaAhorro;
+import com.cliente.aplicacion.dtos.solicitudes.SolicitudProgreso;
+import com.cliente.aplicacion.puertos.ServicioMetaAhorro;
 import com.libreria.comun.utilidades.UtilidadIp;
 import com.libreria.comun.utilidades.UtilidadSeguridad;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.DecimalMin;
 import com.libreria.comun.respuesta.ResultadoApi;
-import jakarta.validation.constraints.Digits;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -18,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,10 +42,6 @@ public class ControladorMetaAhorro {
 
     /**
      * Crea una nueva meta de ahorro.
-     * 
-     * @param solicitud DTO con los datos de la meta a crear
-     * @param request Petición HTTP para extraer la IP
-     * @return ResultadoApi con la meta creada
      */
     @PostMapping
     public ResponseEntity<ResultadoApi<RespuestaMetaAhorro>> crear(
@@ -64,9 +58,6 @@ public class ControladorMetaAhorro {
 
     /**
      * Lista todas las metas del usuario autenticado.
-     * 
-     * @param request Petición HTTP para extraer la IP
-     * @return ResultadoApi con la lista de metas
      */
     @GetMapping
     public ResponseEntity<ResultadoApi<List<RespuestaMetaAhorro>>> listar(HttpServletRequest request) {
@@ -77,9 +68,6 @@ public class ControladorMetaAhorro {
 
     /**
      * Lista solo las metas activas (no completadas), ordenadas por fecha límite.
-     * 
-     * @param request Petición HTTP para extraer la IP
-     * @return ResultadoApi con la lista de metas activas
      */
     @GetMapping("/activas")
     public ResponseEntity<ResultadoApi<List<RespuestaMetaAhorro>>> listarActivas(HttpServletRequest request) {
@@ -90,11 +78,6 @@ public class ControladorMetaAhorro {
 
     /**
      * Filtra dinámicamente las metas de ahorro del usuario utilizando el Specification Pattern.
-     * 
-     * @param completada Filtro opcional de completado
-     * @param venceAntes Filtro opcional de fecha límite
-     * @param progresoBajo Filtro opcional de porcentaje de progreso (0.00 a 100.00)
-     * @return ResultadoApi con la lista de metas filtradas
      */
     @GetMapping("/filtrar")
     public ResponseEntity<ResultadoApi<List<RespuestaMetaAhorro>>> filtrar(
@@ -109,10 +92,6 @@ public class ControladorMetaAhorro {
 
     /**
      * Consulta una meta específica del usuario.
-     * 
-     * @param metaId Identificador único de la meta
-     * @param request Petición HTTP para extraer la IP
-     * @return ResultadoApi con los datos de la meta
      */
     @GetMapping("/{metaId}")
     public ResponseEntity<ResultadoApi<RespuestaMetaAhorro>> consultar(
@@ -126,17 +105,11 @@ public class ControladorMetaAhorro {
 
     /**
      * Actualiza el monto actual de una meta (progreso de ahorro).
-     * Si alcanza el objetivo, marca la meta como completada y publica el evento.
-     * 
-     * @param metaId Identificador único de la meta
-     * @param solicitud DTO con el nuevo monto ahorrado
-     * @param request Petición HTTP para extraer la IP
-     * @return ResultadoApi con la meta actualizada
      */
     @PatchMapping("/{metaId}/progreso")
     public ResponseEntity<ResultadoApi<RespuestaMetaAhorro>> actualizarProgreso(
             @PathVariable UUID metaId,
-            @Valid @RequestBody com.cliente.aplicacion.dtos.SolicitudProgreso solicitud,
+            @Valid @RequestBody SolicitudProgreso solicitud,
             HttpServletRequest request) {
 
         UUID usuarioID = UtilidadSeguridad.obtenerUsuarioId();
@@ -147,10 +120,6 @@ public class ControladorMetaAhorro {
 
     /**
      * Elimina una meta de ahorro del usuario.
-     * 
-     * @param metaId Identificador único de la meta
-     * @param request Petición HTTP para extraer la IP
-     * @return ResultadoApi sin contenido
      */
     @DeleteMapping("/{metaId}")
     public ResponseEntity<ResultadoApi<Void>> eliminar(

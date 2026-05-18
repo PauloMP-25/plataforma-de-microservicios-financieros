@@ -1,28 +1,31 @@
-package com.cliente.aplicacion.servicios.implementacion;
+package com.cliente.aplicacion.servicios;
 
-import com.cliente.aplicacion.dtos.RespuestaLimiteGasto;
-import com.cliente.aplicacion.dtos.SolicitudLimiteGasto;
+import com.cliente.aplicacion.dtos.respuestas.RespuestaLimiteGasto;
+import com.cliente.aplicacion.dtos.solicitudes.SolicitudLimiteGasto;
 import com.cliente.aplicacion.excepciones.LimiteGastoException;
 import com.cliente.aplicacion.excepciones.LimiteGastoNoEncontradoException;
-import com.cliente.aplicacion.servicios.ServicioContexto;
-import com.cliente.aplicacion.servicios.ServicioLimiteGasto;
+import com.cliente.aplicacion.eventos.EventoContextoActualizado;
+import com.cliente.aplicacion.puertos.ServicioLimiteGasto;
 import com.cliente.dominio.entidades.LimiteGasto;
 import com.cliente.dominio.repositorios.LimiteGastoRepositorio;
 import com.cliente.infraestructura.mensajeria.PublicadorAuditoria;
 import com.libreria.comun.dtos.EventoAuditoriaDTO;
 import com.libreria.comun.dtos.EventoTransaccionalDTO;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
 /**
- * Lógica de negocio para la gestión del limite de gasto global
+ * Lógica de negocio para la gestión del limite de gasto global.
  *
  * @author Paulo Moron
  * @since 2026-05
@@ -34,13 +37,10 @@ public class ServicioLimiteGastoImpl implements ServicioLimiteGasto {
 
     private final LimiteGastoRepositorio repositorio;
     private final PublicadorAuditoria publicadorAuditoria;
-    private final ServicioContexto servicioContexto;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
-     * @param usuarioIdToken ID del usuario
-     * @param solicitud DTO con datos del límite
-     * @param ipOrigen IP del cliente
-     * @return RespuestaLimiteGasto con el límite creado
+     * Crea un nuevo límite de gasto global.
      */
     @Override
     @Transactional
@@ -75,15 +75,12 @@ public class ServicioLimiteGastoImpl implements ServicioLimiteGasto {
                 ipOrigen, String.format("Límite global: S/ %.2f hasta %s",
                         guardado.getMontoLimite(), guardado.getFechaFin())));
 
-        servicioContexto.refrescarContextoRedis(usuarioIdToken);
+        eventPublisher.publishEvent(new EventoContextoActualizado(usuarioIdToken, "LIMITE_GLOBAL_CREADO"));
         return convertirADTO(guardado);
     }
 
     /**
-     * @param usuarioId ID del usuario
-     * @param solicitud DTO con datos a actualizar
-     * @param ip IP del cliente
-     * @return RespuestaLimiteGasto con el límite actualizado
+     * Actualiza el límite global ACTIVO.
      */
     @Override
     @Transactional
@@ -107,18 +104,16 @@ public class ServicioLimiteGastoImpl implements ServicioLimiteGasto {
                 usuarioId, limite.getId(), "MS-CLIENTE", "LIMITE GASTO",
                 "Cambiar monto del limite global", limite.getMontoLimite() + "", actualizado.getMontoLimite() + ""));
 
-        servicioContexto.refrescarContextoRedis(usuarioId);
+        eventPublisher.publishEvent(new EventoContextoActualizado(usuarioId, "LIMITE_GLOBAL_ACTUALIZADO"));
         return convertirADTO(actualizado);
     }
 
     /**
-     * @param usuarioId ID del usuario
-     * @return Lista de RespuestaLimiteGasto
+     * Lista todos los límites del usuario.
      */
     @Override
     @Transactional(readOnly = true)
     public List<RespuestaLimiteGasto> listarHistorial(UUID usuarioId) {
-        // Asumiendo que el repo tiene un método findByUsuarioIdOrderByFechaCreacionDesc
         return repositorio.findByUsuarioIdOrderByFechaCreacionDesc(usuarioId)
                 .stream()
                 .map(this::convertirADTO)
@@ -126,8 +121,7 @@ public class ServicioLimiteGastoImpl implements ServicioLimiteGasto {
     }
 
     /**
-     * @param usuarioId ID del usuario
-     * @return RespuestaLimiteGasto DTO de respuesta
+     * Obtiene el límite activo del usuario.
      */
     @Override
     @Transactional(readOnly = true)
@@ -138,8 +132,7 @@ public class ServicioLimiteGastoImpl implements ServicioLimiteGasto {
     }
 
     /**
-     * @param usuarioId ID del usuario
-     * @param ip IP del cliente
+     * Desactiva (eliminación lógica) el límite global actual.
      */
     @Override
     @Transactional
@@ -154,14 +147,11 @@ public class ServicioLimiteGastoImpl implements ServicioLimiteGasto {
                 usuarioId, limite.getId(), "MS-CLIENTE", "LIMITE GLOBAL",
                 "Eliminando limite global", "ACTIVO", "DESACTIVADO"));
         log.info("Límite global desactivado para usuario: {}", usuarioId);
-        servicioContexto.refrescarContextoRedis(usuarioId);
+        eventPublisher.publishEvent(new EventoContextoActualizado(usuarioId, "LIMITE_GLOBAL_ELIMINADO"));
     }
 
     /**
-     * @param usuarioId ID del usuario
-     * @param gastoTotalActual Gasto total actual
-     * @param ipOrigen IP del cliente
-     * @return true si se notificó el límite, false en caso contrario
+     * Evalúa el gasto TOTAL del usuario contra su límite global único.
      */
     @Override
     @Transactional
@@ -178,6 +168,17 @@ public class ServicioLimiteGastoImpl implements ServicioLimiteGasto {
                     return false;
                 })
                 .orElse(false);
+    }
+
+    /**
+     * Consulta interna del límite activo sin validación de JWT (uso para Facade).
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public RespuestaLimiteGasto obtenerActivoInterno(UUID usuarioId) {
+        return repositorio.findByUsuarioIdAndActivoTrue(usuarioId)
+                .map(this::convertirADTO)
+                .orElse(null);
     }
 
     private RespuestaLimiteGasto convertirADTO(LimiteGasto limite) {

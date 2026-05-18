@@ -1,44 +1,37 @@
-package com.cliente.aplicacion.servicios.implementacion;
+package com.cliente.aplicacion.servicios;
 
-import com.cliente.aplicacion.servicios.ServicioMetaAhorro;
-import com.libreria.comun.excepciones.ExcepcionAccesoDenegado;
-import com.cliente.aplicacion.dtos.RespuestaMetaAhorro;
-import com.cliente.aplicacion.dtos.SolicitudMetaAhorro;
+import com.cliente.aplicacion.dtos.respuestas.RespuestaMetaAhorro;
+import com.cliente.aplicacion.dtos.solicitudes.SolicitudMetaAhorro;
 import com.cliente.aplicacion.excepciones.MetaNoEncontradaException;
+import com.cliente.aplicacion.eventos.EventoContextoActualizado;
+import com.cliente.aplicacion.puertos.ServicioMetaAhorro;
+import com.libreria.comun.excepciones.ExcepcionAccesoDenegado;
 import com.cliente.dominio.entidades.MetaAhorro;
 import com.cliente.dominio.repositorios.MetaAhorroRepositorio;
+import com.cliente.dominio.especificaciones.MetaAhorroSpecs;
 import com.cliente.infraestructura.mensajeria.PublicadorAuditoria;
 import com.libreria.comun.dtos.EventoAuditoriaDTO;
 import com.libreria.comun.dtos.EventoTransaccionalDTO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
  * Lógica de negocio para la gestión de metas de ahorro.
- * <p>
- * Publica eventos a RabbitMQ: META_CREADA, META_COMPLETADA.
- * Utiliza el patrón Transactional Event Publisher para garantizar
- * que la sincronización con Redis/RabbitMQ ocurra solo tras COMMIT.
- * </p>
- *
+ * 
  * @author Paulo Moron
  * @version 1.1.0
- * @since 2026-05-10
  */
-import com.cliente.aplicacion.eventos.EventoContextoActualizado;
-import org.springframework.context.ApplicationEventPublisher;
-import com.cliente.dominio.especificaciones.MetaAhorroSpecs;
-import org.springframework.data.jpa.domain.Specification;
-import java.time.LocalDate;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -49,13 +42,7 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
     private final ApplicationEventPublisher eventPublisher;
 
     /**
-     * Crea una nueva meta de ahorro para el usuario. Publica el evento
-     * META_AHORRO_CREADA.
-     *
-     * @param usuarioIdToken ID del usuario
-     * @param solicitud      DTO con datos de la meta
-     * @param ipOrigen       IP del cliente
-     * @return RespuestaMetaAhorro con la meta creada
+     * Crea una nueva meta de ahorro para el usuario.
      */
     @Override
     @Transactional
@@ -74,7 +61,6 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
 
         MetaAhorro guardada = repositorio.save(meta);
 
-        // Publicar evento META_CREADA (asíncrono)
         publicadorAuditoria.publicarEventoExitoso(EventoAuditoriaDTO.crear(
                 usuarioIdToken, "META_AHORRO_CREADA", "MS-CLIENTE", ipOrigen,
                 String.format("Meta creada: '%s' — objetivo: S/ %.2f",
@@ -85,14 +71,7 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
     }
 
     /**
-     * Actualiza el progreso (monto actual) de una meta existente. Si la meta se
-     * completa en esta actualización, publica META_COMPLETADA.
-     *
-     * @param metaId           ID de la meta
-     * @param usuarioIdToken   ID del usuario
-     * @param nuevoMontoActual Nuevo monto guardado
-     * @param ipOrigen         IP del cliente
-     * @return RespuestaMetaAhorro con la meta actualizada
+     * Actualiza el progreso (monto actual) de una meta existente.
      */
     @Override
     @Transactional
@@ -131,9 +110,6 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
 
     /**
      * Lista todas las metas del usuario (activas e inactivas).
-     *
-     * @param usuarioIdToken ID del usuario
-     * @return Lista de RespuestaMetaAhorro con todas las metas
      */
     @Override
     @Transactional(readOnly = true)
@@ -145,11 +121,7 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
     }
 
     /**
-     * Lista solo las metas activas (no completadas), ordenadas por fecha
-     * límite.
-     *
-     * @param usuarioIdToken ID del usuario
-     * @return Lista de RespuestaMetaAhorro con las metas activas
+     * Lista solo las metas activas (no completadas), ordenadas por fecha límite.
      */
     @Override
     @Transactional(readOnly = true)
@@ -162,10 +134,6 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
 
     /**
      * Consulta una meta por id validando que pertenece al usuario.
-     *
-     * @param metaId         ID de la meta
-     * @param usuarioIdToken ID del usuario
-     * @return RespuestaMetaAhorro con la meta consultada
      */
     @Override
     @Transactional(readOnly = true)
@@ -175,10 +143,6 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
 
     /**
      * Elimina una meta de ahorro del usuario.
-     *
-     * @param metaId         ID de la meta
-     * @param usuarioIdToken ID del usuario
-     * @param ipOrigen       IP del cliente
      */
     @Override
     @Transactional
@@ -193,18 +157,18 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
         log.info("Meta eliminada y contexto sincronizado para usuario: {}", usuarioIdToken);
     }
 
-    // =========================================================================
-    // Soporte interno
-    // =========================================================================
     /**
-     * Obtiene una meta de ahorro por su ID y valida que pertenezca al usuario del token.
-     *
-     * @param metaId         ID de la meta a buscar.
-     * @param usuarioIdToken ID del usuario extraído del JWT.
-     * @return {@link MetaAhorro} validada.
-     * @throws MetaNoEncontradaException si la meta no existe.
-     * @throws ExcepcionAccesoDenegado   si la meta pertenece a otro usuario.
+     * Consulta interna del listado de metas sin validación de JWT (uso para Facade).
      */
+    @Override
+    @Transactional(readOnly = true)
+    public List<RespuestaMetaAhorro> listarInterno(UUID usuarioId) {
+        return repositorio.findByUsuarioIdOrderByFechaCreacionDesc(usuarioId)
+                .stream()
+                .map(this::convertirADTO)
+                .collect(Collectors.toList());
+    }
+
     private MetaAhorro obtenerYValidarPropiedad(UUID metaId, UUID usuarioIdToken) {
         if (metaId == null || usuarioIdToken == null) {
             throw new IllegalArgumentException("Los identificadores de meta y token no pueden ser nulos");
@@ -217,18 +181,11 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
         return meta;
     }
 
-    /**
-     * Convierte una entidad {@link MetaAhorro} a su DTO de respuesta.
-     * Incluye lógica de dominio para calcular el porcentaje de progreso.
-     *
-     * @param m Entidad de dominio a convertir.
-     * @return {@link RespuestaMetaAhorro} con los datos mapeados.
-     */
     private RespuestaMetaAhorro convertirADTO(MetaAhorro m) {
         return new RespuestaMetaAhorro(
                 m.getId(), m.getNombre(),
                 m.getMontoObjetivo(), m.getMontoActual(),
-                m.calcularPorcentajeProgreso(), // ← lógica de dominio
+                m.calcularPorcentajeProgreso(),
                 m.getFechaLimite(), m.getCompletada(),
                 m.getFechaCreacion(), m.getFechaActualizacion());
     }
@@ -238,10 +195,8 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
     public List<RespuestaMetaAhorro> buscar(UUID usuarioIdToken, Boolean completada, LocalDate venceAntes, Double progresoBajo) {
         log.debug("Filtrando metas de ahorro dinámicamente para usuarioId={}", usuarioIdToken);
 
-        // 1. Criterio base: la meta debe pertenecer al usuario autenticado
         Specification<MetaAhorro> specs = MetaAhorroSpecs.perteneceAUsuario(usuarioIdToken);
 
-        // 2. Filtros opcionales combinados dinámicamente
         if (completada != null) {
             specs = specs.and(MetaAhorroSpecs.estaCompletada(completada));
         }
@@ -252,7 +207,6 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
             specs = specs.and(MetaAhorroSpecs.tieneProgresoBajo(progresoBajo));
         }
 
-        // 3. Ejecutar consulta usando la especificación compilada
         return repositorio.findAll(specs).stream()
                 .map(this::convertirADTO)
                 .collect(Collectors.toList());

@@ -1,6 +1,6 @@
 package com.cliente.aplicacion.eventos;
 
-import com.cliente.aplicacion.servicios.ServicioContexto;
+import com.cliente.aplicacion.puertos.ServicioContexto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

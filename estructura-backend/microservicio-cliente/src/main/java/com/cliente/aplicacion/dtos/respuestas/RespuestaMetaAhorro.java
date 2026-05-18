@@ -1,4 +1,4 @@
-package com.cliente.aplicacion.dtos;
+package com.cliente.aplicacion.dtos.respuestas;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.math.BigDecimal;

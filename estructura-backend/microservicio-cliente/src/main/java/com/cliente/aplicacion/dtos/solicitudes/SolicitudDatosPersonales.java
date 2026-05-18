@@ -1,4 +1,4 @@
-package com.cliente.aplicacion.dtos;
+package com.cliente.aplicacion.dtos.solicitudes;
 
 import jakarta.validation.constraints.*;
 

@@ -1,13 +1,12 @@
-package com.cliente.aplicacion.servicios.implementacion;
+package com.cliente.aplicacion.servicios;
 
-import com.cliente.aplicacion.dtos.RespuestaDatosPersonales;
-import com.cliente.aplicacion.dtos.SolicitudDatosPersonales;
+import com.cliente.aplicacion.dtos.respuestas.RespuestaDatosPersonales;
+import com.cliente.aplicacion.dtos.solicitudes.SolicitudDatosPersonales;
 import com.libreria.comun.excepciones.ExcepcionAccesoDenegado;
 import com.cliente.aplicacion.excepciones.DatosPersonalesNoEncontradosException;
 import com.cliente.aplicacion.excepciones.DniDuplicadoException;
 import com.cliente.aplicacion.eventos.EventoContextoActualizado;
-import com.cliente.aplicacion.servicios.ServicioContexto;
-import com.cliente.aplicacion.servicios.ServicioDatosPersonales;
+import com.cliente.aplicacion.puertos.ServicioDatosPersonales;
 import com.cliente.dominio.entidades.DatosPersonales;
 import com.cliente.dominio.repositorios.DatosPersonalesRepositorio;
 import com.cliente.infraestructura.mensajeria.PublicadorAuditoria;
@@ -36,14 +35,10 @@ public class ServicioDatosPersonalesImpl implements ServicioDatosPersonales {
     private final DatosPersonalesRepositorio repositorio;
     private final PublicadorAuditoria publicadorAuditoria;
     private final ApplicationEventPublisher eventPublisher;
-    private final ServicioContexto servicioContexto;
 
     /**
      * Crea un perfil inicial vacío de datos personales para un usuario.
      * Si ya existe, retorna el existente.
-     *
-     * @param usuarioId ID del usuario para el cual se crea el perfil.
-     * @return {@link RespuestaDatosPersonales} con el perfil creado o existente.
      */
     @Override
     @Transactional
@@ -70,15 +65,6 @@ public class ServicioDatosPersonalesImpl implements ServicioDatosPersonales {
     /**
      * Actualiza los datos personales del usuario. Tras el commit, publica un
      * evento que dispara la sincronización del contexto con Redis y RabbitMQ.
-     *
-     * @param usuarioIdRuta  ID del usuario en la ruta del endpoint.
-     * @param usuarioIdToken ID del usuario extraído del JWT.
-     * @param solicitud      DTO con los datos personales a actualizar.
-     * @param ipOrigen       IP de origen para auditoría.
-     * @return {@link RespuestaDatosPersonales} con los datos actualizados.
-     * @throws ExcepcionAccesoDenegado               si el token no pertenece al usuario de la ruta.
-     * @throws DatosPersonalesNoEncontradosException si el perfil no existe.
-     * @throws DniDuplicadoException                 si el DNI ya pertenece a otro usuario.
      */
     @Override
     @Transactional
@@ -106,12 +92,6 @@ public class ServicioDatosPersonalesImpl implements ServicioDatosPersonales {
 
     /**
      * Consulta los datos personales de un usuario validando propiedad.
-     *
-     * @param usuarioIdRuta  ID del usuario en la ruta.
-     * @param usuarioIdToken ID del usuario extraído del JWT.
-     * @return {@link RespuestaDatosPersonales} con los datos del perfil.
-     * @throws ExcepcionAccesoDenegado               si el token no pertenece al usuario de la ruta.
-     * @throws DatosPersonalesNoEncontradosException si el perfil no existe.
      */
     @Override
     @Transactional(readOnly = true)
@@ -123,10 +103,7 @@ public class ServicioDatosPersonalesImpl implements ServicioDatosPersonales {
     }
 
     /**
-     * Convierte la entidad de dominio a un DTO de respuesta.
-     *
-     * @param e Entidad de dominio {@link DatosPersonales}.
-     * @return {@link RespuestaDatosPersonales} convertido.
+     * Actualiza solo el teléfono del usuario (uso interno para sincronización OTP).
      */
     @Override
     @Transactional
@@ -139,7 +116,18 @@ public class ServicioDatosPersonalesImpl implements ServicioDatosPersonales {
         repositorio.save(datos);
 
         // Refrescar contexto para IA
-        servicioContexto.refrescarContextoRedis(usuarioId);
+        eventPublisher.publishEvent(new EventoContextoActualizado(usuarioId, "DATOS_PERSONALES"));
+    }
+
+    /**
+     * Consulta interna de datos personales sin validación de JWT (uso para Facade).
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public RespuestaDatosPersonales consultarInterno(UUID usuarioId) {
+        return repositorio.findByUsuarioId(usuarioId)
+                .map(this::convertirADTO)
+                .orElse(null);
     }
 
     private RespuestaDatosPersonales convertirADTO(DatosPersonales e) {
@@ -154,13 +142,6 @@ public class ServicioDatosPersonalesImpl implements ServicioDatosPersonales {
     // =========================================================================
     // Soporte interno
     // =========================================================================
-    /**
-     * Valida que el usuario del token tenga acceso al recurso del usuario de la ruta.
-     *
-     * @param usuarioIdRuta  ID en la ruta.
-     * @param usuarioIdToken ID en el token JWT.
-     * @throws ExcepcionAccesoDenegado si no coinciden.
-     */
     private void validarPropiedad(UUID usuarioIdRuta, UUID usuarioIdToken) {
         if (!usuarioIdRuta.equals(usuarioIdToken)) {
             log.warn("Acceso denegado: usuarioIdToken={} intentó acceder al perfil de usuarioIdRuta={}",
@@ -169,13 +150,6 @@ public class ServicioDatosPersonalesImpl implements ServicioDatosPersonales {
         }
     }
 
-    /**
-     * Valida que el nuevo DNI, si se proporciona, no esté ya en uso por otro usuario.
-     *
-     * @param nuevoDni DNI a validar.
-     * @param actual   Entidad actual para permitir la actualización del propio DNI.
-     * @throws DniDuplicadoException si el DNI ya existe en la BD y no es del usuario.
-     */
     private void validarDniUnico(String nuevoDni, DatosPersonales actual) {
         if (nuevoDni != null
                 && !nuevoDni.equals(actual.getDni())
@@ -184,12 +158,6 @@ public class ServicioDatosPersonalesImpl implements ServicioDatosPersonales {
         }
     }
 
-    /**
-     * Aplica los cambios del DTO de solicitud a la entidad de forma parcial (solo no nulos).
-     *
-     * @param e Entidad {@link DatosPersonales} a modificar.
-     * @param d DTO {@link SolicitudDatosPersonales} con los nuevos valores.
-     */
     private void aplicarCambios(DatosPersonales e, SolicitudDatosPersonales d) {
         if (d.dni() != null) {
             e.setDni(d.dni());

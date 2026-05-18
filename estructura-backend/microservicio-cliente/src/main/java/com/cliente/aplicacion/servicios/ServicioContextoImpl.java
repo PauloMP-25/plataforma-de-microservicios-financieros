@@ -1,19 +1,23 @@
-package com.cliente.aplicacion.servicios.implementacion;
+package com.cliente.aplicacion.servicios;
 
 import com.libreria.comun.dtos.ContextoEstrategicoIADTO;
 import com.libreria.comun.dtos.ContextoUsuarioDTO;
-import com.cliente.aplicacion.servicios.ServicioContexto;
-import com.cliente.dominio.repositorios.DatosPersonalesRepositorio;
-import com.cliente.dominio.repositorios.LimiteGastoRepositorio;
-import com.cliente.dominio.repositorios.MetaAhorroRepositorio;
-import com.cliente.dominio.repositorios.PerfilFinancieroRepositorio;
-import com.cliente.dominio.entidades.DatosPersonales;
+import com.cliente.aplicacion.puertos.ServicioContexto;
+import com.cliente.aplicacion.puertos.ServicioDatosPersonales;
+import com.cliente.aplicacion.puertos.ServicioPerfilFinanciero;
+import com.cliente.aplicacion.puertos.ServicioMetaAhorro;
+import com.cliente.aplicacion.puertos.ServicioLimiteGasto;
+import com.cliente.aplicacion.mappers.ContextoMapper;
+import com.cliente.aplicacion.dtos.respuestas.RespuestaDatosPersonales;
+import com.cliente.aplicacion.dtos.respuestas.RespuestaPerfilFinanciero;
+import com.cliente.aplicacion.dtos.respuestas.RespuestaMetaAhorro;
+import com.cliente.aplicacion.dtos.respuestas.RespuestaLimiteGasto;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,23 +27,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.cliente.infraestructura.mensajeria.PublicadorSincronizacionIA;
 
 /**
- * Servicio que agrega toda la información del cliente en un único objeto.
- * Utilizado por el microservicio-nucleo-financiero vía Feign para obtener el
- * contexto completo con una sola llamada HTTP.
+ * Servicio que consolida la información del cliente mediante el patrón Facade
+ * orquestando llamadas a otros servicios.
  * 
  * @author Paulo Moron
- * @version 1.2.0
- * @since 2026-05-10
+ * @version 1.3.0
  */
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class ServicioContextoImpl implements ServicioContexto {
 
-    private final DatosPersonalesRepositorio repoDatosPersonales;
-    private final PerfilFinancieroRepositorio repoPerfilFinanciero;
-    private final MetaAhorroRepositorio repoMetaAhorro;
-    private final LimiteGastoRepositorio repoLimiteGasto;
+    private final ServicioDatosPersonales servicioDatosPersonales;
+    private final ServicioPerfilFinanciero servicioPerfilFinanciero;
+    private final ServicioMetaAhorro servicioMetaAhorro;
+    private final ServicioLimiteGasto servicioLimiteGasto;
+    private final ContextoMapper mapper;
 
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
@@ -50,13 +53,12 @@ public class ServicioContextoImpl implements ServicioContexto {
     public ContextoEstrategicoIADTO obtenerContextoFinanciero(UUID usuarioId) {
         log.debug("Construyendo contexto estratégico ligero para IA, usuarioId={}", usuarioId);
 
-        // 1. Obtener el contexto completo para evitar múltiples queries dispersas
+        // 1. Obtener el contexto completo consolidado
         ContextoUsuarioDTO completo = obtenerContextoCompleto(usuarioId);
 
-        // 2. Recuperar nombres (esto no está en el DTO común pero es necesario para el saludo)
-        String nombres = repoDatosPersonales.findByUsuarioId(usuarioId)
-                .map(DatosPersonales::getNombres)
-                .orElse("Usuario");
+        // 2. Recuperar nombres a través de la capa de servicio (Facade)
+        RespuestaDatosPersonales datos = servicioDatosPersonales.consultarInterno(usuarioId);
+        String nombres = (datos != null && datos.nombres() != null) ? datos.nombres() : "Usuario";
 
         // 3. Extraer datos del perfil
         var perfil = completo.getPerfilFinanciero();
@@ -74,15 +76,15 @@ public class ServicioContextoImpl implements ServicioContexto {
         if (completo.getMetas() != null && !completo.getMetas().isEmpty()) {
                 var mejorMeta = completo.getMetas().stream()
                                 .filter(m -> m.getMontoObjetivo() != null
-                                                && m.getMontoObjetivo().compareTo(BigDecimal.ZERO) > 0)
+                                                 && m.getMontoObjetivo().compareTo(BigDecimal.ZERO) > 0)
                                 .max(Comparator.comparing(m -> m.getMontoActual()
-                                                .multiply(new BigDecimal("100"))
-                                                .divide(m.getMontoObjetivo(), 2, RoundingMode.HALF_UP)))
+                                                 .multiply(new BigDecimal("100"))
+                                                 .divide(m.getMontoObjetivo(), 2, RoundingMode.HALF_UP)))
                                 .orElse(null);
 
             if (mejorMeta != null) {
                     porcentajeMeta = mejorMeta.getMontoActual().multiply(new BigDecimal("100"))
-                                    .divide(mejorMeta.getMontoObjetivo(), 2, RoundingMode.HALF_UP);
+                                     .divide(mejorMeta.getMontoObjetivo(), 2, RoundingMode.HALF_UP);
                     nombreMeta = mejorMeta.getNombre();
             }
         }
@@ -105,43 +107,15 @@ public class ServicioContextoImpl implements ServicioContexto {
     @Override
     @Transactional(readOnly = true)
     public ContextoUsuarioDTO obtenerContextoCompleto(UUID usuarioId) {
-            log.debug("Consolidando contexto completo para usuarioId={}", usuarioId);
+            log.debug("Consolidando contexto completo para usuarioId={} mediante Facade", usuarioId);
 
-            // 1. Perfil Financiero
-            var perfilDTO = repoPerfilFinanciero.findByUsuarioId(usuarioId)
-                            .map(p -> ContextoUsuarioDTO.PerfilFinancieroDTO.builder()
-                                            .ocupacion(p.getOcupacion())
-                                            .ingresoMensual(p.getIngresoMensual())
-                                            .tonoIA(p.getTonoIA())
-                                            .nivelRiesgo(p.getEstiloVida())
-                                            .build())
-                            .orElse(null);
+            // 1. Obtener datos de la capa de servicio correspondientes a cada sub-dominio
+            RespuestaPerfilFinanciero perfil = servicioPerfilFinanciero.consultarInterno(usuarioId);
+            List<RespuestaMetaAhorro> metas = servicioMetaAhorro.listarInterno(usuarioId);
+            RespuestaLimiteGasto limite = servicioLimiteGasto.obtenerActivoInterno(usuarioId);
 
-            // 2. Metas de Ahorro
-            var metasDTO = repoMetaAhorro.findByUsuarioIdOrderByFechaCreacionDesc(usuarioId).stream()
-                            .map(m -> ContextoUsuarioDTO.MetaAhorroDTO.builder()
-                                            .nombre(m.getNombre())
-                                            .montoObjetivo(m.getMontoObjetivo())
-                                            .montoActual(m.getMontoActual())
-                                            .fechaMeta(m.getFechaLimite() != null ? m.getFechaLimite().toString()
-                                                            : null)
-                                            .build())
-                            .collect(Collectors.toList());
-
-            // 3. Límite Global
-            var limiteDTO = repoLimiteGasto.findByUsuarioIdAndActivoTrue(usuarioId)
-                            .map(l -> ContextoUsuarioDTO.LimiteGlobalDTO.builder()
-                                            .montoLimite(l.getMontoLimite())
-                                            .porcentajeAlerta(l.getPorcentajeAlerta())
-                                            .build())
-                            .orElse(null);
-
-            return ContextoUsuarioDTO.builder()
-                            .idUsuario(usuarioId)
-                            .perfilFinanciero(perfilDTO)
-                            .metas(metasDTO)
-                            .limiteGlobal(limiteDTO)
-                            .build();
+            // 2. Ensamblar usando Mapper dedicado
+            return mapper.ensamblarContextoCompleto(usuarioId, perfil, metas, limite);
     }
 
     @Override

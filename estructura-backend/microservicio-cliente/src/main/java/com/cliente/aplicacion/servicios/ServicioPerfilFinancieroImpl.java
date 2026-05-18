@@ -1,10 +1,10 @@
-package com.cliente.aplicacion.servicios.implementacion;
+package com.cliente.aplicacion.servicios;
 
-import com.cliente.aplicacion.dtos.RespuestaPerfilFinanciero;
-import com.cliente.aplicacion.dtos.SolicitudPerfilFinanciero;
+import com.cliente.aplicacion.dtos.respuestas.RespuestaPerfilFinanciero;
+import com.cliente.aplicacion.dtos.solicitudes.SolicitudPerfilFinanciero;
 import com.cliente.aplicacion.excepciones.DatosPersonalesNoEncontradosException;
 import com.cliente.aplicacion.eventos.EventoContextoActualizado;
-import com.cliente.aplicacion.servicios.ServicioPerfilFinanciero;
+import com.cliente.aplicacion.puertos.ServicioPerfilFinanciero;
 import com.libreria.comun.excepciones.ExcepcionAccesoDenegado;
 import com.cliente.dominio.entidades.PerfilFinanciero;
 import com.cliente.dominio.repositorios.PerfilFinancieroRepositorio;
@@ -21,16 +21,9 @@ import java.util.UUID;
 
 /**
  * Lógica de negocio para el perfil financiero del cliente.
- * <p>
- * Utiliza el patrón Transactional Event Publisher: en lugar de
- * disparar la sincronización directamente, publica un
- * {@link EventoContextoActualizado} que es capturado por
- * {@code EscuchaSincronizacionIA} en fase AFTER_COMMIT.
- * </p>
- *
+ * 
  * @author Paulo Moron
  * @version 1.1.0
- * @since 2026-05-10
  */
 @Service
 @Slf4j
@@ -42,16 +35,7 @@ public class ServicioPerfilFinancieroImpl implements ServicioPerfilFinanciero {
     private final ApplicationEventPublisher eventPublisher;
 
     /**
-     * Crea o actualiza el perfil financiero (upsert). Si no existe, lo crea. Si
-     * existe, lo actualiza. Tras el commit, publica un evento que dispara la
-     * sincronización con Redis y RabbitMQ.
-     * 
-     * @param usuarioIdRuta  ID del usuario en la ruta, usado para buscar el perfil.
-     * @param usuarioIdToken ID del usuario extraído del JWT para validar propiedad.
-     * @param solicitud      DTO con los campos del perfil a crear o actualizar.
-     * @param ipOrigen       Dirección IP de origen para trazabilidad en auditoría.
-     * @return {@link RespuestaPerfilFinanciero} con los datos del perfil guardado.
-     * @throws ExcepcionAccesoDenegado si el usuario del token no coincide con la ruta.
+     * Crea o actualiza el perfil financiero (upsert).
      */
     @Override
     @Transactional
@@ -79,12 +63,6 @@ public class ServicioPerfilFinancieroImpl implements ServicioPerfilFinanciero {
 
     /**
      * Consulta el perfil financiero del usuario.
-     * 
-     * @param usuarioIdRuta  ID del usuario en la ruta, usado para buscar el perfil.
-     * @param usuarioIdToken ID del usuario extraído del JWT para validar propiedad.
-     * @return {@link RespuestaPerfilFinanciero} con el perfil consultado.
-     * @throws ExcepcionAccesoDenegado si el usuario del token no coincide con la ruta.
-     * @throws DatosPersonalesNoEncontradosException si no existe perfil para el usuario.
      */
     @Override
     @Transactional(readOnly = true)
@@ -95,16 +73,17 @@ public class ServicioPerfilFinancieroImpl implements ServicioPerfilFinanciero {
                 .orElseThrow(() -> new DatosPersonalesNoEncontradosException(usuarioIdRuta));
     }
 
-    // =========================================================================
-    // Soporte interno
-    // =========================================================================
     /**
-     * Valida que el usuario del token sea el propietario del recurso.
-     *
-     * @param usuarioIdRuta  ID del usuario en la ruta del endpoint.
-     * @param usuarioIdToken ID del usuario extraído del JWT.
-     * @throws ExcepcionAccesoDenegado si los IDs no coinciden.
+     * Consulta interna del perfil financiero sin validación de JWT (uso para Facade).
      */
+    @Override
+    @Transactional(readOnly = true)
+    public RespuestaPerfilFinanciero consultarInterno(UUID usuarioId) {
+        return repositorio.findByUsuarioId(usuarioId)
+                .map(this::convertirADTO)
+                .orElse(null);
+    }
+
     private void validarPropiedad(UUID usuarioIdRuta, UUID usuarioIdToken) {
         if (usuarioIdRuta == null || usuarioIdToken == null || !usuarioIdRuta.equals(usuarioIdToken)) {
             log.warn("Acceso denegado al perfil financiero: token={} ruta={}", usuarioIdToken, usuarioIdRuta);
@@ -112,13 +91,6 @@ public class ServicioPerfilFinancieroImpl implements ServicioPerfilFinanciero {
         }
     }
 
-    /**
-     * Aplica los cambios del DTO de solicitud a la entidad de dominio.
-     * Solo actualiza campos no nulos (merge parcial).
-     *
-     * @param e Entidad de dominio {@link PerfilFinanciero}.
-     * @param d DTO con los campos a aplicar.
-     */
     private void aplicarCambios(PerfilFinanciero e, SolicitudPerfilFinanciero d) {
         if (d.ocupacion() != null) {
             e.setOcupacion(d.ocupacion());
@@ -134,12 +106,6 @@ public class ServicioPerfilFinancieroImpl implements ServicioPerfilFinanciero {
         }
     }
 
-    /**
-     * Convierte una entidad {@link PerfilFinanciero} a su DTO de respuesta.
-     *
-     * @param e Entidad de dominio a convertir.
-     * @return {@link RespuestaPerfilFinanciero} con los datos mapeados.
-     */
     private RespuestaPerfilFinanciero convertirADTO(PerfilFinanciero e) {
         return new RespuestaPerfilFinanciero(
                 e.getOcupacion(),

@@ -1,7 +1,8 @@
-package com.cliente.aplicacion.dtos;
+package com.cliente.aplicacion.dtos.respuestas;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.LocalDateTime;
+
 /**
  * DTO de salida para DatosPersonales — nunca expone datos internos sensibles.
  */

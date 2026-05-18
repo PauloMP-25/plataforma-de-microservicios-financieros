@@ -1,8 +1,8 @@
 package com.cliente.presentacion.controladores;
 
-import com.cliente.aplicacion.dtos.RespuestaPerfilFinanciero;
-import com.cliente.aplicacion.dtos.SolicitudPerfilFinanciero;
-import com.cliente.aplicacion.servicios.ServicioPerfilFinanciero;
+import com.cliente.aplicacion.dtos.respuestas.RespuestaPerfilFinanciero;
+import com.cliente.aplicacion.dtos.solicitudes.SolicitudPerfilFinanciero;
+import com.cliente.aplicacion.puertos.ServicioPerfilFinanciero;
 import com.libreria.comun.utilidades.UtilidadIp;
 import com.libreria.comun.utilidades.UtilidadSeguridad;
 
@@ -20,10 +20,8 @@ import java.util.UUID;
  * Controlador para el perfil financiero del cliente.
  *
  * Rutas:
- * PUT /api/v1/clientes/perfil-financiero/{usuarioId} → crear o actualizar
- * perfil financiero
- * GET /api/v1/clientes/perfil-financiero/{usuarioId} → consultar perfil
- * financiero
+ * PUT /api/v1/clientes/perfil-financiero/{usuarioId} → crear o actualizar perfil financiero
+ * GET /api/v1/clientes/perfil-financiero/{usuarioId} → consultar perfil financiero
  */
 @RestController
 @RequestMapping("/api/v1/clientes/perfil-financiero")
@@ -35,11 +33,6 @@ public class ControladorPerfilFinanciero {
 
     /**
      * Crea o actualiza el perfil financiero del usuario autenticado (upsert).
-     * 
-     * @param usuarioId Identificador del usuario en la ruta
-     * @param solicitud DTO con los datos financieros a actualizar
-     * @param request   Petición HTTP para extraer la IP
-     * @return ResultadoApi con el perfil financiero actualizado
      */
     @PutMapping("/{usuarioId}")
     @org.springframework.security.access.prepost.PreAuthorize("@seguridadService.esElMismoUsuario(#usuarioId, authentication)")
@@ -57,10 +50,6 @@ public class ControladorPerfilFinanciero {
 
     /**
      * Consulta el perfil financiero del usuario autenticado.
-     * 
-     * @param usuarioId Identificador del usuario en la ruta
-     * @param request   Petición HTTP
-     * @return ResultadoApi con los datos del perfil financiero
      */
     @GetMapping("/{usuarioId}")
     @org.springframework.security.access.prepost.PreAuthorize("@seguridadService.esElMismoUsuario(#usuarioId, authentication)")
