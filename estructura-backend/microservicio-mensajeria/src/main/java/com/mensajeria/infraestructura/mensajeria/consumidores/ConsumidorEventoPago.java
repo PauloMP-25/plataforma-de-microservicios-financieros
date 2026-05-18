@@ -2,7 +2,7 @@ package com.mensajeria.infraestructura.mensajeria.consumidores;
 
 import com.libreria.comun.dtos.EventoPagoExitosoDTO;
 import com.libreria.comun.mensajeria.NombresCola;
-import com.mensajeria.aplicacion.servicios.canales.NotificacionService;
+import com.mensajeria.aplicacion.servicios.canales.NotificacionAdminService;
 import com.rabbitmq.client.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ConsumidorEventoPago {
 
-    private final NotificacionService notificacionService;
+    private final NotificacionAdminService notificacionService;
 
     /**
      * Al detectar un pago exitoso, envía un correo de confirmación.

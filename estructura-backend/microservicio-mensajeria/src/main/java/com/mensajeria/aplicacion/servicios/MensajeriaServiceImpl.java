@@ -21,7 +21,6 @@ import com.mensajeria.infraestructura.clientes.ClienteActualizarTelefono;
 import com.mensajeria.infraestructura.mensajeria.PublicadorAuditoria;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -154,7 +153,7 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
         }
 
         registrarAuditoria(solicitud.usuarioId(), "OTP_SOLICITADO", detalleAudit);
-        return new RespuestaGeneracion(true, "Código enviado exitosamente", solicitud.tipo().name());
+        return new RespuestaGeneracion(true, "Código enviado exitosamente", solicitud.tipo());
     }
 
     // =========================================================================

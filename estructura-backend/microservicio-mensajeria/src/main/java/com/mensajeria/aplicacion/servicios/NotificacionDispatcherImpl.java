@@ -22,10 +22,12 @@ import java.util.Map;
  * @author Paulo Moron
  * @version 1.5.0
  */
+import com.mensajeria.aplicacion.servicios.canales.NotificacionAdminService;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class NotificacionDispatcherImpl implements NotificacionService {
+public class NotificacionDispatcherImpl implements NotificacionService, NotificacionAdminService {
 
     private final List<CanalNotificacionStrategy> estrategias;
     private final IEmailService emailService; // Mantener para métodos específicos de admin

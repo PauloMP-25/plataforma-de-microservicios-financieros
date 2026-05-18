@@ -2,7 +2,7 @@ package com.mensajeria.infraestructura.mensajeria.consumidores;
 
 import com.mensajeria.infraestructura.mensajeria.ConfiguracionRabbitMQ;
 import com.libreria.comun.dtos.SolicitudEmailDTO;
-import com.mensajeria.aplicacion.servicios.canales.NotificacionService;
+import com.mensajeria.aplicacion.servicios.canales.NotificacionAdminService;
 import com.rabbitmq.client.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ConsumidorEmail {
 
-    private final NotificacionService notificacionService;
+    private final NotificacionAdminService notificacionService;
 
     @RabbitListener(queues = ConfiguracionRabbitMQ.COLA_EMAIL_ENVIAR)
     public void procesarEnvioEmail(
@@ -39,7 +39,7 @@ public class ConsumidorEmail {
             log.info("[AMQP] Alerta administrativa enviada a: {}", solicitud.destinatario());
             channel.basicAck(deliveryTag, false);
         } catch (Exception e) {
-            log.error("[AMQP] Error al procesar email: {}", e.getMessage());
+            log.error("[AMQP] Error al procesar email para '{}' asunto='{}': {}", solicitud.destinatario(), solicitud.asunto(), e.getMessage());
             // Rechazamos el mensaje enviándolo a la DLQ (requeue = false) para evitar re-entregas infinitas
             channel.basicNack(deliveryTag, false, false);
         }

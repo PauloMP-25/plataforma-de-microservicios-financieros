@@ -26,6 +26,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 })
 public class MicroservicioMensajeriaApplication {
 
+    public static final String NOMBRE_SERVICIO = "MS-MENSAJERIA";
+
     public static void main(String[] args) {
         SpringApplication.run(MicroservicioMensajeriaApplication.class, args);
     }

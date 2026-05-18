@@ -36,7 +36,7 @@ public class PublicadorAuditoria extends PublicadorEventosBase {
         EventoAuditoriaDTO dto = EventoAuditoriaDTO.crear(
                 usuario,
                 accion,
-                "MS-MENSAJERIA",
+                com.mensajeria.MicroservicioMensajeriaApplication.NOMBRE_SERVICIO,
                 "INTERNAL",
                 detalle);
 
