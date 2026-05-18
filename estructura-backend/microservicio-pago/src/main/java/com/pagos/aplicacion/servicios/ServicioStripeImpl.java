@@ -1,11 +1,11 @@
-package com.pagos.aplicacion.servicios.implementacion;
+package com.pagos.aplicacion.servicios;
 
 import com.pagos.aplicacion.dtos.RespuestaCheckoutDTO;
 import com.pagos.aplicacion.dtos.RespuestaSuscripcionDTO;
 import com.pagos.aplicacion.dtos.SolicitudPagoDTO;
 import com.pagos.aplicacion.enums.EstadoPago;
 import com.pagos.aplicacion.enums.PlanSuscripcion;
-import com.pagos.aplicacion.servicios.IServicioStripe;
+import com.pagos.aplicacion.puertos.IServicioStripe;
 import com.pagos.dominio.entidades.DetallePago;
 import com.pagos.dominio.entidades.Pago;
 import com.pagos.dominio.repositorios.RepositorioDetallePago;

@@ -2,7 +2,7 @@ package com.pagos.presentacion.controladores;
 
 import com.libreria.comun.enums.CodigoError;
 import com.libreria.comun.respuesta.ResultadoApi;
-import com.pagos.aplicacion.servicios.IServicioWebhook;
+import com.pagos.aplicacion.puertos.IServicioWebhook;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Event;
 import com.stripe.net.Webhook;

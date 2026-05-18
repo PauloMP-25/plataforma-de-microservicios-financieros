@@ -1,9 +1,8 @@
-package com.pagos.aplicacion.servicios;
+package com.pagos.aplicacion.puertos;
 
+import com.libreria.comun.respuesta.Paginacion;
 import com.pagos.aplicacion.dtos.ResumenPagosDTO;
 import com.pagos.dominio.entidades.Pago;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.util.UUID;
 
@@ -20,10 +19,11 @@ public interface IServicioAdminPagos {
 
     /**
      * Lista todos los pagos con soporte para paginación.
-     * @param pageable Parámetros de paginación.
-     * @return Página de registros de pago.
+     * @param pagina Número de página.
+     * @param tamanio Tamaño de página.
+     * @return Paginación de registros de pago.
      */
-    Page<Pago> listarTodosLosPagos(Pageable pageable);
+    Paginacion<Pago> listarTodosLosPagos(int pagina, int tamanio);
 
     /**
      * Busca un pago específico por su ID de transacción.

@@ -1,9 +1,9 @@
-package com.pagos.aplicacion.servicios.implementacion;
+package com.pagos.aplicacion.servicios;
 
 import com.libreria.comun.enums.EstadoEvento;
 import com.pagos.aplicacion.enums.EstadoPago;
-import com.pagos.aplicacion.servicios.IPublicadorPagos;
-import com.pagos.aplicacion.servicios.IServicioWebhook;
+import com.pagos.aplicacion.puertos.IPublicadorPagos;
+import com.pagos.aplicacion.puertos.IServicioWebhook;
 import com.pagos.dominio.entidades.Pago;
 import com.pagos.dominio.repositorios.RepositorioPago;
 import com.pagos.infraestructura.mensajeria.PublicadorAuditoriaPagosImpl;

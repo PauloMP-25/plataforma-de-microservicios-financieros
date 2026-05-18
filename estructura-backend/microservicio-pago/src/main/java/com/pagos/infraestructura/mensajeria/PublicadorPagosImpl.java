@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.libreria.comun.dtos.EventoPagoExitosoDTO;
 import com.libreria.comun.mensajeria.NombresExchange;
 import com.libreria.comun.mensajeria.RoutingKeys;
-import com.pagos.aplicacion.servicios.IPublicadorPagos;
+import com.pagos.aplicacion.puertos.IPublicadorPagos;
 import com.pagos.dominio.entidades.BandejaSalida;
 import com.pagos.dominio.entidades.Pago;
 import com.pagos.dominio.repositorios.RepositorioBandejaSalida;

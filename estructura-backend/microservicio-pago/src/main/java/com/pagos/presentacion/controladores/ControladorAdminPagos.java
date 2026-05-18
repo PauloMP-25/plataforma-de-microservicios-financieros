@@ -1,15 +1,14 @@
 package com.pagos.presentacion.controladores;
 
+import com.libreria.comun.respuesta.Paginacion;
 import com.libreria.comun.respuesta.ResultadoApi;
 import com.libreria.comun.utilidades.UtilidadSeguridad;
 import com.pagos.aplicacion.dtos.ResumenPagosDTO;
-import com.pagos.aplicacion.servicios.IServicioAdminPagos;
+import com.pagos.aplicacion.puertos.IServicioAdminPagos;
 import com.pagos.dominio.entidades.Pago;
 import com.pagos.infraestructura.mensajeria.PublicadorAuditoriaPagosImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -36,13 +35,17 @@ public class ControladorAdminPagos {
     }
 
     @GetMapping("/historial")
-    public ResponseEntity<ResultadoApi<Page<Pago>>> listarPagos(Pageable pageable, HttpServletRequest request) {
+    public ResponseEntity<ResultadoApi<Paginacion<Pago>>> listarPagos(
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "10") int tamanio,
+            HttpServletRequest request) {
+        int tamanioAjustado = Math.min(tamanio, 100);
         publicadorAuditoria.auditarAccesoAdmin(
                 UtilidadSeguridad.obtenerUsuarioId(),
                 request.getRequestURI(),
                 request.getRemoteAddr()
         );
-        Page<Pago> pagos = servicioAdmin.listarTodosLosPagos(pageable);
+        Paginacion<Pago> pagos = servicioAdmin.listarTodosLosPagos(pagina, tamanioAjustado);
         return ResponseEntity.ok(ResultadoApi.exito(pagos, "Historial de pagos recuperado"));
     }
 

@@ -1,4 +1,4 @@
-package com.pagos.aplicacion.servicios;
+package com.pagos.aplicacion.puertos;
 
 import com.stripe.model.Event;
 

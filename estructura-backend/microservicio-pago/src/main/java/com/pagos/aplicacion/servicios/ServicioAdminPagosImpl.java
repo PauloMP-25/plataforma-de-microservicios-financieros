@@ -1,16 +1,18 @@
-package com.pagos.aplicacion.servicios.implementacion;
+package com.pagos.aplicacion.servicios;
 
+import com.libreria.comun.respuesta.Paginacion;
 import com.pagos.aplicacion.dtos.ResumenPagosDTO;
 import com.pagos.aplicacion.enums.EstadoPago;
 import com.pagos.aplicacion.enums.PlanSuscripcion;
-import com.pagos.aplicacion.servicios.IServicioAdminPagos;
+import com.pagos.aplicacion.puertos.IServicioAdminPagos;
 import com.pagos.dominio.entidades.Pago;
 import com.pagos.dominio.repositorios.RepositorioDetallePago;
 import com.pagos.dominio.repositorios.RepositorioPago;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,8 +57,10 @@ public class ServicioAdminPagosImpl implements IServicioAdminPagos {
     @SuppressWarnings("null")
     @Override
     @Transactional(readOnly = true)
-    public Page<Pago> listarTodosLosPagos(Pageable pageable) {
-        return repositorioPago.findAll(pageable);
+    public Paginacion<Pago> listarTodosLosPagos(int pagina, int tamanio) {
+        PageRequest pageRequest = PageRequest.of(pagina, tamanio, Sort.by("fechaCreacion").descending());
+        Page<Pago> page = repositorioPago.findAll(pageRequest);
+        return Paginacion.desde(page);
     }
 
     @SuppressWarnings("null")
