@@ -3,6 +3,8 @@ package com.nucleo.financiero.presentacion.controladores;
 import com.libreria.comun.respuesta.Paginacion;
 import com.libreria.comun.respuesta.ResultadoApi;
 import com.libreria.comun.utilidades.UtilidadIp;
+import com.libreria.comun.utilidades.UtilidadSeguridad;
+import com.libreria.comun.excepciones.ExcepcionAccesoDenegado;
 import com.nucleo.financiero.aplicacion.dtos.solicitudes.SolicitudTransaccion;
 import com.nucleo.financiero.aplicacion.dtos.respuestas.RespuestaTransaccion;
 import com.nucleo.financiero.aplicacion.dtos.respuestas.ResumenFinancieroDTO;
@@ -54,6 +56,11 @@ public class TransaccionController {
             @Valid @RequestBody SolicitudTransaccion request,
             HttpServletRequest httpRequest) {
 
+        UUID tokenUsuarioId = UtilidadSeguridad.obtenerUsuarioId();
+        if (!tokenUsuarioId.equals(request.usuarioId())) {
+            throw new ExcepcionAccesoDenegado();
+        }
+
         RespuestaTransaccion respuesta = transaccionService.registrar(request, UtilidadIp.obtenerIpReal(httpRequest));
         return ResponseEntity.status(201).body(ResultadoApi.creado(respuesta, "Transacción registrada con éxito"));
     }
@@ -72,6 +79,13 @@ public class TransaccionController {
     public ResponseEntity<ResultadoApi<List<RespuestaTransaccion>>> registrarLote(
             @Valid @RequestBody List<@Valid SolicitudTransaccion> solicitudes,
             HttpServletRequest httpRequest) {
+
+        UUID tokenUsuarioId = UtilidadSeguridad.obtenerUsuarioId();
+        for (SolicitudTransaccion request : solicitudes) {
+            if (!tokenUsuarioId.equals(request.usuarioId())) {
+                throw new ExcepcionAccesoDenegado();
+            }
+        }
 
         List<RespuestaTransaccion> respuesta = transaccionService.registrarLote(solicitudes, UtilidadIp.obtenerIpReal(httpRequest));
         return ResponseEntity.status(201).body(ResultadoApi.creado(respuesta, "Lote de transacciones procesado"));
@@ -101,6 +115,11 @@ public class TransaccionController {
             @RequestParam(defaultValue = "20") int tamanio,
             HttpServletRequest httpRequest) {
 
+        UUID tokenUsuarioId = UtilidadSeguridad.obtenerUsuarioId();
+        if (!tokenUsuarioId.equals(usuarioId)) {
+            throw new ExcepcionAccesoDenegado();
+        }
+
         Pageable paginacionSpring = PageRequest.of(pagina, tamanio, Sort.by("fechaTransaccion").descending());
         Page<RespuestaTransaccion> page = transaccionService.listarHistorial(
                 usuarioId, tipo, categoriaId, desde, hasta, paginacionSpring, UtilidadIp.obtenerIpReal(httpRequest));
@@ -126,6 +145,11 @@ public class TransaccionController {
             @RequestParam(required = false) Integer mes,
             @RequestParam(required = false) Integer anio,
             HttpServletRequest httpRequest) {
+
+        UUID tokenUsuarioId = UtilidadSeguridad.obtenerUsuarioId();
+        if (!tokenUsuarioId.equals(usuarioId)) {
+            throw new ExcepcionAccesoDenegado();
+        }
 
         ResumenFinancieroDTO resumen = transaccionService.obtenerResumen(usuarioId, mes, anio, UtilidadIp.obtenerIpReal(httpRequest));
         return ResponseEntity.ok(ResultadoApi.exito(resumen, "Resumen financiero generado"));

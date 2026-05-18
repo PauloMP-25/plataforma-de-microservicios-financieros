@@ -4,6 +4,9 @@ import com.libreria.comun.dtos.ContextoUsuarioDTO;
 import com.libreria.comun.dtos.RespuestaIaDTO;
 import com.libreria.comun.dtos.SolicitudIaDTO;
 import com.libreria.comun.enums.TipoSolicitudIa;
+import com.libreria.comun.utilidades.UtilidadSeguridad;
+import com.libreria.comun.excepciones.ExcepcionAccesoDenegado;
+import java.util.UUID;
 import com.nucleo.financiero.aplicacion.puertos.IServicioIa;
 import com.nucleo.financiero.infraestructura.clientes.ClienteIa;
 import com.nucleo.financiero.infraestructura.mensajeria.PublicadorAuditoria;
@@ -34,6 +37,11 @@ public class ServicioIaImpl implements IServicioIa {
 
     @Override
     public RespuestaIaDTO obtenerConsejoIA(SolicitudIaDTO solicitud, String ipCliente) {
+        UUID tokenUsuarioId = UtilidadSeguridad.obtenerUsuarioId();
+        if (!tokenUsuarioId.equals(solicitud.getUsuarioId())) {
+            throw new ExcepcionAccesoDenegado();
+        }
+
         log.info("Iniciando proceso de IA para el usuario: {} desde IP: {}", solicitud.getUsuarioId(), ipCliente);
 
         // 1. Obtener contexto completo del cliente (Datos personales, perfil, metas, límites)
