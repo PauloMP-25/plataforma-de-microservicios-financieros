@@ -22,7 +22,6 @@ import java.time.YearMonth;
 import com.libreria.comun.excepciones.ExcepcionRecursoNoEncontrado;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Implementación de {@link ITransaccionService} para la gestión de movimientos financieros.
@@ -73,7 +72,7 @@ public class TransaccionServiceImpl implements ITransaccionService {
         log.info("Iniciando registro en lote: {} transacciones", solicitudes.size());
         List<Transaccion> entidades = solicitudes.stream()
                 .map(this::construirEntidad)
-                .collect(Collectors.toList());
+                .toList();
         @SuppressWarnings("null")
         List<Transaccion> guardadas = transaccionRepository.saveAll(entidades);
         log.info("Lote completado: {} transacciones guardadas", guardadas.size());
@@ -84,7 +83,7 @@ public class TransaccionServiceImpl implements ITransaccionService {
                 "Se registraron " + guardadas.size() + " transacciones exitosamente.",
                 ipCliente
         );
-        return guardadas.stream().map(RespuestaTransaccion::desde).collect(Collectors.toList());
+        return guardadas.stream().map(RespuestaTransaccion::desde).toList();
     }
 
     @SuppressWarnings("null")

@@ -11,9 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.libreria.comun.excepciones.ExcepcionRecursoNoEncontrado;
+import com.libreria.comun.excepciones.ExcepcionConflicto;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Implementación de {@link ICategoriaService} para la gestión de categorías.
@@ -33,8 +33,7 @@ public class CategoriaServiceImpl implements ICategoriaService {
     @Transactional
     public CategoriaDTO crear(CategoriaRequestDTO request) {
         if (categoriaRepository.existsByNombreIgnoreCase(request.nombre())) {
-            throw new IllegalStateException(
-                String.format("Ya existe una categoría con el nombre '%s'.", request.nombre()));
+            throw new ExcepcionConflicto("nombre", request.nombre());
         }
         Categoria nueva = Categoria.builder()
                 .nombre(request.nombre())
@@ -53,7 +52,7 @@ public class CategoriaServiceImpl implements ICategoriaService {
         return categoriaRepository.findAll()
                 .stream()
                 .map(CategoriaDTO::desde)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -62,7 +61,7 @@ public class CategoriaServiceImpl implements ICategoriaService {
         return categoriaRepository.findByTipo(tipo)
                 .stream()
                 .map(CategoriaDTO::desde)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -82,8 +81,7 @@ public class CategoriaServiceImpl implements ICategoriaService {
         categoriaRepository.findByNombreIgnoreCase(request.nombre())
                 .filter(c -> !c.getId().equals(id))
                 .ifPresent(c -> {
-                    throw new IllegalStateException(
-                        String.format("Ya existe otra categoría con el nombre '%s'.", request.nombre()));
+                    throw new ExcepcionConflicto("nombre", request.nombre());
                 });
 
         existente.setNombre(request.nombre());
