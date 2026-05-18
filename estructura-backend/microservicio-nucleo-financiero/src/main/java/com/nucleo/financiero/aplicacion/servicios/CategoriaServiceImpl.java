@@ -3,6 +3,7 @@ package com.nucleo.financiero.aplicacion.servicios;
 import com.nucleo.financiero.aplicacion.dtos.respuestas.CategoriaDTO;
 import com.nucleo.financiero.aplicacion.dtos.solicitudes.CategoriaRequestDTO;
 import com.nucleo.financiero.aplicacion.puertos.ICategoriaService;
+import com.nucleo.financiero.aplicacion.mappers.CategoriaMapper;
 import com.nucleo.financiero.dominio.entidades.Categoria;
 import com.nucleo.financiero.dominio.entidades.Categoria.TipoMovimiento;
 import com.nucleo.financiero.dominio.repositorios.CategoriaRepository;
@@ -28,6 +29,7 @@ import java.util.UUID;
 public class CategoriaServiceImpl implements ICategoriaService {
 
     private final CategoriaRepository categoriaRepository;
+    private final CategoriaMapper categoriaMapper;
 
     @Override
     @Transactional
@@ -43,7 +45,7 @@ public class CategoriaServiceImpl implements ICategoriaService {
                 .build();
         Categoria guardada = categoriaRepository.save(nueva);
         log.info("Categoría creada: '{}' ({})", guardada.getNombre(), guardada.getTipo());
-        return CategoriaDTO.desde(guardada);
+        return categoriaMapper.aDto(guardada);
     }
 
     @Override
@@ -51,7 +53,7 @@ public class CategoriaServiceImpl implements ICategoriaService {
     public List<CategoriaDTO> listarTodas() {
         return categoriaRepository.findAll()
                 .stream()
-                .map(CategoriaDTO::desde)
+                .map(categoriaMapper::aDto)
                 .toList();
     }
 
@@ -60,7 +62,7 @@ public class CategoriaServiceImpl implements ICategoriaService {
     public List<CategoriaDTO> listarPorTipo(TipoMovimiento tipo) {
         return categoriaRepository.findByTipo(tipo)
                 .stream()
-                .map(CategoriaDTO::desde)
+                .map(categoriaMapper::aDto)
                 .toList();
     }
 
@@ -68,7 +70,7 @@ public class CategoriaServiceImpl implements ICategoriaService {
     @Transactional(readOnly = true)
     public CategoriaDTO obtenerPorId(UUID id) {
         return categoriaRepository.findById(id)
-                .map(CategoriaDTO::desde)
+                .map(categoriaMapper::aDto)
                 .orElseThrow(() -> new ExcepcionRecursoNoEncontrado("Categoria", id));
     }
 
@@ -91,7 +93,7 @@ public class CategoriaServiceImpl implements ICategoriaService {
 
         Categoria actualizada = categoriaRepository.save(existente);
         log.info("Categoría actualizada: '{}' ({})", actualizada.getNombre(), actualizada.getId());
-        return CategoriaDTO.desde(actualizada);
+        return categoriaMapper.aDto(actualizada);
     }
 
     @Override

@@ -26,36 +26,37 @@ public class CargadorDatosIniciales implements CommandLineRunner {
 
     private final CategoriaRepository categoriaRepository;
 
-    private static final List<Object[]> CATEGORIAS_DEFAULT = List.of(
-        new Object[]{"Alimentación",            "Supermercado, restaurantes y comida",     "utensils",        TipoMovimiento.GASTO},
-        new Object[]{"Transporte",              "Gasolina, taxi, bus, peajes",             "car",             TipoMovimiento.GASTO},
-        new Object[]{"Vivienda",                "Alquiler, hipoteca, servicios del hogar", "home",            TipoMovimiento.GASTO},
-        new Object[]{"Salud",                   "Médicos, farmacia, seguros de salud",     "heart-pulse",     TipoMovimiento.GASTO},
-        new Object[]{"Educación",               "Cursos, libros, colegiaturas",            "graduation-cap",  TipoMovimiento.GASTO},
-        new Object[]{"Entretenimiento",         "Cine, juegos, salidas",                   "gamepad-2",       TipoMovimiento.GASTO},
-        new Object[]{"Suscripciones Streaming", "Netflix, Spotify, Disney+, etc.",         "play-circle",     TipoMovimiento.GASTO},
-        new Object[]{"Ropa y Calzado",          "Vestimenta y accesorios",                 "shirt",           TipoMovimiento.GASTO},
-        new Object[]{"Tecnología",              "Dispositivos, software, gadgets",         "laptop",          TipoMovimiento.GASTO},
-        new Object[]{"Viajes",                  "Vuelos, hoteles, vacaciones",             "plane",           TipoMovimiento.GASTO},
-        new Object[]{"Otros Gastos",            "Gastos no categorizados",                 "circle-ellipsis", TipoMovimiento.GASTO},
-        new Object[]{"Salario",                 "Ingreso mensual principal",               "briefcase",       TipoMovimiento.INGRESO},
-        new Object[]{"Freelance",               "Proyectos y trabajos independientes",     "code",            TipoMovimiento.INGRESO},
-        new Object[]{"Inversiones",             "Dividendos, intereses, cripto",           "trending-up",     TipoMovimiento.INGRESO},
-        new Object[]{"Ventas",                  "Venta de bienes o servicios",             "tag",             TipoMovimiento.INGRESO},
-        new Object[]{"Otros Ingresos",          "Ingresos no categorizados",               "plus-circle",     TipoMovimiento.INGRESO}
+    private record DefinicionCategoria(String nombre, String descripcion, String icono, TipoMovimiento tipo) {}
+
+    private static final List<DefinicionCategoria> CATEGORIAS_DEFAULT = List.of(
+        new DefinicionCategoria("Alimentación",            "Supermercado, restaurantes y comida",     "utensils",        TipoMovimiento.GASTO),
+        new DefinicionCategoria("Transporte",              "Gasolina, taxi, bus, peajes",             "car",             TipoMovimiento.GASTO),
+        new DefinicionCategoria("Vivienda",                "Alquiler, hipoteca, servicios del hogar", "home",            TipoMovimiento.GASTO),
+        new DefinicionCategoria("Salud",                   "Médicos, farmacia, seguros de salud",     "heart-pulse",     TipoMovimiento.GASTO),
+        new DefinicionCategoria("Educación",               "Cursos, libros, colegiaturas",            "graduation-cap",  TipoMovimiento.GASTO),
+        new DefinicionCategoria("Entretenimiento",         "Cine, juegos, salidas",                   "gamepad-2",       TipoMovimiento.GASTO),
+        new DefinicionCategoria("Suscripciones Streaming", "Netflix, Spotify, Disney+, etc.",         "play-circle",     TipoMovimiento.GASTO),
+        new DefinicionCategoria("Ropa y Calzado",          "Vestimenta y accesorios",                 "shirt",           TipoMovimiento.GASTO),
+        new DefinicionCategoria("Tecnología",              "Dispositivos, software, gadgets",         "laptop",          TipoMovimiento.GASTO),
+        new DefinicionCategoria("Viajes",                  "Vuelos, hoteles, vacaciones",             "plane",           TipoMovimiento.GASTO),
+        new DefinicionCategoria("Otros Gastos",            "Gastos no categorizados",                 "circle-ellipsis", TipoMovimiento.GASTO),
+        new DefinicionCategoria("Salario",                 "Ingreso mensual principal",               "briefcase",       TipoMovimiento.INGRESO),
+        new DefinicionCategoria("Freelance",               "Proyectos y trabajos independientes",     "code",            TipoMovimiento.INGRESO),
+        new DefinicionCategoria("Inversiones",             "Dividendos, intereses, cripto",           "trending-up",     TipoMovimiento.INGRESO),
+        new DefinicionCategoria("Ventas",                  "Venta de bienes o servicios",             "tag",             TipoMovimiento.INGRESO),
+        new DefinicionCategoria("Otros Ingresos",          "Ingresos no categorizados",               "plus-circle",     TipoMovimiento.INGRESO)
     );
 
     @Override
     public void run(String... args) {
         int creadas = 0;
-        for (Object[] datos : CATEGORIAS_DEFAULT) {
-            String nombre = (String) datos[0];
-            if (!categoriaRepository.existsByNombreIgnoreCase(nombre)) {
+        for (DefinicionCategoria datos : CATEGORIAS_DEFAULT) {
+            if (!categoriaRepository.existsByNombreIgnoreCase(datos.nombre())) {
                 categoriaRepository.save(Categoria.builder()
-                        .nombre(nombre)
-                        .descripcion((String) datos[1])
-                        .icono((String) datos[2])
-                        .tipo((TipoMovimiento) datos[3])
+                        .nombre(datos.nombre())
+                        .descripcion(datos.descripcion())
+                        .icono(datos.icono())
+                        .tipo(datos.tipo())
                         .build());
                 creadas++;
             }

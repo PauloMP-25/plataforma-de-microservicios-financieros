@@ -4,6 +4,7 @@ import com.nucleo.financiero.aplicacion.dtos.solicitudes.SolicitudTransaccion;
 import com.nucleo.financiero.aplicacion.dtos.respuestas.ResumenFinancieroDTO;
 import com.nucleo.financiero.aplicacion.dtos.respuestas.RespuestaTransaccion;
 import com.nucleo.financiero.aplicacion.puertos.ITransaccionService;
+import com.nucleo.financiero.aplicacion.mappers.TransaccionMapper;
 import com.nucleo.financiero.dominio.entidades.Categoria;
 import com.nucleo.financiero.dominio.entidades.Categoria.TipoMovimiento;
 import com.nucleo.financiero.dominio.entidades.Transaccion;
@@ -41,11 +42,14 @@ public class TransaccionServiceImpl implements ITransaccionService {
     private final TransaccionRepository transaccionRepository;
     private final CategoriaRepository categoriaRepository;
     private final PublicadorAuditoria publicadorAuditoria;
+    private final TransaccionMapper transaccionMapper;
 
     @Override
     @Transactional
     public RespuestaTransaccion registrar(SolicitudTransaccion request, String ipCliente) {
-        @SuppressWarnings("null")
+        if (request == null) {
+            throw new IllegalArgumentException("La solicitud de transacción no puede ser nula.");
+        }
         Transaccion guardada = transaccionRepository.save(construirEntidad(request));
         log.info("Transacción registrada: {} — {} {} ({})",
                 guardada.getId(), guardada.getTipo(), guardada.getMonto(), guardada.getNombreCliente());
@@ -56,7 +60,7 @@ public class TransaccionServiceImpl implements ITransaccionService {
                 guardada.getMonto().toString(),
                 ipCliente
         );
-        return RespuestaTransaccion.desde(guardada);
+        return transaccionMapper.aDto(guardada);
     }
 
     @Override
@@ -73,7 +77,6 @@ public class TransaccionServiceImpl implements ITransaccionService {
         List<Transaccion> entidades = solicitudes.stream()
                 .map(this::construirEntidad)
                 .toList();
-        @SuppressWarnings("null")
         List<Transaccion> guardadas = transaccionRepository.saveAll(entidades);
         log.info("Lote completado: {} transacciones guardadas", guardadas.size());
         
@@ -83,16 +86,22 @@ public class TransaccionServiceImpl implements ITransaccionService {
                 "Se registraron " + guardadas.size() + " transacciones exitosamente.",
                 ipCliente
         );
-        return guardadas.stream().map(RespuestaTransaccion::desde).toList();
+        return guardadas.stream().map(transaccionMapper::aDto).toList();
     }
 
-    @SuppressWarnings("null")
     @Override
     @Transactional(readOnly = true)
     public Page<RespuestaTransaccion> listarHistorial(
             UUID usuarioId, TipoMovimiento tipo, UUID categoriaId,
             LocalDateTime desde, LocalDateTime hasta, Pageable paginacion,
             String ipCliente) {
+
+        if (usuarioId == null) {
+            throw new IllegalArgumentException("El ID de usuario no puede ser nulo.");
+        }
+        if (paginacion == null) {
+            throw new IllegalArgumentException("La información de paginación no puede ser nula.");
+        }
 
         if (desde == null) {
             desde = LocalDateTime.now().minusDays(30);
@@ -110,7 +119,7 @@ public class TransaccionServiceImpl implements ITransaccionService {
                 .and(com.nucleo.financiero.dominio.especificaciones.TransaccionSpecs.porCategoria(categoriaId))
                 .and(com.nucleo.financiero.dominio.especificaciones.TransaccionSpecs.entreFechas(desde, hasta));
 
-        return transaccionRepository.findAll(specs, paginacion).map(RespuestaTransaccion::desde);
+        return transaccionRepository.findAll(specs, paginacion).map(transaccionMapper::aDto);
     }
 
     @Override
@@ -134,12 +143,14 @@ public class TransaccionServiceImpl implements ITransaccionService {
         return ResumenFinancieroDTO.calcular(desde, hasta, totalIngresos, totalGastos, cantidadIngresos, cantidadGastos);
     }
 
-    @SuppressWarnings("null")
     @Override
     @Transactional(readOnly = true)
     public RespuestaTransaccion obtenerPorId(UUID id) {
+        if (id == null) {
+            throw new IllegalArgumentException("El ID de transacción no puede ser nulo.");
+        }
         return transaccionRepository.findById(id)
-                .map(RespuestaTransaccion::desde)
+                .map(transaccionMapper::aDto)
                 .orElseThrow(() -> new ExcepcionRecursoNoEncontrado("Transaccion", id));
     }
 
@@ -153,24 +164,9 @@ public class TransaccionServiceImpl implements ITransaccionService {
      * @throws IllegalStateException Si hay inconsistencia entre categoría y tipo.
      */
     private Transaccion construirEntidad(SolicitudTransaccion request) {
-        if (request.categoriaId() == null) {
-            throw new IllegalArgumentException("El ID de la categoría es nulo en la petición.");
-        }
-
-        @SuppressWarnings("null")
-        Categoria categoria = categoriaRepository.findById(request.categoriaId())
-                .orElseThrow(() -> new ExcepcionRecursoNoEncontrado("Categoria", request.categoriaId()));
-
-        if (request.tipo() == null) {
-            throw new IllegalArgumentException("El tipo de movimiento es obligatorio.");
-        }
-
-        if (categoria.getTipo() != request.tipo()) {
-            throw new IllegalStateException(String.format(
-                    "Inconsistencia: La categoría es de tipo %s pero la transacción es %s.",
-                    categoria.getTipo(), request.tipo()));
-        }
-
+        Categoria categoria = obtenerCategoriaValidada(request.categoriaId());
+        validarConsistenciaTransaccion(request, categoria);
+        
         return Transaccion.builder()
                 .usuarioId(request.usuarioId())
                 .nombreCliente(request.nombreCliente())
@@ -182,6 +178,31 @@ public class TransaccionServiceImpl implements ITransaccionService {
                 .etiquetas(request.etiquetas())
                 .notas(request.notas())
                 .build();
+    }
+
+    /**
+     * Obtiene y valida la categoría asociada a la transacción.
+     */
+    private Categoria obtenerCategoriaValidada(UUID categoriaId) {
+        if (categoriaId == null) {
+            throw new IllegalArgumentException("El ID de la categoría es nulo en la petición.");
+        }
+        return categoriaRepository.findById(categoriaId)
+                .orElseThrow(() -> new ExcepcionRecursoNoEncontrado("Categoria", categoriaId));
+    }
+
+    /**
+     * Valida la consistencia de tipos entre la transacción y la categoría seleccionada.
+     */
+    private void validarConsistenciaTransaccion(SolicitudTransaccion request, Categoria categoria) {
+        if (request.tipo() == null) {
+            throw new IllegalArgumentException("El tipo de movimiento es obligatorio.");
+        }
+        if (categoria.getTipo() != request.tipo()) {
+            throw new IllegalStateException(String.format(
+                    "Inconsistencia: La categoría es de tipo %s pero la transacción es %s.",
+                    categoria.getTipo(), request.tipo()));
+        }
     }
 
     /**

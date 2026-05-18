@@ -1,6 +1,5 @@
 package com.nucleo.financiero.aplicacion.dtos.respuestas;
 
-import com.nucleo.financiero.dominio.entidades.Transaccion;
 import lombok.Builder;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -27,21 +26,4 @@ public record RespuestaTransaccion(
         String metodoPago,
         String etiquetas
 ) {
-    /**
-     * Mapea una entidad {@link Transaccion} a este DTO de respuesta.
-     * 
-     * @param t Entidad de dominio.
-     * @return DTO de respuesta transaccional.
-     */
-    public static RespuestaTransaccion desde(Transaccion t) {
-        return RespuestaTransaccion.builder()
-                .id(t.getId())
-                .monto(t.getMonto())
-                .tipo(t.getTipo().name())
-                .categoria(t.getCategoria().getNombre())
-                .fechaTransaccion(t.getFechaTransaccion())
-                .metodoPago(t.getMetodoPago().name())
-                .etiquetas(t.getEtiquetas())
-                .build();
-    }
 }

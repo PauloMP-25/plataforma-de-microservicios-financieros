@@ -1,6 +1,5 @@
 package com.nucleo.financiero.aplicacion.dtos.respuestas;
 
-import com.nucleo.financiero.dominio.entidades.Categoria;
 import lombok.Builder;
 import java.util.UUID;
 
@@ -21,19 +20,4 @@ public record CategoriaDTO(
         String icono,
         String tipo
 ) {
-    /**
-     * Convierte una entidad de dominio {@link Categoria} en su representación DTO.
-     * 
-     * @param entidad Entidad de dominio.
-     * @return DTO de categoría.
-     */
-    public static CategoriaDTO desde(Categoria entidad) {
-        return CategoriaDTO.builder()
-                .id(entidad.getId())
-                .nombre(entidad.getNombre())
-                .descripcion(entidad.getDescripcion())
-                .icono(entidad.getIcono())
-                .tipo(entidad.getTipo().name())
-                .build();
-       }
 }
