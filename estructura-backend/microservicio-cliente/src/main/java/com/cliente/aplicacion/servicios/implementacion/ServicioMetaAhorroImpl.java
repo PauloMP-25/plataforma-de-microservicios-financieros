@@ -224,7 +224,7 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
      * @param m Entidad de dominio a convertir.
      * @return {@link RespuestaMetaAhorro} con los datos mapeados.
      */
-    public RespuestaMetaAhorro convertirADTO(MetaAhorro m) {
+    private RespuestaMetaAhorro convertirADTO(MetaAhorro m) {
         return new RespuestaMetaAhorro(
                 m.getId(), m.getNombre(),
                 m.getMontoObjetivo(), m.getMontoActual(),

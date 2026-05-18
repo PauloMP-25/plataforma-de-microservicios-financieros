@@ -4,7 +4,6 @@ import com.libreria.comun.dtos.ContextoEstrategicoIADTO;
 import com.libreria.comun.mensajeria.PublicadorEventosBase;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -58,7 +57,6 @@ public class PublicadorSincronizacionIA extends PublicadorEventosBase {
      * @param usuarioId ID del usuario propietario del contexto.
      * @param contexto  DTO ligero con el contexto financiero optimizado para IA.
      */
-    @Async
     public void publicarActualizacionContexto(UUID usuarioId, ContextoEstrategicoIADTO contexto) {
         log.info("[SYNC-IA] Publicando contexto actualizado para usuarioId={}, nombres='{}'",
                 usuarioId, contexto.nombres());

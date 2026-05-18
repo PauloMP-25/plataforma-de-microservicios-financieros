@@ -178,8 +178,7 @@ public class ServicioLimiteGastoImpl implements ServicioLimiteGasto {
                 .orElse(false);
     }
 
-    @Override
-    public RespuestaLimiteGasto convertirADTO(LimiteGasto limite) {
+    private RespuestaLimiteGasto convertirADTO(LimiteGasto limite) {
         return new RespuestaLimiteGasto(
                 limite.getId(),
                 limite.getUsuarioId(),

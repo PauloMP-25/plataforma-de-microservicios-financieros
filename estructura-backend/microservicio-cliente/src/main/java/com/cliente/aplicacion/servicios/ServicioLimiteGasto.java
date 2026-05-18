@@ -78,11 +78,5 @@ public interface ServicioLimiteGasto {
     public boolean evaluarYNotificarLimiteGlobal(UUID usuarioId, BigDecimal 
             gastoTotalActual, String ipOrigen);
 
-    /**
-     * Convierte una entidad al DTO de respuesta.
-     *
-     * @param limite Información del cliente
-     * @return RespuestaLimiteGasto DTO de respuesta.
-     */
-    public RespuestaLimiteGasto convertirADTO(LimiteGasto limite);
+
 }

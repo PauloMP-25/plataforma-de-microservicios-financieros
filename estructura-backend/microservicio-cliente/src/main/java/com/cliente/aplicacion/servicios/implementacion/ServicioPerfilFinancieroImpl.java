@@ -141,7 +141,7 @@ public class ServicioPerfilFinancieroImpl implements ServicioPerfilFinanciero {
      * @param e Entidad de dominio a convertir.
      * @return {@link RespuestaPerfilFinanciero} con los datos mapeados.
      */
-    public RespuestaPerfilFinanciero convertirADTO(PerfilFinanciero e) {
+    private RespuestaPerfilFinanciero convertirADTO(PerfilFinanciero e) {
         return new RespuestaPerfilFinanciero(
                 e.getOcupacion(),
                 e.getIngresoMensual(), e.getEstiloVida(), e.getTonoIA(),

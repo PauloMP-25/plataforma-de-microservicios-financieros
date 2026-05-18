@@ -52,5 +52,4 @@ public interface ServicioDatosPersonales {
      */
     void actualizarTelefono(UUID usuarioId, String telefono);
 
-    public RespuestaDatosPersonales convertirADTO(DatosPersonales datos);
 }

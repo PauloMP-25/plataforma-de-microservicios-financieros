@@ -143,8 +143,7 @@ public class ServicioDatosPersonalesImpl implements ServicioDatosPersonales {
         servicioContexto.refrescarContextoRedis(usuarioId);
     }
 
-    @Override
-    public RespuestaDatosPersonales convertirADTO(DatosPersonales e) {
+    private RespuestaDatosPersonales convertirADTO(DatosPersonales e) {
         return new RespuestaDatosPersonales(
                 e.getDni(), e.getNombres(), e.getApellidos(),
                 e.getGenero(), e.getEdad(), e.getTelefono(),

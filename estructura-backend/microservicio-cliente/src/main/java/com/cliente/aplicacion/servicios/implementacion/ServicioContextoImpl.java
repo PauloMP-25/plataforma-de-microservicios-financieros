@@ -1,18 +1,23 @@
 package com.cliente.aplicacion.servicios.implementacion;
 
 import com.libreria.comun.dtos.ContextoEstrategicoIADTO;
+import com.libreria.comun.dtos.ContextoUsuarioDTO;
 import com.cliente.aplicacion.servicios.ServicioContexto;
 import com.cliente.dominio.repositorios.DatosPersonalesRepositorio;
 import com.cliente.dominio.repositorios.LimiteGastoRepositorio;
 import com.cliente.dominio.repositorios.MetaAhorroRepositorio;
 import com.cliente.dominio.repositorios.PerfilFinancieroRepositorio;
+import com.cliente.dominio.entidades.DatosPersonales;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Comparator;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.cliente.infraestructura.mensajeria.PublicadorSincronizacionIA;
@@ -23,7 +28,7 @@ import com.cliente.infraestructura.mensajeria.PublicadorSincronizacionIA;
  * contexto completo con una sola llamada HTTP.
  * 
  * @author Paulo Moron
- * @version 1.1.0
+ * @version 1.2.0
  * @since 2026-05-10
  */
 @Service
@@ -46,42 +51,41 @@ public class ServicioContextoImpl implements ServicioContexto {
         log.debug("Construyendo contexto estratégico ligero para IA, usuarioId={}", usuarioId);
 
         // 1. Obtener el contexto completo para evitar múltiples queries dispersas
-        com.libreria.comun.dtos.ContextoUsuarioDTO completo = obtenerContextoCompleto(usuarioId);
+        ContextoUsuarioDTO completo = obtenerContextoCompleto(usuarioId);
 
-        // 2. Recuperar nombres (esto no está en el DTO común pero es necesario para el
-        // saludo)
+        // 2. Recuperar nombres (esto no está en el DTO común pero es necesario para el saludo)
         String nombres = repoDatosPersonales.findByUsuarioId(usuarioId)
-                .map(com.cliente.dominio.entidades.DatosPersonales::getNombres)
+                .map(DatosPersonales::getNombres)
                 .orElse("Usuario");
 
         // 3. Extraer datos del perfil
         var perfil = completo.getPerfilFinanciero();
         String ocupacion = (perfil != null && perfil.getOcupacion() != null) ? perfil.getOcupacion()
                         : "No especificado";
-        java.math.BigDecimal ingresoMensual = (perfil != null && perfil.getIngresoMensual() != null)
+        BigDecimal ingresoMensual = (perfil != null && perfil.getIngresoMensual() != null)
                         ? perfil.getIngresoMensual()
-                        : java.math.BigDecimal.ZERO;
+                        : BigDecimal.ZERO;
         String tonoIA = (perfil != null && perfil.getTonoIA() != null) ? perfil.getTonoIA() : "Amigable";
 
         // 4. Determinar la meta principal (la de mayor progreso)
-        java.math.BigDecimal porcentajeMeta = java.math.BigDecimal.ZERO;
+        BigDecimal porcentajeMeta = BigDecimal.ZERO;
         String nombreMeta = "Sin metas activas";
 
         if (completo.getMetas() != null && !completo.getMetas().isEmpty()) {
                 var mejorMeta = completo.getMetas().stream()
                                 .filter(m -> m.getMontoObjetivo() != null
-                                                && m.getMontoObjetivo().compareTo(java.math.BigDecimal.ZERO) > 0)
-                                .max(java.util.Comparator.comparing(m -> m.getMontoActual()
-                                                .multiply(new java.math.BigDecimal("100"))
-                                                .divide(m.getMontoObjetivo(), 2, java.math.RoundingMode.HALF_UP)))
+                                                && m.getMontoObjetivo().compareTo(BigDecimal.ZERO) > 0)
+                                .max(Comparator.comparing(m -> m.getMontoActual()
+                                                .multiply(new BigDecimal("100"))
+                                                .divide(m.getMontoObjetivo(), 2, RoundingMode.HALF_UP)))
                                 .orElse(null);
 
             if (mejorMeta != null) {
-                    porcentajeMeta = mejorMeta.getMontoActual().multiply(new java.math.BigDecimal("100"))
-                                    .divide(mejorMeta.getMontoObjetivo(), 2, java.math.RoundingMode.HALF_UP);
+                    porcentajeMeta = mejorMeta.getMontoActual().multiply(new BigDecimal("100"))
+                                    .divide(mejorMeta.getMontoObjetivo(), 2, RoundingMode.HALF_UP);
                     nombreMeta = mejorMeta.getNombre();
             }
-    }
+        }
 
         // 5. Límite de Gasto
         Integer alertaGasto = (completo.getLimiteGlobal() != null)
@@ -100,12 +104,12 @@ public class ServicioContextoImpl implements ServicioContexto {
 
     @Override
     @Transactional(readOnly = true)
-    public com.libreria.comun.dtos.ContextoUsuarioDTO obtenerContextoCompleto(UUID usuarioId) {
+    public ContextoUsuarioDTO obtenerContextoCompleto(UUID usuarioId) {
             log.debug("Consolidando contexto completo para usuarioId={}", usuarioId);
 
             // 1. Perfil Financiero
             var perfilDTO = repoPerfilFinanciero.findByUsuarioId(usuarioId)
-                            .map(p -> com.libreria.comun.dtos.ContextoUsuarioDTO.PerfilFinancieroDTO.builder()
+                            .map(p -> ContextoUsuarioDTO.PerfilFinancieroDTO.builder()
                                             .ocupacion(p.getOcupacion())
                                             .ingresoMensual(p.getIngresoMensual())
                                             .tonoIA(p.getTonoIA())
@@ -113,26 +117,26 @@ public class ServicioContextoImpl implements ServicioContexto {
                                             .build())
                             .orElse(null);
 
-            // 2. Metas de Ahorro (Corregido findByUsuarioId)
+            // 2. Metas de Ahorro
             var metasDTO = repoMetaAhorro.findByUsuarioIdOrderByFechaCreacionDesc(usuarioId).stream()
-                            .map(m -> com.libreria.comun.dtos.ContextoUsuarioDTO.MetaAhorroDTO.builder()
+                            .map(m -> ContextoUsuarioDTO.MetaAhorroDTO.builder()
                                             .nombre(m.getNombre())
                                             .montoObjetivo(m.getMontoObjetivo())
                                             .montoActual(m.getMontoActual())
                                             .fechaMeta(m.getFechaLimite() != null ? m.getFechaLimite().toString()
                                                             : null)
                                             .build())
-                            .collect(java.util.stream.Collectors.toList());
+                            .collect(Collectors.toList());
 
             // 3. Límite Global
             var limiteDTO = repoLimiteGasto.findByUsuarioIdAndActivoTrue(usuarioId)
-                            .map(l -> com.libreria.comun.dtos.ContextoUsuarioDTO.LimiteGlobalDTO.builder()
+                            .map(l -> ContextoUsuarioDTO.LimiteGlobalDTO.builder()
                                             .montoLimite(l.getMontoLimite())
                                             .porcentajeAlerta(l.getPorcentajeAlerta())
                                             .build())
                             .orElse(null);
 
-            return com.libreria.comun.dtos.ContextoUsuarioDTO.builder()
+            return ContextoUsuarioDTO.builder()
                             .idUsuario(usuarioId)
                             .perfilFinanciero(perfilDTO)
                             .metas(metasDTO)
@@ -142,7 +146,6 @@ public class ServicioContextoImpl implements ServicioContexto {
 
     @SuppressWarnings("null")
     @Override
-    @Async
     public void refrescarContextoRedis(UUID usuarioId) {
         try {
             log.info("Refrescando contexto IA en Redis para usuarioId={}", usuarioId);
@@ -151,7 +154,7 @@ public class ServicioContextoImpl implements ServicioContexto {
             redisTemplate.opsForValue().set(redisKey, objectMapper.writeValueAsString(contexto),
                     java.time.Duration.ofHours(1));
 
-            // Publicar a RabbitMQ para sincronización en tiempo real con ms-ia
+            // Publicar a RabbitMQ para sincronización en tiempo real con ms-ia (síncronamente en hilo seguro)
             publicadorSincronizacionIA.publicarActualizacionContexto(usuarioId, contexto);
         } catch (Exception e) {
             log.error("Error al refrescar contexto en Redis para usuarioId={}", usuarioId, e);
