@@ -86,12 +86,9 @@ public class ServicioSeguridadAuditoriaImpl implements ServicioSeguridadAuditori
         }
     }
 
-    /**
-     * Registra o actualiza el bloqueo de una IP en la base de datos.
-     */
     private void bloquearIp(String ip, long intentos) {
         LocalDateTime ahora = LocalDateTime.now();
-        ListaNegraIp registro = repositorioListaNegra.findById(Objects.requireNonNull(ip))
+        ListaNegraIp registro = repositorioListaNegra.findActivaByIp(Objects.requireNonNull(ip), ahora)
                 .orElse(ListaNegraIp.builder().ip(ip).fechaBloqueo(ahora).build());
 
         registro.setMotivo(String.format("Bloqueo automático: %d intentos fallidos.", intentos));

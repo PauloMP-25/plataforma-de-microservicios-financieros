@@ -36,6 +36,6 @@ public interface AuditoriaTransaccionalRepository extends JpaRepository<Auditori
      */
     Page<AuditoriaTransaccional> findByEntidadAfectadaAndEntidadIdOrderByFechaDesc(
             String entidadAfectada,
-            String entidadId,
+            UUID entidadId,
             Pageable paginacion);
 }
