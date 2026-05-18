@@ -1,4 +1,4 @@
-package com.mensajeria.aplicacion.dtos;
+package com.mensajeria.aplicacion.dtos.solicitudes;
 
 import jakarta.validation.constraints.*;
 import java.util.UUID;

@@ -1,7 +1,9 @@
-package com.mensajeria.aplicacion.servicios.impl;
+package com.mensajeria.aplicacion.servicios;
 
 import com.mensajeria.aplicacion.excepciones.MensajeriaExternaException;
-import com.mensajeria.aplicacion.servicios.IEmailService;
+import com.mensajeria.aplicacion.puertos.IEmailService;
+import com.mensajeria.aplicacion.servicios.canales.CanalNotificacionStrategy;
+import com.mensajeria.aplicacion.servicios.canales.TipoNotificacion;
 import com.libreria.comun.enums.PropositoCodigo;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -21,7 +23,7 @@ import java.util.Map;
  */
 @Service
 @Slf4j
-public class EmailServiceImpl implements IEmailService, com.mensajeria.aplicacion.servicios.CanalNotificacionStrategy {
+public class EmailServiceImpl implements IEmailService, CanalNotificacionStrategy {
 
     @Override
     public void enviar(String destinatario, Map<String, Object> variables) {
@@ -31,8 +33,8 @@ public class EmailServiceImpl implements IEmailService, com.mensajeria.aplicacio
     }
 
     @Override
-    public boolean soporta(com.mensajeria.aplicacion.servicios.TipoNotificacion tipo) {
-        return tipo == com.mensajeria.aplicacion.servicios.TipoNotificacion.EMAIL;
+    public boolean soporta(TipoNotificacion tipo) {
+        return tipo == TipoNotificacion.EMAIL;
     }
 
     private final JavaMailSender mailSender;

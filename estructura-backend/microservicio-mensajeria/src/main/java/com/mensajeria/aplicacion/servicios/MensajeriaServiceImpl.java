@@ -1,18 +1,21 @@
-package com.mensajeria.aplicacion.servicios.impl;
+package com.mensajeria.aplicacion.servicios;
 
 import com.libreria.comun.enums.PropositoCodigo;
 import com.libreria.comun.enums.TipoVerificacion;
-import com.mensajeria.aplicacion.dtos.*;
+import com.mensajeria.aplicacion.dtos.solicitudes.SolicitudGenerarCodigo;
+import com.mensajeria.aplicacion.dtos.solicitudes.SolicitudValidarCodigo;
+import com.mensajeria.aplicacion.dtos.respuestas.RespuestaGeneracion;
+import com.mensajeria.aplicacion.dtos.respuestas.RespuestaValidacion;
 import com.mensajeria.aplicacion.excepciones.LimiteCodigosExcedidoException;
 import com.mensajeria.aplicacion.excepciones.UsuarioBloqueadoExcepcion;
 import com.mensajeria.dominio.entidades.CodigoVerificacion;
 import com.mensajeria.dominio.entidades.IntentoValidacion;
 import com.mensajeria.dominio.repositorios.CodigoVerificacionRepository;
 import com.mensajeria.dominio.repositorios.IntentoValidacionRepository;
-import com.mensajeria.aplicacion.servicios.IMensajeriaService;
-import com.mensajeria.aplicacion.servicios.IThrottlingService;
-import com.mensajeria.aplicacion.servicios.NotificacionService;
-import com.mensajeria.aplicacion.servicios.TipoNotificacion;
+import com.mensajeria.aplicacion.puertos.IMensajeriaService;
+import com.mensajeria.aplicacion.puertos.IThrottlingService;
+import com.mensajeria.aplicacion.servicios.canales.NotificacionService;
+import com.mensajeria.aplicacion.servicios.canales.TipoNotificacion;
 import java.util.Map;
 import com.mensajeria.infraestructura.clientes.ClienteUsuario;
 import com.mensajeria.infraestructura.clientes.ClienteActualizarTelefono;

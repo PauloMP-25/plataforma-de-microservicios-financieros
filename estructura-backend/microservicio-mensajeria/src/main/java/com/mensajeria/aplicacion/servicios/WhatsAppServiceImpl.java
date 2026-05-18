@@ -1,7 +1,9 @@
-package com.mensajeria.aplicacion.servicios.impl;
+package com.mensajeria.aplicacion.servicios;
 
 import com.mensajeria.aplicacion.excepciones.MensajeriaExternaException;
-import com.mensajeria.aplicacion.servicios.IWhatsAppService;
+import com.mensajeria.aplicacion.puertos.IWhatsAppService;
+import com.mensajeria.aplicacion.servicios.canales.CanalNotificacionStrategy;
+import com.mensajeria.aplicacion.servicios.canales.TipoNotificacion;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -26,7 +28,7 @@ import java.util.Map;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class WhatsAppServiceImpl implements IWhatsAppService, com.mensajeria.aplicacion.servicios.CanalNotificacionStrategy {
+public class WhatsAppServiceImpl implements IWhatsAppService, CanalNotificacionStrategy {
 
     @Override
     public void enviar(String destinatario, Map<String, Object> variables) {
@@ -44,8 +46,8 @@ public class WhatsAppServiceImpl implements IWhatsAppService, com.mensajeria.apl
     }
 
     @Override
-    public boolean soporta(com.mensajeria.aplicacion.servicios.TipoNotificacion tipo) {
-        return tipo == com.mensajeria.aplicacion.servicios.TipoNotificacion.WHATSAPP;
+    public boolean soporta(TipoNotificacion tipo) {
+        return tipo == TipoNotificacion.WHATSAPP;
     }
 
 

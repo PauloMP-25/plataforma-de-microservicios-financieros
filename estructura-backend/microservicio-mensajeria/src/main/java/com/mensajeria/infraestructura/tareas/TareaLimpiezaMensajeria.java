@@ -1,4 +1,4 @@
-package com.mensajeria.infraestructura.configuracion;
+package com.mensajeria.infraestructura.tareas;
 
 import com.mensajeria.dominio.repositorios.CodigoVerificacionRepository;
 import com.mensajeria.dominio.repositorios.IntentoValidacionRepository;

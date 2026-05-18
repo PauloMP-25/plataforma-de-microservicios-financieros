@@ -1,4 +1,4 @@
-package com.mensajeria.aplicacion.servicios;
+package com.mensajeria.aplicacion.puertos;
 
 import com.libreria.comun.enums.PropositoCodigo;
 import java.util.Map;

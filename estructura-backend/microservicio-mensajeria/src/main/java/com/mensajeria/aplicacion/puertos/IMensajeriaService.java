@@ -1,6 +1,10 @@
-package com.mensajeria.aplicacion.servicios;
+package com.mensajeria.aplicacion.puertos;
 
 import com.libreria.comun.enums.PropositoCodigo;
+import com.mensajeria.aplicacion.dtos.solicitudes.SolicitudGenerarCodigo;
+import com.mensajeria.aplicacion.dtos.solicitudes.SolicitudValidarCodigo;
+import com.mensajeria.aplicacion.dtos.respuestas.RespuestaGeneracion;
+import com.mensajeria.aplicacion.dtos.respuestas.RespuestaValidacion;
 
 /**
  * Contrato del servicio principal de mensajería y OTP.
@@ -28,8 +32,7 @@ public interface IMensajeriaService {
      * @throws com.mensajeria.aplicacion.excepciones.LimiteCodigosExcedidoException
      *             si el usuario ya agotó los 3 códigos diarios para ese propósito.
      */
-    com.mensajeria.aplicacion.dtos.RespuestaGeneracion generarYEnviarCodigo(
-            com.mensajeria.aplicacion.dtos.SolicitudGenerarCodigo solicitud);
+    RespuestaGeneracion generarYEnviarCodigo(SolicitudGenerarCodigo solicitud);
 
     /**
      * Valida el OTP para el flujo de activación de cuenta. Si es correcto,
@@ -42,8 +45,7 @@ public interface IMensajeriaService {
      * @throws com.mensajeria.aplicacion.excepciones.CodigoInvalidoException
      *             si el código es incorrecto o ya fue usado.
      */
-    com.mensajeria.aplicacion.dtos.RespuestaValidacion validarParaActivacion(
-            com.mensajeria.aplicacion.dtos.SolicitudValidarCodigo solicitud);
+    RespuestaValidacion validarParaActivacion(SolicitudValidarCodigo solicitud);
 
     /**
      * Valida el OTP para el flujo de recuperación de contraseña. Retorna el UUID

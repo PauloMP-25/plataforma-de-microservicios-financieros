@@ -51,8 +51,8 @@
         <!-- DOTENV: Carga automáticamente archivos .env locales para desarrollo local sin quemar credenciales -->
         <dependency>
             <groupId>me.paulschwarz</groupId>
-            <artifactId>dotenv-spring-boot-starter</artifactId>
-            <version>4.0.0</version>
+            <artifactId>springboot3-dotenv</artifactId>
+            <version>5.1.0</version>
         </dependency>
 
         <!-- PERSISTENCIA -->

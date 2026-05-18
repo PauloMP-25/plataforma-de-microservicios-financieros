@@ -1,6 +1,8 @@
-package com.mensajeria.aplicacion.servicios.impl;
+package com.mensajeria.aplicacion.servicios;
 
-import com.mensajeria.aplicacion.servicios.ISmsService;
+import com.mensajeria.aplicacion.puertos.ISmsService;
+import com.mensajeria.aplicacion.servicios.canales.CanalNotificacionStrategy;
+import com.mensajeria.aplicacion.servicios.canales.TipoNotificacion;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
@@ -21,7 +23,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Slf4j
-public class SmsServiceImpl implements ISmsService, com.mensajeria.aplicacion.servicios.CanalNotificacionStrategy {
+public class SmsServiceImpl implements ISmsService, CanalNotificacionStrategy {
 
     @Override
     public void enviar(String destinatario, java.util.Map<String, Object> variables) {
@@ -30,8 +32,8 @@ public class SmsServiceImpl implements ISmsService, com.mensajeria.aplicacion.se
     }
 
     @Override
-    public boolean soporta(com.mensajeria.aplicacion.servicios.TipoNotificacion tipo) {
-        return tipo == com.mensajeria.aplicacion.servicios.TipoNotificacion.SMS;
+    public boolean soporta(TipoNotificacion tipo) {
+        return tipo == TipoNotificacion.SMS;
     }
 
 

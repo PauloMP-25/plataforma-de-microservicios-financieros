@@ -43,10 +43,6 @@ public interface CodigoVerificacionRepository extends JpaRepository<CodigoVerifi
     @Query("DELETE FROM CodigoVerificacion c WHERE c.fechaExpiracion < :fecha OR c.usado = true")
     int eliminarCodigosObsoletos(@Param("fecha") LocalDateTime fecha);
 
-    /**
-     * Cuenta cuántos códigos tiene un usuario para un propósito.
-     */
-    long countByUsuarioIdAndPropositoAndUsadoFalse(UUID usuarioId, PropositoCodigo proposito);
     
     /**
      * Cuenta cuántos códigos ha solicitado un usuario para un propósito desde una fecha dada.

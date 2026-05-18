@@ -1,4 +1,4 @@
-package com.mensajeria.aplicacion.dtos;
+package com.mensajeria.aplicacion.dtos.respuestas;
 
 public record RespuestaGeneracion(
     boolean exito,

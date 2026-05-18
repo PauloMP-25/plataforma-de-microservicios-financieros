@@ -1,7 +1,9 @@
-package com.mensajeria.infraestructura.mensajeria;
+package com.mensajeria.infraestructura.mensajeria.consumidores;
 
-import com.mensajeria.aplicacion.dtos.SolicitudGenerarCodigo;
-import com.mensajeria.aplicacion.servicios.IMensajeriaService;
+import com.mensajeria.infraestructura.mensajeria.ConfiguracionRabbitMQ;
+
+import com.mensajeria.aplicacion.dtos.solicitudes.SolicitudGenerarCodigo;
+import com.mensajeria.aplicacion.puertos.IMensajeriaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;

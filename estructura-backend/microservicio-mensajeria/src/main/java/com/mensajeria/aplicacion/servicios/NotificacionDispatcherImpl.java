@@ -1,6 +1,9 @@
-package com.mensajeria.aplicacion.servicios.impl;
+package com.mensajeria.aplicacion.servicios;
 
-import com.mensajeria.aplicacion.servicios.*;
+import com.mensajeria.aplicacion.puertos.IEmailService;
+import com.mensajeria.aplicacion.servicios.canales.CanalNotificacionStrategy;
+import com.mensajeria.aplicacion.servicios.canales.NotificacionService;
+import com.mensajeria.aplicacion.servicios.canales.TipoNotificacion;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

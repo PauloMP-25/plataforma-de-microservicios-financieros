@@ -1,4 +1,4 @@
-package com.mensajeria.aplicacion.dtos;
+package com.mensajeria.aplicacion.dtos.respuestas;
 
 /**
  * Respuesta estándar tras validar un código.

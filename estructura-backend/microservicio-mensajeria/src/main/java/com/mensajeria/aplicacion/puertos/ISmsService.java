@@ -1,4 +1,4 @@
-package com.mensajeria.aplicacion.servicios;
+package com.mensajeria.aplicacion.puertos;
 
 /**
  * Contrato del servicio de envío de SMS.

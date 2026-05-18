@@ -1,7 +1,10 @@
 package com.mensajeria.presentacion.controladores;
 
-import com.mensajeria.aplicacion.dtos.*;
-import com.mensajeria.aplicacion.servicios.IMensajeriaService;
+import com.mensajeria.aplicacion.dtos.solicitudes.SolicitudGenerarCodigo;
+import com.mensajeria.aplicacion.dtos.solicitudes.SolicitudValidarCodigo;
+import com.mensajeria.aplicacion.dtos.respuestas.RespuestaGeneracion;
+import com.mensajeria.aplicacion.dtos.respuestas.RespuestaValidacion;
+import com.mensajeria.aplicacion.puertos.IMensajeriaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

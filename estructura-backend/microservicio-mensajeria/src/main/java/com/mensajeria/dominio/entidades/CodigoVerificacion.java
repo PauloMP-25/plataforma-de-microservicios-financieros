@@ -93,18 +93,7 @@ public class CodigoVerificacion {
     public boolean isExpirado() {
         return LocalDateTime.now().isAfter(fechaExpiracion);
     }
-
-    /**
-     * Valida el código ingresado contra el almacenado. Retorna true únicamente
-     * si no está usado, no expiró y los valores coinciden.
-     *
-     * @param codigoIngresado
-     * @return
-     */
-    public boolean isValido(String codigoIngresado) {
-        return !usado && !isExpirado() && codigo.equals(codigoIngresado);
-    }
-
+    
     /**
      * Validación optimizada: verifica si el código coincide, no ha sido usado,
      * no ha expirado y el propósito es el correcto.

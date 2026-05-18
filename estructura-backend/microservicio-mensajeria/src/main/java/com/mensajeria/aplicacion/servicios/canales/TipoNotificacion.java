@@ -1,4 +1,4 @@
-package com.mensajeria.aplicacion.servicios;
+package com.mensajeria.aplicacion.servicios.canales;
 
 /**
  * Enumeración de los canales de notificación disponibles en el sistema.
