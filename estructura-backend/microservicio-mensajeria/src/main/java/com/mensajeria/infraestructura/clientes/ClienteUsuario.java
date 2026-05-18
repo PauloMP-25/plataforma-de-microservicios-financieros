@@ -16,7 +16,12 @@ import org.springframework.web.bind.annotation.RequestParam;
  * NOTA: El endpoint confirmar-email es público en el ms-usuario (ver
  * ConfiguracionSeguridad), por lo que no se requiere JWT.
  */
-@FeignClient(name = "microservicio-usuario", contextId = "clienteUsuario", url = "${microservicio.usuario.url:http://localhost:8081}")
+@FeignClient(
+        name = "microservicio-usuario",
+        contextId = "clienteUsuario",
+        url = "${microservicio.usuario.url:http://localhost:8081}",
+        fallback = ClienteUsuarioFallback.class
+)
 public interface ClienteUsuario {
 
     /**

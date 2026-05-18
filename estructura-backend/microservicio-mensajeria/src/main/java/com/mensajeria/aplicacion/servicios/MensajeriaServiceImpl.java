@@ -6,8 +6,7 @@ import com.mensajeria.aplicacion.dtos.solicitudes.SolicitudGenerarCodigo;
 import com.mensajeria.aplicacion.dtos.solicitudes.SolicitudValidarCodigo;
 import com.mensajeria.aplicacion.dtos.respuestas.RespuestaGeneracion;
 import com.mensajeria.aplicacion.dtos.respuestas.RespuestaValidacion;
-import com.mensajeria.aplicacion.excepciones.LimiteCodigosExcedidoException;
-import com.mensajeria.aplicacion.excepciones.UsuarioBloqueadoExcepcion;
+import com.mensajeria.aplicacion.excepciones.*;
 import com.mensajeria.dominio.entidades.CodigoVerificacion;
 import com.mensajeria.dominio.entidades.IntentoValidacion;
 import com.mensajeria.dominio.repositorios.CodigoVerificacionRepository;
@@ -95,11 +94,11 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
         // Validación condicional según el canal
         if (solicitud.tipo() == com.libreria.comun.enums.TipoVerificacion.EMAIL) {
             if (solicitud.email() == null || solicitud.email().isBlank()) {
-                throw new IllegalArgumentException("El email es obligatorio para el canal EMAIL");
+                throw new CodigoInvalidoException("el canal EMAIL requiere un email válido");
             }
         } else {
             if (solicitud.telefono() == null || solicitud.telefono().isBlank()) {
-                throw new IllegalArgumentException("El teléfono es obligatorio para el canal " + solicitud.tipo());
+                throw new CodigoInvalidoException("el canal SMS/WHATSAPP requiere un teléfono en formato E.164");
             }
         }
 
@@ -180,6 +179,7 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
      * </p>
      */
     @Override
+    @Transactional
     public RespuestaValidacion validarParaActivacion(SolicitudValidarCodigo solicitud) {
         CodigoVerificacion cv = procesarValidacionInterna(solicitud, PropositoCodigo.ACTIVACION_CUENTA);
         String telefonoVerificado = cv.getTelefono();
@@ -187,7 +187,18 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
         log.info("[MS-MENSAJERIA] Activando cuenta para usuario: {} con teléfono: {}",
                 cv.getUsuarioId(), telefonoVerificado);
 
-        clienteUsuario.activarCuenta(cv.getUsuarioId(), telefonoVerificado);
+        String resultado = clienteUsuario.activarCuenta(cv.getUsuarioId(), telefonoVerificado);
+
+        if ("ACTIVACION_PENDIENTE".equals(resultado)) {
+            log.error("[MS-MENSAJERIA] Activación fallida en ms-usuario para: {}. El OTP sigue siendo válido.", cv.getUsuarioId());
+            throw new MensajeriaExternaException("No se pudo activar la cuenta en el servicio de usuario. El OTP sigue activo. Intente de nuevo.", "ms-usuario offline durante la activación");
+        }
+
+        // Mover el cv.setUsado(true) a después de que activarCuenta() confirme éxito — no antes.
+        cv.setUsado(true);
+        cv.setFechaUso(LocalDateTime.now());
+        resetearIntentos(solicitud.usuarioId());
+        codigoRepository.save(cv);
 
         return new RespuestaValidacion(true, "OTP válido. Cuenta activada y teléfono sincronizado.");
     }
@@ -204,11 +215,10 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
     public UUID validarCodigoYObtenerUsuario(UUID registroId, String codigoStr) {
         CodigoVerificacion cv = codigoRepository
                 .findByIdAndCodigoAndUsadoFalse(registroId, codigoStr)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "El código o el identificador son incorrectos."));
+                .orElseThrow(() -> new CodigoInvalidoException("código o identificador incorrecto"));
 
         if (cv.isExpirado()) {
-            throw new IllegalStateException("El código ha expirado.");
+            throw new CodigoExpiradoException();
         }
 
         cv.setUsado(true);
@@ -245,30 +255,34 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
      * @param sol  DTO con el ID del usuario y el código ingresado.
      * @param prop Propósito esperado del OTP ({@code ACTIVACION_CUENTA} o
      *             {@code RECUPERACION_PASSWORD}).
-     * @return Entidad {@link CodigoVerificacion} marcada como usada y persistida.
+     * @return Entidad {@link CodigoVerificacion} validada (no guardada como usada).
      * @throws UsuarioBloqueadoExcepcion si el usuario ya está bloqueado.
-     * @throws IllegalStateException     si no hay códigos pendientes para el
-     *                                   propósito.
-     * @throws IllegalArgumentException  si el código es incorrecto o expirado.
+     * @throws CodigoPendienteNotFoundException si no hay códigos pendientes.
+     * @throws CodigoExpiradoException si el código ya expiró.
+     * @throws CodigoInvalidoException si el código es incorrecto.
      */
     private CodigoVerificacion procesarValidacionInterna(SolicitudValidarCodigo sol, PropositoCodigo prop) {
         verificarBloqueo(sol.usuarioId());
 
         CodigoVerificacion cv = codigoRepository
                 .findTopByUsuarioIdAndPropositoAndUsadoFalseOrderByFechaCreacionDesc(sol.usuarioId(), prop)
-                .orElseThrow(() -> new IllegalStateException("No hay códigos OTP pendientes para este propósito."));
+                .orElseThrow(() -> new CodigoPendienteNotFoundException(sol.usuarioId()));
 
-        if (!cv.esValidoPara(sol.codigo(), prop)) {
+        if (cv.isExpirado()) {
             if (registrarIntentoFallido(sol.usuarioId())) {
                 throw new UsuarioBloqueadoExcepcion(sol.usuarioId(), bloqueoHoras);
             }
-            throw new IllegalArgumentException("Código incorrecto o ya expirado.");
+            throw new CodigoExpiradoException();
         }
 
-        cv.setUsado(true);
-        cv.setFechaUso(LocalDateTime.now());
-        resetearIntentos(sol.usuarioId());
-        return codigoRepository.save(cv);
+        if (!cv.getCodigo().equals(sol.codigo())) {
+            if (registrarIntentoFallido(sol.usuarioId())) {
+                throw new UsuarioBloqueadoExcepcion(sol.usuarioId(), bloqueoHoras);
+            }
+            throw new CodigoInvalidoException("código incorrecto");
+        }
+
+        return cv;
     }
 
     /**

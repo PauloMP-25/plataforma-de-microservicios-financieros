@@ -22,7 +22,8 @@ public class ManejadorGlobalExcepciones extends ManejadorGlobalExcepcionesBase {
     @ExceptionHandler({
         CodigoExpiradoException.class,
         CodigoInvalidoException.class,
-        CodigoPendienteNotFoundException.class
+        CodigoPendienteNotFoundException.class,
+        TelefonoInvalidoException.class
     })
     public ResponseEntity<ResultadoApi<Void>> manejarErroresCodigo(RuntimeException ex, WebRequest request) {
         return crearRespuestaError(CodigoError.TOKEN_INVALIDO, ex.getMessage(), HttpStatus.BAD_REQUEST, request);
@@ -38,7 +39,7 @@ public class ManejadorGlobalExcepciones extends ManejadorGlobalExcepcionesBase {
 
     @ExceptionHandler(UsuarioBloqueadoExcepcion.class)
     public ResponseEntity<ResultadoApi<Void>> manejarUsuarioBloqueado(UsuarioBloqueadoExcepcion ex, WebRequest request) {
-        return crearRespuestaError(CodigoError.CUENTA_BLOQUEADA, ex.getMessage(), HttpStatus.LOCKED, request);
+        return crearRespuestaError(CodigoError.CUENTA_BLOQUEADA, ex.getMessage(), HttpStatus.TOO_MANY_REQUESTS, request);
     }
 
     @ExceptionHandler(MensajeriaExternaException.class)
