@@ -12,13 +12,11 @@ import com.mensajeria.dominio.entidades.IntentoValidacion;
 import com.mensajeria.dominio.repositorios.CodigoVerificacionRepository;
 import com.mensajeria.dominio.repositorios.IntentoValidacionRepository;
 import com.mensajeria.aplicacion.puertos.IMensajeriaService;
-import com.mensajeria.aplicacion.puertos.IThrottlingService;
 import com.mensajeria.aplicacion.servicios.canales.NotificacionService;
 import com.mensajeria.aplicacion.servicios.canales.TipoNotificacion;
 import java.util.Map;
 import com.mensajeria.infraestructura.clientes.ClienteUsuario;
 import com.mensajeria.infraestructura.clientes.ClienteActualizarTelefono;
-import com.mensajeria.infraestructura.mensajeria.PublicadorAuditoria;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -41,7 +39,7 @@ import java.util.UUID;
  * @author Paulo Moron
  * @version 1.1.0
  */
-@Service
+@Service("mensajeriaServiceImpl")
 @Slf4j
 @RequiredArgsConstructor
 public class MensajeriaServiceImpl implements IMensajeriaService {
@@ -49,14 +47,14 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
     private final CodigoVerificacionRepository codigoRepository;
     private final IntentoValidacionRepository intentoRepository;
     private final NotificacionService notificacionService;
-    private final IThrottlingService throttlingService;
     private final ClienteUsuario clienteUsuario;
     private final ClienteActualizarTelefono usuarioFeignClient;
-    private final PublicadorAuditoria publicadorAuditoria;
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final com.mensajeria.infraestructura.configuracion.PropiedadesOtp propiedadesOtp;
+    private final java.util.List<com.mensajeria.aplicacion.servicios.validadores.ValidadorOtp> validadores;
+    private final com.mensajeria.aplicacion.fabricas.FabricaCodigoVerificacion fabricaCodigo;
 
     // =========================================================================
     // 1. GENERACIÓN Y ENVÍO
@@ -77,42 +75,14 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
      * </p>
      */
     @Override
-    @SuppressWarnings("null")
     @Transactional
     public RespuestaGeneracion generarYEnviarCodigo(SolicitudGenerarCodigo solicitud) {
-        // Validación condicional según el canal
-        if (solicitud.tipo() == com.libreria.comun.enums.TipoVerificacion.EMAIL) {
-            if (solicitud.email() == null || solicitud.email().isBlank()) {
-                throw new CodigoInvalidoException("el canal EMAIL requiere un email válido");
-            }
-        } else {
-            if (solicitud.telefono() == null || solicitud.telefono().isBlank()) {
-                throw new CodigoInvalidoException("el canal SMS/WHATSAPP requiere un teléfono en formato E.164");
-            }
-        }
-
-        verificarBloqueo(solicitud.usuarioId());
-        verificarLimiteDiario(solicitud.usuarioId(), solicitud.proposito());
-
-        // Throttling por canal independiente (Redis)
-        String canalThrottling = solicitud.tipo().name().toLowerCase();
-        String idThrottling = (solicitud.tipo() == TipoVerificacion.EMAIL)
-                ? solicitud.email()
-                : solicitud.telefono();
-        throttlingService.registrarIntento(canalThrottling, idThrottling);
+        // Ejecutar cadena de responsabilidad para validaciones
+        validadores.forEach(v -> v.validar(solicitud));
 
         String codigo = String.valueOf(100_000 + RANDOM.nextInt(900_000));
 
-        CodigoVerificacion entidad = CodigoVerificacion.builder()
-                .usuarioId(solicitud.usuarioId())
-                .email(solicitud.email())
-                .telefono(solicitud.telefono())
-                .codigo(codigo)
-                .tipo(solicitud.tipo())
-                .proposito(solicitud.proposito())
-                .fechaExpiracion(LocalDateTime.now().plusMinutes(propiedadesOtp.getExpiracionMinutos()))
-                .build();
-
+        CodigoVerificacion entidad = fabricaCodigo.crear(solicitud, codigo);
         codigoRepository.save(entidad);
 
         Map<String, Object> variables = Map.of(
@@ -120,7 +90,7 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
                 "proposito", solicitud.proposito()
         );
 
-        // 2. Resolvemos el canal y el destino
+        // Resolvemos el canal y el destino
         TipoNotificacion tipoEnvio = switch (solicitud.tipo()) {
             case EMAIL -> TipoNotificacion.EMAIL;
             case SMS -> TipoNotificacion.SMS;
@@ -131,15 +101,10 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
                 ? solicitud.email() 
                 : solicitud.telefono();
 
-        // 3. Enviamos de forma agnóstica (la implementación decide si es SMTP o Twilio)
+        // Enviamos de forma agnóstica (la implementación decide si es SMTP o Twilio)
         notificacionService.enviar(tipoEnvio, destino, variables);
 
-        String detalleAudit = String.format("OTP solicitado para %s vía %s",
-                solicitud.proposito(), solicitud.tipo());
-
         if (solicitud.tipo() == TipoVerificacion.SMS || solicitud.tipo() == TipoVerificacion.WHATSAPP) {
-            detalleAudit += " — número: " + enmascararTelefono(solicitud.telefono());
-
             // Si es recuperación por un canal telefónico, sincronizar con fallback de
             // Resilience4j
             if (solicitud.proposito() == PropositoCodigo.RESTABLECER_PASSWORD) {
@@ -152,7 +117,6 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
             }
         }
 
-        registrarAuditoria(solicitud.usuarioId(), "OTP_SOLICITADO", detalleAudit);
         return new RespuestaGeneracion(true, "Código enviado exitosamente", solicitud.tipo());
     }
 
@@ -214,8 +178,6 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
         cv.setFechaUso(LocalDateTime.now());
         resetearIntentos(cv.getUsuarioId());
 
-        registrarAuditoria(cv.getUsuarioId(), "OTP_RESET_EXITOSO",
-                "Validación completada para cambio de contraseña");
         return cv.getUsuarioId();
     }
 
@@ -303,16 +265,8 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
         i.incrementarIntentos();
         int intentosActuales = i.getIntentos();
 
-        if (intentosActuales == 2) {
-            registrarAuditoria(uId, "OTP_ADVERTENCIA",
-                    "Segundo intento fallido. El próximo error bloqueará la cuenta por "
-                            + propiedadesOtp.getBloqueoHoras() + " hora(s).");
-        }
-
         if (intentosActuales >= propiedadesOtp.getMaxIntentos()) {
             i.bloquear(propiedadesOtp.getBloqueoHoras());
-            registrarAuditoria(uId, "USUARIO_BLOQUEADO",
-                    "Máximo de " + propiedadesOtp.getMaxIntentos() + " intentos alcanzado. Cuenta suspendida temporalmente.");
         }
 
         intentoRepository.save(i);
@@ -351,30 +305,5 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
             throw new LimiteCodigosExcedidoException(
                     "Has alcanzado el límite de 3 solicitudes diarias para este trámite. Inténtalo mañana.");
         }
-    }
-
-    /**
-     * Enmascara los últimos 4 dígitos del teléfono para logs de auditoría,
-     * evitando la exposición de datos personales en trazas.
-     *
-     * @param tel Número de teléfono completo en formato E.164.
-     * @return Cadena con los primeros dígitos reemplazados por {@code ****}.
-     */
-    private String enmascararTelefono(String tel) {
-        if (tel == null || tel.length() < 4)
-            return "****";
-        return "****" + tel.substring(tel.length() - 4);
-    }
-
-    /**
-     * Delega la publicación de un evento de auditoría al publicador asíncrono
-     * de RabbitMQ, evitando que un fallo en la mensajería bloquee el flujo.
-     *
-     * @param uId    UUID del usuario que originó el evento.
-     * @param accion Etiqueta corta de la acción (ej. {@code "OTP_SOLICITADO"}).
-     * @param desc   Descripción detallada del evento para trazabilidad.
-     */
-    private void registrarAuditoria(UUID uId, String accion, String desc) {
-        publicadorAuditoria.publicarEventoSeguridad(uId, accion, desc);
     }
 }
