@@ -1,10 +1,10 @@
-package com.nucleo.financiero.aplicacion.servicios.implementacion;
+package com.nucleo.financiero.aplicacion.servicios;
 
 import com.libreria.comun.dtos.ContextoUsuarioDTO;
 import com.libreria.comun.dtos.RespuestaIaDTO;
 import com.libreria.comun.dtos.SolicitudIaDTO;
 import com.libreria.comun.enums.TipoSolicitudIa;
-import com.nucleo.financiero.aplicacion.servicios.IServicioIa;
+import com.nucleo.financiero.aplicacion.puertos.IServicioIa;
 import com.nucleo.financiero.infraestructura.clientes.ClienteIa;
 import com.nucleo.financiero.infraestructura.mensajeria.PublicadorAuditoria;
 import com.nucleo.financiero.infraestructura.clientes.ClienteContexto;
@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
  * </p>
  *
  * @author Luka-Dev-Backend
- * @version 1.2.0
+ * @version 1.3.0
  */
 @Service
 @Slf4j

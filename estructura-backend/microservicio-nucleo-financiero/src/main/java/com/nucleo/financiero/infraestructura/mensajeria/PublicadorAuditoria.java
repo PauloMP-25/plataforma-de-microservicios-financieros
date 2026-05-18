@@ -36,13 +36,13 @@ public class PublicadorAuditoria extends PublicadorEventosBase {
          * @param valorNuevo Representación JSON o String del nuevo estado del objeto.
          * @param ip         Dirección IP desde donde se realiza la acción.
          */
-        public void publicarRegistro(UUID usuarioId, String entidadId, String valorNuevo, String ip) {
+        public void publicarRegistro(UUID usuarioId, UUID entidadId, String valorNuevo, String ip) {
                 // Mapeo al DTO oficial de la librería
-                                EventoTransaccionalDTO dto = EventoTransaccionalDTO.crear(
+                EventoTransaccionalDTO dto = EventoTransaccionalDTO.crear(
                                 usuarioId,
-                                UUID.fromString(entidadId),
-                                                "MICROSERVICIO-NUCLEO-FINANCIERO",
-                                                "TRANSACCION",
+                                entidadId,
+                                "MICROSERVICIO-NUCLEO-FINANCIERO",
+                                "TRANSACCION",
                                 "REGISTRO_MOVIMIENTO",
                                 null,
                                 valorNuevo);

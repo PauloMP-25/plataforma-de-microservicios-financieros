@@ -1,8 +1,8 @@
-package com.nucleo.financiero.aplicacion.servicios.implementacion;
+package com.nucleo.financiero.aplicacion.servicios;
 
-import com.nucleo.financiero.aplicacion.dtos.transacciones.CategoriaDTO;
-import com.nucleo.financiero.aplicacion.dtos.transacciones.CategoriaRequestDTO;
-import com.nucleo.financiero.aplicacion.servicios.ICategoriaService;
+import com.nucleo.financiero.aplicacion.dtos.respuestas.CategoriaDTO;
+import com.nucleo.financiero.aplicacion.dtos.solicitudes.CategoriaRequestDTO;
+import com.nucleo.financiero.aplicacion.puertos.ICategoriaService;
 import com.nucleo.financiero.dominio.entidades.Categoria;
 import com.nucleo.financiero.dominio.entidades.Categoria.TipoMovimiento;
 import com.nucleo.financiero.dominio.repositorios.CategoriaRepository;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * Aplica lógica de negocio y persistencia para el dominio financiero.
  *
  * @author Luka-Dev-Backend
- * @version 1.1.0
+ * @version 1.2.0
  */
 @Service
 @Slf4j
@@ -28,7 +28,6 @@ public class CategoriaServiceImpl implements ICategoriaService {
 
     private final CategoriaRepository categoriaRepository;
 
-    @SuppressWarnings("null")
     @Override
     @Transactional
     public CategoriaDTO crear(CategoriaRequestDTO request) {
@@ -65,7 +64,6 @@ public class CategoriaServiceImpl implements ICategoriaService {
                 .collect(Collectors.toList());
     }
 
-    @SuppressWarnings("null")
     @Override
     @Transactional(readOnly = true)
     public CategoriaDTO obtenerPorId(UUID id) {
@@ -75,7 +73,6 @@ public class CategoriaServiceImpl implements ICategoriaService {
                         "Categoría no encontrada con ID: " + id));
     }
 
-    @SuppressWarnings("null")
     @Override
     @Transactional
     public CategoriaDTO actualizar(UUID id, CategoriaRequestDTO request) {
@@ -100,7 +97,6 @@ public class CategoriaServiceImpl implements ICategoriaService {
         return CategoriaDTO.desde(actualizada);
     }
 
-    @SuppressWarnings("null")
     @Override
     @Transactional
     public void eliminar(UUID id) {

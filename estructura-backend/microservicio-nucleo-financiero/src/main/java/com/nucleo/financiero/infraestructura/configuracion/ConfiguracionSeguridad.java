@@ -47,7 +47,8 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
         http.authorizeHttpRequests(auth -> auth
                 // Endpoints de negocio financiero
                 .requestMatchers("/api/v1/financiero/categorias/**").hasAnyRole("USUARIO", "ADMIN")
-                .requestMatchers("/api/v1/financiero/transacciones/**").hasAnyRole("USUARIO", "ADMIN")
+                .requestMatchers("/api/v1/transacciones/**").hasAnyRole("USUARIO", "ADMIN")
+                .requestMatchers("/api/v1/ia/**").hasAnyRole("USUARIO", "ADMIN")
 
                 // Monitoreo y Documentación (Público)
                 .requestMatchers("/actuator/**", "/error/**").permitAll()

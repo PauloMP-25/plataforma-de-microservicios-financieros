@@ -1,4 +1,4 @@
-package com.nucleo.financiero.aplicacion.dtos.transacciones;
+package com.nucleo.financiero.aplicacion.dtos.respuestas;
 
 import com.nucleo.financiero.dominio.entidades.Transaccion;
 import lombok.Builder;

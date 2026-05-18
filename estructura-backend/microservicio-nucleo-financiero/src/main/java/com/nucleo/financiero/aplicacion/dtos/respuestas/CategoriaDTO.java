@@ -1,8 +1,7 @@
-package com.nucleo.financiero.aplicacion.dtos.transacciones;
+package com.nucleo.financiero.aplicacion.dtos.respuestas;
 
 import com.nucleo.financiero.dominio.entidades.Categoria;
 import lombok.Builder;
-
 import java.util.UUID;
 
 /**
@@ -36,5 +35,5 @@ public record CategoriaDTO(
                 .icono(entidad.getIcono())
                 .tipo(entidad.getTipo().name())
                 .build();
-    }
+       }
 }

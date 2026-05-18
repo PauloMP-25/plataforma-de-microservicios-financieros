@@ -2,8 +2,11 @@ package com.nucleo.financiero.presentacion.controladores;
 
 import com.libreria.comun.respuesta.Paginacion;
 import com.libreria.comun.respuesta.ResultadoApi;
-import com.nucleo.financiero.aplicacion.dtos.transacciones.*;
-import com.nucleo.financiero.aplicacion.servicios.ITransaccionService;
+import com.libreria.comun.utilidades.UtilidadIp;
+import com.nucleo.financiero.aplicacion.dtos.solicitudes.SolicitudTransaccion;
+import com.nucleo.financiero.aplicacion.dtos.respuestas.RespuestaTransaccion;
+import com.nucleo.financiero.aplicacion.dtos.respuestas.ResumenFinancieroDTO;
+import com.nucleo.financiero.aplicacion.puertos.ITransaccionService;
 import com.nucleo.financiero.dominio.entidades.Categoria.TipoMovimiento;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -51,7 +54,7 @@ public class TransaccionController {
             @Valid @RequestBody SolicitudTransaccion request,
             HttpServletRequest httpRequest) {
 
-        RespuestaTransaccion respuesta = transaccionService.registrar(request, obtenerIp(httpRequest));
+        RespuestaTransaccion respuesta = transaccionService.registrar(request, UtilidadIp.obtenerIpReal(httpRequest));
         return ResponseEntity.status(201).body(ResultadoApi.creado(respuesta, "Transacción registrada con éxito"));
     }
 
@@ -70,7 +73,7 @@ public class TransaccionController {
             @Valid @RequestBody List<@Valid SolicitudTransaccion> solicitudes,
             HttpServletRequest httpRequest) {
 
-        List<RespuestaTransaccion> respuesta = transaccionService.registrarLote(solicitudes, obtenerIp(httpRequest));
+        List<RespuestaTransaccion> respuesta = transaccionService.registrarLote(solicitudes, UtilidadIp.obtenerIpReal(httpRequest));
         return ResponseEntity.status(201).body(ResultadoApi.creado(respuesta, "Lote de transacciones procesado"));
     }
 
@@ -100,7 +103,7 @@ public class TransaccionController {
 
         Pageable paginacionSpring = PageRequest.of(pagina, tamanio, Sort.by("fechaTransaccion").descending());
         Page<RespuestaTransaccion> page = transaccionService.listarHistorial(
-                usuarioId, tipo, categoriaId, desde, hasta, paginacionSpring, obtenerIp(httpRequest));
+                usuarioId, tipo, categoriaId, desde, hasta, paginacionSpring, UtilidadIp.obtenerIpReal(httpRequest));
 
         return ResponseEntity.ok(ResultadoApi.exito(
                 page.getContent(),
@@ -124,7 +127,7 @@ public class TransaccionController {
             @RequestParam(required = false) Integer anio,
             HttpServletRequest httpRequest) {
 
-        ResumenFinancieroDTO resumen = transaccionService.obtenerResumen(usuarioId, mes, anio, obtenerIp(httpRequest));
+        ResumenFinancieroDTO resumen = transaccionService.obtenerResumen(usuarioId, mes, anio, UtilidadIp.obtenerIpReal(httpRequest));
         return ResponseEntity.ok(ResultadoApi.exito(resumen, "Resumen financiero generado"));
     }
 
@@ -140,8 +143,4 @@ public class TransaccionController {
         return ResponseEntity.ok(ResultadoApi.exito(respuesta));
     }
 
-    private String obtenerIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        return (ip != null) ? ip : request.getRemoteAddr();
-    }
 }

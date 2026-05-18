@@ -1,4 +1,4 @@
-package com.nucleo.financiero.presentacion.manejadores;
+package com.nucleo.financiero.presentacion.excepciones;
 
 import com.libreria.comun.manejadores.ManejadorGlobalExcepcionesBase;
 import com.libreria.comun.enums.CodigoError;

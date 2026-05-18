@@ -1,8 +1,8 @@
-package com.nucleo.financiero.aplicacion.servicios;
+package com.nucleo.financiero.aplicacion.puertos;
 
-import com.nucleo.financiero.aplicacion.dtos.transacciones.ResumenFinancieroDTO;
-import com.nucleo.financiero.aplicacion.dtos.transacciones.RespuestaTransaccion;
-import com.nucleo.financiero.aplicacion.dtos.transacciones.SolicitudTransaccion;
+import com.nucleo.financiero.aplicacion.dtos.respuestas.ResumenFinancieroDTO;
+import com.nucleo.financiero.aplicacion.dtos.respuestas.RespuestaTransaccion;
+import com.nucleo.financiero.aplicacion.dtos.solicitudes.SolicitudTransaccion;
 import com.nucleo.financiero.dominio.entidades.Categoria.TipoMovimiento;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +18,7 @@ import java.util.UUID;
  * </p>
  *
  * @author Luka-Dev-Backend
- * @version 1.1.0
+ * @version 1.2.0
  */
 public interface ITransaccionService {
 

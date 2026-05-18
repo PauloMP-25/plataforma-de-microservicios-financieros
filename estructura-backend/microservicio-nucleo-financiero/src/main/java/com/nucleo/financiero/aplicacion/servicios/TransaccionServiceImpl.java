@@ -1,9 +1,9 @@
-package com.nucleo.financiero.aplicacion.servicios.implementacion;
+package com.nucleo.financiero.aplicacion.servicios;
 
-import com.nucleo.financiero.aplicacion.dtos.transacciones.SolicitudTransaccion;
-import com.nucleo.financiero.aplicacion.dtos.transacciones.ResumenFinancieroDTO;
-import com.nucleo.financiero.aplicacion.dtos.transacciones.RespuestaTransaccion;
-import com.nucleo.financiero.aplicacion.servicios.ITransaccionService;
+import com.nucleo.financiero.aplicacion.dtos.solicitudes.SolicitudTransaccion;
+import com.nucleo.financiero.aplicacion.dtos.respuestas.ResumenFinancieroDTO;
+import com.nucleo.financiero.aplicacion.dtos.respuestas.RespuestaTransaccion;
+import com.nucleo.financiero.aplicacion.puertos.ITransaccionService;
 import com.nucleo.financiero.dominio.entidades.Categoria;
 import com.nucleo.financiero.dominio.entidades.Categoria.TipoMovimiento;
 import com.nucleo.financiero.dominio.entidades.Transaccion;
@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
  * </p>
  *
  * @author Luka-Dev-Backend
- * @version 1.2.0
+ * @version 1.3.0
  */
 @Service
 @Slf4j
@@ -53,7 +53,7 @@ public class TransaccionServiceImpl implements ITransaccionService {
 
         publicadorAuditoria.publicarRegistro(
                 guardada.getUsuarioId(),
-                guardada.getId().toString(),
+                guardada.getId(),
                 guardada.getMonto().toString(),
                 ipCliente
         );

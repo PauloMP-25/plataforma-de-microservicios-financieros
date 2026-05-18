@@ -1,7 +1,7 @@
-package com.nucleo.financiero.aplicacion.servicios;
+package com.nucleo.financiero.aplicacion.puertos;
 
-import com.nucleo.financiero.aplicacion.dtos.transacciones.CategoriaDTO;
-import com.nucleo.financiero.aplicacion.dtos.transacciones.CategoriaRequestDTO;
+import com.nucleo.financiero.aplicacion.dtos.respuestas.CategoriaDTO;
+import com.nucleo.financiero.aplicacion.dtos.solicitudes.CategoriaRequestDTO;
 import com.nucleo.financiero.dominio.entidades.Categoria.TipoMovimiento;
 import java.util.List;
 import java.util.UUID;
@@ -11,7 +11,7 @@ import java.util.UUID;
  * Define el contrato de negocio para el registro y consulta de categorías.
  *
  * @author Luka-Dev-Backend
- * @version 1.1.0
+ * @version 1.2.0
  */
 public interface ICategoriaService {
 

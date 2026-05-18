@@ -1,4 +1,4 @@
-package com.nucleo.financiero.aplicacion.servicios;
+package com.nucleo.financiero.aplicacion.puertos;
 
 import com.libreria.comun.dtos.RespuestaIaDTO;
 import com.libreria.comun.dtos.SolicitudIaDTO;
@@ -11,7 +11,7 @@ import com.libreria.comun.dtos.SolicitudIaDTO;
  * </p>
  *
  * @author Luka-Dev-Backend
- * @version 1.1.0
+ * @version 1.2.0
  */
 public interface IServicioIa {
 
