@@ -129,19 +129,19 @@ public class ControladorMetaAhorro {
      * Si alcanza el objetivo, marca la meta como completada y publica el evento.
      * 
      * @param metaId Identificador único de la meta
-     * @param montoActual Nuevo monto ahorrado
+     * @param solicitud DTO con el nuevo monto ahorrado
      * @param request Petición HTTP para extraer la IP
      * @return ResultadoApi con la meta actualizada
      */
     @PatchMapping("/{metaId}/progreso")
     public ResponseEntity<ResultadoApi<RespuestaMetaAhorro>> actualizarProgreso(
             @PathVariable UUID metaId,
-            @RequestParam @DecimalMin(value = "0.00", message = "El monto no puede ser negativo") @Digits(integer = 10, fraction = 2, message = "Formato de monto inválido") BigDecimal montoActual,
+            @Valid @RequestBody com.cliente.aplicacion.dtos.SolicitudProgreso solicitud,
             HttpServletRequest request) {
 
         UUID usuarioID = UtilidadSeguridad.obtenerUsuarioId();
         String ip = UtilidadIp.obtenerIpReal(request);
-        RespuestaMetaAhorro respuesta = servicio.actualizarProgreso(metaId, usuarioID, montoActual, ip);
+        RespuestaMetaAhorro respuesta = servicio.actualizarProgreso(metaId, usuarioID, solicitud.montoActual(), ip);
         return ResponseEntity.ok(ResultadoApi.exito(respuesta, "Progreso de meta actualizado con éxito.", null));
     }
 

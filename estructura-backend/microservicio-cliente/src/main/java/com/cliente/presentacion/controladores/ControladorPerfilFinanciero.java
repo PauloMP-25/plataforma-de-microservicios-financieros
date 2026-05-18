@@ -42,6 +42,7 @@ public class ControladorPerfilFinanciero {
      * @return ResultadoApi con el perfil financiero actualizado
      */
     @PutMapping("/{usuarioId}")
+    @org.springframework.security.access.prepost.PreAuthorize("@seguridadService.esElMismoUsuario(#usuarioId, authentication)")
     public ResponseEntity<ResultadoApi<RespuestaPerfilFinanciero>> guardarOActualizar(
             @PathVariable UUID usuarioId,
             @Valid @RequestBody SolicitudPerfilFinanciero solicitud,
@@ -62,6 +63,7 @@ public class ControladorPerfilFinanciero {
      * @return ResultadoApi con los datos del perfil financiero
      */
     @GetMapping("/{usuarioId}")
+    @org.springframework.security.access.prepost.PreAuthorize("@seguridadService.esElMismoUsuario(#usuarioId, authentication)")
     public ResponseEntity<ResultadoApi<RespuestaPerfilFinanciero>> consultar(
             @PathVariable UUID usuarioId,
             HttpServletRequest request) {

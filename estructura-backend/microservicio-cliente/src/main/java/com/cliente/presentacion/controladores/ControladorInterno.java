@@ -27,6 +27,7 @@ import java.util.UUID;
 @RequestMapping("/api/v1/clientes/interno")
 @RequiredArgsConstructor
 @Slf4j
+@org.springframework.security.access.prepost.PreAuthorize("@seguridadService.esServicioInterno()")
 public class ControladorInterno {
 
     private final ServicioContexto servicioContexto;

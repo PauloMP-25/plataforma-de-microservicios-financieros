@@ -3,6 +3,7 @@ com\cliente\dominio\entidades\MetaAhorro$MetaAhorroBuilder.class
 com\cliente\dominio\repositorios\LimiteGastoRepositorio.class
 com\cliente\dominio\entidades\PerfilFinanciero.class
 com\cliente\dominio\repositorios\DatosPersonalesRepositorio.class
+com\cliente\infraestructura\seguridad\ServicioSeguridad.class
 com\cliente\dominio\especificaciones\MetaAhorroSpecs.class
 com\cliente\aplicacion\excepciones\ClienteNoEncontradoException.class
 com\cliente\aplicacion\servicios\ServicioLimiteGasto.class
@@ -22,6 +23,7 @@ com\cliente\infraestructura\configuracion\PropiedadesJwt.class
 com\cliente\infraestructura\tareas\TareaDesactivacionLimitesVencidos.class
 com\cliente\presentacion\controladores\ControladorPerfil.class
 com\cliente\infraestructura\mensajeria\ConfiguracionRabbitMQ.class
+com\cliente\aplicacion\dtos\SolicitudProgreso.class
 com\cliente\aplicacion\servicios\ServicioDatosPersonales.class
 com\cliente\dominio\entidades\LimiteGasto$LimiteGastoBuilder.class
 com\cliente\dominio\repositorios\PerfilFinancieroRepositorio.class

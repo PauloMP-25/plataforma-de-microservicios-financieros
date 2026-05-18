@@ -41,13 +41,14 @@ public class ControladorPerfil {
      * @return ResultadoApi con el perfil inicial creado
      */
     @PostMapping("/inicial")
+    @org.springframework.security.access.prepost.PreAuthorize("@seguridadService.esServicioInterno()")
     public ResponseEntity<ResultadoApi<RespuestaDatosPersonales>> crearPerfilInicial(
             @RequestParam UUID usuarioId) {
         log.info("Creando perfil inicial para usuarioId={}", usuarioId);
         RespuestaDatosPersonales respuesta = servicio.crearPerfil(usuarioId);
         return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(ResultadoApi.creado(respuesta, "Perfil inicial creado exitosamente."));
+            .status(HttpStatus.CREATED)
+            .body(ResultadoApi.creado(respuesta, "Perfil inicial creado exitosamente."));
     }
 
     /**
@@ -59,6 +60,7 @@ public class ControladorPerfil {
      * @return ResultadoApi con el perfil actualizado
      */
     @PutMapping("/{usuarioId}")
+    @org.springframework.security.access.prepost.PreAuthorize("@seguridadService.esElMismoUsuario(#usuarioId, authentication)")
     public ResponseEntity<ResultadoApi<RespuestaDatosPersonales>> actualizar(
             @PathVariable UUID usuarioId,
             @Valid @RequestBody SolicitudDatosPersonales solicitud,
@@ -78,6 +80,7 @@ public class ControladorPerfil {
      * @return ResultadoApi con los datos personales del perfil
      */
     @GetMapping("/{usuarioId}")
+    @org.springframework.security.access.prepost.PreAuthorize("@seguridadService.esElMismoUsuario(#usuarioId, authentication)")
     public ResponseEntity<ResultadoApi<RespuestaDatosPersonales>> consultar(
             @PathVariable UUID usuarioId,
             HttpServletRequest request) {
