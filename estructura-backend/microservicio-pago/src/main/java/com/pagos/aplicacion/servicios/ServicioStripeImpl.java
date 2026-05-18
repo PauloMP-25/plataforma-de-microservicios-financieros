@@ -13,9 +13,9 @@ import com.pagos.dominio.repositorios.RepositorioPago;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
+import com.pagos.infraestructura.configuracion.PropiedadesStripe;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,12 +35,7 @@ public class ServicioStripeImpl implements IServicioStripe {
 
     private final RepositorioPago repositorioPago;
     private final RepositorioDetallePago repositorioDetallePago;
-
-    @Value("${stripe.success-url}")
-    private String urlExito;
-
-    @Value("${stripe.cancel-url}")
-    private String urlCancelado;
+    private final PropiedadesStripe propiedadesStripe;
 
     @Override
     @Transactional
@@ -52,32 +47,42 @@ public class ServicioStripeImpl implements IServicioStripe {
             throw new IllegalArgumentException("El plan FREE no requiere un proceso de pago.");
         }
 
-        // Convertir a centavos para Stripe (BigDecimal -> long)
-        long montoCentavos = plan.getPrecio()
-                .multiply(new BigDecimal("100"))
-                .longValueExact();
-
         try {
-            SessionCreateParams params = SessionCreateParams.builder()
+            SessionCreateParams.Builder sessionBuilder = SessionCreateParams.builder()
                     .setMode(SessionCreateParams.Mode.PAYMENT)
-                    .setSuccessUrl(urlExito + "?session_id={CHECKOUT_SESSION_ID}")
-                    .setCancelUrl(urlCancelado)
+                    .setSuccessUrl(propiedadesStripe.getSuccessUrl() + "?session_id={CHECKOUT_SESSION_ID}")
+                    .setCancelUrl(propiedadesStripe.getCancelUrl())
                     .setCustomerEmail(emailUsuario)
-                    .putMetadata("usuarioId", usuarioId.toString())
-                    .addLineItem(SessionCreateParams.LineItem.builder()
-                            .setQuantity(1L)
-                            .setPriceData(SessionCreateParams.LineItem.PriceData.builder()
-                                    .setCurrency("pen")
-                                    .setUnitAmount(montoCentavos)
-                                    .setProductData(SessionCreateParams.LineItem.PriceData.ProductData.builder()
-                                            .setName("Suscripción " + plan.name() + " — LUKA APP")
-                                            .setDescription(plan.getDescripcion())
-                                            .build())
-                                    .build())
-                            .build())
-                    .build();
+                    .putMetadata("usuarioId", usuarioId.toString());
 
-            Session sesion = Session.create(params);
+            String priceProId = propiedadesStripe.getPriceProId();
+
+            // Si es plan PRO y tenemos un priceProId configurado, lo usamos directamente de Stripe
+            if (plan == PlanSuscripcion.PRO && priceProId != null && !priceProId.isEmpty() && !priceProId.startsWith("price_coloca")) {
+                sessionBuilder.addLineItem(SessionCreateParams.LineItem.builder()
+                        .setQuantity(1L)
+                        .setPrice(priceProId)
+                        .build());
+            } else {
+                // Convertir a centavos para Stripe (BigDecimal -> long)
+                long montoCentavos = plan.getPrecio()
+                        .multiply(new BigDecimal("100"))
+                        .longValueExact();
+
+                sessionBuilder.addLineItem(SessionCreateParams.LineItem.builder()
+                        .setQuantity(1L)
+                        .setPriceData(SessionCreateParams.LineItem.PriceData.builder()
+                                .setCurrency("pen")
+                                .setUnitAmount(montoCentavos)
+                                .setProductData(SessionCreateParams.LineItem.PriceData.ProductData.builder()
+                                        .setName("Suscripción " + plan.name() + " — LUKA APP")
+                                        .setDescription(plan.getDescripcion())
+                                        .build())
+                                .build())
+                        .build());
+            }
+
+            Session sesion = Session.create(sessionBuilder.build());
 
             // 1. Persistir el encabezado del pago
             Pago pago = Pago.builder()
