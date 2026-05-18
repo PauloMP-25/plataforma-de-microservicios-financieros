@@ -94,4 +94,51 @@ public class ServicioSeguridadAuditoriaImpl implements ServicioSeguridadAuditori
         repositorioListaNegra.save(registro);
         log.warn("[SEGURIDAD] IP bloqueada por fuerza bruta: {} hasta {}", ip, registro.getFechaExpiracion());
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<ListaNegraIp> listarBloqueos(org.springframework.data.domain.Pageable paginacion) {
+        return repositorioListaNegra.findAll(Objects.requireNonNull(paginacion));
+    }
+
+    @Override
+    @Transactional
+    public void bloquearIpManualmente(String ip, String motivo, int minutos) {
+        LocalDateTime ahora = LocalDateTime.now();
+        ListaNegraIp registro = repositorioListaNegra.findActivaByIp(Objects.requireNonNull(ip), ahora)
+                .orElse(ListaNegraIp.builder().ip(ip).fechaBloqueo(ahora).build());
+
+        registro.setMotivo(motivo != null ? motivo : "Bloqueo administrativo manual.");
+        if (minutos > 0) {
+            registro.setFechaExpiracion(ahora.plusMinutes(minutos));
+        } else {
+            registro.setFechaExpiracion(null); // Bloqueo permanente
+        }
+
+        repositorioListaNegra.save(registro);
+        
+        // Sincronizar con Redis
+        if (minutos > 0) {
+            redisTemplate.opsForValue().set("bloqueo:ip:" + ip, true, java.time.Duration.ofMinutes(minutos));
+        } else {
+            redisTemplate.opsForValue().set("bloqueo:ip:" + ip, true);
+        }
+        log.warn("[SEGURIDAD-ADMIN] IP bloqueada manualmente: {} por motivo: {}. Expiración: {}", 
+                ip, registro.getMotivo(), registro.getFechaExpiracion());
+    }
+
+    @Override
+    @Transactional
+    public void desbloquearIpManualmente(String ip) {
+        LocalDateTime ahora = LocalDateTime.now();
+        repositorioListaNegra.findActivaByIp(Objects.requireNonNull(ip), ahora).ifPresent(registro -> {
+            registro.setFechaExpiracion(ahora);
+            registro.setMotivo(registro.getMotivo() + " (Desbloqueado manualmente)");
+            repositorioListaNegra.save(registro);
+        });
+
+        // Remueve de Redis
+        redisTemplate.delete("bloqueo:ip:" + ip);
+        log.info("[SEGURIDAD-ADMIN] IP desbloqueada manualmente y sincronizada en Redis: {}", ip);
+    }
 }

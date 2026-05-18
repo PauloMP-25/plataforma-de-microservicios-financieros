@@ -2,10 +2,16 @@ package com.auditoria.presentacion.controladores;
 
 import com.auditoria.aplicacion.dtos.RespuestaVerificacionIpDTO;
 import com.auditoria.aplicacion.servicios.ServicioSeguridadAuditoria;
+import com.auditoria.dominio.entidades.ListaNegraIp;
+import com.libreria.comun.respuesta.Paginacion;
 import com.libreria.comun.respuesta.ResultadoApi;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * Controlador REST que expone las operaciones de seguridad y defensa
@@ -18,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
  * </p>
  * 
  * @author Paulo Moron
- * @version 1.1.0
+ * @version 2.0.0
  * @since 2026-05-10
  */
 @RestController
@@ -48,5 +54,71 @@ public class SeguridadControlador {
                 ResultadoApi.exito(
                         respuesta,
                         "Verificación de estado de IP completada.", null));
+    }
+
+    /**
+     * Recupera la lista paginada de todos los bloqueos e historial en la lista negra.
+     * Acceso restringido a administradores.
+     * 
+     * @param pagina  Número de página (0 por defecto).
+     * @param tamanio Cantidad de registros por página (20 por defecto, máx 100).
+     * @return {@link ResponseEntity} con el {@link ResultadoApi} y la paginación estándar.
+     */
+    @GetMapping("/lista-negra")
+    public ResponseEntity<ResultadoApi<List<ListaNegraIp>>> listarBloqueos(
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "20") int tamanio) {
+
+        int tamanioSeguro = Math.min(tamanio, 100);
+        Page<ListaNegraIp> resultadoPage =
+                servicioSeguridad.listarBloqueos(PageRequest.of(pagina, tamanioSeguro));
+
+        Paginacion<ListaNegraIp> metadata = Paginacion.desde(resultadoPage);
+
+        return ResponseEntity.ok(
+                ResultadoApi.exito(
+                        metadata.contenido(),
+                        "Listado de lista negra de IP recuperado con éxito.",
+                        metadata));
+    }
+
+    /**
+     * Bloquea manualmente una dirección IP por motivos de seguridad.
+     * Acceso restringido a administradores.
+     * 
+     * @param ip      Dirección IP a bloquear.
+     * @param motivo  Razón descriptiva del bloqueo.
+     * @param minutos Duración del bloqueo en minutos (opcional).
+     * @return Respuesta de éxito.
+     */
+    @PostMapping("/lista-negra/bloquear")
+    public ResponseEntity<ResultadoApi<Void>> bloquearIp(
+            @RequestParam String ip,
+            @RequestParam(required = false) String motivo,
+            @RequestParam(defaultValue = "60") int minutos) {
+
+        servicioSeguridad.bloquearIpManualmente(ip, motivo, minutos);
+        return ResponseEntity.ok(
+                ResultadoApi.exito(
+                        null,
+                        String.format("IP %s bloqueada de forma manual exitosamente por %d minutos.", ip, minutos),
+                        null));
+    }
+
+    /**
+     * Desbloquea manualmente una dirección IP previamente bloqueada.
+     * Acceso restringido a administradores.
+     * 
+     * @param ip Dirección IP a desbloquear.
+     * @return Respuesta de éxito.
+     */
+    @DeleteMapping("/lista-negra/desbloquear")
+    public ResponseEntity<ResultadoApi<Void>> desbloquearIp(@RequestParam String ip) {
+        servicioSeguridad.desbloquearIpManualmente(ip);
+        return ResponseEntity.ok(
+                ResultadoApi.exito(
+                        null,
+                        String.format("IP %s desbloqueada manualmente con éxito.", ip),
+                        null));
     }
 }

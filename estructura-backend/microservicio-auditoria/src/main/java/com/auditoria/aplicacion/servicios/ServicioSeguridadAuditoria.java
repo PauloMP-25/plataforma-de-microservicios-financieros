@@ -32,4 +32,28 @@ public interface ServicioSeguridadAuditoria {
      * Tarea de mantenimiento para remover bloqueos cuya fecha de expiración ha pasado.
      */
     void limpiarBloqueosExpirados();
+
+    /**
+     * Recupera una lista paginada de todos los bloqueos de IP (históricos y activos).
+     * 
+     * @param paginacion Datos de paginación.
+     * @return Página de registros de lista negra.
+     */
+    org.springframework.data.domain.Page<com.auditoria.dominio.entidades.ListaNegraIp> listarBloqueos(org.springframework.data.domain.Pageable paginacion);
+
+    /**
+     * Registra un bloqueo manual para una dirección IP específica.
+     * 
+     * @param ip        Dirección IP a bloquear.
+     * @param motivo    Razón del bloqueo.
+     * @param minutos   Duración del bloqueo en minutos (0 o negativo para bloqueo indefinido).
+     */
+    void bloquearIpManualmente(String ip, String motivo, int minutos);
+
+    /**
+     * Remueve manualmente cualquier bloqueo activo para una IP específica.
+     * 
+     * @param ip Dirección IP a desbloquear.
+     */
+    void desbloquearIpManualmente(String ip);
 }

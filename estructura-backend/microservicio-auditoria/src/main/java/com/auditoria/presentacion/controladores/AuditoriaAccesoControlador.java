@@ -27,7 +27,7 @@ import java.util.UUID;
  * @since 2026-05
  */
 @RestController
-@RequestMapping("/api/auditoria/accesos")
+@RequestMapping("/api/v1/auditoria/accesos")
 @RequiredArgsConstructor
 public class AuditoriaAccesoControlador {
 
@@ -69,9 +69,11 @@ public class AuditoriaAccesoControlador {
     @GetMapping("/usuario/{usuarioId}")
     public ResponseEntity<ResultadoApi<List<EventoAccesoDTO>>> obtenerPorUsuario(
             @PathVariable UUID usuarioId,
-            @RequestParam(defaultValue = "0") int pagina) {
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "20") int tamanio) {
 
-        Page<EventoAccesoDTO> resultadoPage = servicio.listarPorUsuario(usuarioId, PageRequest.of(pagina, 20));
+        int tamanioSeguro = Math.min(tamanio, 100);
+        Page<EventoAccesoDTO> resultadoPage = servicio.listarPorUsuario(usuarioId, PageRequest.of(pagina, tamanioSeguro));
         
         Paginacion<EventoAccesoDTO> metadata = Paginacion.desde(resultadoPage);
         String mensaje = String.format("Registros de acceso para el usuario %s recuperados.", usuarioId);
