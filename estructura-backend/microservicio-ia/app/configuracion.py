@@ -15,7 +15,7 @@ Cambios v5 (alineación con ecosystem):
 
 from functools import lru_cache
  
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, AliasChoices, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Configuracion(BaseSettings):
@@ -203,24 +203,24 @@ class Configuracion(BaseSettings):
     # ══════════════════════════════════════════════════════════════════════════
     rabbitmq_host: str = Field(
         default="localhost",
-        validation_alias="SPRING_RABBITMQ_HOST",
-        description="Host de RabbitMQ. Misma variable que los ms Java.",
+        validation_alias=AliasChoices("SPRING_RABBITMQ_HOST", "RABBITMQ_HOST"),
+        description="Host de RabbitMQ.",
     )
     rabbitmq_puerto: int = Field(
         default=5672,
-        validation_alias="SPRING_RABBITMQ_PORT",
+        validation_alias=AliasChoices("SPRING_RABBITMQ_PORT", "RABBITMQ_PORT"),
     )
     rabbitmq_usuario: str = Field(
         default="guest",
-        validation_alias="SPRING_RABBITMQ_USERNAME",
+        validation_alias=AliasChoices("SPRING_RABBITMQ_USERNAME", "RABBITMQ_USER"),
     )
     rabbitmq_password: str = Field(
         default="guest",
-        validation_alias="SPRING_RABBITMQ_PASSWORD",
+        validation_alias=AliasChoices("SPRING_RABBITMQ_PASSWORD", "RABBITMQ_PASSWORD"),
     )
     rabbitmq_vhost: str = Field(
         default="/",
-        validation_alias="SPRING_RABBITMQ_VIRTUAL_HOST",
+        validation_alias=AliasChoices("SPRING_RABBITMQ_VIRTUAL_HOST", "RABBITMQ_VHOST"),
     )
 
     # ── Colas RabbitMQ ────────────────────────────────────────────────────────
@@ -248,26 +248,31 @@ class Configuracion(BaseSettings):
     # Reutiliza las credenciales compartidas del grupo Render (SPRING_DATASOURCE_*)
     # La URL específica de la BD de IA se construye internamente.
     # ══════════════════════════════════════════════════════════════════════════
+    spring_datasource_url: str = Field(
+        default="",
+        validation_alias=AliasChoices("SPRING_DATASOURCE_URL", "DATABASE_URL"),
+        description="URL de conexión JDBC / SQLAlchemy completa.",
+    )
     db_host: str = Field(
         default="localhost",
-        validation_alias="SPRING_DATASOURCE_CONNECTION",
-        description="Host del servidor de BD. Lee SPRING_DATASOURCE_CONNECTION del grupo compartido.",
+        validation_alias=AliasChoices("SPRING_DATASOURCE_CONNECTION", "NEON_HOST", "DB_HOST"),
+        description="Host del servidor de BD (Neon).",
     )
     db_port: int = Field(default=5432)
     db_usuario: str = Field(
         default="postgres",
-        validation_alias="SPRING_DATASOURCE_USERNAME",
-        description="Usuario de BD. Lee SPRING_DATASOURCE_USERNAME del grupo compartido.",
+        validation_alias=AliasChoices("SPRING_DATASOURCE_USERNAME", "NEON_USER", "DB_USER"),
+        description="Usuario de BD (Neon).",
     )
     db_password: str = Field(
         default="postgres",
-        validation_alias="SPRING_DATASOURCE_PASSWORD",
-        description="Password de BD. Lee SPRING_DATASOURCE_PASSWORD del grupo compartido.",
+        validation_alias=AliasChoices("SPRING_DATASOURCE_PASSWORD", "NEON_PASSWORD", "DB_PASSWORD"),
+        description="Password de BD (Neon).",
     )
     db_nombre: str = Field(
         default="db_microservicio_ia",
-        validation_alias="DB_NAME_IA",
-        description="Nombre de la BD exclusiva de IA. Única variable propia de BD.",
+        validation_alias=AliasChoices("DB_NAME_IA", "SPRING_DATASOURCE_NAME"),
+        description="Nombre de la BD exclusiva de IA.",
     )
 
     # ══════════════════════════════════════════════════════════════════════════
@@ -276,22 +281,22 @@ class Configuracion(BaseSettings):
     # ══════════════════════════════════════════════════════════════════════════
     redis_host: str = Field(
         default="localhost",
-        validation_alias="SPRING_DATA_REDIS_HOST",
-        description="Host Redis. Lee SPRING_DATA_REDIS_HOST del grupo compartido.",
+        validation_alias=AliasChoices("SPRING_DATA_REDIS_HOST", "REDIS_HOST"),
+        description="Host Redis.",
     )
     redis_port: int = Field(
         default=6379,
-        validation_alias="SPRING_DATA_REDIS_PORT",
+        validation_alias=AliasChoices("SPRING_DATA_REDIS_PORT", "REDIS_PORT"),
     )
     redis_db: int = 0
     redis_password: str = Field(
         default="",
-        validation_alias="SPRING_REDIS_PASSWORD",
-        description="Password Redis. Lee SPRING_REDIS_PASSWORD del grupo compartido.",
+        validation_alias=AliasChoices("SPRING_REDIS_PASSWORD", "REDIS_PASSWORD"),
+        description="Password Redis.",
     )
     redis_ssl: bool = Field(
         default=False,
-        validation_alias="SPRING_DATA_REDIS_SSL_ENABLED",
+        validation_alias=AliasChoices("SPRING_DATA_REDIS_SSL_ENABLED", "REDIS_SSL"),
     )
     redis_ttl_segundos: int = 3600  # 1 hora por defecto
 
@@ -327,6 +332,44 @@ class Configuracion(BaseSettings):
         if valor <= 0 or valor >= 100:
             raise ValueError("Los porcentajes deben estar entre 0 y 100.")
         return valor
+
+    @model_validator(mode="after")
+    def parsear_datasource_url(self) -> "Configuracion":
+        """Extrae el host, puerto y base de datos si se provee una URL de conexión completa."""
+        if self.spring_datasource_url:
+            # Quitamos el prefijo 'jdbc:' si está presente
+            url_limpia = self.spring_datasource_url.replace("jdbc:", "")
+            
+            if "//" in url_limpia:
+                try:
+                    # Formato: postgresql://[usuario:password@]host[:puerto]/dbname[?params]
+                    contenido = url_limpia.split("//")[1]
+                    
+                    # Separamos los parámetros o la base de datos del host
+                    if "/" in contenido:
+                        host_seccion, db_seccion = contenido.split("/", 1)
+                        
+                        # Si hay credenciales en la URL, las separamos del host
+                        if "@" in host_seccion:
+                            _, host_seccion = host_seccion.split("@", 1)
+                            
+                        # Extraemos host y puerto
+                        if ":" in host_seccion:
+                            self.db_host, puerto_str = host_seccion.split(":", 1)
+                            self.db_port = int(puerto_str)
+                        else:
+                            self.db_host = host_seccion
+                            self.db_port = 5432
+                            
+                        # Extraemos nombre de base de datos quitando los query params (?sslmode=...)
+                        if "?" in db_seccion:
+                            self.db_nombre = db_seccion.split("?")[0]
+                        else:
+                            self.db_nombre = db_seccion
+                except Exception:
+                    # En caso de error de parseo, se mantienen los valores leídos individualmente
+                    pass
+        return self
         # ── Propiedades calculadas ────────────────────────────────────────────────
  
     @property
