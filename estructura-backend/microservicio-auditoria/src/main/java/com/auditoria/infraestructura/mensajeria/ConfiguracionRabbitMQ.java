@@ -68,7 +68,6 @@ public class ConfiguracionRabbitMQ {
                 .durable(NombresCola.AUDITORIA_ACCESOS)
                 .withArgument("x-dead-letter-exchange", NombresExchange.AUDITORIA_DLX)
                 .withArgument("x-dead-letter-routing-key", RoutingKeys.DLQ_AUDITORIA_ACCESO)
-                .withArgument("x-message-ttl", 600000)
                 .build();
     }
 
@@ -84,7 +83,6 @@ public class ConfiguracionRabbitMQ {
                 .durable(NombresCola.AUDITORIA_EVENTOS)
                 .withArgument("x-dead-letter-exchange", NombresExchange.AUDITORIA_DLX)
                 .withArgument("x-dead-letter-routing-key", RoutingKeys.DLQ_AUDITORIA_EVENTO)
-                .withArgument("x-message-ttl", 600000)
                 .build();
     }
 
@@ -100,7 +98,6 @@ public class ConfiguracionRabbitMQ {
                 .durable(NombresCola.AUDITORIA_TRANSACCIONES)
                 .withArgument("x-dead-letter-exchange", NombresExchange.AUDITORIA_DLX)
                 .withArgument("x-dead-letter-routing-key", RoutingKeys.DLQ_AUDITORIA_TRANSACCIONAL)
-                .withArgument("x-message-ttl", 600000)
                 .build();
     }
 

@@ -50,14 +50,19 @@ public class ConfiguracionRabbitMQ {
     @Bean
     public Queue colaIAProcesamiento() {
         return QueueBuilder.durable(NombresCola.IA_PROCESAMIENTO)
-                .withArgument("x-dead-letter-exchange", NombresExchange.AUDITORIA_DLX)
-                .withArgument("x-dead-letter-routing-key", NombresCola.IA_PROCESAMIENTO_DLQ)
+                .withArgument("x-dead-letter-exchange", "exchange.ia.dlx")
+                .withArgument("x-dead-letter-routing-key", NombresCola.IA_PROCESAMIENTO)
+                .withArgument("x-message-ttl", 600000)
                 .build();
     }
 
     @Bean
     public Queue colaIASincronizacionContexto() {
-        return QueueBuilder.durable(NombresCola.IA_SINCRONIZACION_CONTEXTO).build();
+        return QueueBuilder.durable(NombresCola.IA_SINCRONIZACION_CONTEXTO)
+                .withArgument("x-dead-letter-exchange", NombresExchange.CLIENTE_ACTUALIZACIONES_DLX)
+                .withArgument("x-dead-letter-routing-key", NombresCola.IA_SINCRONIZACION_ERROR)
+                .withArgument("x-message-ttl", 600000)
+                .build();
     }
 
     @Bean
