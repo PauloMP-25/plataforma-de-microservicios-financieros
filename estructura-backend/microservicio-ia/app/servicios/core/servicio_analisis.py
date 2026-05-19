@@ -33,14 +33,9 @@ from app.utilidades.excepciones import HistorialInsuficienteError
 from app.clientes.luka_clients import obtener_cliente_financiero, obtener_cliente_perfil
 from app.persistencia.cache_redis import CacheRedis
 
-# Motores Modulares
-from app.servicios.modulos.deteccion_gastos_hormiga import DeteccionGastosHormigaService
-from app.servicios.modulos.predecir_gastos import PredecirGastosService
-from app.servicios.modulos.reporte_completo import ReporteCompletoService
-from app.servicios.modulos.habitos_financieros import HabitosFinancierosService
-from app.servicios.modulos.simular_meta import SimularMetaService
-from app.servicios.modulos.reto_ahorro_dinamico import RetoAhorroDinamicoService
-from app.servicios.modulos.analisis_estilo_de_vida import AnalisisEstiloVidaService
+from app.servicios.fabrica_modulos import FabricaModulosAnalisis
+from app.servicios.mappers import MapperContextoIA
+from app.utilidades.auditoria_decorator import auditar_operacion
 
 logger = logging.getLogger(__name__)
 
@@ -49,18 +44,9 @@ class ServicioAnalisis:
         self._cliente_financiero = obtener_cliente_financiero()
         self._cliente_perfil = obtener_cliente_perfil()
         self._coach = CoachIA()
-        self._publicador = publicador_auditoria
         self._cache_redis = CacheRedis()
-        
-        self._modulos = {
-            NombreModulo.GASTO_HORMIGA: DeteccionGastosHormigaService(),
-            NombreModulo.PREDECIR_GASTOS: PredecirGastosService(),
-            NombreModulo.REPORTE_COMPLETO: ReporteCompletoService(),
-            NombreModulo.HABITOS_FINANCIEROS: HabitosFinancierosService(),
-            NombreModulo.SIMULAR_META: SimularMetaService(),
-            NombreModulo.RETO_AHORRO_DINAMICO: RetoAhorroDinamicoService(),
-            NombreModulo.ANALISIS_ESTILO_VIDA: AnalisisEstiloVidaService(),
-        }
+
+    @auditar_operacion("MODULO_ANALISIS")
 
     async def procesar_modulo(
         self, 
@@ -70,15 +56,11 @@ class ServicioAnalisis:
         **kwargs
     ) -> RespuestaModulo:
         """
-        Método ÚNICO y GENÉRICO para procesar cualquier módulo (FASE 5).
+        Método ÚNICO y GENÉRICO para procesar cualquier módulo (FASE 5 y 7).
         """
         try:
-            # 1. Auditoría Inmediata
-            await self._auditar(peticion.usuario_id, f"SOLICITUD_{modulo_enum.value}", "INICIADO", ip)
-
-            servicio = self._modulos.get(modulo_enum)
-            if not servicio:
-                raise ValueError(f"Módulo {modulo_enum} no registrado en el sistema.")
+            # 1. Obtener módulo de la Fábrica (Lazy Loading FASE 7)
+            servicio = FabricaModulosAnalisis.obtener_modulo(modulo_enum)
 
             # 2. Concurrencia HTTP (asyncio.gather) — FASE 5
             mes = getattr(peticion, 'mes', None)
@@ -97,7 +79,7 @@ class ServicioAnalisis:
             # Convertimos respuestas a formatos de trabajo
             df = json_a_dataframe(resp_financiero.get("datos", []))
             perfil_full = PerfilUsuario.model_validate(dict_perfil)
-            contexto = self._mapear_a_contexto(perfil_full)
+            contexto = MapperContextoIA.mapear_perfil(perfil_full)
 
             # 3. Caché de Resultado Completo — FASE 5
             # Construimos hash único: usuario + modulo + (mes/anio) + ultima transaccion
@@ -125,8 +107,6 @@ class ServicioAnalisis:
             consejo, estado, fallback = await self._coach.obtener_consejo_ia(
                 peticion.usuario_id, modulo_enum, prompt, metricas, contexto.rol
             )
-
-            await self._auditar(peticion.usuario_id, f"SOLICITUD_{modulo_enum.value}", "EXITOSO", ip)
 
             resultado_final = RespuestaModulo(
                 usuario_id=peticion.usuario_id,
@@ -161,26 +141,6 @@ class ServicioAnalisis:
             )
 
     # ── Mapeos y Soporte ──────────────────────────────────────────────────────
-
-    def _mapear_a_contexto(self, p: PerfilUsuario) -> ContextoEstrategicoIADTO:
-        return ContextoEstrategicoIADTO(
-            nombres=p.nombre,
-            ocupacion=p.ocupacion or "Estudiante",
-            ingreso_mensual=p.ingreso_mensual or 0.0,
-            nombre_meta_principal=p.meta_ahorro_activa.nombre if p.meta_ahorro_activa else "Ninguna",
-            porcentaje_meta_principal=p.meta_ahorro_activa.porcentaje_completado if p.meta_ahorro_activa else 0.0,
-            tono_ia=p.configuracion_ia.tono_ia if p.configuracion_ia else "AMIGABLE",
-            porcentaje_alerta_gasto=p.configuracion_ia.porcentaje_alerta_gasto if p.configuracion_ia else 80,
-            rol=p.rol
-        )
-
-    async def _auditar(self, usuario_id: str, accion: str, detalles: str, ip: str):
-        try:
-            evento = EventoAuditoriaDTO(
-                usuario_id=usuario_id, accion=accion, modulo="MS-IA", ip_origen=ip, detalles=detalles
-            )
-            await self._publicador.publicar_evento(evento)
-        except: pass
 
 def obtener_servicio_analisis() -> ServicioAnalisis:
     return ServicioAnalisis()
