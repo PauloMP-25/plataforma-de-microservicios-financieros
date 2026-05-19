@@ -15,7 +15,7 @@ class BaseLukaClient:
         self.base_url = base_url.rstrip("/")
         self.service_name = service_name
         self._client = httpx.AsyncClient(
-            timeout=10.0,
+            timeout=4.0,  # FASE 8: Timeout estricto para evitar cascadas
             headers={"Accept": "application/json"}
         )
 

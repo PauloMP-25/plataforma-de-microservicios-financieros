@@ -48,6 +48,7 @@ from app.modelos.esquemas import (
 from app.servicios.core.servicio_analisis import ServicioAnalisis
 from app.servicios.ia.coach_ia import CoachIA
 from app.utilidades.excepciones import BrokerComunicacionError, ContratoDatosError
+from app.persistencia.cache_redis import CacheRedis
 from app.persistencia.database import SessionLocal
 from app.persistencia.modelos_db import OutboxEvento, EstadoOutbox
 
@@ -73,6 +74,7 @@ class ConsumidorIA:
         self._config   = obtener_configuracion()
         self._coach    = CoachIA()           # Para clasificación on-the-fly
         self._servicio = ServicioAnalisis()  # Orquestador principal
+        self._cache_redis = CacheRedis()     # Para idempotencia (FASE 8)
         self._conexion: Optional[pika.BlockingConnection] = None
         self._canal:    Optional[BlockingChannel]         = None
         self._activo   = threading.Event()
@@ -233,9 +235,22 @@ class ConsumidorIA:
         reintentos_previos = self._contar_reintentos(propiedades)
 
         try:
-            # 1. Deserializar
             datos   = json.loads(cuerpo)
             peticion = PeticionConFiltroFecha(**datos)
+            
+            # 1.5. Idempotencia con Redis SETNX (FASE 8)
+            # Creamos un hash o ID único temporal basado en el usuario y los datos del payload
+            evento_id = propiedades.message_id or f"{peticion.usuario_id}_{hash(cuerpo)}"
+            clave_idempotencia = f"ia:procesando:{evento_id}"
+            
+            # set(nx=True) equivale a SETNX
+            if self._cache_redis._client:
+                lock_adquirido = self._cache_redis._client.set(clave_idempotencia, "1", ex=600, nx=True)
+                if not lock_adquirido:
+                    logger.warning("[IDEMPOTENCIA] Mensaje %s ya está en proceso o fue procesado. Descartando duplicado.", evento_id)
+                    canal.basic_ack(delivery_tag=tag)
+                    return
+            
             logger.info(
                 "[CALLBACK] Procesando usuario=%s módulo=%s (intento %d/%d)",
                 peticion.usuario_id,

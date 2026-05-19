@@ -32,6 +32,7 @@ from app.utilidades.hash_util import generar_hash_datos
 from app.utilidades.excepciones import LimiteDiarioExcedidoError
 from app.libreria_comun.modelos.eventos import EventoTransaccionalDTO
 from app.mensajeria.publicador_auditoria import publicador_auditoria
+from app.servicios.ia.motor_reglas import MotorReglasLocal
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +66,8 @@ class CoachIA:
         modulo: NombreModulo,
         prompt: str,
         datos_para_hash: Dict[str, Any],
-        rol: str = "FREE"
+        rol: str = "FREE",
+        nombres: str = "estudiante"
     ) -> Tuple[str, EstadoCoach, bool]:
         """
         Punto de entrada principal para obtener un consejo.
@@ -110,7 +112,7 @@ class CoachIA:
 
         except pybreaker.CircuitBreakerError:
             logger.error("[COACH-IA] Circuit Breaker ABIERTO — Gemini no disponible.")
-            return self._ejecutar_fallback(usuario_id, modulo, datos_para_hash, "Breaker Abierto"), EstadoCoach.NO_DISPONIBLE, True
+            return self._ejecutar_fallback(usuario_id, modulo, datos_para_hash, "Breaker Abierto", nombres), EstadoCoach.NO_DISPONIBLE, True
         except Exception as exc:
             # Discriminar tipo de error Gemini para trazabilidad
             tipo_error = type(exc).__name__
@@ -123,7 +125,7 @@ class CoachIA:
             else:
                 estado = EstadoCoach.NO_DISPONIBLE
             logger.error("[COACH-IA] Gemini %s: %s", tipo_error, exc)
-            return self._ejecutar_fallback(usuario_id, modulo, datos_para_hash, str(exc)), estado, True
+            return self._ejecutar_fallback(usuario_id, modulo, datos_para_hash, str(exc), nombres), estado, True
 
     def _llamar_gemini_api(self, prompt: str) -> Tuple[str, int, int]:
         # FASE 6: Exigir esquema JSON estricto para evitar fallos de parseo
@@ -213,8 +215,10 @@ class CoachIA:
         except Exception as e:
             logger.warning(f"[COACH-IA] No se pudo persistir en DB: {e}")
 
-    def _ejecutar_fallback(self, usuario_id: str, modulo: NombreModulo, datos: Dict[str, Any], error: str) -> str:
-        return f"Paulo, por ahora no puedo darte un consejo detallado, pero sigo analizando tus {modulo.value}. ¡Mantén la disciplina!"
+    def _ejecutar_fallback(self, usuario_id: str, modulo: NombreModulo, datos: Dict[str, Any], error: str, nombres: str) -> str:
+        # FASE 8: Motor de Reglas Local (Graceful Degradation)
+        logger.info(f"[FALLBACK] Generando consejo estático para {modulo.value} (Causa: {error})")
+        return MotorReglasLocal.generar_fallback(modulo, datos, nombres)
 
     def _verificar_cuota_diaria(self, usuario_id: str, modulo: NombreModulo, rol: str) -> None:
         config = obtener_configuracion()

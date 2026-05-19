@@ -105,7 +105,7 @@ class ServicioAnalisis:
 
             # 5. Ejecución en Coach IA (Circuit Breaker incluido en FASE 3)
             consejo, estado, fallback = await self._coach.obtener_consejo_ia(
-                peticion.usuario_id, modulo_enum, prompt, metricas, contexto.rol
+                peticion.usuario_id, modulo_enum, prompt, metricas, contexto.rol, contexto.nombres
             )
 
             resultado_final = RespuestaModulo(
