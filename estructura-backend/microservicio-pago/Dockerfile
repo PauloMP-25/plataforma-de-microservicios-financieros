@@ -57,21 +57,24 @@ COPY --from=builder --chown=lukaapp:lukaapp /build/extracted/application/ ./
 USER lukaapp
 
 # Puerto expuesto
-ARG APP_PORT=8087
-EXPOSE ${APP_PORT}
+# Render inyecta dinámicamente la variable $PORT. Por defecto usamos 8087.
+ENV PORT=8087
+EXPOSE ${PORT}
 
 # Health check interno
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:${APP_PORT}/actuator/health || exit 1
+    CMD curl -f http://localhost:${PORT}/actuator/health || exit 1
 
 # dumb-init maneja señales del SO correctamente
 ENTRYPOINT ["dumb-init", "--"]
 
-# JVM optimizada
-CMD ["java", \
-    "-XX:+UseContainerSupport", \
-    "-XX:MaxRAMPercentage=75.0", \
-    "-XX:+UseG1GC", \
-    "-Djava.security.egd=file:/dev/./urandom", \
-    "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:docker}", \
-    "org.springframework.boot.loader.launch.JarLauncher"]
+# JVM optimizada para contenedores:
+# Usamos 'sh -c' y 'exec java' para que la shell expanda $PORT pero java reciba las señales
+CMD ["sh", "-c", "exec java \
+    -XX:+UseContainerSupport \
+    -XX:MaxRAMPercentage=75.0 \
+    -XX:+UseG1GC \
+    -Djava.security.egd=file:/dev/./urandom \
+    -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:docker} \
+    -Dserver.port=${PORT} \
+    org.springframework.boot.loader.launch.JarLauncher"]
