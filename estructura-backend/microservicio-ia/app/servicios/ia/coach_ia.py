@@ -14,6 +14,7 @@ Responsabilidades:
 from __future__ import annotations
 import logging
 import asyncio
+import json
 from typing import Optional, Tuple, Any, Dict
 from datetime import datetime
 import google.generativeai as genai
@@ -54,6 +55,7 @@ class CoachIA:
         self._config_generacion = genai.types.GenerationConfig(
             max_output_tokens=config.gemini_max_tokens,
             temperature=config.gemini_temperatura,
+            response_mime_type="application/json",
         )
         self._cache_redis = CacheRedis()
 
@@ -124,8 +126,15 @@ class CoachIA:
             return self._ejecutar_fallback(usuario_id, modulo, datos_para_hash, str(exc)), estado, True
 
     def _llamar_gemini_api(self, prompt: str) -> Tuple[str, int, int]:
+        # FASE 6: Exigir esquema JSON estricto para evitar fallos de parseo
+        prompt_json = (
+            f"{prompt}\n\n"
+            f"IMPORTANTE: Debes responder ÚNICAMENTE con un objeto JSON válido "
+            f"que contenga exactamente esta estructura: {{\"consejo\": \"<Tu consejo formateado en markdown>\"}}."
+        )
+        
         respuesta = self._modelo.generate_content(
-            prompt,
+            prompt_json,
             generation_config=self._config_generacion,
         )
         
@@ -134,7 +143,16 @@ class CoachIA:
         in_tokens = usage.prompt_token_count
         out_tokens = usage.candidates_token_count
         
-        return self._limpiar_texto(respuesta.text), in_tokens, out_tokens
+        # Parsear JSON de forma segura
+        texto_crudo = self._limpiar_texto(respuesta.text)
+        try:
+            datos_json = json.loads(texto_crudo)
+            consejo_final = datos_json.get("consejo", texto_crudo)
+        except json.JSONDecodeError:
+            logger.warning("[COACH-IA] Gemini no devolvió JSON válido. Usando respuesta raw.")
+            consejo_final = texto_crudo
+            
+        return consejo_final.strip(), in_tokens, out_tokens
 
     def _calcular_costo_usd(self, in_tokens: int, out_tokens: int) -> float:
         config = obtener_configuracion()
