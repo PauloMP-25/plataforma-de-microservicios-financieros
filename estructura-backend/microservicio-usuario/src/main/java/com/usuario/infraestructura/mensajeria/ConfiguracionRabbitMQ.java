@@ -35,7 +35,6 @@ public class ConfiguracionRabbitMQ {
         return QueueBuilder.durable(NombresCola.AUDITORIA_ACCESOS)
                 .withArgument("x-dead-letter-exchange", NombresExchange.AUDITORIA_DLX)
                 .withArgument("x-dead-letter-routing-key", RoutingKeys.DLQ_AUDITORIA_ACCESO)
-                .withArgument("x-message-ttl", 600000)
                 .build();
     }
 

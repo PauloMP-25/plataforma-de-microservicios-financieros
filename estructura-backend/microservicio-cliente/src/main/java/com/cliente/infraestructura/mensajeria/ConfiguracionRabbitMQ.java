@@ -68,7 +68,6 @@ public class ConfiguracionRabbitMQ {
                 .durable(NombresCola.AUDITORIA_EVENTOS)
                 .withArgument("x-dead-letter-exchange", NombresExchange.AUDITORIA_DLX)
                 .withArgument("x-dead-letter-routing-key", RoutingKeys.DLQ_AUDITORIA_EVENTO)
-                .withArgument("x-message-ttl", 600000)
                 .build();
     }
 
