@@ -51,7 +51,7 @@ public class ConfiguracionRabbitMQ {
     public Queue colaIAProcesamiento() {
         return QueueBuilder.durable(NombresCola.IA_PROCESAMIENTO)
                 .withArgument("x-dead-letter-exchange", NombresExchange.AUDITORIA_DLX)
-                .withArgument("x-dead-letter-routing-key", NombresCola.IA_PROCESAMIENTO + ".dlq")
+                .withArgument("x-dead-letter-routing-key", NombresCola.IA_PROCESAMIENTO_DLQ)
                 .build();
     }
 
@@ -76,7 +76,7 @@ public class ConfiguracionRabbitMQ {
 
     @Bean
     public Queue colaIADLQ() {
-        return QueueBuilder.durable(NombresCola.IA_PROCESAMIENTO + ".dlq").build();
+        return QueueBuilder.durable(NombresCola.IA_PROCESAMIENTO_DLQ).build();
     }
 
     // =========================================================================
@@ -94,6 +94,6 @@ public class ConfiguracionRabbitMQ {
     public Binding bindingIADLQ(Queue colaIADLQ, TopicExchange exchangeDLQ) {
         return BindingBuilder.bind(colaIADLQ)
                 .to(exchangeDLQ)
-                .with(NombresCola.IA_PROCESAMIENTO + ".dlq");
+                .with(NombresCola.IA_PROCESAMIENTO_DLQ);
     }
 }

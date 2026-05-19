@@ -17,6 +17,17 @@ public final class NombresCola {
     public static final String MENSAJERIA_OTP = "cola.mensajeria.otp";
     public static final String CLIENTE_IA_SINCRO = "cola.cliente.ia.sincronizacion";
 
+    public static final String IA_PROCESAMIENTO_DLQ = "cola.ia.procesamiento.dlq";
+    public static final String IA_CLASIFICACION = "q.ia.clasificacion";
+    public static final String IA_INVALIDACION_CACHE = "cola.ia.invalidacion.cache";
+    public static final String DASHBOARD_MODULOS = "cola.dashboard.modulos";
+
+    // Mensajería
+    public static final String MENSAJERIA_OTP_GENERAR = "cola.mensajeria.otp.generar";
+    public static final String MENSAJERIA_ERROR = "cola.mensajeria.error";
+    public static final String MENSAJERIA_EMAIL_ENVIAR = "cola.mensajeria.email.enviar";
+    public static final String MENSAJERIA_SMS_ENVIAR = "cola.mensajeria.sms.enviar";
+
     // Pagos
     public static final String PAGOS_EXITOSOS = "cola.pagos.exitosos";
     public static final String PAGOS_REEMBOLSO = "cola.pagos.reembolso";

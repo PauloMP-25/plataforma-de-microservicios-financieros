@@ -1,5 +1,6 @@
 package com.mensajeria.infraestructura.mensajeria;
 
+import com.libreria.comun.mensajeria.NombresCola;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
@@ -24,6 +25,7 @@ import org.springframework.context.annotation.Configuration;
  *
  * @author Paulo Moron
  * @version 1.1.0
+ * @since 2026-09
  */
 @Configuration
 public class ConfiguracionRabbitMQ {
@@ -40,16 +42,16 @@ public class ConfiguracionRabbitMQ {
 
     // ── Colas ─────────────────────────────────────────────────────────────────
     /** Cola principal de generación de OTPs. */
-    public static final String COLA_OTP_GENERAR = "cola.mensajeria.otp.generar";
+    public static final String COLA_OTP_GENERAR = NombresCola.MENSAJERIA_OTP_GENERAR;
 
     /** Cola de errores (DLQ) donde llegan mensajes con 3 fallos consecutivos. */
-    public static final String COLA_ERROR = "cola.mensajeria.error";
+    public static final String COLA_ERROR = NombresCola.MENSAJERIA_ERROR;
 
     /** Cola para envío asíncrono de emails transaccionales. */
-    public static final String COLA_EMAIL_ENVIAR = "cola.mensajeria.email.enviar";
+    public static final String COLA_EMAIL_ENVIAR = NombresCola.MENSAJERIA_EMAIL_ENVIAR;
 
     /** Cola para envío asíncrono de SMS. */
-    public static final String COLA_SMS_ENVIAR = "cola.mensajeria.sms.enviar";
+    public static final String COLA_SMS_ENVIAR = NombresCola.MENSAJERIA_SMS_ENVIAR;
 
     // ── Routing Keys ──────────────────────────────────────────────────────────
     /** Routing key para solicitudes de generación de OTP. */

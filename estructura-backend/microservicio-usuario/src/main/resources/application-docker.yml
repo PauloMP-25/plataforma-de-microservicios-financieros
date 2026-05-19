@@ -129,6 +129,7 @@ logging:
     "org.hibernate.SQL": WARN
     "com.netflix.eureka": WARN
     "com.netflix.discovery": WARN
+    "org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer": ERROR
 
 # ── Seguridad JWT (Configuración Luka) ─────────────────────────────────────────
 luka:
