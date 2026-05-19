@@ -27,6 +27,8 @@ replay_pid*
 # ── DOCKER & INFRAESTRUCTURA ──────────────────────────────────────────────────
 
 # Ignorar archivos de secretos y configuración local
+.env
+*.env
 docker/.env
 docker/docker-compose.override.yml
 
