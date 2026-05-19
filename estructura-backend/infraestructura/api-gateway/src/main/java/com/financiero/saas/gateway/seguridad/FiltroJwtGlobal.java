@@ -18,15 +18,12 @@ import reactor.core.publisher.Mono;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Filtro global perimetral para el API Gateway.
- * <p>
- * Implementa la validación de seguridad en dos fases:
- * 1. Verifica de forma reactiva si la IP origen está bloqueada por ataques.
- * 2. Valida y desencripta el token JWT para peticiones a rutas protegidas.
- * </p>
+ * Filtro global perimetral para la validación y desencriptación del token JWT.
+ * Se ejecuta únicamente después de que el cortafuegos de IPs (FiltroBloqueoIp)
+ * haya validado que la IP de origen es segura.
  * 
  * @author Paulo Moron
- * @version 1.1.0
+ * @version 2.0.0
  * @since 2026-05-10
  */
 @Component
@@ -35,34 +32,19 @@ import java.nio.charset.StandardCharsets;
 public class FiltroJwtGlobal implements GlobalFilter, Ordered {
 
     private final ServicioJwtGateway servicioJwt;
-    private final SeguridadClient seguridadClient;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getURI().getPath();
-        String ipCliente = extraerIp(exchange.getRequest());
 
-        log.debug("Verificando petición: [{} {}] desde IP: {}", exchange.getRequest().getMethod(), path, ipCliente);
+        log.debug("Verificando JWT para petición: [{} {}]", exchange.getRequest().getMethod(), path);
 
-        // 1. ¿IP BLOQUEADA? (Estrategia de Seguridad Robusta con Redis)
-        return seguridadClient.estaBloqueada(ipCliente)
-                .flatMap(bloqueada -> {
-                    if (Boolean.TRUE.equals(bloqueada)) {
-                        log.warn("[SEGURIDAD] Rechazando petición de IP bloqueada: {}", ipCliente);
-                        return responderError(exchange, HttpStatus.FORBIDDEN, "ACCESO_DENEGADO",
-                                "Acceso denegado por políticas de seguridad");
-                    }
-                    return continuarValidacionJwt(exchange, chain, path);
-                });
-    }
-
-    private Mono<Void> continuarValidacionJwt(ServerWebExchange exchange, GatewayFilterChain chain, String path) {
-        // 2. RUTAS PÚBLICAS (Login, Registro)
+        // 1. RUTAS PÚBLICAS (Login, Registro)
         if (esRutaPublica(path)) {
             return chain.filter(exchange);
         }
 
-        // 3. VALIDACIÓN USANDO LA LIBRERÍA
+        // 2. VALIDACIÓN USANDO LA LIBRERÍA
         String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return responderError(exchange, CodigoError.ACCESO_NO_AUTORIZADO, "Token ausente");
@@ -78,26 +60,13 @@ public class FiltroJwtGlobal implements GlobalFilter, Ordered {
             return responderError(exchange, CodigoError.TOKEN_INVALIDO, "Error de firma");
         }
 
-        // 4. INYECCIÓN DE HEADERS PARA LOS MICROS
+        // 3. INYECCIÓN DE HEADERS PARA LOS MICROSERVICIOS AGUAS ABAJO
         ServerHttpRequest requestModificada = exchange.getRequest().mutate()
-                .header("X-Usuario-Id", servicioJwt.extraerUsuarioId(token).toString())
+                .header("X-Usuario-Id", servicioJwt.extraerUsuarioId(token))
                 .header("X-Usuario-Roles", String.join(",", servicioJwt.extraerRoles(token)))
                 .build();
 
         return chain.filter(exchange.mutate().request(requestModificada).build());
-    }
-
-    @SuppressWarnings("null")
-    private String extraerIp(ServerHttpRequest request) {
-        String xForwardedFor = request.getHeaders().getFirst("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-            // X-Forwarded-For puede contener múltiples IPs, la primera es el origen
-            return xForwardedFor.split(",")[0].trim();
-        }
-        if (request.getRemoteAddress() != null && request.getRemoteAddress().getAddress() != null) {
-            return request.getRemoteAddress().getAddress().getHostAddress();
-        }
-        return "IP_DESCONOCIDA";
     }
 
     // Usamos nuestro ResultadoApi de la librería para el error del Gateway
@@ -122,7 +91,8 @@ public class FiltroJwtGlobal implements GlobalFilter, Ordered {
 
     @Override
     public int getOrder() {
-        return Ordered.HIGHEST_PRECEDENCE;
+        // Se ejecuta después de FiltroBloqueoIp (Ordered.HIGHEST_PRECEDENCE) y FiltroTrazabilidadGlobal (Ordered.HIGHEST_PRECEDENCE + 1)
+        return Ordered.HIGHEST_PRECEDENCE + 2;
     }
 
     private boolean esRutaPublica(String path) {
