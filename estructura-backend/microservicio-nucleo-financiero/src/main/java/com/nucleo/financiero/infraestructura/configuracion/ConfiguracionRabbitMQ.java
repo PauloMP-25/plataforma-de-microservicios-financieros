@@ -26,8 +26,8 @@ public class ConfiguracionRabbitMQ {
     // =========================================================================
 
     @Bean
-    public TopicExchange exchangeIA() {
-        return new TopicExchange(NombresExchange.IA);
+    public DirectExchange exchangeIA() {
+        return new DirectExchange(NombresExchange.IA);
     }
 
     @Bean
@@ -36,11 +36,11 @@ public class ConfiguracionRabbitMQ {
     }
 
     /**
-     * Topic Exchange centralizado para mensajes fallidos (Dead Letter Exchange).
+     * Direct Exchange centralizado para mensajes fallidos (Dead Letter Exchange).
      */
     @Bean
-    public TopicExchange exchangeDLQ() {
-        return new TopicExchange(NombresExchange.AUDITORIA_DLX);
+    public DirectExchange exchangeDLQ() {
+        return new DirectExchange(NombresExchange.AUDITORIA_DLX);
     }
 
     // =========================================================================
@@ -89,14 +89,14 @@ public class ConfiguracionRabbitMQ {
     // =========================================================================
 
     @Bean
-    public Binding bindingIAAnalisis(Queue colaIAProcesamiento, TopicExchange exchangeIA) {
+    public Binding bindingIAAnalisis(Queue colaIAProcesamiento, DirectExchange exchangeIA) {
         return BindingBuilder.bind(colaIAProcesamiento)
                 .to(exchangeIA)
                 .with(RoutingKeys.IA_ANALISIS_SOLICITAR);
     }
 
     @Bean
-    public Binding bindingIADLQ(Queue colaIADLQ, TopicExchange exchangeDLQ) {
+    public Binding bindingIADLQ(Queue colaIADLQ, DirectExchange exchangeDLQ) {
         return BindingBuilder.bind(colaIADLQ)
                 .to(exchangeDLQ)
                 .with(NombresCola.IA_PROCESAMIENTO_DLQ);
