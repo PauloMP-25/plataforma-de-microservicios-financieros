@@ -6,50 +6,24 @@ spring:
     import: optional:file:../../.env[.properties]
   application:
     name: api-gateway
-  # ─────────────────────────────────────────────────────────────────────────
-  # REDIS: Necesario para Rate Limiting
-  # En desarrollo puedes correr Redis con Docker:
-  #   docker run -d -p 6379:6379 redis:alpine
-  # ─────────────────────────────────────────────────────────────────────────
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       connect-timeout: 2s
       timeout: 1s
-      # password: ${REDIS_PASSWORD:} # Descomentar en producción
 
-  # ═══════════════════════════════════════════════════════════════════════════
-  # SPRING CLOUD GATEWAY — CONFIGURACIÓN CENTRAL
-  # ═══════════════════════════════════════════════════════════════════════════
   cloud:
     gateway:
-      # Tiempos de espera globales
       httpclient:
-        connect-timeout: 30000  # 30 segundos para conectar
-        response-timeout: 60s # 60 segundos para responder
-      # Descubrimiento automático: si un servicio se llama "mi-servicio"
-      # en Eureka, el Gateway crea automáticamente una ruta /mi-servicio/**
-      # Útil para tener rutas de respaldo, pero aquí las definimos manualmente
-      # para tener control total sobre paths, filtros y seguridad.
+        connect-timeout: 30000
+        response-timeout: ${GATEWAY_RESPONSE_TIMEOUT:60s}
       discovery:
         locator:
           enabled: true
-          lower-case-service-id: true  # Convierte MICROSERVICIO-USUARIO → microservicio-usuario
+          lower-case-service-id: true
 
-      # ─────────────────────────────────────────────────────────────────────
-      # RUTAS DEFINIDAS MANUALMENTE
-      # Estructura de cada ruta:
-      #   id:        Identificador único (para logs y debugging)
-      #   uri:       lb://NOMBRE-EN-EUREKA  (lb = load balanced)
-      #   predicates: Condición para que esta ruta aplique
-      #   filters:   Transformaciones que se aplican a la petición/respuesta
-      # ─────────────────────────────────────────────────────────────────────
       routes:
-        # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-USUARIO  (Puerto 8081)                   │
-        # │  Rutas PÚBLICAS: login y registro no requieren JWT      │
-        # └─────────────────────────────────────────────────────────┘
         - id: servicio-usuario-auth
           uri: lb://MICROSERVICIO-USUARIO
           predicates:
@@ -57,16 +31,10 @@ spring:
           filters:
             - StripPrefix=0
             - AddRequestHeader=X-Gateway-Source, api-gateway
-            # ─────────────────────────────────────────────────────────
-            # CIRCUIT BREAKER: Protege contra caídas del MS-USUARIO
-            # ─────────────────────────────────────────────────────────
             - name: CircuitBreaker
               args:
-                name: loginCircuitBreaker
-                fallbackUri: forward:/fallback/login
-            # ─────────────────────────────────────────────────────────
-            # RATE LIMITER: Protección contra ataques de fuerza bruta
-            # ─────────────────────────────────────────────────────────
+                name: usuarioCB
+                fallbackUri: forward:/fallback
             - name: RequestRateLimiter
               args:
                 redis-rate-limiter.replenishRate: 3
@@ -75,9 +43,6 @@ spring:
           metadata:
             requiere-autenticacion: false
 
-        # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-USUARIO  — Rutas protegidas              │
-        # └─────────────────────────────────────────────────────────┘
         - id: usuario-protegido
           uri: lb://MICROSERVICIO-USUARIO
           predicates:
@@ -87,12 +52,28 @@ spring:
           filters:
             - StripPrefix=0
             - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: usuarioCB
+                fallbackUri: forward:/fallback
           metadata:
             requiere-autenticacion: true
 
-        # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-CLIENTE  (Puerto 8083)                   │
-        # └─────────────────────────────────────────────────────────┘
+        - id: servicio-cliente-interno
+          uri: lb://MICROSERVICIO-CLIENTE
+          predicates:
+            - Path=/api/v1/clientes/perfil/inicial
+            - Path=/api/v1/clientes/interno/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: clienteCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: false
+
         - id: servicio-cliente
           uri: lb://MICROSERVICIO-CLIENTE
           predicates:
@@ -100,20 +81,19 @@ spring:
           filters:
             - StripPrefix=0
             - AddRequestHeader=X-Gateway-Source, api-gateway
-            # Rate Limiting: máx 20 peticiones/segundo por usuario autenticado
             - name: RequestRateLimiter
               args:
                 redis-rate-limiter.replenishRate: 20
                 redis-rate-limiter.burstCapacity: 40
                 redis-rate-limiter.requestedTokens: 1
                 key-resolver: "#{@userKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: clienteCB
+                fallbackUri: forward:/fallback
           metadata:
             requiere-autenticacion: true
 
-        # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-AUDITORIA  (Puerto 8082)                 │
-        # │  Solo accesible para ROLE_ADMIN desde el exterior       │
-        # └─────────────────────────────────────────────────────────┘
         - id: servicio-auditoria
           uri: lb://MICROSERVICIO-AUDITORIA
           predicates:
@@ -121,14 +101,14 @@ spring:
           filters:
             - StripPrefix=0
             - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: auditoriaCB
+                fallbackUri: forward:/fallback
           metadata:
             requiere-autenticacion: true
             rol-requerido: ROLE_ADMIN
 
-        # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-MENSAJERIA  (Puerto 8084)                │
-        # │  Los OTP son públicos, el resto protegido               │
-        # └─────────────────────────────────────────────────────────┘
         - id: servicio-mensajeria-otp
           uri: lb://MICROSERVICIO-MENSAJERIA
           predicates:
@@ -136,12 +116,13 @@ spring:
           filters:
             - StripPrefix=0
             - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: mensajeriaCB
+                fallbackUri: forward:/fallback
           metadata:
             requiere-autenticacion: false
 
-        # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-NUCLEO-FINANCIERO  (Puerto 8085)         │
-        # └─────────────────────────────────────────────────────────┘
         - id: servicio-nucleo-financiero
           uri: lb://MICROSERVICIO-NUCLEO-FINANCIERO
           predicates:
@@ -155,12 +136,13 @@ spring:
                 redis-rate-limiter.burstCapacity: 20
                 redis-rate-limiter.requestedTokens: 1
                 key-resolver: "#{@userKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: financieroCB
+                fallbackUri: forward:/fallback
           metadata:
             requiere-autenticacion: true
 
-        # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-IA  (Puerto 8086)                        │
-        # └─────────────────────────────────────────────────────────┘
         - id: servicio-ia
           uri: lb://MICROSERVICIO-IA
           predicates:
@@ -168,19 +150,18 @@ spring:
           filters:
             - StripPrefix=0
             - AddRequestHeader=X-Gateway-Source, api-gateway
-            # Filtro de Cuota Dinámica (Módulo 8)
             - name: RequestRateLimiter
               args:
                 redis-rate-limiter.replenishRate: 1
                 redis-rate-limiter.burstCapacity: 1
                 key-resolver: "#{@userKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: iaCB
+                fallbackUri: forward:/fallback
           metadata:
             requiere-autenticacion: true
 
-        # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-PAGO  (Puerto 8087)                      │
-        # │  Webhook PÚBLICO, resto PROTEGIDO                       │
-        # └─────────────────────────────────────────────────────────┘
         - id: servicio-pagos-webhook
           uri: lb://MICROSERVICIO-PAGO
           predicates:
@@ -188,6 +169,10 @@ spring:
           filters:
             - StripPrefix=0
             - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: pagoCB
+                fallbackUri: forward:/fallback
           metadata:
             requiere-autenticacion: false
 
@@ -199,6 +184,10 @@ spring:
           filters:
             - StripPrefix=0
             - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: pagoCB
+                fallbackUri: forward:/fallback
           metadata:
             requiere-autenticacion: true
 
@@ -209,21 +198,20 @@ spring:
           filters:
             - StripPrefix=0
             - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: pagoCB
+                fallbackUri: forward:/fallback
           metadata:
             requiere-autenticacion: true
             rol-requerido: ROLE_ADMIN
 
-      # ─────────────────────────────────────────────────────────────────────
-      # CORS GLOBAL: Aplica a todas las rutas del Gateway
-      # ─────────────────────────────────────────────────────────────────────
       globalcors:
         corsConfigurations:
           '[/**]':
-            # En producción, reemplazar '*' con tu dominio real:
-            # allowedOrigins: "https://tu-app.com"
             allowedOrigins:
-              - "http://localhost:3000"    # React/Next.js dev
-              - "http://localhost:5173"    # Vite dev
+              - "http://localhost:3000"
+              - "http://localhost:5173"
               - ${FRONTEND_URL:http://localhost:3000}
             allowedMethods:
               - GET
@@ -235,39 +223,25 @@ spring:
             allowedHeaders:
               - "*"
             allowCredentials: true
-            # Cuánto tiempo el browser cachea la respuesta preflight (OPTIONS)
             maxAge: 3600
 
-# ═══════════════════════════════════════════════════════════════════════════
-# EUREKA CLIENT: El Gateway se registra Y busca otros servicios
-# ═══════════════════════════════════════════════════════════════════════════
 eureka:
   client:
     service-url:
       defaultZone: http://${EUREKA_USER:admin}:${EUREKA_PASSWORD:admin123}@${EUREKA_HOST:localhost}:8761/eureka/
-    # El Gateway SÍ busca el registry para resolver lb:// en las rutas
     fetch-registry: true
     register-with-eureka: true
-    # Con qué frecuencia (ms) actualiza la caché del registry
     registry-fetch-interval-seconds: 5
   instance:
     prefer-ip-address: true
-    # Tiempo que tarda Eureka en detectar que el Gateway cayó
     lease-expiration-duration-in-seconds: 20
     lease-renewal-interval-in-seconds: 10
 
-# ═══════════════════════════════════════════════════════════════════════════
-# JWT: Clave compartida para validar tokens (la misma del microservicio-usuario)
-# En producción: usa variable de entorno JWT_SECRET_KEY
-# ═══════════════════════════════════════════════════════════════════════════
 app:
   security:
     jwt:
       secret-key: ${JWT_SECRET_KEY:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
 
-# ═══════════════════════════════════════════════════════════════════════════
-# LOGGING
-# ═══════════════════════════════════════════════════════════════════════════
 logging:
   level:
     org.springframework.cloud.gateway: INFO
@@ -277,7 +251,6 @@ logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
-# ═══════════════════════════════════════════════════════════════════════════
 management:
   endpoints:
     web:
@@ -287,11 +260,8 @@ management:
     health:
       show-details: always
     gateway:
-      enabled: true  # Expone /actuator/gateway/routes para ver rutas en tiempo real
+      enabled: true
 
-# ═══════════════════════════════════════════════════════════════════════════
-# RESILIENCE4J: Configuración de Circuit Breaker
-# ═══════════════════════════════════════════════════════════════════════════
 resilience4j:
   circuitbreaker:
     configs:
@@ -302,12 +272,36 @@ resilience4j:
         failure-rate-threshold: 50
         event-consumer-buffer-size: 10
     instances:
-      loginCircuitBreaker:
+      usuarioCB:
+        base-config: default
+      clienteCB:
+        base-config: default
+      auditoriaCB:
+        base-config: default
+      mensajeriaCB:
+        base-config: default
+      financieroCB:
+        base-config: default
+      iaCB:
+        base-config: default
+      pagoCB:
         base-config: default
   timelimiter:
     configs:
       default:
         timeout-duration: 5s
     instances:
-      loginCircuitBreaker:
+      usuarioCB:
+        base-config: default
+      clienteCB:
+        base-config: default
+      auditoriaCB:
+        base-config: default
+      mensajeriaCB:
+        base-config: default
+      financieroCB:
+        base-config: default
+      iaCB:
+        base-config: default
+      pagoCB:
         base-config: default
