@@ -1,4 +1,5 @@
 from typing import List, Dict, Any, Optional
+from datetime import datetime
 from app.clientes.base_client import BaseLukaClient
 from app.configuracion import obtener_configuracion
 
@@ -12,19 +13,37 @@ class ClienteFinanciero(BaseLukaClient):
             service_name="ms-nucleo-financiero"
         )
 
-    async def obtener_transacciones(
+    async def obtener_historial_transacciones_async(
         self, 
         usuario_id: str, 
         token: str, 
-        tamanio: int = 200
-    ) -> List[Dict[str, Any]]:
-        """Recupera el historial de transacciones del usuario."""
-        endpoint = f"/api/v1/transacciones/usuario/{usuario_id}"
-        params = {"size": tamanio}
+        tamanio: int = 200,
+        mes: Optional[int] = None,
+        anio: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """Recupera el historial de transacciones (concurrente)."""
+        endpoint = f"/api/v1/transacciones/historial"
         
-        # El núcleo financiero devuelve un ResultadoApi con la lista en 'datos'
+        desde_str = None
+        hasta_str = None
+        if mes and anio:
+            desde_str = datetime(anio, mes, 1, 0, 0, 0).isoformat()
+            if mes == 12:
+                hasta_str = datetime(anio + 1, 1, 1, 0, 0, 0).isoformat()
+            else:
+                hasta_str = datetime(anio, mes + 1, 1, 0, 0, 0).isoformat()
+
+        params = {
+            "usuarioId": usuario_id,
+            "size": tamanio,
+            "page": 0,
+        }
+        if desde_str: params["desde"] = desde_str
+        if hasta_str: params["hasta"] = hasta_str
+
         respuesta = await self.call("GET", endpoint, token=token, params=params)
-        return respuesta.get("datos", [])
+        return respuesta
+
 
 class ClientePerfil(BaseLukaClient):
     """Cliente para comunicarse con ms-cliente."""
@@ -34,14 +53,13 @@ class ClientePerfil(BaseLukaClient):
             service_name="ms-cliente"
         )
 
-    async def obtener_perfil_estrategico(
+    async def obtener_perfil_usuario_async(
         self, 
         usuario_id: str, 
         token: str
     ) -> Dict[str, Any]:
-        """Obtiene el perfil y metas del usuario para el coach IA."""
+        """Obtiene el perfil y metas del usuario (concurrente)."""
         endpoint = f"/api/v1/perfil/estrategico/{usuario_id}"
-        
         respuesta = await self.call("GET", endpoint, token=token)
         return respuesta.get("datos", {})
 
