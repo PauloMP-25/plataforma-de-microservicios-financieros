@@ -15,6 +15,8 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+import org.springframework.beans.factory.annotation.Value;
+import java.util.List;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -32,6 +34,9 @@ import java.nio.charset.StandardCharsets;
 public class FiltroJwtGlobal implements GlobalFilter, Ordered {
 
     private final ServicioJwtGateway servicioJwt;
+
+    @Value("#{'${app.security.rutas-publicas}'.split(',')}")
+    private List<String> rutasPublicas;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -96,6 +101,9 @@ public class FiltroJwtGlobal implements GlobalFilter, Ordered {
     }
 
     private boolean esRutaPublica(String path) {
-        return path.contains("/auth/") || path.contains("/v3/api-docs");
+        if (rutasPublicas == null || rutasPublicas.isEmpty()) {
+            return path.contains("/auth/") || path.contains("/v3/api-docs");
+        }
+        return rutasPublicas.stream().anyMatch(path::contains);
     }
 }

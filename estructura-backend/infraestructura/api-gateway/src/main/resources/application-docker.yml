@@ -269,6 +269,7 @@ app:
   security:
     jwt:
       secret-key: ${JWT_SECRET_KEY:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    rutas-publicas: "/auth/,/api/v1/mensajeria/otp/,/api/v1/pagos/webhook/,/v3/api-docs,/swagger-ui,/actuator/,/error/"
 
 # ═══════════════════════════════════════════════════════════════════════════
 # ACTUATOR (Health Checks)
