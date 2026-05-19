@@ -14,6 +14,7 @@ Responsabilidades:
 from __future__ import annotations
 import logging
 import asyncio
+import json
 from typing import Optional, Tuple, Any, Dict
 from datetime import datetime
 import google.generativeai as genai
@@ -28,8 +29,10 @@ from app.persistencia.cache_redis import CacheRedis
 from app.persistencia.database import SessionLocal
 from app.persistencia.modelos_db import IaAnalisisCache
 from app.utilidades.hash_util import generar_hash_datos
+from app.utilidades.excepciones import LimiteDiarioExcedidoError
 from app.libreria_comun.modelos.eventos import EventoTransaccionalDTO
 from app.mensajeria.publicador_auditoria import publicador_auditoria
+from app.servicios.ia.motor_reglas import MotorReglasLocal
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +56,7 @@ class CoachIA:
         self._config_generacion = genai.types.GenerationConfig(
             max_output_tokens=config.gemini_max_tokens,
             temperature=config.gemini_temperatura,
+            response_mime_type="application/json",
         )
         self._cache_redis = CacheRedis()
 
@@ -62,7 +66,8 @@ class CoachIA:
         modulo: NombreModulo,
         prompt: str,
         datos_para_hash: Dict[str, Any],
-        rol: str = "FREE"
+        rol: str = "FREE",
+        nombres: str = "estudiante"
     ) -> Tuple[str, EstadoCoach, bool]:
         """
         Punto de entrada principal para obtener un consejo.
@@ -79,12 +84,14 @@ class CoachIA:
         if consejo:
             return consejo, estado, fallback
 
-        # 3. Verificar Cuota Diaria (Gobernanza)
+        # 3. Verificar Cuota Diaria (Gobernanza) — lanza LimiteDiarioExcedidoError si se excede
         try:
             self._verificar_cuota_diaria(usuario_id, modulo, rol)
-        except ValueError as e:
-            logger.warning(f"[COACH-IA] Cuota bloqueada: {e}")
-            return str(e), EstadoCoach.NO_DISPONIBLE, False
+        except LimiteDiarioExcedidoError:
+            raise  # El handler global la captura → HTTP 429
+        except Exception as e:
+            logger.warning(f"[COACH-IA] Cuota no verificable (Redis down): {e}")
+            # Si Redis está caído, permitimos la consulta (fail-open)
 
         # 4. Ejecución: Llamada a Gemini con protección
         try:
@@ -104,15 +111,32 @@ class CoachIA:
             return consejo_texto, EstadoCoach.EXITOSO, False
 
         except pybreaker.CircuitBreakerError:
-            logger.error(f"[COACH-IA] Circuit Breaker ABIERTO.")
-            return self._ejecutar_fallback(usuario_id, modulo, datos_para_hash, "Breaker Abierto"), EstadoCoach.TIMEOUT, True
+            logger.error("[COACH-IA] Circuit Breaker ABIERTO — Gemini no disponible.")
+            return self._ejecutar_fallback(usuario_id, modulo, datos_para_hash, "Breaker Abierto", nombres), EstadoCoach.NO_DISPONIBLE, True
         except Exception as exc:
-            logger.error(f"[COACH-IA] Error en Gemini: {exc}")
-            return self._ejecutar_fallback(usuario_id, modulo, datos_para_hash, str(exc)), EstadoCoach.TIMEOUT, True
+            # Discriminar tipo de error Gemini para trazabilidad
+            tipo_error = type(exc).__name__
+            if "ResourceExhausted" in tipo_error or "429" in str(exc):
+                estado = EstadoCoach.CUOTA_AGOTADA
+            elif "InvalidArgument" in tipo_error or "400" in str(exc):
+                estado = EstadoCoach.AUTH_ERROR
+            elif "DeadlineExceeded" in tipo_error or "timeout" in str(exc).lower():
+                estado = EstadoCoach.TIMEOUT
+            else:
+                estado = EstadoCoach.NO_DISPONIBLE
+            logger.error("[COACH-IA] Gemini %s: %s", tipo_error, exc)
+            return self._ejecutar_fallback(usuario_id, modulo, datos_para_hash, str(exc), nombres), estado, True
 
     def _llamar_gemini_api(self, prompt: str) -> Tuple[str, int, int]:
+        # FASE 6: Exigir esquema JSON estricto para evitar fallos de parseo
+        prompt_json = (
+            f"{prompt}\n\n"
+            f"IMPORTANTE: Debes responder ÚNICAMENTE con un objeto JSON válido "
+            f"que contenga exactamente esta estructura: {{\"consejo\": \"<Tu consejo formateado en markdown>\"}}."
+        )
+        
         respuesta = self._modelo.generate_content(
-            prompt,
+            prompt_json,
             generation_config=self._config_generacion,
         )
         
@@ -121,7 +145,16 @@ class CoachIA:
         in_tokens = usage.prompt_token_count
         out_tokens = usage.candidates_token_count
         
-        return self._limpiar_texto(respuesta.text), in_tokens, out_tokens
+        # Parsear JSON de forma segura
+        texto_crudo = self._limpiar_texto(respuesta.text)
+        try:
+            datos_json = json.loads(texto_crudo)
+            consejo_final = datos_json.get("consejo", texto_crudo)
+        except json.JSONDecodeError:
+            logger.warning("[COACH-IA] Gemini no devolvió JSON válido. Usando respuesta raw.")
+            consejo_final = texto_crudo
+            
+        return consejo_final.strip(), in_tokens, out_tokens
 
     def _calcular_costo_usd(self, in_tokens: int, out_tokens: int) -> float:
         config = obtener_configuracion()
@@ -182,8 +215,10 @@ class CoachIA:
         except Exception as e:
             logger.warning(f"[COACH-IA] No se pudo persistir en DB: {e}")
 
-    def _ejecutar_fallback(self, usuario_id: str, modulo: NombreModulo, datos: Dict[str, Any], error: str) -> str:
-        return f"Paulo, por ahora no puedo darte un consejo detallado, pero sigo analizando tus {modulo.value}. ¡Mantén la disciplina!"
+    def _ejecutar_fallback(self, usuario_id: str, modulo: NombreModulo, datos: Dict[str, Any], error: str, nombres: str) -> str:
+        # FASE 8: Motor de Reglas Local (Graceful Degradation)
+        logger.info(f"[FALLBACK] Generando consejo estático para {modulo.value} (Causa: {error})")
+        return MotorReglasLocal.generar_fallback(modulo, datos, nombres)
 
     def _verificar_cuota_diaria(self, usuario_id: str, modulo: NombreModulo, rol: str) -> None:
         config = obtener_configuracion()
@@ -207,10 +242,10 @@ class CoachIA:
             
             if intentos_int >= limite:
                 mensaje_error = (
-                    f"Has agotado tus {limite} intentos semanales de {tipo_pool}. "
-                    f"Tu plan {rol_upper} se renovará el próximo lunes."
+                    f"Has agotado tus {limite} consultas semanales de {tipo_pool}. "
+                    f"Tu plan {rol_upper} se renueva el próximo lunes."
                 )
-                raise ValueError(mensaje_error)
+                raise LimiteDiarioExcedidoError(mensaje=mensaje_error)
             
             self._cache_redis.guardar(clave, intentos_int + 1, ex=604800) # 7 días
             logger.info(f"[CUOTA-{tipo_pool.upper()}] {usuario_id}: {intentos_int + 1}/{limite}")

@@ -33,7 +33,6 @@ public class ManejadorErroresRabbit implements RabbitListenerErrorHandler {
      *         excepción para reintento.
      * @throws Exception Si ocurre un error durante el manejo del fallo.
      */
-    @SuppressWarnings("null")
     @Override
     public Object handleError(org.springframework.amqp.core.Message msg,
             com.rabbitmq.client.Channel channel,
@@ -41,8 +40,9 @@ public class ManejadorErroresRabbit implements RabbitListenerErrorHandler {
             ListenerExecutionFailedException exception) throws Exception {
 
         Throwable causa = exception.getCause();
-        String routingKey = (String) message.getHeaders()
+        Object routingKeyHeader = message.getHeaders()
                 .get(org.springframework.amqp.support.AmqpHeaders.RECEIVED_ROUTING_KEY);
+        String routingKey = routingKeyHeader != null ? routingKeyHeader.toString() : "desconocido";
 
         // Si es un error de código (NullPointer, etc), no reintentamos para no bloquear
         // la cola

@@ -20,11 +20,14 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableAsync
 @EnableScheduling
 @EnableFeignClients
+@org.springframework.cache.annotation.EnableCaching
 @ComponentScan(basePackages = {
         "com.mensajeria",
         "com.libreria.comun"
 })
 public class MicroservicioMensajeriaApplication {
+
+    public static final String NOMBRE_SERVICIO = "MS-MENSAJERIA";
 
     public static void main(String[] args) {
         SpringApplication.run(MicroservicioMensajeriaApplication.class, args);

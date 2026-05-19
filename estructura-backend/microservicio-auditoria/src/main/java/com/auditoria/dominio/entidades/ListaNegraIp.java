@@ -3,6 +3,7 @@ package com.auditoria.dominio.entidades;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * Entidad de persistencia que gestiona el bloqueo de direcciones IP maliciosas.
@@ -11,17 +12,14 @@ import java.time.LocalDateTime;
  * prioritaria por el <b>microservicio-gateway</b> antes de procesar cualquier
  * petición entrante a <b>Luka App</b>.
  * </p>
- * <p>
- * Se utiliza la dirección IP como clave primaria para garantizar la unicidad
- * de los registros y permitir búsquedas de alta eficiencia (complejidad O(1)).
- * </p>
  *
  * @author Paulo Moron
- * @version 1.1.0
+ * @version 1.2.0
  * @since 2026-05-10
  */
 @Entity
 @Table(name = "lista_negra_ip", indexes = {
+        @Index(name = "idx_lista_negra_ip", columnList = "ip"),
         @Index(name = "idx_lista_negra_expiracion", columnList = "fecha_expiracion")
 })
 @Getter
@@ -32,10 +30,16 @@ import java.time.LocalDateTime;
 public class ListaNegraIp {
 
     /**
-     * Dirección IP bloqueada. Soporta formatos IPv4 e IPv6.
-     * Actúa como identificador único del registro.
+     * Identificador único del registro de bloqueo.
      */
     @Id
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
+
+    /**
+     * Dirección IP bloqueada. Soporta formatos IPv4 e IPv6.
+     */
     @Column(name = "ip", nullable = false, length = 45)
     private String ip;
 

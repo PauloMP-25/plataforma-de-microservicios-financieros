@@ -100,6 +100,7 @@ public class ConfiguracionRabbitMQ {
      * @param exchangeAuditoria Bean del exchange de auditoría.
      * @return {@link Binding} que establece la ruta de mensajes de acceso.
      */
+    @Bean
     public Binding bindingEventos(
             @Qualifier("colaAuditoria") Queue colaEventos,
             @Qualifier("exchangeAuditoria") TopicExchange exchangeAuditoria) {
@@ -107,6 +108,23 @@ public class ConfiguracionRabbitMQ {
                 .bind(colaEventos)
                 .to(exchangeAuditoria)
                 .with(RoutingKeys.AUDITORIA_EVENTO_ALL);
+    }
+
+    /**
+     * Vincula la cola de error de auditoría (DLQ) al Dead Letter Exchange (DLX).
+     * 
+     * @param colaEventosDlq      Bean de la cola DLQ de auditoría.
+     * @param exchangeAuditoriaDlq Bean del exchange DLX de auditoría.
+     * @return {@link Binding} que establece la ruta de reintento.
+     */
+    @Bean
+    public Binding bindingAuditoriaDlq(
+            @Qualifier("colaEventosDlq") Queue colaEventosDlq,
+            @Qualifier("exchangeAuditoriaDlq") DirectExchange exchangeAuditoriaDlq) {
+        return BindingBuilder
+                .bind(colaEventosDlq)
+                .to(exchangeAuditoriaDlq)
+                .with(RoutingKeys.DLQ_AUDITORIA_EVENTO);
     }
 
     // =========================================================================

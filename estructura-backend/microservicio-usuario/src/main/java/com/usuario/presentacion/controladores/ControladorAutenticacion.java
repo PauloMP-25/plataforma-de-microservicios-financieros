@@ -1,14 +1,20 @@
 package com.usuario.presentacion.controladores;
 
 import com.libreria.comun.respuesta.ResultadoApi;
-import com.usuario.aplicacion.dtos.*;
-import com.usuario.aplicacion.servicios.IServicioAutenticacion;
+import com.usuario.aplicacion.dtos.solicitudes.*;
+import com.usuario.aplicacion.dtos.respuestas.*;
+import com.usuario.aplicacion.puertos.IServicioAutenticacion;
 import com.usuario.dominio.entidades.Usuario;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -22,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Autenticación (Auth)", description = "Controlador principal para el registro, activación, inicio de sesión, recuperación de credenciales y desactivación de cuentas.")
 public class ControladorAutenticacion {
 
     private final IServicioAutenticacion servicioAuth;
@@ -30,10 +37,16 @@ public class ControladorAutenticacion {
      * Activa la cuenta de un usuario recién registrado validando un código OTP.
      */
     @PutMapping("/activar/{usuarioId}")
+    @Operation(summary = "Activar Cuenta con OTP", description = "Activa el perfil de usuario recién registrado validando el código OTP enviado a su correo o teléfono. Si el OTP es correcto, cambia el estado del usuario a habilitado.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cuenta activada exitosamente. El usuario ya puede iniciar sesión."),
+            @ApiResponse(responseCode = "400", description = "Código OTP inválido, expirado o ya utilizado."),
+            @ApiResponse(responseCode = "404", description = "Usuario no encontrado en el sistema.")
+    })
     public ResponseEntity<ResultadoApi<String>> activarCuenta(
-            @PathVariable UUID usuarioId,
-            @RequestParam(required = false) String codigoOtp,
-            @RequestParam(required = false) String telefono, 
+            @PathVariable @Parameter(description = "UUID único del usuario a activar.", example = "d3b07384-d113-4a0b-8083-d922a901ba8d") UUID usuarioId,
+            @RequestParam(required = false) @Parameter(description = "Código OTP de verificación de 6 dígitos.", example = "123456") String codigoOtp,
+            @RequestParam(required = false) @Parameter(description = "Número telefónico opcional para registrar o validar.", example = "+51999999999") String telefono,
             HttpServletRequest request) {
         
         log.info("[API] Intento de activación para usuario: {}", usuarioId);
@@ -46,8 +59,14 @@ public class ControladorAutenticacion {
      * Solicita un nuevo código OTP para la activación de cuenta.
      */
     @PostMapping("/solicitar-otp/{usuarioId}")
+    @Operation(summary = "Solicitar Nuevo OTP", description = "Genera y reenvía un nuevo código OTP de activación al medio de contacto especificado (EMAIL, SMS o WHATSAPP) en caso de que el anterior haya expirado o no haya sido recibido.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Código OTP enviado exitosamente al medio de contacto."),
+            @ApiResponse(responseCode = "400", description = "El canal seleccionado no es válido o hay demasiadas solicitudes pendientes (Rate Limit de OTP)."),
+            @ApiResponse(responseCode = "404", description = "Usuario no encontrado.")
+    })
     public ResponseEntity<ResultadoApi<String>> solicitarOtpActivacion(
-            @PathVariable UUID usuarioId,
+            @PathVariable @Parameter(description = "UUID único del usuario.", example = "d3b07384-d113-4a0b-8083-d922a901ba8d") UUID usuarioId,
             @Valid @RequestBody SolicitudGenerarOtp solicitud) {
         
         log.info("[API] Solicitud de OTP de activación para usuario: {}", usuarioId);
@@ -60,6 +79,12 @@ public class ControladorAutenticacion {
      * Realiza el login del usuario y retorna el token JWT.
      */
     @PostMapping("/login")
+    @Operation(summary = "Iniciar Sesión (Autenticación)", description = "Valida las credenciales de correo y contraseña de un usuario en el sistema. Retorna un token de acceso JWT firmado (HS384) y un refresh token, además de los datos de su plan de suscripción actual.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Autenticación exitosa. Se retorna el token JWT y el perfil de acceso."),
+            @ApiResponse(responseCode = "401", description = "Credenciales incorrectas o IP bloqueada temporalmente por fuerza bruta."),
+            @ApiResponse(responseCode = "403", description = "El usuario existe pero su cuenta no se encuentra activada (requiere verificación OTP).")
+    })
     public ResponseEntity<ResultadoApi<RespuestaAutenticacion>> login(
             @Valid @RequestBody SolicitudLogin solicitud,
             HttpServletRequest request) {
@@ -74,6 +99,11 @@ public class ControladorAutenticacion {
      * Renueva el Access Token utilizando un Refresh Token válido.
      */
     @PostMapping("/refrescar-token")
+    @Operation(summary = "Renovar Access Token", description = "Recibe un Refresh Token válido y genera un nuevo Access Token JWT firmado para prolongar la sesión activa del usuario.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Token renovado exitosamente. Se retorna un nuevo Access Token."),
+            @ApiResponse(responseCode = "400", description = "Refresh Token inválido, expirado o malformado.")
+    })
     public ResponseEntity<ResultadoApi<RespuestaAutenticacion>> refrescarToken(
             @Valid @RequestBody SolicitudRefreshToken solicitud,
             HttpServletRequest request) {
@@ -88,6 +118,11 @@ public class ControladorAutenticacion {
      * Cierra la sesión del usuario actual e invalida el token.
      */
     @PostMapping("/logout")
+    @Operation(summary = "Cerrar Sesión (Logout)", description = "Invalida el token JWT activo del usuario guardándolo en la blacklist de Redis con un TTL equivalente al tiempo de expiración restante.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Sesión cerrada correctamente. El token ha sido invalidado."),
+            @ApiResponse(responseCode = "401", description = "No autorizado. Token inválido o ausente.")
+    })
     public ResponseEntity<ResultadoApi<String>> logout(Authentication authentication, HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
         String token = (authHeader != null && authHeader.startsWith("Bearer ")) ? authHeader.substring(7) : null;
@@ -102,6 +137,12 @@ public class ControladorAutenticacion {
      * Registra un nuevo usuario en el sistema.
      */
     @PostMapping("/registrar")
+    @Operation(summary = "Registrar Nuevo Usuario", description = "Crea una nueva cuenta de usuario en estado inactivo con el rol base ROLE_FREE. Genera y envía un código OTP de activación a través de ms-mensajeria.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Usuario creado exitosamente. Se retorna el UUID de la cuenta."),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos o formato de contraseña incorrecto."),
+            @ApiResponse(responseCode = "409", description = "Conflicto por duplicidad: el nombre de usuario o correo electrónico ya están registrados.")
+    })
     public ResponseEntity<ResultadoApi<UUID>> registrar(
             @Valid @RequestBody SolicitudRegistro solicitud, 
             HttpServletRequest request) {
@@ -117,6 +158,10 @@ public class ControladorAutenticacion {
      * Inicia el flujo de recuperación de contraseña.
      */
     @PostMapping("/recuperar-solicitar")
+    @Operation(summary = "Solicitar Recuperación de Contraseña", description = "Inicia el flujo de recuperación de contraseña enviando un código OTP al correo del usuario si este existe y está activo.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Solicitud procesada. Si el correo existe, recibirá el código OTP en breve.")
+    })
     public ResponseEntity<ResultadoApi<String>> solicitarRecuperacion(
             @Valid @RequestBody SolicitudRecuperacion solicitud) {
         
@@ -131,9 +176,14 @@ public class ControladorAutenticacion {
      * Establece una nueva contraseña tras validar el código de recuperación.
      */
     @PostMapping("/recuperar-confirmar")
+    @Operation(summary = "Confirmar Recuperación de Contraseña", description = "Establece una nueva contraseña tras validar el código OTP de recuperación y el registro asignado.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Contraseña restablecida correctamente. Ya puede iniciar sesión."),
+            @ApiResponse(responseCode = "400", description = "Código OTP inválido o expirado.")
+    })
     public ResponseEntity<ResultadoApi<String>> resetearPassword(
-            @RequestParam UUID registroId,
-            @RequestParam String codigoOtp,
+            @RequestParam @Parameter(description = "ID del registro de recuperación.", example = "e0078021-d55a-4b0b-8083-d922a901ba8d") UUID registroId,
+            @RequestParam @Parameter(description = "Código OTP de verificación recibido.", example = "654321") String codigoOtp,
             @Valid @RequestBody SolicitudRestablecerPassword solicitud) {
         
         log.info("[API] Confirmación de recuperación de contraseña para registro: {}", registroId);
@@ -146,6 +196,12 @@ public class ControladorAutenticacion {
      * Permite a un usuario autenticado cambiar su contraseña.
      */
     @PutMapping("/cambiar-password")
+    @Operation(summary = "Cambiar Contraseña", description = "Permite a un usuario autenticado cambiar su contraseña actual por una nueva validando la coincidencia de las contraseñas ingresadas.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Contraseña actualizada correctamente."),
+            @ApiResponse(responseCode = "400", description = "La contraseña actual no coincide o la nueva contraseña no cumple con los requisitos de seguridad."),
+            @ApiResponse(responseCode = "401", description = "No autorizado.")
+    })
     public ResponseEntity<ResultadoApi<String>> cambiarPassword(
             @Valid @RequestBody SolicitudCambioPassword solicitud,
             Authentication authentication,
@@ -161,6 +217,11 @@ public class ControladorAutenticacion {
      * Desactiva lógicamente la cuenta del usuario autenticado.
      */
     @DeleteMapping("/mi-cuenta")
+    @Operation(summary = "Desactivar/Eliminar Cuenta", description = "Desactiva de forma lógica la cuenta del usuario autenticado en la base de datos, impidiendo futuros inicios de sesión.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cuenta desactivada exitosamente."),
+            @ApiResponse(responseCode = "401", description = "No autorizado.")
+    })
     public ResponseEntity<ResultadoApi<String>> eliminarCuenta(
             Authentication authentication,
             HttpServletRequest request) {

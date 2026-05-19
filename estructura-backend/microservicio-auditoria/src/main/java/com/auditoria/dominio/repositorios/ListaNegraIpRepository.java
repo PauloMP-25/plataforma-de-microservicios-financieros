@@ -9,15 +9,17 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import java.util.UUID;
+
 /**
  * Repositorio para la gestión de IPs bloqueadas por seguridad.
  * Utilizado por el Gateway para filtrar peticiones maliciosas en tiempo real.
  * 
  * @author Paulo Moron
- * @version 1.1.0
+ * @version 1.2.0
  * @since 2026-05-10
  */
-public interface ListaNegraIpRepository extends JpaRepository<ListaNegraIp, String> {
+public interface ListaNegraIpRepository extends JpaRepository<ListaNegraIp, UUID> {
 
     /**
      * Busca un registro de bloqueo que no haya expirado para la IP dada.

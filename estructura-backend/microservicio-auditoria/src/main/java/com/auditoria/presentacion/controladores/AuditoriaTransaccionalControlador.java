@@ -1,6 +1,6 @@
 package com.auditoria.presentacion.controladores;
 
-import com.auditoria.aplicacion.servicios.ServicioAuditoriaTransaccional;
+import com.auditoria.aplicacion.puertos.ServicioAuditoriaTransaccional;
 import com.libreria.comun.dtos.EventoTransaccionalDTO;
 import com.libreria.comun.respuesta.Paginacion;
 import com.libreria.comun.respuesta.ResultadoApi;
@@ -71,10 +71,12 @@ public class AuditoriaTransaccionalControlador {
             @RequestParam(required = false) String servicioOrigen,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime desde,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime hasta,
-            @RequestParam(defaultValue = "0") int pagina) {
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "20") int tamanio) {
 
+        int tamanioSeguro = Math.min(tamanio, 100);
         Page<EventoTransaccionalDTO> resultado = servicio.buscarConFiltros(
-                servicioOrigen, desde, hasta, PageRequest.of(pagina, 20));
+                servicioOrigen, desde, hasta, PageRequest.of(pagina, tamanioSeguro));
 
         Paginacion<EventoTransaccionalDTO> paginacion = Paginacion.desde(resultado);
 

@@ -17,6 +17,14 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+
 /**
  * Registro automático de los componentes de la librería LUKA COMMONS.
  * <p>
@@ -104,5 +112,46 @@ public class LukaConfiguracion {
     @ConditionalOnMissingBean
     public PublicadorEventosBase publicadorEventosBase(RabbitTemplate rabbitTemplate) {
         return new PublicadorEventosBase(rabbitTemplate);
+    }
+
+    /**
+     * Configuración global y automatizada de OpenAPI (Swagger) para todos los microservicios
+     * que implementen 'libreria-comun'. Habilita la autorización por token JWT Bearer de forma centralizada
+     * y genera dinámicamente el título y descripción basándose en el nombre de cada microservicio.
+     * 
+     * @return Objeto OpenAPI configurado.
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public OpenAPI customOpenAPI() {
+        final String nombreEsquemaSeguridad = "BearerToken";
+        
+        // Formatear el nombre de la aplicación para que se vea legible en Swagger
+        String prettyAppName = "Servicio LUKA";
+        if (applicationName != null && !applicationName.isEmpty()) {
+            prettyAppName = applicationName.substring(0, 1).toUpperCase() + applicationName.substring(1).replace("-", " ");
+        }
+
+        return new OpenAPI()
+                .info(new Info()
+                        .title("LUKA - " + prettyAppName)
+                        .version("1.0.0")
+                        .description("API auto-documentada del componente **" + prettyAppName + "** para el ecosistema SaaS de gestión financiera LUKA.")
+                        .contact(new Contact()
+                                .name("Paulo Moron - Cloud Architect")
+                                .email("paulo@luka-financial.com")
+                                .url("https://luka-financial.com"))
+                        .license(new License()
+                                .name("Apache 2.0")
+                                .url("http://springdoc.org")))
+                // Aplica de forma global a todos los endpoints el botón Authorize para testing
+                .addSecurityItem(new SecurityRequirement().addList(nombreEsquemaSeguridad))
+                .components(new Components()
+                        .addSecuritySchemes(nombreEsquemaSeguridad, new SecurityScheme()
+                                .name(nombreEsquemaSeguridad)
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")
+                                .description("Ingresa tu token JWT en formato Bearer (sin prefijos) para habilitar el acceso a los endpoints protegidos de este microservicio.")));
     }
 }

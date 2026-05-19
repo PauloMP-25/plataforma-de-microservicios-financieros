@@ -5,7 +5,7 @@ import com.libreria.comun.utilidades.UtilidadSeguridad;
 import com.pagos.aplicacion.dtos.RespuestaCheckoutDTO;
 import com.pagos.aplicacion.dtos.RespuestaSuscripcionDTO;
 import com.pagos.aplicacion.dtos.SolicitudPagoDTO;
-import com.pagos.aplicacion.servicios.IServicioStripe;
+import com.pagos.aplicacion.puertos.IServicioStripe;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

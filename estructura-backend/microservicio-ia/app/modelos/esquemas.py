@@ -205,7 +205,7 @@ class PeticionSimularMeta(PeticionBase):
     nombre_meta: str = Field(
         ...,
         min_length=1,
-        max_length=200,
+        max_length=80,
         description="Nombre descriptivo de la meta (ej: 'Laptop para estudios', 'Viaje Cusco').",
         examples=["Laptop Dell para programación"],
     )
@@ -235,6 +235,16 @@ class PeticionSimularMeta(PeticionBase):
             )
         return self
 
+    @field_validator("nombre_meta")
+    @classmethod
+    def sanitizar_nombre_meta(cls, v: str) -> str:
+        """FASE 7: Guardrail contra Inyección de Prompts."""
+        texto_inferior = v.lower()
+        bloqueados = ["ignora", "olvida", "instrucciones", "actúa como", "prompt", "bypass"]
+        if any(b in texto_inferior for b in bloqueados):
+            raise ValueError("Entrada no permitida por políticas de seguridad.")
+        return v
+
 
 # ── Módulo 9: Simulación de Escenario "¿Qué pasaría si...?" ─────────────────
  
@@ -243,7 +253,7 @@ class PeticionSimularEscenario(PeticionBase, FiltroDeFecha):
     descripcion_escenario: str = Field(
         ...,
         min_length=5,
-        max_length=300,
+        max_length=80,
         description="Descripción del cambio hipotético (ej: 'Agregar suscripción Spotify S/20').",
         examples=["Agregar suscripción de gym por S/ 120 al mes"],
     )
@@ -259,6 +269,16 @@ class PeticionSimularEscenario(PeticionBase, FiltroDeFecha):
         default=True,
         description="Si es True, el cambio se aplica todos los meses (suscripción). False = pago único.",
     )
+
+    @field_validator("descripcion_escenario")
+    @classmethod
+    def sanitizar_descripcion_escenario(cls, v: str) -> str:
+        """FASE 7: Guardrail contra Inyección de Prompts."""
+        texto_inferior = v.lower()
+        bloqueados = ["ignora", "olvida", "instrucciones", "actúa como", "prompt", "bypass"]
+        if any(b in texto_inferior for b in bloqueados):
+            raise ValueError("Entrada no permitida por políticas de seguridad.")
+        return v
 
 # ══════════════════════════════════════════════════════════════════════════════
 # DTO DE CONTEXTO PERSONAL — Perfil del usuario universitario

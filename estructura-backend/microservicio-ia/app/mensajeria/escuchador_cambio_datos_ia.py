@@ -67,16 +67,26 @@ class EscuchadorCambioDatosIA:
     def _invalidar_cache(self, cliente_id: str):
         """Elimina de DB y Redis los registros del cliente."""
         try:
-            # 1. Eliminar de DB
+            # 1. Eliminar de DB (Caché a largo plazo)
             with SessionLocal() as db:
                 db.query(IaAnalisisCache).filter(IaAnalisisCache.cliente_id == cliente_id).delete()
                 db.commit()
             
-            # 2. Redis (En esta implementación simple, eliminamos por prefijo si es posible)
-            # Como los hashes no siempre contienen el cliente_id directamente en el key (ia:consejo:hash),
-            # lo ideal sería tener una estructura de datos extra cliente -> [hashes].
-            # Por ahora, logueamos que se limpió la DB.
-            logger.info(f"[SYNC-CACHE] Caché de DB limpiada para {cliente_id}")
+            # 2. Invalidar caché en memoria (Redis) de los resultados completos
+            redis_cli = self._cache_redis._client
+            if redis_cli:
+                # Patrón: ia:resultado_completo:{cliente_id}:*
+                patron = f"ia:resultado_completo:{cliente_id}:*"
+                # Borramos todas las coincidencias
+                claves_borradas = 0
+                for clave in redis_cli.scan_iter(patron):
+                    redis_cli.delete(clave)
+                    claves_borradas += 1
+                
+                logger.info(f"[SYNC-CACHE] Caché invalidada para {cliente_id}: {claves_borradas} claves Redis y DB limpia.")
+            else:
+                logger.info(f"[SYNC-CACHE] Caché DB limpiada para {cliente_id} (Sin conexión Redis)")
+
         except Exception as e:
             logger.error(f"[SYNC-CACHE] Error al invalidar: {e}")
 

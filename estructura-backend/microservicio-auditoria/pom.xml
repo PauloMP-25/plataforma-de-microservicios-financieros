@@ -41,6 +41,18 @@
             <artifactId>libreria-comun</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+        <!--SPRING-BOOT-STARTER-WEB:
+        Para el servidor web embebido y API REST.-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <!--SPRING-BOOT-STARTER-AMQP:
+        Para la mensajería asíncrona con RabbitMQ.-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
         <!--STARTER-NETFLIX-EUREKA-CLIENT:
         Cliente para el registro y descubrimiento de servicios con Eureka.-->
         <dependency>
@@ -85,11 +97,11 @@
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.8.5</version>
         </dependency>
-        <!-- REDIS: Para sincronización de bloqueos de IP con el Gateway
+        <!-- REDIS: Para sincronización de bloqueos de IP con el Gateway -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>-->
+        </dependency>
 
         <!-- ACTUATOR: Render consultara el endpoint de salud del microservicio -->
         <dependency>

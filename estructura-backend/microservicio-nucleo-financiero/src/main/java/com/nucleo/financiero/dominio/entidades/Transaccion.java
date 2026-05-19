@@ -29,8 +29,6 @@ import java.util.UUID;
         @Index(name = "idx_transaccion_cliente",   columnList = "nombre_cliente")
     }
 )
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

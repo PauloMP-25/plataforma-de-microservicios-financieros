@@ -37,7 +37,9 @@ class Configuracion(BaseSettings):
     # SEGURIDAD JWT
     # ══════════════════════════════════════════════════════════════════════════
     jwt_clave_secreta: str = Field(
-    description="Clave secreta compartida con microservicio-usuario (formato HEX).",)
+        validation_alias="JWT_SECRET_KEY",
+        description="Clave secreta compartida con microservicio-usuario (formato HEX).",
+    )
 
     jwt_algoritmo: str = "HS256"
 
@@ -73,7 +75,9 @@ class Configuracion(BaseSettings):
     # GOOGLE GEMINI
     # ══════════════════════════════════════════════════════════════════════════
     gemini_api_key: str = Field(
-        description="Clave API para autenticación con Google Gemini (formato HEX).",)
+        validation_alias="GEMINI_API_KEY",
+        description="Clave API para autenticación con Google Gemini (formato HEX).",
+    )
     gemini_modelo:  str = "gemini-2.0-flash"
     gemini_max_tokens: int = Field(
         default=500,
@@ -213,11 +217,11 @@ class Configuracion(BaseSettings):
     # ══════════════════════════════════════════════════════════════════════════
     # BASE DE DATOS (Persistencia de Caché IA)
     # ══════════════════════════════════════════════════════════════════════════
-    db_host: str = "localhost"
-    db_port: int = 5432
-    db_usuario: str = "postgres"
-    db_password: str = "postgres"
-    db_nombre: str = "db_microservicio_ia"
+    db_host: str = Field(default="localhost", validation_alias="DB_HOST_LOCAL")
+    db_port: int = Field(default=5432, validation_alias="DB_PORT_LOCAL")
+    db_usuario: str = Field(default="postgres", validation_alias="DB_USER_LOCAL")
+    db_password: str = Field(default="postgres", validation_alias="DB_PASSWORD_LOCAL")
+    db_nombre: str = Field(default="db_luka_ia", validation_alias="DB_NAME_IA")
 
     # ══════════════════════════════════════════════════════════════════════════
     # REDIS (Caché de Contexto IA)
@@ -232,11 +236,15 @@ class Configuracion(BaseSettings):
     # ══════════════════════════════════════════════════════════════════════════
     # PYDANTIC SETTINGS
     # ══════════════════════════════════════════════════════════════════════════
+    # Nombre de conexión para identificar el servicio en el panel de RabbitMQ
+    rabbitmq_connection_name: str = "microservicio-ia"
+
     model_config = SettingsConfigDict(
-        env_file=".env.book.env",
-        env_file_encoding="utf-8",
+        env_file=["../.env", ".env"],  # .env centralizado del backend, con fallback local
+        env_file_encoding="utf-8-sig",  # Maneja BOM (UTF-8 y UTF-16 con BOM)
         case_sensitive=False,
-        extra="ignore"  # Ignora variables extrañas en el .env
+        populate_by_name=True,
+        extra="ignore"  # Ignora variables extras del .env
     )
 
     # ── Validadores ───────────────────────────────────────────────────────────

@@ -1,8 +1,8 @@
 package com.cliente.presentacion.controladores;
 
-import com.cliente.aplicacion.dtos.RespuestaDatosPersonales;
-import com.cliente.aplicacion.dtos.SolicitudDatosPersonales;
-import com.cliente.aplicacion.servicios.ServicioDatosPersonales;
+import com.cliente.aplicacion.dtos.respuestas.RespuestaDatosPersonales;
+import com.cliente.aplicacion.dtos.solicitudes.SolicitudDatosPersonales;
+import com.cliente.aplicacion.puertos.ServicioDatosPersonales;
 import com.libreria.comun.utilidades.UtilidadIp;
 import com.libreria.comun.utilidades.UtilidadSeguridad;
 
@@ -36,29 +36,23 @@ public class ControladorPerfil {
     /**
      * Crea el perfil vacío inicial tras el registro.
      * Endpoint interno — sin autenticación JWT (permitAll en seguridad).
-     * 
-     * @param usuarioId ID del usuario
-     * @return ResultadoApi con el perfil inicial creado
      */
     @PostMapping("/inicial")
+    @org.springframework.security.access.prepost.PreAuthorize("@seguridadService.esServicioInterno()")
     public ResponseEntity<ResultadoApi<RespuestaDatosPersonales>> crearPerfilInicial(
             @RequestParam UUID usuarioId) {
         log.info("Creando perfil inicial para usuarioId={}", usuarioId);
         RespuestaDatosPersonales respuesta = servicio.crearPerfil(usuarioId);
         return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(ResultadoApi.creado(respuesta, "Perfil inicial creado exitosamente."));
+            .status(HttpStatus.CREATED)
+            .body(ResultadoApi.creado(respuesta, "Perfil inicial creado exitosamente."));
     }
 
     /**
      * Actualiza los datos personales del cliente autenticado.
-     * 
-     * @param usuarioId Identificador del usuario en la ruta
-     * @param solicitud DTO con los datos personales a actualizar
-     * @param request   Petición HTTP para extraer la IP
-     * @return ResultadoApi con el perfil actualizado
      */
     @PutMapping("/{usuarioId}")
+    @org.springframework.security.access.prepost.PreAuthorize("@seguridadService.esElMismoUsuario(#usuarioId, authentication)")
     public ResponseEntity<ResultadoApi<RespuestaDatosPersonales>> actualizar(
             @PathVariable UUID usuarioId,
             @Valid @RequestBody SolicitudDatosPersonales solicitud,
@@ -72,12 +66,9 @@ public class ControladorPerfil {
 
     /**
      * Consulta los datos personales del cliente autenticado.
-     * 
-     * @param usuarioId Identificador del usuario en la ruta
-     * @param request   Petición HTTP
-     * @return ResultadoApi con los datos personales del perfil
      */
     @GetMapping("/{usuarioId}")
+    @org.springframework.security.access.prepost.PreAuthorize("@seguridadService.esElMismoUsuario(#usuarioId, authentication)")
     public ResponseEntity<ResultadoApi<RespuestaDatosPersonales>> consultar(
             @PathVariable UUID usuarioId,
             HttpServletRequest request) {

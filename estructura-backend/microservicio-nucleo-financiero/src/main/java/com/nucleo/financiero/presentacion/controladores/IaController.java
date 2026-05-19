@@ -3,7 +3,8 @@ package com.nucleo.financiero.presentacion.controladores;
 import com.libreria.comun.dtos.RespuestaIaDTO;
 import com.libreria.comun.dtos.SolicitudIaDTO;
 import com.libreria.comun.respuesta.ResultadoApi;
-import com.nucleo.financiero.aplicacion.servicios.IServicioIa;
+import com.libreria.comun.utilidades.UtilidadIp;
+import com.nucleo.financiero.aplicacion.puertos.IServicioIa;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -59,10 +60,7 @@ public class IaController {
         log.info("Iniciando consulta de IA para usuarioId={}", solicitud.getIdUsuario());
 
         // Extraemos la IP real del cliente para trazabilidad
-        String ipCliente = servletRequest.getHeader("X-Forwarded-For");
-        if (ipCliente == null) {
-            ipCliente = servletRequest.getRemoteAddr();
-        }
+        String ipCliente = UtilidadIp.obtenerIpReal(servletRequest);
 
         RespuestaIaDTO respuesta = servicioIa.obtenerConsejoIA(solicitud, ipCliente);
 

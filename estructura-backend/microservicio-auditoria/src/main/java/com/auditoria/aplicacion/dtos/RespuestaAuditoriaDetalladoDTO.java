@@ -31,6 +31,7 @@ public record RespuestaAuditoriaDetalladoDTO(
         String accion,
         String modulo,
         String ipOrigen,
+        String correlationId,
         String detalles,
         LocalDate fechaHora) {
 }

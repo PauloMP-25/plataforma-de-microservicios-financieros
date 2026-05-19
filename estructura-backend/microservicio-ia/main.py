@@ -32,6 +32,7 @@ from app.libreria_comun.excepciones.base import LukaException
 from app.libreria_comun.excepciones.handler import luka_exception_handler
 from app.libreria_comun.seguridad.middleware import TraceabilityMiddleware
 from app.mensajeria.consumidor_ia import ConsumidorIA
+from app.mensajeria.outbox_scheduler import OutboxScheduler
 from app.mensajeria.escuchador_sincronizacion_ia import EscuchadorSincronizacionIA
 from app.mensajeria.escuchador_cambio_datos_ia import EscuchadorCambioDatosIA
 from app.routers import analisis
@@ -55,6 +56,8 @@ config = obtener_configuracion()
 # ══════════════════════════════════════════════════════════════════════════ 
 _consumidor: ConsumidorIA | None = None
 _consumidor_activo: bool = False
+_outbox_scheduler: OutboxScheduler | None = None
+_outbox_scheduler_activo: bool = False
 _escuchador_sync: EscuchadorSincronizacionIA | None = None
 _escuchador_sync_activo: bool = False
 _escuchador_cambio: EscuchadorCambioDatosIA | None = None
@@ -169,6 +172,17 @@ async def lifespan(app: FastAPI):
     _iniciar_consumidor_rabbitmq()
     _iniciar_escuchadores_adicionales()
 
+    # --- OUTBOX SCHEDULER (Transactional Outbox — FASE 4) ---
+    global _outbox_scheduler, _outbox_scheduler_activo
+    try:
+        _outbox_scheduler = OutboxScheduler()
+        _outbox_scheduler.iniciar()
+        _outbox_scheduler_activo = True
+        logger.info("[MAIN] OutboxScheduler iniciado.")
+    except Exception as exc:
+        _outbox_scheduler_activo = False
+        logger.error("[MAIN] No se pudo iniciar el OutboxScheduler: %s", exc)
+
     # --- JOB DE MONITOREO DE COSTOS ---
     from app.servicios.ia.alerta_costos import job_monitoreo_costos
     asyncio.create_task(job_monitoreo_costos())
@@ -185,6 +199,13 @@ async def lifespan(app: FastAPI):
             logger.info("[MAIN] ConsumidorIA detenido correctamente.")
         except Exception as exc:
             logger.warning("[MAIN] Error al detener el ConsumidorIA: %s", str(exc))
+
+    if _outbox_scheduler:
+        try:
+            _outbox_scheduler.detener()
+            logger.info("[MAIN] OutboxScheduler detenido correctamente.")
+        except Exception as exc:
+            logger.warning("[MAIN] Error al detener el OutboxScheduler: %s", str(exc))
 
     if _escuchador_sync:
         try:
@@ -297,7 +318,12 @@ async def health() -> dict:
             "estado": "UP" if _consumidor_activo else "DEGRADADO",
             "broker": f"{config.rabbitmq_host}:{config.rabbitmq_puerto}",
             "cola": config.cola_ia_procesamiento,
+            "dlq": f"{config.cola_ia_procesamiento}.dlq",
             "descripcion": "Procesando eventos" if _consumidor_activo else "Sin conexión al broker",
+        },
+        "outbox_scheduler": {
+            "estado": "UP" if _outbox_scheduler_activo else "DEGRADADO",
+            "descripcion": "Publicando eventos pendientes" if _outbox_scheduler_activo else "Inactivo",
         },
         "sync_contexto_ia": {
             "estado": "UP" if _escuchador_sync_activo else "DEGRADADO",
