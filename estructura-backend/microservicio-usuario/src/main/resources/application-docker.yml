@@ -13,18 +13,18 @@ spring:
   # ── Redis ────────────────────────────────────────────────────────────────────
   data:
     redis:
-      host: ${SPRING_DATA_REDIS_HOST:trusting-arachnid-122931.upstash.io}
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
       port: ${SPRING_DATA_REDIS_PORT:6379}
-      password: ${SPRING_REDIS_PASSWORD:gQAAAAAAAeAzAAIgcDE2YjMzMzJjOGNhNGQ0ZGJjYjdlZjllYzcyODliOTg0MA}
+      password: ${SPRING_REDIS_PASSWORD:}
       connect-timeout: 5s
       timeout: 3s
       ssl:
-        enabled: true
+        enabled: ${SPRING_DATA_REDIS_SSL_ENABLED:false}
   # ── Base de datos ────────────────────────────────────────────────────────────
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://ep-super-king-aqa9cmhx-pooler.c-8.us-east-1.aws.neon.tech/db_microservicio_usuario?sslmode=require}
-    username: ${SPRING_DATASOURCE_USERNAME:neondb_owner}
-    password: ${SPRING_DATASOURCE_PASSWORD:npg_fRA6mI4navZs}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/db_microservicio_usuario}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: org.postgresql.Driver
     hikari:
       # Pool de conexiones optimizado para contenedores

@@ -1,14 +1,15 @@
 """
-configuracion.py  ·  v4 — IA Centrada en Datos (LUKA)
+configuracion.py  ·  v5 — Alineación con Ecosystem Luka (LUKA)
 ══════════════════════════════════════════════════════════════════════════════
 Singleton de configuración para el Microservicio IA Financiera de LUKA.
 Gestiona todas las variables de entorno con validación Pydantic v2.
- 
-Cambios v4 (refactorización "IA Centrada en Datos"):
-  - Separación clara entre parámetros del Motor Analítico y del Coach IA
-  - Umbrales estadísticos para cada módulo de análisis
-  - Parámetros de regresión y series temporales
-  - Configuración de la regla 50/30/20 para universitarios
+
+Cambios v5 (alineación con ecosystem):
+  - Variables de RabbitMQ renombradas a SPRING_RABBITMQ_* (estándar compartido)
+  - Variables de Redis mapeadas desde SPRING_DATA_REDIS_* / REDIS_*
+  - Variables de BD mapeadas desde SPRING_DATASOURCE_* (usuario/password)
+  - Eureka controlado por EUREKA_CLIENT_ENABLED (mismo que los ms Java)
+  - Entorno controlado por SPRING_PROFILES_ACTIVE
 ══════════════════════════════════════════════════════════════════════════════
 """
 
@@ -45,12 +46,23 @@ class Configuracion(BaseSettings):
 
     # ══════════════════════════════════════════════════════════════════════════
     # DESCUBRIMIENTO DE SERVICIOS (EUREKA)
-    # ══════════════════════════════════════════════════════════════════════════ 
-    eureka_servidor_url: str = "http://admin:admin123@localhost:8761/eureka"
-    eureka_instancia_host: str = "192.168.18.28"
+    # Usa la misma variable EUREKA_CLIENT_ENABLED que los microservicios Java
+    # ══════════════════════════════════════════════════════════════════════════
+    eureka_servidor_url: str = Field(
+        default="http://localhost:8761/eureka",
+        validation_alias="EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE",
+        description="URL del servidor Eureka (compartida con ms Java).",
+    )
+    eureka_instancia_host: str = Field(
+        default="microservicio-ia",
+        validation_alias="EUREKA_INSTANCE_HOSTNAME",
+    )
     eureka_instancia_puerto: int = Field(default=8086, ge=1024, le=65535)
-    #Desactivamos Eureka por el momento
-    eureka_enable: bool = False
+    eureka_enable: bool = Field(
+        default=False,
+        validation_alias="EUREKA_CLIENT_ENABLED",
+        description="Habilita/deshabilita Eureka. Usar False en Render.",
+    )
     # ══════════════════════════════════════════════════════════════════════════
     # URLs DE MICROSERVICIOS JAVA
     # ══════════════════════════════════════════════════════════════════════════
@@ -187,24 +199,41 @@ class Configuracion(BaseSettings):
     
     # ══════════════════════════════════════════════════════════════════════════
     # MENSAJERÍA (RABBITMQ)
+    # Usa los mismos nombres de variable que todos los microservicios Java
     # ══════════════════════════════════════════════════════════════════════════
-    rabbitmq_host:     str = "localhost"
-    rabbitmq_puerto:   int = 5672
-    rabbitmq_usuario:  str = "guest"
-    rabbitmq_password: str = "guest"
-    rabbitmq_vhost:    str = "/"
+    rabbitmq_host: str = Field(
+        default="localhost",
+        validation_alias="SPRING_RABBITMQ_HOST",
+        description="Host de RabbitMQ. Misma variable que los ms Java.",
+    )
+    rabbitmq_puerto: int = Field(
+        default=5672,
+        validation_alias="SPRING_RABBITMQ_PORT",
+    )
+    rabbitmq_usuario: str = Field(
+        default="guest",
+        validation_alias="SPRING_RABBITMQ_USERNAME",
+    )
+    rabbitmq_password: str = Field(
+        default="guest",
+        validation_alias="SPRING_RABBITMQ_PASSWORD",
+    )
+    rabbitmq_vhost: str = Field(
+        default="/",
+        validation_alias="SPRING_RABBITMQ_VIRTUAL_HOST",
+    )
 
     # ── Colas RabbitMQ ────────────────────────────────────────────────────────
     # Entrada
     cola_ia_procesamiento:   str = "cola.ia.procesamiento"
     cola_ia_clasificacion:   str = "q.ia.clasificacion"  # Nueva cola para On-the-Fly
     exchange_ia:             str = "exchange.ia"
- 
+
     # ── Colas de salida hacia Dashboard ──────────────────────────────────────
     cola_dashboard_consejos: str = "cola.dashboard.consejos"      # consejos automáticos
     cola_dashboard_modulos:  str = "cola.dashboard.modulos"       # respuestas a módulos manuales
     exchange_dashboard:      str = "exchange.dashboard"
-    
+
     # Tiempos de vida de la conexión
     rabbitmq_heartbeat: int = 60
     rabbitmq_timeout: int = 300
@@ -216,21 +245,54 @@ class Configuracion(BaseSettings):
 
     # ══════════════════════════════════════════════════════════════════════════
     # BASE DE DATOS (Persistencia de Caché IA)
+    # Reutiliza las credenciales compartidas del grupo Render (SPRING_DATASOURCE_*)
+    # La URL específica de la BD de IA se construye internamente.
     # ══════════════════════════════════════════════════════════════════════════
-    db_host: str = Field(default="localhost", validation_alias="DB_HOST_LOCAL")
-    db_port: int = Field(default=5432, validation_alias="DB_PORT_LOCAL")
-    db_usuario: str = Field(default="postgres", validation_alias="DB_USER_LOCAL")
-    db_password: str = Field(default="postgres", validation_alias="DB_PASSWORD_LOCAL")
-    db_nombre: str = Field(default="db_luka_ia", validation_alias="DB_NAME_IA")
+    db_host: str = Field(
+        default="localhost",
+        validation_alias="SPRING_DATASOURCE_CONNECTION",
+        description="Host del servidor de BD. Lee SPRING_DATASOURCE_CONNECTION del grupo compartido.",
+    )
+    db_port: int = Field(default=5432)
+    db_usuario: str = Field(
+        default="postgres",
+        validation_alias="SPRING_DATASOURCE_USERNAME",
+        description="Usuario de BD. Lee SPRING_DATASOURCE_USERNAME del grupo compartido.",
+    )
+    db_password: str = Field(
+        default="postgres",
+        validation_alias="SPRING_DATASOURCE_PASSWORD",
+        description="Password de BD. Lee SPRING_DATASOURCE_PASSWORD del grupo compartido.",
+    )
+    db_nombre: str = Field(
+        default="db_microservicio_ia",
+        validation_alias="DB_NAME_IA",
+        description="Nombre de la BD exclusiva de IA. Única variable propia de BD.",
+    )
 
     # ══════════════════════════════════════════════════════════════════════════
     # REDIS (Caché de Contexto IA)
+    # Reutiliza las credenciales compartidas del grupo Render (SPRING_DATA_REDIS_*)
     # ══════════════════════════════════════════════════════════════════════════
-    redis_host: str = "trusting-arachnid-122931.upstash.io"
-    redis_port: int = 6379
+    redis_host: str = Field(
+        default="localhost",
+        validation_alias="SPRING_DATA_REDIS_HOST",
+        description="Host Redis. Lee SPRING_DATA_REDIS_HOST del grupo compartido.",
+    )
+    redis_port: int = Field(
+        default=6379,
+        validation_alias="SPRING_DATA_REDIS_PORT",
+    )
     redis_db: int = 0
-    redis_password: str = "gQAAAAAAAeAzAAIgcDE2YjMzMzJjOGNhNGQ0ZGJjYjdlZjllYzcyODliOTg0MA"
-    redis_ssl: bool = True
+    redis_password: str = Field(
+        default="",
+        validation_alias="SPRING_REDIS_PASSWORD",
+        description="Password Redis. Lee SPRING_REDIS_PASSWORD del grupo compartido.",
+    )
+    redis_ssl: bool = Field(
+        default=False,
+        validation_alias="SPRING_DATA_REDIS_SSL_ENABLED",
+    )
     redis_ttl_segundos: int = 3600  # 1 hora por defecto
 
     # ══════════════════════════════════════════════════════════════════════════

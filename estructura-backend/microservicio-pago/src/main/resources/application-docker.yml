@@ -11,9 +11,9 @@ server:
 
   # ── Base de datos ────────────────────────────────────────────────────────────
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://ep-super-king-aqa9cmhx-pooler.c-8.us-east-1.aws.neon.tech/db_microservicio_pagos?sslmode=require}
-    username: ${SPRING_DATASOURCE_USERNAME:neondb_owner}
-    password: ${SPRING_DATASOURCE_PASSWORD:npg_fRA6mI4navZs}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/db_microservicio_pagos}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -61,7 +61,7 @@ management:
 # ── Seguridad JWT (Configuración Luka) ─────────────────────────────────────────
 luka:
   jwt:
-    clave-secreta: ${JWT_SECRET_KEY:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    clave-secreta: ${JWT_SECRET_KEY:}
 
 stripe:
   api-key: ${STRIPE_SECRET_KEY}
