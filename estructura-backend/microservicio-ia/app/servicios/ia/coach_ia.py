@@ -28,6 +28,7 @@ from app.persistencia.cache_redis import CacheRedis
 from app.persistencia.database import SessionLocal
 from app.persistencia.modelos_db import IaAnalisisCache
 from app.utilidades.hash_util import generar_hash_datos
+from app.utilidades.excepciones import LimiteDiarioExcedidoError
 from app.libreria_comun.modelos.eventos import EventoTransaccionalDTO
 from app.mensajeria.publicador_auditoria import publicador_auditoria
 
@@ -79,12 +80,14 @@ class CoachIA:
         if consejo:
             return consejo, estado, fallback
 
-        # 3. Verificar Cuota Diaria (Gobernanza)
+        # 3. Verificar Cuota Diaria (Gobernanza) — lanza LimiteDiarioExcedidoError si se excede
         try:
             self._verificar_cuota_diaria(usuario_id, modulo, rol)
-        except ValueError as e:
-            logger.warning(f"[COACH-IA] Cuota bloqueada: {e}")
-            return str(e), EstadoCoach.NO_DISPONIBLE, False
+        except LimiteDiarioExcedidoError:
+            raise  # El handler global la captura → HTTP 429
+        except Exception as e:
+            logger.warning(f"[COACH-IA] Cuota no verificable (Redis down): {e}")
+            # Si Redis está caído, permitimos la consulta (fail-open)
 
         # 4. Ejecución: Llamada a Gemini con protección
         try:
@@ -104,11 +107,21 @@ class CoachIA:
             return consejo_texto, EstadoCoach.EXITOSO, False
 
         except pybreaker.CircuitBreakerError:
-            logger.error(f"[COACH-IA] Circuit Breaker ABIERTO.")
-            return self._ejecutar_fallback(usuario_id, modulo, datos_para_hash, "Breaker Abierto"), EstadoCoach.TIMEOUT, True
+            logger.error("[COACH-IA] Circuit Breaker ABIERTO — Gemini no disponible.")
+            return self._ejecutar_fallback(usuario_id, modulo, datos_para_hash, "Breaker Abierto"), EstadoCoach.NO_DISPONIBLE, True
         except Exception as exc:
-            logger.error(f"[COACH-IA] Error en Gemini: {exc}")
-            return self._ejecutar_fallback(usuario_id, modulo, datos_para_hash, str(exc)), EstadoCoach.TIMEOUT, True
+            # Discriminar tipo de error Gemini para trazabilidad
+            tipo_error = type(exc).__name__
+            if "ResourceExhausted" in tipo_error or "429" in str(exc):
+                estado = EstadoCoach.CUOTA_AGOTADA
+            elif "InvalidArgument" in tipo_error or "400" in str(exc):
+                estado = EstadoCoach.AUTH_ERROR
+            elif "DeadlineExceeded" in tipo_error or "timeout" in str(exc).lower():
+                estado = EstadoCoach.TIMEOUT
+            else:
+                estado = EstadoCoach.NO_DISPONIBLE
+            logger.error("[COACH-IA] Gemini %s: %s", tipo_error, exc)
+            return self._ejecutar_fallback(usuario_id, modulo, datos_para_hash, str(exc)), estado, True
 
     def _llamar_gemini_api(self, prompt: str) -> Tuple[str, int, int]:
         respuesta = self._modelo.generate_content(
@@ -207,10 +220,10 @@ class CoachIA:
             
             if intentos_int >= limite:
                 mensaje_error = (
-                    f"Has agotado tus {limite} intentos semanales de {tipo_pool}. "
-                    f"Tu plan {rol_upper} se renovará el próximo lunes."
+                    f"Has agotado tus {limite} consultas semanales de {tipo_pool}. "
+                    f"Tu plan {rol_upper} se renueva el próximo lunes."
                 )
-                raise ValueError(mensaje_error)
+                raise LimiteDiarioExcedidoError(mensaje=mensaje_error)
             
             self._cache_redis.guardar(clave, intentos_int + 1, ex=604800) # 7 días
             logger.info(f"[CUOTA-{tipo_pool.upper()}] {usuario_id}: {intentos_int + 1}/{limite}")
