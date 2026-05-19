@@ -7,16 +7,16 @@
 # ── ETAPA 1: BUILD (Usamos Maven directamente) ───────────────────────────────
 FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
 
-WORKDIR /build
+WORKDIR /build/infraestructura/eureka-server
 
 # Copiamos el pom.xml para descargar las dependencias
-COPY pom.xml .
+COPY estructura-backend/infraestructura/eureka-server/pom.xml .
 
 # Descargamos dependencias (esta capa se cachea)
 RUN mvn dependency:go-offline -B
 
 # Copiamos el código fuente y compilamos
-COPY src ./src
+COPY estructura-backend/infraestructura/eureka-server/src ./src
 
 # Compilamos usando mvn directamente en lugar de ./mvnw
 RUN mvn package -DskipTests -B
