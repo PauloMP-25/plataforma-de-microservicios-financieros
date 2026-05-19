@@ -27,8 +27,9 @@ from app.configuracion import obtener_configuracion
 from app.modelos.esquemas import (
     NombreModulo,
     RespuestaModulo,
-    PeticionConFiltroFecha,  # Usaremos este como DTO genérico para eventos
+    PeticionConFiltroFecha,  # DTO genérico para eventos RabbitMQ
 )
+from app.servicios.core.servicio_analisis import ServicioAnalisis
 from app.servicios.ia.coach_ia import CoachIA
 from app.utilidades.excepciones import BrokerComunicacionError, ContratoDatosError
 
@@ -46,14 +47,15 @@ class ConsumidorIA:
 
     def __init__(self) -> None:
         self._config   = obtener_configuracion()
-        self._coach    = CoachIA()
+        self._coach    = CoachIA()          # Para clasificación on-the-fly
+        self._servicio = ServicioAnalisis() # Orquestador principal para el _callback
         self._conexion: Optional[pika.BlockingConnection] = None
         self._canal:    Optional[BlockingChannel]         = None
         
-        # Movemos las constantes aquí para que sean dinámicas desde la config
-        self.EXCHANGE_IA = self._config.rabbitmq_exchange_ia
-        self.COLA_ENTRADA = self._config.rabbitmq_cola_entrada
-        self.COLA_SALIDA = self._config.rabbitmq_cola_salida_ws
+        # Accesos directos a la config para los callbacks de publicación
+        self.EXCHANGE_IA = self._config.exchange_ia
+        self.COLA_ENTRADA = self._config.cola_ia_procesamiento
+        self.COLA_SALIDA = self._config.cola_dashboard_consejos
    
     # ── Ciclo de vida ─────────────────────────────────────────────────────────
     def iniciar(self) -> None:
@@ -203,13 +205,25 @@ class ConsumidorIA:
             
             logger.info(f"[CALLBACK] Analizando usuario {peticion.usuario_id}...")
 
-            # 2. Delegar análisis (esto invoca el motor analítico + Gemini)
-            # Adaptamos para que acepte el DTO de v4
-            resultado: RespuestaModulo = self._coach.analizar_v4(peticion)
+            # 2. Determinar módulo desde el mensaje (el productor debe incluir 'modulo')
+            nombre_modulo_str = datos.get("modulo", NombreModulo.REPORTE_COMPLETO.value)
+            try:
+                modulo = NombreModulo(nombre_modulo_str)
+            except ValueError:
+                logger.warning("[CALLBACK] Módulo desconocido '%s', usando REPORTE_COMPLETO", nombre_modulo_str)
+                modulo = NombreModulo.REPORTE_COMPLETO
 
-            # 3. Resolver ruteo (Automático vs Manual)
-            # Usamos una lógica simple: si viene con módulo específico, va a 'modulos'
-            cola_destino = self._config.cola_dashboard_modulos if peticion.mes else self._config.cola_dashboard_consejos
+            # 3. Delegar análisis al orquestador principal (motor analítico + Gemini)
+            resultado: RespuestaModulo = asyncio.run(
+                self._servicio.procesar_modulo(modulo, peticion, "rabbitmq")
+            )
+
+            # 4. Resolver ruteo (módulo específico vs. consejo automático)
+            cola_destino = (
+                self._config.cola_dashboard_modulos
+                if peticion.mes
+                else self._config.cola_dashboard_consejos
+            )
 
             # 4. Publicar y confirmar
             if self._publicar_resultado(canal, resultado, cola_destino):
