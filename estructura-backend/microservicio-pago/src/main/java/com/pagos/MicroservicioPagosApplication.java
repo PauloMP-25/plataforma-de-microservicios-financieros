@@ -6,6 +6,9 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import com.pagos.infraestructura.configuracion.PropiedadesStripe;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+
 /**
  * Clase principal del Microservicio de Pagos.
  * <p>
@@ -20,6 +23,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication(scanBasePackages = {"com.pagos", "com.libreria.comun"})
 @EnableFeignClients
 @EnableScheduling
+@EnableConfigurationProperties(PropiedadesStripe.class)
 public class MicroservicioPagosApplication {
 
     public static void main(String[] args) {

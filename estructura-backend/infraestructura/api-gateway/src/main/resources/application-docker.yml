@@ -7,17 +7,19 @@ server:
   port: 8080 # El puerto interno en Docker (mapeado al 8080 en el host)
 
 spring:
+  config:
+    import: optional:file:../../.env[.properties]
   application:
     name: api-gateway
 
   # ─────────────────────────────────────────────────────────────────────────
-  # REDIS: Necesario para Rate Limiting
+  # REDIS: Necesario para Rate Limiting (Upstash / Producción)
   # ─────────────────────────────────────────────────────────────────────────
   data:
     redis:
-      host: ${REDIS_HOST:trusting-arachnid-122931.upstash.io}
+      host: ${REDIS_HOST}
       port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:gQAAAAAAAeAzAAIgcDE2YjMzMzJjOGNhNGQ0ZGJjYjdlZjllYzcyODliOTg0MA}
+      password: ${REDIS_PASSWORD}
       connect-timeout: 5s
       timeout: 3s
       ssl:
@@ -30,20 +32,13 @@ spring:
     gateway:
       httpclient:
         connect-timeout: 30000
-        response-timeout: 5s 
-      
+        response-timeout: ${GATEWAY_RESPONSE_TIMEOUT:60s} # Consistente con local y parametrizable
       discovery:
         locator:
           enabled: true
           lower-case-service-id: true
-      
-      # ─────────────────────────────────────────────────────────────────────
-      # RUTAS DEFINIDAS MANUALMENTE
-      # ─────────────────────────────────────────────────────────────────────
+
       routes:
-        # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-USUARIO                                  │
-        # └─────────────────────────────────────────────────────────┘
         - id: servicio-usuario-auth
           uri: lb://MICROSERVICIO-USUARIO
           predicates:
@@ -55,6 +50,11 @@ spring:
               args:
                 name: usuarioCB
                 fallbackUri: forward:/fallback
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 3
+                redis-rate-limiter.burstCapacity: 5
+                key-resolver: "#{@userKeyResolver}"
           metadata:
             requiere-autenticacion: false
 
@@ -74,9 +74,6 @@ spring:
           metadata:
             requiere-autenticacion: true
 
-        # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-CLIENTE                                  │
-        # └─────────────────────────────────────────────────────────┘
         - id: servicio-cliente-interno
           uri: lb://MICROSERVICIO-CLIENTE
           predicates:
@@ -112,9 +109,6 @@ spring:
           metadata:
             requiere-autenticacion: true
 
-        # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-AUDITORIA                                │
-        # └─────────────────────────────────────────────────────────┘
         - id: servicio-auditoria
           uri: lb://MICROSERVICIO-AUDITORIA
           predicates:
@@ -130,9 +124,6 @@ spring:
             requiere-autenticacion: true
             rol-requerido: ROLE_ADMIN
 
-        # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-MENSAJERIA                               │
-        # └─────────────────────────────────────────────────────────┘
         - id: servicio-mensajeria-otp
           uri: lb://MICROSERVICIO-MENSAJERIA
           predicates:
@@ -147,9 +138,6 @@ spring:
           metadata:
             requiere-autenticacion: false
 
-        # ┌─────────────────────────────────────────────────────────┐
-        # │  MICROSERVICIO-NUCLEO-FINANCIERO                        │
-        # └─────────────────────────────────────────────────────────┘
         - id: servicio-nucleo-financiero
           uri: lb://MICROSERVICIO-NUCLEO-FINANCIERO
           predicates:
@@ -169,29 +157,76 @@ spring:
                 fallbackUri: forward:/fallback
           metadata:
             requiere-autenticacion: true
-            
-        # ┌─────────────────────────────────────────────────────────┐
-        # │ EXCEPCIÓN: Rutas de Actuator de todos los microservicios│
-        # │ Para que Docker/K8s puedan revisar el healthcheck libres│
-        # └─────────────────────────────────────────────────────────┘
-        - id: rutas-actuator-publicas
-          uri: no://op # No redirige, solo clasifica
+
+        - id: servicio-ia
+          uri: lb://MICROSERVICIO-IA
           predicates:
-            - Path=/**/actuator/**
+            - Path=/api/v1/ia/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 1
+                redis-rate-limiter.burstCapacity: 1
+                key-resolver: "#{@userKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: iaCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: true
+
+        - id: servicio-pagos-webhook
+          uri: lb://MICROSERVICIO-PAGO
+          predicates:
+            - Path=/api/v1/pagos/webhook/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: pagoCB
+                fallbackUri: forward:/fallback
           metadata:
             requiere-autenticacion: false
 
-      # ─────────────────────────────────────────────────────────────────────
-      # CORS GLOBAL: Aplica a todas las rutas del Gateway
-      # ─────────────────────────────────────────────────────────────────────
+        - id: servicio-pagos-usuarios
+          uri: lb://MICROSERVICIO-PAGO
+          predicates:
+            - Path=/api/v1/pagos/checkout/**
+            - Path=/api/v1/pagos/mi-suscripcion/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: pagoCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: true
+
+        - id: servicio-pagos-admin
+          uri: lb://MICROSERVICIO-PAGO
+          predicates:
+            - Path=/api/v1/pagos/admin/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: pagoCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: true
+            rol-requerido: ROLE_ADMIN
+
       globalcors:
         corsConfigurations:
           '[/**]':
-            # En producción, reemplazar '*' con tu dominio real:
-            # allowedOrigins: "https://tu-app.com"
             allowedOrigins:
-              - "http://localhost:3000"    # React/Next.js dev
-              - "http://localhost:5173"    # Vite dev
+              - "http://localhost:3000"
+              - "http://localhost:5173"
               - ${FRONTEND_URL:http://localhost:3000}
             allowedMethods:
               - GET
@@ -203,7 +238,6 @@ spring:
             allowedHeaders:
               - "*"
             allowCredentials: true
-            # Cuánto tiempo el browser cachea la respuesta preflight (OPTIONS)
             maxAge: 3600
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -235,6 +269,7 @@ app:
   security:
     jwt:
       secret-key: ${JWT_SECRET_KEY:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    rutas-publicas: "/auth/,/api/v1/mensajeria/otp/,/api/v1/pagos/webhook/,/v3/api-docs,/swagger-ui,/actuator/,/error/"
 
 # ═══════════════════════════════════════════════════════════════════════════
 # ACTUATOR (Health Checks)
@@ -265,3 +300,50 @@ logging:
     org.springframework.security: WARN
     com.netflix.eureka: WARN
     com.netflix.discovery: WARN
+
+# ═══════════════════════════════════════════════════════════════════════════
+# RESILIENCE4J: Configuración de Circuit Breaker
+# ═══════════════════════════════════════════════════════════════════════════
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 10
+        permitted-number-of-calls-in-half-open-state: 3
+        wait-duration-in-open-state: 5s
+        failure-rate-threshold: 50
+        event-consumer-buffer-size: 10
+    instances:
+      usuarioCB:
+        base-config: default
+      clienteCB:
+        base-config: default
+      auditoriaCB:
+        base-config: default
+      mensajeriaCB:
+        base-config: default
+      financieroCB:
+        base-config: default
+      iaCB:
+        base-config: default
+      pagoCB:
+        base-config: default
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 5s
+    instances:
+      usuarioCB:
+        base-config: default
+      clienteCB:
+        base-config: default
+      auditoriaCB:
+        base-config: default
+      mensajeriaCB:
+        base-config: default
+      financieroCB:
+        base-config: default
+      iaCB:
+        base-config: default
+      pagoCB:
+        base-config: default
