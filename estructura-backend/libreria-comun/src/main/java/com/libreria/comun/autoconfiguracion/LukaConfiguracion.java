@@ -51,6 +51,9 @@ public class LukaConfiguracion {
     @Value("${spring.rabbitmq.password:guest}")
     private String rabbitPassword;
 
+    @Value("${spring.rabbitmq.virtual-host:/}")
+    private String rabbitVirtualHost;
+
     // --- SEGURIDAD ---
 
     @Bean
@@ -89,6 +92,7 @@ public class LukaConfiguracion {
         CachingConnectionFactory factory = new CachingConnectionFactory(rabbitHost, rabbitPort);
         factory.setUsername(rabbitUsername);
         factory.setPassword(rabbitPassword);
+        factory.setVirtualHost(rabbitVirtualHost);
         factory.setConnectionNameStrategy(cf -> applicationName);
         return factory;
     }
