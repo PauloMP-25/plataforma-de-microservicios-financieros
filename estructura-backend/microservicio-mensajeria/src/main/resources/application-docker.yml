@@ -24,9 +24,9 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: org.postgresql.Driver
     hikari:
-      # Pool de conexiones optimizado para contenedores
-      maximum-pool-size: 10
-      minimum-idle: 2
+      # Pool reducido para Render free tier (512 MB). Aumentar en producción premium.
+      maximum-pool-size: 3
+      minimum-idle: 1
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
@@ -74,27 +74,26 @@ server:
   port: 8084
 
   # ── Eureka Client ─────────────────────────────────────────────────────────────
+  # EUREKA_CLIENT_ENABLED=true  → activar (Docker local)
+  # EUREKA_CLIENT_ENABLED=false → desactivar (Render producción, valor por defecto)
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE}
-    enabled: true
-    register-with-eureka: true
-    fetch-registry: true
-    # Intervalo de refresco del registro (en segundos)
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka}
+    enabled: ${EUREKA_CLIENT_ENABLED:false}
+    register-with-eureka: ${EUREKA_CLIENT_ENABLED:false}
+    fetch-registry: ${EUREKA_CLIENT_ENABLED:false}
     registry-fetch-interval-seconds: 10
     eureka-connection-idle-timeout-seconds: 30
   instance:
-    hostname: ${EUREKA_INSTANCE_HOSTNAME}
+    hostname: ${EUREKA_INSTANCE_HOSTNAME:ms-mensajeria}
     prefer-ip-address: true
-    # Heartbeat: cada cuánto el servicio avisa que sigue vivo
     lease-renewal-interval-in-seconds: 10
-    # Cuánto espera Eureka antes de marcar el servicio como caído
     lease-expiration-duration-in-seconds: 30
     health-check-url-path: /actuator/health
     status-page-url-path: /actuator/info
     metadata-map:
-      startup: ${random.int}    # Fuerza re-registro si el pod se reinicia
+      startup: ${random.int}
 
 # ── Actuator (Health Checks) ───────────────────────────────────────────────────
 management:
