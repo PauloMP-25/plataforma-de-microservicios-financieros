@@ -650,10 +650,10 @@ services:
       REDIS_PORT: 6379
       REDIS_DB: 0
 
-      # ── URLs de microservicios Java ──────────────────────────────────────
-      URL_NUCLEO_FINANCIERO: http://ms-nucleo-financiero:8085
-      URL_AUDITORIA: http://ms-auditoria:8082
-      URL_CLIENTE: http://ms-cliente:8083
+      # ── URLs de microservicios (estándar URL_PROD_* compartido con Gateway y FeignClients) ─
+      URL_PROD_FINANCIERO: http://ms-nucleo-financiero:8085
+      URL_PROD_AUDITORIA: http://ms-auditoria:8082
+      URL_PROD_CLIENTE: http://ms-cliente:8083
 
       # ── Seguridad JWT (compartido con Java) ──────────────────────────────
       JWT_CLAVE_SECRETA: ${JWT_SECRET_KEY}
