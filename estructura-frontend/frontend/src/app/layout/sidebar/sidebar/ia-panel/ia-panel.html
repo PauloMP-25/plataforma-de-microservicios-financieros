@@ -4,7 +4,7 @@
      ============================================= -->
 
 <!-- ── BOTÓN DISPARADOR DEL PANEL IA ── -->
-<div class="ia-trigger" (click)="togglePanel()" [class.ia-trigger--active]="panelAbierto()">
+<div class="ia-trigger" (click)="togglePanel()" [class.ia-trigger--active]="panelAbierto()" [class.ia-trigger--collapsed]="!expanded">
   <div class="ia-trigger-left">
     <div class="ia-orb">
       <i class="fa-solid fa-microchip-ai"></i>
@@ -65,9 +65,6 @@
         <span class="ia-modulo-nombre">{{ m.label }}</span>
         <span class="ia-modulo-desc">{{ m.descripcion }}</span>
       </div>
-      <span class="ia-modulo-tag" [style.background]="m.tagColor + '22'" [style.color]="m.tagColor">
-        {{ m.tag }}
-      </span>
     </button>
   </div>
 

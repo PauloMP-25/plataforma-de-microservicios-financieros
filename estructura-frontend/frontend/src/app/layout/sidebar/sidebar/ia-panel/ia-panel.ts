@@ -117,7 +117,16 @@ type TabGroup = 'TODOS' | 'ANÁLISIS' | 'COACH' | 'CLASIFICACIÓN';
   styleUrl:    './ia-panel.scss',
 })
 export class IaPanelComponent {
-  @Input() expanded = true;   // recibe si el sidebar está expandido
+  private _expanded = true;
+  @Input() set expanded(val: boolean) {
+    this._expanded = val;
+    if (!val) {
+      this.panelAbierto.set(false);
+    }
+  }
+  get expanded(): boolean {
+    return this._expanded;
+  }
 
   private router = inject(Router);
   IA_MODULOS_COUNT = 8;
@@ -154,7 +163,11 @@ export class IaPanelComponent {
 
   // ── Acciones ──────────────────────────────────────────────────────────
   togglePanel(): void {
-    this.panelAbierto.update(v => !v);
+    if (!this.expanded) {
+      this.router.navigate(['/inteligencia-artificial']);
+    } else {
+      this.panelAbierto.update(v => !v);
+    }
   }
 
   abrirModulo(modulo: IaModulo): void {

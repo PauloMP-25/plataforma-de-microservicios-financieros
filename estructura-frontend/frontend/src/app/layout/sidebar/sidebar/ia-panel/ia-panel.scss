@@ -8,6 +8,13 @@ $accent-purple: #a855f7;
 $accent-emerald: #10b981;
 $transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
+:host {
+  display: block;
+  width: 100%;
+  max-width: 232px;
+  box-sizing: border-box;
+}
+
 .ia-trigger {
   display: flex;
   align-items: center;
@@ -19,6 +26,8 @@ $transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   background: transparent;
   transition: $transition-smooth;
   border: 1px solid transparent;
+  width: 100%;
+  box-sizing: border-box;
 
   &:hover {
     background: var(--bg-hover, rgba(91, 106, 240, 0.05));
@@ -36,6 +45,19 @@ $transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     .ia-chevron {
       color: $accent-cyan;
+    }
+  }
+
+  &--collapsed {
+    justify-content: center;
+    padding: 11px;
+    margin: 4px auto;
+    width: 44px;
+    height: 44px;
+
+    .ia-trigger-left {
+      gap: 0;
+      justify-content: center;
     }
   }
 }
@@ -110,9 +132,11 @@ $transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid transparent;
   padding: 0 10px;
   margin: 0 4px;
+  max-width: 232px;
+  box-sizing: border-box;
 
   &--open {
-    max-height: 480px;
+    max-height: 280px;
     opacity: 1;
     padding: 14px 10px;
     margin: 6px 4px 12px;
@@ -237,10 +261,12 @@ $transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
 .ia-modulo-card {
   width: 100%;
+  max-width: 212px;
+  box-sizing: border-box;
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  padding: 10px;
+  padding: 8px 10px;
   border-radius: var(--r-md, 10px);
   background: var(--bg-card, #ffffff);
   border: 1px solid var(--border-light, rgba(232, 234, 255, 0.4));
@@ -284,9 +310,9 @@ $transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 .ia-modulo-desc {
   font-size: 0.65rem;
   color: var(--text-secondary);
-  line-height: 1.25;
+  line-height: 1.2;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
