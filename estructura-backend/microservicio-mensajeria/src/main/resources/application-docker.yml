@@ -113,6 +113,8 @@ management:
       enabled: true
     db:
       enabled: true
+    mail:
+      enabled: false
     diskspace:
       enabled: false    # Innecesario en contenedores
 
