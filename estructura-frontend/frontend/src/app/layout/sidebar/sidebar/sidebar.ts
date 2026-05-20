@@ -10,6 +10,7 @@ import { NAV_ITEMS, BOTTOM_NAV_ITEMS } from '../../../config/navigation.config';
 import { Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { NavigationEnd } from '@angular/router';
+import { IaPanelComponent } from './ia-panel/ia-panel';
 
 // TODO: reemplazar con MascotaService.getMensajeDiario()
 const MASCOT_MSGS = [
@@ -24,7 +25,7 @@ const MASCOT_MSGS = [
 @Component({
   selector:    'app-sidebar',
   standalone:  true,
-  imports:     [CommonModule, RouterModule],
+  imports:     [CommonModule, RouterModule, IaPanelComponent],
   templateUrl: './sidebar.html',
   styleUrl:    './sidebar.scss'
 })
