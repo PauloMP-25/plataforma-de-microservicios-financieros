@@ -40,7 +40,7 @@ spring:
 
       routes:
         - id: servicio-usuario-docs
-          uri: lb://MICROSERVICIO-USUARIO
+          uri: ${URL_PROD_USUARIO:lb://MICROSERVICIO-USUARIO}
           predicates:
             - Path=/microservicio-usuario/v3/api-docs/**
           filters:
@@ -49,7 +49,7 @@ spring:
             requiere-autenticacion: false
 
         - id: servicio-usuario-auth
-          uri: lb://MICROSERVICIO-USUARIO
+          uri: ${URL_PROD_USUARIO:lb://MICROSERVICIO-USUARIO}
           predicates:
             - Path=/api/v1/auth/**
           filters:
@@ -68,7 +68,7 @@ spring:
             requiere-autenticacion: false
 
         - id: usuario-protegido
-          uri: lb://MICROSERVICIO-USUARIO
+          uri: ${URL_PROD_USUARIO:lb://MICROSERVICIO-USUARIO}
           predicates:
             - Path=/api/v1/auth/cambiar-password
             - Path=/api/v1/auth/mi-cuenta
@@ -84,7 +84,7 @@ spring:
             requiere-autenticacion: true
 
         - id: servicio-cliente-interno
-          uri: lb://MICROSERVICIO-CLIENTE
+          uri: ${URL_PROD_CLIENTE:lb://MICROSERVICIO-CLIENTE}
           predicates:
             - Path=/api/v1/clientes/perfil/inicial
             - Path=/api/v1/clientes/interno/**
@@ -99,7 +99,7 @@ spring:
             requiere-autenticacion: false
 
         - id: servicio-cliente
-          uri: lb://MICROSERVICIO-CLIENTE
+          uri: ${URL_PROD_CLIENTE:lb://MICROSERVICIO-CLIENTE}
           predicates:
             - Path=/api/v1/clientes/**
           filters:
@@ -119,7 +119,7 @@ spring:
             requiere-autenticacion: true
 
         - id: servicio-auditoria
-          uri: lb://MICROSERVICIO-AUDITORIA
+          uri: ${URL_PROD_AUDITORIA:lb://MICROSERVICIO-AUDITORIA}
           predicates:
             - Path=/api/v1/auditoria/**
           filters:
@@ -134,7 +134,7 @@ spring:
             rol-requerido: ROLE_ADMIN
 
         - id: servicio-mensajeria-otp
-          uri: lb://MICROSERVICIO-MENSAJERIA
+          uri: ${URL_PROD_MENSAJERIA:lb://MICROSERVICIO-MENSAJERIA}
           predicates:
             - Path=/api/v1/mensajeria/otp/**
           filters:
@@ -148,7 +148,7 @@ spring:
             requiere-autenticacion: false
 
         - id: servicio-nucleo-financiero
-          uri: lb://MICROSERVICIO-NUCLEO-FINANCIERO
+          uri: ${URL_PROD_FINANCIERO:lb://MICROSERVICIO-NUCLEO-FINANCIERO}
           predicates:
             - Path=/api/v1/financiero/**
           filters:
@@ -168,7 +168,7 @@ spring:
             requiere-autenticacion: true
 
         - id: servicio-ia
-          uri: lb://MICROSERVICIO-IA
+          uri: ${URL_PROD_IA:lb://MICROSERVICIO-IA}
           predicates:
             - Path=/api/v1/ia/**
           filters:
@@ -187,7 +187,7 @@ spring:
             requiere-autenticacion: true
 
         - id: servicio-pagos-webhook
-          uri: lb://MICROSERVICIO-PAGO
+          uri: ${URL_PROD_PAGO:lb://MICROSERVICIO-PAGO}
           predicates:
             - Path=/api/v1/pagos/webhook/**
           filters:
@@ -201,7 +201,7 @@ spring:
             requiere-autenticacion: false
 
         - id: servicio-pagos-usuarios
-          uri: lb://MICROSERVICIO-PAGO
+          uri: ${URL_PROD_PAGO:lb://MICROSERVICIO-PAGO}
           predicates:
             - Path=/api/v1/pagos/checkout/**
             - Path=/api/v1/pagos/mi-suscripcion/**
@@ -216,7 +216,7 @@ spring:
             requiere-autenticacion: true
 
         - id: servicio-pagos-admin
-          uri: lb://MICROSERVICIO-PAGO
+          uri: ${URL_PROD_PAGO:lb://MICROSERVICIO-PAGO}
           predicates:
             - Path=/api/v1/pagos/admin/**
           filters:
