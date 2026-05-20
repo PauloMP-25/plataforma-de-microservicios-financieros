@@ -327,6 +327,7 @@ services:
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
       # Eureka
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}@eureka-server:8761/eureka
+      EUREKA_CLIENT_ENABLED: "true"
       EUREKA_INSTANCE_HOSTNAME: ms-usuario
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
       SPRING_APPLICATION_NAME: microservicio-usuario
@@ -388,6 +389,7 @@ services:
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
       # Eureka
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}@eureka-server:8761/eureka
+      EUREKA_CLIENT_ENABLED: "true"
       EUREKA_INSTANCE_HOSTNAME: ms-cliente
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
       SPRING_APPLICATION_NAME: microservicio-cliente
@@ -447,6 +449,7 @@ services:
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
       # Eureka
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}@eureka-server:8761/eureka
+      EUREKA_CLIENT_ENABLED: "true"
       EUREKA_INSTANCE_HOSTNAME: ms-auditoria
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
       SPRING_APPLICATION_NAME: microservicio-auditoria
@@ -504,6 +507,7 @@ services:
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
       # Eureka
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}@eureka-server:8761/eureka
+      EUREKA_CLIENT_ENABLED: "true"
       EUREKA_INSTANCE_HOSTNAME: ms-mensajeria
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
       SPRING_APPLICATION_NAME: microservicio-mensajeria
@@ -569,6 +573,7 @@ services:
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
       # Eureka (para descubrir ms-cliente via Feign)
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}@eureka-server:8761/eureka
+      EUREKA_CLIENT_ENABLED: "true"
       EUREKA_INSTANCE_HOSTNAME: ms-nucleo-financiero
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
       SPRING_APPLICATION_NAME: microservicio-nucleo-financiero
@@ -650,10 +655,10 @@ services:
       REDIS_PORT: 6379
       REDIS_DB: 0
 
-      # ── URLs de microservicios Java ──────────────────────────────────────
-      URL_NUCLEO_FINANCIERO: http://ms-nucleo-financiero:8085
-      URL_AUDITORIA: http://ms-auditoria:8082
-      URL_CLIENTE: http://ms-cliente:8083
+      # ── URLs de microservicios (estándar URL_PROD_* compartido con Gateway y FeignClients) ─
+      URL_PROD_FINANCIERO: http://ms-nucleo-financiero:8085
+      URL_PROD_AUDITORIA: http://ms-auditoria:8082
+      URL_PROD_CLIENTE: http://ms-cliente:8083
 
       # ── Seguridad JWT (compartido con Java) ──────────────────────────────
       JWT_CLAVE_SECRETA: ${JWT_SECRET_KEY}
@@ -775,6 +780,7 @@ services:
       SPRING_APPLICATION_NAME: api-gateway
       # Eureka: el Gateway descubre los servicios dinámicamente
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}@eureka-server:8761/eureka
+      EUREKA_CLIENT_ENABLED: "true"
       EUREKA_INSTANCE_HOSTNAME: api-gateway
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
       # Spring Cloud Gateway usa Reactor Netty (reactor, no servlet)

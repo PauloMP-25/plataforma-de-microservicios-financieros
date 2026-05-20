@@ -65,17 +65,22 @@ class Configuracion(BaseSettings):
     )
     # ══════════════════════════════════════════════════════════════════════════
     # URLs DE MICROSERVICIOS JAVA
+    # Usa las mismas variables URL_PROD_* que el API Gateway y los FeignClients
+    # Java para mantener un único diccionario de variables en todo el ecosistema.
     # ══════════════════════════════════════════════════════════════════════════
     url_nucleo_financiero: str = Field(
         default="http://localhost:8085",
+        validation_alias=AliasChoices("URL_PROD_FINANCIERO", "URL_NUCLEO_FINANCIERO"),
         description="Puerto 8085: fuente de transacciones.",
     )
     url_auditoria: str = Field(
         default="http://localhost:8082",
+        validation_alias=AliasChoices("URL_PROD_AUDITORIA", "URL_AUDITORIA"),
         description="Puerto 8082: registro de eventos (no bloqueante).",
     )
     url_cliente: str = Field(
         default="http://localhost:8083",
+        validation_alias=AliasChoices("URL_PROD_CLIENTE", "URL_CLIENTE"),
         description="Puerto 8083: perfil del usuario universitario.",
     )
     url_dashboard: str = Field(
