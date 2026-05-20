@@ -6,9 +6,6 @@ spring:
   application:
     name: ms-pagos
 
-server:
-  port: 8087
-
   # ── Base de datos ────────────────────────────────────────────────────────────
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/db_microservicio_pagos}
@@ -38,8 +35,15 @@ server:
     username: ${SPRING_RABBITMQ_USERNAME:guest}
     password: ${SPRING_RABBITMQ_PASSWORD:guest}
     virtual-host: ${SPRING_RABBITMQ_VIRTUAL_HOST:/}
+    connection-timeout: 10000
+    listener:
+      simple:
+        auto-startup: true
 
-  # ── Eureka Client ─────────────────────────────────────────────────────────────
+server:
+  port: 8087
+
+# ── Eureka Client ─────────────────────────────────────────────────────────────
 eureka:
   client:
     service-url:
@@ -64,7 +68,7 @@ luka:
     clave-secreta: ${JWT_SECRET_KEY:}
 
 stripe:
-  api-key: ${STRIPE_SECRET_KEY}
-  webhook-secret: ${STRIPE_WEBHOOK_SECRET}
+  api-key: ${STRIPE_SECRET_KEY:sk_test_mock_secret}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_mock_secret}
   success-url: ${FRONTEND_URL:http://localhost:3000}/suscripcion/exito
   cancel-url: ${FRONTEND_URL:http://localhost:3000}/suscripcion/cancelado
