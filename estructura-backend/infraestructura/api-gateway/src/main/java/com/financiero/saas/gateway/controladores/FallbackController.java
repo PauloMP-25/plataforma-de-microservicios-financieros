@@ -23,7 +23,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class FallbackController {
 
-    @GetMapping("/fallback")
+    @org.springframework.web.bind.annotation.RequestMapping("/fallback")
     public Mono<ResponseEntity<ResultadoApi<Void>>> fallback(ServerWebExchange exchange) {
         String correlationId = exchange.getRequest().getHeaders().getFirst("X-Correlation-ID");
         if (correlationId == null) {
