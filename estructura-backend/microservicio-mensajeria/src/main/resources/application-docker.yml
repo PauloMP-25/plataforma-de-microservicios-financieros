@@ -9,9 +9,6 @@ spring:
   application:
     name: microservicio-mensajeria
 
-server:
-  port: 8084
-
   # ── Redis ────────────────────────────────────────────────────────────────────
   data:
     redis:
@@ -72,6 +69,9 @@ server:
         enabled: true
         initial-interval: 1000ms
         max-attempts: 3
+
+server:
+  port: 8084
 
   # ── Eureka Client ─────────────────────────────────────────────────────────────
 eureka:
