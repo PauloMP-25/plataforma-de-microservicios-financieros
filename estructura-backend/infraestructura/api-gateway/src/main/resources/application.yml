@@ -24,6 +24,15 @@ spring:
           lower-case-service-id: true
 
       routes:
+        - id: servicio-usuario-docs
+          uri: lb://MICROSERVICIO-USUARIO
+          predicates:
+            - Path=/microservicio-usuario/v3/api-docs/**
+          filters:
+            - RewritePath=/microservicio-usuario/(?<remaining>.*), /${remaining}
+          metadata:
+            requiere-autenticacion: false
+
         - id: servicio-usuario-auth
           uri: lb://MICROSERVICIO-USUARIO
           predicates:
