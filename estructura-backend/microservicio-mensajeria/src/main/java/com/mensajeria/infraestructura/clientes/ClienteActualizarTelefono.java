@@ -31,7 +31,7 @@ import com.libreria.comun.respuesta.ResultadoApi;
  * @author Paulo Moron
  * @version 1.1.0
  */
-@FeignClient(name = "microservicio-usuario", contextId = "clienteActualizarTelefono", url = "${microservicio.usuario.url:http://localhost:8081}", fallback = ClienteActualizarTelefonoFallback.class)
+@FeignClient(name = "microservicio-usuario", contextId = "clienteActualizarTelefono", url = "${URL_PROD_USUARIO:http://localhost:8081}", fallback = ClienteActualizarTelefonoFallback.class)
 public interface ClienteActualizarTelefono {
 
     /**

@@ -16,7 +16,7 @@ import java.util.UUID;
  * 
  * @author Luka-Dev-Backend
  */
-@FeignClient(name = "microservicio-cliente")
+@FeignClient(name = "microservicio-cliente", url = "${URL_PROD_CLIENTE:http://localhost:8083}")
 public interface ClienteContexto{
 
     /**
