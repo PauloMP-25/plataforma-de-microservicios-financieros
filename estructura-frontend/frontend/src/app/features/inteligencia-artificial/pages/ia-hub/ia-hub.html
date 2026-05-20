@@ -22,8 +22,23 @@
 
   <!-- Vista 1: Cuadrícula de Todos los Módulos -->
   <div class="vista-grid-modulos" *ngIf="!moduloSeleccionado()">
+    
+    <!-- Filtros de categoría premium de IA -->
+    <div class="hub-tabs">
+      <button
+        *ngFor="let tab of tabs"
+        class="hub-tab"
+        [class.hub-tab--active]="tabActiva() === tab"
+        (click)="cambiarTab(tab)"
+      >
+        <i [className]="tabIcons[tab]"></i>
+        <span>{{ tab }}</span>
+        <span class="hub-tab-count">{{ conteoPor(tab) }}</span>
+      </button>
+    </div>
+
     <div class="grid-layout">
-      <div class="grid-item" *ngFor="let mod of modulos">
+      <div class="grid-item" *ngFor="let mod of modulosFiltrados()">
         <app-ia-modulo-card
           [modulo]="mod"
           (seleccionar)="seleccionarModulo(mod)">
