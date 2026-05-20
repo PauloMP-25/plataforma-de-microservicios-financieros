@@ -16,7 +16,7 @@ import java.util.UUID;
  */
 @FeignClient(
     name = "microservicio-cliente", 
-    url = "${microservicio.cliente.url:http://localhost:8083}",
+    url = "${URL_PROD_CLIENTE:http://localhost:8083}",
     fallback = ClientePerfilExternoFallback.class
 )
 public interface ClientePerfilExterno {

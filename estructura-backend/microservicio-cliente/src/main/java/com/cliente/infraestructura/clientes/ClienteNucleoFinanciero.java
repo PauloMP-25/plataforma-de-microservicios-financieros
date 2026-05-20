@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
  * @version 1.0.0
  * @since 2026-05-17
  */
-@FeignClient(name = "microservicio-nucleo-financiero", url = "${microservicio.nucleo.financiero.url:http://localhost:8085}")
+@FeignClient(name = "microservicio-nucleo-financiero", url = "${URL_PROD_FINANCIERO:http://localhost:8085}")
 public interface ClienteNucleoFinanciero {
 
     /**
