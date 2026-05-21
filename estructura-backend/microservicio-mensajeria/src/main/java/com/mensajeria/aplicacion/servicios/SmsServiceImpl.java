@@ -6,9 +6,11 @@ import com.mensajeria.aplicacion.servicios.canales.TipoNotificacion;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import com.mensajeria.infraestructura.configuracion.PropiedadesTwilio;
 
 /**
  * Implementación concreta de {@link ISmsService} que usa el SDK de Twilio.
@@ -23,7 +25,10 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class SmsServiceImpl implements ISmsService, CanalNotificacionStrategy {
+
+    private final PropiedadesTwilio propiedadesTwilio;
 
     @Override
     public void enviar(String destinatario, java.util.Map<String, Object> variables) {
@@ -36,25 +41,12 @@ public class SmsServiceImpl implements ISmsService, CanalNotificacionStrategy {
         return tipo == TipoNotificacion.SMS;
     }
 
-
-    /** SID de la cuenta Twilio, leído desde la variable de entorno {@code TWILIO_ACCOUNT_SID}. */
-    @Value("${twilio.account.sid}")
-    private String accountSid;
-
-    /** Token de autenticación de Twilio, leído desde {@code TWILIO_AUTH_TOKEN}. */
-    @Value("${twilio.auth.token}")
-    private String authToken;
-
-    /** Número de teléfono origen de Twilio en formato E.164. */
-    @Value("${twilio.phone.number}")
-    private String fromPhoneNumber;
-
     private boolean twilioInitialized = false;
 
     /** Inicializa el SDK de forma perezosa para evitar errores de arranque en local. */
     private void initializeTwilio() {
         if (!twilioInitialized) {
-            Twilio.init(accountSid, authToken);
+            Twilio.init(propiedadesTwilio.getAccount().getSid(), propiedadesTwilio.getAuth().getToken());
             twilioInitialized = true;
             log.info("[SMS] Twilio inicializado.");
         }
@@ -76,7 +68,7 @@ public class SmsServiceImpl implements ISmsService, CanalNotificacionStrategy {
             );
             Message msg = Message.creator(
                     new PhoneNumber(telefono),
-                    new PhoneNumber(fromPhoneNumber),
+                    new PhoneNumber(propiedadesTwilio.getPhone().getNumber()),
                     texto
             ).create();
             log.info("[SMS] OTP enviado a {}. SID: {}", telefono, msg.getSid());
