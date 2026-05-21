@@ -92,15 +92,16 @@
     <div class="metas-page__main-grid anim-fade-up">
       <!-- Columna Izquierda: Formulario de Creación y Aporte Rápido -->
       <section class="metas-page__left-col">
+        <div class="metas-page__col-header">
+          <h2>
+            <i class="fa-solid fa-circle-plus text-primary"></i>
+            Nueva Meta de Ahorro
+          </h2>
+          <p>Establece un nuevo objetivo y define su presupuesto inicial.</p>
+        </div>
+
         <!-- Tarjeta 1: Crear Meta -->
         <div class="card metas-page__form-card">
-          <div class="metas-page__col-header">
-            <h2>
-              <i class="fa-solid fa-circle-plus text-primary"></i>
-              Nueva Meta de Ahorro
-            </h2>
-            <p>Establece un nuevo objetivo y define su presupuesto inicial.</p>
-          </div>
 
           <form [formGroup]="formulario" (ngSubmit)="guardarMeta()" class="metas-page__form">
             <!-- Campo: Nombre de la Meta -->

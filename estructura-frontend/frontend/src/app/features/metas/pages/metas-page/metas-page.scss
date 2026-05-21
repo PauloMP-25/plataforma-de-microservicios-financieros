@@ -205,8 +205,8 @@
   &__main-grid {
     display: grid;
     grid-template-columns: 1.1fr 1.3fr;
-    gap: 1.75rem;
-    align-items: start;
+    gap: 2rem;
+    align-items: stretch;
 
     @media (max-width: 992px) {
       grid-template-columns: 1fr;
@@ -214,6 +214,12 @@
   }
 
   &__left-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+  }
+
+  &__right-col {
     display: flex;
     flex-direction: column;
     gap: 1.75rem;
@@ -249,6 +255,10 @@
     }
   }
 
+  &__form-card, &__aporte-card {
+    padding: 1.5rem;
+  }
+
   /* Formulario */
   &__form {
     display: flex;
@@ -276,8 +286,14 @@
     .input-icon {
       position: absolute;
       left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
       color: var(--text-muted);
       font-size: 0.95rem;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     input, select {
@@ -329,6 +345,8 @@
     font-size: 0.8rem;
     color: var(--color-danger);
     font-weight: 500;
+    margin-top: 0.25rem;
+    display: block;
   }
 
   &__btn-submit {
@@ -446,6 +464,7 @@
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
+    flex: 1;
   }
 
   &__meta-card {
@@ -575,6 +594,9 @@
       i {
         position: absolute;
         left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
       }
 
       input {
@@ -683,6 +705,7 @@
     text-align: center;
     border: 1.5px dashed var(--border-color);
     background: transparent;
+    flex: 1;
 
     .empty-icon {
       font-size: 2.5rem;
