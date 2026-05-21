@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { IniciarSesion } from '../iniciar-sesion/iniciar-sesion';
 import { CrearCuenta } from '../crear-cuenta/crear-cuenta';
@@ -22,7 +22,8 @@ export class ContenedorAutenticacion implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private location: Location
   ) {}
 
   ngOnInit(): void {
@@ -35,8 +36,9 @@ export class ContenedorAutenticacion implements OnInit {
   }
 
   cambiarVista(vista: 'login' | 'registro'): void {
+    this.vistaActual = vista;
     const ruta = vista === 'login' ? '/autenticacion/iniciar-sesion' : '/autenticacion/crear-cuenta';
-    this.router.navigate([ruta]);
+    this.location.go(ruta);
   }
 
   /** Maneja el registro exitoso y muestra la verificación de código */
