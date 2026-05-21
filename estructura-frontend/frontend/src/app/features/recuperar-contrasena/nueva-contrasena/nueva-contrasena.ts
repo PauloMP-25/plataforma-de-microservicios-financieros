@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-nueva-contrasena',
@@ -19,7 +20,11 @@ export class NuevaContrasena {
   errorMensaje = '';
   codigoOtp = '';
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private authService: AuthService
+  ) {
     this.codigoOtp = sessionStorage.getItem('codigo-otp') || '';
 
     this.formulario = this.fb.group({
@@ -45,27 +50,40 @@ export class NuevaContrasena {
       this.formulario.markAllAsTouched();
       return;
     }
+
+    const registroId = sessionStorage.getItem('registro-id') || '';
+    const codigoOtp = sessionStorage.getItem('codigo-otp') || '';
+
+    if (!registroId || !codigoOtp) {
+      this.errorMensaje = 'No se encontraron las credenciales temporales de recuperación. Por favor, vuelva a solicitar el código.';
+      return;
+    }
+
     this.cargando = true;
     this.errorMensaje = '';
 
-    // Objeto que coincide con SolicitudRestablecerPassword del backend
-    // Se envía junto con codigoOtp como query param
     const solicitudRestablecer = {
       nuevoPassword: this.formulario.value.nuevoPassword,
       confirmarPassword: this.formulario.value.confirmarPassword
     };
 
-    console.log('SolicitudRestablecerPassword:', solicitudRestablecer);
-    console.log('codigoOtp (query param):', this.codigoOtp);
-    // TODO: Conectar con POST /api/v1/auth/reset-password?codigoOtp=XXXXXX
-
-    setTimeout(() => {
-      this.cargando = false;
-      this.exitoso = true;
-      // Limpiar datos de sesión
-      sessionStorage.removeItem('correo-recuperacion');
-      sessionStorage.removeItem('codigo-otp');
-      setTimeout(() => this.router.navigate(['/autenticacion/iniciar-sesion']), 3000);
-    }, 1500);
+    this.authService.resetPassword(registroId, codigoOtp, solicitudRestablecer).subscribe({
+      next: (resp) => {
+        this.cargando = false;
+        if (resp.exito) {
+          this.exitoso = true;
+          sessionStorage.removeItem('correo-recuperacion');
+          sessionStorage.removeItem('registro-id');
+          sessionStorage.removeItem('codigo-otp');
+          setTimeout(() => this.router.navigate(['/autenticacion/iniciar-sesion']), 3000);
+        } else {
+          this.errorMensaje = resp.mensaje || 'Error al restablecer la contraseña';
+        }
+      },
+      error: (err) => {
+        this.cargando = false;
+        this.errorMensaje = err.error?.mensaje || 'Error al restablecer la contraseña';
+      }
+    });
   }
 }

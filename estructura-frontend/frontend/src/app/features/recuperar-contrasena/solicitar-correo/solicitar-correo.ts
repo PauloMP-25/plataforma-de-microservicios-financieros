@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-solicitar-correo',
@@ -16,7 +17,11 @@ export class SolicitarCorreo {
   enviado = false;
   errorMensaje = '';
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private authService: AuthService
+  ) {
     this.formulario = this.fb.group({
       correo: ['', [Validators.required, Validators.email]]
     });
@@ -30,19 +35,26 @@ export class SolicitarCorreo {
     this.cargando = true;
     this.errorMensaje = '';
 
-    // Objeto que coincide con SolicitudRecuperacion del backend
     const solicitudRecuperacion = {
       correo: this.formulario.value.correo
     };
 
-    console.log('SolicitudRecuperacion:', solicitudRecuperacion);
-    // TODO: Conectar con POST /api/v1/auth/recuperar-password
-    setTimeout(() => {
-      this.cargando = false;
-      this.enviado = true;
-      // Guardar correo para pasos siguientes
-      sessionStorage.setItem('correo-recuperacion', this.formulario.value.correo);
-      setTimeout(() => this.router.navigate(['/recuperar-contrasena/codigo']), 2000);
-    }, 1500);
+    this.authService.solicitarRecuperacion(solicitudRecuperacion).subscribe({
+      next: (resp) => {
+        this.cargando = false;
+        if (resp.exito) {
+          this.enviado = true;
+          sessionStorage.setItem('correo-recuperacion', this.formulario.value.correo);
+          sessionStorage.setItem('registro-id', resp.datos);
+          setTimeout(() => this.router.navigate(['/recuperar-contrasena/codigo']), 2000);
+        } else {
+          this.errorMensaje = resp.mensaje || 'Error al enviar la solicitud';
+        }
+      },
+      error: (err) => {
+        this.cargando = false;
+        this.errorMensaje = err.error?.mensaje || 'Error al enviar la solicitud';
+      }
+    });
   }
 }
