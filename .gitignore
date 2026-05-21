@@ -68,6 +68,8 @@ GEMINI.md
 graphify-out/
 .graphify_cache/
 .continue/
+.skills/
+.cursorrules
 
 # --- CARPETAS ---
 scratch/
