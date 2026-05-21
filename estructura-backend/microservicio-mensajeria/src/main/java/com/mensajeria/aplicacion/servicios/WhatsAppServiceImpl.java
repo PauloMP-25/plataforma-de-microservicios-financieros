@@ -4,45 +4,43 @@ import com.mensajeria.aplicacion.excepciones.MensajeriaExternaException;
 import com.mensajeria.aplicacion.puertos.IWhatsAppService;
 import com.mensajeria.aplicacion.servicios.canales.CanalNotificacionStrategy;
 import com.mensajeria.aplicacion.servicios.canales.TipoNotificacion;
+import com.twilio.Twilio;
+import com.twilio.rest.api.v2010.account.Message;
+import com.twilio.type.PhoneNumber;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import com.mensajeria.infraestructura.configuracion.PropiedadesTwilio;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
- * Implementación del servicio de WhatsApp usando Meta Cloud API.
- * <p>
- * Se encarga de la construcción de la carga útil JSON requerida por Meta
- * y el manejo de la autenticación mediante Bearer Token.
- * </p>
+ * Implementación del servicio de WhatsApp usando Twilio.
  *
  * @author Paulo Moron
- * @version 1.0.0
+ * @version 1.1.0
  */
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class WhatsAppServiceImpl implements IWhatsAppService, CanalNotificacionStrategy {
 
+    private final PropiedadesTwilio propiedadesTwilio;
+
+    private boolean twilioInitialized = false;
+
+    private void initializeTwilio() {
+        if (!twilioInitialized) {
+            Twilio.init(propiedadesTwilio.getAccount().getSid(), propiedadesTwilio.getAuth().getToken());
+            twilioInitialized = true;
+            log.info("[WHATSAPP] Twilio SDK inicializado correctamente para el proyecto LUKA.");
+        }
+    }
+
     @Override
     public void enviar(String destinatario, Map<String, Object> variables) {
         String codigo = (String) variables.get("codigo");
-        com.libreria.comun.enums.PropositoCodigo proposito = (com.libreria.comun.enums.PropositoCodigo) variables.get("proposito");
-        
-        // Seleccionamos la plantilla basada en el propósito
-        String plantilla = (proposito == com.libreria.comun.enums.PropositoCodigo.RESTABLECER_PASSWORD)
-                ? whatsAppConfig.getTemplates().getRecovery()
-                : whatsAppConfig.getTemplates().getRegistration();
-
-        // Para WhatsApp usamos la plantilla de autenticación (el código es el parámetro {{1}})
-        Map<String, String> waVariables = Map.of("1", codigo);
-        this.enviarMensajeTemplate(destinatario, plantilla, waVariables);
+        this.sendVerificationCode(destinatario, codigo);
     }
 
     @Override
@@ -50,105 +48,57 @@ public class WhatsAppServiceImpl implements IWhatsAppService, CanalNotificacionS
         return tipo == TipoNotificacion.WHATSAPP;
     }
 
+    /**
+     * Envía un código de verificación por WhatsApp aprovechando la ventana de 24 horas.
+     * @param targetPhone Número del cliente en formato internacional (ej: "+51943455686")
+     * @param token Código de verificación generado por tu sistema
+     * @return El SID del mensaje generado por Twilio si el envío fue exitoso
+     */
+    public String sendVerificationCode(String targetPhone, String token) {
+        if (!esNumeroValido(targetPhone)) {
+            log.error("[WHATSAPP] Formato de teléfono inválido: {}. Se requiere E.164 (ej. +51943455686)", targetPhone);
+            throw new com.mensajeria.aplicacion.excepciones.TelefonoInvalidoException("El número " + targetPhone + " no tiene el formato internacional requerido.");
+        }
+        
+        try {
+            initializeTwilio();
+            
+            // Construimos el cuerpo del mensaje libre aprovechando que la ventana está abierta
+            String messageBody = String.format(
+                "Luka App: Tu código de verificación es [%s]. Expira en 5 minutos. No lo compartas con nadie.", 
+                token
+            );
 
-    private final RestTemplate restTemplate;
-    private final com.mensajeria.infraestructura.configuracion.WhatsAppConfig whatsAppConfig;
+            // Aseguramos que el teléfono destino tenga el "+" si no lo tiene, aunque esNumeroValido lo pide.
+            String formattedPhone = targetPhone.startsWith("+") ? targetPhone : "+" + targetPhone;
+
+            // Twilio exige el prefijo "whatsapp:" tanto para el origen como para el destino
+            Message message = Message.creator(
+                    new PhoneNumber("whatsapp:" + formattedPhone),
+                    new PhoneNumber("whatsapp:" + propiedadesTwilio.getWhatsapp().getFrom()),
+                    messageBody
+            ).create();
+
+            log.info("[WHATSAPP] Mensaje de verificación enviado con éxito. SID: {}", message.getSid());
+            return message.getSid();
+
+        } catch (Exception e) {
+            log.error("[WHATSAPP] Error al enviar el token de validación por WhatsApp a {}: {}", targetPhone, e.getMessage());
+            throw new MensajeriaExternaException("Fallo en el envío de la notificación de seguridad por WhatsApp", e.getMessage());
+        }
+    }
 
     @Override
     public void enviarMensajeTemplate(String telefono, String plantilla, Map<String, String> variables) {
-        if (telefono == null || telefono.isBlank()) {
-            throw new IllegalArgumentException("El teléfono destino no puede ser nulo o vacío.");
-        }
-        if (plantilla == null || plantilla.isBlank()) {
-            throw new IllegalArgumentException("La plantilla de WhatsApp no puede ser nula.");
-        }
-        
-        // 1. Validar formato de teléfono antes de gastar API
-        if (!esNumeroValido(telefono)) {
-            log.error("[WHATSAPP] Formato de teléfono inválido: {}. Se requiere E.164 (ej. 51943455686)", telefono);
-            throw new com.mensajeria.aplicacion.excepciones.TelefonoInvalidoException("El número " + telefono + " no tiene el formato internacional requerido.");
-        }
-
-        String apiToken = whatsAppConfig.getApi().getToken();
-        String phoneNumberId = whatsAppConfig.getApi().getPhoneId();
-
-        if (apiToken == null || apiToken.isEmpty() || phoneNumberId == null || phoneNumberId.isEmpty()) {
-            log.warn("[WHATSAPP] Credenciales no configuradas. Saltando envío.");
-            return;
-        }
-
-        try {
-            // Construcción de la URL usando la base de la configuración + el phoneId
-            String url = String.format("%s/%s/messages", whatsAppConfig.getApi().getUrl(), phoneNumberId);
-            
-            // Construcción del JSON para Meta Cloud API
-            Map<String, Object> body = new HashMap<>();
-            body.put("messaging_product", "whatsapp");
-            body.put("to", limpiarTelefono(telefono));
-            body.put("type", "template");
-
-            Map<String, Object> template = new HashMap<>();
-            template.put("name", plantilla);
-            
-            Map<String, String> language = new HashMap<>();
-            language.put("code", whatsAppConfig.getTemplates().getLanguage()); 
-            template.put("language", language);
-
-            // Componentes (Placeholders {{1}}, {{2}}, etc)
-            if (variables != null && !variables.isEmpty()) {
-                List<Map<String, Object>> components = new ArrayList<>();
-                Map<String, Object> bodyComponent = new HashMap<>();
-                bodyComponent.put("type", "body");
-                
-                List<Map<String, String>> parameters = new ArrayList<>();
-                // Se asume que las variables vienen en orden "1", "2", etc o se mapean
-                variables.forEach((k, v) -> {
-                    Map<String, String> param = new HashMap<>();
-                    param.put("type", "text");
-                    param.put("text", v);
-                    parameters.add(param);
-                });
-                
-                bodyComponent.put("parameters", parameters);
-                components.add(bodyComponent);
-                template.put("components", components);
-            }
-
-            body.put("template", template);
-
-            // Headers
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(apiToken);
-
-            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-            
-            ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
-
-            if (response.getStatusCode().is2xxSuccessful()) {
-                log.info("[WHATSAPP] Mensaje enviado exitosamente a {}. Respuesta: {}", telefono, response.getBody());
-            } else {
-                log.error("[WHATSAPP] Error de Meta API: {} - {}", response.getStatusCode(), response.getBody());
-                throw new MensajeriaExternaException("Meta API rechazó el mensaje", response.getBody());
-            }
-
-        } catch (Exception e) {
-            log.error("[WHATSAPP] Fallo crítico al enviar mensaje a {}: {}", telefono, e.getMessage());
-            throw new MensajeriaExternaException("Error de comunicación con WhatsApp Cloud API", e.getMessage());
-        }
+        // Como ya no se usan plantillas, redirigimos la lógica a sendVerificationCode.
+        // Asumimos que el token es la primera variable (ej. "1").
+        String token = variables != null ? variables.getOrDefault("1", "DESCONOCIDO") : "DESCONOCIDO";
+        this.sendVerificationCode(telefono, token);
     }
 
     @Override
     public boolean esNumeroValido(String telefono) {
-        // WhatsApp requiere formato E.164 (ej: 51943455686)
-        // Debe tener entre 10 y 15 dígitos y no contener letras.
-        if (telefono == null) return false;
-        String limpio = limpiarTelefono(telefono);
-        return limpio.matches("^\\d{10,15}$");
-    }
-
-    private String limpiarTelefono(String telefono) {
-        if (telefono == null) return "";
-        return telefono.replace("+", "").replace(" ", "");
+        // WhatsApp requiere formato E.164 (ej: +51943455686) para Twilio
+        return telefono != null && telefono.matches("^\\+?[1-9]\\d{9,14}$");
     }
 }

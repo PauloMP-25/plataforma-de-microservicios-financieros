@@ -128,19 +128,10 @@ logging:
     "com.netflix.eureka": WARN
     "com.netflix.discovery": WARN
 
-# ── Configuración Luka (JWT + WhatsApp) ─────────────────────────────────────────
+# ── Configuración Luka (JWT) ─────────────────────────────────────────
 luka:
   jwt:
     clave-secreta: ${JWT_SECRET_KEY}
-  whatsapp:
-    api:
-      url: ${WHATSAPP_API_URL:https://graph.facebook.com/v20.0}
-      phone-id: ${WHATSAPP_PHONE_ID:1194188753768160}
-      token: ${WHATSAPP_TOKEN}
-    templates:
-      registration: ${WHATSAPP_TEMPLATE_REGISTRATION:codigo_registro_luka}
-      recovery: ${WHATSAPP_TEMPLATE_RECOVERY:recuperacion_password_luka}
-      language: ${WHATSAPP_TEMPLATE_LANGUAGE:es}
 
 # ── Notificaciones Externas (Twilio) ───────────────────────────────────────────
 twilio:
@@ -149,4 +140,6 @@ twilio:
   auth:
     token: ${TWILIO_AUTH_TOKEN}
   phone:
-    number: ${TWILIO_PHONE_NUMBER}
+    number: ${TWILIO_SMS_FROM}
+  whatsapp:
+    from: ${TWILIO_WHATSAPP_FROM}

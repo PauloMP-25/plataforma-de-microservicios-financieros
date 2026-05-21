@@ -8,11 +8,12 @@ import com.libreria.comun.enums.PropositoCodigo;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
+import com.mensajeria.infraestructura.configuracion.PropiedadesEmail;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
@@ -39,16 +40,12 @@ public class EmailServiceImpl implements IEmailService, CanalNotificacionStrateg
 
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
+    private final PropiedadesEmail propiedadesEmail;
 
-    @Value("${spring.mail.username}")
-    private String fromEmail;
-
-    @Value("${email.nombre.empresa:Luka App}")
-    private String appName;
-
-    public EmailServiceImpl(JavaMailSender mailSender, TemplateEngine templateEngine) {
+    public EmailServiceImpl(JavaMailSender mailSender, TemplateEngine templateEngine, PropiedadesEmail propiedadesEmail) {
         this.mailSender = mailSender;
         this.templateEngine = templateEngine;
+        this.propiedadesEmail = propiedadesEmail;
     }
 
     @Override
@@ -60,7 +57,8 @@ public class EmailServiceImpl implements IEmailService, CanalNotificacionStrateg
             throw new IllegalArgumentException("El propósito no puede ser nulo.");
         }
         
-        String nombreApp = variables != null ? (String) variables.getOrDefault("appName", appName) : appName;
+        String appNameConfig = propiedadesEmail.getNombre().getEmpresa();
+        String nombreApp = variables != null ? (String) variables.getOrDefault("appName", appNameConfig) : appNameConfig;
 
         try {
             String plantilla = resolverPlantilla(proposito);
@@ -73,7 +71,10 @@ public class EmailServiceImpl implements IEmailService, CanalNotificacionStrateg
 
             MimeMessage mensaje = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");
-            helper.setFrom(fromEmail, nombreApp);
+            
+            // Usamos email.from si está configurado, sino el fallback por defecto
+            String origen = propiedadesEmail.getFrom() != null ? propiedadesEmail.getFrom() : "noreply@luka.com";
+            helper.setFrom(origen, nombreApp);
             helper.setTo(email);
             helper.setSubject(asunto);
             helper.setText(cuerpoHtml, true);
@@ -99,7 +100,9 @@ public class EmailServiceImpl implements IEmailService, CanalNotificacionStrateg
         try {
             MimeMessage mensaje = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");
-            helper.setFrom(fromEmail, appName);
+            
+            String origen = propiedadesEmail.getFrom() != null ? propiedadesEmail.getFrom() : "noreply@luka.com";
+            helper.setFrom(origen, propiedadesEmail.getNombre().getEmpresa());
             helper.setTo(destinatario);
             helper.setSubject(asunto);
             helper.setText(cuerpo, esHtml);

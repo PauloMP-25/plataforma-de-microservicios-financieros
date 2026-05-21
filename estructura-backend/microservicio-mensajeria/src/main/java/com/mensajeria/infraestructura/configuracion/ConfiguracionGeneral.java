@@ -8,11 +8,6 @@ import org.springframework.web.client.RestTemplate;
 public class ConfiguracionGeneral {
 
     @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
-    }
-
-    @Bean
     public org.springframework.core.task.TaskExecutor notificacionExecutor() {
         org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor executor = new org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor();
         executor.setCorePoolSize(3);
