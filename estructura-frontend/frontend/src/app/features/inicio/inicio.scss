@@ -794,6 +794,7 @@ $max-ancho: 1200px;
   font-weight: 800;
   background: $gradiente-primario;
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 16px;
 }
