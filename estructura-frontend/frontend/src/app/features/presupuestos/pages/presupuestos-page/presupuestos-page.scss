@@ -439,12 +439,14 @@
       flex: 1;
       height: 6px;
       -webkit-appearance: none;
+      appearance: none;
       background: var(--border-color);
       border-radius: var(--radius-full);
       outline: none;
 
       &::-webkit-slider-thumb {
         -webkit-appearance: none;
+        appearance: none;
         width: 18px;
         height: 18px;
         border-radius: 50%;
