@@ -9,6 +9,9 @@ FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
 
 WORKDIR /build
 
+# Limitar memoria de Maven para evitar OOM en Render (512MB límite)
+ENV MAVEN_OPTS="-Xmx256m"
+
 # 1. Primero instalamos la librería común localmente en el contenedor
 COPY estructura-backend/libreria-comun ./libreria-comun
 RUN cd libreria-comun && mvn install -DskipTests -B
