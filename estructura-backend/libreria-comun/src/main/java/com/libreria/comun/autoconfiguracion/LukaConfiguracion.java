@@ -10,6 +10,7 @@ import com.libreria.comun.seguridad.ServicioJwt;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -68,12 +69,14 @@ public class LukaConfiguracion {
 
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     public FiltroJwt filtroJwt(ServicioJwt servicioJwt) {
         return new FiltroJwt(servicioJwt);
     }
 
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     public PuntoEntradaJwt puntoEntradaJwt(ObjectMapper objectMapper) {
         return new PuntoEntradaJwt(objectMapper);
     }
@@ -82,6 +85,7 @@ public class LukaConfiguracion {
 
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     public ManejadorGlobalExcepcionesBase manejadorGlobalExcepciones() {
         return new ManejadorGlobalExcepcionesBase() {
         };
