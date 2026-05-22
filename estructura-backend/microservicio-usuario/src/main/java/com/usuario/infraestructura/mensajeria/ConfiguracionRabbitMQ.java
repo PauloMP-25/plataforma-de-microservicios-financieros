@@ -26,6 +26,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class ConfiguracionRabbitMQ {
+    // Forzar despliegue en Render para cargar la nueva libreria-comun
 
     /**
      * Define la cola de auditoría de accesos de forma duradera enlazada a su DLX.
