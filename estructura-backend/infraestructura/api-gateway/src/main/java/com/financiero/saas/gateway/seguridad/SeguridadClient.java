@@ -35,7 +35,7 @@ public class SeguridadClient {
 
     public SeguridadClient(WebClient.Builder webClientBuilder, 
                            ReactiveRedisTemplate<String, Boolean> redisTemplate,
-                           @org.springframework.beans.factory.annotation.Value("${URL_PROD_AUDITORIA:lb://MICROSERVICIO-AUDITORIA}") String urlProdAuditoria) {
+                           @org.springframework.beans.factory.annotation.Value("${URL_PROD_AUDITORIA:https://luka-auditoria.onrender.com}") String urlProdAuditoria) {
         this.redisTemplate = redisTemplate;
         
         // Determinar si usamos Eureka (LoadBalancer) o conexión directa (Render)
