@@ -66,3 +66,9 @@ logging:
         SQL: INFO
   pattern:
     console: "%d{HH:mm:ss} %-5p - %msg%n"
+
+management:
+  endpoints:
+    web:
+      path-mapping:
+        health: health-internal
