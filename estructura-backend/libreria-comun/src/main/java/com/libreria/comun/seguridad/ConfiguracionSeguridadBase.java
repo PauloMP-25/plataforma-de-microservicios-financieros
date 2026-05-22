@@ -88,6 +88,6 @@ public abstract class ConfiguracionSeguridadBase {
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12);
+        return new BCryptPasswordEncoder(10);
     }
 }

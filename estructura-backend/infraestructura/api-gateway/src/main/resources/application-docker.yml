@@ -342,7 +342,7 @@ resilience4j:
   timelimiter:
     configs:
       default:
-        timeout-duration: 5s
+        timeout-duration: 15s
     instances:
       usuarioCB:
         base-config: default

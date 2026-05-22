@@ -76,7 +76,7 @@ public class SeguridadClient {
                     }
                     return false;
                 })
-                .timeout(Duration.ofMillis(300))
+                .timeout(Duration.ofMillis(1500))
                 .onErrorResume(error -> {
                     log.warn("[SEGURIDAD-CLIENTE] Latencia excedida o error en Auditoría. Fallback seguro activado: {}", error.getMessage());
                     return Mono.just(false); 

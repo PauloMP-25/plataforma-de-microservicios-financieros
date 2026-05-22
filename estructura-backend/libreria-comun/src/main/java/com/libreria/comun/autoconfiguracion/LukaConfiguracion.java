@@ -102,7 +102,7 @@ public class LukaConfiguracion {
 
     @Bean
     @ConditionalOnMissingBean
-    public MessageConverter jsonMessageConverter() {
+    public MessageConverter messageConverter() {
         return new Jackson2JsonMessageConverter();
     }
 
@@ -111,7 +111,7 @@ public class LukaConfiguracion {
     @ConditionalOnMissingBean
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
-        template.setMessageConverter(jsonMessageConverter());
+        template.setMessageConverter(messageConverter());
         return template;
     }
 
