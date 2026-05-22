@@ -61,15 +61,17 @@ public class LukaConfiguracion {
 
     // --- SEGURIDAD ---
 
-    @Bean
-    @ConditionalOnMissingBean
-    public ServicioJwt servicioJwt() {
-        return new ServicioJwt();
-    }
+
 
     @org.springframework.context.annotation.Configuration
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     public static class ServletSecurityConfig {
+
+        @Bean
+        @ConditionalOnMissingBean
+        public ServicioJwt servicioJwt() {
+            return new ServicioJwt();
+        }
 
         @Bean
         @ConditionalOnMissingBean
