@@ -28,6 +28,12 @@ public class ClienteMensajeriaFallback implements ClienteMensajeria {
     }
 
     @Override
+    public com.libreria.comun.respuesta.ResultadoApi<com.usuario.aplicacion.dtos.respuestas.RespuestaValidacion> validarActivacion(com.usuario.aplicacion.dtos.solicitudes.SolicitudValidarCodigo solicitud) {
+        log.error("Fallo crítico: No se puede validar código de activación porque ms-mensajeria está offline.");
+        return null;
+    }
+
+    @Override
     public void validarLimite(com.usuario.aplicacion.dtos.solicitudes.SolicitudVerificarLimite solicitud) {
         log.warn("MS-Mensajería offline: Saltando validación de límite de OTP para no bloquear al usuario.");
         // Al ser void, simplemente no hace nada y permite que el flujo continúe

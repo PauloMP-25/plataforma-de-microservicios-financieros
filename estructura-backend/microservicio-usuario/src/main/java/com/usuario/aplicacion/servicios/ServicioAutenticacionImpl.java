@@ -80,8 +80,8 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
 
         // 1. Validar OTP vía microservicio de mensajería (Solo si viene el código)
         if (codigoOtp != null && !codigoOtp.isBlank()) {
-            UUID idConfirmado = clienteMensajeria.validarCodigoYObtenerUsuario(new SolicitudValidarRecuperacion(usuarioId, codigoOtp));
-            if (idConfirmado == null) {
+            var respuesta = clienteMensajeria.validarActivacion(new com.usuario.aplicacion.dtos.solicitudes.SolicitudValidarCodigo(usuarioId, codigoOtp));
+            if (respuesta == null || !respuesta.exito() || !respuesta.datos().esValido()) {
                 publicadorAuditoria.publicarAcceso(usuarioId, ipCliente, EstadoEvento.FALLO,
                         "ACTIVACION_FALLIDA_OTP_INVALIDO");
                 throw new TokenInvalidoException("Código de activación inválido o expirado.");
@@ -300,8 +300,14 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
     @SuppressWarnings("null")
     @Override
     @Transactional
-    public void solicitarOtpActivacion(UUID usuarioId, SolicitudGenerarOtp solicitud) {
-        Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow();
+    public void solicitarOtpActivacion(com.usuario.aplicacion.dtos.solicitudes.SolicitudReenvioOtp solicitud) {
+        Usuario usuario = usuarioRepository.findByCorreo(solicitud.email())
+                .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado con correo: " + solicitud.email()));
+        
+        if (usuario.isHabilitado()) {
+            throw new IllegalArgumentException("La cuenta ya se encuentra activada.");
+        }
+
         publicadorAuditoria.publicarSolicitudOtp(
                 FabricaSolicitudOtp.paraReenvioActivacionManual(usuario, solicitud.tipo(), solicitud.telefono()));
     }
