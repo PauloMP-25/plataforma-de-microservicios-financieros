@@ -58,7 +58,9 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
                         "/api/v1/auth/login",
                         "/api/v1/auth/registrar",
                         "/api/v1/auth/recuperar-solicitar",
-                        "/api/v1/auth/recuperar-confirmar")
+                        "/api/v1/auth/recuperar-confirmar",
+                        "/api/v1/auth/solicitar-otp/**",
+                        "/api/v1/auth/refrescar-token")
                 .permitAll()
 
                 // Monitoreo y Documentación (Público)
