@@ -36,6 +36,7 @@ import org.springframework.context.annotation.Import;
  * </p>
  */
 @AutoConfiguration
+@org.springframework.boot.autoconfigure.AutoConfigureBefore(name = "org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration")
 @Import(ControladorSaludCustom.class)
 public class LukaConfiguracion {
 

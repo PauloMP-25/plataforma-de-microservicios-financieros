@@ -29,14 +29,25 @@ import java.time.Duration;
 public class SeguridadClient {
 
     private static final String PREFIJO_CACHE = "bloqueo:ip:";
-    private static final String URL_AUDITORIA = "http://microservicio-auditoria/api/v1/seguridad/verificar-ip/";
-
     private final WebClient webClient;
     private final ReactiveRedisTemplate<String, Boolean> redisTemplate;
+    private final String urlBaseAuditoria;
 
-    public SeguridadClient(WebClient.Builder webClientBuilder, ReactiveRedisTemplate<String, Boolean> redisTemplate) {
-        this.webClient = webClientBuilder.build();
+    public SeguridadClient(WebClient.Builder webClientBuilder, 
+                           ReactiveRedisTemplate<String, Boolean> redisTemplate,
+                           @org.springframework.beans.factory.annotation.Value("${URL_PROD_AUDITORIA:lb://MICROSERVICIO-AUDITORIA}") String urlProdAuditoria) {
         this.redisTemplate = redisTemplate;
+        
+        // Determinar si usamos Eureka (LoadBalancer) o conexión directa (Render)
+        if (urlProdAuditoria.startsWith("lb://") || urlProdAuditoria.contains("microservicio-auditoria")) {
+            this.webClient = webClientBuilder.build();
+            this.urlBaseAuditoria = "http://microservicio-auditoria/api/v1/seguridad/verificar-ip/";
+        } else {
+            this.webClient = WebClient.create();
+            this.urlBaseAuditoria = urlProdAuditoria.endsWith("/") 
+                ? urlProdAuditoria + "api/v1/seguridad/verificar-ip/" 
+                : urlProdAuditoria + "/api/v1/seguridad/verificar-ip/";
+        }
     }
 
     /**
@@ -65,7 +76,7 @@ public class SeguridadClient {
         log.debug("[SEGURIDAD-CACHE] MISS para IP {}. Consultando microservicio...", ip);
 
         return webClient.get()
-                .uri(URL_AUDITORIA + ip)
+                .uri(urlBaseAuditoria + ip)
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .map(respuesta -> {
