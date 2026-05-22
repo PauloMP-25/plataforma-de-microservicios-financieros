@@ -33,6 +33,7 @@ export class VerificarCodigo {
   digitos: string[] = ['', '', '', '', '', ''];
   cargando = false;
   errorMensaje = '';
+  infoMensaje = '';
   correoRecuperacion = '';
 
   constructor(
@@ -101,6 +102,7 @@ export class VerificarCodigo {
     if (!this.codigoValido) return;
     this.cargando = true;
     this.errorMensaje = '';
+    this.infoMensaje = '';
 
     const codigo = this.codigoCompleto;
     sessionStorage.setItem('codigo-otp', codigo);
@@ -141,7 +143,28 @@ export class VerificarCodigo {
   }
 
   reenviarCodigo(): void {
-    // TODO: Conectar con POST /api/v1/auth/recuperar-password o /verificar-registro
-    console.log('Reenviar código a:', this.destinoMostrado);
+    if (!this.usuarioId && this.destinoMostrado) {
+      this.cargando = true;
+      this.errorMensaje = '';
+      this.infoMensaje = '';
+      this.authService.solicitarRecuperacion({ correo: this.destinoMostrado }).subscribe({
+        next: (resp) => {
+          this.cargando = false;
+          if (resp.exito) {
+            sessionStorage.setItem('registro-id', resp.datos);
+            this.infoMensaje = 'Código reenviado con éxito';
+            setTimeout(() => this.infoMensaje = '', 4000);
+          } else {
+            this.errorMensaje = resp.mensaje || 'Error al reenviar el código';
+          }
+        },
+        error: (err) => {
+          this.cargando = false;
+          this.errorMensaje = err.error?.mensaje || 'Error al reenviar el código';
+        }
+      });
+    } else {
+      console.log('Reenviar código de activación a:', this.destinoMostrado);
+    }
   }
 }

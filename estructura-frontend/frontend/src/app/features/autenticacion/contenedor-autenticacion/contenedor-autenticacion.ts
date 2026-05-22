@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterLink, ActivatedRoute } from '@angular/router';
+import { CommonModule, Location } from '@angular/common';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { IniciarSesion } from '../iniciar-sesion/iniciar-sesion';
 import { CrearCuenta } from '../crear-cuenta/crear-cuenta';
 import { VerificarCodigo } from '../../recuperar-contrasena/verificar-codigo/verificar-codigo';
@@ -20,7 +20,11 @@ export class ContenedorAutenticacion implements OnInit {
   destinoVerificacion = '';
   usuarioId = '';
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private location: Location
+  ) {}
 
   ngOnInit(): void {
     // Leer el estado inicial desde los datos de la ruta
@@ -33,6 +37,8 @@ export class ContenedorAutenticacion implements OnInit {
 
   cambiarVista(vista: 'login' | 'registro'): void {
     this.vistaActual = vista;
+    const ruta = vista === 'login' ? '/autenticacion/iniciar-sesion' : '/autenticacion/crear-cuenta';
+    this.location.go(ruta);
   }
 
   /** Maneja el registro exitoso y muestra la verificación de código */

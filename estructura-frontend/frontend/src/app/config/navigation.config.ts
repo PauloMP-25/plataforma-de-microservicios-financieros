@@ -47,7 +47,7 @@ export const BOTTOM_NAV_ITEMS: NavItem[] = [
   },
   {
     label: 'Configuración',
-    route: '/configuracion',
+    route: '/perfil/configuracion',
     icon:  'fa-solid fa-gear'
   },
   {

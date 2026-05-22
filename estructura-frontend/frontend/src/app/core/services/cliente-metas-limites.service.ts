@@ -33,8 +33,7 @@ export class ClienteMetasLimitesService {
   }
 
   actualizarProgresoMeta(metaId: string, montoActual: number): Observable<RespuestaMetaAhorro> {
-    const params = new HttpParams().set('montoActual', montoActual);
-    return this.http.patch<RespuestaMetaAhorro>(`${this.baseMetas}/${metaId}/progreso`, null, { params });
+    return this.http.patch<RespuestaMetaAhorro>(`${this.baseMetas}/${metaId}/progreso`, { montoActual });
   }
 
   eliminarMeta(metaId: string): Observable<void> {

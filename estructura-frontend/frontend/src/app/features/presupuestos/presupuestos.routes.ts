@@ -9,7 +9,7 @@ export const PRESUPUESTO_ROUTES : Routes = [
     data: {
         title: 'Presupuesto',
         breadcrumbs: [
-            {label: 'Presupuesto', route: '/presupuesto'},
+            {label: 'Presupuesto', route: '/presupuestos'},
             {label: 'Sección'}
         ]
     }

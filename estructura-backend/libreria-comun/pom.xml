@@ -79,6 +79,12 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Actuator para monitoreo -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
         <!-- Utilidades -->
         <!--LOMBOK: Biblioteca para reducir código repetitivo (Boilerplate) como Getters y Setters.-->
         <dependency>
