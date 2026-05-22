@@ -43,6 +43,11 @@ public interface ClienteMensajeria {
         @RequestBody SolicitudValidarRecuperacion solicitud
     );
     
+    @PostMapping("/api/v1/mensajeria/otp/validar-activacion")
+    com.libreria.comun.respuesta.ResultadoApi<com.usuario.aplicacion.dtos.respuestas.RespuestaValidacion> validarActivacion(
+        @RequestBody com.usuario.aplicacion.dtos.solicitudes.SolicitudValidarCodigo solicitud
+    );
+    
     @PostMapping("/api/v1/mensajeria/otp/validar-limite")
     void validarLimite(@RequestBody com.usuario.aplicacion.dtos.solicitudes.SolicitudVerificarLimite solicitud);
 }

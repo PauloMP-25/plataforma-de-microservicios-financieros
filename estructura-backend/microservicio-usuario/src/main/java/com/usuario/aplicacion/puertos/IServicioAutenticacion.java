@@ -97,7 +97,7 @@ public interface IServicioAutenticacion {
      * @param usuarioId ID del usuario.
      * @param solicitud DTO con el medio de envío.
      */
-    void solicitarOtpActivacion(UUID usuarioId, SolicitudGenerarOtp solicitud);
+    void solicitarOtpActivacion(com.usuario.aplicacion.dtos.solicitudes.SolicitudReenvioOtp solicitud);
 
     /**
      * Sincroniza el teléfono verificado de un usuario, usualmente después de una

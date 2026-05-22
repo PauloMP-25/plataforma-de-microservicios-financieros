@@ -58,7 +58,7 @@ public class ControladorAutenticacion {
     /**
      * Solicita un nuevo código OTP para la activación de cuenta.
      */
-    @PostMapping("/solicitar-otp/{usuarioId}")
+    @PostMapping("/solicitar-otp")
     @Operation(summary = "Solicitar Nuevo OTP", description = "Genera y reenvía un nuevo código OTP de activación al medio de contacto especificado (EMAIL, SMS o WHATSAPP) en caso de que el anterior haya expirado o no haya sido recibido.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Código OTP enviado exitosamente al medio de contacto."),
@@ -66,11 +66,10 @@ public class ControladorAutenticacion {
             @ApiResponse(responseCode = "404", description = "Usuario no encontrado.")
     })
     public ResponseEntity<ResultadoApi<String>> solicitarOtpActivacion(
-            @PathVariable @Parameter(description = "UUID único del usuario.", example = "d3b07384-d113-4a0b-8083-d922a901ba8d") UUID usuarioId,
-            @Valid @RequestBody SolicitudGenerarOtp solicitud) {
+            @Valid @RequestBody SolicitudReenvioOtp solicitud) {
         
-        log.info("[API] Solicitud de OTP de activación para usuario: {}", usuarioId);
-        servicioAuth.solicitarOtpActivacion(usuarioId, solicitud);
+        log.info("[API] Solicitud de OTP de activación para email: {}", solicitud.email());
+        servicioAuth.solicitarOtpActivacion(solicitud);
         
         return ResponseEntity.ok(ResultadoApi.exito("OTP_ENVIADO", "El código ha sido enviado a su medio de contacto."));
     }
