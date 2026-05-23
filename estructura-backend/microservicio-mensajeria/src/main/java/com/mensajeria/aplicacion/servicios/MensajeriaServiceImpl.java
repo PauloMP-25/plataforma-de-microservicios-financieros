@@ -337,24 +337,28 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
     @Override
     public boolean validarConexionTwilio() {
         try {
-            // Hacemos una llamada ligera a Twilio para validar que el par API Key/Secret o Auth Token
-            // y el Account SID maestro son validos. Si son invalidos, Twilio arrojara una ApiException.
-            String accountSid = propiedadesTwilio.getAccount().getSid();
+            // Validación puramente local (no realiza llamadas a la API de Twilio)
+            // Evita errores de permisos (ej. falta de twilio/iam/accounts/read en API Keys Restringidas)
+            // y no bloquea el arranque con peticiones de red pesadas en el Health Check.
+            String accountSid = propiedadesTwilio.getAccountSid() != null ? propiedadesTwilio.getAccountSid() : propiedadesTwilio.getAccount().getSid();
+            String apiKeySid = propiedadesTwilio.getApiKeySid() != null ? propiedadesTwilio.getApiKeySid() : propiedadesTwilio.getApiKey().getSid();
+            
             if (accountSid == null || accountSid.isBlank()) {
                 throw new IllegalStateException("El Account SID de Twilio no está configurado.");
             }
             
-            log.info("[TWILIO-HEALTH] Validando conexión de Twilio con Account SID: {}", accountSid);
-            com.twilio.rest.api.v2010.Account.fetcher(accountSid).fetch();
+            boolean tieneApiKey = apiKeySid != null && !apiKeySid.isBlank();
+            boolean tieneAuthToken = propiedadesTwilio.getAuth().getToken() != null && !propiedadesTwilio.getAuth().getToken().isBlank();
+
+            if (!tieneApiKey && !tieneAuthToken) {
+                throw new IllegalStateException("Falta configurar credenciales de Twilio (API Key o Auth Token).");
+            }
             
-            log.info("[TWILIO-HEALTH] Conexión y autenticación con Twilio exitosas.");
+            log.debug("[TWILIO-HEALTH] Validación local exitosa. Credenciales presentes para Account SID: {}", accountSid);
             return true;
-        } catch (com.twilio.exception.ApiException e) {
-            log.error("[TWILIO-HEALTH] Error de autenticación o respuesta de API en Twilio: {}", e.getMessage());
-            throw new RuntimeException("Fallo de autenticación en Twilio: " + e.getMessage(), e);
         } catch (Exception e) {
-            log.error("[TWILIO-HEALTH] Error inesperado en Twilio health check: {}", e.getMessage());
-            throw new RuntimeException("Error inesperado al conectar con Twilio: " + e.getMessage(), e);
+            log.error("[TWILIO-HEALTH] Error en validación local de Twilio: {}", e.getMessage());
+            throw new RuntimeException("Fallo de configuración local en Twilio: " + e.getMessage(), e);
         }
     }
 }

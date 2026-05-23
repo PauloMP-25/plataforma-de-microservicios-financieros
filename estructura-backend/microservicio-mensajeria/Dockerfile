@@ -77,8 +77,9 @@ ENTRYPOINT ["dumb-init", "--"]
 # Usamos 'sh -c' y 'exec java' para que la shell expanda $PORT pero java reciba las señales
 CMD ["sh", "-c", "exec java \
     -XX:+UseContainerSupport \
-    -XX:MaxRAMPercentage=75.0 \
-    -XX:MaxMetaspaceSize=256m \
+    -XX:MaxRAMPercentage=50.0 \
+    -XX:MaxMetaspaceSize=128m \
+    -Xss512k \
     -XX:+UseG1GC \
     -Djava.security.egd=file:/dev/./urandom \
     -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:docker} \
