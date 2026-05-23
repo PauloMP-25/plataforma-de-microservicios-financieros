@@ -68,7 +68,6 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
 
     @SuppressWarnings("null")
     @Override
-    @Transactional
     public void activarCuenta(String correo, String codigoOtp, String telefono, String ipCliente) {
         Usuario usuario = usuarioRepository.findByCorreo(correo)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con correo: " + correo));
@@ -87,37 +86,14 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
                         "ACTIVACION_FALLIDA_OTP_INVALIDO");
                 throw new TokenInvalidoException("Código de activación inválido o expirado.");
             }
+            log.info("[AUTH-ACT] Activación por ID realizada con éxito a través de ms-mensajeria para correo: {}", correo);
         } else {
+            // Caso de activación directa (sin OTP)
             log.info("[AUTH-ACT] Activación directa solicitada para usuario: {} (OTP ya validado o no requerido)",
                     usuarioId);
+            // Sincronizar y habilitar directamente en una transacción
+            activarCuentaPorId(usuarioId, telefono);
         }
-
-        // 2. Sincronizar teléfono si se proporcionó
-        if (telefono != null && !telefono.isBlank()) {
-            try {
-                clientePerfilExterno.actualizarTelefono(usuarioId, telefono);
-            } catch (Exception e) {
-                log.error("Error sincronizando teléfono con MS-CLIENTE: {}", e.getMessage());
-            }
-        }
-
-        // 3. Habilitar cuenta
-        usuario.setHabilitado(true);
-        usuario.setCuentaNoBloqueada(true);
-        usuarioRepository.save(usuario);
-
-        // 4. Crear perfil inicial en MS-CLIENTE (Garantizar consistencia)
-        try {
-            clientePerfilExterno.crearPerfilInicial(usuarioId);
-            log.info("[AUTH-ACT] Perfil inicial creado exitosamente en ms-cliente para usuario: {}", usuarioId);
-        } catch (Exception e) {
-            log.warn(
-                    "[AUTH-ACT] No se pudo crear el perfil inicial para el usuario {}. Se deberá sincronizar posteriormente.",
-                    usuarioId);
-        }
-
-        // 5. Registrar acceso exitoso
-        publicadorAuditoria.publicarAcceso(usuarioId, ipCliente, EstadoEvento.EXITO, "ACTIVACION_CUENTA");
     }
 
     @Override
