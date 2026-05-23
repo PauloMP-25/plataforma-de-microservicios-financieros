@@ -21,7 +21,7 @@ public class ServicioPerfilCacheImpl implements IServicioPerfilCache {
     private final ClientePerfilExterno clientePerfilExterno;
 
     @Override
-    @Cacheable(value = "telefonos", key = "#usuarioId")
+    @Cacheable(value = "telefonos", key = "#usuarioId", unless = "#result == null")
     public String obtenerTelefono(UUID usuarioId) {
         log.info("[CACHE-MISS] Consultando teléfono de usuario {} de forma síncrona en microservicio-cliente", usuarioId);
         return clientePerfilExterno.obtenerTelefono(usuarioId);
