@@ -6,17 +6,37 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * Mapeo centralizado de las propiedades de Twilio.
+ *
+ * <p>A partir de la versión 1.2.0 se utiliza el {@code messagingServiceSid}
+ * para enviar SMS y WhatsApp a través del Messaging Service de Twilio,
+ * eliminando la dependencia de números de teléfono estáticos (from/number).
+ * La autenticación se realiza con API Key Restringida (sid + secret) en lugar
+ * del Auth Token maestro.</p>
+ *
+ * @author Paulo Moron
+ * @version 1.2.0
  */
 @Configuration
 @ConfigurationProperties(prefix = "twilio")
 @Data
 public class PropiedadesTwilio {
-    
-    private Account account = new Account();
-    private Auth auth = new Auth();
-    private ApiKey apiKey = new ApiKey();
-    private Phone phone = new Phone();
-    private Whatsapp whatsapp = new Whatsapp();
+
+    /** Account SID de la cuenta Twilio (requerido siempre). */
+    private String accountSid;
+
+    /** API Key SID de tipo Restricted con permisos de Messaging. */
+    private String apiKeySid;
+
+    /** API Key Secret asociado al {@code apiKeySid}. */
+    private String apiKeySecret;
+
+    /**
+     * Messaging Service SID (prefijo {@code MG...}).
+     * Permite enrutar mensajes sin fijar un número de origen estático.
+     */
+    private String messagingServiceSid;
+
+    // ── Clases internas para compatibilidad con binding de Spring Boot ──────────
 
     @Data
     public static class Account {
@@ -44,4 +64,12 @@ public class PropiedadesTwilio {
     public static class Whatsapp {
         private String from;
     }
+
+    // ── Campos heredados (mantenidos por compatibilidad con TwilioInitializer) ──
+
+    private Account account = new Account();
+    private Auth auth = new Auth();
+    private ApiKey apiKey = new ApiKey();
+    private Phone phone = new Phone();
+    private Whatsapp whatsapp = new Whatsapp();
 }
