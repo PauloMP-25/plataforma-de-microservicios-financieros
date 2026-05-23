@@ -170,18 +170,15 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
      */
     @Override
     @Transactional
-    public UUID validarCodigoYObtenerUsuario(UUID registroId, String codigoStr) {
-        CodigoVerificacion cv = codigoRepository
-                .findByIdAndCodigoAndUsadoFalse(registroId, codigoStr)
-                .orElseThrow(() -> new CodigoInvalidoException("código o identificador incorrecto"));
-
-        if (cv.isExpirado()) {
-            throw new CodigoExpiradoException();
-        }
+    public UUID validarCodigoYObtenerUsuario(UUID usuarioId, String codigoStr) {
+        CodigoVerificacion cv = procesarValidacionInterna(
+                new SolicitudValidarCodigo(usuarioId, codigoStr),
+                PropositoCodigo.RESTABLECER_PASSWORD);
 
         cv.setUsado(true);
         cv.setFechaUso(LocalDateTime.now());
         reiniciarIntentos(cv.getUsuarioId());
+        codigoRepository.save(cv);
 
         return cv.getUsuarioId();
     }

@@ -39,12 +39,10 @@ public interface IServicioAutenticacion {
 
     /**
      * Restablece la contraseña de un usuario validando un código OTP.
-     * 
-     * @param registroId ID de la solicitud de recuperación.
-     * @param codigoOtp  Código recibido por el usuario.
-     * @param solicitud  DTO con la nueva contraseña.
+     *
+     * @param solicitud DTO con el correo, código OTP y la nueva contraseña.
      */
-    void restablecerPassword(UUID registroId, String codigoOtp, SolicitudRestablecerPassword solicitud);
+    void restablecerPassword(SolicitudRestablecerPassword solicitud);
 
     /**
      * Desactiva lógicamente la cuenta de un usuario.

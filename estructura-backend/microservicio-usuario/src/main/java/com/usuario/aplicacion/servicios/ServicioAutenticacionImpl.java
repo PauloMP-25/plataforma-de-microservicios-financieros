@@ -256,12 +256,22 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
 
     @Override
     @Transactional
-    public void restablecerPassword(UUID registroId, String codigoOtp, SolicitudRestablecerPassword solicitud) {
-        UUID userId = clienteMensajeria.validarCodigoYObtenerUsuario(new SolicitudValidarRecuperacion(registroId, codigoOtp));
-        if (userId == null)
-            throw new TokenInvalidoException("Código inválido");
+    public void restablecerPassword(SolicitudRestablecerPassword solicitud) {
+        if (!solicitud.contrasenasNuevasCoinciden()) {
+            throw new ContrasenasNoCoincidenException();
+        }
 
-        Usuario usuario = usuarioRepository.findById(userId).orElseThrow();
+        // 1. Buscar el usuario por correo (operación segura: no revela si el correo existe hasta este punto)
+        Usuario usuario = usuarioRepository.findByCorreoAndHabilitadoTrue(solicitud.correo())
+                .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado o cuenta inactiva"));
+
+        // 2. Validar OTP enviando el UUID real al ms-mensajeria
+        UUID userId = clienteMensajeria.validarCodigoYObtenerUsuario(
+                new SolicitudValidarRecuperacion(usuario.getId(), solicitud.codigoOtp()));
+        if (userId == null)
+            throw new TokenInvalidoException("Código inválido o expirado");
+
+        // 3. Actualizar contraseña
         usuario.setPassword(passwordEncoder.encode(solicitud.nuevoPassword()));
         usuarioRepository.save(usuario);
 

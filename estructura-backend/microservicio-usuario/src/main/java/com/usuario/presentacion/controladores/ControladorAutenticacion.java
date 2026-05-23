@@ -175,18 +175,16 @@ public class ControladorAutenticacion {
      * Establece una nueva contraseña tras validar el código de recuperación.
      */
     @PostMapping("/recuperar-confirmar")
-    @Operation(summary = "Confirmar Recuperación de Contraseña", description = "Establece una nueva contraseña tras validar el código OTP de recuperación y el registro asignado.")
+    @Operation(summary = "Confirmar Recuperación de Contraseña", description = "Establece una nueva contraseña tras validar el código OTP de recuperación. El usuario debe enviar su correo, el OTP recibido y la nueva contraseña.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Contraseña restablecida correctamente. Ya puede iniciar sesión."),
             @ApiResponse(responseCode = "400", description = "Código OTP inválido o expirado.")
     })
     public ResponseEntity<ResultadoApi<String>> resetearPassword(
-            @RequestParam @Parameter(description = "ID del registro de recuperación.", example = "e0078021-d55a-4b0b-8083-d922a901ba8d") UUID registroId,
-            @RequestParam @Parameter(description = "Código OTP de verificación recibido.", example = "654321") String codigoOtp,
             @Valid @RequestBody SolicitudRestablecerPassword solicitud) {
         
-        log.info("[API] Confirmación de recuperación de contraseña para registro: {}", registroId);
-        servicioAuth.restablecerPassword(registroId, codigoOtp, solicitud);
+        log.info("[API] Confirmación de recuperación de contraseña para: {}", solicitud.correo());
+        servicioAuth.restablecerPassword(solicitud);
         
         return ResponseEntity.ok(ResultadoApi.exito("PASSWORD_RESETEADO", "Su contraseña ha sido restablecida correctamente."));
     }

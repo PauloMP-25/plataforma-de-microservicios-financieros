@@ -60,7 +60,7 @@ public interface IMensajeriaService {
      *                                  ya fue usado.
      * @throws IllegalStateException    si el código ya expiró.
      */
-    java.util.UUID validarCodigoYObtenerUsuario(java.util.UUID registroId, String codigoStr);
+    java.util.UUID validarCodigoYObtenerUsuario(java.util.UUID usuarioId, String codigoStr);
 
     /**
      * Valida de forma anticipada las restricciones de bloqueo y límite diario

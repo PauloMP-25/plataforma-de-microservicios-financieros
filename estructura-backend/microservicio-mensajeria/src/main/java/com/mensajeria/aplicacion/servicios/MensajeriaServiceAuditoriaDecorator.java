@@ -71,16 +71,16 @@ public class MensajeriaServiceAuditoriaDecorator implements IMensajeriaService {
     }
 
     @Override
-    public UUID validarCodigoYObtenerUsuario(UUID registroId, String codigoStr) {
+    public UUID validarCodigoYObtenerUsuario(UUID usuarioId, String codigoStr) {
         try {
-            UUID usuarioId = servicioReal.validarCodigoYObtenerUsuario(registroId, codigoStr);
-            publicadorAuditoria.publicarEventoSeguridad(usuarioId, "OTP_RESET_EXITOSO", "Validación completada para cambio de contraseña");
-            return usuarioId;
+            UUID userId = servicioReal.validarCodigoYObtenerUsuario(usuarioId, codigoStr);
+            publicadorAuditoria.publicarEventoSeguridad(userId, "OTP_RESET_EXITOSO", "Validación completada para cambio de contraseña");
+            return userId;
         } catch (UsuarioBloqueadoExcepcion e) {
-            publicadorAuditoria.publicarEventoSeguridad(registroId, "USUARIO_BLOQUEADO", "Cuenta suspendida temporalmente por múltiples intentos fallidos.");
+            publicadorAuditoria.publicarEventoSeguridad(usuarioId, "USUARIO_BLOQUEADO", "Cuenta suspendida temporalmente por múltiples intentos fallidos.");
             throw e;
         } catch (Exception e) {
-            publicadorAuditoria.publicarEventoSeguridad(registroId, "OTP_INTENTO_FALLIDO", "Intento fallido de validación: " + e.getMessage());
+            publicadorAuditoria.publicarEventoSeguridad(usuarioId, "OTP_INTENTO_FALLIDO", "Intento fallido de validación: " + e.getMessage());
             throw e;
         }
     }
