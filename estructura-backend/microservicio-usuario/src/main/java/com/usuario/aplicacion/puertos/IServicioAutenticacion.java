@@ -21,6 +21,14 @@ public interface IServicioAutenticacion {
     void activarCuenta(String correo, String codigoOtp, String telefono, String ipCliente);
 
     /**
+     * Activa la cuenta de un usuario recién registrado por su ID.
+     *
+     * @param usuarioId ID único del usuario a activar.
+     * @param telefono  Teléfono verificado a sincronizar (opcional).
+     */
+    void activarCuentaPorId(UUID usuarioId, String telefono);
+
+    /**
      * Cambia la contraseña de un usuario autenticado.
      * 
      * @param usuarioId ID del usuario.
