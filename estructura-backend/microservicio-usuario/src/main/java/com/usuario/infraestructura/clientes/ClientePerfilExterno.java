@@ -21,7 +21,7 @@ import java.util.UUID;
 )
 public interface ClientePerfilExterno {
 
-    @PostMapping("/api/v1/clientes/inicial")
+    @PostMapping("/api/v1/clientes/perfil/inicial")
     void crearPerfilInicial(@RequestParam("usuarioId") UUID usuarioId);
     
     // Nuevo: Para guardar el teléfono cuando el usuario lo elige en la activación

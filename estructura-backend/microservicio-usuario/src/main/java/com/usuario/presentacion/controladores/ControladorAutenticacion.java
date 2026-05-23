@@ -36,7 +36,7 @@ public class ControladorAutenticacion {
     /**
      * Activa la cuenta de un usuario recién registrado validando un código OTP.
      */
-    @PutMapping("/activar/{usuarioId}")
+    @PutMapping("/activar")
     @Operation(summary = "Activar Cuenta con OTP", description = "Activa el perfil de usuario recién registrado validando el código OTP enviado a su correo o teléfono. Si el OTP es correcto, cambia el estado del usuario a habilitado.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Cuenta activada exitosamente. El usuario ya puede iniciar sesión."),
@@ -44,13 +44,13 @@ public class ControladorAutenticacion {
             @ApiResponse(responseCode = "404", description = "Usuario no encontrado en el sistema.")
     })
     public ResponseEntity<ResultadoApi<String>> activarCuenta(
-            @PathVariable @Parameter(description = "UUID único del usuario a activar.", example = "d3b07384-d113-4a0b-8083-d922a901ba8d") UUID usuarioId,
+            @RequestParam @Parameter(description = "Correo electrónico del usuario.", example = "correo@gmail.com") String correo,
             @RequestParam(required = false) @Parameter(description = "Código OTP de verificación de 6 dígitos.", example = "123456") String codigoOtp,
             @RequestParam(required = false) @Parameter(description = "Número telefónico opcional para registrar o validar.", example = "+51999999999") String telefono,
             HttpServletRequest request) {
         
-        log.info("[API] Intento de activación para usuario: {}", usuarioId);
-        servicioAuth.activarCuenta(usuarioId, codigoOtp, telefono, request.getRemoteAddr());
+        log.info("[API] Intento de activación para usuario con correo: {}", correo);
+        servicioAuth.activarCuenta(correo, codigoOtp, telefono, request.getRemoteAddr());
         
         return ResponseEntity.ok(ResultadoApi.exito("OK", "Cuenta activada correctamente. Ya puede iniciar sesión."));
     }
@@ -175,18 +175,16 @@ public class ControladorAutenticacion {
      * Establece una nueva contraseña tras validar el código de recuperación.
      */
     @PostMapping("/recuperar-confirmar")
-    @Operation(summary = "Confirmar Recuperación de Contraseña", description = "Establece una nueva contraseña tras validar el código OTP de recuperación y el registro asignado.")
+    @Operation(summary = "Confirmar Recuperación de Contraseña", description = "Establece una nueva contraseña tras validar el código OTP de recuperación. El usuario debe enviar su correo, el OTP recibido y la nueva contraseña.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Contraseña restablecida correctamente. Ya puede iniciar sesión."),
             @ApiResponse(responseCode = "400", description = "Código OTP inválido o expirado.")
     })
     public ResponseEntity<ResultadoApi<String>> resetearPassword(
-            @RequestParam @Parameter(description = "ID del registro de recuperación.", example = "e0078021-d55a-4b0b-8083-d922a901ba8d") UUID registroId,
-            @RequestParam @Parameter(description = "Código OTP de verificación recibido.", example = "654321") String codigoOtp,
             @Valid @RequestBody SolicitudRestablecerPassword solicitud) {
         
-        log.info("[API] Confirmación de recuperación de contraseña para registro: {}", registroId);
-        servicioAuth.restablecerPassword(registroId, codigoOtp, solicitud);
+        log.info("[API] Confirmación de recuperación de contraseña para: {}", solicitud.correo());
+        servicioAuth.restablecerPassword(solicitud);
         
         return ResponseEntity.ok(ResultadoApi.exito("PASSWORD_RESETEADO", "Su contraseña ha sido restablecida correctamente."));
     }

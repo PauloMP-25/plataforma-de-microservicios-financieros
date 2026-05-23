@@ -69,13 +69,14 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
     @SuppressWarnings("null")
     @Override
     @Transactional
-    public void activarCuenta(UUID usuarioId, String codigoOtp, String telefono, String ipCliente) {
-        Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new IllegalArgumentException("ID de usuario no encontrado: " + usuarioId));
+    public void activarCuenta(String correo, String codigoOtp, String telefono, String ipCliente) {
+        Usuario usuario = usuarioRepository.findByCorreo(correo)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con correo: " + correo));
+        
+        UUID usuarioId = usuario.getId();
 
         if (usuario.isHabilitado()) {
-            log.warn("[AUTH-ACT] Intento de reactivación para usuario ya habilitado: {}", usuarioId);
-            return; // Idempotencia
+            throw new IllegalArgumentException("La cuenta ya se encuentra activada.");
         }
 
         // 1. Validar OTP vía microservicio de mensajería (Solo si viene el código)
@@ -108,11 +109,15 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
         // 4. Crear perfil inicial en MS-CLIENTE (Garantizar consistencia)
         try {
             clientePerfilExterno.crearPerfilInicial(usuarioId);
+            log.info("[AUTH-ACT] Perfil inicial creado exitosamente en ms-cliente para usuario: {}", usuarioId);
         } catch (Exception e) {
-            log.warn("Perfil ya existía o MS-CLIENTE no disponible: {}", e.getMessage());
+            log.warn(
+                    "[AUTH-ACT] No se pudo crear el perfil inicial para el usuario {}. Se deberá sincronizar posteriormente.",
+                    usuarioId);
         }
 
-        publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente, EstadoEvento.EXITO, "CUENTA_ACTIVADA_VIA_OTP");
+        // 5. Registrar acceso exitoso
+        publicadorAuditoria.publicarAcceso(usuarioId, ipCliente, EstadoEvento.EXITO, "ACTIVACION_CUENTA");
     }
 
     @Override
@@ -251,12 +256,22 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
 
     @Override
     @Transactional
-    public void restablecerPassword(UUID registroId, String codigoOtp, SolicitudRestablecerPassword solicitud) {
-        UUID userId = clienteMensajeria.validarCodigoYObtenerUsuario(new SolicitudValidarRecuperacion(registroId, codigoOtp));
-        if (userId == null)
-            throw new TokenInvalidoException("Código inválido");
+    public void restablecerPassword(SolicitudRestablecerPassword solicitud) {
+        if (!solicitud.contrasenasNuevasCoinciden()) {
+            throw new ContrasenasNoCoincidenException();
+        }
 
-        Usuario usuario = usuarioRepository.findById(userId).orElseThrow();
+        // 1. Buscar el usuario por correo (operación segura: no revela si el correo existe hasta este punto)
+        Usuario usuario = usuarioRepository.findByCorreoAndHabilitadoTrue(solicitud.correo())
+                .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado o cuenta inactiva"));
+
+        // 2. Validar OTP enviando el UUID real al ms-mensajeria
+        UUID userId = clienteMensajeria.validarCodigoYObtenerUsuario(
+                new SolicitudValidarRecuperacion(usuario.getId(), solicitud.codigoOtp()));
+        if (userId == null)
+            throw new TokenInvalidoException("Código inválido o expirado");
+
+        // 3. Actualizar contraseña
         usuario.setPassword(passwordEncoder.encode(solicitud.nuevoPassword()));
         usuarioRepository.save(usuario);
 

@@ -51,10 +51,9 @@ public class ConsumidorAuditoria {
      * @param deliveryTag Etiqueta identificadora del mensaje.
      */
     @RabbitListener(queues = NombresCola.AUDITORIA_ACCESOS, errorHandler = RABBIT_ERROR_HANDLER)
-    public void procesarAcceso(EventoAccesoDTO evento, Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag) throws java.io.IOException {
+    public void procesarAcceso(EventoAccesoDTO evento) throws java.io.IOException {
         log.info("[RABBIT-ACCESO] Recibido evento para usuario: {}", evento.usuarioId());
         servicioAcceso.registrarAcceso(evento);
-        channel.basicAck(deliveryTag, false);
     }
 
     /**
@@ -69,10 +68,9 @@ public class ConsumidorAuditoria {
      * @param deliveryTag Etiqueta identificadora del mensaje.
      */
     @RabbitListener(queues = NombresCola.AUDITORIA_EVENTOS, errorHandler = RABBIT_ERROR_HANDLER)
-    public void procesarEvento(EventoAuditoriaDTO evento, Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag) throws java.io.IOException {
+    public void procesarEvento(EventoAuditoriaDTO evento) throws java.io.IOException {
         log.info("[RABBIT-ACCESO] Recibido evento para usuario: {}", evento.usuarioId());
         servicioRegistro.registrarEvento(evento);
-        channel.basicAck(deliveryTag, false);
     }
 
     /**
@@ -83,11 +81,10 @@ public class ConsumidorAuditoria {
      * @param deliveryTag Etiqueta identificadora del mensaje.
      */
     @RabbitListener(queues = NombresCola.AUDITORIA_TRANSACCIONES, errorHandler = RABBIT_ERROR_HANDLER)
-    public void procesarTransaccion(EventoTransaccionalDTO evento, Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag) throws java.io.IOException {
+    public void procesarTransaccion(EventoTransaccionalDTO evento) throws java.io.IOException {
         log.info("[RABBIT-TRANSAC] Registrando cambio en entidad: {} del servicio: {}",
                 evento.entidadAfectada(), evento.servicioOrigen());
         servicioTransaccional.guardarEvento(evento);
-        channel.basicAck(deliveryTag, false);
     }
 
     /**
@@ -99,7 +96,7 @@ public class ConsumidorAuditoria {
      * @param deliveryTag Etiqueta identificadora del mensaje.
      */
     @RabbitListener(queues = NombresCola.PAGOS_EXITOSOS, errorHandler = RABBIT_ERROR_HANDLER)
-    public void manejarPagoExitoso(EventoPagoExitosoDTO evento, Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag) throws java.io.IOException {
+    public void manejarPagoExitoso(EventoPagoExitosoDTO evento) throws java.io.IOException {
         log.info("[RABBIT-PAGOS] Registrando auditoría de pago para usuario: {}", evento.usuarioId());
 
         String planAnterior = servicioTransaccional.obtenerUltimoPlanUsuario(evento.usuarioId());
@@ -114,6 +111,5 @@ public class ConsumidorAuditoria {
                 evento.planNuevo());
 
         servicioTransaccional.guardarEvento(auditoria);
-        channel.basicAck(deliveryTag, false);
     }
 }

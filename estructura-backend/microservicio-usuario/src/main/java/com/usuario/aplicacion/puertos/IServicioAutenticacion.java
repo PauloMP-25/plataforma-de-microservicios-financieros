@@ -11,15 +11,14 @@ import java.util.UUID;
 public interface IServicioAutenticacion {
 
     /**
-     * Activa la cuenta de un usuario mediante la verificación de sus datos y un
-     * código OTP.
-     * 
-     * @param usuarioId ID del usuario a activar.
-     * @param codigoOtp Código de verificación.
-     * @param telefono  Teléfono opcional a vincular.
-     * @param ipCliente Dirección IP de origen para auditoría.
+     * Activa la cuenta de un usuario recién registrado.
+     *
+     * @param correo Correo electrónico del usuario a activar.
+     * @param codigoOtp Código OTP (opcional si la activación es directa).
+     * @param telefono  Teléfono asociado (opcional).
+     * @param ipCliente Dirección IP del cliente para la auditoría.
      */
-    void activarCuenta(UUID usuarioId, String codigoOtp, String telefono, String ipCliente);
+    void activarCuenta(String correo, String codigoOtp, String telefono, String ipCliente);
 
     /**
      * Cambia la contraseña de un usuario autenticado.
@@ -40,12 +39,10 @@ public interface IServicioAutenticacion {
 
     /**
      * Restablece la contraseña de un usuario validando un código OTP.
-     * 
-     * @param registroId ID de la solicitud de recuperación.
-     * @param codigoOtp  Código recibido por el usuario.
-     * @param solicitud  DTO con la nueva contraseña.
+     *
+     * @param solicitud DTO con el correo, código OTP y la nueva contraseña.
      */
-    void restablecerPassword(UUID registroId, String codigoOtp, SolicitudRestablecerPassword solicitud);
+    void restablecerPassword(SolicitudRestablecerPassword solicitud);
 
     /**
      * Desactiva lógicamente la cuenta de un usuario.
