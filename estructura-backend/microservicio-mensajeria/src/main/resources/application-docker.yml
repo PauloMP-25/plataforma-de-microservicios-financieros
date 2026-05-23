@@ -160,3 +160,7 @@ twilio:
     number: ${TWILIO_SMS_FROM}
   whatsapp:
     from: ${TWILIO_WHATSAPP_FROM}
+  api-key:
+    sid: ${TWILIO_API_KEY_SID:}
+    secret: ${TWILIO_API_KEY_SECRET:}
+    use-api-key: ${TWILIO_USE_API_KEY:false}
