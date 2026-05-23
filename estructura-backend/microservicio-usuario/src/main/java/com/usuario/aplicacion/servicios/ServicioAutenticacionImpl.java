@@ -69,13 +69,14 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
     @SuppressWarnings("null")
     @Override
     @Transactional
-    public void activarCuenta(UUID usuarioId, String codigoOtp, String telefono, String ipCliente) {
-        Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new IllegalArgumentException("ID de usuario no encontrado: " + usuarioId));
+    public void activarCuenta(String correo, String codigoOtp, String telefono, String ipCliente) {
+        Usuario usuario = usuarioRepository.findByCorreo(correo)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con correo: " + correo));
+        
+        UUID usuarioId = usuario.getId();
 
         if (usuario.isHabilitado()) {
-            log.warn("[AUTH-ACT] Intento de reactivación para usuario ya habilitado: {}", usuarioId);
-            return; // Idempotencia
+            throw new IllegalArgumentException("La cuenta ya se encuentra activada.");
         }
 
         // 1. Validar OTP vía microservicio de mensajería (Solo si viene el código)
@@ -108,11 +109,15 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
         // 4. Crear perfil inicial en MS-CLIENTE (Garantizar consistencia)
         try {
             clientePerfilExterno.crearPerfilInicial(usuarioId);
+            log.info("[AUTH-ACT] Perfil inicial creado exitosamente en ms-cliente para usuario: {}", usuarioId);
         } catch (Exception e) {
-            log.warn("Perfil ya existía o MS-CLIENTE no disponible: {}", e.getMessage());
+            log.warn(
+                    "[AUTH-ACT] No se pudo crear el perfil inicial para el usuario {}. Se deberá sincronizar posteriormente.",
+                    usuarioId);
         }
 
-        publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente, EstadoEvento.EXITO, "CUENTA_ACTIVADA_VIA_OTP");
+        // 5. Registrar acceso exitoso
+        publicadorAuditoria.publicarAcceso(usuarioId, ipCliente, EstadoEvento.EXITO, "ACTIVACION_CUENTA");
     }
 
     @Override
