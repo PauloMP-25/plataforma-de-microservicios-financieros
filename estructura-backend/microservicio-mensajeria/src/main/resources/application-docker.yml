@@ -151,16 +151,26 @@ luka:
     clave-secreta: ${JWT_SECRET_KEY}
 
 # ── Notificaciones Externas (Twilio) ───────────────────────────────────────────
+#  Autenticación con API Key Restringida (permisos de Messaging únicamente).
+#  Declarar en el dashboard de Render las siguientes variables de entorno:
+#    TWILIO_ACCOUNT_SID, TWILIO_API_KEY_SID, TWILIO_API_KEY_SECRET, TWILIO_MESSAGING_SERVICE_SID
 twilio:
-  account:
-    sid: ${TWILIO_ACCOUNT_SID}
-  auth:
-    token: ${TWILIO_AUTH_TOKEN}
+  account-sid: ${TWILIO_ACCOUNT_SID}
+  api-key-sid: ${TWILIO_API_KEY_SID}
+  api-key-secret: ${TWILIO_API_KEY_SECRET}
+  messaging-service-sid: ${TWILIO_MESSAGING_SERVICE_SID}
+  # ── Fallback para desarrollo local sin Messaging Service ─────────────────────
+  #  (Dejar en blanco en producción/Render; solo activar localmente)
   phone:
-    number: ${TWILIO_SMS_FROM}
+    number: ${TWILIO_SMS_FROM:}
   whatsapp:
-    from: ${TWILIO_WHATSAPP_FROM}
+    from: ${TWILIO_WHATSAPP_FROM:}
+  # ── Compatibilidad con TwilioInitializer (mantener si se usa API Key) ────────
   api-key:
-    sid: ${TWILIO_API_KEY_SID:}
-    secret: ${TWILIO_API_KEY_SECRET:}
-    use-api-key: ${TWILIO_USE_API_KEY:false}
+    sid: ${TWILIO_API_KEY_SID}
+    secret: ${TWILIO_API_KEY_SECRET}
+    use-api-key: true
+  auth:
+    token: ${TWILIO_AUTH_TOKEN:}
+  account:
+    sid: ${TWILIO_ACCOUNT_SID}
