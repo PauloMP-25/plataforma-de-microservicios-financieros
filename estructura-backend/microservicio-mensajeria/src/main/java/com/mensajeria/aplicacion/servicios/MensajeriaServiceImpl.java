@@ -60,6 +60,7 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
     private final com.mensajeria.infraestructura.configuracion.PropiedadesOtp propiedadesOtp;
     private final java.util.List<com.mensajeria.aplicacion.servicios.validadores.ValidadorOtp> validadores;
     private final com.mensajeria.aplicacion.fabricas.FabricaCodigoVerificacion fabricaCodigo;
+    private final com.mensajeria.infraestructura.configuracion.PropiedadesTwilio propiedadesTwilio;
 
     // =========================================================================
     // 1. GENERACIÓN Y ENVÍO
@@ -328,5 +329,32 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
                 .and(MensajeriaSpecs.creadoEntre(inicio, fin));
 
         return codigoRepository.findAll(spec, pageable);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean validarConexionTwilio() {
+        try {
+            // Hacemos una llamada ligera a Twilio para validar que el par API Key/Secret o Auth Token
+            // y el Account SID maestro son validos. Si son invalidos, Twilio arrojara una ApiException.
+            String accountSid = propiedadesTwilio.getAccount().getSid();
+            if (accountSid == null || accountSid.isBlank()) {
+                throw new IllegalStateException("El Account SID de Twilio no está configurado.");
+            }
+            
+            log.info("[TWILIO-HEALTH] Validando conexión de Twilio con Account SID: {}", accountSid);
+            com.twilio.rest.api.v2010.Account.fetcher(accountSid).fetch();
+            
+            log.info("[TWILIO-HEALTH] Conexión y autenticación con Twilio exitosas.");
+            return true;
+        } catch (com.twilio.exception.ApiException e) {
+            log.error("[TWILIO-HEALTH] Error de autenticación o respuesta de API en Twilio: {}", e.getMessage());
+            throw new RuntimeException("Fallo de autenticación en Twilio: " + e.getMessage(), e);
+        } catch (Exception e) {
+            log.error("[TWILIO-HEALTH] Error inesperado en Twilio health check: {}", e.getMessage());
+            throw new RuntimeException("Error inesperado al conectar con Twilio: " + e.getMessage(), e);
+        }
     }
 }

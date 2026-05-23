@@ -102,6 +102,11 @@ public class MensajeriaServiceAuditoriaDecorator implements IMensajeriaService {
         return servicioReal.buscarCodigos(usuarioId, proposito, usado, inicio, fin, pageable);
     }
     
+    @Override
+    public boolean validarConexionTwilio() {
+        return servicioReal.validarConexionTwilio();
+    }
+
     private String enmascararTelefono(String tel) {
         if (tel == null || tel.length() < 4)
             return "****";

@@ -41,17 +41,6 @@ public class SmsServiceImpl implements ISmsService, CanalNotificacionStrategy {
         return tipo == TipoNotificacion.SMS;
     }
 
-    private boolean twilioInitialized = false;
-
-    /** Inicializa el SDK de forma perezosa para evitar errores de arranque en local. */
-    private void initializeTwilio() {
-        if (!twilioInitialized) {
-            Twilio.init(propiedadesTwilio.getAccount().getSid(), propiedadesTwilio.getAuth().getToken());
-            twilioInitialized = true;
-            log.info("[SMS] Twilio inicializado.");
-        }
-    }
-
     /**
      * {@inheritDoc}
      *
@@ -61,7 +50,6 @@ public class SmsServiceImpl implements ISmsService, CanalNotificacionStrategy {
     @Override
     public void enviarCodigoVerificacion(String telefono, String codigo) {
         try {
-            initializeTwilio();
             String texto = String.format(
                 "Tu código de verificación LUKA es: %s%nVálido por 10 minutos. No lo compartas.",
                 codigo
