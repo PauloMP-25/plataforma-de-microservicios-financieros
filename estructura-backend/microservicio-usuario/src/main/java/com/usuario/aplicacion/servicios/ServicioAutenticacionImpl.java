@@ -259,10 +259,13 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
         }
 
         Usuario usuario = usuarioOpt.get();
-        String telefonoAEnviar = (solicitud.tipo() == TipoVerificacion.SMS
-                || solicitud.tipo() == TipoVerificacion.WHATSAPP)
-                        ? servicioPerfilCache.obtenerTelefono(usuario.getId())
-                        : null;
+        String telefonoAEnviar = null;
+        if (solicitud.tipo() == TipoVerificacion.SMS || solicitud.tipo() == TipoVerificacion.WHATSAPP) {
+            telefonoAEnviar = solicitud.telefono();
+            if (telefonoAEnviar == null || telefonoAEnviar.isBlank()) {
+                telefonoAEnviar = servicioPerfilCache.obtenerTelefono(usuario.getId());
+            }
+        }
 
         publicadorAuditoria
                 .publicarSolicitudOtp(
