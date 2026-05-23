@@ -137,7 +137,7 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
      * </p>
      */
     @Override
-    @Transactional
+    @Transactional(noRollbackFor = {CodigoInvalidoException.class, CodigoExpiradoException.class, UsuarioBloqueadoExcepcion.class})
     public RespuestaValidacion validarParaActivacion(SolicitudValidarCodigo solicitud) {
         CodigoVerificacion cv = procesarValidacionInterna(solicitud, PropositoCodigo.ACTIVACION_CUENTA);
         String telefonoVerificado = cv.getTelefono();
@@ -169,7 +169,7 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
      * {@inheritDoc}
      */
     @Override
-    @Transactional
+    @Transactional(noRollbackFor = {CodigoInvalidoException.class, CodigoExpiradoException.class, UsuarioBloqueadoExcepcion.class})
     public UUID validarCodigoYObtenerUsuario(UUID usuarioId, String codigoStr) {
         CodigoVerificacion cv = procesarValidacionInterna(
                 new SolicitudValidarCodigo(usuarioId, codigoStr),
