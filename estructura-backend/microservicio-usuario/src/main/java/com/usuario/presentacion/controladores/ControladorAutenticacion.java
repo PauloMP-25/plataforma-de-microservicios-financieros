@@ -56,6 +56,26 @@ public class ControladorAutenticacion {
     }
 
     /**
+     * Activa la cuenta de un usuario recién registrado por su ID.
+     * Invocado internamente por ms-mensajeria tras una validación OTP exitosa.
+     */
+    @PutMapping("/activar/{usuarioId}")
+    @Operation(summary = "Activar Cuenta por ID (Interno)", description = "Activa directamente la cuenta de un usuario por su UUID. Invocado principalmente de forma interna por ms-mensajeria.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cuenta activada exitosamente."),
+            @ApiResponse(responseCode = "404", description = "Usuario no encontrado.")
+    })
+    public ResponseEntity<ResultadoApi<String>> activarCuentaPorId(
+            @PathVariable @Parameter(description = "UUID del usuario.", example = "d3b07384-d113-4a0b-8083-d922a901ba8d") UUID usuarioId,
+            @RequestParam(required = false) @Parameter(description = "Teléfono verificado a sincronizar.", example = "+51999999999") String telefono) {
+        
+        log.info("[API-INTERNAL] Intento de activación por ID para: {}", usuarioId);
+        servicioAuth.activarCuentaPorId(usuarioId, telefono);
+        
+        return ResponseEntity.ok(ResultadoApi.exito("OK", "Cuenta activada correctamente."));
+    }
+
+    /**
      * Solicita un nuevo código OTP para la activación de cuenta.
      */
     @PostMapping("/solicitar-otp")

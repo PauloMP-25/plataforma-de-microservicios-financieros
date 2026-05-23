@@ -122,6 +122,43 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
 
     @Override
     @Transactional
+    public void activarCuentaPorId(UUID usuarioId, String telefono) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado con ID: " + usuarioId));
+
+        if (usuario.isHabilitado()) {
+            log.info("[AUTH-ACT] La cuenta del usuario {} ya se encuentra activada.", usuarioId);
+            return;
+        }
+
+        // 1. Sincronizar teléfono si se proporcionó
+        if (telefono != null && !telefono.isBlank()) {
+            try {
+                clientePerfilExterno.actualizarTelefono(usuarioId, telefono);
+            } catch (Exception e) {
+                log.error("Error sincronizando teléfono con MS-CLIENTE: {}", e.getMessage());
+            }
+        }
+
+        // 2. Habilitar cuenta
+        usuario.setHabilitado(true);
+        usuario.setCuentaNoBloqueada(true);
+        usuarioRepository.save(usuario);
+
+        // 3. Crear perfil inicial en MS-CLIENTE
+        try {
+            clientePerfilExterno.crearPerfilInicial(usuarioId);
+            log.info("[AUTH-ACT] Perfil inicial creado exitosamente en ms-cliente para usuario: {}", usuarioId);
+        } catch (Exception e) {
+            log.warn("[AUTH-ACT] No se pudo crear el perfil inicial para el usuario {}. Se deberá sincronizar posteriormente.", usuarioId);
+        }
+
+        // 4. Registrar auditoría
+        publicadorAuditoria.publicarAcceso(usuarioId, "INTERNAL-OTP", EstadoEvento.EXITO, "ACTIVACION_CUENTA_INTERNAL");
+    }
+
+    @Override
+    @Transactional
     public RespuestaAutenticacion login(SolicitudLogin request, String ipCliente) {
         Usuario usuario = usuarioRepository.findByCorreo(request.correo())
                 .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado: " + request.correo()));
@@ -207,6 +244,10 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
     @Override
     @Transactional
     public UUID registrar(SolicitudRegistro request, String ipCliente) {
+        if (!request.contrasenasCoinciden()) {
+            throw new ContrasenasNoCoincidenException();
+        }
+
         validarDisponibilidad(request);
 
         Rol rolBase = rolRepository.findByNombre(Rol.NombreRol.ROLE_FREE.name())
