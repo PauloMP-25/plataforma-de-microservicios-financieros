@@ -14,6 +14,7 @@ public class PropiedadesTwilio {
     
     private Account account = new Account();
     private Auth auth = new Auth();
+    private ApiKey apiKey = new ApiKey();
     private Phone phone = new Phone();
     private Whatsapp whatsapp = new Whatsapp();
 
@@ -25,6 +26,13 @@ public class PropiedadesTwilio {
     @Data
     public static class Auth {
         private String token;
+    }
+
+    @Data
+    public static class ApiKey {
+        private String sid;
+        private String secret;
+        private boolean useApiKey = false;
     }
 
     @Data

@@ -89,4 +89,12 @@ public interface IMensajeriaService {
             java.time.LocalDateTime inicio,
             java.time.LocalDateTime fin,
             org.springframework.data.domain.Pageable pageable);
+
+    /**
+     * Valida la conexión y credenciales configuradas para Twilio.
+     * Realiza una llamada de prueba no destructiva (fetch) al API de Twilio.
+     *
+     * @return true si la conexión y autenticación son correctas.
+     */
+    boolean validarConexionTwilio();
 }

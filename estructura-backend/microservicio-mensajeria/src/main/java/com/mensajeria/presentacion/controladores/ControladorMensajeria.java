@@ -168,5 +168,19 @@ public class ControladorMensajeria {
 
         return ResponseEntity.ok(ResultadoApi.exito(resultados, "Búsqueda de OTPs completada", null));
     }
+
+    /**
+     * Endpoint público/interno de salud para validar que las credenciales de Twilio
+     * (sea la API Key o el Auth Token Maestro) están configuradas y funcionando con éxito.
+     * Realiza un fetch rápido y no destructivo a la API de Twilio.
+     *
+     * @return HTTP 200 si la conexión es exitosa, o error detallado en caso contrario.
+     */
+    @GetMapping("/twilio/health")
+    public ResponseEntity<ResultadoApi<Boolean>> verificarSaludTwilio() {
+        log.info("[GET] /otp/twilio/health — Iniciando prueba de comunicación con Twilio");
+        boolean saludOk = mensajeriaService.validarConexionTwilio();
+        return ResponseEntity.ok(ResultadoApi.exito(saludOk, "La integración con Twilio está configurada y lista para operar.", null));
+    }
 }
 

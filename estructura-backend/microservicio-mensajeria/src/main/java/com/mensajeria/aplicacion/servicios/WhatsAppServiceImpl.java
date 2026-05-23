@@ -27,16 +27,6 @@ public class WhatsAppServiceImpl implements IWhatsAppService, CanalNotificacionS
 
     private final PropiedadesTwilio propiedadesTwilio;
 
-    private boolean twilioInitialized = false;
-
-    private void initializeTwilio() {
-        if (!twilioInitialized) {
-            Twilio.init(propiedadesTwilio.getAccount().getSid(), propiedadesTwilio.getAuth().getToken());
-            twilioInitialized = true;
-            log.info("[WHATSAPP] Twilio SDK inicializado correctamente para el proyecto LUKA.");
-        }
-    }
-
     @Override
     public void enviar(String destinatario, Map<String, Object> variables) {
         String codigo = (String) variables.get("codigo");
@@ -61,7 +51,6 @@ public class WhatsAppServiceImpl implements IWhatsAppService, CanalNotificacionS
         }
         
         try {
-            initializeTwilio();
             
             // Construimos el cuerpo del mensaje libre aprovechando que la ventana está abierta
             String messageBody = String.format(
