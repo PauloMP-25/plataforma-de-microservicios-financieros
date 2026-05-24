@@ -219,7 +219,7 @@ public class TransaccionServiceImpl implements ITransaccionService {
 
         return new LocalDateTime[]{
             periodo.atDay(1).atStartOfDay(),
-            periodo.atEndOfMonth().atTime(23, 59, 59)
+            LocalDateTime.now()
         };
     }
 }
