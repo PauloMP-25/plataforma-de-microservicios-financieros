@@ -52,7 +52,10 @@ public class ServicioWebhookImpl implements IServicioWebhook {
     private void procesarPagoExitoso(Event evento) {
         Session sesion = (Session) evento.getDataObjectDeserializer()
             .getObject()
-            .orElseThrow(() -> new RuntimeException("Error al deserializar sesión de Stripe"));
+            .orElseGet(() -> {
+                log.warn("[WEBHOOK] Versión de API Stripe distinta detectada, forzando deserialización (deserializeUnsafe)");
+                return evento.getDataObjectDeserializer().deserializeUnsafe();
+            });
 
         Pago pago = repositorioPago.findByStripeSessionId(sesion.getId())
             .orElseThrow(() -> new RuntimeException("Pago no encontrado para sesión: " + sesion.getId()));
@@ -78,7 +81,10 @@ public class ServicioWebhookImpl implements IServicioWebhook {
     private void procesarSesionExpirada(Event evento) {
         Session sesion = (Session) evento.getDataObjectDeserializer()
             .getObject()
-            .orElseThrow(() -> new RuntimeException("Error al deserializar sesión de Stripe"));
+            .orElseGet(() -> {
+                log.warn("[WEBHOOK] Versión de API Stripe distinta detectada, forzando deserialización (deserializeUnsafe)");
+                return evento.getDataObjectDeserializer().deserializeUnsafe();
+            });
 
         repositorioPago.findByStripeSessionId(sesion.getId()).ifPresent(pago -> {
             pago.setEstado(EstadoPago.VENCIDO);
@@ -97,7 +103,10 @@ public class ServicioWebhookImpl implements IServicioWebhook {
     private void procesarPagoFallido(Event evento) {
         Session sesion = (Session) evento.getDataObjectDeserializer()
             .getObject()
-            .orElseThrow(() -> new RuntimeException("Error al deserializar sesión de Stripe"));
+            .orElseGet(() -> {
+                log.warn("[WEBHOOK] Versión de API Stripe distinta detectada, forzando deserialización (deserializeUnsafe)");
+                return evento.getDataObjectDeserializer().deserializeUnsafe();
+            });
 
         repositorioPago.findByStripeSessionId(sesion.getId()).ifPresent(pago -> {
             pago.setEstado(EstadoPago.FALLIDO);
