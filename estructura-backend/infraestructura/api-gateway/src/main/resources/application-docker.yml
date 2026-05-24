@@ -186,25 +186,10 @@ spring:
           metadata:
             requiere-autenticacion: true
 
-        - id: servicio-pagos-webhook
+        - id: servicio-pagos
           uri: ${URL_PROD_PAGO:https://luka-pagos.onrender.com}
           predicates:
-            - Path=/api/v1/pagos/webhook/**
-          filters:
-            - StripPrefix=0
-            - AddRequestHeader=X-Gateway-Source, api-gateway
-            - name: CircuitBreaker
-              args:
-                name: pagoCB
-                fallbackUri: forward:/fallback
-          metadata:
-            requiere-autenticacion: false
-
-        - id: servicio-pagos-usuarios
-          uri: ${URL_PROD_PAGO:https://luka-pagos.onrender.com}
-          predicates:
-            - Path=/api/v1/pagos/checkout/**
-            - Path=/api/v1/pagos/mi-suscripcion/**
+            - Path=/api/v1/pagos/**
           filters:
             - StripPrefix=0
             - AddRequestHeader=X-Gateway-Source, api-gateway
@@ -214,21 +199,6 @@ spring:
                 fallbackUri: forward:/fallback
           metadata:
             requiere-autenticacion: true
-
-        - id: servicio-pagos-admin
-          uri: ${URL_PROD_PAGO:https://luka-pagos.onrender.com}
-          predicates:
-            - Path=/api/v1/pagos/admin/**
-          filters:
-            - StripPrefix=0
-            - AddRequestHeader=X-Gateway-Source, api-gateway
-            - name: CircuitBreaker
-              args:
-                name: pagoCB
-                fallbackUri: forward:/fallback
-          metadata:
-            requiere-autenticacion: true
-            rol-requerido: ROLE_ADMIN
 
       globalcors:
         corsConfigurations:
