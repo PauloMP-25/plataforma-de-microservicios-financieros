@@ -65,9 +65,25 @@ class ServicioAnalisis:
             # 2. Concurrencia HTTP (asyncio.gather) — FASE 5
             mes = getattr(peticion, 'mes', None)
             anio = getattr(peticion, 'anio', None)
+            dia_inicio = getattr(peticion, 'dia_inicio', None)
+            mes_inicio = getattr(peticion, 'mes_inicio', None)
+            anio_inicio = getattr(peticion, 'anio_inicio', None)
+            dia_fin = getattr(peticion, 'dia_fin', None)
+            mes_fin = getattr(peticion, 'mes_fin', None)
+            anio_fin = getattr(peticion, 'anio_fin', None)
             
             tarea_financiera = self._cliente_financiero.obtener_historial_transacciones_async(
-                peticion.usuario_id, peticion.token, peticion.tamanio_pagina, mes, anio
+                peticion.usuario_id, 
+                peticion.token, 
+                peticion.tamanio_pagina, 
+                mes, 
+                anio,
+                dia_inicio,
+                mes_inicio,
+                anio_inicio,
+                dia_fin,
+                mes_fin,
+                anio_fin
             )
             tarea_perfil = self._cliente_perfil.obtener_perfil_usuario_async(
                 peticion.usuario_id, peticion.token
@@ -82,13 +98,13 @@ class ServicioAnalisis:
             contexto = MapperContextoIA.mapear_perfil(perfil_full)
 
             # 3. Caché de Resultado Completo — FASE 5
-            # Construimos hash único: usuario + modulo + (mes/anio) + ultima transaccion
+            # Construimos hash único: usuario + modulo + (mes/anio/rango) + ultima transaccion
             if not df.empty:
                 ultima_fecha = str(df['fecha'].max())
             else:
                 ultima_fecha = "SIN_DATOS"
                 
-            hash_str = f"{peticion.usuario_id}_{modulo_enum.value}_{mes}_{anio}_{ultima_fecha}"
+            hash_str = f"{peticion.usuario_id}_{modulo_enum.value}_{mes}_{anio}_{mes_inicio}_{anio_inicio}_{mes_fin}_{anio_fin}_{ultima_fecha}"
             hash_unico = hashlib.sha256(hash_str.encode()).hexdigest()
             # La clave incluye el usuario_id para permitir invalidación proactiva fácil con patrón
             clave_cache = f"ia:resultado_completo:{peticion.usuario_id}:{hash_unico}"
