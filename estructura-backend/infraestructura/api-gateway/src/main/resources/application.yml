@@ -171,24 +171,10 @@ spring:
           metadata:
             requiere-autenticacion: true
 
-        - id: servicio-pagos-webhook
+        - id: servicio-pagos
           uri: lb://MICROSERVICIO-PAGO
           predicates:
-            - Path=/api/v1/pagos/webhook,/api/v1/pagos/webhook/**
-          filters:
-            - StripPrefix=0
-            - AddRequestHeader=X-Gateway-Source, api-gateway
-            - name: CircuitBreaker
-              args:
-                name: pagoCB
-                fallbackUri: forward:/fallback
-          metadata:
-            requiere-autenticacion: false
-
-        - id: servicio-pagos-usuarios
-          uri: lb://MICROSERVICIO-PAGO
-          predicates:
-            - Path=/api/v1/pagos/checkout,/api/v1/pagos/checkout/**,/api/v1/pagos/mi-suscripcion,/api/v1/pagos/mi-suscripcion/**
+            - Path=/api/v1/pagos/**
           filters:
             - StripPrefix=0
             - AddRequestHeader=X-Gateway-Source, api-gateway
@@ -198,21 +184,6 @@ spring:
                 fallbackUri: forward:/fallback
           metadata:
             requiere-autenticacion: true
-
-        - id: servicio-pagos-admin
-          uri: lb://MICROSERVICIO-PAGO
-          predicates:
-            - Path=/api/v1/pagos/admin,/api/v1/pagos/admin/**
-          filters:
-            - StripPrefix=0
-            - AddRequestHeader=X-Gateway-Source, api-gateway
-            - name: CircuitBreaker
-              args:
-                name: pagoCB
-                fallbackUri: forward:/fallback
-          metadata:
-            requiere-autenticacion: true
-            rol-requerido: ROLE_ADMIN
 
       globalcors:
         corsConfigurations:
