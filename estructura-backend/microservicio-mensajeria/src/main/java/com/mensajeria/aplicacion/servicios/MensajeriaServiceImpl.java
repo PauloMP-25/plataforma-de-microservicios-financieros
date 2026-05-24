@@ -354,7 +354,7 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
                 throw new IllegalStateException("Falta configurar credenciales de Twilio (API Key o Auth Token).");
             }
             
-            log.debug("[TWILIO-HEALTH] Validación local exitosa. Credenciales presentes para Account SID: {}", accountSid);
+            // log.trace("[TWILIO-HEALTH] Validación local exitosa. Credenciales presentes para Account SID: {}", accountSid);
             return true;
         } catch (Exception e) {
             log.error("[TWILIO-HEALTH] Error en validación local de Twilio: {}", e.getMessage());
