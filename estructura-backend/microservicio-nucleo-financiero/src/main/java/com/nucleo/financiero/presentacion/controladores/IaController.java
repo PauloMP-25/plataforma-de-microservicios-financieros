@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @version 1.2.2
  */
 @RestController
-@RequestMapping("/api/v1/ia")
+@RequestMapping("/api/v1/financiero/ia")
 @RequiredArgsConstructor
 @Slf4j
 public class IaController {

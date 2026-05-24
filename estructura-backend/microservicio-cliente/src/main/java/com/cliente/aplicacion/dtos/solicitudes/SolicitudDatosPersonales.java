@@ -25,7 +25,7 @@ public record SolicitudDatosPersonales(
         @Max(value = 120, message = "La edad máxima es 120 años")
         Integer edad,
 
-        @Pattern(regexp = "^[0-9]{8}$", message = "Número de teléfono inválido")
+        @Pattern(regexp = "^\\+?[0-9]{8,15}$", message = "Número de teléfono inválido")
         String telefono,
 
         @Size(max = 500, message = "La URL de la foto no puede superar los 500 caracteres")
