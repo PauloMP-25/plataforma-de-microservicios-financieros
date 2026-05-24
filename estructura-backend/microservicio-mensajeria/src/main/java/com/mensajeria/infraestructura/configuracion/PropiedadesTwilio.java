@@ -36,6 +36,9 @@ public class PropiedadesTwilio {
      */
     private String messagingServiceSid;
 
+    /** Número del Sandbox de WhatsApp de Twilio. */
+    private String sandboxWhatsappFrom;
+
     // ── Clases internas para compatibilidad con binding de Spring Boot ──────────
 
     @Data
