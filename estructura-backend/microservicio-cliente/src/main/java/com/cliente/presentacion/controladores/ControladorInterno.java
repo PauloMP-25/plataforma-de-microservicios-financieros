@@ -66,6 +66,17 @@ public class ControladorInterno {
     }
 
     /**
+     * Recupera el teléfono verificado de un usuario.
+     */
+    @GetMapping("/perfiles/{usuarioId}/telefono")
+    public ResponseEntity<String> obtenerTelefono(
+            @PathVariable UUID usuarioId) {
+        log.info("[INTERNO] Recuperando teléfono para usuario: {}", usuarioId);
+        com.cliente.aplicacion.dtos.respuestas.RespuestaDatosPersonales respuesta = servicioDatosPersonales.consultarInterno(usuarioId);
+        return ResponseEntity.ok(respuesta != null ? respuesta.telefono() : null);
+    }
+
+    /**
      * Actualiza el teléfono de un usuario tras una validación exitosa en el
      * ms-mensajeria.
      */

@@ -110,18 +110,7 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
         // Enviamos de forma agnóstica (la implementación decide si es SMTP o Twilio)
         notificacionService.enviar(tipoEnvio, destino, variables);
 
-        if (solicitud.tipo() == TipoVerificacion.SMS || solicitud.tipo() == TipoVerificacion.WHATSAPP) {
-            // Si es recuperación por un canal telefónico, sincronizar con fallback de
-            // Resilience4j
-            if (solicitud.proposito() == PropositoCodigo.RESTABLECER_PASSWORD) {
-                ResultadoApi<String> resultado = usuarioFeignClient.sincronizarTelefono(
-                        solicitud.usuarioId(), solicitud.telefono());
-                if (resultado != null && "SINCRONIZACION_PENDIENTE".equals(resultado.datos())) {
-                    log.warn("[FEIGN] Sincronización de teléfono pendiente para usuario: {}",
-                            solicitud.usuarioId());
-                }
-            }
-        }
+
 
         return new RespuestaGeneracion(true, "Código enviado exitosamente", solicitud.tipo());
     }
@@ -180,6 +169,24 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
         cv.setFechaUso(LocalDateTime.now());
         reiniciarIntentos(cv.getUsuarioId());
         codigoRepository.save(cv);
+
+        // Sincronizar el teléfono verificado tras la validación exitosa del OTP
+        if (cv.getTipo() == TipoVerificacion.SMS || cv.getTipo() == TipoVerificacion.WHATSAPP) {
+            String telefonoVerificado = cv.getTelefono();
+            if (telefonoVerificado != null && !telefonoVerificado.isBlank()) {
+                try {
+                    log.info("[MS-MENSAJERIA] Sincronizando teléfono verificado tras validación OTP exitosa.");
+                    ResultadoApi<String> resultado = usuarioFeignClient.sincronizarTelefono(
+                            cv.getUsuarioId(), telefonoVerificado);
+                    if (resultado != null && "SINCRONIZACION_PENDIENTE".equals(resultado.datos())) {
+                        log.warn("[FEIGN] Sincronización de teléfono pendiente en ms-usuario para: {}",
+                                cv.getUsuarioId());
+                    }
+                } catch (Exception e) {
+                    log.error("[FEIGN] Error al sincronizar el teléfono con ms-usuario. Fallback no disponible o error interno. Se continuará con el flujo.", e);
+                }
+            }
+        }
 
         return cv.getUsuarioId();
     }

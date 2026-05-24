@@ -9,6 +9,11 @@ spring:
   application:
     name: microservicio-mensajeria
 
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+
   # ── Redis ────────────────────────────────────────────────────────────────────
   data:
     redis:
