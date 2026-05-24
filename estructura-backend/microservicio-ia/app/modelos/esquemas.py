@@ -118,6 +118,7 @@ class FiltroDeFecha(BaseModel):
     """
     Mixin de filtros temporales opcionales.
     Reutilizado en los módulos que necesitan acotar el período de análisis.
+    Soporta tanto mes/año simple (legacy) como un rango de fecha inicio/fin separado.
     """
     mes: Optional[int] = Field(
         default=None,
@@ -131,12 +132,25 @@ class FiltroDeFecha(BaseModel):
         le=2100,
         description="Año de análisis. None = todos.",
     )
+
+    # Nuevos campos de rango de fecha separados por día-mes-año
+    dia_inicio: Optional[int] = Field(default=None, ge=1, le=31, description="Día de inicio del rango de análisis.")
+    mes_inicio: Optional[int] = Field(default=None, ge=1, le=12, description="Mes de inicio del rango de análisis.")
+    anio_inicio: Optional[int] = Field(default=None, ge=2020, le=2100, description="Año de inicio del rango de análisis.")
+    
+    dia_fin: Optional[int] = Field(default=None, ge=1, le=31, description="Día de fin del rango de análisis.")
+    mes_fin: Optional[int] = Field(default=None, ge=1, le=12, description="Mes de fin del rango de análisis.")
+    anio_fin: Optional[int] = Field(default=None, ge=2020, le=2100, description="Año de fin del rango de análisis.")
  
     @model_validator(mode="after")
     def validar_coherencia_fecha(self) -> "FiltroDeFecha":
-        """Si se proporciona mes, se debe proporcionar también el año."""
+        """Valida la coherencia de los campos de fecha proporcionados."""
         if self.mes is not None and self.anio is None:
             raise ValueError("Si se especifica 'mes', también se debe especificar 'anio'.")
+        if self.mes_inicio is not None and self.anio_inicio is None:
+            raise ValueError("Si se especifica 'mes_inicio', también se debe especificar 'anio_inicio'.")
+        if self.mes_fin is not None and self.anio_fin is None:
+            raise ValueError("Si se especifica 'mes_fin', también se debe especificar 'anio_fin'.")
         return self
 
 class PeticionConFiltroFecha(PeticionBase, FiltroDeFecha):
