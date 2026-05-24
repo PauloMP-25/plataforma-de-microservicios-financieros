@@ -21,16 +21,61 @@ public class ConfiguracionColasPagos {
     }
 
     @Bean
-    public Queue colaPagosExitosos() {
-        return QueueBuilder.durable(NombresCola.PAGOS_EXITOSOS).build();
+    public Queue colaUsuarioPagosExitosos() {
+        return QueueBuilder.durable(NombresCola.PAGOS_EXITOSOS_USUARIO).build();
     }
 
     @Bean
-    public Binding bindingPagoExitoso(
-            @Qualifier("colaPagosExitosos") Queue colaPagosExitosos, 
+    public Binding bindingUsuarioPagoExitoso(
+            @Qualifier("colaUsuarioPagosExitosos") Queue colaUsuarioPagosExitosos, 
             @Qualifier("exchangePagos") TopicExchange exchangePagos) {
         return BindingBuilder
-            .bind(colaPagosExitosos)
+            .bind(colaUsuarioPagosExitosos)
+            .to(exchangePagos)
+            .with(RoutingKeys.PAGO_EXITOSO);
+    }
+
+    @Bean
+    public Queue colaMensajeriaPagosExitosos() {
+        return QueueBuilder.durable(NombresCola.PAGOS_EXITOSOS_MENSAJERIA).build();
+    }
+
+    @Bean
+    public Binding bindingMensajeriaPagoExitoso(
+            @Qualifier("colaMensajeriaPagosExitosos") Queue colaMensajeriaPagosExitosos, 
+            @Qualifier("exchangePagos") TopicExchange exchangePagos) {
+        return BindingBuilder
+            .bind(colaMensajeriaPagosExitosos)
+            .to(exchangePagos)
+            .with(RoutingKeys.PAGO_EXITOSO);
+    }
+
+    @Bean
+    public Queue colaFinancieroPagosExitosos() {
+        return QueueBuilder.durable(NombresCola.PAGOS_EXITOSOS_FINANCIERO).build();
+    }
+
+    @Bean
+    public Binding bindingFinancieroPagoExitoso(
+            @Qualifier("colaFinancieroPagosExitosos") Queue colaFinancieroPagosExitosos, 
+            @Qualifier("exchangePagos") TopicExchange exchangePagos) {
+        return BindingBuilder
+            .bind(colaFinancieroPagosExitosos)
+            .to(exchangePagos)
+            .with(RoutingKeys.PAGO_EXITOSO);
+    }
+
+    @Bean
+    public Queue colaAuditoriaPagosExitosos() {
+        return QueueBuilder.durable(NombresCola.PAGOS_EXITOSOS_AUDITORIA).build();
+    }
+
+    @Bean
+    public Binding bindingAuditoriaPagoExitoso(
+            @Qualifier("colaAuditoriaPagosExitosos") Queue colaAuditoriaPagosExitosos, 
+            @Qualifier("exchangePagos") TopicExchange exchangePagos) {
+        return BindingBuilder
+            .bind(colaAuditoriaPagosExitosos)
             .to(exchangePagos)
             .with(RoutingKeys.PAGO_EXITOSO);
     }

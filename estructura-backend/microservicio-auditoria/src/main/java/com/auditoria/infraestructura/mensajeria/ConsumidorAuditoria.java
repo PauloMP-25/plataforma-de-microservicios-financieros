@@ -95,7 +95,7 @@ public class ConsumidorAuditoria {
      * @param channel Canal RabbitMQ para confirmación manual.
      * @param deliveryTag Etiqueta identificadora del mensaje.
      */
-    @RabbitListener(queues = NombresCola.PAGOS_EXITOSOS, errorHandler = RABBIT_ERROR_HANDLER)
+    @RabbitListener(queues = NombresCola.PAGOS_EXITOSOS_AUDITORIA, errorHandler = RABBIT_ERROR_HANDLER)
     public void manejarPagoExitoso(EventoPagoExitosoDTO evento) throws java.io.IOException {
         log.info("[RABBIT-PAGOS] Registrando auditoría de pago para usuario: {}", evento.usuarioId());
 

@@ -220,7 +220,7 @@ app:
   security:
     jwt:
       secret-key: ${JWT_SECRET_KEY:}
-    rutas-publicas: "/auth/,/api/v1/mensajeria/otp/,/api/v1/pagos/webhook,/v3/api-docs,/swagger-ui,/actuator/,/error/"
+    rutas-publicas: "/auth/,/api/v1/mensajeria/otp/,/api/v1/pagos/webhook,/v3/api-docs,/swagger-ui,/actuator/,/error/,/interno/,/api/v1/clientes/perfil/inicial"
 
 logging:
   level:

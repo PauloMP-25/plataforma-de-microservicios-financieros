@@ -30,6 +30,10 @@ public final class NombresCola {
 
     // Pagos
     public static final String PAGOS_EXITOSOS = "cola.pagos.exitosos";
+    public static final String PAGOS_EXITOSOS_USUARIO = "cola.usuario.pagos.exitosos";
+    public static final String PAGOS_EXITOSOS_MENSAJERIA = "cola.mensajeria.pagos.exitosos";
+    public static final String PAGOS_EXITOSOS_FINANCIERO = "cola.financiero.pagos.exitosos";
+    public static final String PAGOS_EXITOSOS_AUDITORIA = "cola.auditoria.pagos.exitosos";
     public static final String PAGOS_REEMBOLSO = "cola.pagos.reembolso";
 
     private NombresCola() {

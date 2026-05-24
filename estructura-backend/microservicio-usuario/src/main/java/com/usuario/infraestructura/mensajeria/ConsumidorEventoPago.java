@@ -33,7 +33,7 @@ public class ConsumidorEventoPago {
      * @param tag     Etiqueta de entrega del mensaje.
      * @throws IOException Si ocurre un error de comunicación AMQP.
      */
-    @RabbitListener(queues = NombresCola.PAGOS_EXITOSOS)
+    @RabbitListener(queues = NombresCola.PAGOS_EXITOSOS_USUARIO)
     public void manejarPagoExitoso(
             EventoPagoExitosoDTO evento,
             Channel channel,

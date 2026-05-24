@@ -94,4 +94,33 @@ public class ConfiguracionRabbitMQ {
                 .to(dlxAuditoria)
                 .with(RoutingKeys.DLQ_AUDITORIA_ACCESO);
     }
+
+    /**
+     * Define el exchange de pagos.
+     */
+    @Bean
+    public TopicExchange exchangePagos() {
+        return new TopicExchange(NombresExchange.PAGOS, true, false);
+    }
+
+    /**
+     * Define la cola de pagos exitosos específica de usuario.
+     */
+    @Bean
+    public Queue queuePagosExitososUsuario() {
+        return QueueBuilder.durable(NombresCola.PAGOS_EXITOSOS_USUARIO).build();
+    }
+
+    /**
+     * Realiza el enlace entre la cola de pagos de usuario y el exchange de pagos.
+     */
+    @Bean
+    public Binding bindingPagosUsuario(
+            @Qualifier("queuePagosExitososUsuario") Queue queuePagosExitososUsuario,
+            @Qualifier("exchangePagos") TopicExchange exchangePagos) {
+        return BindingBuilder
+                .bind(queuePagosExitososUsuario)
+                .to(exchangePagos)
+                .with(RoutingKeys.PAGO_EXITOSO);
+    }
 }
