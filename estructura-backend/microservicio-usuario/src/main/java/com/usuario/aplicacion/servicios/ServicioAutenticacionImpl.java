@@ -286,10 +286,12 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
                 .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado o cuenta inactiva"));
 
         // 2. Validar OTP enviando el UUID real al ms-mensajeria
-        UUID userId = clienteMensajeria.validarCodigoYObtenerUsuario(
+        com.libreria.comun.respuesta.ResultadoApi<UUID> resultado = clienteMensajeria.validarCodigoYObtenerUsuario(
                 new SolicitudValidarRecuperacion(usuario.getId(), solicitud.codigoOtp()));
-        if (userId == null)
+        if (resultado == null || !resultado.exito())
             throw new TokenInvalidoException("Código inválido o expirado");
+
+        UUID userId = resultado.datos();
 
         // 3. Actualizar contraseña
         usuario.setPassword(passwordEncoder.encode(solicitud.nuevoPassword()));

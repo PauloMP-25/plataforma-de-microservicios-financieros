@@ -22,7 +22,7 @@ public class ClienteMensajeriaFallback implements ClienteMensajeria {
     }
 
     @Override
-    public UUID validarCodigoYObtenerUsuario(SolicitudValidarRecuperacion solicitud) {
+    public com.libreria.comun.respuesta.ResultadoApi<UUID> validarCodigoYObtenerUsuario(SolicitudValidarRecuperacion solicitud) {
         log.error("Fallo crítico: No se puede validar código de recuperación porque ms-mensajeria está offline.");
         return null; // Aquí el servicio de autenticación debe manejar el null
     }

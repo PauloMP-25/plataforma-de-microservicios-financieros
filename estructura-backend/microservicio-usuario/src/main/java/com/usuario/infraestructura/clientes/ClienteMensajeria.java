@@ -39,7 +39,7 @@ public interface ClienteMensajeria {
      * @return 
      */
     @PostMapping("/api/v1/mensajeria/otp/validar-recuperacion")
-    UUID validarCodigoYObtenerUsuario(
+    com.libreria.comun.respuesta.ResultadoApi<UUID> validarCodigoYObtenerUsuario(
         @RequestBody SolicitudValidarRecuperacion solicitud
     );
     
