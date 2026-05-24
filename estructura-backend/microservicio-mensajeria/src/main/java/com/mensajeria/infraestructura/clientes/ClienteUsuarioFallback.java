@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 public class ClienteUsuarioFallback implements ClienteUsuario {
 
     @Override
-    public String activarCuenta(UUID usuarioId, String telefono) {
+    public com.libreria.comun.respuesta.ResultadoApi<String> activarCuenta(UUID usuarioId, String telefono) {
         log.error("[FEIGN-FALLBACK] ms-usuario no disponible. Activación PENDIENTE para: {}", usuarioId);
-        return "ACTIVACION_PENDIENTE";
+        return com.libreria.comun.respuesta.ResultadoApi.exito("ACTIVACION_PENDIENTE", "ms-usuario no disponible");
     }
 }

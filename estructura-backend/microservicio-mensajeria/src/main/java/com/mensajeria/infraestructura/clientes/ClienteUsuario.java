@@ -33,7 +33,7 @@ public interface ClienteUsuario {
      * @return
      */
     @PutMapping("/api/v1/auth/activar/{usuarioId}")
-    String activarCuenta(
+    com.libreria.comun.respuesta.ResultadoApi<String> activarCuenta(
             @PathVariable("usuarioId") UUID usuarioId,
             @RequestParam("telefono") String telefono);
 }

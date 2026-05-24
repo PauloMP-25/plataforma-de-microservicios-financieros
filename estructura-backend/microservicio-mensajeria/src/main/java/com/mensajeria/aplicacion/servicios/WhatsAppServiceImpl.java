@@ -72,10 +72,19 @@ public class WhatsAppServiceImpl implements IWhatsAppService, CanalNotificacionS
             // Twilio requiere el prefijo "whatsapp:" en el número destino
             String whatsappDest = "whatsapp:" + formattedPhone;
 
+            String sandboxWhatsappFrom = propiedadesTwilio.getSandboxWhatsappFrom();
             String messagingServiceSid = propiedadesTwilio.getMessagingServiceSid();
             Message message;
 
-            if (StringUtils.hasText(messagingServiceSid)) {
+            if (StringUtils.hasText(sandboxWhatsappFrom)) {
+                String fromWhatsapp = "whatsapp:" + sandboxWhatsappFrom;
+                log.info("[WHATSAPP] Usando Sandbox con remitente explícito: {}", fromWhatsapp);
+                message = Message.creator(
+                        new PhoneNumber(whatsappDest),
+                        new PhoneNumber(fromWhatsapp),
+                        messageBody
+                ).create();
+            } else if (StringUtils.hasText(messagingServiceSid)) {
                 // Modo producción: Messaging Service gestiona el número de origen
                 log.info("[WHATSAPP] Usando MessagingServiceSid: {}", messagingServiceSid);
                 message = Message.creator(

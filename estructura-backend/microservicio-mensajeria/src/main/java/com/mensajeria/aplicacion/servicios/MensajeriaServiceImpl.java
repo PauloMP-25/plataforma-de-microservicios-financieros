@@ -135,9 +135,9 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
         log.info("[MS-MENSAJERIA] Activando cuenta para usuario: {} con teléfono: {}",
                 cv.getUsuarioId(), telefonoVerificado);
 
-        String resultado = clienteUsuario.activarCuenta(cv.getUsuarioId(), telefonoVerificado);
+        com.libreria.comun.respuesta.ResultadoApi<String> resultado = clienteUsuario.activarCuenta(cv.getUsuarioId(), telefonoVerificado);
 
-        if ("ACTIVACION_PENDIENTE".equals(resultado)) {
+        if (resultado == null || "ACTIVACION_PENDIENTE".equals(resultado.datos())) {
             log.error("[MS-MENSAJERIA] Activación fallida en ms-usuario para: {}. El OTP sigue siendo válido.", cv.getUsuarioId());
             throw new MensajeriaExternaException("No se pudo activar la cuenta en el servicio de usuario. El OTP sigue activo. Intente de nuevo.", "ms-usuario offline durante la activación");
         }
