@@ -36,7 +36,7 @@ import org.springframework.format.annotation.DateTimeFormat;
  * @version 1.2.2
  */
 @RestController
-@RequestMapping("/api/v1/transacciones")
+@RequestMapping("/api/v1/financiero/transacciones")
 @RequiredArgsConstructor
 @Slf4j
 @Validated
