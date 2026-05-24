@@ -4,6 +4,7 @@ import com.libreria.comun.mensajeria.NombresExchange;
 import com.libreria.comun.mensajeria.NombresCola;
 import com.libreria.comun.mensajeria.RoutingKeys;
 import org.springframework.amqp.core.*;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -72,7 +73,7 @@ public class ConfiguracionRabbitMQ {
 
     @Bean
     public Queue colaPagosExitosos() {
-        return QueueBuilder.durable(NombresCola.PAGOS_EXITOSOS).build();
+        return QueueBuilder.durable(NombresCola.PAGOS_EXITOSOS_FINANCIERO).build();
     }
 
     // =========================================================================
@@ -100,5 +101,26 @@ public class ConfiguracionRabbitMQ {
         return BindingBuilder.bind(colaIADLQ)
                 .to(exchangeDLQ)
                 .with(NombresCola.IA_PROCESAMIENTO_DLQ);
+    }
+
+    /**
+     * Define el exchange de pagos.
+     */
+    @Bean
+    public TopicExchange exchangePagos() {
+        return new TopicExchange(NombresExchange.PAGOS, true, false);
+    }
+
+    /**
+     * Realiza el enlace entre la cola de pagos de financiero y el exchange de pagos.
+     */
+    @Bean
+    public Binding bindingPagosFinanciero(
+            @Qualifier("colaPagosExitosos") Queue colaPagosExitosos,
+            @Qualifier("exchangePagos") TopicExchange exchangePagos) {
+        return BindingBuilder
+                .bind(colaPagosExitosos)
+                .to(exchangePagos)
+                .with(RoutingKeys.PAGO_EXITOSO);
     }
 }

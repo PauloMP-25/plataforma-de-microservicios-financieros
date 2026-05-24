@@ -1,6 +1,8 @@
 package com.mensajeria.infraestructura.mensajeria;
 
 import com.libreria.comun.mensajeria.NombresCola;
+import com.libreria.comun.mensajeria.NombresExchange;
+import com.libreria.comun.mensajeria.RoutingKeys;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
@@ -206,5 +208,34 @@ public class ConfiguracionRabbitMQ {
                 .bind(colaError)
                 .to(exchangeError)
                 .with(RK_ERROR);
+    }
+
+    /**
+     * Define el exchange de pagos.
+     */
+    @Bean
+    public TopicExchange exchangePagos() {
+        return new TopicExchange(NombresExchange.PAGOS, true, false);
+    }
+
+    /**
+     * Define la cola de pagos exitosos específica de mensajería.
+     */
+    @Bean
+    public Queue queuePagosExitososMensajeria() {
+        return QueueBuilder.durable(NombresCola.PAGOS_EXITOSOS_MENSAJERIA).build();
+    }
+
+    /**
+     * Realiza el enlace entre la cola de pagos de mensajería y el exchange de pagos.
+     */
+    @Bean
+    public Binding bindingPagosMensajeria(
+            @Qualifier("queuePagosExitososMensajeria") Queue queuePagosExitososMensajeria,
+            @Qualifier("exchangePagos") TopicExchange exchangePagos) {
+        return BindingBuilder
+                .bind(queuePagosExitososMensajeria)
+                .to(exchangePagos)
+                .with(RoutingKeys.PAGO_EXITOSO);
     }
 }

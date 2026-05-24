@@ -30,7 +30,7 @@ public class ConsumidorEventoPago {
     /**
      * Al detectar un pago exitoso, lo registra como un INGRESO en el núcleo financiero.
      */
-    @RabbitListener(queues = NombresCola.PAGOS_EXITOSOS)
+    @RabbitListener(queues = NombresCola.PAGOS_EXITOSOS_FINANCIERO)
     public void registrarIngresoSuscripcion(EventoPagoExitosoDTO evento) {
         log.info("[FINANCIERO-CONSUMER] Registrando ingreso por suscripción: {} - {}", 
             evento.planNuevo(), evento.monto());

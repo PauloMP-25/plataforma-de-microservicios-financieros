@@ -25,7 +25,7 @@ public class ConsumidorEventoPago {
     /**
      * Al detectar un pago exitoso, envía un correo de confirmación.
      */
-    @RabbitListener(queues = NombresCola.PAGOS_EXITOSOS)
+    @RabbitListener(queues = NombresCola.PAGOS_EXITOSOS_MENSAJERIA)
     public void enviarComprobantePago(
             EventoPagoExitosoDTO evento,
             Channel channel,
