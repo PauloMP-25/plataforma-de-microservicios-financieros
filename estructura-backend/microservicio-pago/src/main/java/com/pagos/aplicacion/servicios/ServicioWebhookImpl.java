@@ -1,6 +1,7 @@
 package com.pagos.aplicacion.servicios;
 
 import com.libreria.comun.enums.EstadoEvento;
+import com.libreria.comun.excepciones.ExcepcionServicioExterno;
 import com.pagos.aplicacion.enums.EstadoPago;
 import com.pagos.aplicacion.puertos.IPublicadorPagos;
 import com.pagos.aplicacion.puertos.IServicioWebhook;
@@ -54,7 +55,11 @@ public class ServicioWebhookImpl implements IServicioWebhook {
             .getObject()
             .orElseGet(() -> {
                 log.warn("[WEBHOOK] Versión de API Stripe distinta detectada, forzando deserialización (deserializeUnsafe)");
-                return evento.getDataObjectDeserializer().deserializeUnsafe();
+                try {
+                    return evento.getDataObjectDeserializer().deserializeUnsafe();
+                } catch (Exception e) {
+                    throw new ExcepcionServicioExterno("Stripe", "Error crítico al forzar deserialización: " + e.getMessage());
+                }
             });
 
         Pago pago = repositorioPago.findByStripeSessionId(sesion.getId())
@@ -83,7 +88,11 @@ public class ServicioWebhookImpl implements IServicioWebhook {
             .getObject()
             .orElseGet(() -> {
                 log.warn("[WEBHOOK] Versión de API Stripe distinta detectada, forzando deserialización (deserializeUnsafe)");
-                return evento.getDataObjectDeserializer().deserializeUnsafe();
+                try {
+                    return evento.getDataObjectDeserializer().deserializeUnsafe();
+                } catch (Exception e) {
+                    throw new ExcepcionServicioExterno("Stripe", "Error crítico al forzar deserialización: " + e.getMessage());
+                }
             });
 
         repositorioPago.findByStripeSessionId(sesion.getId()).ifPresent(pago -> {
@@ -105,7 +114,11 @@ public class ServicioWebhookImpl implements IServicioWebhook {
             .getObject()
             .orElseGet(() -> {
                 log.warn("[WEBHOOK] Versión de API Stripe distinta detectada, forzando deserialización (deserializeUnsafe)");
-                return evento.getDataObjectDeserializer().deserializeUnsafe();
+                try {
+                    return evento.getDataObjectDeserializer().deserializeUnsafe();
+                } catch (Exception e) {
+                    throw new ExcepcionServicioExterno("Stripe", "Error crítico al forzar deserialización: " + e.getMessage());
+                }
             });
 
         repositorioPago.findByStripeSessionId(sesion.getId()).ifPresent(pago -> {
