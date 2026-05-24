@@ -241,8 +241,8 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
         Usuario guardado = usuarioRepository.save(usuario);
         publicadorAuditoria.publicarAcceso(guardado.getId(), ipCliente, EstadoEvento.EXITO, "REGISTRO_INICIAL");
 
-        // Disparamos la generación del código de activación vía RabbitMQ
-        publicadorAuditoria.publicarSolicitudOtp(FabricaSolicitudOtp.paraActivacionRegistroInicial(guardado));
+        // Se ha deshabilitado el envío automático de OTP por correo en el registro.
+        // El usuario debe solicitar el OTP explícitamente a través del canal de su elección (SMS, WhatsApp o Email).
 
         return guardado.getId();
     }
