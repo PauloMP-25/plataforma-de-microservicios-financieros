@@ -25,7 +25,8 @@ from app.modelos.esquemas import (
     RespuestaModulo,
     NombreModulo,
     EstadoCoach,
-    PerfilUsuario
+    PerfilUsuario,
+    InsightAnalitico
 )
 from app.servicios.ia.coach_ia import CoachIA
 from app.utilidades.preparador_datos import json_a_dataframe
@@ -124,12 +125,25 @@ class ServicioAnalisis:
                 peticion.usuario_id, modulo_enum, prompt, metricas, contexto.rol, contexto.nombres
             )
 
+            total_txs = len(df) if not df.empty else 0
+            total_ing = float(df[df['tipo'] == 'INGRESO']['monto'].sum()) if not df.empty else 0.0
+            total_gas = float(df[df['tipo'] == 'GASTO']['monto'].sum()) if not df.empty else 0.0
+
+            insight_dto = InsightAnalitico(
+                modulo=modulo_enum,
+                total_transacciones_analizadas=total_txs,
+                total_ingresos=total_ing,
+                total_gastos=total_gas,
+                balance_neto=round(total_ing - total_gas, 2),
+                hallazgos=metricas
+            )
+
             resultado_final = RespuestaModulo(
                 usuario_id=peticion.usuario_id,
                 modulo=modulo_enum,
                 consejo=consejo,
                 estado_coach=estado,
-                hallazgos=metricas,
+                insight=insight_dto,
                 usando_fallback=fallback
             )
             
@@ -144,7 +158,10 @@ class ServicioAnalisis:
                 modulo=modulo_enum,
                 consejo=str(e),
                 estado_coach=EstadoCoach.NO_DISPONIBLE,
-                hallazgos={"error": "historial_insuficiente"}
+                insight=InsightAnalitico(
+                    modulo=modulo_enum,
+                    hallazgos={"error": "historial_insuficiente"}
+                )
             )
         except Exception as e:
             logger.error(f"Fallo crítico en {modulo_enum.value}: {e}", exc_info=True)
@@ -153,7 +170,10 @@ class ServicioAnalisis:
                 modulo=modulo_enum,
                 consejo="Lo siento, estamos optimizando tu experiencia. Intenta de nuevo en un momento.",
                 estado_coach=EstadoCoach.NO_DISPONIBLE,
-                hallazgos={"error": str(e)}
+                insight=InsightAnalitico(
+                    modulo=modulo_enum,
+                    hallazgos={"error": str(e)}
+                )
             )
 
     # ── Mapeos y Soporte ──────────────────────────────────────────────────────

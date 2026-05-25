@@ -102,13 +102,17 @@ class ConsumidorIA:
             raise BrokerComunicacionError("Conexión con el broker perdida.", detalles=str(exc))
         except KeyboardInterrupt:
             self.detener()
+        finally:
+            self._cerrar()
 
     def detener(self) -> None:
         """Detiene el consumidor de forma limpia desde otro hilo."""
         self._activo.clear()
         if self._canal and self._canal.is_open:
-            self._conexion.add_callback_threadsafe(self._canal.stop_consuming)
-        self._cerrar()
+            try:
+                self._conexion.add_callback_threadsafe(self._canal.stop_consuming)
+            except Exception as e:
+                logger.warning("[CONSUMIDOR] Error al detener consumidor vía threadsafe: %s", e)
 
     # ── Conexión ───────────────────────────────────────────────────────────────
 

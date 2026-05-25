@@ -222,6 +222,13 @@ async def lifespan(app: FastAPI):
         except Exception as exc:
             logger.warning("[MAIN] Error al detener el EscuchadorSincronizacionIA: %s", str(exc))
 
+    if _escuchador_cambio:
+        try:
+            _escuchador_cambio.detener()
+            logger.info("[MAIN] EscuchadorCambioDatosIA detenido correctamente.")
+        except Exception as exc:
+            logger.warning("[MAIN] Error al detener el EscuchadorCambioDatosIA: %s", str(exc))
+
     if config.eureka_enable:
         await desregistrar_de_eureka()
     logger.info("[MAIN] Microservicio IA de LUKA detenido correctamente.")

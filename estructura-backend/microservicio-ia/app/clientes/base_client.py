@@ -34,6 +34,7 @@ class BaseLukaClient:
         # 1. Preparar headers de trazabilidad y seguridad
         headers = kwargs.get("headers", {})
         headers["X-Correlation-ID"] = get_correlation_id()
+        headers["X-Gateway-Source"] = "api-gateway"
         
         if token:
             headers["Authorization"] = f"Bearer {token}"
