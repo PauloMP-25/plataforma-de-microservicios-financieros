@@ -31,8 +31,9 @@ def validar_token(
     token = credenciales.credentials
 
     try:
-        # Decodificar la clave HEX a bytes
-        secret_key = binascii.unhexlify(settings.jwt_secret_key)
+        import base64
+        # Decodificar la clave Base64 a bytes (el backend Java usa Base64)
+        secret_key = base64.b64decode(settings.jwt_secret_key)
         
         payload = jwt.decode(
             token,
