@@ -37,7 +37,7 @@ def validar_token(
         payload = jwt.decode(
             token,
             secret_key,
-            algorithms=[settings.jwt_algorithm],
+            algorithms=[settings.jwt_algorithm, "HS384", "HS512"],
             options={"verify_exp": True}
         )
         
