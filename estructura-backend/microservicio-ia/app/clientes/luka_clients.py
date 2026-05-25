@@ -80,7 +80,7 @@ class ClientePerfil(BaseLukaClient):
         token: str
     ) -> Dict[str, Any]:
         """Obtiene el perfil y metas del usuario (concurrente)."""
-        endpoint = f"/api/v1/perfil/estrategico/{usuario_id}"
+        endpoint = f"/api/v1/clientes/interno/contexto-financiero/{usuario_id}"
         respuesta = await self.call("GET", endpoint, token=token)
         return respuesta.get("datos", {})
 

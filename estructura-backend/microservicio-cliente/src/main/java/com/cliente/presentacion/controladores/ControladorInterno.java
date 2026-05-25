@@ -2,6 +2,7 @@ package com.cliente.presentacion.controladores;
 
 import com.libreria.comun.dtos.ContextoEstrategicoIADTO;
 import com.libreria.comun.dtos.ContextoUsuarioDTO;
+import com.libreria.comun.respuesta.ResultadoApi;
 import com.cliente.aplicacion.puertos.ServicioContexto;
 import com.cliente.aplicacion.puertos.ServicioDatosPersonales;
 import lombok.RequiredArgsConstructor;
@@ -39,41 +40,42 @@ public class ControladorInterno {
      * para la generación de recomendaciones en el ms-ia.
      */
     @GetMapping("/contexto-financiero/{usuarioId}")
-    public ResponseEntity<ContextoEstrategicoIADTO> obtenerContextoFinanciero(
+    public ResponseEntity<ResultadoApi<ContextoEstrategicoIADTO>> obtenerContextoFinanciero(
             @PathVariable UUID usuarioId) {
         log.debug("Solicitud interna de contexto estratégico de IA para usuarioId={}", usuarioId);
-        return ResponseEntity.ok(servicioContexto.obtenerContextoFinanciero(usuarioId));
+        return ResponseEntity.ok(ResultadoApi.exito(servicioContexto.obtenerContextoFinanciero(usuarioId), "Contexto estratégico de IA recuperado", null));
     }
 
     /**
      * Retorna el contexto consolidado completo del usuario.
      */
     @GetMapping("/contexto/{usuarioId}")
-    public ResponseEntity<ContextoUsuarioDTO> obtenerContexto(
+    public ResponseEntity<ResultadoApi<ContextoUsuarioDTO>> obtenerContexto(
             @PathVariable UUID usuarioId) {
         log.debug("Solicitud interna de contexto completo para usuarioId={}", usuarioId);
-        return ResponseEntity.ok(servicioContexto.obtenerContextoCompleto(usuarioId));
+        return ResponseEntity.ok(ResultadoApi.exito(servicioContexto.obtenerContextoCompleto(usuarioId), "Contexto completo recuperado", null));
     }
 
     /**
      * Crea el perfil inicial para un nuevo usuario registrado.
      */
     @PostMapping("/inicial")
-    public ResponseEntity<Void> crearPerfilInicial(@RequestParam UUID usuarioId) {
+    public ResponseEntity<ResultadoApi<Void>> crearPerfilInicial(@RequestParam UUID usuarioId) {
         log.info("[INTERNO] Solicitud de creación de perfil inicial para usuario: {}", usuarioId);
         servicioDatosPersonales.crearPerfil(usuarioId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(ResultadoApi.sinContenido("Perfil inicial creado con éxito."));
     }
 
     /**
      * Recupera el teléfono verificado de un usuario.
      */
     @GetMapping("/perfiles/{usuarioId}/telefono")
-    public ResponseEntity<String> obtenerTelefono(
+    public ResponseEntity<ResultadoApi<String>> obtenerTelefono(
             @PathVariable UUID usuarioId) {
         log.info("[INTERNO] Recuperando teléfono para usuario: {}", usuarioId);
         com.cliente.aplicacion.dtos.respuestas.RespuestaDatosPersonales respuesta = servicioDatosPersonales.consultarInterno(usuarioId);
-        return ResponseEntity.ok(respuesta != null ? respuesta.telefono() : null);
+        String telefono = respuesta != null ? respuesta.telefono() : null;
+        return ResponseEntity.ok(ResultadoApi.exito(telefono, "Teléfono recuperado", null));
     }
 
     /**
@@ -81,11 +83,11 @@ public class ControladorInterno {
      * ms-mensajeria.
      */
     @PatchMapping("/perfiles/{usuarioId}/telefono")
-    public ResponseEntity<Void> actualizarTelefono(
+    public ResponseEntity<ResultadoApi<Void>> actualizarTelefono(
             @PathVariable UUID usuarioId,
             @RequestParam String telefono) {
         log.info("[INTERNO] Sincronizando teléfono para usuario: {} -> {}", usuarioId, telefono);
         servicioDatosPersonales.actualizarTelefono(usuarioId, telefono);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(ResultadoApi.sinContenido("Teléfono sincronizado con éxito."));
     }
 }
