@@ -28,7 +28,7 @@ class ClienteFinanciero(BaseLukaClient):
         anio_fin: Optional[int] = None
     ) -> Dict[str, Any]:
         """Recupera el historial de transacciones (concurrente)."""
-        endpoint = f"/api/v1/transacciones/historial"
+        endpoint = f"/api/v1/financiero/transacciones/historial"
         
         desde_str = None
         hasta_str = None
