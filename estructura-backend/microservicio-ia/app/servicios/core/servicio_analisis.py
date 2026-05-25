@@ -152,7 +152,7 @@ class ServicioAnalisis:
                 usuario_id=peticion.usuario_id,
                 modulo=modulo_enum,
                 consejo="Lo siento, estamos optimizando tu experiencia. Intenta de nuevo en un momento.",
-                estado_coach=EstadoCoach.ERROR,
+                estado_coach=EstadoCoach.NO_DISPONIBLE,
                 hallazgos={"error": str(e)}
             )
 

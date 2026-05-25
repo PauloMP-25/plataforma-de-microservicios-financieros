@@ -45,6 +45,7 @@ class EscuchadorCambioDatosIA:
         parametros = pika.ConnectionParameters(
             host=self._config.rabbitmq_host,
             port=self._config.rabbitmq_puerto,
+            virtual_host=self._config.rabbitmq_vhost,
             credentials=credenciales
         )
         self._conexion = pika.BlockingConnection(parametros)

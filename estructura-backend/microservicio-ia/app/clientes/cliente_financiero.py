@@ -76,7 +76,7 @@ class ClienteNucleoFinanciero:
             "Authorization": f"Bearer {token}"
         }
         
-        url = f"{self.url_base}/api/v1/transacciones/historial"
+        url = f"{self.url_base}/api/v1/financiero/transacciones/historial"
 
         try:
             with httpx.Client(timeout=self.timeout) as cliente:
