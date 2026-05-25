@@ -132,17 +132,25 @@ class EscuchadorSincronizacionIA:
             raise
         except KeyboardInterrupt:
             self.detener()
+        finally:
+            self._cerrar_conexion()
 
     def detener(self) -> None:
         """Detiene el consumidor de forma limpia."""
         try:
             if self._canal and self._canal.is_open:
-                self._canal.stop_consuming()
+                self._conexion.add_callback_threadsafe(self._canal.stop_consuming)
+            logger.info("[SYNC-IA] Solicitando detención del consumidor...")
+        except Exception as exc:
+            logger.warning("[SYNC-IA] Error al solicitar detención: %s", exc)
+
+    def _cerrar_conexion(self) -> None:
+        try:
             if self._conexion and not self._conexion.is_closed:
                 self._conexion.close()
-            logger.info("[SYNC-IA] Consumidor detenido correctamente.")
+                logger.info("[SYNC-IA] Conexión RabbitMQ cerrada.")
         except Exception as exc:
-            logger.warning("[SYNC-IA] Error al detener consumidor: %s", exc)
+            logger.warning("[SYNC-IA] Error al cerrar conexión: %s", exc)
 
     # ── Conexión ─────────────────────────────────────────────────────────────
 

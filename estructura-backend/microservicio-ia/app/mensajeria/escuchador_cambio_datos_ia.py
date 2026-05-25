@@ -44,6 +44,8 @@ class EscuchadorCambioDatosIA:
             self._canal.start_consuming()
         except Exception as e:
             logger.error(f"[SYNC-CACHE] Error: {e}")
+        finally:
+            self._cerrar_interno()
 
     def _conectar(self):
         credenciales = pika.PlainCredentials(self._config.rabbitmq_usuario, self._config.rabbitmq_password)
@@ -97,7 +99,17 @@ class EscuchadorCambioDatosIA:
             logger.error(f"[SYNC-CACHE] Error al invalidar: {e}")
 
     def detener(self):
-        if self._canal:
-            self._canal.stop_consuming()
-        if self._conexion:
-            self._conexion.close()
+        if self._canal and self._canal.is_open:
+            try:
+                self._conexion.add_callback_threadsafe(self._canal.stop_consuming)
+                logger.info("[SYNC-CACHE] Solicitando detención del escuchador de cambios...")
+            except Exception as e:
+                logger.warning(f"[SYNC-CACHE] Error al detener threadsafe: {e}")
+
+    def _cerrar_interno(self):
+        try:
+            if self._conexion and not self._conexion.is_closed:
+                self._conexion.close()
+                logger.info("[SYNC-CACHE] Conexión RabbitMQ cerrada.")
+        except Exception as e:
+            logger.warning(f"[SYNC-CACHE] Error al cerrar conexión: {e}")

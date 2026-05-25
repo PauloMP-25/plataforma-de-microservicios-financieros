@@ -100,7 +100,10 @@ class ClienteContexto:
             f"{self.url_base}/api/v1/clientes/interno/"
             f"contexto-financiero/{usuario_id}"
         )
-        headers = {"Authorization": f"Bearer {token}"}
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "X-Gateway-Source": "api-gateway"
+        }
 
         try:
             with httpx.Client(timeout=self.timeout) as cliente:
