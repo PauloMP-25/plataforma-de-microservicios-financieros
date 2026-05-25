@@ -142,3 +142,26 @@ async def luka_exception_handler(request: Request, exc: Exception) -> JSONRespon
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content=resultado.model_dump(by_alias=True),
     )
+
+async def http_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Manejador global para HTTPException (Starlette/FastAPI)"""
+    ruta = str(request.url.path)
+    
+    # Extraer el detalle. Si es un diccionario (ej: validador_jwt.py), extraer valores
+    mensaje = str(exc.detail)
+    codigo_error = "ERROR_HTTP"
+    
+    if isinstance(exc.detail, dict):
+        mensaje = exc.detail.get("mensaje", mensaje)
+        codigo_error = exc.detail.get("codigoError", codigo_error)
+        
+    resultado = ResultadoApi.error_res(
+        mensaje=mensaje,
+        codigo_error=codigo_error,
+        ruta=ruta,
+    )
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=resultado.model_dump(by_alias=True),
+    )
+

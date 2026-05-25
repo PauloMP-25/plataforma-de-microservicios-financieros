@@ -29,7 +29,8 @@ from fastapi.responses import JSONResponse
 from app.clientes.cliente_eureka import desregistrar_de_eureka, registrar_en_eureka
 from app.configuracion import obtener_configuracion
 from app.libreria_comun.excepciones.base import LukaException
-from app.libreria_comun.excepciones.handler import luka_exception_handler
+from app.libreria_comun.excepciones.handler import luka_exception_handler, http_exception_handler
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.libreria_comun.seguridad.middleware import TraceabilityMiddleware
 from app.mensajeria.consumidor_ia import ConsumidorIA
 from app.mensajeria.outbox_scheduler import OutboxScheduler
@@ -48,6 +49,12 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 logger = logging.getLogger("ia_financiera")
+
+class HealthCheckFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        return record.args and len(record.args) >= 3 and "/actuator/health" not in str(record.args[2])
+
+logging.getLogger("uvicorn.access").addFilter(HealthCheckFilter())
 
 config = obtener_configuracion()
 
@@ -168,7 +175,8 @@ async def lifespan(app: FastAPI):
 
     # --- REGISTRO EN EUREKA ---
     inicializar_db()
-    await registrar_en_eureka(config)
+    if config.eureka_enable:
+        await registrar_en_eureka(config)
     _iniciar_consumidor_rabbitmq()
     _iniciar_escuchadores_adicionales()
 
@@ -214,7 +222,8 @@ async def lifespan(app: FastAPI):
         except Exception as exc:
             logger.warning("[MAIN] Error al detener el EscuchadorSincronizacionIA: %s", str(exc))
 
-    await desregistrar_de_eureka()
+    if config.eureka_enable:
+        await desregistrar_de_eureka()
     logger.info("[MAIN] Microservicio IA de LUKA detenido correctamente.")
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -275,6 +284,7 @@ app.add_middleware(
 
 # Registramos el manejador de la librería común para excepciones de negocio y generales
 app.add_exception_handler(LukaException, luka_exception_handler)
+app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(Exception, luka_exception_handler)
 
 
