@@ -25,10 +25,15 @@ class EscuchadorCambioDatosIA:
         try:
             self._conectar()
             # Escuchamos eventos de ahorro cambiado
+            self._canal.exchange_declare(
+                exchange="exchange.cliente.actualizaciones",
+                exchange_type="topic",
+                durable=True
+            )
             self._canal.queue_declare(queue="cola.ia.invalidacion.cache", durable=True)
             self._canal.queue_bind(
                 queue="cola.ia.invalidacion.cache",
-                exchange="exchange.nucleo.actualizaciones", # Asumido según requerimiento
+                exchange="exchange.cliente.actualizaciones",
                 routing_key="ahorro.dato.cambiado"
             )
             self._canal.basic_consume(

@@ -106,7 +106,8 @@ class ClienteContexto:
             with httpx.Client(timeout=self.timeout) as cliente:
                 respuesta = cliente.get(url, headers=headers)
                 respuesta.raise_for_status()
-                contexto = respuesta.json()
+                json_respuesta = respuesta.json()
+                contexto = json_respuesta.get("datos", {})
 
                 logger.info(
                     "[CONTEXTO-PULL] Contexto obtenido vía HTTP para "
