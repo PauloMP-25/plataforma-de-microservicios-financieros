@@ -25,8 +25,8 @@ class DeteccionGastosHormigaService(BaseAnalisisService):
         df_mes_actual = df[(df['fecha'].dt.month == mes_actual) & (df['fecha'].dt.year == anio_actual)]
         df_meses_anteriores = df[~((df['fecha'].dt.month == mes_actual) & (df['fecha'].dt.year == anio_actual))]
         
-        if len(df_mes_actual) < 20:
-            raise HistorialInsuficienteError("GASTO_HORMIGA (Mes Actual)", len(df_mes_actual), 20)
+        if len(df) < 20:
+            raise HistorialInsuficienteError("GASTO_HORMIGA", len(df), 20)
 
         # 2. Análisis de Pequeños Gastos (Menores a S/ 25 por defecto)
         umbral_hormiga = 25.0
