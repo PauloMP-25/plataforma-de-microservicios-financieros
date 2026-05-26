@@ -13,7 +13,7 @@ Cambios v7 (FASE 2):
 from __future__ import annotations
 import logging
 from fastapi import APIRouter, Request, Depends, Security
-from app.libreria_comun.seguridad.validador_jwt import validar_token, obtener_usuario_id
+from app.libreria_comun.seguridad.validador_jwt import validar_token, obtener_usuario_id, obtener_rol_usuario
 from app.libreria_comun.respuesta.resultado_api import ResultadoApi
 from app.modelos.esquemas import (
     PeticionConFiltroFecha,
@@ -46,7 +46,7 @@ async def detectar_gasto_hormiga(
     payload: dict = Security(validar_token),
 ):
     peticion.usuario_id = obtener_usuario_id(payload)
-    resultado = await servicio.procesar_modulo(NombreModulo.GASTO_HORMIGA, peticion, _obtener_ip(request), rol=payload.get("role", "FREE"))
+    resultado = await servicio.procesar_modulo(NombreModulo.GASTO_HORMIGA, peticion, _obtener_ip(request), rol=obtener_rol_usuario(payload))
     return ResultadoApi.exito_res(datos=resultado, mensaje="Análisis de gasto hormiga completado", ruta=request.url.path)
 
 
@@ -60,7 +60,7 @@ async def predecir_gastos(
     payload: dict = Security(validar_token),
 ):
     peticion.usuario_id = obtener_usuario_id(payload)
-    resultado = await servicio.procesar_modulo(NombreModulo.PREDECIR_GASTOS, peticion, _obtener_ip(request), rol=payload.get("role", "FREE"))
+    resultado = await servicio.procesar_modulo(NombreModulo.PREDECIR_GASTOS, peticion, _obtener_ip(request), rol=obtener_rol_usuario(payload))
     return ResultadoApi.exito_res(datos=resultado, mensaje="Predicción de gastos generada", ruta=request.url.path)
 
 
@@ -74,7 +74,7 @@ async def habitos_financieros(
     payload: dict = Security(validar_token),
 ):
     peticion.usuario_id = obtener_usuario_id(payload)
-    resultado = await servicio.procesar_modulo(NombreModulo.HABITOS_FINANCIEROS, peticion, _obtener_ip(request), rol=payload.get("role", "FREE"))
+    resultado = await servicio.procesar_modulo(NombreModulo.HABITOS_FINANCIEROS, peticion, _obtener_ip(request), rol=obtener_rol_usuario(payload))
     return ResultadoApi.exito_res(datos=resultado, mensaje="Análisis de hábitos completado", ruta=request.url.path)
 
 
@@ -93,7 +93,7 @@ async def simular_meta(
         "meta_monto": peticion.monto_objetivo,
         "meta_ahorro_previo": peticion.monto_actual_ahorrado,
         "aporte_deseado": peticion.aporte_mensual_deseado,
-        "rol": payload.get("role", "FREE"),
+        "rol": obtener_rol_usuario(payload),
     }
     resultado = await servicio.procesar_modulo(NombreModulo.SIMULAR_META, peticion, _obtener_ip(request), **extra)
     return ResultadoApi.exito_res(datos=resultado, mensaje="Simulación de meta finalizada", ruta=request.url.path)
@@ -115,7 +115,7 @@ async def reto_ahorro_dinamico(
         _obtener_ip(request),
         usuario_id=peticion.usuario_id,
         frecuencia=peticion.frecuencia,
-        rol=payload.get("role", "FREE"),
+        rol=obtener_rol_usuario(payload),
     )
     return ResultadoApi.exito_res(datos=resultado, mensaje="Reto de ahorro gestionado", ruta=request.url.path)
 
@@ -130,7 +130,7 @@ async def reporte_completo(
     payload: dict = Security(validar_token),
 ):
     peticion.usuario_id = obtener_usuario_id(payload)
-    resultado = await servicio.procesar_modulo(NombreModulo.REPORTE_COMPLETO, peticion, _obtener_ip(request), rol=payload.get("role", "FREE"))
+    resultado = await servicio.procesar_modulo(NombreModulo.REPORTE_COMPLETO, peticion, _obtener_ip(request), rol=obtener_rol_usuario(payload))
     return ResultadoApi.exito_res(datos=resultado, mensaje="Reporte ejecutivo generado", ruta=request.url.path)
 
 
@@ -144,7 +144,7 @@ async def analisis_estilo_vida(
     payload: dict = Security(validar_token),
 ):
     peticion.usuario_id = obtener_usuario_id(payload)
-    resultado = await servicio.procesar_modulo(NombreModulo.ANALISIS_ESTILO_VIDA, peticion, _obtener_ip(request), rol=payload.get("role", "FREE"))
+    resultado = await servicio.procesar_modulo(NombreModulo.ANALISIS_ESTILO_VIDA, peticion, _obtener_ip(request), rol=obtener_rol_usuario(payload))
     return ResultadoApi.exito_res(datos=resultado, mensaje="Análisis de estilo de vida completado", ruta=request.url.path)
 
 
@@ -158,7 +158,7 @@ async def clasificar_transaccion(
     payload: dict = Security(validar_token),
 ):
     usuario_id = obtener_usuario_id(payload)
-    rol = payload.get("role", "FREE")
+    rol = obtener_rol_usuario(payload)
 
     # 1. Verificar cuota diaria del módulo de clasificación
     servicio._coach._verificar_cuota_diaria(usuario_id, NombreModulo.AUTO_CLASIFICACION, rol)
