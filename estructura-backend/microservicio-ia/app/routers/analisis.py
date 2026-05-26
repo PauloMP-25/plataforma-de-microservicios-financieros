@@ -174,6 +174,33 @@ async def clasificar_transaccion(
     )
 
 
+# ── Módulo 9: Limpiar Historial de Consultas ──────────────────────────────────
+
+@router.delete("/mis-consultas/historial", response_model=ResultadoApi[dict])
+async def limpiar_historial_consultas(
+    request: Request,
+    payload: dict = Security(validar_token),
+):
+    """
+    Permite al usuario limpiar su historial de firmas de consultas previas
+    para poder forzar una nueva llamada a Gemini en rangos consultados anteriormente.
+    """
+    usuario_id = obtener_usuario_id(payload)
+    from app.persistencia.cache_redis import CacheRedis
+    cache = CacheRedis()
+    eliminadas = cache.flush_firmas_usuario(usuario_id)
+    
+    logger.info(
+        "[HISTORIAL-CLEAR] Usuario %s eliminó %d firmas de consulta Redis",
+        usuario_id, eliminadas
+    )
+    return ResultadoApi.exito_res(
+        datos={"usuario_id": usuario_id, "firmas_eliminadas": eliminadas},
+        mensaje="Historial de consultas limpiado exitosamente",
+        ruta=request.url.path,
+    )
+
+
 # ── Admin: Mantenimiento de Caché ────────────────────────────────────────────
 
 @router.delete("/admin/cache/flush", response_model=ResultadoApi[dict])

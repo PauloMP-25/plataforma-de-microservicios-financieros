@@ -16,28 +16,6 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 
-# ── 1. Cache de análisis IA ───────────────────────────────────────────────────
-
-class IaAnalisisCache(Base):
-    """
-    Persistencia de consejos generados por Gemini.
-    Segunda capa de caché (Redis es la primera) para ahorrar tokens.
-    """
-    __tablename__ = "ia_analisis_cache"
-
-    hash_datos      = Column(String(64), primary_key=True)
-    cliente_id      = Column(String(50), nullable=False, index=True)
-    modulo          = Column(String(50), nullable=False)
-    version_modulo  = Column(Integer, default=1)
-    prompt_usado    = Column(Text, nullable=False)
-    consejo_gemini  = Column(Text, nullable=False)
-    tokens_usados   = Column(Integer, default=0)
-    costo_usd       = Column(Float, default=0.0)
-    usando_fallback = Column(Boolean, default=False)
-    fecha_creacion  = Column(DateTime, default=datetime.now)
-
-    def __repr__(self):
-        return f"<IaAnalisisCache(hash={self.hash_datos}, cliente={self.cliente_id}, modulo={self.modulo})>"
 
 
 # ── 2. Retos de ahorro gamificados ────────────────────────────────────────────

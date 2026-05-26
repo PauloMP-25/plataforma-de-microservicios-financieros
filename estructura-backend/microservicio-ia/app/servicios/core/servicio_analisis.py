@@ -10,6 +10,7 @@ Novedades FASE 5:
 ══════════════════════════════════════════════════════════════════════════════
 """
 
+from datetime import datetime
 import json
 import logging
 import asyncio
@@ -30,7 +31,7 @@ from app.modelos.esquemas import (
 )
 from app.servicios.ia.coach_ia import CoachIA
 from app.utilidades.preparador_datos import json_a_dataframe
-from app.utilidades.excepciones import HistorialInsuficienteError
+from app.utilidades.excepciones import HistorialInsuficienteError, LimiteDiarioExcedidoError
 from app.clientes.luka_clients import obtener_cliente_financiero, obtener_cliente_perfil
 from app.persistencia.cache_redis import CacheRedis
 
@@ -60,10 +61,29 @@ class ServicioAnalisis:
         Método ÚNICO y GENÉRICO para procesar cualquier módulo (FASE 5 y 7).
         """
         try:
-            # 1. Obtener módulo de la Fábrica (Lazy Loading FASE 7)
+            # 1. Verificar si la cuota ya está agotada (sin incrementarla todavía)
+            # Esto evita llamadas HTTP si el usuario ya no tiene cuota
+            tipo_pool = "clasificacion" if modulo_enum == NombreModulo.AUTO_CLASIFICACION else "analitica"
+            rol_upper = kwargs.get("rol", "FREE").upper()
+            if tipo_pool == "analitica":
+                limite = 20 if rol_upper == "PRO" else (50 if rol_upper == "PREMIUM" else 5)
+            else:
+                limite = 10 if rol_upper == "PRO" else (20 if rol_upper == "PREMIUM" else 3)
+            
+            fecha_actual = datetime.now()
+            anio_act, semana_act, _ = fecha_actual.isocalendar()
+            clave_cuota = f"ia:cuota:{tipo_pool}:{peticion.usuario_id}:{anio_act}:W{semana_act}"
+            
+            cuota_actual = self._cache_redis.obtener_cuota_actual(clave_cuota)
+            if cuota_actual >= limite:
+                raise LimiteDiarioExcedidoError(
+                    mensaje=f"Has agotado tus {limite} consultas semanales de {tipo_pool}. Tu plan {rol_upper} se renueva el próximo lunes."
+                )
+
+            # 2. Obtener módulo de la Fábrica (Lazy Loading FASE 7)
             servicio = FabricaModulosAnalisis.obtener_modulo(modulo_enum)
 
-            # 2. Concurrencia HTTP (asyncio.gather) — FASE 5
+            # 3. Concurrencia HTTP (asyncio.gather) — FASE 5
             mes = getattr(peticion, 'mes', None)
             anio = getattr(peticion, 'anio', None)
             dia_inicio = getattr(peticion, 'dia_inicio', None)
@@ -94,29 +114,52 @@ class ServicioAnalisis:
             resp_financiero, dict_perfil = await asyncio.gather(tarea_financiera, tarea_perfil)
             
             # Convertimos respuestas a formatos de trabajo
-            df = json_a_dataframe(resp_financiero.get("datos", []))
+            datos_raw = resp_financiero.get("datos", [])
+            df = json_a_dataframe(datos_raw)
             contexto = ContextoEstrategicoIADTO.model_validate(dict_perfil)
             contexto.rol = kwargs.get("rol", "FREE")
 
-            # 3. Caché de Resultado Completo — FASE 5
-            # Construimos hash único: usuario + modulo + (mes/anio/rango) + ultima transaccion
-            if not df.empty:
-                ultima_fecha = str(df['fecha'].max())
-            else:
-                ultima_fecha = "SIN_DATOS"
+            # 4. Hash estable de transacciones reales + descripción de rango
+            datos_normalizados = sorted([json.dumps(t, sort_keys=True) for t in datos_raw])
+            hash_txs = hashlib.sha256(
+                json.dumps(datos_normalizados).encode()
+            ).hexdigest()[:16]
+
+            descripcion_rango = _construir_descripcion_rango(mes, anio, mes_inicio, anio_inicio, mes_fin, anio_fin)
+            clave_firma = f"ia:firma:{peticion.usuario_id}:{modulo_enum.value}:{descripcion_rango}:{hash_txs}"
+
+            # 5. Detección de consulta duplicada
+            descripcion_previa = self._cache_redis.obtener_firma(clave_firma)
+            if descripcion_previa:
+                logger.info("[CACHE-HIT-FIRMA] Consulta duplicada detectada para usuario=%s modulo=%s rango=%s", peticion.usuario_id, modulo_enum.value, descripcion_rango)
+                total_txs = len(df) if not df.empty else 0
+                total_ing = float(df[df['tipo'] == 'INGRESO']['monto'].sum()) if not df.empty else 0.0
+                total_gas = float(df[df['tipo'] == 'GASTO']['monto'].sum()) if not df.empty else 0.0
                 
-            hash_str = f"{peticion.usuario_id}_{modulo_enum.value}_{mes}_{anio}_{mes_inicio}_{anio_inicio}_{mes_fin}_{anio_fin}_{ultima_fecha}"
-            hash_unico = hashlib.sha256(hash_str.encode()).hexdigest()
-            # La clave incluye el usuario_id para permitir invalidación proactiva fácil con patrón
-            clave_cache = f"ia:resultado_completo:{peticion.usuario_id}:{hash_unico}"
+                insight_dto = InsightAnalitico(
+                    modulo=modulo_enum,
+                    total_transacciones_analizadas=total_txs,
+                    total_ingresos=total_ing,
+                    total_gastos=total_gas,
+                    balance_neto=round(total_ing - total_gas, 2),
+                    hallazgos={"consulta_duplicada": True, "rango": descripcion_rango}
+                )
+                return RespuestaModulo(
+                    usuario_id=peticion.usuario_id,
+                    modulo=modulo_enum,
+                    consejo=(
+                        f"Ya realizaste esta consulta de **{modulo_enum.value.replace('_', ' ').title()}** "
+                        f"para el período **{descripcion_rango}** y los datos financieros no han cambiado. "
+                        f"Te recomiendo consultar un rango de fechas diferente o registrar nuevas "
+                        f"transacciones para obtener un análisis actualizado."
+                    ),
+                    estado_coach=EstadoCoach.EXITOSO,
+                    insight=insight_dto,
+                    usando_fallback=False,
+                )
 
-            resultado_cacheado = self._cache_redis.obtener(clave_cache)
-            if resultado_cacheado:
-                logger.info("[CACHE-HIT] Retornando análisis desde caché para usuario=%s modulo=%s", peticion.usuario_id, modulo_enum.value)
-                return RespuestaModulo.model_validate_json(resultado_cacheado)
-
-            # 4. Lógica Analítica + Prompting (Solo si no hay caché)
-            logger.info("[CACHE-MISS] Ejecutando motor analítico y Gemini para usuario=%s", peticion.usuario_id)
+            # 6. Lógica Analítica + Prompting
+            logger.info("[CACHE-MISS-FIRMA] Ejecutando motor analítico y Gemini para usuario=%s", peticion.usuario_id)
             metricas = servicio.ejecutar_calculos(df, contexto, **kwargs)
 
             # Calcular totales financieros antes de invocar la IA, para inyectar en métricas para el fallback
@@ -129,8 +172,7 @@ class ServicioAnalisis:
 
             prompt = servicio.orquestar_prompt(metricas, contexto)
 
-            # 5. Ejecución en Coach IA (Circuit Breaker incluido en FASE 3)
-            # Pasamos el contexto completo para que el motor de reglas de fallback pueda formatear la respuesta
+            # 7. Ejecución en Coach IA (que verifica e incrementa la cuota)
             consejo, estado, fallback = await self._coach.obtener_consejo_ia(
                 peticion.usuario_id, 
                 modulo_enum, 
@@ -159,8 +201,8 @@ class ServicioAnalisis:
                 usando_fallback=fallback
             )
             
-            # Guardamos en caché por 24 horas (invalidación proactiva ocurrirá si cambian datos)
-            self._cache_redis.guardar(clave_cache, resultado_final.model_dump_json(), ex=86400)
+            # Registrar la firma exitosa en Redis (TTL 7 días)
+            self._cache_redis.registrar_consulta(clave_firma, descripcion_rango)
             
             return resultado_final
 
@@ -192,3 +234,13 @@ class ServicioAnalisis:
 
 def obtener_servicio_analisis() -> ServicioAnalisis:
     return ServicioAnalisis()
+
+
+def _construir_descripcion_rango(mes, anio, mes_inicio, anio_inicio, mes_fin, anio_fin) -> str:
+    MESES = {1:"Ene",2:"Feb",3:"Mar",4:"Abr",5:"May",6:"Jun",
+             7:"Jul",8:"Ago",9:"Sep",10:"Oct",11:"Nov",12:"Dic"}
+    if mes and anio:
+        return f"{MESES.get(mes, mes)}-{anio}"
+    if mes_inicio and anio_inicio and mes_fin and anio_fin:
+        return f"{MESES.get(mes_inicio)}-{anio_inicio}_a_{MESES.get(mes_fin)}-{anio_fin}"
+    return "todos-los-periodos"

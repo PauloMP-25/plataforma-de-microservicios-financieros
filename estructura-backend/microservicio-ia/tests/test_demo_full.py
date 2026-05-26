@@ -7,9 +7,9 @@ from unittest.mock import MagicMock, patch
 
 # Asegurar que se carguen las variables de entorno
 from dotenv import load_dotenv
-load_dotenv(".env.book.env")
+load_dotenv(".env")
 key = os.getenv("GEMINI_API_KEY")
-print(f"--- API KEY CARGADA: {key[:5]}...{key[-5:] if key else 'None'} ---")
+print(f"--- API KEY CARGADA: {key[:5]}...{key[-5:] if key else 'None'} ---" if key else "--- NO API KEY FOUND ---")
 
 from app.servicios.modulos.analisis_estilo_de_vida import AnalisisEstiloVidaService
 from app.libreria_comun.modelos.contexto import ContextoEstrategicoIADTO

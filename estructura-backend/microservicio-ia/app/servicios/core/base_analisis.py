@@ -26,8 +26,8 @@ class BaseAnalisisService(ABC):
         if total_txs < requisito:
             raise HistorialInsuficienteError(
                 modulo=self.nombre_modulo,
-                mes_actual=total_txs,
-                minimo_requerido=requisito
+                actuales=total_txs,
+                requeridos=requisito
             )
 
     @abstractmethod
