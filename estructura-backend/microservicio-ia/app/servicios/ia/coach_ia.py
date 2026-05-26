@@ -103,6 +103,19 @@ class CoachIA:
             total_tokens = in_tokens + out_tokens
             costo_usd = self._calcular_costo_usd(in_tokens, out_tokens)
 
+            # Log para los dueños del sistema (Consola)
+            logger.info(
+                "\n========================================================\n"
+                "[CONSEJO-IA-TOKENS] Consumo de Tokens para el consejo:\n"
+                f"  - Usuario ID: {usuario_id}\n"
+                f"  - Módulo: {modulo.value}\n"
+                f"  - Tokens de Entrada (Prompt): {in_tokens}\n"
+                f"  - Tokens de Salida (Respuesta): {out_tokens}\n"
+                f"  - Total Tokens: {total_tokens}\n"
+                f"  - Costo USD: ${costo_usd:.6f}\n"
+                "========================================================"
+            )
+
             # Persistir éxito
             self._cache_redis.guardar_consejo(hash_datos, consejo_texto)
             self._guardar_en_db(hash_datos, usuario_id, modulo.value, prompt, consejo_texto, False, total_tokens, costo_usd)
@@ -133,7 +146,7 @@ class CoachIA:
         # FASE 6: Exigir esquema JSON estricto para evitar fallos de parseo
         prompt_json = (
             f"{prompt}\n\n"
-            f"IMPORTANTE: Debes responder ÚNICAMENTE con un objeto JSON válido "
+            f"IMPORTANTE: NO uses emojis en tu respuesta. Debes responder ÚNICAMENTE con un objeto JSON válido "
             f"que contenga exactamente esta estructura: {{\"consejo\": \"<Tu consejo formateado en markdown>\"}}."
         )
         
