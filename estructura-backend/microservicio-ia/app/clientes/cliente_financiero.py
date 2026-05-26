@@ -63,8 +63,8 @@ class ClienteNucleoFinanciero:
         # ── 2. Preparar Query Params ─────────────────────────────────────────
         params: Dict[str, Any] = {
             "usuarioId": usuario_id,
-            "size": tamanio,
-            "page": pagina,
+            "tamanio": tamanio,
+            "pagina": pagina,
         }
         
         if desde_str: params["desde"] = desde_str
