@@ -216,6 +216,11 @@ class PeticionClasificar(PeticionBase):
  
 class PeticionSimularMeta(PeticionBase):
     """Entrada para el módulo 6: Simular cuánto tiempo tomará alcanzar una meta."""
+    token: str = Field(
+        ...,
+        min_length=10,
+        description="JWT Bearer token emitido por microservicio-usuario.",
+    )
     nombre_meta: str = Field(
         ...,
         min_length=1,
