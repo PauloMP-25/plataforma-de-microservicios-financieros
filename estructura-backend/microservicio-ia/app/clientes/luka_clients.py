@@ -56,8 +56,8 @@ class ClienteFinanciero(BaseLukaClient):
 
         params = {
             "usuarioId": usuario_id,
-            "size": tamanio,
-            "page": 0,
+            "tamanio": tamanio,
+            "pagina": 0,
         }
         if desde_str: params["desde"] = desde_str
         if hasta_str: params["hasta"] = hasta_str
