@@ -97,10 +97,10 @@ class Configuracion(BaseSettings):
     )
     gemini_modelo:  str = "gemini-2.0-flash"
     gemini_max_tokens: int = Field(
-        default=500,
+        default=1024,
         ge=100,
-        le=2048,
-        description="Tokens máximos en la respuesta del coach.",
+        le=8192,
+        description="Tokens máximos en la respuesta del coach. 1024 = balance costo/calidad (env: GEMINI_MAX_TOKENS).",
     )
     gemini_temperatura: float = Field(
         default=0.7,
@@ -109,9 +109,9 @@ class Configuracion(BaseSettings):
         description="Creatividad del coach (0=preciso, 1=creativo).",
     )
 
-    # ── Control de Costos ──────────────────────────────────────────────────────
-    gemini_costo_input_1m: float = 0.35   # USD por 1M tokens (Flash 1.5)
-    gemini_costo_output_1m: float = 1.05  # USD por 1M tokens (Flash 1.5)
+    # ── Control de Costos (gemini-2.0-flash) ──────────────────────────────────
+    gemini_costo_input_1m: float = 0.10   # USD por 1M tokens entrada (Flash 2.0)
+    gemini_costo_output_1m: float = 0.40  # USD por 1M tokens salida  (Flash 2.0)
     umbral_alerta_costo_diario_usd: float = 2.70 # S/10 aprox
 
     # ══════════════════════════════════════════════════════════════════════════

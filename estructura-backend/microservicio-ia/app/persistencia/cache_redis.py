@@ -48,24 +48,13 @@ class CacheRedis:
         except Exception as e:
             logger.warning(f"[CACHE-REDIS] Error al guardar: {e}")
 
-    def invalidar_cache_cliente(self, cliente_id: str):
+    def invalidar_cache_cliente(self, cliente_id: str) -> int:
         """
-        Elimina todos los consejos cacheados de un cliente específico.
-        Se usa cuando sus datos financieros cambian.
+        Elimina todos los consejos cacheados con patrón ia:consejo:*.
+        Retorna el número de claves eliminadas.
         """
-        if not self._client:
-            return
-        try:
-            # En una implementación real, podríamos usar un Set o keys con patrón.
-            # Por simplicidad y performance, usaremos un patrón de búsqueda (SCAN en prod).
-            keys = self._client.keys(f"ia:consejo:*")
-            # Nota: Esta es una forma simplificada. En producción se recomienda 
-            # usar tags o estructuras de datos que vinculen cliente -> hashes.
-            # Por ahora, invalidaremos por patrón si el hash incluyera el cliente_id.
-            pass 
-        except Exception as e:
-            logger.warning(f"[CACHE-REDIS] Error al invalidar: {e}")
-            
+        return self.flush_ia_cache()
+
     def eliminar_por_hash(self, hash_datos: str):
         """Elimina una entrada específica."""
         if not self._client:
@@ -74,6 +63,32 @@ class CacheRedis:
             self._client.delete(f"ia:consejo:{hash_datos}")
         except Exception as e:
             logger.warning(f"[CACHE-REDIS] Error al eliminar: {e}")
+
+    def flush_ia_cache(self, patron: str = "ia:*") -> int:
+        """
+        Elimina TODAS las claves que coincidan con el patrón dado.
+        Por defecto elimina toda la cache de la IA (ia:consejo:*, ia:cuota:*, etc.).
+        Usa SCAN para no bloquear Redis en producción.
+        Retorna el número de claves eliminadas.
+        """
+        if not self._client:
+            logger.warning("[CACHE-REDIS] flush_ia_cache: cliente Redis no disponible.")
+            return 0
+        try:
+            cursor = 0
+            total_eliminadas = 0
+            while True:
+                cursor, keys = self._client.scan(cursor, match=patron, count=100)
+                if keys:
+                    self._client.delete(*keys)
+                    total_eliminadas += len(keys)
+                if cursor == 0:
+                    break
+            logger.info("[CACHE-REDIS] flush_ia_cache: %d clave(s) eliminadas (patron='%s').", total_eliminadas, patron)
+            return total_eliminadas
+        except Exception as e:
+            logger.error(f"[CACHE-REDIS] Error en flush_ia_cache: {e}")
+            return 0
 
     # ── Métodos Genéricos ──────────────────────────────────────────────────────
 
