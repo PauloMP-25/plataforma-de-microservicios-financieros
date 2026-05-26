@@ -95,8 +95,8 @@ class ServicioAnalisis:
             
             # Convertimos respuestas a formatos de trabajo
             df = json_a_dataframe(resp_financiero.get("datos", []))
-            perfil_full = PerfilUsuario.model_validate(dict_perfil)
-            contexto = MapperContextoIA.mapear_perfil(perfil_full)
+            contexto = ContextoEstrategicoIADTO.model_validate(dict_perfil)
+            contexto.rol = kwargs.get("rol", "FREE")
 
             # 3. Caché de Resultado Completo — FASE 5
             # Construimos hash único: usuario + modulo + (mes/anio/rango) + ultima transaccion
