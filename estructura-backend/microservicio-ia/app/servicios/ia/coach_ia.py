@@ -16,7 +16,7 @@ import logging
 import asyncio
 import json
 from typing import Optional, Tuple, Any, Dict
-from datetime import datetime
+from datetime import datetime, date
 import google.generativeai as genai
 import pybreaker
 import unicodedata
@@ -103,6 +103,19 @@ class CoachIA:
             total_tokens = in_tokens + out_tokens
             costo_usd = self._calcular_costo_usd(in_tokens, out_tokens)
 
+            # Log para los dueños del sistema (Consola)
+            logger.info(
+                "\n========================================================\n"
+                "[CONSEJO-IA-TOKENS] Consumo de Tokens para el consejo:\n"
+                f"  - Usuario ID: {usuario_id}\n"
+                f"  - Módulo: {modulo.value}\n"
+                f"  - Tokens de Entrada (Prompt): {in_tokens}\n"
+                f"  - Tokens de Salida (Respuesta): {out_tokens}\n"
+                f"  - Total Tokens: {total_tokens}\n"
+                f"  - Costo USD: ${costo_usd:.6f}\n"
+                "========================================================"
+            )
+
             # Persistir éxito
             self._cache_redis.guardar_consejo(hash_datos, consejo_texto)
             self._guardar_en_db(hash_datos, usuario_id, modulo.value, prompt, consejo_texto, False, total_tokens, costo_usd)
@@ -133,7 +146,7 @@ class CoachIA:
         # FASE 6: Exigir esquema JSON estricto para evitar fallos de parseo
         prompt_json = (
             f"{prompt}\n\n"
-            f"IMPORTANTE: Debes responder ÚNICAMENTE con un objeto JSON válido "
+            f"IMPORTANTE: NO uses emojis en tu respuesta. Debes responder ÚNICAMENTE con un objeto JSON válido "
             f"que contenga exactamente esta estructura: {{\"consejo\": \"<Tu consejo formateado en markdown>\"}}."
         )
         
@@ -149,12 +162,27 @@ class CoachIA:
         
         # Parsear JSON de forma segura
         texto_crudo = self._limpiar_texto(respuesta.text)
+        texto_limpio = texto_crudo.strip()
+        
+        # Eliminar bloques de código markdown ```json ... ``` si están presentes
+        if texto_limpio.startswith("```"):
+            idx_salto = texto_limpio.find("\n")
+            if idx_salto != -1:
+                texto_limpio = texto_limpio[idx_salto:].strip()
+            if texto_limpio.endswith("```"):
+                texto_limpio = texto_limpio[:-3].strip()
+
         try:
-            datos_json = json.loads(texto_crudo)
-            consejo_final = datos_json.get("consejo", texto_crudo)
+            datos_json = json.loads(texto_limpio)
+            consejo_final = datos_json.get("consejo", texto_limpio)
         except json.JSONDecodeError:
-            logger.warning("[COACH-IA] Gemini no devolvió JSON válido. Usando respuesta raw.")
-            consejo_final = texto_crudo
+            logger.warning("[COACH-IA] Gemini no devolvió JSON válido. Intentando extraer el campo 'consejo' manualmente.")
+            # Intento de extracción manual como contingencia
+            match = re.search(r'"consejo"\s*:\s*"(.*?)"', texto_limpio, re.DOTALL)
+            if match:
+                consejo_final = match.group(1).replace('\\"', '"').replace('\\n', '\n')
+            else:
+                consejo_final = texto_limpio
             
         return consejo_final.strip(), in_tokens, out_tokens
 
@@ -175,7 +203,7 @@ class CoachIA:
                 descripcion=f"CONSUMO_TOKENS_GEMINI_{modulo}",
                 valor_anterior="0",
                 valor_nuevo=str(tokens),
-                fecha=datetime.now()
+                fecha=date.today()
             )
             await publicador_auditoria.publicar_evento(evento)
             logger.info(f"[AUDITORIA-IA] {usuario_id} consumió {tokens} tokens (${costo})")
