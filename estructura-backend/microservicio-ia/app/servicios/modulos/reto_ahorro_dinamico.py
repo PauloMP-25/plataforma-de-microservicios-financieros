@@ -93,7 +93,7 @@ class RetoAhorroDinamicoService(BaseAnalisisService):
         nuevo_reto = IaRetoAhorro(
             usuario_id=usuario_id,
             categoria=top_cat,
-            monto_limite=limite_sugerido,
+            monto_limite=float(limite_sugerido),
             fecha_fin=datetime.now() + timedelta(days=dias),
             frecuencia=frecuencia,
             estado="ACTIVO"
@@ -120,7 +120,7 @@ class RetoAhorroDinamicoService(BaseAnalisisService):
             db_reto = db_session.query(IaRetoAhorro).get(reto.id)
             if db_reto:
                 db_reto.estado = "FINALIZADO"
-                db_reto.ahorro_logrado = ahorro
+                db_reto.ahorro_logrado = float(ahorro)
                 db_session.commit()
 
         return {

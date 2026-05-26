@@ -51,7 +51,6 @@ async def demo():
     
     # Mockear dependencias externas para ejecución aislada
     with patch.object(coach, '_cache_redis'), \
-         patch('app.servicios.ia.coach_ia.SessionLocal'), \
          patch('app.servicios.ia.coach_ia.publicador_auditoria'):
         
         coach._verificar_cuota_diaria = MagicMock()
