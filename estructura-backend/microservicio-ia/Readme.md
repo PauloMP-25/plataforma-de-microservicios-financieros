@@ -135,6 +135,7 @@ uvicorn main:app --host 0.0.0.0 --port 8086 --workers 2
 |----------|--------|--------------|-----|
 | microservicio-nucleo-financiero | 8085 | HTTP GET síncrono | Fuente de transacciones |
 | microservicio-auditoria | 8082 | HTTP POST asíncrono | Registro de eventos IA |
+| microservicio-pago | 8087 | HTTP GET síncrono | Validación de estado de suscripción |
 
 ---
 

@@ -1,12 +1,16 @@
 package com.cliente.aplicacion.excepciones;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import com.libreria.comun.excepciones.ExcepcionRecursoNoEncontrado;
 import java.util.UUID;
 
-@ResponseStatus(HttpStatus.NOT_FOUND)
-public class ClienteNoEncontradoException extends RuntimeException {
+/**
+ * Excepción lanzada cuando no se encuentra un cliente.
+ * 
+ * @author Paulo Moron
+ * @version 1.1.0
+ */
+public class ClienteNoEncontradoException extends ExcepcionRecursoNoEncontrado {
     public ClienteNoEncontradoException(UUID usuarioId) {
-        super("No existe perfil de cliente para el usuarioId: " + usuarioId);
+        super("el cliente", usuarioId);
     }
 }

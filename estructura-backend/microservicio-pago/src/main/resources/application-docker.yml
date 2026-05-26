@@ -1,0 +1,79 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+#  LUKA APP — application-docker.yml (ms-pagos)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+spring:
+  application:
+    name: ms-pagos
+
+  # ── Base de datos ────────────────────────────────────────────────────────────
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/db_microservicio_pagos}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      # Pool reducido para Render free tier (512 MB). Aumentar en producción premium.
+      maximum-pool-size: 3
+      minimum-idle: 1
+      connection-timeout: 30000
+
+  # ── JPA / Hibernate ──────────────────────────────────────────────────────────
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:validate}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        show_sql: false
+    open-in-view: false
+
+  # ── RabbitMQ ─────────────────────────────────────────────────────────────────
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:rabbitmq}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
+    virtual-host: ${SPRING_RABBITMQ_VIRTUAL_HOST:/}
+    connection-name: ${spring.application.name}
+    connection-timeout: 10000
+    listener:
+      simple:
+        auto-startup: true
+
+server:
+  port: 8087
+
+# ── Eureka Client ─────────────────────────────────────────────────────────────
+# EUREKA_CLIENT_ENABLED=true  → activar (Docker local)
+# EUREKA_CLIENT_ENABLED=false → desactivar (Render producción, valor por defecto)
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka}
+    enabled: ${EUREKA_CLIENT_ENABLED:false}
+  instance:
+    prefer-ip-address: true
+    hostname: ${EUREKA_INSTANCE_HOSTNAME:ms-pagos}
+
+# ── Actuator ───────────────────────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# ── Seguridad JWT (Configuración Luka) ─────────────────────────────────────────
+luka:
+  jwt:
+    clave-secreta: ${JWT_SECRET_KEY:}
+
+stripe:
+  api-key: ${STRIPE_SECRET_KEY:sk_test_mock_secret}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_mock_secret}
+  success-url: ${FRONTEND_URL:http://localhost:3000}/suscripcion/exito
+  cancel-url: ${FRONTEND_URL:http://localhost:3000}/suscripcion/cancelado

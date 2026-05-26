@@ -1,0 +1,81 @@
+
+.luka-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-body);
+  color: var(--text-primary);
+  position: relative;
+  overflow: hidden;
+
+  // Fondo decorativo sutil
+  &::before {
+    content: '';
+    position: fixed;
+    top: -200px;
+    right: -200px;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--color-primary) 12%, transparent) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  &::after {
+    content: '';
+    position: fixed;
+    bottom: -150px;
+    left: 100px;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+.luka-main {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 1;
+
+  &.sidebar-collapsed {
+    margin-left: 80px;
+  }
+}
+
+.luka-content {
+  flex: 1;
+  margin-top: var(--header-height);
+  overflow-y: auto;
+  background: linear-gradient(180deg, var(--bg-body) 0%, var(--bg-surface-soft) 100%);
+}
+
+.content-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  animation: fadeInUp 0.4s ease both;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .luka-main {
+    margin-left: 80px;
+  }
+
+  .luka-content {
+    padding: 20px 16px 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .luka-main {
+    margin-left: 0;
+  }
+}
+

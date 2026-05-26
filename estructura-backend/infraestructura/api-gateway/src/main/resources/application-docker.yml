@@ -1,0 +1,330 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+#  LUKA APP — application-docker.yml (API GATEWAY)
+#  Perfil Spring Boot activo cuando SPRING_PROFILES_ACTIVE=docker
+# ═══════════════════════════════════════════════════════════════════════════════
+
+server:
+  port: 8080 # El puerto interno en Docker (mapeado al 8080 en el host)
+
+spring:
+  config:
+    import: optional:file:../../.env[.properties]
+  application:
+    name: api-gateway
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # REDIS: Necesario para Rate Limiting (Upstash / Producción)
+  # ─────────────────────────────────────────────────────────────────────────
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+      connect-timeout: 5s
+      timeout: 3s
+      ssl:
+        enabled: true
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SPRING CLOUD GATEWAY — CONFIGURACIÓN CENTRAL
+  # ═══════════════════════════════════════════════════════════════════════════
+  cloud:
+    gateway:
+      httpclient:
+        connect-timeout: 30000
+        response-timeout: ${GATEWAY_RESPONSE_TIMEOUT:60s} # Consistente con local y parametrizable
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
+      routes:
+        - id: servicio-usuario-docs
+          uri: ${URL_PROD_USUARIO:https://luka-usuario.onrender.com}
+          predicates:
+            - Path=/microservicio-usuario/v3/api-docs/**
+          filters:
+            - RewritePath=/microservicio-usuario/(?<remaining>.*), /${remaining}
+          metadata:
+            requiere-autenticacion: false
+
+        - id: servicio-usuario-auth
+          uri: ${URL_PROD_USUARIO:https://luka-usuario.onrender.com}
+          predicates:
+            - Path=/api/v1/auth/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: usuarioCB
+                fallbackUri: forward:/fallback
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 3
+                redis-rate-limiter.burstCapacity: 5
+                key-resolver: "#{@userKeyResolver}"
+          metadata:
+            requiere-autenticacion: false
+
+        - id: usuario-protegido
+          uri: ${URL_PROD_USUARIO:https://luka-usuario.onrender.com}
+          predicates:
+            - Path=/api/v1/auth/cambiar-password
+            - Path=/api/v1/auth/mi-cuenta
+            - Path=/api/v1/auth/logout
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: usuarioCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: true
+
+        - id: servicio-cliente-interno
+          uri: ${URL_PROD_CLIENTE:https://luka-cliente.onrender.com}
+          predicates:
+            - Path=/api/v1/clientes/perfil/inicial
+            - Path=/api/v1/clientes/interno/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: clienteCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: false
+
+        - id: servicio-cliente
+          uri: ${URL_PROD_CLIENTE:https://luka-cliente.onrender.com}
+          predicates:
+            - Path=/api/v1/clientes/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 40
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@userKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: clienteCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: true
+
+        - id: servicio-auditoria
+          uri: ${URL_PROD_AUDITORIA:https://luka-auditoria.onrender.com}
+          predicates:
+            - Path=/api/v1/auditoria/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: auditoriaCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: true
+            rol-requerido: ROLE_ADMIN
+
+        - id: servicio-mensajeria-otp
+          uri: ${URL_PROD_MENSAJERIA:https://luka-mensajeria.onrender.com}
+          predicates:
+            - Path=/api/v1/mensajeria/otp/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: mensajeriaCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: false
+
+        - id: servicio-nucleo-financiero
+          uri: ${URL_PROD_FINANCIERO:https://luka-financiero.onrender.com}
+          predicates:
+            - Path=/api/v1/financiero/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@userKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: financieroCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: true
+
+        - id: servicio-ia
+          uri: ${URL_PROD_IA:https://luka-ia-ojw0.onrender.com}
+          predicates:
+            - Path=/api/v1/ia/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 1
+                redis-rate-limiter.burstCapacity: 1
+                key-resolver: "#{@userKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: iaCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: true
+
+        - id: servicio-pagos
+          uri: ${URL_PROD_PAGO:https://luka-pagos.onrender.com}
+          predicates:
+            - Path=/api/v1/pagos/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: pagoCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: true
+
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:3000"
+              - "http://localhost:5173"
+              - ${FRONTEND_URL:http://localhost:3000}
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+              - PATCH
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+            maxAge: 3600
+
+# ═══════════════════════════════════════════════════════════════════════════
+# EUREKA CLIENT
+# EUREKA_CLIENT_ENABLED=true  → activar (Docker local)
+# EUREKA_CLIENT_ENABLED=false → desactivar (Render producción, valor por defecto)
+# ═══════════════════════════════════════════════════════════════════════
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka}
+    fetch-registry: ${EUREKA_CLIENT_ENABLED:false}
+    register-with-eureka: ${EUREKA_CLIENT_ENABLED:false}
+    registry-fetch-interval-seconds: 10
+    eureka-connection-idle-timeout-seconds: 30
+  instance:
+    hostname: ${EUREKA_INSTANCE_HOSTNAME:api-gateway}
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+    health-check-url-path: /actuator/health
+    status-page-url-path: /actuator/info
+    metadata-map:
+      startup: ${random.int}
+
+# ═══════════════════════════════════════════════════════════════════════════
+# JWT: Clave compartida para validar tokens (la de todos los ms)
+# En producción: usa variable de entorno JWT_SECRET_KEY
+# ═══════════════════════════════════════════════════════════════════════════
+app:
+  security:
+    jwt:
+      secret-key: ${JWT_SECRET_KEY:}
+    rutas-publicas: "/auth/,/api/v1/mensajeria/otp/,/api/v1/pagos/webhook,/v3/api-docs,/swagger-ui,/actuator/,/error/,/interno/,/api/v1/clientes/perfil/inicial"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ACTUATOR (Health Checks)
+# ═══════════════════════════════════════════════════════════════════════════
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway,metrics,env
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+    gateway:
+      enabled: true
+
+# ═══════════════════════════════════════════════════════════════════════════
+# LOGGING
+# ═══════════════════════════════════════════════════════════════════════════
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+  level:
+    root: INFO
+    org.springframework.cloud.gateway: INFO
+    org.springframework.security: WARN
+    com.netflix.eureka: WARN
+    com.netflix.discovery: WARN
+
+# ═══════════════════════════════════════════════════════════════════════════
+# RESILIENCE4J: Configuración de Circuit Breaker
+# ═══════════════════════════════════════════════════════════════════════════
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 10
+        permitted-number-of-calls-in-half-open-state: 3
+        wait-duration-in-open-state: 5s
+        failure-rate-threshold: 50
+        event-consumer-buffer-size: 10
+    instances:
+      usuarioCB:
+        base-config: default
+      clienteCB:
+        base-config: default
+      auditoriaCB:
+        base-config: default
+      mensajeriaCB:
+        base-config: default
+      financieroCB:
+        base-config: default
+      iaCB:
+        base-config: default
+      pagoCB:
+        base-config: default
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 15s
+    instances:
+      usuarioCB:
+        base-config: default
+      clienteCB:
+        base-config: default
+      auditoriaCB:
+        base-config: default
+      mensajeriaCB:
+        base-config: default
+      financieroCB:
+        base-config: default
+      iaCB:
+        base-config: default
+      pagoCB:
+        base-config: default

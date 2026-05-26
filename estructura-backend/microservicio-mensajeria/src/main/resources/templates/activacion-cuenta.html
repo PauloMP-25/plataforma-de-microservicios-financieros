@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:replace="~{layout-base :: layout(~{::title}, ~{::section})}">
+        <title>Bienvenido a Luka App - Activa tu cuenta</title>
+        <section>
+            <h2 style="color: #111827; margin-top: 0;">¡Hola! Bienvenido a Luka App</h2>
+            <p>Estamos emocionados de tenerte con nosotros. Para comenzar a utilizar nuestra plataforma y tomar el control de tus finanzas, necesitamos verificar tu dirección de correo electrónico.</p>
+            
+            <p>Por favor, ingresa el siguiente código de verificación en la aplicación:</p>
+            
+            <div class="otp-box" th:text="${codigo}">123456</div>
+            
+            <p>Este código es válido por <strong>10 minutos</strong>. Si no solicitaste esta cuenta, puedes ignorar este mensaje de forma segura.</p>
+            
+            <p>¡Gracias por unirte!<br>El equipo de <strong th:text="${appName}">Luka App</strong></p>
+        </section>
+    </div>
+</body>
+</html>

@@ -1,5 +1,7 @@
 package com.mensajeria.dominio.entidades;
 
+import com.libreria.comun.enums.PropositoCodigo;
+import com.libreria.comun.enums.TipoVerificacion;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -30,8 +32,9 @@ import java.util.UUID;
 public class CodigoVerificacion {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
 
     /**
      * Identificador del usuario en el Microservicio-Usuario. Campo OBLIGATORIO:
@@ -40,7 +43,7 @@ public class CodigoVerificacion {
     @Column(name = "usuario_id", nullable = false, updatable = false)
     private UUID usuarioId;
 
-    @Column(nullable = false, length = 150)
+    @Column(nullable = true, length = 150)
     private String email;
 
     @Column(name = "telefono", length = 20)
@@ -70,16 +73,7 @@ public class CodigoVerificacion {
     @Column(name = "fecha_uso")
     private LocalDateTime fechaUso;
 
-    // ─── Enum ────────────────────────────────────────────────────────────────
-    public enum TipoVerificacion {
-        EMAIL, PHONE
-    }
-
-    public enum PropositoCodigo {
-        ACTIVACION_CUENTA, RESTABLECER_PASSWORD
-    }
-
-    // ─── Lifecycle ───────────────────────────────────────────────────────────
+    // Lifecycle
     @PrePersist
     protected void alCrear() {
         fechaCreacion = LocalDateTime.now();
@@ -99,18 +93,7 @@ public class CodigoVerificacion {
     public boolean isExpirado() {
         return LocalDateTime.now().isAfter(fechaExpiracion);
     }
-
-    /**
-     * Valida el código ingresado contra el almacenado. Retorna true únicamente
-     * si no está usado, no expiró y los valores coinciden.
-     *
-     * @param codigoIngresado
-     * @return
-     */
-    public boolean isValido(String codigoIngresado) {
-        return !usado && !isExpirado() && codigo.equals(codigoIngresado);
-    }
-
+    
     /**
      * Validación optimizada: verifica si el código coincide, no ha sido usado,
      * no ha expirado y el propósito es el correcto.

@@ -1,0 +1,77 @@
+<section class="recuperar" id="pagina-nueva-contrasena">
+  <div class="recuperar__fondo">
+    <div class="recuperar__orbe recuperar__orbe--1"></div>
+    <div class="recuperar__orbe recuperar__orbe--2"></div>
+    <div class="recuperar__rejilla"></div>
+  </div>
+
+  <a routerLink="/recuperar-contrasena/codigo" class="recuperar__volver" id="btn-volver-codigo">
+    <i class="fas fa-arrow-left"></i> Volver
+  </a>
+
+  <div class="recuperar__tarjeta">
+    <!-- Estado: Formulario -->
+    <div *ngIf="!exitoso" class="recuperar__contenido">
+      <div class="recuperar__icono-principal">
+        <i class="fas fa-lock-open"></i>
+      </div>
+      <h1>Nueva Contraseña</h1>
+      <p class="recuperar__desc">Crea una nueva contraseña segura para tu cuenta.</p>
+
+      <form [formGroup]="formulario" (ngSubmit)="restablecerPassword()" class="recuperar__formulario" id="form-nueva-contrasena">
+        <div class="recuperar__campo">
+          <label class="recuperar__label">NUEVA CONTRASEÑA</label>
+          <div class="recuperar__input-grupo" [class.recuperar__input-grupo--error]="formulario.get('nuevoPassword')?.touched && formulario.get('nuevoPassword')?.invalid">
+            <i class="fas fa-lock recuperar__input-icono"></i>
+            <input [type]="mostrarPassword ? 'text' : 'password'" formControlName="nuevoPassword" placeholder="Mínimo 6 caracteres" class="recuperar__input" id="input-nueva-password">
+            <button type="button" class="recuperar__btn-ojo" (click)="alternarPassword()">
+              <i [class]="mostrarPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
+          </div>
+          <span class="recuperar__error" *ngIf="formulario.get('nuevoPassword')?.touched && formulario.get('nuevoPassword')?.hasError('required')">
+            La contraseña es obligatoria
+          </span>
+          <span class="recuperar__error" *ngIf="formulario.get('nuevoPassword')?.touched && formulario.get('nuevoPassword')?.hasError('minlength')">
+            Mínimo 6 caracteres
+          </span>
+        </div>
+
+        <div class="recuperar__campo">
+          <label class="recuperar__label">CONFIRMAR CONTRASEÑA</label>
+          <div class="recuperar__input-grupo" [class.recuperar__input-grupo--error]="formulario.get('confirmarPassword')?.touched && (formulario.get('confirmarPassword')?.invalid || formulario.hasError('noCoinciden'))">
+            <i class="fas fa-lock recuperar__input-icono"></i>
+            <input [type]="mostrarConfirmar ? 'text' : 'password'" formControlName="confirmarPassword" placeholder="Repite tu contraseña" class="recuperar__input" id="input-confirmar-nueva-password">
+            <button type="button" class="recuperar__btn-ojo" (click)="alternarConfirmar()">
+              <i [class]="mostrarConfirmar ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
+          </div>
+          <span class="recuperar__error" *ngIf="formulario.get('confirmarPassword')?.touched && formulario.get('confirmarPassword')?.hasError('required')">
+            Confirma tu contraseña
+          </span>
+          <span class="recuperar__error" *ngIf="formulario.get('confirmarPassword')?.touched && formulario.hasError('noCoinciden')">
+            Las contraseñas no coinciden
+          </span>
+        </div>
+
+        <button type="submit" class="recuperar__btn-submit" [disabled]="cargando" id="btn-restablecer-password">
+          <span *ngIf="!cargando">Restablecer Contraseña <i class="fas fa-check"></i></span>
+          <span *ngIf="cargando" class="recuperar__spinner"></span>
+        </button>
+
+        <div class="recuperar__error-general" *ngIf="errorMensaje">
+          <i class="fas fa-exclamation-circle"></i> {{ errorMensaje }}
+        </div>
+      </form>
+    </div>
+
+    <!-- Estado: Éxito -->
+    <div *ngIf="exitoso" class="recuperar__contenido recuperar__contenido--exito">
+      <div class="recuperar__icono-principal recuperar__icono-principal--exito">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <h1>¡Contraseña restablecida!</h1>
+      <p class="recuperar__desc">Tu contraseña ha sido actualizada exitosamente. Serás redirigido al inicio de sesión.</p>
+      <p class="recuperar__redireccion">Redirigiendo...</p>
+    </div>
+  </div>
+</section>

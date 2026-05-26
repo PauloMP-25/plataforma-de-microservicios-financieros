@@ -1,0 +1,186 @@
+@use '../autenticacion-compartido' as *;
+
+.auth__contenedor-maestro {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 900px;
+  min-height: 600px;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid $borde-sutil;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  background: $bg-tarjeta;
+  display: flex;
+}
+
+// ── Contenedores Deslizantes ──
+.auth__formulario-contenedor {
+  width: 50%;
+  position: relative;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  background: $bg-tarjeta;
+  z-index: 2;
+}
+
+.auth__lateral-contenedor {
+  width: 50%;
+  position: relative;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  background: $gradiente-primario;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 70%, rgba(255,255,255,0.08) 0%, transparent 60%);
+  }
+}
+
+// ── Vistas Interiores ──
+.auth__formulario-interior {
+  position: absolute;
+  inset: 0;
+  padding: 48px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: opacity 0.4s ease, visibility 0.4s;
+  overflow-y: auto;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  &.activo {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition-delay: 0.2s; // Aparece después de que el slide inicia
+  }
+
+  // Scrollbar para formulario si es alto
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: $borde-sutil; border-radius: 10px; }
+}
+
+.auth__lateral-interior {
+  position: absolute;
+  padding: 40px;
+  text-align: center;
+  transition: opacity 0.4s ease, visibility 0.4s, transform 0.4s;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(20px);
+
+  &.activo {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+    transition-delay: 0.2s;
+  }
+
+  h2 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 14px;
+  }
+
+  p {
+    color: rgba(255,255,255,0.85);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 32px;
+  }
+}
+
+// ── Estado "Registro" (Animación Slide) ──
+.mostrar-registro {
+  .auth__formulario-contenedor {
+    // Ambos paneles son 50%, el cruce es perfecto
+    transform: translateX(100%);
+  }
+  .auth__lateral-contenedor {
+    transform: translateX(-100%);
+  }
+}
+
+// ── Estado "Verificar" y "Exito" (misma posición que registro) ──
+.mostrar-verificar,
+.mostrar-exito {
+  .auth__formulario-contenedor {
+    transform: translateX(100%);
+  }
+  .auth__lateral-contenedor {
+    transform: translateX(-100%);
+  }
+}
+
+// ── Responsive ──
+@media (max-width: 768px) {
+  .auth__contenedor-maestro {
+    flex-direction: column-reverse;
+    min-height: auto;
+    max-width: 440px;
+  }
+
+  .auth__formulario-contenedor,
+  .auth__lateral-contenedor {
+    width: 100%;
+    transform: none !important; // Desactiva slide horizontal
+    transition: none;
+  }
+
+  .auth__lateral-contenedor {
+    padding: 30px 20px;
+    height: auto;
+    min-height: 200px;
+  }
+
+  .auth__formulario-contenedor {
+    height: auto;
+    min-height: 500px;
+  }
+
+  .auth__formulario-interior {
+    position: relative;
+    padding: 32px 24px;
+    display: none; // En móvil no usamos absolute, usamos display none
+    
+    &.activo {
+      display: flex;
+    }
+  }
+
+  .auth__lateral-interior {
+    position: relative;
+    padding: 0;
+    display: none;
+
+    &.activo {
+      display: block;
+    }
+  }
+}
+
+// ── Tema Claro ──
+:host-context(body.tema-claro) {
+  .auth { background: #F5F6FF; }
+  .auth__contenedor-maestro {
+    background: #FFFFFF;
+    border-color: #E2E5F1;
+    box-shadow: 0 20px 60px rgba(91,106,240,0.12);
+  }
+  .auth__formulario-contenedor {
+    background: #FFFFFF;
+  }
+}

@@ -1,0 +1,75 @@
+spring:
+  config:
+    import: optional:file:../.env[.properties]
+  application:
+    name: microservicio-pago
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/db_luka_pagos}
+    username: ${DATABASE_USER:postgres}
+    password: ${DATABASE_PASSWORD:adminUTP}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
+    virtual-host: ${SPRING_RABBITMQ_VIRTUAL_HOST:/}
+    connection-name: ${spring.application.name}
+    connection-timeout: 10000
+    listener:
+      simple:
+        auto-startup: true
+
+server:
+  port: 8087
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://admin:admin123@localhost:8761/eureka/}
+
+luka:
+  jwt:
+    clave-secreta: ${JWT_SECRET_KEY:}
+    expiracion-ms: 86400000
+
+stripe:
+  # Se añade ":sk_test_..." como respaldo por si no existe la variable de entorno
+  api-key: ${STRIPE_SECRET_KEY:sk_test_coloca_aqui_tu_clave_si_no_usas_variable}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_mock_secret}
+  success-url: ${FRONTEND_URL:http://localhost:3000}/suscripcion/exito
+  cancel-url: ${FRONTEND_URL:http://localhost:3000}/suscripcion/cancelado
+  product-pro-id: ${STRIPE_PRODUCT_PRO_ID:prod_UXcxMz1rEEfN0k}
+  price-pro-id: ${STRIPE_PRICE_PRO_ID:price_1TYXhuE4AqR3mWxPEqEN8HmA}
+  
+  # ============================================
+# LOGGING (CONVERTIDO A FORMATO YAML)
+# ============================================
+logging:
+  level:
+    root: INFO
+    com:
+      pagos: DEBUG # Cambiado de com.usuario a com.pagos por ser el paquete de este servicio
+    org:
+      springframework:
+        security: WARN
+        transaction: INFO
+        web: INFO
+        amqp: WARN
+        boot.actuate: WARN
+      hibernate:
+        SQL: INFO
+  pattern:
+    console: "%d{HH:mm:ss} %-5p - %msg%n"
+
+management:
+  endpoints:
+    web:
+      path-mapping:
+        health: health-internal

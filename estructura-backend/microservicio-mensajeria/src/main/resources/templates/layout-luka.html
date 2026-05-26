@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Luka App</title>
+</head>
+<body style="margin:0;padding:0;">
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
+            <h1 style="margin: 0;" th:text="${titulo}">Título</h1>
+            <p style="margin: 10px 0 0 0;">LUKA APP</p>
+        </div>
+        <div style="padding: 40px; text-align: center;">
+            <p style="color: #333; font-size: 16px;">Tu código de seguridad es:</p>
+            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <h1 style="color: #667eea; font-size: 48px; letter-spacing: 10px; margin: 0;" th:text="${codigo}">000000</h1>
+            </div>
+            <p style="color: #6c757d; font-size: 14px;">Válido por 10 minutos. Si no lo solicitaste, ignora este correo.</p>
+        </div>
+        <div style="padding: 20px; text-align: center; background-color: #343a40; color: #adb5bd; font-size: 12px;">
+            <p style="margin: 0;">Luka App — Seguridad Integral</p>
+        </div>
+    </div>
+</body>
+</html>

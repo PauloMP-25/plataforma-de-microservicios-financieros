@@ -4,6 +4,7 @@ import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * Feign Client que invoca el endpoint de activación de cuenta en el
@@ -17,16 +18,22 @@ import org.springframework.web.bind.annotation.PutMapping;
  */
 @FeignClient(
         name = "microservicio-usuario",
-        url = "${microservicio.usuario.url:http://localhost:8081}"
+        contextId = "clienteUsuario",
+        url = "${URL_PROD_USUARIO:http://localhost:8081}",
+        fallback = ClienteUsuarioFallback.class
 )
 public interface ClienteUsuario {
 
     /**
      * Activa la cuenta del usuario por su ID. Mapea al nuevo endpoint PUT en
      * MS-Usuario.
+     * 
      * @param usuarioId
-     * @return 
+     * @param telefono
+     * @return
      */
     @PutMapping("/api/v1/auth/activar/{usuarioId}")
-    String activarCuenta(@PathVariable("usuarioId") UUID usuarioId);
+    com.libreria.comun.respuesta.ResultadoApi<String> activarCuenta(
+            @PathVariable("usuarioId") UUID usuarioId,
+            @RequestParam("telefono") String telefono);
 }

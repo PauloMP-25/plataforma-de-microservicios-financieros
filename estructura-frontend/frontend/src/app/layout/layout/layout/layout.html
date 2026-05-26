@@ -1,0 +1,16 @@
+
+<div class="luka-layout">
+
+  <app-sidebar></app-sidebar>
+
+  <div class="luka-main" [class.collapsed]="sidebarState.collapsed()">
+    <app-header></app-header>
+
+    <main class="luka-content">
+      <div class="content-inner">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+  </div>
+
+</div>

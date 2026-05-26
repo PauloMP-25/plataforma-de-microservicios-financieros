@@ -1,8 +1,9 @@
 package com.mensajeria.dominio.repositorios;
 
 import com.mensajeria.dominio.entidades.CodigoVerificacion;
-import com.mensajeria.dominio.entidades.CodigoVerificacion.PropositoCodigo; // Importante
+import com.libreria.comun.enums.PropositoCodigo;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,37 +13,39 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Repositorio para la gestión de códigos de verificación OTP.
+ * <p>
+ * Extiende JpaSpecificationExecutor para soportar el Specification Pattern,
+ * permitiendo auditorías y limpiezas dinámicas.
+ * </p>
+ * 
+ * @author Paulo Moron
+ * @version 1.2.0
+ */
 @Repository
-public interface CodigoVerificacionRepository extends JpaRepository<CodigoVerificacion, Long> {
+public interface CodigoVerificacionRepository extends JpaRepository<CodigoVerificacion, UUID>, JpaSpecificationExecutor<CodigoVerificacion> {
 
     /**
-     * Busca el código más reciente, no usado, filtrando por Usuario y
-     * PROPÓSITO. Esto evita que un código de activación se use para resetear
-     * password.
-     * @param usuarioId
-     * @param proposito
-     * @return
+     * Busca el código más reciente, no usado, filtrando por Usuario y PROPÓSITO.
      */
     Optional<CodigoVerificacion> findTopByUsuarioIdAndPropositoAndUsadoFalseOrderByFechaCreacionDesc(
             UUID usuarioId,
             PropositoCodigo proposito
     );
 
+    Optional<CodigoVerificacion> findByIdAndCodigoAndUsadoFalse(UUID id, String codigo);
+    
     /**
      * Limpieza profunda: Elimina códigos expirados Y códigos ya utilizados.
-     * Esto mantiene la tabla ligera y rápida.
-     * @param fecha
-     * @return
      */
     @Modifying
     @Query("DELETE FROM CodigoVerificacion c WHERE c.fechaExpiracion < :fecha OR c.usado = true")
     int eliminarCodigosObsoletos(@Param("fecha") LocalDateTime fecha);
 
+    
     /**
-     * Busca un código específico en toda la tabla (sin importar el usuario aún). 
-     * Esto es vital para el flujo de recuperación de contraseña.
-     * @param codigo
-     * @return 
+     * Cuenta cuántos códigos ha solicitado un usuario para un propósito desde una fecha dada.
      */
-    Optional<CodigoVerificacion> findTopByCodigoAndUsadoFalseOrderByFechaCreacionDesc(String codigo);
+    long countByUsuarioIdAndPropositoAndFechaCreacionAfter(UUID usuarioId, PropositoCodigo proposito, LocalDateTime fecha);
 }

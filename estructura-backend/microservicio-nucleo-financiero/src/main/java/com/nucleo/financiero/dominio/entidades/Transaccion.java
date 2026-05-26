@@ -7,6 +7,17 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * Entidad núcleo que representa un movimiento financiero (Ingreso o Egreso).
+ * <p>
+ * Almacena la información transaccional detallada, incluyendo montos, categorías,
+ * métodos de pago y metadatos para auditoría. Es la fuente principal para el
+ * motor de IA.
+ * </p>
+ * 
+ * @author Luka-Dev-Backend
+ * @version 1.1.0
+ */
 @Entity
 @Table(
     name = "transacciones",
@@ -18,8 +29,6 @@ import java.util.UUID;
         @Index(name = "idx_transaccion_cliente",   columnList = "nombre_cliente")
     }
 )
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -27,8 +36,8 @@ import java.util.UUID;
 public class Transaccion {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(updatable = false, nullable = false)
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     private UUID id;
 
     @Column(name = "usuario_id", nullable = false)
@@ -64,10 +73,17 @@ public class Transaccion {
     @Column(name = "fecha_registro", nullable = false, updatable = false)
     private LocalDateTime fechaRegistro;
 
+    /**
+     * Catálogo de métodos de pago soportados por la plataforma.
+     */
     public enum MetodoPago {
+        /** Pago en moneda física */
         EFECTIVO,
+        /** Uso de tarjetas de crédito o débito */
         TARJETA,
+        /** Operación bancaria directa */
         TRANSFERENCIA,
+        /** Wallets o pasarelas de pago (Mercado Pago, Culqui) */
         DIGITAL
     }
 
