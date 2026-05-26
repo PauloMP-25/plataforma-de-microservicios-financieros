@@ -118,16 +118,28 @@ class ServicioAnalisis:
             # 4. Lógica Analítica + Prompting (Solo si no hay caché)
             logger.info("[CACHE-MISS] Ejecutando motor analítico y Gemini para usuario=%s", peticion.usuario_id)
             metricas = servicio.ejecutar_calculos(df, contexto, **kwargs)
-            prompt = servicio.orquestar_prompt(metricas, contexto)
 
-            # 5. Ejecución en Coach IA (Circuit Breaker incluido en FASE 3)
-            consejo, estado, fallback = await self._coach.obtener_consejo_ia(
-                peticion.usuario_id, modulo_enum, prompt, metricas, contexto.rol, contexto.nombres
-            )
-
+            # Calcular totales financieros antes de invocar la IA, para inyectar en métricas para el fallback
             total_txs = len(df) if not df.empty else 0
             total_ing = float(df[df['tipo'] == 'INGRESO']['monto'].sum()) if not df.empty else 0.0
             total_gas = float(df[df['tipo'] == 'GASTO']['monto'].sum()) if not df.empty else 0.0
+
+            metricas["_total_ingresos"] = total_ing
+            metricas["_total_gastos"] = total_gas
+
+            prompt = servicio.orquestar_prompt(metricas, contexto)
+
+            # 5. Ejecución en Coach IA (Circuit Breaker incluido en FASE 3)
+            # Pasamos el contexto completo para que el motor de reglas de fallback pueda formatear la respuesta
+            consejo, estado, fallback = await self._coach.obtener_consejo_ia(
+                peticion.usuario_id, 
+                modulo_enum, 
+                prompt, 
+                metricas, 
+                contexto.rol, 
+                contexto.nombres, 
+                contexto=contexto
+            )
 
             insight_dto = InsightAnalitico(
                 modulo=modulo_enum,
