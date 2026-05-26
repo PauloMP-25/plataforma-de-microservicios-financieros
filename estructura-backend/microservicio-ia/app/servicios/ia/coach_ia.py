@@ -16,7 +16,7 @@ import logging
 import asyncio
 import json
 from typing import Optional, Tuple, Any, Dict
-from datetime import datetime
+from datetime import datetime, date
 import google.generativeai as genai
 import pybreaker
 import unicodedata
@@ -149,12 +149,27 @@ class CoachIA:
         
         # Parsear JSON de forma segura
         texto_crudo = self._limpiar_texto(respuesta.text)
+        texto_limpio = texto_crudo.strip()
+        
+        # Eliminar bloques de código markdown ```json ... ``` si están presentes
+        if texto_limpio.startswith("```"):
+            idx_salto = texto_limpio.find("\n")
+            if idx_salto != -1:
+                texto_limpio = texto_limpio[idx_salto:].strip()
+            if texto_limpio.endswith("```"):
+                texto_limpio = texto_limpio[:-3].strip()
+
         try:
-            datos_json = json.loads(texto_crudo)
-            consejo_final = datos_json.get("consejo", texto_crudo)
+            datos_json = json.loads(texto_limpio)
+            consejo_final = datos_json.get("consejo", texto_limpio)
         except json.JSONDecodeError:
-            logger.warning("[COACH-IA] Gemini no devolvió JSON válido. Usando respuesta raw.")
-            consejo_final = texto_crudo
+            logger.warning("[COACH-IA] Gemini no devolvió JSON válido. Intentando extraer el campo 'consejo' manualmente.")
+            # Intento de extracción manual como contingencia
+            match = re.search(r'"consejo"\s*:\s*"(.*?)"', texto_limpio, re.DOTALL)
+            if match:
+                consejo_final = match.group(1).replace('\\"', '"').replace('\\n', '\n')
+            else:
+                consejo_final = texto_limpio
             
         return consejo_final.strip(), in_tokens, out_tokens
 
@@ -175,7 +190,7 @@ class CoachIA:
                 descripcion=f"CONSUMO_TOKENS_GEMINI_{modulo}",
                 valor_anterior="0",
                 valor_nuevo=str(tokens),
-                fecha=datetime.now()
+                fecha=date.today()
             )
             await publicador_auditoria.publicar_evento(evento)
             logger.info(f"[AUDITORIA-IA] {usuario_id} consumió {tokens} tokens (${costo})")
