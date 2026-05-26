@@ -172,3 +172,30 @@ async def clasificar_transaccion(
         mensaje="Sugerencias de categorías generadas",
         ruta=request.url.path,
     )
+
+
+# ── Admin: Mantenimiento de Caché ────────────────────────────────────────────
+
+@router.delete("/admin/cache/flush", response_model=ResultadoApi[dict])
+async def flush_cache_ia(
+    request: Request,
+    patron: str = "ia:*",
+    payload: dict = Security(validar_token),
+):
+    """
+    [ADMIN] Limpia todas las claves de caché Redis que coincidan con el patrón.
+    Por defecto elimina ia:* (consejos + cuotas). Requiere JWT válido.
+    Útil para forzar que Gemini regenere consejos después de correcciones de código.
+    """
+    from app.persistencia.cache_redis import CacheRedis
+    cache = CacheRedis()
+    eliminadas = cache.flush_ia_cache(patron=patron)
+    logger.warning(
+        "[ADMIN-CACHE-FLUSH] Usuario %s eliminó %d claves Redis (patron='%s')",
+        obtener_usuario_id(payload), eliminadas, patron
+    )
+    return ResultadoApi.exito_res(
+        datos={"claves_eliminadas": eliminadas, "patron": patron},
+        mensaje=f"Cache limpiada: {eliminadas} clave(s) eliminadas",
+        ruta=request.url.path,
+    )

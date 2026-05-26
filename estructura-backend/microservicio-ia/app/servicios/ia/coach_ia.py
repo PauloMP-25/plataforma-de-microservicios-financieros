@@ -14,13 +14,11 @@ Responsabilidades:
 from __future__ import annotations
 import logging
 import asyncio
-import json
 from typing import Optional, Tuple, Any, Dict
 from datetime import datetime, date
 import google.generativeai as genai
 import pybreaker
 import unicodedata
-import re
 import uuid
 
 from app.configuracion import Configuracion, obtener_configuracion
@@ -57,7 +55,8 @@ class CoachIA:
         self._config_generacion = genai.types.GenerationConfig(
             max_output_tokens=config.gemini_max_tokens,
             temperature=config.gemini_temperatura,
-            response_mime_type="application/json",
+            # NO usar response_mime_type="application/json": limita la salida a ~30 tokens.
+            # Gemini responde en texto plano / Markdown directamente.
         )
         self._cache_redis = CacheRedis()
 
@@ -143,48 +142,32 @@ class CoachIA:
             return self._ejecutar_fallback(usuario_id, modulo, datos_para_hash, str(exc), nombres, contexto), estado, True
 
     def _llamar_gemini_api(self, prompt: str) -> Tuple[str, int, int]:
-        # FASE 6: Exigir esquema JSON estricto para evitar fallos de parseo
-        prompt_json = (
+        # Instrucción final: respuesta directa en Markdown, sin JSON, sin emojis
+        prompt_final = (
             f"{prompt}\n\n"
-            f"IMPORTANTE: NO uses emojis en tu respuesta. Debes responder ÚNICAMENTE con un objeto JSON válido "
-            f"que contenga exactamente esta estructura: {{\"consejo\": \"<Tu consejo formateado en markdown>\"}}."
+            f"IMPORTANTE: Responde DIRECTAMENTE en formato Markdown. "
+            f"NO uses emojis. NO envuelvas la respuesta en JSON ni en bloques de código. "
+            f"El texto que escribas será mostrado directamente al usuario."
         )
-        
+
         respuesta = self._modelo.generate_content(
-            prompt_json,
+            prompt_final,
             generation_config=self._config_generacion,
         )
-        
+
         # Extraer métricas de tokens
         usage = respuesta.usage_metadata
         in_tokens = usage.prompt_token_count
         out_tokens = usage.candidates_token_count
-        
-        # Parsear JSON de forma segura
-        texto_crudo = self._limpiar_texto(respuesta.text)
-        texto_limpio = texto_crudo.strip()
-        
-        # Eliminar bloques de código markdown ```json ... ``` si están presentes
-        if texto_limpio.startswith("```"):
-            idx_salto = texto_limpio.find("\n")
-            if idx_salto != -1:
-                texto_limpio = texto_limpio[idx_salto:].strip()
-            if texto_limpio.endswith("```"):
-                texto_limpio = texto_limpio[:-3].strip()
 
-        try:
-            datos_json = json.loads(texto_limpio)
-            consejo_final = datos_json.get("consejo", texto_limpio)
-        except json.JSONDecodeError:
-            logger.warning("[COACH-IA] Gemini no devolvió JSON válido. Intentando extraer el campo 'consejo' manualmente.")
-            # Intento de extracción manual como contingencia
-            match = re.search(r'"consejo"\s*:\s*"(.*?)"', texto_limpio, re.DOTALL)
-            if match:
-                consejo_final = match.group(1).replace('\\"', '"').replace('\\n', '\n')
-            else:
-                consejo_final = texto_limpio
-            
-        return consejo_final.strip(), in_tokens, out_tokens
+        # La respuesta ya es Markdown puro — solo limpiamos espacios y saltos extra
+        consejo_final = self._limpiar_texto(respuesta.text)
+
+        logger.info(
+            "[COACH-IA] Consejo generado: %d caracteres | %d tokens entrada | %d tokens salida.",
+            len(consejo_final), in_tokens, out_tokens
+        )
+        return consejo_final, in_tokens, out_tokens
 
     def _calcular_costo_usd(self, in_tokens: int, out_tokens: int) -> float:
         config = obtener_configuracion()
