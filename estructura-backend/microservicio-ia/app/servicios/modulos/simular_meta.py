@@ -52,10 +52,10 @@ class SimularMetaService(BaseAnalisisService):
 
         return {
             "meta_nombre": kwargs.get("meta_nombre", "Mi Meta"),
-            "es_viable": meses_estimados < 48, # Viable si es menos de 4 años
+            "es_viable": bool(meses_estimados < 48), # Viable si es menos de 4 años
             "meses_para_lograrlo": round(meses_estimados, 1),
             "capacidad_ahorro_mensual": round(capacidad_ahorro, 2),
-            "viabilidad_fecha_objetivo": es_viable_en_fecha if fecha_deseada_str else None,
+            "viabilidad_fecha_objetivo": bool(es_viable_en_fecha) if fecha_deseada_str else None,
             "ahorro_faltante": round(faltante, 2)
         }
 

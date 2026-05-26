@@ -28,46 +28,95 @@ class CacheRedis:
             logger.error(f"[CACHE-REDIS] Error al conectar: {e}")
             self._client = None
 
-    def obtener_consejo(self, hash_datos: str) -> Optional[str]:
-        """Recupera un consejo de la caché usando el hash de los datos."""
+    def obtener_firma(self, clave: str) -> Optional[str]:
+        """Obtiene la firma de una consulta previa para verificar duplicidad."""
         if not self._client:
             return None
         try:
-            return self._client.get(f"ia:consejo:{hash_datos}")
+            return self._client.get(clave)
         except Exception as e:
-            logger.warning(f"[CACHE-REDIS] Error al obtener: {e}")
+            logger.warning(f"[CACHE-REDIS] Error al obtener firma {clave}: {e}")
             return None
 
-    def guardar_consejo(self, hash_datos: str, consejo: str, ttl: int = None):
-        """Guarda un consejo en la caché con un tiempo de vida (TTL)."""
+    def registrar_consulta(self, clave_firma: str, descripcion: str, ttl: int = 604800):
+        """Registra la firma de una consulta con su descripción y un TTL de 7 días."""
         if not self._client:
             return
         try:
-            tiempo = ttl or config.redis_ttl_segundos
-            self._client.setex(f"ia:consejo:{hash_datos}", tiempo, consejo)
+            self._client.setex(clave_firma, ttl, descripcion)
         except Exception as e:
-            logger.warning(f"[CACHE-REDIS] Error al guardar: {e}")
+            logger.warning(f"[CACHE-REDIS] Error al registrar consulta {clave_firma}: {e}")
 
-    def invalidar_cache_cliente(self, cliente_id: str) -> int:
-        """
-        Elimina todos los consejos cacheados con patrón ia:consejo:*.
-        Retorna el número de claves eliminadas.
-        """
-        return self.flush_ia_cache()
-
-    def eliminar_por_hash(self, hash_datos: str):
-        """Elimina una entrada específica."""
+    def obtener_cuota_actual(self, clave: str) -> int:
+        """Devuelve el contador de cuota actual."""
         if not self._client:
-            return
+            return 0
         try:
-            self._client.delete(f"ia:consejo:{hash_datos}")
+            valor = self._client.get(clave)
+            return int(valor) if valor else 0
         except Exception as e:
-            logger.warning(f"[CACHE-REDIS] Error al eliminar: {e}")
+            logger.warning(f"[CACHE-REDIS] Error al obtener cuota {clave}: {e}")
+            return 0
+
+    def incrementar_cuota(self, clave: str, ttl_segundos: int) -> int:
+        """Incrementa de forma atómica la cuota diaria/semanal y asegura el TTL con pipeline."""
+        if not self._client:
+            return 0
+        try:
+            pipeline = self._client.pipeline()
+            pipeline.incr(clave)
+            pipeline.expire(clave, ttl_segundos)
+            resultados = pipeline.execute()
+            return resultados[0]
+        except Exception as e:
+            logger.warning(f"[CACHE-REDIS] Error al incrementar cuota {clave}: {e}")
+            return 0
+
+    def flush_firmas_usuario(self, usuario_id: str) -> int:
+        """Elimina todas las firmas de consulta para un usuario específico (para volver a consultar)."""
+        if not self._client:
+            return 0
+        try:
+            patron = f"ia:firma:{usuario_id}:*"
+            cursor = 0
+            total_eliminadas = 0
+            while True:
+                cursor, keys = self._client.scan(cursor, match=patron, count=100)
+                if keys:
+                    self._client.delete(*keys)
+                    total_eliminadas += len(keys)
+                if cursor == 0:
+                    break
+            logger.info(f"[CACHE-REDIS] flush_firmas_usuario: {total_eliminadas} firmas eliminadas para usuario {usuario_id}.")
+            return total_eliminadas
+        except Exception as e:
+            logger.error(f"[CACHE-REDIS] Error en flush_firmas_usuario para {usuario_id}: {e}")
+            return 0
+
+    def flush_cuotas(self) -> int:
+        """Elimina todos los contadores de cuota (ia:cuota:*)."""
+        if not self._client:
+            return 0
+        try:
+            patron = "ia:cuota:*"
+            cursor = 0
+            total_eliminadas = 0
+            while True:
+                cursor, keys = self._client.scan(cursor, match=patron, count=100)
+                if keys:
+                    self._client.delete(*keys)
+                    total_eliminadas += len(keys)
+                if cursor == 0:
+                    break
+            logger.info(f"[CACHE-REDIS] flush_cuotas: {total_eliminadas} cuotas eliminadas.")
+            return total_eliminadas
+        except Exception as e:
+            logger.error(f"[CACHE-REDIS] Error en flush_cuotas: {e}")
+            return 0
 
     def flush_ia_cache(self, patron: str = "ia:*") -> int:
         """
         Elimina TODAS las claves que coincidan con el patrón dado.
-        Por defecto elimina toda la cache de la IA (ia:consejo:*, ia:cuota:*, etc.).
         Usa SCAN para no bloquear Redis en producción.
         Retorna el número de claves eliminadas.
         """

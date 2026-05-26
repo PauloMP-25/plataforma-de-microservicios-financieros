@@ -19,7 +19,7 @@ from app.servicios.core.base_analisis import BaseAnalisisService
 
 logger = logging.getLogger(__name__)
 
-class PredecirGastosService(BaseAnalisisService):
+class PrediccionGastosService(BaseAnalisisService):
     """
     Implementación del Módulo PREDECIR_GASTOS.
     Utiliza regresión lineal simple sobre los totales mensuales para proyectar.
@@ -43,8 +43,7 @@ class PredecirGastosService(BaseAnalisisService):
         self.validar_historial(df)
         
         # 1. Preparar datos temporales
-        col_fecha = self._detectar_columna_fecha(df)
-        df['fecha_dt'] = pd.to_datetime(df[col_fecha])
+        df['fecha_dt'] = pd.to_datetime(df['fecha'])
         
         # Agrupar gastos por mes
         df_gastos = df[df['tipo'].str.upper() == "GASTO"].copy()
@@ -86,6 +85,8 @@ class PredecirGastosService(BaseAnalisisService):
             "tiene_datos": True,
             "promedio_historico": float(y.mean()),
             "proyeccion_proximo_mes": round(proyeccion_proximo_mes, 2),
+            "gasto_proyectado": round(proyeccion_proximo_mes, 2),
+            "balance_proyectado": round(ingreso_mensual - proyeccion_proximo_mes, 2),
             "pendiente": round(pendiente, 2),
             "porcentaje_variacion_mensual": round(porcentaje_variacion, 1),
             "ingreso_mensual": ingreso_mensual,
@@ -129,3 +130,7 @@ Genera una advertencia financiera para {contexto.primer_nombre}:
 3. Da UNA recomendación matemática basada en la tendencia (ej: 'necesitas bajar un 10% tus gastos para no entrar en déficit').
 
 Máximo 150 palabras. Sin markdown pesado."""
+
+# Alias de compatibilidad
+PredecirGastosService = PrediccionGastosService
+
