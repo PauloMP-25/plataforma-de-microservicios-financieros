@@ -114,9 +114,16 @@
           [cargando]="cargando()">
         </app-ia-reto-ahorro>
 
+        <!-- Módulo Simulación de Meta: La Máquina del Tiempo -->
+        <app-ia-simular-meta
+          *ngIf="moduloSeleccionado()?.id === 'simular-meta'"
+          [resultado]="resultado()"
+          [cargando]="cargando()">
+        </app-ia-simular-meta>
+
         <!-- Otros módulos: Vista genérica de resultados -->
         <app-ia-resultado
-          *ngIf="moduloSeleccionado()?.id !== 'gasto-hormiga' && moduloSeleccionado()?.id !== 'predecir-gastos' && moduloSeleccionado()?.id !== 'habitos-financieros' && moduloSeleccionado()?.id !== 'reto-ahorro'"
+          *ngIf="moduloSeleccionado()?.id !== 'gasto-hormiga' && moduloSeleccionado()?.id !== 'predecir-gastos' && moduloSeleccionado()?.id !== 'habitos-financieros' && moduloSeleccionado()?.id !== 'reto-ahorro' && moduloSeleccionado()?.id !== 'simular-meta'"
           [resultado]="resultado()"
           [cargando]="cargando()">
         </app-ia-resultado>

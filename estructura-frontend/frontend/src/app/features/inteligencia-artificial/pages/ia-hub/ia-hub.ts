@@ -13,6 +13,8 @@ import { IaGastoHormigaComponent } from '../../components/ia-gasto-hormiga/ia-ga
 import { IaPrediccionGastosComponent } from '../../components/ia-prediccion-gastos/ia-prediccion-gastos';
 import { IaHabitosFinancierosComponent } from '../../components/ia-habitos-financieros/ia-habitos-financieros';
 import { IaRetoAhorroComponent } from '../../components/ia-reto-ahorro/ia-reto-ahorro';
+import { IaSimularMetaComponent } from '../../components/ia-simular-meta/ia-simular-meta';
+
 
 
 
@@ -127,7 +129,8 @@ const IA_MODULOS: IaModulo[] = [
     IaGastoHormigaComponent,
     IaPrediccionGastosComponent,
     IaHabitosFinancierosComponent,
-    IaRetoAhorroComponent
+    IaRetoAhorroComponent,
+    IaSimularMetaComponent
   ],
   templateUrl: './ia-hub.html',
   styleUrl: './ia-hub.scss'
@@ -342,8 +345,10 @@ export class IaHubComponent implements OnInit, OnDestroy {
         meta_nombre: payload?.nombre_meta || 'Laptop Gamer',
         monto_objetivo: Number(payload?.monto_objetivo) || 3500,
         aporte_mensual: Number(payload?.aporte_mensual_deseado) || 350,
-        meses_estimados: Math.ceil((Number(payload?.monto_objetivo) || 3500) / (Number(payload?.aporte_mensual_deseado) || 350)),
+        meses_estimados: 6.5,
         fecha_proyectada: 'Marzo 2027',
+        viabilidad_fecha_objetivo: true,
+        ahorro_faltante: 3000.00,
         escenario_alternativo: {
           aporte: (Number(payload?.aporte_mensual_deseado) || 350) + 150,
           meses: Math.ceil((Number(payload?.monto_objetivo) || 3500) / ((Number(payload?.aporte_mensual_deseado) || 350) + 150))
@@ -378,7 +383,7 @@ export class IaHubComponent implements OnInit, OnDestroy {
       'habitos-financieros': '¡Hola Paulo! He notado que tus **Sábados a las 6 PM** son el momento donde tu billetera más sufre, especialmente en **\'Restaurantes\'**. Parece que el fin de semana te invita a celebrar, ¡y eso está bien!, pero esos pequeños impulsos están frenando tu meta de la **Laptop Gamer**. <br/><br/>**Hábito Atómico:** Prueba la **\'Regla de las 48 horas\'**: si ves algo que quieres comprar un sábado, espérate al lunes. Si aún lo quieres, cómpralo. Verás cómo el 80% de esos antojos desaparecen solos. ¡Tú tienes el control!',
       'estilo-vida': '🌿 **Perfil de Estilo de Vida:** "Explorador Consciente". Inviertes en memorias pero ahorras poco. Te aconsejamos ajustar al modelo 50% necesidades, 30% deseos y 20% ahorro.',
       'reporte-completo': '📊 **Reporte 360° Ejecutivo:** Balance positivo de S/. 720. Vas por buen camino, pero mantente alerta a la categoría de alimentación fuera del hogar que creció un 15% este mes.',
-      'simular-meta': `🎯 **Simulador de Metas:** Para tu meta de **"${payload?.nombre_meta || 'Laptop Gamer'}"** (S/. ${payload?.monto_objetivo || 3500}), aportando S/. ${payload?.aporte_mensual_deseado || 350} al mes, lo lograrás en **${Math.ceil((payload?.monto_objetivo || 3500) / (payload?.aporte_mensual_deseado || 350))} meses** (Marzo 2027).`,
+      'simular-meta': `¡Paulo, tu meta de la **'Laptop Gamer'** es **TOTALMENTE VIABLE** y estás más cerca de lo que crees! Con tu capacidad de ahorro actual de S/ 450.00 al mes y tu ahorro previo de S/ 500.00, en aproximadamente **6.5 meses** estarás estrenando equipo. Pero espera, he analizado tus finanzas y si logras optimizar solo un poco tus gastos de ocio, podrías subir ese aporte a S/ 550.00 y tenerla en solo 5 meses. ¡Imagina la potencia de ese procesador trabajando para ti medio año antes! Mantén el enfoque, cada sol ahorrado hoy es un frame más por segundo en tu nueva computadora. ¡Tú puedes!`,
       'reto-ahorro': '¡Misión: Operación Cocina en Casa! 🏆 Paulo, he detectado que tu \'Enemigo Final\' de esta semana son los Restaurantes. Tu misión, si decides aceptarla, es evitar comer fuera por los próximos 7 días. Si lo logras, habrás salvado **S/ 85.00** para tu fondo de la \'Laptop Gamer\'. ¿Aceptas el reto, Jugador 1?',
       'clasificar-transaccion': `🏷️ **Clasificación sugerida:** Para "${payload?.descripcion || 'Rappi Alimentos'}" de S/. ${payload?.monto || 45.00}, Gemini Pro recomienda la categoría **"Alimentación"** con 95% de confianza.`
     };
