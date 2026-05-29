@@ -28,6 +28,7 @@ export class IaPrediccionGastosComponent implements OnChanges, OnDestroy {
   porcentajeVariacion = signal<number>(0);
   deficitEstimado = signal<number>(0);
   historialMeses = signal<number[]>([]);
+  ingresoEsperado = signal<number>(2000.00);
   
   consejoTexto = signal<string>('');
   consejoVisible = signal<boolean>(false);
@@ -136,6 +137,7 @@ export class IaPrediccionGastosComponent implements OnChanges, OnDestroy {
     this.porcentajeVariacion.set(insight.porcentaje_variacion_mensual ?? 0);
     this.deficitEstimado.set(insight.deficit_estimado ?? 0);
     this.historialMeses.set(insight.historial_meses ?? []);
+    this.ingresoEsperado.set(insight.ingreso_esperado ?? 2000.00);
 
     this.iniciarTypewriter(this.resultado?.consejo ?? '');
   }

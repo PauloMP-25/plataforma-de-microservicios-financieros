@@ -92,6 +92,29 @@
         </div>
       </div>
 
+      <!-- Widget Complementario: El Termómetro del Futuro -->
+      <div class="future-thermometer-widget" [class.boiling]="proyeccionProximoMes() > ingresoEsperado()">
+        <div class="thermometer-glass">
+          <div class="thermometer-fluid-track">
+            <div class="thermometer-fluid-level" [style.height.%]="(proyeccionProximoMes() / 2500) * 100">
+              <div class="boiling-bubbles" *ngIf="proyeccionProximoMes() > ingresoEsperado()">
+                <span class="bubble-particle"></span>
+                <span class="bubble-particle"></span>
+                <span class="bubble-particle"></span>
+                <span class="bubble-particle"></span>
+              </div>
+            </div>
+            <div class="income-threshold-line" [style.bottom.%]="(ingresoEsperado() / 2500) * 100">
+              <span class="threshold-label">Límite S/. {{ ingresoEsperado() | number:'1.0-0' }}</span>
+            </div>
+          </div>
+          <div class="thermometer-bulb-future"></div>
+        </div>
+        <div class="thermometer-label-tag">
+          <span>{{ proyeccionProximoMes() > ingresoEsperado() ? '🔥 EXCESO!' : 'ESTABLE' }}</span>
+        </div>
+      </div>
+
       <!-- Satélites Orbitando en 3D -->
       <div class="satellites-orbit">
         <!-- Satélite 1: Pendiente/Tendencia -->
