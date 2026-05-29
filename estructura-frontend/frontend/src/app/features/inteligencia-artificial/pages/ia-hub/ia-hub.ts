@@ -9,6 +9,8 @@ import { RespuestaModuloDTO } from '../../../../core/models/financiero/ia.model'
 import { IaModuloCardComponent } from '../../components/ia-modulo-card/ia-modulo-card';
 import { IaPanelActivoComponent } from '../../components/ia-panel-activo/ia-panel-activo';
 import { IaResultadoComponent } from '../../components/ia-resultado/ia-resultado';
+import { IaGastoHormigaComponent } from '../../components/ia-gasto-hormiga/ia-gasto-hormiga';
+import { IaPrediccionGastosComponent } from '../../components/ia-prediccion-gastos/ia-prediccion-gastos';
 
 
 export interface IaModulo {
@@ -118,7 +120,9 @@ const IA_MODULOS: IaModulo[] = [
     RouterModule,
     IaModuloCardComponent,
     IaPanelActivoComponent,
-    IaResultadoComponent
+    IaResultadoComponent,
+    IaGastoHormigaComponent,
+    IaPrediccionGastosComponent
   ],
   templateUrl: './ia-hub.html',
   styleUrl: './ia-hub.scss'
@@ -225,16 +229,27 @@ export class IaHubComponent implements OnInit, OnDestroy {
     
     const insights: Record<string, any> = {
       'gasto-hormiga': {
-        fuga_total: 184.00,
+        hay_hormigas: true,
+        principal_gasto_hormiga: 'Cafetería',
+        total_gastos_hormiga: 184.00,
+        proyeccion_fuga_anual: 2208.00,
+        ingreso_mensual_referencia: 3200.00,
+        variacion_vs_mes_anterior: 14.2,
         gastos_detectados: [
-          { descripcion: 'Café Espresso diario', frecuencia: '22 veces/mes', total: 154.00, categoria: 'Cafetería' },
-          { descripcion: 'Suscripción inactiva App', frecuencia: '1 vez/mes', total: 30.00, categoria: 'Suscripciones' }
+          { descripcion: 'Café Espresso diario', frecuencia: '22 veces/mes', total: 154.00, categoria: 'Cafetería', promedio_por_compra: 7.00, dia_mayor_gasto: 'Lunes' },
+          { descripcion: 'Suscripción inactiva App', frecuencia: '1 vez/mes', total: 30.00, categoria: 'Suscripciones', promedio_por_compra: 30.00, dia_mayor_gasto: 'N/A' }
         ]
       },
       'predecir-gastos': {
         prediccion_total: 2340.00,
         variacion_estimada: 12.5,
-        alertas: ['Incremento en entretenimiento detectado para los fines de semana', 'Gasto proyectado en servicios básicos estable']
+        alertas: ['Incremento en entretenimiento detectado para los fines de semana', 'Gasto proyectado en servicios básicos estable'],
+        promedio_historico: 2100.00,
+        proyeccion_proximo_mes: 2340.00,
+        pendiente: 'SUBE',
+        porcentaje_variacion_mensual: 12.5,
+        deficit_estimado: 140.00,
+        historial_meses: [1950, 2050, 2010, 2200, 2100]
       },
       'habitos-financieros': {
         puntuacion_habito: 72,

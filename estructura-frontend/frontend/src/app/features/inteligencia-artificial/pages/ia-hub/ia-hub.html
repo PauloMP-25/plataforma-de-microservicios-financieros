@@ -86,7 +86,23 @@
       </div>
 
       <div class="console-column right">
+        <!-- Módulo Gasto Hormiga: Vista temática del Detective -->
+        <app-ia-gasto-hormiga
+          *ngIf="moduloSeleccionado()?.id === 'gasto-hormiga'"
+          [resultado]="resultado()"
+          [cargando]="cargando()">
+        </app-ia-gasto-hormiga>
+
+        <!-- Módulo Predicción de Gastos: El Oráculo -->
+        <app-ia-prediccion-gastos
+          *ngIf="moduloSeleccionado()?.id === 'predecir-gastos'"
+          [resultado]="resultado()"
+          [cargando]="cargando()">
+        </app-ia-prediccion-gastos>
+
+        <!-- Otros módulos: Vista genérica de resultados -->
         <app-ia-resultado
+          *ngIf="moduloSeleccionado()?.id !== 'gasto-hormiga' && moduloSeleccionado()?.id !== 'predecir-gastos'"
           [resultado]="resultado()"
           [cargando]="cargando()">
         </app-ia-resultado>

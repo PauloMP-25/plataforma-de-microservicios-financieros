@@ -1,0 +1,655 @@
+// Estilos para el Oráculo Financiero (Módulo Predicción de Gastos)
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.oraculo-container {
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 2.5rem;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  transition: all 0.5s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.03) 0%, rgba(34, 211, 238, 0.02) 50%, transparent 100%);
+    pointer-events: none;
+  }
+}
+
+// ── ESTADO CARGA MÍSTICA ──
+.oraculo-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+
+  .mist-loader {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin-bottom: 2rem;
+
+    .sphere-core {
+      position: absolute;
+      top: 25px;
+      left: 25px;
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #a855f7 0%, #22d3ee 80%, #0f172a 100%);
+      box-shadow: 0 0 30px rgba(34, 211, 238, 0.6);
+      animation: pulseCore 3s ease-in-out infinite alternate;
+    }
+
+    .nebula-ring {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      border-top-color: #22d3ee;
+      border-bottom-color: #a855f7;
+      animation: spinRing 2s linear infinite;
+
+      &.ring-2 {
+        top: 0px;
+        left: 0px;
+        width: 120px;
+        height: 120px;
+        animation: spinRing 3s linear infinite reverse;
+        opacity: 0.7;
+      }
+    }
+  }
+
+  .loading-text {
+    font-size: 1.15rem;
+    color: #e2e8f0;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-shadow: 0 2px 10px rgba(34, 211, 238, 0.3);
+    animation: pulseText 2.5s ease-in-out infinite;
+  }
+}
+
+// ── VISTA PRINCIPAL DEL ORÁCULO ──
+.mystic-scene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 3rem 0;
+  margin-bottom: 2rem;
+}
+
+// La Bola de Cristal (Efecto Vidrio 3D)
+.crystal-ball {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.15) 0%, rgba(15, 23, 42, 0.8) 70%, rgba(34, 211, 238, 0.1) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    inset 0 20px 30px rgba(255, 255, 255, 0.15),
+    inset 10px 0 30px rgba(34, 211, 238, 0.2),
+    inset -10px 0 30px rgba(168, 85, 247, 0.2),
+    inset 0 -20px 30px rgba(15, 23, 42, 0.9),
+    0 15px 45px rgba(0, 0, 0, 0.6),
+    0 0 60px rgba(34, 211, 238, 0.15);
+  z-index: 2;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: floatBall 6s ease-in-out infinite;
+}
+
+// Brillos e Iluminación de la Bola
+.ball-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.1) 0%, transparent 70%);
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+.ball-highlight {
+  position: absolute;
+  top: 15px;
+  left: 50px;
+  width: 60px;
+  height: 25px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  transform: rotate(-15deg);
+  filter: blur(1px);
+  pointer-events: none;
+}
+
+.ball-mist {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(circle at 70% 80%, rgba(34, 211, 238, 0.08) 0%, transparent 60%);
+  animation: mistMovement 8s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+// Pedestal de la Bola
+.pedestal-top {
+  position: absolute;
+  bottom: 2.1rem;
+  width: 120px;
+  height: 18px;
+  background: linear-gradient(90deg, #1e293b, #0f172a, #1e293b);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  z-index: 1;
+}
+
+.pedestal-base {
+  position: absolute;
+  bottom: 0.5rem;
+  width: 160px;
+  height: 28px;
+  background: linear-gradient(90deg, #334155, #1e293b, #334155);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px 4px 8px 8px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+// Gráfico SVG Interno
+.chart-wrapper {
+  width: 90%;
+  height: 60%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 3;
+  margin-top: 10px;
+}
+
+.oraculo-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.ball-legend {
+  position: absolute;
+  bottom: -5px;
+  display: flex;
+  gap: 6px;
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+
+  .legend-hist {
+    color: #22d3ee;
+  }
+  .legend-spacer {
+    color: #94a3b8;
+  }
+  .legend-pred {
+    color: #a855f7;
+    text-shadow: 0 0 4px rgba(168, 85, 247, 0.6);
+  }
+}
+
+// ── SATÉLITES ORBITANTES (CSS FLOATING / 3D EFFECT) ──
+.satellites-orbit {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.satellite {
+  position: absolute;
+  pointer-events: auto;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+
+  .sat-inner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 8px 14px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+
+    i {
+      font-size: 1.1rem;
+    }
+  }
+
+  .sat-details {
+    display: flex;
+    flex-direction: column;
+
+    .sat-label {
+      font-size: 0.65rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .sat-val {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #fff;
+    }
+  }
+
+  &:hover {
+    transform: translateY(-5px) scale(1.05) !important;
+    z-index: 10;
+
+    .sat-inner {
+      border-color: rgba(255, 255, 255, 0.25);
+      box-shadow: 0 8px 25px rgba(34, 211, 238, 0.2);
+    }
+  }
+}
+
+// Posicionamiento y animaciones flotantes individuales
+.sat-trend {
+  top: 15%;
+  left: 5%;
+  animation: floatSat1 5s ease-in-out infinite alternate;
+
+  .sat-inner i {
+    color: #cbd5e1;
+  }
+
+  &.tendencia-sube {
+    .sat-inner {
+      border-left: 3px solid #f43f5e;
+      i { color: #f43f5e; }
+    }
+  }
+  &.tendencia-baja {
+    .sat-inner {
+      border-left: 3px solid #10b981;
+      i { color: #10b981; }
+    }
+  }
+  &.tendencia-estable {
+    .sat-inner {
+      border-left: 3px solid #6b7280;
+      i { color: #6b7280; }
+    }
+  }
+}
+
+.sat-risk {
+  top: 45%;
+  right: 2%;
+  animation: floatSat2 6s ease-in-out infinite alternate;
+
+  &.escudo-exito .sat-inner {
+    border-left: 3px solid #10b981;
+    i { color: #10b981; }
+  }
+
+  &.escudo-peligro .sat-inner {
+    border-left: 3px solid #ef4444;
+    i {
+      color: #ef4444;
+      animation: alertPulse 1.5s infinite;
+    }
+  }
+}
+
+.sat-deficit {
+  bottom: 12%;
+  left: 8%;
+  animation: floatSat3 5.5s ease-in-out infinite alternate;
+
+  .sat-inner {
+    border-left: 3px solid #a855f7;
+    i {
+      color: #a855f7;
+      text-shadow: 0 0 5px rgba(168, 85, 247, 0.5);
+    }
+  }
+}
+
+// ── DETALLES Y METRICAS ──
+.oraculo-details {
+  margin-top: 1rem;
+}
+
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.metric-card {
+  background: rgba(30, 41, 59, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+
+  .metric-lbl {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+
+  .metric-val {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #f8fafc;
+  }
+
+  &.highlight-border {
+    border: 1px solid rgba(168, 85, 247, 0.35);
+    background: rgba(168, 85, 247, 0.04);
+  }
+
+  .purple-glow {
+    color: #e9d5ff;
+    text-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
+  }
+
+  &:hover {
+    background: rgba(30, 41, 59, 0.45);
+    transform: translateY(-2px);
+  }
+}
+
+.font-numeric {
+  font-family: 'Outfit', 'Inter', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+// ── CONSEJO DEL COACH / REVELACIÓN ──
+.oraculo-wisdom {
+  background: linear-gradient(135deg, rgba(88, 28, 135, 0.15) 0%, rgba(15, 23, 42, 0.8) 100%);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  border-radius: 12px;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(to bottom, #22d3ee, #a855f7);
+  }
+
+  .wisdom-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #c084fc;
+    margin-bottom: 0.75rem;
+
+    i {
+      font-size: 0.95rem;
+    }
+  }
+
+  .wisdom-text {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #e2e8f0;
+    margin: 0;
+  }
+}
+
+// ── KEYFRAMES ANIMACIONES ──
+@keyframes pulseCore {
+  0% { transform: scale(0.95); opacity: 0.8; box-shadow: 0 0 20px rgba(34, 211, 238, 0.4); }
+  100% { transform: scale(1.05); opacity: 1; box-shadow: 0 0 40px rgba(168, 85, 247, 0.7); }
+}
+
+@keyframes spinRing {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulseText {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; color: #a855f7; }
+}
+
+@keyframes floatBall {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes mistMovement {
+  0% { opacity: 0.4; transform: scale(1) translate(0, 0); }
+  100% { opacity: 0.8; transform: scale(1.1) translate(-10px, -10px); }
+}
+
+@keyframes alertPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.15); }
+}
+
+// Animaciones satélites flotantes
+@keyframes floatSat1 {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  100% { transform: translate(5px, -12px) rotate(1deg); }
+}
+
+@keyframes floatSat2 {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  100% { transform: translate(-6px, 10px) rotate(-1deg); }
+}
+
+@keyframes floatSat3 {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  100% { transform: translate(8px, 6px) rotate(2deg); }
+}
+
+// ── TEMA CLARO ADAPTABILITY ──
+:host-context(body.tema-claro) {
+  .oraculo-container {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.06);
+
+    &::before {
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.02) 0%, rgba(34, 211, 238, 0.01) 50%, transparent 100%);
+    }
+  }
+
+  .crystal-ball {
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8) 0%, rgba(241, 245, 249, 0.9) 70%, rgba(34, 211, 238, 0.15) 100%);
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 
+      inset 0 20px 30px rgba(255, 255, 255, 0.9),
+      inset 10px 0 30px rgba(34, 211, 238, 0.1),
+      inset -10px 0 30px rgba(168, 85, 247, 0.1),
+      0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .pedestal-top {
+    background: linear-gradient(90deg, #e2e8f0, #cbd5e1, #e2e8f0);
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .pedestal-base {
+    background: linear-gradient(90deg, #cbd5e1, #94a3b8, #cbd5e1);
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .satellite .sat-inner {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  }
+
+  .satellite .sat-details .sat-val {
+    color: #1e293b;
+  }
+
+  .metric-card {
+    background: rgba(241, 245, 249, 0.6);
+    border-color: rgba(0, 0, 0, 0.06);
+
+    .metric-val {
+      color: #0f172a;
+    }
+
+    &.highlight-border {
+      border-color: rgba(168, 85, 247, 0.4);
+      background: rgba(168, 85, 247, 0.04);
+    }
+  }
+
+  .oraculo-wisdom {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.06) 0%, rgba(255, 255, 255, 0.9) 100%);
+    border-color: rgba(168, 85, 247, 0.2);
+
+    .wisdom-text {
+      color: #334155;
+    }
+  }
+}
+
+// ── DISEÑO ADAPTATIVO (MEDIA QUERIES) ──
+
+@media (max-width: 900px) {
+  .oraculo-container {
+    padding: 1.75rem;
+  }
+  
+  .crystal-ball {
+    width: 250px;
+    height: 250px;
+  }
+  
+  .pedestal-top {
+    width: 100px;
+    bottom: 2.3rem;
+  }
+
+  .pedestal-base {
+    width: 140px;
+  }
+
+  .sat-trend {
+    left: 2%;
+  }
+
+  .sat-risk {
+    right: 0%;
+  }
+}
+
+@media (max-width: 768px) {
+  .mystic-scene {
+    padding: 2rem 0;
+  }
+
+  // Desactivar el posicionamiento absoluto flotante para evitar desborde
+  .satellites-orbit {
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 2rem;
+    width: 100%;
+    pointer-events: auto;
+  }
+
+  .satellite {
+    position: static;
+    animation: none !important;
+    transform: none !important;
+    flex: 1 1 180px;
+    max-width: 220px;
+
+    .sat-inner {
+      justify-content: center;
+      padding: 10px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .oraculo-container {
+    padding: 1.25rem;
+  }
+
+  .crystal-ball {
+    width: 200px;
+    height: 200px;
+  }
+
+  .pedestal-top {
+    width: 90px;
+    bottom: 2.3rem;
+  }
+
+  .pedestal-base {
+    width: 120px;
+  }
+
+  .metrics-row {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
+
+  .satellite {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+}
