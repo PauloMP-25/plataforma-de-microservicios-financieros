@@ -14,6 +14,8 @@ import { IaPrediccionGastosComponent } from '../../components/ia-prediccion-gast
 import { IaHabitosFinancierosComponent } from '../../components/ia-habitos-financieros/ia-habitos-financieros';
 import { IaRetoAhorroComponent } from '../../components/ia-reto-ahorro/ia-reto-ahorro';
 import { IaSimularMetaComponent } from '../../components/ia-simular-meta/ia-simular-meta';
+import { IaEstiloVidaComponent } from '../../components/ia-estilo-vida/ia-estilo-vida';
+
 
 
 
@@ -130,7 +132,8 @@ const IA_MODULOS: IaModulo[] = [
     IaPrediccionGastosComponent,
     IaHabitosFinancierosComponent,
     IaRetoAhorroComponent,
-    IaSimularMetaComponent
+    IaSimularMetaComponent,
+    IaEstiloVidaComponent
   ],
   templateUrl: './ia-hub.html',
   styleUrl: './ia-hub.scss'
@@ -329,9 +332,10 @@ export class IaHubComponent implements OnInit, OnDestroy {
         })()
       },
       'estilo-vida': {
-        perfil: 'Explorador Consciente',
-        resumen: 'Tus finanzas reflejan gastos enfocados en experiencias y viajes. Sin embargo, descuidas el ahorro a largo plazo.',
-        porcentajes_actuales: { necesidades: 55, deseos: 35, ahorro: 10 }
+        cluster_dominante: 'FOODIE',
+        porcentaje_dominancia: 65.4,
+        total_analizado: 1250.00,
+        personalidad_detectada: 'El Foodie Explorador'
       },
       'reporte-completo': {
         resumen_ejecutivo: 'Reporte Financiero 360° para el periodo seleccionado.',
@@ -381,7 +385,7 @@ export class IaHubComponent implements OnInit, OnDestroy {
       'gasto-hormiga': 'Paulo, **vamos al grano**. Tus gastos en **\'Cafetería\'** han subido un **20%** este mes. Lo que ves como S/ 12.00 diarios hoy, se traduce en una fuga de **S/ 4,320.00 al año**. Con ese dinero podrías comprarte la **\'Laptop Gamer\'** que tanto quieres y aún te sobraría para los periféricos. Estás descuidando tu meta por una comodidad momentánea. Para empezar con fuerza, esta semana ponte el reto de llevar tu propio café en un termo al campus al menos tres días. Verás que ese pequeño cambio acelerará tu camino hacia esa nueva computadora y te dará la tranquilidad que necesitas para programar. ¡Deja de financiar el marketing de las grandes cadenas y empieza a financiar tu herramienta de trabajo!',
       'predecir-gastos': 'Estimado Paulo Moron, tras realizar el **análisis econométrico** de su historial transaccional, proyectamos que sus egresos para el próximo periodo ascenderán a **S/ 1,850.00**. Dado que sus ingresos mensuales se sitúan en S/ 2,000.00, su margen de maniobra es del **7.5%**, lo cual se considera un nivel de riesgo moderado ante contingencias. Le recomendamos formalmente priorizar la constitución de un fondo de reserva equivalente a tres meses de gastos. Evite comprometerse con nuevas obligaciones financieras durante el próximo trimestre para asegurar la viabilidad de su meta principal de la **\'Laptop Gamer\'** sin comprometer sus necesidades básicas.',
       'habitos-financieros': '¡Hola Paulo! He notado que tus **Sábados a las 6 PM** son el momento donde tu billetera más sufre, especialmente en **\'Restaurantes\'**. Parece que el fin de semana te invita a celebrar, ¡y eso está bien!, pero esos pequeños impulsos están frenando tu meta de la **Laptop Gamer**. <br/><br/>**Hábito Atómico:** Prueba la **\'Regla de las 48 horas\'**: si ves algo que quieres comprar un sábado, espérate al lunes. Si aún lo quieres, cómpralo. Verás cómo el 80% de esos antojos desaparecen solos. ¡Tú tienes el control!',
-      'estilo-vida': '🌿 **Perfil de Estilo de Vida:** "Explorador Consciente". Inviertes en memorias pero ahorras poco. Te aconsejamos ajustar al modelo 50% necesidades, 30% deseos y 20% ahorro.',
+      'estilo-vida': `Paulo, tras analizar tus movimientos, te he bautizado como **'El Foodie Explorador'**. Tienes un paladar exigente: el 65% de tus gastos no fijos se van en descubrir nuevos sabores en restaurantes y barras de café. <br/><br/>**Valor de Salud:** Como tu perfil es gastronómico, podrías ahorrar un **15%** mensual si aprovechas los días de promociones bancarias en tus locales favoritos o si te pones un presupuesto semanal de 'salidas' fijo. Ese ahorro extra de S/ 120.00 aceleraría tu meta de la **Laptop Gamer** en casi un mes. ¡Sigue explorando, pero con estrategia!`,
       'reporte-completo': '📊 **Reporte 360° Ejecutivo:** Balance positivo de S/. 720. Vas por buen camino, pero mantente alerta a la categoría de alimentación fuera del hogar que creció un 15% este mes.',
       'simular-meta': `¡Paulo, tu meta de la **'Laptop Gamer'** es **TOTALMENTE VIABLE** y estás más cerca de lo que crees! Con tu capacidad de ahorro actual de S/ 450.00 al mes y tu ahorro previo de S/ 500.00, en aproximadamente **6.5 meses** estarás estrenando equipo. Pero espera, he analizado tus finanzas y si logras optimizar solo un poco tus gastos de ocio, podrías subir ese aporte a S/ 550.00 y tenerla en solo 5 meses. ¡Imagina la potencia de ese procesador trabajando para ti medio año antes! Mantén el enfoque, cada sol ahorrado hoy es un frame más por segundo en tu nueva computadora. ¡Tú puedes!`,
       'reto-ahorro': '¡Misión: Operación Cocina en Casa! 🏆 Paulo, he detectado que tu \'Enemigo Final\' de esta semana son los Restaurantes. Tu misión, si decides aceptarla, es evitar comer fuera por los próximos 7 días. Si lo logras, habrás salvado **S/ 85.00** para tu fondo de la \'Laptop Gamer\'. ¿Aceptas el reto, Jugador 1?',

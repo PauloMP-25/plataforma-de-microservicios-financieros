@@ -121,9 +121,16 @@
           [cargando]="cargando()">
         </app-ia-simular-meta>
 
+        <!-- Módulo Estilo de Vida: El Clasificador de Personalidades -->
+        <app-ia-estilo-vida
+          *ngIf="moduloSeleccionado()?.id === 'estilo-vida'"
+          [resultado]="resultado()"
+          [cargando]="cargando()">
+        </app-ia-estilo-vida>
+
         <!-- Otros módulos: Vista genérica de resultados -->
         <app-ia-resultado
-          *ngIf="moduloSeleccionado()?.id !== 'gasto-hormiga' && moduloSeleccionado()?.id !== 'predecir-gastos' && moduloSeleccionado()?.id !== 'habitos-financieros' && moduloSeleccionado()?.id !== 'reto-ahorro' && moduloSeleccionado()?.id !== 'simular-meta'"
+          *ngIf="moduloSeleccionado()?.id !== 'gasto-hormiga' && moduloSeleccionado()?.id !== 'predecir-gastos' && moduloSeleccionado()?.id !== 'habitos-financieros' && moduloSeleccionado()?.id !== 'reto-ahorro' && moduloSeleccionado()?.id !== 'simular-meta' && moduloSeleccionado()?.id !== 'estilo-vida'"
           [resultado]="resultado()"
           [cargando]="cargando()">
         </app-ia-resultado>

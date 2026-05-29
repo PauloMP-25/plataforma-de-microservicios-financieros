@@ -1,0 +1,162 @@
+<!-- Barra de Depuración para Cristina Astocaza (Frontend Lead & QA) -->
+<div class="mockup-debugger">
+  <span class="debugger-title"><i class="fa-solid fa-address-card"></i> Modo QA (Personalidades):</span>
+  <div class="debugger-buttons">
+    <button (click)="seleccionarCluster('FOODIE')" [class.active]="clusterSeleccionado() === 'FOODIE'">Foodie</button>
+    <button (click)="seleccionarCluster('DIGITAL')" [class.active]="clusterSeleccionado() === 'DIGITAL'">Digital</button>
+    <button (click)="seleccionarCluster('WELLNESS')" [class.active]="clusterSeleccionado() === 'WELLNESS'">Wellness</button>
+    <button (click)="seleccionarCluster('EXPLORER')" [class.active]="clusterSeleccionado() === 'EXPLORER'">Explorer</button>
+    <button (click)="seleccionarCluster('MINIMALISTA')" [class.active]="clusterSeleccionado() === 'MINIMALISTA'">Minimalista</button>
+  </div>
+</div>
+
+<div class="modulo-estilo-vida-contenedor" [ngStyle]="{ '--cluster-color': currentCluster().color }">
+
+  <!-- Muro de Polaroids (Collage) -->
+  <div class="polaroid-wall">
+    <div class="spotlight"></div>
+    
+    <div 
+      *ngFor="let clId of clustersList" 
+      class="polaroid-card"
+      [class.dominant]="clusterSeleccionado() === clId"
+      [class.stacked]="clusterSeleccionado() !== clId"
+      (click)="seleccionarCluster(clId)"
+    >
+      <div class="polaroid-inner">
+        <div class="polaroid-photo">
+          <div class="photo-emoji">{{ clustersInfo[clId].emoji }}</div>
+          <div class="photo-overlay-wash"></div>
+        </div>
+        <div class="polaroid-caption">
+          <span class="caption-title">{{ clustersInfo[clId].nombreDisplay }}</span>
+          <!-- Barra de Revelado Fotográfico -->
+          <div class="revelado-bar-container">
+            <div class="revelado-fill" [style.width.%]="clustersInfo[clId].porcentajePredeterminado"></div>
+          </div>
+          <span class="caption-percentage">{{ clustersInfo[clId].porcentajePredeterminado }}% dominancia</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Carnet de Identidad Financiera (Flip 3D) -->
+  <div class="id-card-flip-container" [class.flipped]="tarjetaVolteada()">
+    <div class="id-card-inner">
+      
+      <!-- FRENTE DEL CARNET -->
+      <div class="id-card-side card-front">
+        <div class="card-glow-border"></div>
+        <div class="card-badge-top">LUKA IDENTITY CARD</div>
+        
+        <div class="id-card-layout">
+          <!-- Avatar del Usuario Temático -->
+          <div class="id-avatar-container">
+            <div class="id-avatar-glow" [style.background]="currentCluster().color"></div>
+            <svg class="id-avatar-svg" viewBox="0 0 40 40">
+              <circle cx="20" cy="20" r="18" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+              <!-- Cabeza -->
+              <circle cx="20" cy="15" r="7" fill="#fbcfe8" />
+              <!-- Cabello -->
+              <path d="M12 15 C12 8, 28 8, 28 15" fill="#1e293b" />
+              <!-- Cuerpo -->
+              <path d="M10 32 C10 24, 30 24, 30 32" [attr.fill]="currentCluster().color" />
+              <!-- Gafas cool de IA -->
+              <rect x="15" y="13" width="10" height="3" rx="1.5" fill="#f43f5e" opacity="0.9" />
+            </svg>
+          </div>
+          
+          <div class="id-details">
+            <span class="id-cluster-sub">Personalidad Financiera Dominante</span>
+            <h3 class="id-cluster-name">{{ currentCluster().nombre }}</h3>
+            
+            <div class="id-badges-row">
+              <span *ngFor="let rasgo of currentCluster().rasgos" class="rasgo-badge">
+                {{ rasgo }}
+              </span>
+            </div>
+            
+            <p class="id-description">
+              {{ currentCluster().descripcion }}
+            </p>
+          </div>
+        </div>
+        
+        <div class="id-card-footer">
+          <button class="btn-card-action" (click)="toggleFlip()">
+            <i class="fa-solid fa-arrow-rotate-left"></i> Ver Categorías Analizadas
+          </button>
+          <button class="btn-card-action btn-share-instagram" (click)="toggleCompartir()">
+            <i class="fa-brands fa-instagram"></i> Compartir Story
+          </button>
+        </div>
+      </div>
+      
+      <!-- REVERSO DEL CARNET -->
+      <div class="id-card-side card-back">
+        <div class="card-glow-border"></div>
+        <div class="card-badge-top">LUKA ANALYSIS REPORT</div>
+        
+        <div class="back-details">
+          <h3 class="back-title"><i class="fa-solid fa-chart-pie text-cyan-400"></i> Categorías de Gasto Asociadas</h3>
+          <p class="back-subtitle">Total del capital analizado este mes:</p>
+          <h2 class="total-monto font-display">S/. {{ resultado?.insight?.total_analizado || '1,250.00' }}</h2>
+          
+          <div class="back-tags-grid">
+            <div *ngFor="let cat of currentCluster().categorias" class="categoria-tag">
+              <i class="fa-solid fa-tag"></i>
+              <span>{{ cat }}</span>
+            </div>
+          </div>
+          
+          <div class="advice-block-back">
+            <i class="fa-solid fa-lightbulb text-yellow-400"></i>
+            <p>El algoritmo de Gemini agrupa transacciones usando modelos de clustering para deducir patrones recurrentes en tu estilo de vida.</p>
+          </div>
+        </div>
+        
+        <div class="id-card-footer">
+          <button class="btn-card-action btn-full-width" (click)="toggleFlip()">
+            <i class="fa-solid fa-arrow-rotate-left"></i> Volver a Identificación
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal Simulado Story de Instagram para Compartir -->
+  <div class="modal-share-overlay" *ngIf="mostrarCompartir()" (click)="toggleCompartir()">
+    <div class="story-preview-container" (click)="$event.stopPropagation()">
+      <div class="story-header">
+        <span class="story-tag"><i class="fa-brands fa-instagram"></i> Vista Previa de Story</span>
+        <button class="btn-close-story" (click)="toggleCompartir()">&times;</button>
+      </div>
+      
+      <!-- Lienzo de Story con el gradiente del color signature -->
+      <div class="story-canvas" [style.background]="'linear-gradient(135deg, ' + currentCluster().color + ' 0%, #1e1b4b 100%)'">
+        <div class="story-watermark">LUKA APP • COACH IA</div>
+        
+        <div class="story-polaroid">
+          <div class="story-emoji">{{ currentCluster().emoji }}</div>
+          <h2 class="story-name">{{ currentCluster().nombre }}</h2>
+          <div class="story-badges">
+            <span *ngFor="let r of currentCluster().rasgos" class="story-badge">{{ r }}</span>
+          </div>
+        </div>
+
+        <div class="story-footer">
+          <p class="story-scan-tag">¿Y tú, qué personalidad eres?</p>
+          <span class="story-logo">LUKA.PE</span>
+        </div>
+      </div>
+      
+      <div class="story-actions">
+        <button class="btn-play-game" (click)="toggleCompartir()">
+          <i class="fa-solid fa-download"></i> Descargar Imagen
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
