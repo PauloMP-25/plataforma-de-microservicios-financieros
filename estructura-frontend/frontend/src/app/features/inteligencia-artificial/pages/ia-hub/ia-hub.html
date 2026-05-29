@@ -10,13 +10,29 @@
         <h1 class="page-title">Centro de Inteligencia Artificial</h1>
       </div>
       <p class="page-subtitle">Explora análisis avanzados, proyecciones y optimizaciones para tu capital impulsados por Google Gemini Pro.</p>
-      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 animate-pulse mt-2">
-        <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
-        Tailwind CSS v3 Activo
-      </div>
     </div>
     
     <div class="header-right" *ngIf="!moduloSeleccionado()">
+      <!-- Alternador de vistas -->
+      <div class="view-toggle">
+        <button 
+          class="btn-toggle" 
+          [class.active]="vistaActiva() === 'ESTELAR'" 
+          (click)="vistaActiva.set('ESTELAR')" 
+          title="Mapa Estelar">
+          <i class="fa-solid fa-circle-nodes"></i>
+          <span>Mapa Estelar</span>
+        </button>
+        <button 
+          class="btn-toggle" 
+          [class.active]="vistaActiva() === 'GRID'" 
+          (click)="vistaActiva.set('GRID')" 
+          title="Vista de Grilla">
+          <i class="fa-solid fa-grip"></i>
+          <span>Grilla</span>
+        </button>
+      </div>
+
       <div class="quota-badge">
         <i class="fa-solid fa-bolt"></i>
         <span>Cuota: Activa &amp; Sin Límite (Luka Elite)</span>
@@ -24,8 +40,8 @@
     </div>
   </div>
 
-  <!-- Vista 1: Cuadrícula de Todos los Módulos -->
-  <div class="vista-grid-modulos" *ngIf="!moduloSeleccionado()">
+  <!-- Vista 1: Panel General -->
+  <div class="vista-general-ia" *ngIf="!moduloSeleccionado()">
     
     <!-- Filtros de categoría premium de IA -->
     <div class="hub-tabs">
@@ -41,14 +57,79 @@
       </button>
     </div>
 
-    <div class="grid-layout">
-      <div class="grid-item" *ngFor="let mod of modulosFiltrados()">
-        <app-ia-modulo-card
-          [modulo]="mod"
-          (seleccionar)="seleccionarModulo(mod)">
-        </app-ia-modulo-card>
+    <!-- Sub-vista A: Grilla Tradicional -->
+    <div class="vista-grid-modulos" *ngIf="vistaActiva() === 'GRID'">
+      <div class="grid-layout">
+        <div class="grid-item" *ngFor="let mod of modulosFiltrados()">
+          <app-ia-modulo-card
+            [modulo]="mod"
+            (seleccionar)="seleccionarModulo(mod)">
+          </app-ia-modulo-card>
+        </div>
       </div>
     </div>
+
+    <!-- Sub-vista B: Mapa Estelar -->
+    <div class="vista-mapa-estelar" *ngIf="vistaActiva() === 'ESTELAR'">
+      <div class="mapa-estelar-universe">
+        
+        <!-- Elementos del fondo de espacio -->
+        <div class="stars-layer"></div>
+        <div class="nebula-1"></div>
+        <div class="nebula-2"></div>
+
+        <!-- Sol Central: Score de Salud (78) -->
+        <div class="sol-central">
+          <div class="sol-glow"></div>
+          <div class="sol-content">
+            <span class="sol-label">SCORE LUKA</span>
+            <span class="sol-score">78</span>
+            <span class="sol-status">Estable</span>
+          </div>
+        </div>
+
+        <!-- Anillos orbitales en 3D -->
+        <div class="orbit-ring" style="--orbit-size: 240px;"></div>
+        <div class="orbit-ring" style="--orbit-size: 400px;"></div>
+        <div class="orbit-ring" style="--orbit-size: 560px;"></div>
+        <div class="orbit-ring" style="--orbit-size: 720px;"></div>
+
+        <!-- Planetas / Nodos de misiones -->
+        <div *ngFor="let mod of modulos"
+             class="estelar-planet-wrapper"
+             [style.--orbit-size]="mod.orbit === 1 ? '240px' : mod.orbit === 2 ? '400px' : mod.orbit === 3 ? '560px' : '720px'"
+             [style.--angle]="mod.angle + 'deg'">
+          
+          <div class="estelar-planet"
+               [style.--size]="mod.size + 'px'"
+               [style.--color]="mod.color"
+               [class.dimmed]="tabActiva() !== 'TODOS' && tabActiva() !== mod.tag"
+               (click)="seleccionarModulo(mod)">
+            
+            <div class="planet-body">
+              <span class="planet-emoji">{{ mod.emoji }}</span>
+              <div class="planet-corona"></div>
+            </div>
+
+            <!-- Tooltip del planeta (Info Card) -->
+            <div class="planet-tooltip">
+              <span class="tooltip-tag" [style.background-color]="mod.tagColor + '20'" [style.color]="mod.tagColor">
+                {{ mod.tag }}
+              </span>
+              <h5 class="tooltip-title">{{ mod.label }}</h5>
+              <p class="tooltip-desc">{{ mod.descripcion }}</p>
+              <div class="tooltip-action">
+                <span>Iniciar Misión</span>
+                <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 
   <!-- Vista 2: Consola de Trabajo (Módulo Activo) -->
@@ -57,7 +138,7 @@
     <!-- Barra de navegación / retroceso -->
     <div class="console-nav">
       <button class="btn-back" (click)="deseleccionarModulo()">
-        <i class="fa-solid fa-arrow-left"></i> Volver al panel general
+        <i class="fa-solid fa-arrow-left"></i> Volver al mapa estelar
       </button>
       <span class="location-trail">
         Inteligencia Artificial <i class="fa-solid fa-chevron-right"></i> {{ mod.label }}
@@ -75,7 +156,7 @@
       </div>
     </div>
 
-    <!-- Layout Dividido (Panel Activo a la izquierda, Resultados a la derecha) -->
+    <!-- Layout Dividido -->
     <div class="console-grid">
       <div class="console-column left">
         <app-ia-panel-activo
@@ -146,4 +227,26 @@
 
   </div>
 
+</div>
+
+<!-- Overlay para salto hiperespacial / viaje espacial (Warp Speed) -->
+<div class="space-travel-overlay" [class.active]="viajeEspacialActivo()">
+  <div class="warp-speedlines">
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+  <div class="warp-flash"></div>
+  <div class="warp-hud">
+    <div class="warp-loader"></div>
+    <div class="warp-label">CALCULANDO TRAYECTORIA DE SALTO...</div>
+    <div class="warp-sub">Estableciendo puente neuronal con Gemini Pro</div>
+  </div>
 </div>

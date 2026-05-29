@@ -32,6 +32,11 @@ export interface IaModulo {
   endpoint: string;
   filtroFecha: boolean;
   params?: string[];
+  orbit: number;
+  angle: number;
+  size: number;
+  color: string;
+  emoji: string;
 }
 
 export type TabGroup = 'TODOS' | 'ANÁLISIS' | 'COACH' | 'CLASIFICACIÓN';
@@ -46,6 +51,11 @@ const IA_MODULOS: IaModulo[] = [
     tagColor: '#f59e0b',
     endpoint: '/api/v1/ia/gasto-hormiga',
     filtroFecha: true,
+    orbit: 2,
+    angle: 120,
+    size: 78,
+    color: '#f59e0b',
+    emoji: '🐜'
   },
   {
     id: 'predecir-gastos',
@@ -56,6 +66,11 @@ const IA_MODULOS: IaModulo[] = [
     tagColor: '#f59e0b',
     endpoint: '/api/v1/ia/predecir-gastos',
     filtroFecha: true,
+    orbit: 1,
+    angle: 210,
+    size: 68,
+    color: '#3b82f6',
+    emoji: '🔮'
   },
   {
     id: 'habitos-financieros',
@@ -66,6 +81,11 @@ const IA_MODULOS: IaModulo[] = [
     tagColor: '#f59e0b',
     endpoint: '/api/v1/ia/habitos-financieros',
     filtroFecha: true,
+    orbit: 3,
+    angle: 240,
+    size: 64,
+    color: '#a855f7',
+    emoji: '🧠'
   },
   {
     id: 'estilo-vida',
@@ -76,6 +96,11 @@ const IA_MODULOS: IaModulo[] = [
     tagColor: '#f59e0b',
     endpoint: '/api/v1/ia/estilo-vida',
     filtroFecha: true,
+    orbit: 2,
+    angle: 300,
+    size: 58,
+    color: '#ec4899',
+    emoji: '🕶️'
   },
   {
     id: 'reporte-completo',
@@ -86,6 +111,11 @@ const IA_MODULOS: IaModulo[] = [
     tagColor: '#f59e0b',
     endpoint: '/api/v1/ia/reporte-completo',
     filtroFecha: true,
+    orbit: 4,
+    angle: 160,
+    size: 82,
+    color: '#10b981',
+    emoji: '📊'
   },
   {
     id: 'simular-meta',
@@ -97,6 +127,11 @@ const IA_MODULOS: IaModulo[] = [
     endpoint: '/api/v1/ia/simular-meta',
     filtroFecha: false,
     params: ['nombre_meta', 'monto_objetivo', 'aporte_mensual_deseado'],
+    orbit: 3,
+    angle: 60,
+    size: 62,
+    color: '#06b6d4',
+    emoji: '🚀'
   },
   {
     id: 'reto-ahorro',
@@ -107,6 +142,11 @@ const IA_MODULOS: IaModulo[] = [
     tagColor: '#10b981',
     endpoint: '/api/v1/ia/reto-ahorro',
     filtroFecha: true,
+    orbit: 1,
+    angle: 30,
+    size: 66,
+    color: '#eab308',
+    emoji: '🏆'
   },
   {
     id: 'clasificar-transaccion',
@@ -118,6 +158,11 @@ const IA_MODULOS: IaModulo[] = [
     endpoint: '/api/v1/ia/clasificar-transaccion',
     filtroFecha: false,
     params: ['descripcion', 'monto'],
+    orbit: 4,
+    angle: 330,
+    size: 52,
+    color: '#8b5cf6',
+    emoji: '🏷️'
   },
 ];
 
@@ -150,6 +195,10 @@ export class IaHubComponent implements OnInit, OnDestroy {
   resultado = signal<RespuestaModuloDTO | null>(null);
   cargando = signal(false);
   errorMsg = signal<string | null>(null);
+
+  // Navegación Estelar
+  vistaActiva = signal<'GRID' | 'ESTELAR'>('ESTELAR');
+  viajeEspacialActivo = signal(false);
 
   // ── Filtros del Panel Principal ──
   tabActiva = signal<TabGroup>('TODOS');
@@ -201,19 +250,29 @@ export class IaHubComponent implements OnInit, OnDestroy {
   }
 
   seleccionarModulo(modulo: IaModulo) {
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { modulo: modulo.id },
-      queryParamsHandling: 'merge'
-    });
+    this.viajeEspacialActivo.set(true);
+    setTimeout(() => {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { modulo: modulo.id },
+        queryParamsHandling: 'merge'
+      }).then(() => {
+        this.viajeEspacialActivo.set(false);
+      });
+    }, 750);
   }
 
   deseleccionarModulo() {
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { modulo: null },
-      queryParamsHandling: 'merge'
-    });
+    this.viajeEspacialActivo.set(true);
+    setTimeout(() => {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { modulo: null },
+        queryParamsHandling: 'merge'
+      }).then(() => {
+        this.viajeEspacialActivo.set(false);
+      });
+    }, 750);
   }
 
   // ── Simulación Estática con Respuesta Mock (Fase de Pruebas) ──
