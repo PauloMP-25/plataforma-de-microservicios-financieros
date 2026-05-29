@@ -11,6 +11,7 @@ import { IaPanelActivoComponent } from '../../components/ia-panel-activo/ia-pane
 import { IaResultadoComponent } from '../../components/ia-resultado/ia-resultado';
 import { IaGastoHormigaComponent } from '../../components/ia-gasto-hormiga/ia-gasto-hormiga';
 import { IaPrediccionGastosComponent } from '../../components/ia-prediccion-gastos/ia-prediccion-gastos';
+import { IaHabitosFinancierosComponent } from '../../components/ia-habitos-financieros/ia-habitos-financieros';
 
 
 export interface IaModulo {
@@ -122,7 +123,8 @@ const IA_MODULOS: IaModulo[] = [
     IaPanelActivoComponent,
     IaResultadoComponent,
     IaGastoHormigaComponent,
-    IaPrediccionGastosComponent
+    IaPrediccionGastosComponent,
+    IaHabitosFinancierosComponent
   ],
   templateUrl: './ia-hub.html',
   styleUrl: './ia-hub.scss'
@@ -231,31 +233,94 @@ export class IaHubComponent implements OnInit, OnDestroy {
       'gasto-hormiga': {
         hay_hormigas: true,
         principal_gasto_hormiga: 'Cafetería',
-        total_gastos_hormiga: 184.00,
-        proyeccion_fuga_anual: 2208.00,
-        ingreso_mensual_referencia: 3200.00,
-        variacion_vs_mes_anterior: 14.2,
+        total_gastos_hormiga: 360.50,
+        proyeccion_fuga_anual: 4320.00,
+        ingreso_mensual_referencia: 2000.00,
+        variacion_vs_mes_anterior: 20.0,
         gastos_detectados: [
-          { descripcion: 'Café Espresso diario', frecuencia: '22 veces/mes', total: 154.00, categoria: 'Cafetería', promedio_por_compra: 7.00, dia_mayor_gasto: 'Lunes' },
-          { descripcion: 'Suscripción inactiva App', frecuencia: '1 vez/mes', total: 30.00, categoria: 'Suscripciones', promedio_por_compra: 30.00, dia_mayor_gasto: 'N/A' }
+          { descripcion: 'Café diario fuera de casa', frecuencia: '30 veces/mes', total: 360.50, categoria: 'Cafetería', promedio_por_compra: 12.00, dia_mayor_gasto: 'Todos los días' }
         ]
       },
       'predecir-gastos': {
-        prediccion_total: 2340.00,
-        variacion_estimada: 12.5,
-        alertas: ['Incremento en entretenimiento detectado para los fines de semana', 'Gasto proyectado en servicios básicos estable'],
-        promedio_historico: 2100.00,
-        proyeccion_proximo_mes: 2340.00,
+        prediccion_total: 1850.00,
+        variacion_estimada: 7.5,
+        alertas: ['Margen de seguridad ajustado', 'Fondo de reserva recomendado equivalente a tres meses de gastos'],
+        promedio_historico: 1800.00,
+        proyeccion_proximo_mes: 1850.00,
         pendiente: 'SUBE',
-        porcentaje_variacion_mensual: 12.5,
-        deficit_estimado: 140.00,
-        historial_meses: [1950, 2050, 2010, 2200, 2100]
+        porcentaje_variacion_mensual: 7.5,
+        deficit_estimado: 0.00,
+        ingreso_esperado: 2000.00,
+        margen_seguridad: 7.5,
+        nivel_riesgo: 'MODERADO',
+        historial_meses: [1750, 1820, 1780, 1800, 1850]
       },
       'habitos-financieros': {
+        frecuencia_analizada: 'SEMANAL',
+        dia_mayor_gasto: 'Saturday',
+        categoria_mas_frecuente: 'Restaurantes',
+        total_transacciones_periodo: 18,
+        es_saludable: false,
         puntuacion_habito: 72,
-        nivel: 'Bueno',
-        fortalezas: ['Constancia en registro de transacciones diarios', 'Presupuesto de alimentación respetado'],
-        oportunidades: ['El 34% de tus consumos no planificados ocurren los días viernes por la noche']
+        dimensiones: {
+          'ESTA_SEMANA': { Constancia: 75, Ahorro: 45, Control: 70, Diversidad: 50, Puntualidad: 85, Equilibrio: 60 },
+          'SEMANA_PASADA': { Constancia: 65, Ahorro: 40, Control: 60, Diversidad: 45, Puntualidad: 80, Equilibrio: 55 }
+        },
+        heatmap_datos: (() => {
+          const list = [];
+          const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+          
+          for (let i = 0; i < 28; i++) {
+            const w = Math.floor(i / 7) + 1;
+            const dIdx = i % 7;
+            const diaSemana = diasSemana[dIdx];
+            const diaNum = i + 1;
+            
+            let monto = 0;
+            let nivel = 1;
+            let transacciones: any[] = [];
+            
+            if (diaSemana === 'Sábado') {
+              monto = w === 4 ? 185.00 : (w === 3 ? 150.00 : (w === 2 ? 120.00 : 95.00));
+              nivel = 5;
+              transacciones = [
+                { descripcion: 'Cena rústica', monto: monto * 0.6, categoria: 'Restaurantes', icono: 'fa-utensils' },
+                { descripcion: 'Bebidas fin de semana', monto: monto * 0.3, categoria: 'Ocio', icono: 'fa-glass-water' },
+                { descripcion: 'Taxi retorno', monto: monto * 0.1, categoria: 'Transporte', icono: 'fa-taxi' }
+              ];
+            } else if (diaSemana === 'Viernes') {
+              monto = 65.00;
+              nivel = 4;
+              transacciones = [
+                { descripcion: 'Cine 2D combo', monto: 45.00, categoria: 'Ocio', icono: 'fa-film' },
+                { descripcion: 'Dulces snacks', monto: 20.00, categoria: 'Alimentación', icono: 'fa-cookie' }
+              ];
+            } else if (diaSemana === 'Lunes' && w === 2) {
+              monto = 42.00;
+              nivel = 3;
+              transacciones = [
+                { descripcion: 'Cafetería Starbucks', monto: 12.00, categoria: 'Cafetería', icono: 'fa-mug-hot' },
+                { descripcion: 'Menú Ejecutivo', monto: 30.00, categoria: 'Alimentación', icono: 'fa-bowl-food' }
+              ];
+            } else {
+              monto = Math.random() > 0.6 ? 12.00 : 0;
+              nivel = monto > 0 ? 2 : 1;
+              if (monto > 0) {
+                transacciones = [{ descripcion: 'Cafecito rápido', monto: monto, categoria: 'Alimentación', icono: 'fa-mug-hot' }];
+              }
+            }
+            
+            list.push({
+              fecha: `2026-05-${diaNum.toString().padStart(2, '0')}`,
+              diaSemana,
+              diaNum,
+              monto,
+              nivel,
+              transacciones
+            });
+          }
+          return list;
+        })()
       },
       'estilo-vida': {
         perfil: 'Explorador Consciente',
@@ -303,9 +368,9 @@ export class IaHubComponent implements OnInit, OnDestroy {
     };
 
     const consejos: Record<string, string> = {
-      'gasto-hormiga': '🐜 **Gastos hormiga bajo la lupa:** El café diario y las suscripciones que no usas drenan S/. 184 al mes. Redirigiendo esto a tu fondo de emergencia, acumularías S/. 2,208 en un año. ¡Pruébalo!',
-      'predecir-gastos': '📈 **Predicción de gastos:** Proyectamos gastos de S/. 2,340 para el próximo mes. El entretenimiento tiende a subir en fines de semana; fijar un límite de S/. 200 evitaría desvíos.',
-      'habitos-financieros': '🧠 **Evaluación de hábitos:** Calificación de 72/100. Tu fortaleza es el registro diario de compras. Para subir la nota, automatiza tu ahorro apenas recibas tu sueldo.',
+      'gasto-hormiga': 'Paulo, **vamos al grano**. Tus gastos en **\'Cafetería\'** han subido un **20%** este mes. Lo que ves como S/ 12.00 diarios hoy, se traduce en una fuga de **S/ 4,320.00 al año**. Con ese dinero podrías comprarte la **\'Laptop Gamer\'** que tanto quieres y aún te sobraría para los periféricos. Estás descuidando tu meta por una comodidad momentánea. Para empezar con fuerza, esta semana ponte el reto de llevar tu propio café en un termo al campus al menos tres días. Verás que ese pequeño cambio acelerará tu camino hacia esa nueva computadora y te dará la tranquilidad que necesitas para programar. ¡Deja de financiar el marketing de las grandes cadenas y empieza a financiar tu herramienta de trabajo!',
+      'predecir-gastos': 'Estimado Paulo Moron, tras realizar el **análisis econométrico** de su historial transaccional, proyectamos que sus egresos para el próximo periodo ascenderán a **S/ 1,850.00**. Dado que sus ingresos mensuales se sitúan en S/ 2,000.00, su margen de maniobra es del **7.5%**, lo cual se considera un nivel de riesgo moderado ante contingencias. Le recomendamos formalmente priorizar la constitución de un fondo de reserva equivalente a tres meses de gastos. Evite comprometerse con nuevas obligaciones financieras durante el próximo trimestre para asegurar la viabilidad de su meta principal de la **\'Laptop Gamer\'** sin comprometer sus necesidades básicas.',
+      'habitos-financieros': '¡Hola Paulo! He notado que tus **Sábados a las 6 PM** son el momento donde tu billetera más sufre, especialmente en **\'Restaurantes\'**. Parece que el fin de semana te invita a celebrar, ¡y eso está bien!, pero esos pequeños impulsos están frenando tu meta de la **Laptop Gamer**. <br/><br/>**Hábito Atómico:** Prueba la **\'Regla de las 48 horas\'**: si ves algo que quieres comprar un sábado, espérate al lunes. Si aún lo quieres, cómpralo. Verás cómo el 80% de esos antojos desaparecen solos. ¡Tú tienes el control!',
       'estilo-vida': '🌿 **Perfil de Estilo de Vida:** "Explorador Consciente". Inviertes en memorias pero ahorras poco. Te aconsejamos ajustar al modelo 50% necesidades, 30% deseos y 20% ahorro.',
       'reporte-completo': '📊 **Reporte 360° Ejecutivo:** Balance positivo de S/. 720. Vas por buen camino, pero mantente alerta a la categoría de alimentación fuera del hogar que creció un 15% este mes.',
       'simular-meta': `🎯 **Simulador de Metas:** Para tu meta de **"${payload?.nombre_meta || 'Laptop Gamer'}"** (S/. ${payload?.monto_objetivo || 3500}), aportando S/. ${payload?.aporte_mensual_deseado || 350} al mes, lo lograrás en **${Math.ceil((payload?.monto_objetivo || 3500) / (payload?.aporte_mensual_deseado || 350))} meses** (Marzo 2027).`,
@@ -320,8 +385,7 @@ export class IaHubComponent implements OnInit, OnDestroy {
         tipoGrafico: 'BARRAS',
         unidad: 'S/.',
         datos: [
-          { etiqueta: 'Cafeterías', valor: 154, color: '#f59e0b' },
-          { etiqueta: 'Aplicaciones', valor: 30, color: '#a855f7' }
+          { etiqueta: 'Cafeterías', valor: 360.50, color: '#f59e0b' }
         ]
       },
       'predecir-gastos': {
@@ -330,9 +394,9 @@ export class IaHubComponent implements OnInit, OnDestroy {
         unidad: 'S/.',
         datos: [
           { etiqueta: 'Fijos (Vivienda/Servicios)', valor: 1200, color: '#10b981' },
-          { etiqueta: 'Alimentación', valor: 550, color: '#3b82f6' },
-          { etiqueta: 'Entretenimiento', valor: 350, color: '#f43f5e' },
-          { etiqueta: 'Otros', valor: 240, color: '#6b7280' }
+          { etiqueta: 'Alimentación', valor: 450, color: '#3b82f6' },
+          { etiqueta: 'Entretenimiento', valor: 150, color: '#f43f5e' },
+          { etiqueta: 'Otros', valor: 50, color: '#6b7280' }
         ]
       },
       'habitos-financieros': {
@@ -340,8 +404,8 @@ export class IaHubComponent implements OnInit, OnDestroy {
         tipoGrafico: 'BARRAS',
         unidad: '%',
         datos: [
-          { etiqueta: 'Consistencia de Registro', valor: 95, color: '#10b981' },
-          { etiqueta: 'Control de Presupuestos', valor: 78, color: '#3b82f6' },
+          { etiqueta: 'Constancia de Registro', valor: 75, color: '#10b981' },
+          { etiqueta: 'Control de Presupuestos', valor: 70, color: '#3b82f6' },
           { etiqueta: 'Capacidad de Ahorro', valor: 45, color: '#ef4444' }
         ]
       },
@@ -398,8 +462,8 @@ export class IaHubComponent implements OnInit, OnDestroy {
     };
 
     const kpis: Record<string, any> = {
-      'gasto-hormiga': { valor: 184, etiqueta: 'Fuga total estimada', tendencia: 'ALZA', variacion_porcentaje: 14.2, unidad: 'S/.' },
-      'predecir-gastos': { valor: 2340, etiqueta: 'Gasto Proyectado Próximo Mes', tendencia: 'ALZA', variacion_porcentaje: 8.5, unidad: 'S/.' },
+      'gasto-hormiga': { valor: 360.50, etiqueta: 'Fuga mensual por antojos', tendencia: 'ALZA', variacion_porcentaje: 20.0, unidad: 'S/.' },
+      'predecir-gastos': { valor: 1850.00, etiqueta: 'Gasto Proyectado Próximo Mes', tendencia: 'ALZA', variacion_porcentaje: 7.5, unidad: 'S/.' },
       'habitos-financieros': { valor: 72, etiqueta: 'Índice de Hábitos Financieros', tendencia: 'ESTABLE', variacion_porcentaje: 0, unidad: '/100' },
       'estilo-vida': { valor: 55, etiqueta: 'Porcentaje Gasto Necesidades', tendencia: 'BAJA', variacion_porcentaje: -3.2, unidad: '%' },
       'reporte-completo': { valor: 720, etiqueta: 'Ahorro Neto este Mes', tendencia: 'ALZA', variacion_porcentaje: 25.4, unidad: 'S/.' },

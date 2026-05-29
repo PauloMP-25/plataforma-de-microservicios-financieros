@@ -100,9 +100,16 @@
           [cargando]="cargando()">
         </app-ia-prediccion-gastos>
 
+        <!-- Módulo Hábitos Financieros: El Espejo del Alma -->
+        <app-ia-habitos-financieros
+          *ngIf="moduloSeleccionado()?.id === 'habitos-financieros'"
+          [resultado]="resultado()"
+          [cargando]="cargando()">
+        </app-ia-habitos-financieros>
+
         <!-- Otros módulos: Vista genérica de resultados -->
         <app-ia-resultado
-          *ngIf="moduloSeleccionado()?.id !== 'gasto-hormiga' && moduloSeleccionado()?.id !== 'predecir-gastos'"
+          *ngIf="moduloSeleccionado()?.id !== 'gasto-hormiga' && moduloSeleccionado()?.id !== 'predecir-gastos' && moduloSeleccionado()?.id !== 'habitos-financieros'"
           [resultado]="resultado()"
           [cargando]="cargando()">
         </app-ia-resultado>
