@@ -128,9 +128,16 @@
           [cargando]="cargando()">
         </app-ia-estilo-vida>
 
+        <!-- Módulo Reporte Ejecutivo Anual: El Anuario Financiero -->
+        <app-ia-reporte-anual
+          *ngIf="moduloSeleccionado()?.id === 'reporte-completo'"
+          [resultado]="resultado()"
+          [cargando]="cargando()">
+        </app-ia-reporte-anual>
+
         <!-- Otros módulos: Vista genérica de resultados -->
         <app-ia-resultado
-          *ngIf="moduloSeleccionado()?.id !== 'gasto-hormiga' && moduloSeleccionado()?.id !== 'predecir-gastos' && moduloSeleccionado()?.id !== 'habitos-financieros' && moduloSeleccionado()?.id !== 'reto-ahorro' && moduloSeleccionado()?.id !== 'simular-meta' && moduloSeleccionado()?.id !== 'estilo-vida'"
+          *ngIf="moduloSeleccionado()?.id !== 'gasto-hormiga' && moduloSeleccionado()?.id !== 'predecir-gastos' && moduloSeleccionado()?.id !== 'habitos-financieros' && moduloSeleccionado()?.id !== 'reto-ahorro' && moduloSeleccionado()?.id !== 'simular-meta' && moduloSeleccionado()?.id !== 'estilo-vida' && moduloSeleccionado()?.id !== 'reporte-completo'"
           [resultado]="resultado()"
           [cargando]="cargando()">
         </app-ia-resultado>

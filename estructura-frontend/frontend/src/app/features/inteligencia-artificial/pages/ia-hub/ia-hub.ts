@@ -15,6 +15,8 @@ import { IaHabitosFinancierosComponent } from '../../components/ia-habitos-finan
 import { IaRetoAhorroComponent } from '../../components/ia-reto-ahorro/ia-reto-ahorro';
 import { IaSimularMetaComponent } from '../../components/ia-simular-meta/ia-simular-meta';
 import { IaEstiloVidaComponent } from '../../components/ia-estilo-vida/ia-estilo-vida';
+import { IaReporteAnualComponent } from '../../components/ia-reporte-anual/ia-reporte-anual';
+
 
 
 
@@ -133,7 +135,8 @@ const IA_MODULOS: IaModulo[] = [
     IaHabitosFinancierosComponent,
     IaRetoAhorroComponent,
     IaSimularMetaComponent,
-    IaEstiloVidaComponent
+    IaEstiloVidaComponent,
+    IaReporteAnualComponent
   ],
   templateUrl: './ia-hub.html',
   styleUrl: './ia-hub.scss'
@@ -338,12 +341,12 @@ export class IaHubComponent implements OnInit, OnDestroy {
         personalidad_detectada: 'El Foodie Explorador'
       },
       'reporte-completo': {
-        resumen_ejecutivo: 'Reporte Financiero 360° para el periodo seleccionado.',
-        ingresos_totales: 3200.00,
-        gastos_totales: 2480.00,
-        ahorro_neto: 720.00,
-        tasa_ahorro: 22.5,
-        indicadores: { salud: 'BUENA', alertas: 3 }
+        score_salud: 78,
+        balance_anual: 2450.00,
+        total_ingresos: 15000.00,
+        total_gastos: 12550.00,
+        categoria_critica: 'Ocio',
+        porcentaje_gasto_critico: 25
       },
       'simular-meta': {
         meta_nombre: payload?.nombre_meta || 'Laptop Gamer',
@@ -386,7 +389,7 @@ export class IaHubComponent implements OnInit, OnDestroy {
       'predecir-gastos': 'Estimado Paulo Moron, tras realizar el **análisis econométrico** de su historial transaccional, proyectamos que sus egresos para el próximo periodo ascenderán a **S/ 1,850.00**. Dado que sus ingresos mensuales se sitúan en S/ 2,000.00, su margen de maniobra es del **7.5%**, lo cual se considera un nivel de riesgo moderado ante contingencias. Le recomendamos formalmente priorizar la constitución de un fondo de reserva equivalente a tres meses de gastos. Evite comprometerse con nuevas obligaciones financieras durante el próximo trimestre para asegurar la viabilidad de su meta principal de la **\'Laptop Gamer\'** sin comprometer sus necesidades básicas.',
       'habitos-financieros': '¡Hola Paulo! He notado que tus **Sábados a las 6 PM** son el momento donde tu billetera más sufre, especialmente en **\'Restaurantes\'**. Parece que el fin de semana te invita a celebrar, ¡y eso está bien!, pero esos pequeños impulsos están frenando tu meta de la **Laptop Gamer**. <br/><br/>**Hábito Atómico:** Prueba la **\'Regla de las 48 horas\'**: si ves algo que quieres comprar un sábado, espérate al lunes. Si aún lo quieres, cómpralo. Verás cómo el 80% de esos antojos desaparecen solos. ¡Tú tienes el control!',
       'estilo-vida': `Paulo, tras analizar tus movimientos, te he bautizado como **'El Foodie Explorador'**. Tienes un paladar exigente: el 65% de tus gastos no fijos se van en descubrir nuevos sabores en restaurantes y barras de café. <br/><br/>**Valor de Salud:** Como tu perfil es gastronómico, podrías ahorrar un **15%** mensual si aprovechas los días de promociones bancarias en tus locales favoritos o si te pones un presupuesto semanal de 'salidas' fijo. Ese ahorro extra de S/ 120.00 aceleraría tu meta de la **Laptop Gamer** en casi un mes. ¡Sigue explorando, pero con estrategia!`,
-      'reporte-completo': '📊 **Reporte 360° Ejecutivo:** Balance positivo de S/. 720. Vas por buen camino, pero mantente alerta a la categoría de alimentación fuera del hogar que creció un 15% este mes.',
+      'reporte-completo': `Paulo, tu **Score LUKA es 78/100**. Has mantenido un crecimiento constante en tus ahorros desde el 1 de enero. Tu balance anual positivo de S/ 2,450.00 indica una gestión responsable, aunque detectamos un punto crítico en Marzo. Eres un 'Ahorrador Estratégico'. Tu gestión es superior al 80% de los usuarios de tu perfil. Mantén este ritmo y cerrarás el año con la solvencia necesaria para todas tus metas y estarás estrenando esa nueva laptop antes de lo previsto.`,
       'simular-meta': `¡Paulo, tu meta de la **'Laptop Gamer'** es **TOTALMENTE VIABLE** y estás más cerca de lo que crees! Con tu capacidad de ahorro actual de S/ 450.00 al mes y tu ahorro previo de S/ 500.00, en aproximadamente **6.5 meses** estarás estrenando equipo. Pero espera, he analizado tus finanzas y si logras optimizar solo un poco tus gastos de ocio, podrías subir ese aporte a S/ 550.00 y tenerla en solo 5 meses. ¡Imagina la potencia de ese procesador trabajando para ti medio año antes! Mantén el enfoque, cada sol ahorrado hoy es un frame más por segundo en tu nueva computadora. ¡Tú puedes!`,
       'reto-ahorro': '¡Misión: Operación Cocina en Casa! 🏆 Paulo, he detectado que tu \'Enemigo Final\' de esta semana son los Restaurantes. Tu misión, si decides aceptarla, es evitar comer fuera por los próximos 7 días. Si lo logras, habrás salvado **S/ 85.00** para tu fondo de la \'Laptop Gamer\'. ¿Aceptas el reto, Jugador 1?',
       'clasificar-transaccion': `🏷️ **Clasificación sugerida:** Para "${payload?.descripcion || 'Rappi Alimentos'}" de S/. ${payload?.monto || 45.00}, Gemini Pro recomienda la categoría **"Alimentación"** con 95% de confianza.`
