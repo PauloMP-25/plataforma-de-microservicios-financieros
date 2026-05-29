@@ -1,0 +1,27 @@
+:root {
+  /* Colores de Identidad */
+  --color-primary:        #5B6AF0; 
+  --color-primary-soft:   #EEF0FE;
+  --color-success:        #22C55E; 
+  --color-danger:         #EF4444; 
+  
+  /* Colores de Flujo Financiero (Nuevos) */
+  --color-gasto:          #EF4444; 
+  --color-ingreso:        #10B981; 
+  --color-ahorro:         #3B82F6; 
+
+  /* Fondos y Textos */
+  --bg-body:              #F5F6FF; 
+  --bg-card:              #FFFFFF; 
+  --text-primary:         #1E2340; 
+  --text-muted:           #9CA3AF; 
+  
+  /* Bordes y Sombras */
+  --border-color:         #E8EAFF;
+  --shadow-md:            0 4px 20px rgba(91, 106, 240, 0.12);
+  
+  /* Tipografía y Radios */
+  --font-main:            'Nunito', sans-serif;
+  --radius-lg:            20px;
+  --transition:           all 0.25s ease;
+}

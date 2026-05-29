@@ -1,1 +1,160 @@
-<p>ingresos-page works!</p>
+<div class="ingresos-main-screen" *ngIf="!isModalAbierto">
+  
+  <header class="main-header">
+    <h1>Gestión de Ingresos</h1>
+    <p>Controla tus entradas de dinero, nóminas y extras de forma inteligente.</p>
+  </header>
+
+  <div class="main-actions-row">
+    <button class="btn-registrar-ingreso" (click)="abrirModal()">
+      <i class="fa-solid fa-plus me-2"></i> Registrar Ingreso
+    </button>
+  </div>
+
+  <section class="kpi-grid-row">
+    <div class="kpi-card-blanca">
+      <span class="kpi-label">INGRESO NETO (MES)</span>
+      <strong class="kpi-value text-success">S/. 0.00</strong>
+    </div>
+    <div class="kpi-card-blanca">
+      <span class="kpi-label">INGRESO BRUTO (MES)</span>
+      <strong class="kpi-value text-primary">S/. 0.00</strong>
+    </div>
+    <div class="kpi-card-blanca">
+      <span class="kpi-label">PROYECCIÓN ANUAL</span>
+      <strong class="kpi-value text-warning">S/. 0.00</strong>
+    </div>
+  </section>
+
+  <div class="toolbar-ingresos">
+    <div class="search-box-wrapper">
+      <input type="text" placeholder="Buscar ingresos..." class="input-search-ingresos">
+    </div>
+    <div class="toolbar-buttons">
+      <button class="btn-tool-action"><i class="fa-solid fa-file-excel me-1"></i> Exportar Excel</button>
+      <button class="btn-tool-action"><i class="fa-solid fa-file-pdf me-1"></i> PDF</button>
+      <button class="btn-tool-action"><i class="fa-solid fa-filter"></i> Filtrar</button>
+    </div>
+  </div>
+
+  <main class="historial-container">
+    <div class="card-historial-blanca">
+      <header class="historial-header">
+        <h3>Historial de Ingresos</h3>
+        <span class="badge-recientes">Recientes</span>
+      </header>
+      
+      <ul class="lista-ingresos-items">
+        <li class="ingreso-item-row">
+          <div class="item-info-left">
+            <strong class="item-titulo">Pago de Nómina</strong>
+            <small class="item-subtitulo">Depósito mensual obligatorio</small>
+          </div>
+          <div class="item-monto-right">
+            <span class="monto-valor">S/. 2,500.00</span>
+            <small class="monto-fecha">28/05/2026</small>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </main>
+</div>
+
+<div class="panel-registro-claro" *ngIf="isModalAbierto">
+  <header class="header-registro-claro">
+    <div>
+      <h1>Registrar Nuevo Ingreso</h1>
+      <p>Calculadora inteligente de ingresos netos, impuestos y deducciones.</p>
+    </div>
+    <button class="btn-volver-claro" (click)="cerrarModal()">
+      <i class="fa-solid fa-arrow-left me-2"></i> Volver
+    </button>
+  </header>
+
+  <div class="banner-ia-claro">
+    <div class="info-ia">
+      <div class="icono-ia"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+      <div>
+        <h3>Autocompletar con IA</h3>
+        <p>Sube recibos para combinar de forma automatizada.</p>
+      </div>
+    </div>
+    <button class="btn-subir-claro"><i class="fa-solid fa-upload me-2"></i> Subir</button>
+  </div>
+
+  <div class="layout-registro-claro">
+    <div class="columna-formulario">
+      <div class="fila-inputs-clara">
+        <div class="grupo-input-claro">
+          <label>Fecha de Ingreso</label>
+          <div class="wrapper-icono-input">
+            <input type="text" value="28 may 2026" readonly>
+            <i class="fa-solid fa-calendar"></i>
+          </div>
+        </div>
+        <div class="grupo-input-claro">
+          <label>Moneda Base</label>
+          <select>
+            <option>PEN - Sol Peruano</option>
+            <option>USD - Dólar Americano</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card-blanca-premium">
+        <div class="titulo-seccion-card text-success">
+          <span class="indicador-dot bg-success"></span> SUELDO FIJO MENSUAL
+        </div>
+        <div class="contenedor-monto-editable">
+          <span class="prefijo-moneda">S/.</span>
+          <input type="number" placeholder="0.00" value="0.00">
+        </div>
+      </div>
+
+      <div class="card-blanca-premium">
+        <div class="titulo-seccion-card border-bottom pb-2 mb-3">
+          <i class="fa-solid fa-chart-line text-primary me-2"></i>
+          <div>
+            <span class="text-dark fw-bold">Variables & Incentivos</span>
+          </div>
+        </div>
+        <div class="fila-inputs-clara">
+          <div class="grupo-input-claro">
+            <label>Variable Mensual</label>
+            <div class="input-porcentaje-wrapper">
+              <span class="badge-porcentaje">0 %</span>
+              <input type="number" placeholder="Monto">
+            </div>
+          </div>
+          <div class="grupo-input-claro">
+            <label>Incentivo Trimestral</label>
+            <div class="input-porcentaje-wrapper">
+              <span class="badge-porcentaje">0 %</span>
+              <input type="number" placeholder="Monto">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="columna-resumen">
+      <div class="card-blanca-premium resumen-adherente">
+        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+          <span class="text-muted fw-bold small">RESUMEN DE NÓMINA</span>
+        </div>
+        <div class="item-resumen-claro">
+          <span>Ingreso Bruto Total</span>
+          <span class="txt-valor">S/. 0.00</span>
+        </div>
+        <div class="caja-total-neto">
+          <span>TOTAL NETO A RECIBIR</span>
+          <strong>S/. 0.00</strong>
+        </div>
+        <div class="acciones-resumen-claro">
+          <button type="button" class="btn-cancelar-claro" (click)="cerrarModal()">Descartar</button>
+          <button type="submit" class="btn-guardar-claro">Registrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

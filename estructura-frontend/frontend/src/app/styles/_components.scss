@@ -1,0 +1,77 @@
+/* La Tarjeta Estándar de Luka */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  transition: var(--transition);
+
+  &:hover {
+    transform: translateY(-3px); // Efecto de flotado
+  }
+}
+
+/* El Botón Principal */
+.btn-luka {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+
+  &:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 4px 12px rgba(91, 106, 240, 0.3);
+  }
+}
+
+/* El Input Moderno */
+.luka-input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-body);
+  
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+  }
+}
+/* Estilo de Tabla Pro */
+.luka-table {
+  width: 100%;
+  border-collapse: collapse;
+  
+  th {
+    background: var(--color-primary-soft);
+    color: var(--color-primary-dark);
+    padding: 16px;
+    text-align: left;
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  td {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.95rem;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  
+  tr:hover { background-color: #f8fafc; }
+}
+
+/* Layout de rejilla rápida */
+.grid-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}

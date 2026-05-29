@@ -1,0 +1,269 @@
+/* =========================================================================
+   ESTILOS GENERALES Y CONFIGURACIÓN BASE
+   ========================================================================= */
+.ingresos-main-screen, .panel-registro-claro {
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  box-sizing: border-box;
+  
+  *, *:before, *:after {
+    box-sizing: inherit;
+  }
+}
+
+/* =========================================================================
+   PANTALLA 1: VISTA PRINCIPAL DE INGRESOS (Estilo de la Imagen 2)
+   ========================================================================= */
+.ingresos-main-screen {
+  padding: 24px;
+  background-color: #f4f6f9; 
+  min-height: 100vh;
+
+  .main-header {
+    margin-bottom: 24px;
+    h1 { color: #1e293b; font-size: 2.2rem; font-weight: 700; margin: 0; }
+    p { color: #64748b; font-size: 1rem; margin-top: 6px; }
+  }
+
+  .main-actions-row { margin-bottom: 24px; }
+
+  .btn-registrar-ingreso {
+    background-color: #2563eb;
+    color: #ffffff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+    transition: all 0.2s ease;
+    &:hover { background-color: #1d4ed8; transform: translateY(-1px); }
+  }
+
+  /* Grid de KPIs */
+  .kpi-grid-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 28px;
+  }
+
+  .kpi-card-blanca {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+    display: flex;
+    flex-direction: column;
+
+    .kpi-label { font-size: 0.8rem; font-weight: 700; color: #64748b; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .kpi-value { font-size: 1.85rem; font-weight: 700; }
+  }
+
+  /* Toolbar */
+  .toolbar-ingresos {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .search-box-wrapper { flex: 1; max-width: 600px; }
+  .input-search-ingresos {
+    width: 100%; height: 42px; background: #ffffff; border: 1px solid #e2e8f0;
+    border-radius: 10px; padding: 0 16px; font-size: 0.9rem; outline: none;
+    &:focus { border-color: #2563eb; }
+  }
+
+  .toolbar-buttons { display: flex; gap: 10px; }
+  .btn-tool-action {
+    background: #ffffff; border: 1px solid #e2e8f0; color: #334155;
+    padding: 0 16px; height: 42px; border-radius: 10px; font-weight: 600;
+    font-size: 0.85rem; cursor: pointer; display: flex; align-items: center;
+    &:hover { background: #f8fafc; }
+  }
+
+  /* Historial */
+  .card-historial-blanca {
+    background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 24px;
+    .historial-header {
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid #f1f5f9; padding-bottom: 16px; margin-bottom: 16px;
+      h3 { margin: 0; font-size: 1.15rem; font-weight: 700; color: #1e293b; }
+      .badge-recientes { font-size: 0.75rem; color: #64748b; }
+    }
+  }
+
+  .lista-ingresos-items { list-style: none; padding: 0; margin: 0; }
+  .ingreso-item-row {
+    display: flex; justify-content: space-between; align-items: center; padding: 14px 8px;
+    &:hover { background: #f8fafc; border-radius: 8px; }
+    .item-info-left {
+      .item-titulo { display: block; color: #1e293b; font-size: 0.95rem; font-weight: 600; }
+      .item-subtitulo { color: #64748b; font-size: 0.85rem; }
+    }
+    .item-monto-right {
+      text-align: right;
+      .monto-valor { display: block; color: #16a34a; font-weight: 700; font-size: 1.05rem; }
+      .monto-fecha { color: #94a3b8; font-size: 0.8rem; }
+    }
+  }
+}
+
+/* =========================================================================
+   PANTALLA 2: FORMULARIO DE REGISTRO PREMIUM CLARO (Restaurando image_29c28b.png)
+   ========================================================================= */
+.panel-registro-claro {
+  background-color: #f8fafc;
+  padding: 24px;
+  min-height: 100vh;
+  width: 100%;
+
+  .header-registro-claro {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    h1 { color: #1e293b; font-size: 2rem; font-weight: 700; margin: 0; }
+    p { color: #64748b; margin: 4px 0 0; font-size: 0.95rem; }
+  }
+
+  .btn-volver-claro {
+    background: #ffffff; border: 1px solid #e2e8f0; color: #475569;
+    padding: 8px 16px; border-radius: 10px; font-weight: 600; cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    &:hover { background: #f1f5f9; color: #0f172a; }
+  }
+
+  .banner-ia-claro {
+    background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 12px;
+    padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px;
+
+    .info-ia { display: flex; align-items: center; gap: 14px; }
+    .icono-ia {
+      background: #e0f2fe; color: #0284c7; width: 42px; height: 42px;
+      border-radius: 10px; display: grid; place-items: center; font-size: 1.2rem;
+    }
+    h3 { color: #1e293b; font-size: 1rem; margin: 0; font-weight: 700; }
+    p { margin: 2px 0 0; color: #64748b; font-size: 0.85rem; }
+    .btn-subir-claro {
+      background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0;
+      padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer;
+      &:hover { background: #e2e8f0; }
+    }
+  }
+
+  /* Grid Layout */
+  .layout-registro-claro {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .columna-formulario {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .fila-inputs-clara {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+  }
+
+  /* Tarjetas Blancas Elevadas */
+  .card-blanca-premium {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+
+    .titulo-seccion-card {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #475569;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .indicador-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  }
+
+  /* Inputs del Formulario */
+  .grupo-input-claro {
+    width: 100%;
+    label {
+      display: block; font-size: 0.75rem; font-weight: 700; color: #64748b;
+      text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;
+    }
+    input, select {
+      width: 100%; height: 44px; background: #ffffff; border: 1px solid #e2e8f0;
+      border-radius: 10px; color: #1e293b; padding: 0 14px; font-size: 0.95rem; outline: none;
+      &:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+    }
+  }
+
+  .wrapper-icono-input {
+    position: relative;
+    input { padding-right: 40px; }
+    i { position: absolute; right: 14px; top: 14px; color: #94a3b8; }
+  }
+
+  /* Input de Sueldo Gigante */
+  .contenedor-monto-editable {
+    display: flex; align-items: center; gap: 10px; margin-top: 12px;
+    .prefijo-moneda { font-size: 2.2rem; font-weight: 800; color: #16a34a; }
+    input {
+      font-size: 2.2rem; font-weight: 800; color: #1e293b;
+      border: none; background: transparent; outline: none; width: 100%;
+    }
+  }
+
+  /* Wrapper de Porcentajes */
+  .input-porcentaje-wrapper {
+    display: flex; background: #ffffff; border: 1px solid #e2e8f0;
+    border-radius: 10px; overflow: hidden; height: 44px; align-items: center;
+    .badge-porcentaje {
+      background: #f1f5f9; color: #475569; font-weight: 700; font-size: 0.8rem;
+      padding: 0 14px; height: 100%; display: grid; place-items: center; border-right: 1px solid #e2e8f0;
+    }
+    input { border: none !important; outline: none !important; padding: 0 12px; width: 100%; color: #1e293b; }
+  }
+
+  /* Resumen Columna Derecha */
+  .resumen-adherente { position: sticky; top: 24px; border-top: 4px solid #2563eb !important; }
+  
+  .item-resumen-claro {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 0.95rem;
+    span { color: #475569; font-weight: 500; }
+    .txt-valor { color: #1e293b; font-weight: 700; }
+  }
+
+  .caja-total-neto {
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin: 16px 0;
+    span { font-size: 0.75rem; color: #64748b; font-weight: 700; }
+    strong { font-size: 1.8rem; color: #1e293b; font-weight: 800; display: block; margin-top: 2px; }
+  }
+
+  .acciones-resumen-claro {
+    display: flex; gap: 10px;
+    button { flex: 1; height: 42px; border-radius: 10px; font-weight: 700; font-size: 0.9rem; cursor: pointer; }
+    .btn-cancelar-claro { background: #ffffff; border: 1px solid #e2e8f0; color: #64748b; &:hover { background: #f1f5f9; } }
+    .btn-guardar-claro { background: #2563eb; color: #ffffff; border: none; &:hover { background: #1d4ed8; } }
+  }
+}
+
+/* responsive */
+@media (max-width: 992px) {
+  .panel-registro-claro .layout-registro-claro { grid-template-columns: 1fr; }
+  .ingresos-main-screen .kpi-grid-row { grid-template-columns: 1fr; }
+}
