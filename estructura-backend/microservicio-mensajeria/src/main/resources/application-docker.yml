@@ -78,28 +78,6 @@ spring:
 server:
   port: 8084
 
-  # ── Eureka Client ─────────────────────────────────────────────────────────────
-  # EUREKA_CLIENT_ENABLED=true  → activar (Docker local)
-  # EUREKA_CLIENT_ENABLED=false → desactivar (Render producción, valor por defecto)
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka}
-    enabled: ${EUREKA_CLIENT_ENABLED:false}
-    register-with-eureka: ${EUREKA_CLIENT_ENABLED:false}
-    fetch-registry: ${EUREKA_CLIENT_ENABLED:false}
-    registry-fetch-interval-seconds: 10
-    eureka-connection-idle-timeout-seconds: 30
-  instance:
-    hostname: ${EUREKA_INSTANCE_HOSTNAME:ms-mensajeria}
-    prefer-ip-address: true
-    lease-renewal-interval-in-seconds: 10
-    lease-expiration-duration-in-seconds: 30
-    health-check-url-path: /actuator/health
-    status-page-url-path: /actuator/info
-    metadata-map:
-      startup: ${random.int}
-
   # ── Correo (Spring Mail) ───────────────────────────────────────────────────────
   mail:
     host: ${SPRING_MAIL_HOST:smtp.gmail.com}
@@ -147,8 +125,6 @@ logging:
     root: INFO
     "org.springframework.web": INFO
     "org.hibernate.SQL": WARN
-    "com.netflix.eureka": WARN
-    "com.netflix.discovery": WARN
 
 # ── Configuración Luka (JWT) ─────────────────────────────────────────
 luka:

@@ -60,16 +60,9 @@
             <artifactId>spring-cloud-starter-gateway</artifactId>
         </dependency>
         <!-- ═══════════════════════════════════════════════════════
-             EUREKA CLIENT: Permite al Gateway descubrir servicios
-             por nombre en lugar de URLs fijas (lb://nombre-servicio).
-        ═══════════════════════════════════════════════════════ -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-        </dependency>
-        <!-- ═══════════════════════════════════════════════════════
-             LOAD BALANCER: Requerido para la integración
-             Gateway + Eureka. Habilita el prefijo lb:// en las rutas.
+             LOAD BALANCER: Habilita balanceo de carga basado en
+             configuración estática (sin Eureka). Permite uso de lb://
+             con listas de instancias definidas en application.yml.
         ═══════════════════════════════════════════════════════ -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>

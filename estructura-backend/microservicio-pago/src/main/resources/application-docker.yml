@@ -45,18 +45,6 @@ spring:
 server:
   port: 8087
 
-# ── Eureka Client ─────────────────────────────────────────────────────────────
-# EUREKA_CLIENT_ENABLED=true  → activar (Docker local)
-# EUREKA_CLIENT_ENABLED=false → desactivar (Render producción, valor por defecto)
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka}
-    enabled: ${EUREKA_CLIENT_ENABLED:false}
-  instance:
-    prefer-ip-address: true
-    hostname: ${EUREKA_INSTANCE_HOSTNAME:ms-pagos}
-
 # ── Actuator ───────────────────────────────────────────────────────────────────
 management:
   endpoints:

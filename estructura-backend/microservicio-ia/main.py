@@ -26,7 +26,6 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
  
-from app.clientes.cliente_eureka import desregistrar_de_eureka, registrar_en_eureka
 from app.configuracion import obtener_configuracion
 from app.libreria_comun.excepciones.base import LukaException
 from app.libreria_comun.excepciones.handler import luka_exception_handler, http_exception_handler
@@ -147,12 +146,10 @@ async def lifespan(app: FastAPI):
  
     Startup:
       1. Imprime el banner de inicio con la configuración activa.
-      2. Registra el microservicio en Eureka.
-      3. Arranca el ConsumidorIA en hilo daemon.
+      2. Arranca el ConsumidorIA en hilo daemon.
  
     Shutdown:
       1. Detiene el ConsumidorIA limpiamente.
-      2. Desregistra el microservicio de Eureka.
     """
     # ── Banner de inicio ──────────────────────────────────────────────────────
     logger.info("═" * 65)
@@ -173,10 +170,7 @@ async def lifespan(app: FastAPI):
                 config.porcentaje_ahorro_objetivo)
     logger.info("═" * 65)
 
-    # --- REGISTRO EN EUREKA ---
     inicializar_db()
-    if config.eureka_enable:
-        await registrar_en_eureka(config)
     _iniciar_consumidor_rabbitmq()
     _iniciar_escuchadores_adicionales()
 
@@ -229,15 +223,13 @@ async def lifespan(app: FastAPI):
         except Exception as exc:
             logger.warning("[MAIN] Error al detener el EscuchadorCambioDatosIA: %s", str(exc))
 
-    if config.eureka_enable:
-        await desregistrar_de_eureka()
     logger.info("[MAIN] Microservicio IA de LUKA detenido correctamente.")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # APLICACIÓN FASTAPI
 # ══════════════════════════════════════════════════════════════════════════════
 app = FastAPI(
-    title=config.id_app_eureka,
+    title=config.nombre_app,
     version="4.0.0",
     description="""
 """,
@@ -312,7 +304,7 @@ app.include_router(analisis.router)
 
 async def health() -> dict:
     """
-    Endpoint de health check compatible con el servidor Eureka y el API Gateway.
+    Endpoint de health check compatible con el API Gateway.
  
     Retorna el estado de cada componente del microservicio:
       - motor_analitico : siempre UP (Pandas/Scikit-Learn son locales).

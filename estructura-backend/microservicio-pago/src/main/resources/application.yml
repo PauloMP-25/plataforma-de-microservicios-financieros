@@ -29,11 +29,6 @@ spring:
 server:
   port: 8087
 
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_URL:http://admin:admin123@localhost:8761/eureka/}
-
 luka:
   jwt:
     clave-secreta: ${JWT_SECRET_KEY:}

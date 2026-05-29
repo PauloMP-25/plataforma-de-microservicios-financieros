@@ -200,6 +200,20 @@ spring:
           metadata:
             requiere-autenticacion: true
 
+        - id: servicio-suscripciones
+          uri: ${URL_PROD_SUSCRIPCIONES:https://luka-suscripciones.onrender.com}
+          predicates:
+            - Path=/api/v1/suscripciones/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: suscripcionCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: true
+
       globalcors:
         corsConfigurations:
           '[/**]':
@@ -218,29 +232,6 @@ spring:
               - "*"
             allowCredentials: true
             maxAge: 3600
-
-# ═══════════════════════════════════════════════════════════════════════════
-# EUREKA CLIENT
-# EUREKA_CLIENT_ENABLED=true  → activar (Docker local)
-# EUREKA_CLIENT_ENABLED=false → desactivar (Render producción, valor por defecto)
-# ═══════════════════════════════════════════════════════════════════════
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka}
-    fetch-registry: ${EUREKA_CLIENT_ENABLED:false}
-    register-with-eureka: ${EUREKA_CLIENT_ENABLED:false}
-    registry-fetch-interval-seconds: 10
-    eureka-connection-idle-timeout-seconds: 30
-  instance:
-    hostname: ${EUREKA_INSTANCE_HOSTNAME:api-gateway}
-    prefer-ip-address: true
-    lease-renewal-interval-in-seconds: 10
-    lease-expiration-duration-in-seconds: 30
-    health-check-url-path: /actuator/health
-    status-page-url-path: /actuator/info
-    metadata-map:
-      startup: ${random.int}
 
 # ═══════════════════════════════════════════════════════════════════════════
 # JWT: Clave compartida para validar tokens (la de todos los ms)
@@ -279,8 +270,6 @@ logging:
     root: INFO
     org.springframework.cloud.gateway: INFO
     org.springframework.security: WARN
-    com.netflix.eureka: WARN
-    com.netflix.discovery: WARN
 
 # ═══════════════════════════════════════════════════════════════════════════
 # RESILIENCE4J: Configuración de Circuit Breaker
@@ -309,6 +298,8 @@ resilience4j:
         base-config: default
       pagoCB:
         base-config: default
+      suscripcionCB:
+        base-config: default
   timelimiter:
     configs:
       default:
@@ -327,4 +318,6 @@ resilience4j:
       iaCB:
         base-config: default
       pagoCB:
+        base-config: default
+      suscripcionCB:
         base-config: default

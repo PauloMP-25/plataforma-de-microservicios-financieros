@@ -6,6 +6,9 @@ import com.libreria.comun.mensajeria.PublicadorEventosBase;
 import com.libreria.comun.seguridad.FiltroJwt;
 import com.libreria.comun.seguridad.PuntoEntradaJwt;
 import com.libreria.comun.seguridad.ServicioJwt;
+import com.libreria.comun.utilidades.CalculadorFechasStrategy;
+import com.libreria.comun.utilidades.CalculadorFechasCalendario;
+import com.libreria.comun.utilidades.CalculadorFechasDiasHabiles;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -90,6 +93,30 @@ public class LukaConfiguracion {
         public ManejadorGlobalExcepcionesBase manejadorGlobalExcepciones() {
             return new ManejadorGlobalExcepcionesBase() {
             };
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public FiltroCorrelacion filtroCorrelacion() {
+            return new FiltroCorrelacion();
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public InterceptorCorrelacion interceptorCorrelacion() {
+            return new InterceptorCorrelacion();
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public CalculadorFechasStrategy calculadorFechasCalendario() {
+            return new CalculadorFechasCalendario();
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public CalculadorFechasStrategy calculadorFechasDiasHabiles() {
+            return new CalculadorFechasDiasHabiles();
         }
     }
 

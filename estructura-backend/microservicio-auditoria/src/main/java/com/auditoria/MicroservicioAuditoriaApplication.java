@@ -1,7 +1,6 @@
 package com.auditoria;
 
 import org.springframework.boot.SpringApplication;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -20,8 +19,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * Configuraciones clave:
  * </p>
  * <ul>
- * <li>{@code @EnableDiscoveryClient}: Habilita el registro y descubrimiento en
- * el servidor Eureka.</li>
  * <li>{@code @EnableScheduling}: Permite la ejecución de tareas programadas,
  * como el procesamiento de colas o limpieza de logs.</li>
  * <li>{@code @ComponentScan}: Configurado para incluir los paquetes de la
@@ -34,7 +31,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @since 2026-05-10
  */
 @SpringBootApplication(scanBasePackages = {"com.auditoria", "com.libreria.comun"})
-@EnableDiscoveryClient
 @EnableScheduling
 public class MicroservicioAuditoriaApplication {
 
