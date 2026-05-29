@@ -107,9 +107,16 @@
           [cargando]="cargando()">
         </app-ia-habitos-financieros>
 
+        <!-- Módulo Reto de Ahorro: La Misión Financiera -->
+        <app-ia-reto-ahorro
+          *ngIf="moduloSeleccionado()?.id === 'reto-ahorro'"
+          [resultado]="resultado()"
+          [cargando]="cargando()">
+        </app-ia-reto-ahorro>
+
         <!-- Otros módulos: Vista genérica de resultados -->
         <app-ia-resultado
-          *ngIf="moduloSeleccionado()?.id !== 'gasto-hormiga' && moduloSeleccionado()?.id !== 'predecir-gastos' && moduloSeleccionado()?.id !== 'habitos-financieros'"
+          *ngIf="moduloSeleccionado()?.id !== 'gasto-hormiga' && moduloSeleccionado()?.id !== 'predecir-gastos' && moduloSeleccionado()?.id !== 'habitos-financieros' && moduloSeleccionado()?.id !== 'reto-ahorro'"
           [resultado]="resultado()"
           [cargando]="cargando()">
         </app-ia-resultado>

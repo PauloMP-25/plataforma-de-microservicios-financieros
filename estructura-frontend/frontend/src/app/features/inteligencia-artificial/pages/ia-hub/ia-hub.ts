@@ -12,104 +12,106 @@ import { IaResultadoComponent } from '../../components/ia-resultado/ia-resultado
 import { IaGastoHormigaComponent } from '../../components/ia-gasto-hormiga/ia-gasto-hormiga';
 import { IaPrediccionGastosComponent } from '../../components/ia-prediccion-gastos/ia-prediccion-gastos';
 import { IaHabitosFinancierosComponent } from '../../components/ia-habitos-financieros/ia-habitos-financieros';
+import { IaRetoAhorroComponent } from '../../components/ia-reto-ahorro/ia-reto-ahorro';
+
 
 
 export interface IaModulo {
-  id:          string;
-  label:       string;
+  id: string;
+  label: string;
   descripcion: string;
-  icon:        string;
-  tag:         'ANÁLISIS' | 'COACH' | 'CLASIFICACIÓN';
-  tagColor:    string;
-  endpoint:    string;
+  icon: string;
+  tag: 'ANÁLISIS' | 'COACH' | 'CLASIFICACIÓN';
+  tagColor: string;
+  endpoint: string;
   filtroFecha: boolean;
-  params?:     string[];
+  params?: string[];
 }
 
 export type TabGroup = 'TODOS' | 'ANÁLISIS' | 'COACH' | 'CLASIFICACIÓN';
 
 const IA_MODULOS: IaModulo[] = [
   {
-    id:          'gasto-hormiga',
-    label:       'Gasto Hormiga',
+    id: 'gasto-hormiga',
+    label: 'Gasto Hormiga',
     descripcion: 'Detecta pequeños gastos recurrentes que erosionan tu presupuesto.',
-    icon:        'fa-solid fa-bug',
-    tag:         'ANÁLISIS',
-    tagColor:    '#f59e0b',
-    endpoint:    '/api/v1/ia/gasto-hormiga',
+    icon: 'fa-solid fa-bug',
+    tag: 'ANÁLISIS',
+    tagColor: '#f59e0b',
+    endpoint: '/api/v1/ia/gasto-hormiga',
     filtroFecha: true,
   },
   {
-    id:          'predecir-gastos',
-    label:       'Predicción de Gastos',
+    id: 'predecir-gastos',
+    label: 'Predicción de Gastos',
     descripcion: 'Proyecta tus gastos futuros con base en tus patrones históricos.',
-    icon:        'fa-solid fa-chart-line',
-    tag:         'ANÁLISIS',
-    tagColor:    '#f59e0b',
-    endpoint:    '/api/v1/ia/predecir-gastos',
+    icon: 'fa-solid fa-chart-line',
+    tag: 'ANÁLISIS',
+    tagColor: '#f59e0b',
+    endpoint: '/api/v1/ia/predecir-gastos',
     filtroFecha: true,
   },
   {
-    id:          'habitos-financieros',
-    label:       'Hábitos Financieros',
+    id: 'habitos-financieros',
+    label: 'Hábitos Financieros',
     descripcion: 'Evalúa la calidad de tus hábitos de ahorro y gasto.',
-    icon:        'fa-solid fa-brain',
-    tag:         'ANÁLISIS',
-    tagColor:    '#f59e0b',
-    endpoint:    '/api/v1/ia/habitos-financieros',
+    icon: 'fa-solid fa-brain',
+    tag: 'ANÁLISIS',
+    tagColor: '#f59e0b',
+    endpoint: '/api/v1/ia/habitos-financieros',
     filtroFecha: true,
   },
   {
-    id:          'estilo-vida',
-    label:       'Estilo de Vida',
+    id: 'estilo-vida',
+    label: 'Estilo de Vida',
     descripcion: 'Analiza si tus finanzas reflejan el estilo de vida que deseas.',
-    icon:        'fa-solid fa-person-walking',
-    tag:         'ANÁLISIS',
-    tagColor:    '#f59e0b',
-    endpoint:    '/api/v1/ia/estilo-vida',
+    icon: 'fa-solid fa-person-walking',
+    tag: 'ANÁLISIS',
+    tagColor: '#f59e0b',
+    endpoint: '/api/v1/ia/estilo-vida',
     filtroFecha: true,
   },
   {
-    id:          'reporte-completo',
-    label:       'Reporte Ejecutivo',
+    id: 'reporte-completo',
+    label: 'Reporte Ejecutivo',
     descripcion: 'Informe 360° que combina todos los módulos de análisis.',
-    icon:        'fa-solid fa-file-chart-column',
-    tag:         'ANÁLISIS',
-    tagColor:    '#f59e0b',
-    endpoint:    '/api/v1/ia/reporte-completo',
+    icon: 'fa-solid fa-file-chart-column',
+    tag: 'ANÁLISIS',
+    tagColor: '#f59e0b',
+    endpoint: '/api/v1/ia/reporte-completo',
     filtroFecha: true,
   },
   {
-    id:          'simular-meta',
-    label:       'Simular Meta',
+    id: 'simular-meta',
+    label: 'Simular Meta',
     descripcion: 'Simula cuánto tiempo necesitas para alcanzar una meta de ahorro.',
-    icon:        'fa-solid fa-bullseye-arrow',
-    tag:         'COACH',
-    tagColor:    '#10b981',
-    endpoint:    '/api/v1/ia/simular-meta',
+    icon: 'fa-solid fa-bullseye-arrow',
+    tag: 'COACH',
+    tagColor: '#10b981',
+    endpoint: '/api/v1/ia/simular-meta',
     filtroFecha: false,
-    params:      ['nombre_meta', 'monto_objetivo', 'aporte_mensual_deseado'],
+    params: ['nombre_meta', 'monto_objetivo', 'aporte_mensual_deseado'],
   },
   {
-    id:          'reto-ahorro',
-    label:       'Reto de Ahorro',
+    id: 'reto-ahorro',
+    label: 'Reto de Ahorro',
     descripcion: 'Genera un plan de reto personalizado para mejorar tu ahorro.',
-    icon:        'fa-solid fa-trophy',
-    tag:         'COACH',
-    tagColor:    '#10b981',
-    endpoint:    '/api/v1/ia/reto-ahorro',
+    icon: 'fa-solid fa-trophy',
+    tag: 'COACH',
+    tagColor: '#10b981',
+    endpoint: '/api/v1/ia/reto-ahorro',
     filtroFecha: true,
   },
   {
-    id:          'clasificar-transaccion',
-    label:       'Auto-Clasificar',
+    id: 'clasificar-transaccion',
+    label: 'Auto-Clasificar',
     descripcion: 'Sugiere categorías para tus transacciones usando IA Gemini.',
-    icon:        'fa-solid fa-tags',
-    tag:         'CLASIFICACIÓN',
-    tagColor:    '#8b5cf6',
-    endpoint:    '/api/v1/ia/clasificar-transaccion',
+    icon: 'fa-solid fa-tags',
+    tag: 'CLASIFICACIÓN',
+    tagColor: '#8b5cf6',
+    endpoint: '/api/v1/ia/clasificar-transaccion',
     filtroFecha: false,
-    params:      ['descripcion', 'monto'],
+    params: ['descripcion', 'monto'],
   },
 ];
 
@@ -124,7 +126,8 @@ const IA_MODULOS: IaModulo[] = [
     IaResultadoComponent,
     IaGastoHormigaComponent,
     IaPrediccionGastosComponent,
-    IaHabitosFinancierosComponent
+    IaHabitosFinancierosComponent,
+    IaRetoAhorroComponent
   ],
   templateUrl: './ia-hub.html',
   styleUrl: './ia-hub.scss'
@@ -143,10 +146,10 @@ export class IaHubComponent implements OnInit, OnDestroy {
   tabActiva = signal<TabGroup>('TODOS');
   tabs: TabGroup[] = ['TODOS', 'ANÁLISIS', 'COACH', 'CLASIFICACIÓN'];
   tabIcons: Record<TabGroup, string> = {
-    'TODOS':          'fa-solid fa-layer-group',
-    'ANÁLISIS':       'fa-solid fa-magnifying-glass-chart',
-    'COACH':          'fa-solid fa-graduation-cap',
-    'CLASIFICACIÓN':  'fa-solid fa-tags',
+    'TODOS': 'fa-solid fa-layer-group',
+    'ANÁLISIS': 'fa-solid fa-magnifying-glass-chart',
+    'COACH': 'fa-solid fa-graduation-cap',
+    'CLASIFICACIÓN': 'fa-solid fa-tags',
   };
 
   modulosFiltrados = computed(() => {
@@ -228,7 +231,7 @@ export class IaHubComponent implements OnInit, OnDestroy {
 
   private _generarRespuestaMock(modulo: IaModulo, payload?: any): RespuestaModuloDTO {
     const ahora = new Date().toISOString();
-    
+
     const insights: Record<string, any> = {
       'gasto-hormiga': {
         hay_hormigas: true,
@@ -269,17 +272,17 @@ export class IaHubComponent implements OnInit, OnDestroy {
         heatmap_datos: (() => {
           const list = [];
           const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-          
+
           for (let i = 0; i < 28; i++) {
             const w = Math.floor(i / 7) + 1;
             const dIdx = i % 7;
             const diaSemana = diasSemana[dIdx];
             const diaNum = i + 1;
-            
+
             let monto = 0;
             let nivel = 1;
             let transacciones: any[] = [];
-            
+
             if (diaSemana === 'Sábado') {
               monto = w === 4 ? 185.00 : (w === 3 ? 150.00 : (w === 2 ? 120.00 : 95.00));
               nivel = 5;
@@ -309,7 +312,7 @@ export class IaHubComponent implements OnInit, OnDestroy {
                 transacciones = [{ descripcion: 'Cafecito rápido', monto: monto, categoria: 'Alimentación', icono: 'fa-mug-hot' }];
               }
             }
-            
+
             list.push({
               fecha: `2026-05-${diaNum.toString().padStart(2, '0')}`,
               diaSemana,
@@ -347,14 +350,16 @@ export class IaHubComponent implements OnInit, OnDestroy {
         }
       },
       'reto-ahorro': {
-        duracion_dias: 30,
+        estado_reto: 'ACTIVO',
+        id_reto: 45,
+        categoria_objetivo: 'Restaurantes',
+        progreso_temporal: 45,
+        monto_limite: 50.00,
+        duracion_dias: 7,
         dificultad: 'Media',
-        plan_semanal: [
-          { semana: 1, reto: 'No-cafeterías ni compras en tiendas de conveniencia', ahorro_estimado: 50 },
-          { semana: 2, reto: 'Cocinar en casa de lunes a jueves', ahorro_estimado: 70 },
-          { semana: 3, reto: 'Auditar y cancelar una suscripción inactiva', ahorro_estimado: 30 },
-          { semana: 4, reto: 'Ahorro diario progresivo: desde S/. 1 hasta S/. 7', ahorro_estimado: 28 }
-        ]
+        exito: true,
+        ahorro_real: 85.00,
+        gasto_real: 92.50
       },
       'clasificar-transaccion': {
         descripcion: payload?.descripcion || 'Rappi Alimentos',
@@ -374,7 +379,7 @@ export class IaHubComponent implements OnInit, OnDestroy {
       'estilo-vida': '🌿 **Perfil de Estilo de Vida:** "Explorador Consciente". Inviertes en memorias pero ahorras poco. Te aconsejamos ajustar al modelo 50% necesidades, 30% deseos y 20% ahorro.',
       'reporte-completo': '📊 **Reporte 360° Ejecutivo:** Balance positivo de S/. 720. Vas por buen camino, pero mantente alerta a la categoría de alimentación fuera del hogar que creció un 15% este mes.',
       'simular-meta': `🎯 **Simulador de Metas:** Para tu meta de **"${payload?.nombre_meta || 'Laptop Gamer'}"** (S/. ${payload?.monto_objetivo || 3500}), aportando S/. ${payload?.aporte_mensual_deseado || 350} al mes, lo lograrás en **${Math.ceil((payload?.monto_objetivo || 3500) / (payload?.aporte_mensual_deseado || 350))} meses** (Marzo 2027).`,
-      'reto-ahorro': '🏆 **Reto Luka Ahorro:** Te retamos a un plan de 30 días dividido en fases semanales. Si cumples los objetivos semanales, obtendrás un ahorro estimado de **S/. 178**.',
+      'reto-ahorro': '¡Misión: Operación Cocina en Casa! 🏆 Paulo, he detectado que tu \'Enemigo Final\' de esta semana son los Restaurantes. Tu misión, si decides aceptarla, es evitar comer fuera por los próximos 7 días. Si lo logras, habrás salvado **S/ 85.00** para tu fondo de la \'Laptop Gamer\'. ¿Aceptas el reto, Jugador 1?',
       'clasificar-transaccion': `🏷️ **Clasificación sugerida:** Para "${payload?.descripcion || 'Rappi Alimentos'}" de S/. ${payload?.monto || 45.00}, Gemini Pro recomienda la categoría **"Alimentación"** con 95% de confianza.`
     };
 
@@ -468,7 +473,7 @@ export class IaHubComponent implements OnInit, OnDestroy {
       'estilo-vida': { valor: 55, etiqueta: 'Porcentaje Gasto Necesidades', tendencia: 'BAJA', variacion_porcentaje: -3.2, unidad: '%' },
       'reporte-completo': { valor: 720, etiqueta: 'Ahorro Neto este Mes', tendencia: 'ALZA', variacion_porcentaje: 25.4, unidad: 'S/.' },
       'simular-meta': { valor: Math.ceil((Number(payload?.monto_objetivo) || 3500) / (Number(payload?.aporte_mensual_deseado) || 350)), etiqueta: 'Meses Requeridos para la Meta', tendencia: 'ESTABLE', variacion_porcentaje: 0, unidad: 'meses' },
-      'reto-ahorro': { valor: 178, etiqueta: 'Ahorro Estimado Total', tendencia: 'ALZA', variacion_porcentaje: 100, unidad: 'S/.' },
+      'reto-ahorro': { valor: 85.00, etiqueta: 'Ahorro Estimado Total', tendencia: 'ALZA', variacion_porcentaje: 100, unidad: 'S/.' },
       'clasificar-transaccion': { valor: 95, etiqueta: 'Nivel de Confianza', tendencia: 'ALZA', variacion_porcentaje: 0, unidad: '%' }
     };
 
@@ -480,7 +485,7 @@ export class IaHubComponent implements OnInit, OnDestroy {
       estado_coach: 'EXITOSO',
       usando_fallback: true,
       insight: insights[modulo.id] || {},
-      consejo: consejos[modulo.id] || '✅ Simulación completada exitosamente en el entorno de pruebas.',
+      consejo: consejos[modulo.id] || 'Simulación completada exitosamente en el entorno de pruebas.',
       grafico: graficos[modulo.id],
       kpi: kpis[modulo.id]
     };
