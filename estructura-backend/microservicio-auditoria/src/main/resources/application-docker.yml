@@ -74,28 +74,6 @@ server:
         initial-interval: 1000ms
         max-attempts: 3
 
-  # ── Eureka Client ─────────────────────────────────────────────────────────────
-  # EUREKA_CLIENT_ENABLED=true  → activar (Docker local)
-  # EUREKA_CLIENT_ENABLED=false → desactivar (Render producción, valor por defecto)
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka}
-    enabled: ${EUREKA_CLIENT_ENABLED:false}
-    register-with-eureka: ${EUREKA_CLIENT_ENABLED:false}
-    fetch-registry: ${EUREKA_CLIENT_ENABLED:false}
-    registry-fetch-interval-seconds: 10
-    eureka-connection-idle-timeout-seconds: 30
-  instance:
-    hostname: ${EUREKA_INSTANCE_HOSTNAME:ms-auditoria}
-    prefer-ip-address: true
-    lease-renewal-interval-in-seconds: 10
-    lease-expiration-duration-in-seconds: 30
-    health-check-url-path: /actuator/health
-    status-page-url-path: /actuator/info
-    metadata-map:
-      startup: ${random.int}
-
 # ── Actuator (Health Checks) ───────────────────────────────────────────────────
 management:
   endpoints:
@@ -124,8 +102,6 @@ logging:
     root: INFO
     "org.springframework.web": INFO
     "org.hibernate.SQL": WARN
-    "com.netflix.eureka": WARN
-    "com.netflix.discovery": WARN
 
 # ── Seguridad JWT (Configuración Luka) ─────────────────────────────────────────
 luka:

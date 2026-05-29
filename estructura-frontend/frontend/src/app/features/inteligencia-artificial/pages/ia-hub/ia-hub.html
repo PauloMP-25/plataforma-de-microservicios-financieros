@@ -1,0 +1,94 @@
+<div class="hub-container">
+  
+  <!-- Cabecera principal de la sección -->
+  <div class="hub-header">
+    <div class="header-left">
+      <div class="title-with-icon">
+        <div class="neural-orb">
+          <i class="fa-solid fa-microchip animate-spin-slow"></i>
+        </div>
+        <h1 class="page-title">Centro de Inteligencia Artificial</h1>
+      </div>
+      <p class="page-subtitle">Explora análisis avanzados, proyecciones y optimizaciones para tu capital impulsados por Google Gemini Pro.</p>
+    </div>
+    
+    <div class="header-right" *ngIf="!moduloSeleccionado()">
+      <div class="quota-badge">
+        <i class="fa-solid fa-bolt"></i>
+        <span>Cuota: Activa &amp; Sin Límite (Luka Elite)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista 1: Cuadrícula de Todos los Módulos -->
+  <div class="vista-grid-modulos" *ngIf="!moduloSeleccionado()">
+    
+    <!-- Filtros de categoría premium de IA -->
+    <div class="hub-tabs">
+      <button
+        *ngFor="let tab of tabs"
+        class="hub-tab"
+        [class.hub-tab--active]="tabActiva() === tab"
+        (click)="cambiarTab(tab)"
+      >
+        <i [className]="tabIcons[tab]"></i>
+        <span>{{ tab }}</span>
+        <span class="hub-tab-count">{{ conteoPor(tab) }}</span>
+      </button>
+    </div>
+
+    <div class="grid-layout">
+      <div class="grid-item" *ngFor="let mod of modulosFiltrados()">
+        <app-ia-modulo-card
+          [modulo]="mod"
+          (seleccionar)="seleccionarModulo(mod)">
+        </app-ia-modulo-card>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista 2: Consola de Trabajo (Módulo Activo) -->
+  <div class="vista-consola" *ngIf="moduloSeleccionado() as mod">
+    
+    <!-- Barra de navegación / retroceso -->
+    <div class="console-nav">
+      <button class="btn-back" (click)="deseleccionarModulo()">
+        <i class="fa-solid fa-arrow-left"></i> Volver al panel general
+      </button>
+      <span class="location-trail">
+        Inteligencia Artificial <i class="fa-solid fa-chevron-right"></i> {{ mod.label }}
+      </span>
+    </div>
+
+    <!-- Banner de Error si falla -->
+    <div class="error-banner" *ngIf="errorMsg()">
+      <div class="error-icon">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <div class="error-content">
+        <h4>Error de Conexión</h4>
+        <p>{{ errorMsg() }}</p>
+      </div>
+    </div>
+
+    <!-- Layout Dividido (Panel Activo a la izquierda, Resultados a la derecha) -->
+    <div class="console-grid">
+      <div class="console-column left">
+        <app-ia-panel-activo
+          [modulo]="mod"
+          [cargando]="cargando()"
+          (ejecutar)="ejecutarAnalisis($event)">
+        </app-ia-panel-activo>
+      </div>
+
+      <div class="console-column right">
+        <app-ia-resultado
+          [resultado]="resultado()"
+          [cargando]="cargando()">
+        </app-ia-resultado>
+      </div>
+    </div>
+
+  </div>
+
+</div>

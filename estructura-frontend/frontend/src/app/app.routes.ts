@@ -76,6 +76,14 @@ export const routes: Routes = [
             .then(m => m.AYUDA_ROUTES)
       },
 
+      // -- Inteligencia Artificial --
+      {
+        path: 'inteligencia-artificial',
+        loadChildren: () =>
+          import('./features/inteligencia-artificial/ia.routes')
+            .then(m => m.IA_ROUTES)
+      },
+
       {
         path: '',
         redirectTo: '/inicio',
