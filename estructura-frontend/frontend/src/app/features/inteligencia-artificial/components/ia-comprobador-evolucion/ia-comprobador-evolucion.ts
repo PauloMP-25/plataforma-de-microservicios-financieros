@@ -102,12 +102,7 @@ export class IaComprobadorEvolucionComponent {
           estado: 'sano',
           gastoPeriodoA: 300.00,
           gastoPeriodoB: 440.00,
-          desviacion: -46.6, // Gasto de ahorro es ahorro en realidad (aumento del 46.6%)
-          desviacionRealText: '+46.6%',
-          gastoRealSigno: 'Ahorro',
-          gastoPeriodoAText: 'S/ 300.00',
-          gastoPeriodoBText: 'S/ 440.00',
-          desviacion: -46.6, // Para consistencia de signo de "gasto" (gasto menor en consumo libre es ahorro)
+          desviacion: -46.6,
           descripcionLogro: '¡Esternón fuerte! Tu reserva neta aumentó significativamente comparando ambos periodos.'
         },
         medianas: {

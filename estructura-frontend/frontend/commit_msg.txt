@@ -1,5 +1,0 @@
-feat(ia): Integración de Sala de Radiología (Comprobador de Evolución) y homogeneización de colores de la consola
-
-- Agregado el Módulo 9: "El Comprobador de Evolución" (Sala de Radiología) con arquitectura modular desacoplada en 6 componentes (selector de rangos, cargador láser EKG, esqueleto interactivo SVG con tooltips de hover, panel lateral de receta clínica estilo marfil y veredicto con corazón dinámico).
-- Corregida la colisión de colores y colorProfiles en la consola de IA (cada uno de los 10 módulos ahora posee un tono e identificador visual único).
-- Registrada la directiva del nuevo componente en la vista de orquestación central (IaHubComponent y su HTML).
