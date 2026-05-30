@@ -30,6 +30,17 @@ const MASCOT_MSGS = [
 })
 export class Sidebar implements OnInit {
 
+modalPlanesAbierto = signal(false);
+
+abrirModalPlanes(): void {
+  this.modalPlanesAbierto.set(true);
+}
+
+cerrarModalPlanes(): void {
+  this.modalPlanesAbierto.set(false);
+}
+
+
 
 
 
@@ -84,6 +95,14 @@ readonly perfilNavItems = [
 
   toggle(): void {
     this.sidebarState.toggle();
+  }
+
+  closeMobile(): void {
+    this.sidebarState.closeMobile();
+  }
+
+  onNavClick(): void {
+    this.sidebarState.closeMobile();
   }
 
   toggleMascotMsg(): void {

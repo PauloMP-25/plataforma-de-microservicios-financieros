@@ -4,6 +4,8 @@ import { AuthService } from '../../../core/services/auth.service';
 import { ClientePerfilService } from '../../../core/services/cliente-perfil.service';
 import { RespuestaDatosPersonales, SolicitudDatosPersonales } from '../../../core/models/cliente/perfil-cliente.model';
 import { AvatarService } from '../../../core/services/avatar.service';
+import { ServicioTema } from '../../../core/services/servicio-tema';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-configuracion',
@@ -13,9 +15,20 @@ import { AvatarService } from '../../../core/services/avatar.service';
   styleUrls: ['./configuracion.scss'],
 })
 export class Configuracion {
+
+  modalPlanesAbierto = signal(false);
+
+abrirModalPlanes(): void {
+  this.modalPlanesAbierto.set(true);
+}
+
+cerrarModalPlanes(): void {
+  this.modalPlanesAbierto.set(false);
+}
   // Servicios usados:
   readonly authService = inject(AuthService);
   readonly avatarService = inject(AvatarService);
+  readonly servicioTema = inject(ServicioTema);
   private readonly clientePerfilService = inject(ClientePerfilService);
 
   readonly tema = signal<'oscuro' | 'claro'>('claro');
@@ -25,6 +38,9 @@ export class Configuracion {
   readonly modalEditarPerfilAbierto = signal(false);
   readonly guardandoPerfil = signal(false);
   readonly mensajePerfil = signal('');
+  readonly eliminandoCuenta = signal(false);
+  readonly mensajeCuenta = signal('');
+  readonly modalProAbierto = signal(false);
 
   readonly formNombres = signal('');
   readonly formApellidos = signal('');
@@ -33,7 +49,7 @@ export class Configuracion {
   readonly formCiudad = signal('');
 
   readonly coloresDisponibles = ['#6d4aff', '#4361ee', '#12b3a6', '#db2777', '#ea580c'];
-  private readonly THEME_KEY = 'luka_theme';
+  private readonly THEME_KEY = 'luka-theme';
   private readonly ACCENT_KEY = 'luka_accent_color';
 
   constructor() {
@@ -52,6 +68,14 @@ export class Configuracion {
   seleccionarColor(color: string): void {
     this.colorPrincipal.set(color);
     this.aplicarColorGlobal(color);
+  }
+
+  abrirModalPro(): void {
+    this.modalProAbierto.set(true);
+  }
+
+  cerrarModalPro(): void {
+    this.modalProAbierto.set(false);
   }
 
   abrirModalEditarPerfil(): void {
@@ -109,6 +133,29 @@ export class Configuracion {
     });
   }
 
+  eliminarCuenta(): void {
+    const usuarioId = this.authService.usuario()?.id;
+    if (!usuarioId) {
+      this.mensajeCuenta.set('No se encontró sesión activa para eliminar la cuenta.');
+      return;
+    }
+
+    this.eliminandoCuenta.set(true);
+    this.mensajeCuenta.set('');
+
+    this.clientePerfilService
+      .eliminarCuenta(usuarioId)
+      .pipe(finalize(() => this.eliminandoCuenta.set(false)))
+      .subscribe({
+        next: () => {
+          this.mensajeCuenta.set('Solicitud de eliminación registrada. Nuestro equipo validará el proceso.');
+        },
+        error: () => {
+          this.mensajeCuenta.set('No se pudo procesar la solicitud de eliminación. Inténtalo nuevamente.');
+        },
+      });
+  }
+
   private cargarPerfil(): void {
     // Carga inicial de perfil por usuario autenticado.
     const usuarioId = this.authService.usuario()?.id;
@@ -123,16 +170,29 @@ export class Configuracion {
   }
 
   private inicializarTemaGlobal(): void {
-    // Mantiene preferencia persistida; por defecto inicia en claro.
+    // Solo sincroniza estado visual local; NO cambia tema al cargar Configuración.
+    // Fallback: claro por defecto si no existe preferencia.
     const guardado = localStorage.getItem(this.THEME_KEY);
-    const temaInicial: 'oscuro' | 'claro' = guardado === 'oscuro' ? 'oscuro' : 'claro';
+    const temaInicial: 'oscuro' | 'claro' =
+      guardado === 'oscuro' || guardado === 'claro'
+        ? guardado
+        : (this.servicioTema.temaOscuro() ? 'oscuro' : 'claro');
+
+    console.debug('[TemaDebug][Configuracion] init', {
+      guardado,
+      temaInicial,
+      bodyThemeDarkAntes: document.body.classList.contains('theme-dark'),
+      bodyDarkAntes: document.body.classList.contains('dark')
+    });
+
     this.tema.set(temaInicial);
-    this.aplicarTemaGlobal(temaInicial);
+    // Importante: no invocar aplicarTemaGlobal aquí.
   }
 
   private aplicarTemaGlobal(tema: 'oscuro' | 'claro'): void {
-    // Punto único de verdad para el tema global vía clase en body.
-    document.body.classList.toggle('theme-dark', tema === 'oscuro');
+    // Punto único de verdad centralizado en ServicioTema.
+    console.debug('[TemaDebug][Configuracion] aplicarTemaGlobal', { tema });
+    this.servicioTema.setTema(tema);
     localStorage.setItem(this.THEME_KEY, tema);
   }
 
@@ -148,7 +208,43 @@ export class Configuracion {
 
   private aplicarColorGlobal(color: string): void {
     document.documentElement.style.setProperty('--accent-primary', color);
+    document.documentElement.style.setProperty('--color-primary', color);
+
+    // Derivados para conservar coherencia visual global
+    const light = this.mixHex(color, '#ffffff', 0.25);
+    const dark = this.mixHex(color, '#000000', 0.22);
+    const soft = this.hexToRgba(color, 0.14);
+
+    document.documentElement.style.setProperty('--color-primary-light', light);
+    document.documentElement.style.setProperty('--color-primary-dark', dark);
+    document.documentElement.style.setProperty('--color-primary-soft', soft);
     localStorage.setItem(this.ACCENT_KEY, color);
+  }
+
+  private mixHex(base: string, mixWith: string, ratio: number): string {
+    const b = this.hexToRgb(base);
+    const m = this.hexToRgb(mixWith);
+    if (!b || !m) return base;
+    const r = Math.round(b.r * (1 - ratio) + m.r * ratio);
+    const g = Math.round(b.g * (1 - ratio) + m.g * ratio);
+    const bl = Math.round(b.b * (1 - ratio) + m.b * ratio);
+    return `#${[r, g, bl].map(v => v.toString(16).padStart(2, '0')).join('')}`;
+  }
+
+  private hexToRgba(hex: string, alpha: number): string {
+    const rgb = this.hexToRgb(hex);
+    if (!rgb) return 'rgba(91,106,240,0.14)';
+    return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
+  }
+
+  private hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+    const clean = hex.replace('#', '').trim();
+    const full = clean.length === 3
+      ? clean.split('').map(c => c + c).join('')
+      : clean;
+    if (!/^[0-9a-fA-F]{6}$/.test(full)) return null;
+    const n = parseInt(full, 16);
+    return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
   }
 
 }

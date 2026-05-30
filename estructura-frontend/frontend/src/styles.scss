@@ -1,4 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* =============================================
    LUKA - Estilos Globales
    Sistema de Gastos Personales
@@ -15,6 +19,10 @@
   --color-primary-light:  #7B89F5;
   --color-primary-dark:   #3D4EC8;
   --color-primary-soft:   #EEF0FE;
+  /* Alias de compatibilidad (evita hardcodes viejos) */
+  --c-primary:            var(--color-primary);
+  --c-accent:             var(--color-primary-light);
+  --c-primary-soft:       var(--color-primary-soft);
 
 
 
@@ -43,9 +51,11 @@
 
   /* Grises / Neutros */
   --bg-body:              #F5F6FF;
+  --bg-main:              #F5F6FF;
   --bg-card:              #FFFFFF;
   --bg-sidebar:           #FFFFFF;
   --text-primary:         #1E2340;
+  --text-main:            #1E2340;
   --text-secondary:       #6B7280;
   --text-muted:           #9CA3AF;
   --border-color:         #E8EAFF;
@@ -72,25 +82,34 @@
   --transition:           all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-bounce:    all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  /* Sidebar */
+  /* Sidebar / Header layout */
   --sidebar-width:        260px;
-  --header-height:        0px;
+  --sidebar-w:            260px;
+  --sidebar-w-col:        80px;
+  --header-height:        72px;
 }
 
 /* Tema oscuro global */
 body.theme-dark {
-  --bg-body:              #0F172A;
-  --bg-card:              #131D33;
-  --bg-sidebar:           #0F1A30;
+  --bg-body:              #0B1220;
+  --bg-main:              #0B1220;
+  --bg-card:              #121B2E;
+  --bg-sidebar:           #0E172A;
   --text-primary:         #E5ECFF;
+  --text-main:            #E5ECFF;
   --text-secondary:       #A9B6D3;
   --text-muted:           #8290AF;
-  --border-color:         #253553;
+  --border-color:         #253652;
   --shadow-sm:            0 2px 10px rgba(5, 10, 20, 0.35);
   --shadow-md:            0 8px 24px rgba(5, 10, 20, 0.45);
   --shadow-lg:            0 16px 38px rgba(5, 10, 20, 0.5);
   --bg-surface-soft:      #16243E;
   --color-accent-soft-2:  #133F39;
+
+  /* Mantener consistencia con variables antiguas */
+  --c-primary:            var(--color-primary);
+  --c-accent:             var(--color-primary-light);
+  --c-primary-soft:       var(--color-primary-soft);
 }
 
 /* ── Reset & Base ── */

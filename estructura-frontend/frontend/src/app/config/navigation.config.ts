@@ -36,6 +36,11 @@ export const NAV_ITEMS: NavItem[] = [
     route: '/presupuestos',
     icon:  'fa-solid fa-wallet'
   },
+  {
+    label: 'Perfil',
+    route: '/perfil',
+    icon:  'fa-solid fa-circle-user'
+  },
 ];
 
 // ── Navegación de cuenta  ──
