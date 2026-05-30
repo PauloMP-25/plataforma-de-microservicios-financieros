@@ -44,8 +44,8 @@
   position: relative;
   z-index: 1;
 
-  &.sidebar-collapsed {
-    margin-left: 80px;
+  &.collapsed {
+    margin-left: var(--sidebar-w-col, 80px);
   }
 }
 

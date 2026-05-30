@@ -1,0 +1,206 @@
+<!-- Barra de Depuración para Cristina Astocaza (Frontend Lead & QA) -->
+<div class="mockup-debugger">
+  <span class="debugger-title"><i class="fa-solid fa-file-chart-column"></i> Modo QA (Reporte Anual):</span>
+  <div class="debugger-buttons">
+    <button (click)="setEscenario('EXCELENTE')" [class.active]="escenarioActivo() === 'EXCELENTE'">Elite (>85 Score)</button>
+    <button (click)="setEscenario('CRITICO')" [class.active]="escenarioActivo() === 'CRITICO'">Alerta (<50 Score)</button>
+  </div>
+</div>
+
+<div class="modulo-reporte-anual-contenedor">
+  
+  <div class="reporte-anual-titulo-seccion">
+    <span class="revista-logo">LUKA EXECUTIVE REPORT</span>
+    <h1 class="revista-titulo-principal">El Anuario Financiero 2026</h1>
+    <p class="revista-resumen">Auditoría estratégica e indicadores clave consolidados de tu salud de capital.</p>
+  </div>
+
+  <!-- Bento Grid Editorial -->
+  <div class="bento-grid">
+    
+    <!-- Celda XXL: Score de Salud con Dial de Velocímetro -->
+    <div class="bento-card card-xxl card-score" [class.excellent-score]="escenarioActivo() === 'EXCELENTE'">
+      <!-- Fuegos artificiales si el score es perfecto/excelente -->
+      <div class="fireworks-container" *ngIf="fuegosArtificialesActivos()">
+        <div class="spark"></div>
+        <div class="spark"></div>
+        <div class="spark"></div>
+        <div class="spark"></div>
+      </div>
+      
+      <div class="card-header-bento">
+        <span>SCORE DE SALUD FINANCIERA</span>
+        <i class="fa-solid fa-gauge-high"></i>
+      </div>
+      
+      <div class="dial-wrapper">
+        <svg class="dial-svg" viewBox="0 0 100 50">
+          <defs>
+            <linearGradient id="dial-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#ef4444" />
+              <stop offset="50%" stop-color="#f59e0b" />
+              <stop offset="100%" stop-color="#10b981" />
+            </linearGradient>
+          </defs>
+          <!-- Arco de fondo del dial -->
+          <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="url(#dial-gradient)" stroke-width="8" stroke-linecap="round" />
+          
+          <!-- Aguja SVG que rota dinámicamente -->
+          <g [style.transform]="'rotate(' + anguloAguja() + 'deg)'" style="transform-origin: 50px 50px; transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);">
+            <line x1="50" y1="50" x2="50" y2="15" stroke="#f8fafc" stroke-width="2.5" stroke-linecap="round" />
+            <polygon points="48,22 52,22 50,15" fill="#f8fafc" />
+            <circle cx="50" cy="50" r="4" fill="#0f172a" stroke="#f8fafc" stroke-width="1.5" />
+          </g>
+        </svg>
+        
+        <div class="score-number-overlay">
+          <h1 class="score-display font-display animate-pulse-slow">{{ scoreVisual() }}</h1>
+          <span class="score-eval">{{ scoreVisual() >= 80 ? 'EXCELENTE' : (scoreVisual() >= 50 ? 'ACEPTABLE' : 'CRÍTICO') }}</span>
+        </div>
+      </div>
+      
+      <p class="bento-card-desc">
+        Tu Score Luka se sitúa por encima del <strong>{{ scoreVisual() >= 80 ? '80%' : '40%' }}</strong> de usuarios de tu perfil.
+      </p>
+    </div>
+
+    <!-- Celda L: Balance Anual con Línea de Tendencia -->
+    <div class="bento-card card-l card-balance" [class.balance-positivo]="balanceVisual() >= 0" [class.balance-negativo]="balanceVisual() < 0">
+      <div class="card-header-bento">
+        <span>BALANCE NETO ANUAL</span>
+        <i class="fa-solid" [class.fa-circle-arrow-up]="balanceVisual() >= 0" [class.fa-circle-arrow-down]="balanceVisual() < 0"></i>
+      </div>
+      
+      <div class="balance-display-box">
+        <h1 class="balance-monto font-display">
+          {{ balanceVisual() >= 0 ? '+' : '' }}S/. {{ balanceVisual() }}
+        </h1>
+        <span class="balance-trend-tag">
+          {{ balanceVisual() >= 0 ? 'Gestión Superavitaria' : 'Déficit Acumulado' }}
+        </span>
+      </div>
+
+      <!-- Micro línea de tendencia SVG -->
+      <div class="micro-trend-svg-container">
+        <svg class="micro-trend-svg" viewBox="0 0 100 20">
+          <path 
+            [attr.d]="balanceVisual() >= 0 ? 'M 5 15 Q 25 12, 50 14 T 95 3' : 'M 5 3 Q 25 6, 50 10 T 95 18'" 
+            fill="none" 
+            [attr.stroke]="balanceVisual() >= 0 ? '#10b981' : '#ef4444'" 
+            stroke-width="2" 
+            stroke-linecap="round"
+          />
+          <!-- Puntos calientes en extremos -->
+          <circle cx="5" [attr.cy]="balanceVisual() >= 0 ? 15 : 3" r="2.5" [attr.fill]="balanceVisual() >= 0 ? '#10b981' : '#ef4444'" />
+          <circle class="animate-pulse" cx="95" [attr.cy]="balanceVisual() >= 0 ? 3 : 18" r="2.5" [attr.fill]="balanceVisual() >= 0 ? '#10b981' : '#ef4444'" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- Celda L: Villano del Año -->
+    <div class="bento-card card-l card-villain">
+      <div class="spotlight-villain"></div>
+      
+      <div class="card-header-bento">
+        <span>VILLANO DEL PRESUPUESTO</span>
+        <i class="fa-solid fa-ghost text-amber-500"></i>
+      </div>
+      
+      <div class="villain-display-layout">
+        <div class="villain-avatar">
+          <i class="fa-solid fa-pizza-slice animate-bounce-slow"></i>
+        </div>
+        <div class="villain-info">
+          <h3 class="villain-name">{{ escenarioActivo() === 'EXCELENTE' ? 'Ocio / Delivery' : 'Suscripciones' }}</h3>
+          <span class="villain-impact">{{ escenarioActivo() === 'EXCELENTE' ? '25%' : '42%' }} del gasto variable</span>
+        </div>
+      </div>
+      
+      <p class="bento-card-desc">
+        Esta categoría concentró la mayor cantidad de compras compulsivas del año. ¡Ojo con este enemigo!
+      </p>
+    </div>
+
+    <!-- Celda M: Total Ingresos con Lluvia de Monedas -->
+    <div class="bento-card card-m card-income">
+      <div class="money-shower" *ngIf="escenarioActivo() === 'EXCELENTE'">
+        <div class="falling-coin" *ngFor="let i of [1,2,3,4,5]" [style.left.%]="i * 20" [style.animationDelay.s]="i * 0.3">
+          <i class="fa-solid fa-coins text-yellow-500/25"></i>
+        </div>
+      </div>
+      
+      <div class="card-header-bento">
+        <span>INGRESOS TOTALES</span>
+        <i class="fa-solid fa-wallet text-emerald-400"></i>
+      </div>
+      
+      <div class="monto-kpi-m">
+        <h2 class="font-display">S/. {{ ingresosVisual() }}</h2>
+        <span class="sub-label-kpi">Registrado en Luka</span>
+      </div>
+    </div>
+
+    <!-- Celda M: Total Gastos con Termómetro Vertical -->
+    <div class="bento-card card-m card-expenses">
+      <div class="card-header-bento">
+        <span>EGRESOS TOTALES</span>
+        <i class="fa-solid fa-receipt text-red-400"></i>
+      </div>
+      
+      <div class="expenses-layout">
+        <div class="monto-kpi-m">
+          <h2 class="font-display text-red-400">S/. {{ gastosVisual() }}</h2>
+          <span class="sub-label-kpi">{{ porcentajeTermometro() }}% de tus ingresos</span>
+        </div>
+        
+        <!-- Termómetro Vertical -->
+        <div class="thermometer-container">
+          <div class="thermometer-track">
+            <div class="thermometer-mercury" [style.height.%]="porcentajeTermometro()">
+              <div class="thermometer-bulb"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Celda M: Meses Analizados (Calendario de Intensidad) -->
+    <div class="bento-card card-m card-months">
+      <div class="card-header-bento">
+        <span>ACTIVIDAD ANUAL</span>
+        <i class="fa-solid fa-calendar-days text-purple-400"></i>
+      </div>
+      
+      <div class="mini-calendar-grid">
+        <div 
+          *ngFor="let mes of ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']" 
+          class="calendar-cell"
+          [class.cell-active-high]="escenarioActivo() === 'EXCELENTE' && ['Ene', 'Feb', 'Mar', 'May'].includes(mes)"
+          [class.cell-active-mid]="['Abr', 'Jun', 'Jul', 'Ago'].includes(mes)"
+          [class.cell-active-low]="['Sep', 'Oct', 'Nov', 'Dic'].includes(mes)"
+        >
+          {{ mes }}
+        </div>
+      </div>
+      
+      <p class="bento-card-desc mt-2">
+        Monitoreo constante. Registros activos durante el periodo anual fiscal 2026.
+      </p>
+    </div>
+
+  </div>
+
+  <!-- Consejo del Coach en la parte inferior del Bento -->
+  <div class="reporte-coach-consejo-box">
+    <div class="coach-avatar-large">
+      <i class="fa-solid fa-user-tie"></i>
+    </div>
+    <div class="coach-text">
+      <h4>CONSEJO ESTRATÉGICO LUKA COACH:</h4>
+      <p>
+        "Paulo, tu balance neto positivo de S/ 2,450.00 indica una gestión responsable. Has mantenido un crecimiento constante en tus ahorros. Identificamos que tu punto crítico de gastos se concentra en Ocio y Delivery. Controlar estas fugas acelerará tu meta de la Laptop Gamer. ¡Mantén este gran ritmo!"
+      </p>
+    </div>
+  </div>
+
+</div>

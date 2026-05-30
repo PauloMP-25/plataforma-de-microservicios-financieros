@@ -1,0 +1,61 @@
+<!-- Se oculta si no hay resultado -->
+<div class="modulo-simulador-contenedor" *ngIf="resultado" [class.es-viable]="esViableSimulado()">
+
+  <!-- Respuesta de Producción de Luka -->
+  <app-meta-respuesta-coach [consejo]="resultado?.consejo"></app-meta-respuesta-coach>
+
+  <!-- Cabecera del Simulador (HUD) -->
+  <div class="simulador-header">
+    <div class="meta-badge-container">
+      <div class="badge-tag" [class.badge-viable]="esViableSimulado()" [class.badge-alerta]="!esViableSimulado()">
+        <i class="fa-solid" [class.fa-circle-check]="esViableSimulado()"
+          [class.fa-triangle-exclamation]="!esViableSimulado()"></i>
+        <span>{{ esViableSimulado() ? 'PROYECCIÓN VIABLE' : 'AJUSTAR PLAN' }}</span>
+      </div>
+      <h2 class="meta-nombre-titulo">{{ resultado?.insight?.meta_nombre || 'Laptop Gamer' }}</h2>
+    </div>
+
+    <div class="simulador-kpis-grid">
+      <div class="kpi-card">
+        <span class="kpi-label">Tiempo Estimado</span>
+        <span class="kpi-valor" [class.text-green-400]="esViableSimulado()" [class.text-red-500]="!esViableSimulado()">
+          {{ mesesProyectados() }} meses
+        </span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Fecha Proyectada</span>
+        <span class="kpi-valor text-slate-100">{{ fechaProyectadaStr() }}</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Falta Ahorrar</span>
+        <span class="kpi-valor text-amber-500">S/. {{ montoObjetivo() - ahorroPrevio() }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline Horizontal Interactivo con Drag-Scroll -->
+  <app-meta-timeline
+    [esViableSimulado]="esViableSimulado()"
+    [porcentajeLograble]="porcentajeLograble()"
+    [ahorroPrevio]="ahorroPrevio()"
+    [montoObjetivo]="montoObjetivo()"
+    [blurAmount]="blurAmount()">
+  </app-meta-timeline>
+
+  <!-- Panel de Control del Slider interactivo -->
+  <app-meta-slider
+    [aporteMensualBase]="aporteMensualBase()"
+    [ahorroAdicional]="ahorroAdicional()"
+    (sliderChange)="onSliderChange($event)">
+  </app-meta-slider>
+
+  <!-- Consejos de Luka en base a la viabilidad -->
+  <app-meta-consejo
+    [esViableSimulado]="esViableSimulado()"
+    [aporteMensualBase]="aporteMensualBase()"
+    [ahorroAdicional]="ahorroAdicional()"
+    [mesesProyectados]="mesesProyectados()"
+    [mesesDeseados]="mesesDeseados()">
+  </app-meta-consejo>
+
+</div>

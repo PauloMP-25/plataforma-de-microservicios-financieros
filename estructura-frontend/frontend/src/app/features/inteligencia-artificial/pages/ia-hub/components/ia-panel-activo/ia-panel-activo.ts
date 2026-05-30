@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IaModulo } from '../../../../layout/sidebar/sidebar/ia-panel/ia-panel';
+import { IaModulo } from '../../ia-hub';
 
 @Component({
   selector: 'app-ia-panel-activo',
@@ -9,16 +9,17 @@ import { IaModulo } from '../../../../layout/sidebar/sidebar/ia-panel/ia-panel';
   imports: [CommonModule, FormsModule],
   templateUrl: './ia-panel-activo.html',
   styleUrl: './ia-panel-activo.scss'
-})
+}
+)
 export class IaPanelActivoComponent implements OnInit, OnChanges {
   @Input() modulo!: IaModulo;
   @Input() cargando = false;
+  @Input() tieneResultado = false;
   @Output() ejecutar = new EventEmitter<any>();
 
-  // Filtros de fecha (predeterminados al mes actual)
-  mesSelect = 5; // Mayo
-  anioSelect = 2026;
-  tamanioPagina = 100;
+  // Filtros de fecha
+  fechaInicio = '';
+  fechaFin = '';
   frecuenciaSelect: 'SEMANAL' | 'QUINCENAL' | 'MENSUAL' = 'MENSUAL';
 
   // Simulación de metas
@@ -26,6 +27,8 @@ export class IaPanelActivoComponent implements OnInit, OnChanges {
   montoObjetivo = 3000;
   montoActualAhorrado = 500;
   aporteMensualDeseado = 200;
+  aniosObjetivo = 1;
+  mesesAdicionalesObjetivo = 0;
 
   // Clasificación de transacciones
   idTemporal = 'tx_temp_001';
@@ -45,19 +48,23 @@ export class IaPanelActivoComponent implements OnInit, OnChanges {
 
   resetFormularios() {
     const hoy = new Date();
-    this.mesSelect = hoy.getMonth() + 1;
-    this.anioSelect = hoy.getFullYear();
+    const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    
+    this.fechaInicio = inicioMes.toISOString().split('T')[0];
+    this.fechaFin = hoy.toISOString().split('T')[0];
   }
 
   onEjecutar() {
     let payload: any = {};
 
     if (this.modulo.id === 'simular-meta') {
+      const totalMeses = (this.aniosObjetivo || 0) * 12 + (this.mesesAdicionalesObjetivo || 0);
       payload = {
         nombre_meta: this.nombreMeta,
         monto_objetivo: this.montoObjetivo,
         monto_actual_ahorrado: this.montoActualAhorrado,
-        aporte_mensual_deseado: this.aporteMensualDeseado
+        aporte_mensual_deseado: this.aporteMensualDeseado,
+        meses_objetivo: totalMeses > 0 ? totalMeses : 12
       };
     } else if (this.modulo.id === 'clasificar-transaccion') {
       payload = {
@@ -69,9 +76,8 @@ export class IaPanelActivoComponent implements OnInit, OnChanges {
     } else {
       // Filtros de fecha estándar
       payload = {
-        mes: Number(this.mesSelect),
-        anio: Number(this.anioSelect),
-        tamanio_pagina: Number(this.tamanioPagina),
+        fecha_inicio: this.fechaInicio,
+        fecha_fin: this.fechaFin,
         frecuencia: this.frecuenciaSelect
       };
     }
