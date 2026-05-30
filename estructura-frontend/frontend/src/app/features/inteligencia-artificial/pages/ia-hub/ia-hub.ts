@@ -6,11 +6,11 @@ import { Subscription } from 'rxjs';
 import { IaService } from '../../../../core/services/ia.service';
 import { RespuestaModuloDTO } from '../../../../core/models/financiero/ia.model';
 
-import { IaModuloCardComponent } from '../../components/ia-modulo-card/ia-modulo-card';
-import { IaPanelActivoComponent } from '../../components/ia-panel-activo/ia-panel-activo';
-import { IaResultadoComponent } from '../../components/ia-resultado/ia-resultado';
-import { IaHubHeaderComponent } from '../../components/ia-hub-header/ia-hub-header';
-import { IaHubControlsComponent } from '../../components/ia-hub-controls/ia-hub-controls';
+import { IaModuloCardComponent } from './components/ia-modulo-card/ia-modulo-card';
+import { IaPanelActivoComponent } from './components/ia-panel-activo/ia-panel-activo';
+import { IaResultadoComponent } from './components/ia-resultado/ia-resultado';
+import { IaHubHeaderComponent } from './components/ia-hub-header/ia-hub-header';
+import { IaHubControlsComponent } from './components/ia-hub-controls/ia-hub-controls';
 import { IaGastoHormigaComponent } from '../../components/ia-gasto-hormiga/ia-gasto-hormiga';
 import { IaPrediccionGastosComponent } from '../../components/ia-prediccion-gastos/ia-prediccion-gastos';
 import { IaHabitosFinancierosComponent } from '../../components/ia-habitos-financieros/ia-habitos-financieros';

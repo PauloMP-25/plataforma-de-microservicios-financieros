@@ -1,0 +1,19 @@
+<div class="consejos-ia-panel">
+  <div class="coach-avatar">
+    <i class="fa-solid fa-robot animate-bounce-slow"></i>
+  </div>
+  <div class="consejo-content">
+    <p *ngIf="esViableSimulado">
+      <strong>¡Tu meta es TOTALMENTE VIABLE!</strong> Con tu ahorro actual más un aporte de
+      <strong>S/. {{ aporteMensualBase + ahorroAdicional }}</strong>, alcanzarás tu meta en
+      <strong>{{ mesesProyectados }} meses</strong>, que está dentro de tu plazo ideal de {{ mesesDeseados }}
+      meses.
+    </p>
+    <p *ngIf="!esViableSimulado">
+      <strong> Aporte insuficiente para tu fecha objetivo.</strong>
+      Si ahorras <strong>S/. {{ aporteMensualBase + ahorroAdicional }}</strong>, tardarás <strong>{{
+        mesesProyectados }} meses</strong> en llegar a tu meta (te tomará más de los {{ mesesDeseados }} meses que
+      planeabas). ¡Intenta subir tu aporte en el slider para acortar el tiempo!
+    </p>
+  </div>
+</div>

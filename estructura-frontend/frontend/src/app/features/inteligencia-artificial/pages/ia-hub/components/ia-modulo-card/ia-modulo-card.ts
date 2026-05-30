@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IaModulo } from '../../pages/ia-hub/ia-hub';
+import { IaModulo } from '../../ia-hub';
 
 @Component({
   selector: 'app-ia-modulo-card',

@@ -2,25 +2,19 @@
 <div class="modulo-simulador-contenedor" *ngIf="resultado" [class.es-viable]="esViableSimulado()">
 
   <!-- Respuesta de Producción de Luka -->
-  <div class="prompt-gemini-box">
-    <div class="prompt-header">
-      <i class="fa-solid fa-comment-dots"></i> RESPUESTA EN PRODUCCIÓN DEL COACH LUKA
-    </div>
-    <div class="prompt-content">
-      <p [innerHTML]="resultado?.consejo"></p>
-    </div>
-  </div>
+  <app-meta-respuesta-coach [consejo]="resultado?.consejo"></app-meta-respuesta-coach>
 
   <!-- Cabecera del Simulador (HUD) -->
   <div class="simulador-header">
     <div class="meta-badge-container">
       <div class="badge-tag" [class.badge-viable]="esViableSimulado()" [class.badge-alerta]="!esViableSimulado()">
-        <i class="fa-solid" [class.fa-circle-check]="esViableSimulado()" [class.fa-triangle-exclamation]="!esViableSimulado()"></i>
+        <i class="fa-solid" [class.fa-circle-check]="esViableSimulado()"
+          [class.fa-triangle-exclamation]="!esViableSimulado()"></i>
         <span>{{ esViableSimulado() ? 'PROYECCIÓN VIABLE' : 'AJUSTAR PLAN' }}</span>
       </div>
       <h2 class="meta-nombre-titulo">{{ resultado?.insight?.meta_nombre || 'Laptop Gamer' }}</h2>
     </div>
-    
+
     <div class="simulador-kpis-grid">
       <div class="kpi-card">
         <span class="kpi-label">Tiempo Estimado</span>
@@ -39,152 +33,29 @@
     </div>
   </div>
 
-  <!-- Descripción del Timeline Interactivo -->
-  <div class="timeline-description">
-    <p>
-      <i class="fa-solid fa-chart-line text-cyan-400"></i> 
-      <strong>Línea de Tiempo Interactiva:</strong> Este gráfico muestra tu camino proyectado hacia la meta. La barra se desplaza reflejando el progreso de ahorro. Si tu plan actual no es viable, la barra y los hitos se atenuarán y el objeto final de tu meta se verá desenfocado. <strong>¡Usa el control deslizante de abajo para simular aportes mensuales adicionales y ver cómo se acelera tu progreso en tiempo real!</strong>
-    </p>
-  </div>
-
   <!-- Timeline Horizontal Interactivo con Drag-Scroll -->
-  <div class="timeline-scroll-wrapper">
-    <div class="timeline-container">
-      
-      <!-- Línea base y tramos coloreados -->
-      <div class="timeline-base-line"></div>
-      <div class="timeline-progress-line" [style.width.%]="porcentajeLograble()"></div>
-
-      <!-- Nodo 0: HOY -->
-      <div class="timeline-node node-hoy active" style="left: 0%;">
-        <div class="node-bullet bullet-pulsing">
-          <i class="fa-solid fa-location-crosshairs"></i>
-        </div>
-        <div class="node-card">
-          <span class="node-title">HOY</span>
-          <span class="node-subtitle">S/. {{ ahorroPrevio() }} ahorrados</span>
-        </div>
-      </div>
-
-      <!-- Hito 1: 25% -->
-      <div class="timeline-node" style="left: 25%;" [class.active]="esViableSimulado()">
-        <div class="node-bullet">
-          <i class="fa-solid fa-percent"></i>
-        </div>
-        <div class="node-card">
-          <span class="node-title">25% (Hito 1)</span>
-          <span class="node-subtitle">S/. {{ (montoObjetivo() * 0.25) | number:'1.0-0' }}</span>
-        </div>
-      </div>
-
-      <!-- Hito 2: 50% -->
-      <div class="timeline-node" style="left: 50%;" [class.active]="esViableSimulado()">
-        <div class="node-bullet">
-          <i class="fa-solid fa-shield-halved"></i>
-        </div>
-        <div class="node-card">
-          <span class="node-title">Mitad de Camino</span>
-          <span class="node-subtitle">S/. {{ (montoObjetivo() * 0.50) | number:'1.0-0' }}</span>
-        </div>
-      </div>
-
-      <!-- Hito 3: 75% -->
-      <div class="timeline-node" style="left: 75%;" [class.active]="esViableSimulado()">
-        <div class="node-bullet">
-          <i class="fa-solid fa-flag"></i>
-        </div>
-        <div class="node-card">
-          <span class="node-title">Casi Listo</span>
-          <span class="node-subtitle">S/. {{ (montoObjetivo() * 0.75) | number:'1.0-0' }}</span>
-        </div>
-      </div>
-
-      <!-- Nodo Final: META CONSEGUIDA (Ilustración Laptop Gamer) -->
-      <div class="timeline-node node-meta" style="left: 95%;" [class.active]="esViableSimulado()">
-        
-        <div class="target-image-wrapper" [style.filter]="'blur(' + blurAmount() + 'px)'">
-          <!-- Ilustración SVG del objeto gamer para carga ultraliviana y resolución premium -->
-          <svg class="target-svg" viewBox="0 0 100 100">
-            <!-- Pantalla Exterior -->
-            <rect x="15" y="15" width="70" height="45" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="2" />
-            <!-- Pantalla Display (Brillo de Neon) -->
-            <rect x="18" y="18" width="64" height="39" rx="2" fill="#0f172a" />
-            <polygon points="25,25 75,35 75,50 25,50" fill="url(#neon-grad)" opacity="0.4" />
-            <!-- Teclado y Base -->
-            <polygon points="5,75 15,60 85,60 95,75" fill="#334155" stroke="#38bdf8" stroke-width="1.5" />
-            <!-- Trackpad -->
-            <rect x="42" y="68" width="16" height="5" rx="1" fill="#1e293b" />
-            <!-- Glow Base -->
-            <rect x="10" y="75" width="80" height="4" rx="2" fill="#38bdf8" opacity="0.8" />
-            
-            <defs>
-              <linearGradient id="neon-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#a855f7" />
-                <stop offset="100%" stop-color="#ec4899" />
-              </linearGradient>
-            </defs>
-          </svg>
-        </div>
-
-        <div class="node-card">
-          <span class="node-title text-cyan-400">OBJETIVO METIDO</span>
-          <span class="node-subtitle">S/. {{ montoObjetivo() }}</span>
-        </div>
-      </div>
-
-    </div>
-  </div>
+  <app-meta-timeline
+    [esViableSimulado]="esViableSimulado()"
+    [porcentajeLograble]="porcentajeLograble()"
+    [ahorroPrevio]="ahorroPrevio()"
+    [montoObjetivo]="montoObjetivo()"
+    [blurAmount]="blurAmount()">
+  </app-meta-timeline>
 
   <!-- Panel de Control del Slider interactivo -->
-  <div class="slider-interactive-panel">
-    <div class="slider-info">
-      <div class="info-group">
-        <span class="info-label">Ahorro Mensual Base:</span>
-        <span class="info-valor">S/. {{ aporteMensualBase() }} / mes</span>
-      </div>
-      <div class="info-group highlight">
-        <span class="info-label">Aporte Mensual Extra:</span>
-        <span class="info-valor text-cyan-400">+S/. {{ ahorroAdicional() }} / mes</span>
-      </div>
-    </div>
-    
-    <div class="slider-input-container">
-      <input 
-        type="range" 
-        min="0" 
-        max="500" 
-        step="50"
-        [value]="ahorroAdicional()"
-        (input)="onSliderChange($event)"
-        class="interactive-range-slider"
-      />
-      <div class="slider-ticks">
-        <span>S/. 0</span>
-        <span>S/. 100</span>
-        <span>S/. 200</span>
-        <span>S/. 300</span>
-        <span>S/. 400</span>
-        <span>S/. 500</span>
-      </div>
-    </div>
-  </div>
+  <app-meta-slider
+    [aporteMensualBase]="aporteMensualBase()"
+    [ahorroAdicional]="ahorroAdicional()"
+    (sliderChange)="onSliderChange($event)">
+  </app-meta-slider>
 
   <!-- Consejos de Luka en base a la viabilidad -->
-  <div class="consejos-ia-panel">
-    <div class="coach-avatar">
-      <i class="fa-solid fa-robot animate-bounce-slow"></i>
-    </div>
-    <div class="consejo-content">
-      <p *ngIf="esViableSimulado()">
-        <strong>¡Tu meta es TOTALMENTE VIABLE!</strong> 🚀 Con tu ahorro actual más un aporte de 
-        <strong>S/. {{ aporteMensualBase() + ahorroAdicional() }}</strong>, alcanzarás tu meta en 
-        <strong>{{ mesesProyectados() }} meses</strong>, que está dentro de tu plazo ideal de {{ mesesDeseados() }} meses.
-      </p>
-      <p *ngIf="!esViableSimulado()">
-        <strong>⚠️ Aporte insuficiente para tu fecha objetivo.</strong> 
-        Si ahorras <strong>S/. {{ aporteMensualBase() + ahorroAdicional() }}</strong>, tardarás <strong>{{ mesesProyectados() }} meses</strong> en llegar a tu meta (te tomará más de los {{ mesesDeseados() }} meses que planeabas). ¡Intenta subir tu aporte en el slider para acortar el tiempo!
-      </p>
-    </div>
-  </div>
+  <app-meta-consejo
+    [esViableSimulado]="esViableSimulado()"
+    [aporteMensualBase]="aporteMensualBase()"
+    [ahorroAdicional]="ahorroAdicional()"
+    [mesesProyectados]="mesesProyectados()"
+    [mesesDeseados]="mesesDeseados()">
+  </app-meta-consejo>
 
 </div>

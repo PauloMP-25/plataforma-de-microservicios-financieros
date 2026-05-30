@@ -2,10 +2,21 @@ import { Component, Input, OnInit, OnChanges, SimpleChanges, signal, computed } 
 import { CommonModule } from '@angular/common';
 import { RespuestaModuloDTO } from '../../../../core/models/financiero/ia.model';
 
+import { MetaRespuestaCoachComponent } from './components/meta-respuesta-coach/meta-respuesta-coach';
+import { MetaTimelineComponent } from './components/meta-timeline/meta-timeline';
+import { MetaSliderComponent } from './components/meta-slider/meta-slider';
+import { MetaConsejoComponent } from './components/meta-consejo/meta-consejo';
+
 @Component({
   selector: 'app-ia-simular-meta',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    MetaRespuestaCoachComponent,
+    MetaTimelineComponent,
+    MetaSliderComponent,
+    MetaConsejoComponent
+  ],
   templateUrl: './ia-simular-meta.html',
   styleUrl: './ia-simular-meta.scss'
 })

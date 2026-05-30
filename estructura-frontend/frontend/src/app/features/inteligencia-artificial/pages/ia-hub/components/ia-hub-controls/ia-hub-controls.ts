@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TabGroup } from '../../pages/ia-hub/ia-hub';
+import { TabGroup } from '../../ia-hub';
 
 @Component({
   selector: 'app-ia-hub-controls',

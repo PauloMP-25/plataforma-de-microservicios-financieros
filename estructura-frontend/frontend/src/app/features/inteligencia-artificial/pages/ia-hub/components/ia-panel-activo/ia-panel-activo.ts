@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IaModulo } from '../../pages/ia-hub/ia-hub';
+import { IaModulo } from '../../ia-hub';
 
 @Component({
   selector: 'app-ia-panel-activo',
