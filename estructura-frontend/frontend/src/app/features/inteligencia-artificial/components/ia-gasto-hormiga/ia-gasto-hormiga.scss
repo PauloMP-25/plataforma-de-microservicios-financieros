@@ -360,8 +360,14 @@ $pin-color: #dc2626;
 // ── Zonas principales ──
 .board-zones {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr auto 1fr;
   gap: 24px;
+}
+
+.board-divider {
+  width: 2px;
+  background: linear-gradient(to bottom, transparent, rgba(245, 158, 11, 0.2), transparent);
+  border-radius: 2px;
 }
 
 // ── Zona Header (shared) ──
@@ -399,10 +405,59 @@ $pin-color: #dc2626;
   gap: 16px;
 }
 
+// ── Estado Vacío (0 casos) ──
+.estado-vacio-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px 24px;
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px dashed rgba(16, 185, 129, 0.3);
+  border-radius: 14px;
+  color: rgba(248, 250, 252, 0.8);
+  gap: 12px;
+  margin-top: 8px;
+
+  .vacio-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+
+    i {
+      font-size: 32px;
+      color: #10b981;
+      text-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+    }
+  }
+
+  h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #10b981;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+
+  body.tema-claro & {
+    color: rgba(30, 41, 59, 0.8);
+    background: rgba(16, 185, 129, 0.03);
+  }
+}
+
 .ficha-policial {
   position: relative;
-  display: grid;
-  grid-template-columns: 56px 1fr auto;
+  display: flex;
   align-items: center;
   gap: 14px;
   padding: 16px 18px;
@@ -411,6 +466,40 @@ $pin-color: #dc2626;
   border: 1px solid rgba(245, 158, 11, 0.1);
   cursor: default;
   transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden; // Para que los barrotes no se salgan
+
+  overflow: hidden; // Para que los barrotes no se salgan
+
+  // Poner el contenido encima de los barrotes sin afectar el position absolute del pin
+  .ficha-mugshot, .ficha-datos, .ficha-monto {
+    position: relative;
+    z-index: 10;
+  }
+
+  // Barrotes de prisión
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(90deg, 
+      transparent, 
+      transparent 28px, 
+      rgba(0, 0, 0, 0.4) 28px, 
+      rgba(0, 0, 0, 0.4) 34px
+    );
+    pointer-events: none;
+    z-index: 5;
+    border-radius: 14px;
+
+    body.tema-claro & {
+      background: repeating-linear-gradient(90deg, 
+        transparent, 
+        transparent 28px, 
+        rgba(0, 0, 0, 0.15) 28px, 
+        rgba(0, 0, 0, 0.15) 34px
+      );
+    }
+  }
 
   // Animación de entrada staggered
   animation: cardDrop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
@@ -510,6 +599,7 @@ $pin-color: #dc2626;
   flex-direction: column;
   gap: 3px;
   min-width: 0;
+  flex: 1;
 }
 
 .ficha-categoria {
@@ -522,15 +612,19 @@ $pin-color: #dc2626;
 }
 
 .ficha-nombre {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #f1f5f9;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 
-  body.tema-claro & { color: #1e293b; }
+  body.tema-claro & { 
+    color: #0f172a; 
+    text-shadow: none;
+  }
 }
 
 .ficha-stat {
@@ -543,6 +637,26 @@ $pin-color: #dc2626;
   i { font-size: 0.6rem; color: rgba(245, 158, 11, 0.5); }
 
   body.tema-claro & { color: rgba(30, 41, 59, 0.5); }
+}
+
+.peligro-stat {
+  margin-top: 4px;
+  span {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 800;
+  }
+  .badge-crítico { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.25); }
+  .badge-alto { background: rgba(249, 115, 22, 0.15); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.25); }
+  .badge-medio { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.25); }
+  .badge-bajo { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25); }
+}
+
+.alternativa-stat {
+  margin-top: 2px;
+  color: #22d3ee !important;
+  i { color: #22d3ee !important; }
 }
 
 // ── Monto rojo ──
@@ -599,13 +713,28 @@ $pin-color: #dc2626;
   gap: 18px;
 }
 
+// ── Top Row Impacto ──
+.impacto-top-row {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+}
+
 // ── Reloj Analógico ──
 .reloj-container {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 12px;
-  padding: 20px;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  flex: 1.2;
+
+  body.tema-claro & {
+    background: rgba(255, 255, 255, 0.4);
+  }
 }
 
 .reloj-face {
@@ -645,6 +774,7 @@ $pin-color: #dc2626;
     width: 2.5px;
     background: rgba(245, 158, 11, 0.6);
     top: 4px;
+    transform-origin: 50% 61px;
   }
 }
 
@@ -666,7 +796,7 @@ $pin-color: #dc2626;
 
   &.manecilla-minutos {
     width: 2px;
-    height: 44px;
+    height: 46px;
     margin-left: -1px;
     background: linear-gradient(to top, $detective-red, lighten($detective-red, 10%));
     box-shadow: 0 0 6px $detective-red-glow;
@@ -700,13 +830,15 @@ $pin-color: #dc2626;
 }
 
 .reloj-caption {
-  font-size: 0.75rem;
-  color: rgba(248, 250, 252, 0.45);
-  text-align: center;
-  font-style: italic;
+  font-size: 0.82rem;
+  color: rgba(248, 250, 252, 0.8);
+  text-align: justify;
   margin: 0;
+  font-style: italic;
+  line-height: 1.4;
+  width: 100%;
 
-  body.tema-claro & { color: rgba(30, 41, 59, 0.45); }
+  body.tema-claro & { color: rgba(30, 41, 59, 0.8); }
 }
 
 // ── Odómetro Card ──
@@ -818,17 +950,127 @@ $pin-color: #dc2626;
   transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+// ── Proyección a Largo Plazo Card ──
+.proyeccion-card {
+  margin-top: 24px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  body.tema-claro & {
+    background: rgba(255, 255, 255, 0.5);
+    border-color: rgba(0, 0, 0, 0.05);
+  }
+}
+
+.proyeccion-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: $detective-amber;
+  margin-bottom: 4px;
+  h4 { margin: 0; font-size: 1rem; }
+}
+
+.proyeccion-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 12px;
+  
+  body.tema-claro & { border-bottom-color: rgba(0,0,0,0.05); }
+}
+
+.proy-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: rgba(248, 250, 252, 0.8);
+
+  body.tema-claro & { color: rgba(30, 41, 59, 0.8); }
+}
+
+.proy-danger {
+  color: #ef4444;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.proyeccion-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: rgba(34, 211, 238, 0.8);
+  font-style: italic;
+
+  i { color: #22d3ee; }
+}
+
+// ── Alerta Máxima (5 casos) ──
+.alerta-maxima-card {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: rgba(239, 68, 68, 0.1);
+  border-left: 4px solid #ef4444;
+  border-radius: 8px;
+  color: #f1f5f9;
+
+  i {
+    font-size: 24px;
+    color: #ef4444;
+  }
+
+  .alerta-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    h4 {
+      margin: 0;
+      color: #ef4444;
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: rgba(248, 250, 252, 0.8);
+      line-height: 1.4;
+    }
+  }
+
+  body.tema-claro & {
+    color: #1e293b;
+    .alerta-text p { color: rgba(30, 41, 59, 0.8); }
+  }
+}
+
 // ── Principal Sospechoso Card ──
 .principal-sospechoso-card {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 16px 20px;
+  padding: 16px;
   border-radius: 14px;
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(239, 68, 68, 0.06));
   border: 1px dashed rgba(245, 158, 11, 0.2);
   text-align: center;
+  flex: 0.8;
 
   body.tema-claro & {
     background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(239, 68, 68, 0.04));
@@ -866,18 +1108,36 @@ $pin-color: #dc2626;
 .consejo-detective {
   display: flex;
   gap: 16px;
-  padding: 20px;
-  border-radius: 14px;
-  background: rgba(15, 23, 42, 0.4);
-  border: 1px solid rgba(245, 158, 11, 0.1);
-  border-left: 3px solid $detective-amber;
+  padding: 16px 20px;
+  border-radius: 14px 14px 14px 0; // Forma de burbuja de chat
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-left: 4px solid $detective-amber;
   animation: fadeSlideUp 0.5s ease-out both;
   animation-delay: 1.2s;
+  position: relative;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: -12px;
+    left: -4px;
+    width: 0;
+    height: 0;
+    border-top: 12px solid $detective-amber;
+    border-right: 16px solid transparent;
+  }
 
   body.tema-claro & {
-    background: rgba(255, 248, 235, 0.5);
-    border-color: rgba(245, 158, 11, 0.15);
+    background: rgba(255, 248, 235, 0.85);
+    border-color: rgba(245, 158, 11, 0.25);
     border-left-color: $detective-amber;
+
+    &::before {
+      border-top-color: $detective-amber;
+    }
   }
 }
 
@@ -933,7 +1193,15 @@ $pin-color: #dc2626;
   line-height: 1.65;
   margin: 0;
 
-  body.tema-claro & { color: rgba(30, 41, 59, 0.8); }
+  strong {
+    color: #f59e0b;
+    font-weight: 700;
+  }
+
+  body.tema-claro & { 
+    color: rgba(30, 41, 59, 0.8); 
+    strong { color: #d97706; }
+  }
 }
 
 .cursor-blink {

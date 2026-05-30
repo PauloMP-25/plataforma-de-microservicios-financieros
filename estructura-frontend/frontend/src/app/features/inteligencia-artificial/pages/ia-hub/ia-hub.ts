@@ -9,6 +9,8 @@ import { RespuestaModuloDTO } from '../../../../core/models/financiero/ia.model'
 import { IaModuloCardComponent } from '../../components/ia-modulo-card/ia-modulo-card';
 import { IaPanelActivoComponent } from '../../components/ia-panel-activo/ia-panel-activo';
 import { IaResultadoComponent } from '../../components/ia-resultado/ia-resultado';
+import { IaHubHeaderComponent } from '../../components/ia-hub-header/ia-hub-header';
+import { IaHubControlsComponent } from '../../components/ia-hub-controls/ia-hub-controls';
 import { IaGastoHormigaComponent } from '../../components/ia-gasto-hormiga/ia-gasto-hormiga';
 import { IaPrediccionGastosComponent } from '../../components/ia-prediccion-gastos/ia-prediccion-gastos';
 import { IaHabitosFinancierosComponent } from '../../components/ia-habitos-financieros/ia-habitos-financieros';
@@ -27,143 +29,194 @@ export interface IaModulo {
   label: string;
   descripcion: string;
   icon: string;
-  tag: 'ANÁLISIS' | 'COACH' | 'CLASIFICACIÓN';
+  tag: 'ANÁLISIS' | 'COACH';
   tagColor: string;
   endpoint: string;
   filtroFecha: boolean;
   params?: string[];
-  orbit: number;
-  angle: number;
-  size: number;
-  color: string;
-  emoji: string;
+  bentoClass?: string;
+  colorProfile?: string;
+  proximamente?: boolean;
+  features?: { icon: string, text: string }[];
 }
 
-export type TabGroup = 'TODOS' | 'ANÁLISIS' | 'COACH' | 'CLASIFICACIÓN';
+export type TabGroup = 'TODOS' | 'ANÁLISIS' | 'COACH';
 
 const IA_MODULOS: IaModulo[] = [
   {
-    id: 'gasto-hormiga',
-    label: 'Gasto Hormiga',
-    descripcion: 'Detecta pequeños gastos recurrentes que erosionan tu presupuesto.',
-    icon: 'fa-solid fa-bug',
-    tag: 'ANÁLISIS',
-    tagColor: '#f59e0b',
-    endpoint: '/api/v1/ia/gasto-hormiga',
-    filtroFecha: true,
-    orbit: 2,
-    angle: 120,
-    size: 78,
-    color: '#f59e0b',
-    emoji: '🐜'
-  },
-  {
     id: 'predecir-gastos',
     label: 'Predicción de Gastos',
-    descripcion: 'Proyecta tus gastos futuros con base en tus patrones históricos.',
+    descripcion: 'Deja que Luka analice tus patrones ocultos para proyectar con alta precisión tus próximos egresos y evitar sorpresas de fin de mes.',
     icon: 'fa-solid fa-chart-line',
     tag: 'ANÁLISIS',
-    tagColor: '#f59e0b',
+    tagColor: '#06b6d4',
     endpoint: '/api/v1/ia/predecir-gastos',
     filtroFecha: true,
-    orbit: 1,
-    angle: 210,
-    size: 68,
-    color: '#3b82f6',
-    emoji: '🔮'
+    bentoClass: 'bento-wide',
+    colorProfile: 'neon-cyan',
+    features: [
+      { icon: 'fa-solid fa-magnifying-glass-chart', text: 'Proyecta egresos mensuales' },
+      { icon: 'fa-solid fa-triangle-exclamation', text: 'Alerta saldos negativos' },
+      { icon: 'fa-solid fa-shield-halved', text: 'Sugiere fondos de reserva' }
+    ]
   },
   {
-    id: 'habitos-financieros',
-    label: 'Hábitos Financieros',
-    descripcion: 'Evalúa la calidad de tus hábitos de ahorro y gasto.',
-    icon: 'fa-solid fa-brain',
+    id: 'gasto-hormiga',
+    label: 'Gasto Hormiga',
+    descripcion: 'Luka detecta esas minúsculas pero letales fugas de dinero recurrentes que están erosionando silenciosamente tu patrimonio.',
+    icon: 'fa-solid fa-bug',
     tag: 'ANÁLISIS',
-    tagColor: '#f59e0b',
-    endpoint: '/api/v1/ia/habitos-financieros',
+    tagColor: '#ef4444',
+    endpoint: '/api/v1/ia/gasto-hormiga',
     filtroFecha: true,
-    orbit: 3,
-    angle: 240,
-    size: 64,
-    color: '#a855f7',
-    emoji: '🧠'
-  },
-  {
-    id: 'estilo-vida',
-    label: 'Estilo de Vida',
-    descripcion: 'Analiza si tus finanzas reflejan el estilo de vida que deseas.',
-    icon: 'fa-solid fa-person-walking',
-    tag: 'ANÁLISIS',
-    tagColor: '#f59e0b',
-    endpoint: '/api/v1/ia/estilo-vida',
-    filtroFecha: true,
-    orbit: 2,
-    angle: 300,
-    size: 58,
-    color: '#ec4899',
-    emoji: '🕶️'
-  },
-  {
-    id: 'reporte-completo',
-    label: 'Reporte Ejecutivo',
-    descripcion: 'Informe 360° que combina todos los módulos de análisis.',
-    icon: 'fa-solid fa-file-chart-column',
-    tag: 'ANÁLISIS',
-    tagColor: '#f59e0b',
-    endpoint: '/api/v1/ia/reporte-completo',
-    filtroFecha: true,
-    orbit: 4,
-    angle: 160,
-    size: 82,
-    color: '#10b981',
-    emoji: '📊'
+    bentoClass: 'bento-wide',
+    colorProfile: 'alert-red',
+    features: [
+      { icon: 'fa-solid fa-bug', text: 'Rastrea micro-consumos' },
+      { icon: 'fa-solid fa-arrow-trend-down', text: 'Proyecta fugas anuales' },
+      { icon: 'fa-solid fa-ban', text: 'Sustituye gastos nocivos' }
+    ]
   },
   {
     id: 'simular-meta',
     label: 'Simular Meta',
-    descripcion: 'Simula cuánto tiempo necesitas para alcanzar una meta de ahorro.',
-    icon: 'fa-solid fa-bullseye-arrow',
+    descripcion: 'Luka calculará la ruta más eficiente para que alcances tus sueños. Simula tiempos, cuotas y descubre atajos financieros.',
+    icon: 'fa-solid fa-bullseye',
     tag: 'COACH',
     tagColor: '#10b981',
     endpoint: '/api/v1/ia/simular-meta',
     filtroFecha: false,
     params: ['nombre_meta', 'monto_objetivo', 'aporte_mensual_deseado'],
-    orbit: 3,
-    angle: 60,
-    size: 62,
-    color: '#06b6d4',
-    emoji: '🚀'
+    bentoClass: 'bento-wide',
+    colorProfile: 'matrix-green',
+    features: [
+      { icon: 'fa-solid fa-calendar-days', text: 'Calcula tiempos y plazos' },
+      { icon: 'fa-solid fa-calculator', text: 'Estima cuotas de ahorro' },
+      { icon: 'fa-solid fa-compass', text: 'Traza rutas de ahorro' }
+    ]
+  },
+  {
+    id: 'reporte-completo',
+    label: 'Reporte Ejecutivo',
+    descripcion: 'Luka, tu coach financiero, consolida todos tus movimientos en un informe panorámico 360° para evaluar tu salud económica global.',
+    icon: 'fa-solid fa-chart-pie',
+    tag: 'ANÁLISIS',
+    tagColor: '#f59e0b',
+    endpoint: '/api/v1/ia/reporte-completo',
+    filtroFecha: true,
+    bentoClass: 'bento-wide',
+    colorProfile: 'cyber-gold',
+    features: [
+      { icon: 'fa-solid fa-chart-pie', text: 'Consolida ingresos y egresos' },
+      { icon: 'fa-solid fa-heart-pulse', text: 'Evalúa tu salud financiera' },
+      { icon: 'fa-solid fa-lightbulb', text: 'Optimiza tu capital disponible' }
+    ]
+  },
+  {
+    id: 'estilo-vida',
+    label: 'Estilo de Vida',
+    descripcion: 'Una radiografía de tu perfil como consumidor. Luka te muestra si tu nivel de gasto refleja realmente la vida que deseas tener.',
+    icon: 'fa-solid fa-person-walking',
+    tag: 'ANÁLISIS',
+    tagColor: '#d946ef',
+    endpoint: '/api/v1/ia/estilo-vida',
+    filtroFecha: true,
+    bentoClass: 'bento-wide',
+    colorProfile: 'plasma-magenta',
+    features: [
+      { icon: 'fa-solid fa-user-gear', text: 'Perfil de consumidor' },
+      { icon: 'fa-solid fa-chart-simple', text: 'Aplica regla 50/30/20' },
+      { icon: 'fa-solid fa-wand-magic-sparkles', text: 'Consejos de consumo óptimo' }
+    ]
+  },
+  {
+    id: 'habitos-financieros',
+    label: 'Hábitos Financieros',
+    descripcion: 'Luka evalúa la calidad de tus decisiones diarias. Descubre si tus rutinas de consumo te acercan a la riqueza o a la deuda.',
+    icon: 'fa-solid fa-brain',
+    tag: 'ANÁLISIS',
+    tagColor: '#8b5cf6',
+    endpoint: '/api/v1/ia/habitos-financieros',
+    filtroFecha: true,
+    bentoClass: 'bento-wide',
+    colorProfile: 'synth-purple',
+    features: [
+      { icon: 'fa-solid fa-calendar-week', text: 'Evalúa consumo semanal' },
+      { icon: 'fa-solid fa-basket-shopping', text: 'Detecta categorías frecuentes' },
+      { icon: 'fa-solid fa-chart-line', text: 'Mide impacto patrimonial' }
+    ]
   },
   {
     id: 'reto-ahorro',
     label: 'Reto de Ahorro',
-    descripcion: 'Genera un plan de reto personalizado para mejorar tu ahorro.',
+    descripcion: 'Tu coach Luka te propone misiones semanales personalizadas. Supera los retos para inyectar capital directo a tus ahorros.',
     icon: 'fa-solid fa-trophy',
     tag: 'COACH',
     tagColor: '#10b981',
     endpoint: '/api/v1/ia/reto-ahorro',
     filtroFecha: true,
-    orbit: 1,
-    angle: 30,
-    size: 66,
-    color: '#eab308',
-    emoji: '🏆'
+    bentoClass: 'bento-wide',
+    colorProfile: 'matrix-green',
+    features: [
+      { icon: 'fa-solid fa-gamepad', text: 'Misiones semanales de ahorro' },
+      { icon: 'fa-solid fa-sack-dollar', text: 'Ahorro directo a metas' },
+      { icon: 'fa-solid fa-award', text: 'Puntos para tu score Luka' }
+    ]
   },
   {
-    id: 'clasificar-transaccion',
-    label: 'Auto-Clasificar',
-    descripcion: 'Sugiere categorías para tus transacciones usando IA Gemini.',
-    icon: 'fa-solid fa-tags',
-    tag: 'CLASIFICACIÓN',
-    tagColor: '#8b5cf6',
-    endpoint: '/api/v1/ia/clasificar-transaccion',
+    id: 'modulo-futuro-1',
+    label: 'Próximamente',
+    descripcion: 'Nuevo módulo de análisis en desarrollo. Muy pronto tu coach financiero Luka te sorprenderá con más herramientas inteligentes.',
+    icon: 'fa-solid fa-hourglass-start',
+    tag: 'ANÁLISIS',
+    tagColor: '#64748b',
+    endpoint: '',
     filtroFecha: false,
-    params: ['descripcion', 'monto'],
-    orbit: 4,
-    angle: 330,
-    size: 52,
-    color: '#8b5cf6',
-    emoji: '🏷️'
+    bentoClass: 'bento-wide',
+    colorProfile: 'cyber-grey',
+    proximamente: true,
+    features: [
+      { icon: 'fa-solid fa-hourglass-start', text: 'Nuevo análisis inteligente' },
+      { icon: 'fa-solid fa-circle-nodes', text: 'Integración con Luka Brain' },
+      { icon: 'fa-solid fa-microchip', text: 'Módulo en desarrollo' }
+    ]
   },
+  {
+    id: 'modulo-futuro-2',
+    label: 'Próximamente',
+    descripcion: 'Nueva funcionalidad del Coach IA en fase de diseño. Estamos creando nuevas formas de optimizar tus finanzas diarias.',
+    icon: 'fa-solid fa-hourglass-half',
+    tag: 'COACH',
+    tagColor: '#64748b',
+    endpoint: '',
+    filtroFecha: false,
+    bentoClass: 'bento-wide',
+    colorProfile: 'cyber-grey',
+    proximamente: true,
+    features: [
+      { icon: 'fa-solid fa-hourglass-half', text: 'Nueva mentoría del Coach' },
+      { icon: 'fa-solid fa-brain', text: 'Recomendaciones autónomas' },
+      { icon: 'fa-solid fa-gears', text: 'Funcionalidad en diseño' }
+    ]
+  },
+  {
+    id: 'modulo-futuro-3',
+    label: 'Próximamente',
+    descripcion: 'Módulo inteligente adicional en planificación. Expandiendo las capacidades predictivas de nuestra red neuronal.',
+    icon: 'fa-solid fa-hourglass-end',
+    tag: 'ANÁLISIS',
+    tagColor: '#64748b',
+    endpoint: '',
+    filtroFecha: false,
+    bentoClass: 'bento-wide',
+    colorProfile: 'cyber-grey',
+    proximamente: true,
+    features: [
+      { icon: 'fa-solid fa-hourglass-end', text: 'Análisis predictivo futuro' },
+      { icon: 'fa-solid fa-robot', text: 'Red neuronal ampliada' },
+      { icon: 'fa-solid fa-screwdriver-wrench', text: 'Módulo en planificación' }
+    ]
+  }
 ];
 
 @Component({
@@ -175,6 +228,8 @@ const IA_MODULOS: IaModulo[] = [
     IaModuloCardComponent,
     IaPanelActivoComponent,
     IaResultadoComponent,
+    IaHubHeaderComponent,
+    IaHubControlsComponent,
     IaGastoHormigaComponent,
     IaPrediccionGastosComponent,
     IaHabitosFinancierosComponent,
@@ -196,18 +251,16 @@ export class IaHubComponent implements OnInit, OnDestroy {
   cargando = signal(false);
   errorMsg = signal<string | null>(null);
 
-  // Navegación Estelar
-  vistaActiva = signal<'GRID' | 'ESTELAR'>('ESTELAR');
-  viajeEspacialActivo = signal(false);
+  // Animación de Transición
+  transicionActiva = signal(false);
 
   // ── Filtros del Panel Principal ──
   tabActiva = signal<TabGroup>('TODOS');
-  tabs: TabGroup[] = ['TODOS', 'ANÁLISIS', 'COACH', 'CLASIFICACIÓN'];
+  tabs: TabGroup[] = ['TODOS', 'ANÁLISIS', 'COACH'];
   tabIcons: Record<TabGroup, string> = {
     'TODOS': 'fa-solid fa-layer-group',
     'ANÁLISIS': 'fa-solid fa-magnifying-glass-chart',
     'COACH': 'fa-solid fa-graduation-cap',
-    'CLASIFICACIÓN': 'fa-solid fa-tags',
   };
 
   modulosFiltrados = computed(() => {
@@ -249,30 +302,38 @@ export class IaHubComponent implements OnInit, OnDestroy {
     this.tabActiva.set(tab);
   }
 
+  getCuotaText(tab: TabGroup): string {
+    if (tab === 'TODOS') return '∞ Consultas';
+    if (tab === 'ANÁLISIS') return '∞ Consultas';
+    if (tab === 'COACH') return '∞ Consultas';
+    return '';
+  }
+
   seleccionarModulo(modulo: IaModulo) {
-    this.viajeEspacialActivo.set(true);
+    if (modulo.proximamente) return;
+    this.transicionActiva.set(true);
     setTimeout(() => {
       this.router.navigate([], {
         relativeTo: this.route,
         queryParams: { modulo: modulo.id },
         queryParamsHandling: 'merge'
       }).then(() => {
-        this.viajeEspacialActivo.set(false);
+        this.transicionActiva.set(false);
       });
-    }, 750);
+    }, 400); // Transición más ágil
   }
 
   deseleccionarModulo() {
-    this.viajeEspacialActivo.set(true);
+    this.transicionActiva.set(true);
     setTimeout(() => {
       this.router.navigate([], {
         relativeTo: this.route,
         queryParams: { modulo: null },
         queryParamsHandling: 'merge'
       }).then(() => {
-        this.viajeEspacialActivo.set(false);
+        this.transicionActiva.set(false);
       });
-    }, 750);
+    }, 400);
   }
 
   // ── Simulación Estática con Respuesta Mock (Fase de Pruebas) ──
@@ -418,7 +479,8 @@ export class IaHubComponent implements OnInit, OnDestroy {
         escenario_alternativo: {
           aporte: (Number(payload?.aporte_mensual_deseado) || 350) + 150,
           meses: Math.ceil((Number(payload?.monto_objetivo) || 3500) / ((Number(payload?.aporte_mensual_deseado) || 350) + 150))
-        }
+        },
+        raw_payload: payload
       },
       'reto-ahorro': {
         estado_reto: 'ACTIVO',
@@ -451,7 +513,7 @@ export class IaHubComponent implements OnInit, OnDestroy {
       'reporte-completo': `Paulo, tu **Score LUKA es 78/100**. Has mantenido un crecimiento constante en tus ahorros desde el 1 de enero. Tu balance anual positivo de S/ 2,450.00 indica una gestión responsable, aunque detectamos un punto crítico en Marzo. Eres un 'Ahorrador Estratégico'. Tu gestión es superior al 80% de los usuarios de tu perfil. Mantén este ritmo y cerrarás el año con la solvencia necesaria para todas tus metas y estarás estrenando esa nueva laptop antes de lo previsto.`,
       'simular-meta': `¡Paulo, tu meta de la **'Laptop Gamer'** es **TOTALMENTE VIABLE** y estás más cerca de lo que crees! Con tu capacidad de ahorro actual de S/ 450.00 al mes y tu ahorro previo de S/ 500.00, en aproximadamente **6.5 meses** estarás estrenando equipo. Pero espera, he analizado tus finanzas y si logras optimizar solo un poco tus gastos de ocio, podrías subir ese aporte a S/ 550.00 y tenerla en solo 5 meses. ¡Imagina la potencia de ese procesador trabajando para ti medio año antes! Mantén el enfoque, cada sol ahorrado hoy es un frame más por segundo en tu nueva computadora. ¡Tú puedes!`,
       'reto-ahorro': '¡Misión: Operación Cocina en Casa! 🏆 Paulo, he detectado que tu \'Enemigo Final\' de esta semana son los Restaurantes. Tu misión, si decides aceptarla, es evitar comer fuera por los próximos 7 días. Si lo logras, habrás salvado **S/ 85.00** para tu fondo de la \'Laptop Gamer\'. ¿Aceptas el reto, Jugador 1?',
-      'clasificar-transaccion': `🏷️ **Clasificación sugerida:** Para "${payload?.descripcion || 'Rappi Alimentos'}" de S/. ${payload?.monto || 45.00}, Gemini Pro recomienda la categoría **"Alimentación"** con 95% de confianza.`
+      'clasificar-transaccion': `🏷️ **Clasificación sugerida:** Para "${payload?.descripcion || 'Rappi Alimentos'}" de S/. ${payload?.monto || 45.00}, Luka recomienda la categoría **"Alimentación"** con 95% de confianza.`
     };
 
     // Estructuras de gráficos para visualizar en IaResultadoComponent

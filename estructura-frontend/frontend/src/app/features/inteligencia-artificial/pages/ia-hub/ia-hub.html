@@ -1,132 +1,25 @@
-<div class="hub-container">
-  
-  <!-- Cabecera principal de la sección -->
-  <div class="hub-header">
-    <div class="header-left">
-      <div class="title-with-icon">
-        <div class="neural-orb">
-          <i class="fa-solid fa-microchip animate-spin-slow"></i>
-        </div>
-        <h1 class="page-title">Centro de Inteligencia Artificial</h1>
-      </div>
-      <p class="page-subtitle">Explora análisis avanzados, proyecciones y optimizaciones para tu capital impulsados por Google Gemini Pro.</p>
-    </div>
-    
-    <div class="header-right" *ngIf="!moduloSeleccionado()">
-      <!-- Alternador de vistas -->
-      <div class="view-toggle">
-        <button 
-          class="btn-toggle" 
-          [class.active]="vistaActiva() === 'ESTELAR'" 
-          (click)="vistaActiva.set('ESTELAR')" 
-          title="Mapa Estelar">
-          <i class="fa-solid fa-circle-nodes"></i>
-          <span>Mapa Estelar</span>
-        </button>
-        <button 
-          class="btn-toggle" 
-          [class.active]="vistaActiva() === 'GRID'" 
-          (click)="vistaActiva.set('GRID')" 
-          title="Vista de Grilla">
-          <i class="fa-solid fa-grip"></i>
-          <span>Grilla</span>
-        </button>
-      </div>
-
-      <div class="quota-badge">
-        <i class="fa-solid fa-bolt"></i>
-        <span>Cuota: Activa &amp; Sin Límite (Luka Elite)</span>
-      </div>
-    </div>
-  </div>
+<div class="hub-container cyber-theme">
+  <app-ia-hub-header [moduloActivo]="moduloSeleccionado()"></app-ia-hub-header>
 
   <!-- Vista 1: Panel General -->
   <div class="vista-general-ia" *ngIf="!moduloSeleccionado()">
     
-    <!-- Filtros de categoría premium de IA -->
-    <div class="hub-tabs">
-      <button
-        *ngFor="let tab of tabs"
-        class="hub-tab"
-        [class.hub-tab--active]="tabActiva() === tab"
-        (click)="cambiarTab(tab)"
-      >
-        <i [className]="tabIcons[tab]"></i>
-        <span>{{ tab }}</span>
-        <span class="hub-tab-count">{{ conteoPor(tab) }}</span>
-      </button>
-    </div>
+    <app-ia-hub-controls
+      [tabs]="tabs"
+      [tabActiva]="tabActiva()"
+      [tabIcons]="tabIcons"
+      (tabChange)="cambiarTab($event)">
+    </app-ia-hub-controls>
 
-    <!-- Sub-vista A: Grilla Tradicional -->
-    <div class="vista-grid-modulos" *ngIf="vistaActiva() === 'GRID'">
-      <div class="grid-layout">
-        <div class="grid-item" *ngFor="let mod of modulosFiltrados()">
+    <!-- Sub-vista A: Bento Box Grid -->
+    <div class="vista-bento-modulos">
+      <div class="bento-grid">
+        <div class="bento-node {{mod.bentoClass}}" *ngFor="let mod of modulosFiltrados()">
           <app-ia-modulo-card
             [modulo]="mod"
             (seleccionar)="seleccionarModulo(mod)">
           </app-ia-modulo-card>
         </div>
-      </div>
-    </div>
-
-    <!-- Sub-vista B: Mapa Estelar -->
-    <div class="vista-mapa-estelar" *ngIf="vistaActiva() === 'ESTELAR'">
-      <div class="mapa-estelar-universe">
-        
-        <!-- Elementos del fondo de espacio -->
-        <div class="stars-layer"></div>
-        <div class="nebula-1"></div>
-        <div class="nebula-2"></div>
-
-        <!-- Sol Central: Score de Salud (78) -->
-        <div class="sol-central">
-          <div class="sol-glow"></div>
-          <div class="sol-content">
-            <span class="sol-label">SCORE LUKA</span>
-            <span class="sol-score">78</span>
-            <span class="sol-status">Estable</span>
-          </div>
-        </div>
-
-        <!-- Anillos orbitales en 3D -->
-        <div class="orbit-ring" style="--orbit-size: 240px;"></div>
-        <div class="orbit-ring" style="--orbit-size: 400px;"></div>
-        <div class="orbit-ring" style="--orbit-size: 560px;"></div>
-        <div class="orbit-ring" style="--orbit-size: 720px;"></div>
-
-        <!-- Planetas / Nodos de misiones -->
-        <div *ngFor="let mod of modulos"
-             class="estelar-planet-wrapper"
-             [style.--orbit-size]="mod.orbit === 1 ? '240px' : mod.orbit === 2 ? '400px' : mod.orbit === 3 ? '560px' : '720px'"
-             [style.--angle]="mod.angle + 'deg'">
-          
-          <div class="estelar-planet"
-               [style.--size]="mod.size + 'px'"
-               [style.--color]="mod.color"
-               [class.dimmed]="tabActiva() !== 'TODOS' && tabActiva() !== mod.tag"
-               (click)="seleccionarModulo(mod)">
-            
-            <div class="planet-body">
-              <span class="planet-emoji">{{ mod.emoji }}</span>
-              <div class="planet-corona"></div>
-            </div>
-
-            <!-- Tooltip del planeta (Info Card) -->
-            <div class="planet-tooltip">
-              <span class="tooltip-tag" [style.background-color]="mod.tagColor + '20'" [style.color]="mod.tagColor">
-                {{ mod.tag }}
-              </span>
-              <h5 class="tooltip-title">{{ mod.label }}</h5>
-              <p class="tooltip-desc">{{ mod.descripcion }}</p>
-              <div class="tooltip-action">
-                <span>Iniciar Misión</span>
-                <i class="fa-solid fa-chevron-right"></i>
-              </div>
-            </div>
-            
-          </div>
-        </div>
-
       </div>
     </div>
 
@@ -136,117 +29,63 @@
   <div class="vista-consola" *ngIf="moduloSeleccionado() as mod">
     
     <!-- Barra de navegación / retroceso -->
-    <div class="console-nav">
-      <button class="btn-back" (click)="deseleccionarModulo()">
-        <i class="fa-solid fa-arrow-left"></i> Volver al mapa estelar
+    <div class="console-nav cyber-nav">
+      <button class="btn-back cyber-btn-back" (click)="deseleccionarModulo()">
+        <i class="fa-solid fa-arrow-left"></i> DESCONECTAR TERMINAL
       </button>
       <span class="location-trail">
-        Inteligencia Artificial <i class="fa-solid fa-chevron-right"></i> {{ mod.label }}
+        SYS.IA <span class="divider">/</span> {{ mod.label | uppercase }}
       </span>
     </div>
 
     <!-- Banner de Error si falla -->
-    <div class="error-banner" *ngIf="errorMsg()">
+    <div class="error-banner cyber-error" *ngIf="errorMsg()">
       <div class="error-icon">
         <i class="fa-solid fa-triangle-exclamation"></i>
       </div>
       <div class="error-content">
-        <h4>Error de Conexión</h4>
+        <h4>FALLO DE CONEXIÓN NEURONAL</h4>
         <p>{{ errorMsg() }}</p>
       </div>
     </div>
 
-    <!-- Layout Dividido -->
-    <div class="console-grid">
-      <div class="console-column left">
-        <app-ia-panel-activo
-          [modulo]="mod"
-          [cargando]="cargando()"
-          (ejecutar)="ejecutarAnalisis($event)">
-        </app-ia-panel-activo>
-      </div>
-
-      <div class="console-column right">
-        <!-- Módulo Gasto Hormiga: Vista temática del Detective -->
-        <app-ia-gasto-hormiga
-          *ngIf="moduloSeleccionado()?.id === 'gasto-hormiga'"
-          [resultado]="resultado()"
-          [cargando]="cargando()">
-        </app-ia-gasto-hormiga>
-
-        <!-- Módulo Predicción de Gastos: El Oráculo -->
-        <app-ia-prediccion-gastos
-          *ngIf="moduloSeleccionado()?.id === 'predecir-gastos'"
-          [resultado]="resultado()"
-          [cargando]="cargando()">
-        </app-ia-prediccion-gastos>
-
-        <!-- Módulo Hábitos Financieros: El Espejo del Alma -->
-        <app-ia-habitos-financieros
-          *ngIf="moduloSeleccionado()?.id === 'habitos-financieros'"
-          [resultado]="resultado()"
-          [cargando]="cargando()">
-        </app-ia-habitos-financieros>
-
-        <!-- Módulo Reto de Ahorro: La Misión Financiera -->
-        <app-ia-reto-ahorro
-          *ngIf="moduloSeleccionado()?.id === 'reto-ahorro'"
-          [resultado]="resultado()"
-          [cargando]="cargando()">
-        </app-ia-reto-ahorro>
-
-        <!-- Módulo Simulación de Meta: La Máquina del Tiempo -->
-        <app-ia-simular-meta
-          *ngIf="moduloSeleccionado()?.id === 'simular-meta'"
-          [resultado]="resultado()"
-          [cargando]="cargando()">
-        </app-ia-simular-meta>
-
-        <!-- Módulo Estilo de Vida: El Clasificador de Personalidades -->
-        <app-ia-estilo-vida
-          *ngIf="moduloSeleccionado()?.id === 'estilo-vida'"
-          [resultado]="resultado()"
-          [cargando]="cargando()">
-        </app-ia-estilo-vida>
-
-        <!-- Módulo Reporte Ejecutivo Anual: El Anuario Financiero -->
-        <app-ia-reporte-anual
-          *ngIf="moduloSeleccionado()?.id === 'reporte-completo'"
-          [resultado]="resultado()"
-          [cargando]="cargando()">
-        </app-ia-reporte-anual>
-
-        <!-- Otros módulos: Vista genérica de resultados -->
-        <app-ia-resultado
-          *ngIf="moduloSeleccionado()?.id !== 'gasto-hormiga' && moduloSeleccionado()?.id !== 'predecir-gastos' && moduloSeleccionado()?.id !== 'habitos-financieros' && moduloSeleccionado()?.id !== 'reto-ahorro' && moduloSeleccionado()?.id !== 'simular-meta' && moduloSeleccionado()?.id !== 'estilo-vida' && moduloSeleccionado()?.id !== 'reporte-completo'"
-          [resultado]="resultado()"
-          [cargando]="cargando()">
-        </app-ia-resultado>
-      </div>
+    <!-- Barra de Filtros Horizontal -->
+    <div class="horizontal-filters-container">
+      <app-ia-panel-activo
+        [modulo]="mod"
+        [cargando]="cargando()"
+        [tieneResultado]="!!resultado()"
+        (ejecutar)="ejecutarAnalisis($event)">
+      </app-ia-panel-activo>
     </div>
 
-  </div>
+    <!-- Contenedor de Resultados a Ancho Completo -->
+    <div class="console-results-fullwidth">
+      <!-- Módulos Específicos -->
+      <app-ia-gasto-hormiga *ngIf="moduloSeleccionado()?.id === 'gasto-hormiga'" [resultado]="resultado()" [cargando]="cargando()"></app-ia-gasto-hormiga>
+      <app-ia-prediccion-gastos *ngIf="moduloSeleccionado()?.id === 'predecir-gastos'" [resultado]="resultado()" [cargando]="cargando()"></app-ia-prediccion-gastos>
+      <app-ia-habitos-financieros *ngIf="moduloSeleccionado()?.id === 'habitos-financieros'" [resultado]="resultado()" [cargando]="cargando()"></app-ia-habitos-financieros>
+      <app-ia-reto-ahorro *ngIf="moduloSeleccionado()?.id === 'reto-ahorro'" [resultado]="resultado()" [cargando]="cargando()"></app-ia-reto-ahorro>
+      <app-ia-simular-meta *ngIf="moduloSeleccionado()?.id === 'simular-meta'" [resultado]="resultado()" [cargando]="cargando()"></app-ia-simular-meta>
+      <app-ia-estilo-vida *ngIf="moduloSeleccionado()?.id === 'estilo-vida'" [resultado]="resultado()" [cargando]="cargando()"></app-ia-estilo-vida>
+      <app-ia-reporte-anual *ngIf="moduloSeleccionado()?.id === 'reporte-completo'" [resultado]="resultado()" [cargando]="cargando()"></app-ia-reporte-anual>
 
+      <!-- Vista genérica -->
+      <app-ia-resultado
+        *ngIf="moduloSeleccionado()?.id !== 'gasto-hormiga' && moduloSeleccionado()?.id !== 'predecir-gastos' && moduloSeleccionado()?.id !== 'habitos-financieros' && moduloSeleccionado()?.id !== 'reto-ahorro' && moduloSeleccionado()?.id !== 'simular-meta' && moduloSeleccionado()?.id !== 'estilo-vida' && moduloSeleccionado()?.id !== 'reporte-completo'"
+        [resultado]="resultado()"
+        [cargando]="cargando()">
+      </app-ia-resultado>
+    </div>
+  </div>
 </div>
 
-<!-- Overlay para salto hiperespacial / viaje espacial (Warp Speed) -->
-<div class="space-travel-overlay" [class.active]="viajeEspacialActivo()">
-  <div class="warp-speedlines">
-    <span></span>
-    <span></span>
-    <span></span>
-    <span></span>
-    <span></span>
-    <span></span>
-    <span></span>
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
-  <div class="warp-flash"></div>
-  <div class="warp-hud">
+<!-- Transición de inmersión limpia -->
+<div class="immersion-transition-overlay" [class.active]="transicionActiva()">
+  <div class="immersion-glow"></div>
+  <div class="immersion-hud">
     <div class="warp-loader"></div>
-    <div class="warp-label">CALCULANDO TRAYECTORIA DE SALTO...</div>
-    <div class="warp-sub">Estableciendo puente neuronal con Gemini Pro</div>
+    <div class="warp-label">ESTABLECIENDO CONEXIÓN NEURONAL</div>
+    <div class="warp-sub">Cargando módulo de inteligencia artificial...</div>
   </div>
 </div>

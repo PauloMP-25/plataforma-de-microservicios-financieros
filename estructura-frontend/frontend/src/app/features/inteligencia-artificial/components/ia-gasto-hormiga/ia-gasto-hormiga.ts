@@ -23,6 +23,8 @@ export interface SospechosoHormiga {
   categoria: string;
   promedio_por_compra?: number;
   dia_mayor_gasto?: string;
+  nivelPeligro?: string;
+  alternativa?: string;
   rotacion: number; // grados de inclinación aleatorios (-3° a +3°)
   delay: number;    // delay de animación staggered (ms)
 }
@@ -50,7 +52,8 @@ export class IaGastoHormigaComponent implements OnChanges, AfterViewInit, OnDest
   ingresoReferencia = signal<number>(3200);
   cardHoveredIndex = signal<number | null>(null);
   odometroDisplay = signal<string>('0');
-  consejoTexto = signal<string>('');
+  consejoTextoOriginal = signal<string>('');
+  consejoHtml = signal<string>('');
   consejoVisible = signal<boolean>(false);
 
   // ── Computed ──
@@ -69,10 +72,20 @@ export class IaGastoHormigaComponent implements OnChanges, AfterViewInit, OnDest
   /** Velocidad del reloj: más rápido a mayor proyección */
   velocidadReloj = computed(() => {
     const proy = this.proyeccionAnual();
-    if (proy <= 500) return 12;
-    if (proy <= 1500) return 6;
-    if (proy <= 3000) return 3;
-    return 1.5;
+    if (proy === 0) return 0; // Detenido
+    if (proy <= 1000) return 24; // Lento
+    if (proy <= 2500) return 12; // Normal
+    if (proy <= 5000) return 4;  // Rápido
+    return 1.5; // Muy rápido
+  });
+
+  relojCaption = computed(() => {
+    const proy = this.proyeccionAnual();
+    if (proy === 0) return 'Excelente. No se detectan fugas de dinero.';
+    if (proy <= 1000) return 'Fuga bajo control, tus finanzas están seguras.';
+    if (proy <= 2500) return 'Atención: Pequeñas fugas detectadas con el tiempo.';
+    if (proy <= 5000) return 'Tu dinero se escapa más rápido de lo que crees.';
+    return '¡CRÍTICO! Tu dinero está desapareciendo en tiempo récord.';
   });
 
   private animFrameId = 0;
@@ -110,16 +123,22 @@ export class IaGastoHormigaComponent implements OnChanges, AfterViewInit, OnDest
     // Construir sospechosos con rotación aleatoria
     const detectados = insight.gastos_detectados || [];
     const sospechosos: SospechosoHormiga[] = detectados.map(
-      (g: any, i: number) => ({
-        descripcion: g.descripcion,
-        frecuencia: g.frecuencia,
-        total: g.total,
-        categoria: g.categoria,
-        promedio_por_compra: g.promedio_por_compra,
-        dia_mayor_gasto: g.dia_mayor_gasto,
-        rotacion: (Math.random() * 6 - 3),
-        delay: i * 200,
-      })
+      (g: any, i: number) => {
+        const peligros = ['CRÍTICO', 'ALTO', 'MEDIO', 'BAJO'];
+        const alternativas = ['Preparar en casa', 'Buscar opción free', 'Reducir a la mitad', 'Cancelar suscripción'];
+        return {
+          descripcion: g.descripcion,
+          frecuencia: g.frecuencia,
+          total: g.total,
+          categoria: g.categoria,
+          promedio_por_compra: g.promedio_por_compra,
+          dia_mayor_gasto: g.dia_mayor_gasto,
+          nivelPeligro: peligros[Math.floor(Math.random() * peligros.length)],
+          alternativa: alternativas[Math.floor(Math.random() * alternativas.length)],
+          rotacion: (Math.random() * 6 - 3),
+          delay: i * 200,
+        };
+      }
     );
     this.sospechosos.set(sospechosos);
 
@@ -150,22 +169,57 @@ export class IaGastoHormigaComponent implements OnChanges, AfterViewInit, OnDest
     this.animFrameId = requestAnimationFrame(animar);
   }
 
-  // ── Animación Typewriter para el consejo ──
+  // ── Animación Typewriter (Soporte HTML) ──
   private iniciarTypewriter(texto: string): void {
     if (!texto) return;
-    this.consejoTexto.set('');
+    this.consejoTextoOriginal.set(texto);
     this.consejoVisible.set(true);
-    let i = 0;
+    this.consejoHtml.set('');
+    
+    // Parsear Markdown básico
+    let parsed = texto.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    parsed = parsed.replace(/\\n/g, '<br>').replace(/\n/g, '<br>');
+    
+    // Tokenizar HTML para la animación
+    const tokens: { type: string, value: string }[] = [];
+    let isTag = false;
+    let currentTag = '';
+    
+    for (let i = 0; i < parsed.length; i++) {
+      const char = parsed[i];
+      if (char === '<') {
+        isTag = true;
+        currentTag = char;
+      } else if (char === '>') {
+        isTag = false;
+        currentTag += char;
+        tokens.push({ type: 'tag', value: currentTag });
+        currentTag = '';
+      } else if (isTag) {
+        currentTag += char;
+      } else {
+        tokens.push({ type: 'text', value: char });
+      }
+    }
 
+    let i = 0;
     const escribir = () => {
-      if (i < texto.length) {
-        this.consejoTexto.set(texto.substring(0, i + 1));
-        i++;
+      if (i < tokens.length) {
+        let toAdd = '';
+        while (i < tokens.length && tokens[i].type === 'tag') {
+          toAdd += tokens[i].value;
+          i++;
+        }
+        if (i < tokens.length && tokens[i].type === 'text') {
+          toAdd += tokens[i].value;
+          i++;
+        }
+        this.consejoHtml.update(prev => prev + toAdd);
         this.typewriterTimeout = setTimeout(escribir, 12);
       }
     };
 
-    // Esperar a que las tarjetas hayan caído antes de mostrar el consejo
+    // Esperar a que las tarjetas caigan
     this.typewriterTimeout = setTimeout(escribir, 1500);
   }
 
@@ -206,5 +260,54 @@ export class IaGastoHormigaComponent implements OnChanges, AfterViewInit, OnDest
     if (v > 0) return 'tendencia-alerta';
     if (v < 0) return 'tendencia-bien';
     return 'tendencia-neutral';
+  }
+
+  // ── Mocks para pruebas ──
+  cargarMock(cantidad: number) {
+    this.hayHormigas.set(true);
+    this.fugaTotal.set(cantidad * 150);
+    this.proyeccionAnual.set(cantidad * 150 * 12);
+    this.variacion.set(cantidad === 0 ? 0 : 5.2);
+    this.principalSospechoso.set(cantidad === 0 ? 'Ninguno' : 'Mock Principal');
+    
+    const mockGastos = Array.from({ length: cantidad }).map((_, i) => ({
+      descripcion: `Gasto Identificado ${i + 1}`,
+      frecuencia: `${(i+1)*2} veces/mes`,
+      total: (i+1)*50,
+      categoria: ['Cafetería', 'Delivery', 'Suscripciones', 'Transporte'][i % 4],
+      promedio_por_compra: 15.5,
+      dia_mayor_gasto: 'Viernes'
+    }));
+
+    const sospechosos: SospechosoHormiga[] = mockGastos.map(
+      (g: any, i: number) => {
+        const peligros = ['CRÍTICO', 'ALTO', 'MEDIO', 'BAJO'];
+        const alternativas = ['Preparar en casa', 'Buscar opción free', 'Reducir a la mitad', 'Cancelar suscripción'];
+        return {
+          descripcion: g.descripcion,
+          frecuencia: g.frecuencia,
+          total: g.total,
+          categoria: g.categoria,
+          promedio_por_compra: g.promedio_por_compra,
+          dia_mayor_gasto: g.dia_mayor_gasto,
+          nivelPeligro: peligros[Math.floor(Math.random() * peligros.length)],
+          alternativa: alternativas[Math.floor(Math.random() * alternativas.length)],
+          rotacion: (Math.random() * 6 - 3),
+          delay: i * 200,
+        };
+      }
+    );
+    this.sospechosos.set(sospechosos);
+    
+    // Reiniciar animaciones
+    if (this.animFrameId) cancelAnimationFrame(this.animFrameId);
+    if (this.typewriterTimeout) clearTimeout(this.typewriterTimeout);
+    
+    setTimeout(() => this.iniciarOdometro(), 100);
+    if (cantidad === 0) {
+      this.iniciarTypewriter('¡Felicidades! No he encontrado gastos hormiga. Tus finanzas están en perfecto estado.');
+    } else {
+      this.iniciarTypewriter('He analizado tus gastos y hay pequeños consumos que están afectando tu meta. ¡Ajustemos esos hábitos y recuperemos el control! Puedes hacerlo.');
+    }
   }
 }

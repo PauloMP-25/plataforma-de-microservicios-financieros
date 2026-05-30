@@ -148,6 +148,38 @@
   }
 }
 
+// Descripción del Timeline Interactivo
+.timeline-description {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 12px 18px;
+  
+  p {
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: #94a3b8;
+    
+    strong {
+      color: #f1f5f9;
+    }
+  }
+
+  :host-context(body.tema-claro) & {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    
+    p {
+      color: #64748b;
+      
+      strong {
+        color: #0f172a;
+      }
+    }
+  }
+}
+
 // Timeline Scrollable
 .timeline-scroll-wrapper {
   width: 100%;
@@ -396,6 +428,47 @@
     p {
       margin: 0;
     }
+  }
+}
+
+// ── Prompt de Gemini (Arriba) ──
+.prompt-gemini-box {
+  margin-bottom: 24px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+
+  .prompt-header {
+    background: rgba(16, 185, 129, 0.1);
+    padding: 10px 16px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #10b981;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+  }
+
+  .prompt-content {
+    padding: 16px;
+    
+    p {
+      margin: 0;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: rgba(248, 250, 252, 0.85);
+      font-family: 'Fira Code', 'Courier New', Courier, monospace;
+    }
+  }
+
+  body.tema-claro & {
+    background: #f8fafc;
+    border-color: rgba(16, 185, 129, 0.3);
+    
+    .prompt-content p { color: rgba(15, 23, 42, 0.85); }
   }
 }
 

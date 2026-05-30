@@ -1,13 +1,15 @@
-<!-- Barra de Depuración para Cristina Astocaza (Frontend Lead & QA) -->
-<div class="mockup-debugger">
-  <span class="debugger-title"><i class="fa-solid fa-clock-rotate-left"></i> Modo QA (Simulador):</span>
-  <div class="debugger-buttons">
-    <button (click)="setEscenario('VIABLE')" [class.active]="estadoEscenario() === 'VIABLE'">Viable (Optimizado)</button>
-    <button (click)="setEscenario('NO_VIABLE')" [class.active]="estadoEscenario() === 'NO_VIABLE'">No Viable (Alerta)</button>
-  </div>
-</div>
+<!-- Se oculta si no hay resultado -->
+<div class="modulo-simulador-contenedor" *ngIf="resultado" [class.es-viable]="esViableSimulado()">
 
-<div class="modulo-simulador-contenedor" [class.es-viable]="esViableSimulado()">
+  <!-- Respuesta de Producción de Luka -->
+  <div class="prompt-gemini-box">
+    <div class="prompt-header">
+      <i class="fa-solid fa-comment-dots"></i> RESPUESTA EN PRODUCCIÓN DEL COACH LUKA
+    </div>
+    <div class="prompt-content">
+      <p [innerHTML]="resultado?.consejo"></p>
+    </div>
+  </div>
 
   <!-- Cabecera del Simulador (HUD) -->
   <div class="simulador-header">
@@ -37,13 +39,21 @@
     </div>
   </div>
 
+  <!-- Descripción del Timeline Interactivo -->
+  <div class="timeline-description">
+    <p>
+      <i class="fa-solid fa-chart-line text-cyan-400"></i> 
+      <strong>Línea de Tiempo Interactiva:</strong> Este gráfico muestra tu camino proyectado hacia la meta. La barra se desplaza reflejando el progreso de ahorro. Si tu plan actual no es viable, la barra y los hitos se atenuarán y el objeto final de tu meta se verá desenfocado. <strong>¡Usa el control deslizante de abajo para simular aportes mensuales adicionales y ver cómo se acelera tu progreso en tiempo real!</strong>
+    </p>
+  </div>
+
   <!-- Timeline Horizontal Interactivo con Drag-Scroll -->
   <div class="timeline-scroll-wrapper">
     <div class="timeline-container">
       
       <!-- Línea base y tramos coloreados -->
       <div class="timeline-base-line"></div>
-      <div class="timeline-progress-line" [style.width.%]="esViableSimulado() ? 100 : 45"></div>
+      <div class="timeline-progress-line" [style.width.%]="porcentajeLograble()"></div>
 
       <!-- Nodo 0: HOY -->
       <div class="timeline-node node-hoy active" style="left: 0%;">
@@ -166,14 +176,13 @@
     </div>
     <div class="consejo-content">
       <p *ngIf="esViableSimulado()">
-        <strong>¡Paulo, tu meta es TOTALMENTE VIABLE!</strong> 🚀 Con un aporte mensual de 
-        <strong>S/. {{ aporteMensualBase() + ahorroAdicional() }}</strong>, alcanzarás tu meta en solo 
-        <strong>{{ mesesProyectados() }} meses</strong>. ¡Imagina la potencia de ese procesador trabajando para ti medio año antes!
+        <strong>¡Tu meta es TOTALMENTE VIABLE!</strong> 🚀 Con tu ahorro actual más un aporte de 
+        <strong>S/. {{ aporteMensualBase() + ahorroAdicional() }}</strong>, alcanzarás tu meta en 
+        <strong>{{ mesesProyectados() }} meses</strong>, que está dentro de tu plazo ideal de {{ mesesDeseados() }} meses.
       </p>
       <p *ngIf="!esViableSimulado()">
-        <strong>⚠️ Aporte mensual insuficiente para la fecha objetivo.</strong> 
-        El Coach de Gemini recomienda optimizar gastos variables de ocio en un 15% para añadir al menos 
-        <strong>+S/. 150</strong> mensuales a tu meta y volverla viable en corto plazo.
+        <strong>⚠️ Aporte insuficiente para tu fecha objetivo.</strong> 
+        Si ahorras <strong>S/. {{ aporteMensualBase() + ahorroAdicional() }}</strong>, tardarás <strong>{{ mesesProyectados() }} meses</strong> en llegar a tu meta (te tomará más de los {{ mesesDeseados() }} meses que planeabas). ¡Intenta subir tu aporte en el slider para acortar el tiempo!
       </p>
     </div>
   </div>

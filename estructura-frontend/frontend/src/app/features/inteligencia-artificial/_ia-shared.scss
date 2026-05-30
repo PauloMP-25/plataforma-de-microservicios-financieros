@@ -37,7 +37,7 @@ $ia-blur-card-glass: 16px;
   }
 
   // Adaptación automática al Tema Claro de Luka
-  body.tema-claro & {
+  :host-context(body.tema-claro) & {
     background: rgba(255, 255, 255, 0.45) !important;
     border: 1px solid rgba(91, 106, 240, 0.12) !important;
     color: var(--text-primary) !important;

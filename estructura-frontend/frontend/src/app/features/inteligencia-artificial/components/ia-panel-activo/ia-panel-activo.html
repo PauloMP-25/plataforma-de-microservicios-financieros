@@ -1,37 +1,15 @@
-<div class="panel-activo-wrap" *ngIf="modulo">
-  <!-- Cabecera del panel -->
-  <div class="panel-header">
-    <div class="icon-frame" [style.color]="modulo.tagColor" [style.border-color]="modulo.tagColor + '33'">
-      <i [className]="modulo.icon"></i>
-    </div>
-    <div class="header-details">
-      <span class="category-badge" [style.background]="modulo.tagColor + '15'" [style.color]="modulo.tagColor">
-        {{ modulo.tag }}
-      </span>
-      <h2 class="modulo-title">{{ modulo.label }}</h2>
-      <p class="modulo-desc">{{ modulo.descripcion }}</p>
-    </div>
-  </div>
-
-  <!-- Endpoint del microservicio -->
-  <div class="endpoint-badge">
-    <i class="fa-solid fa-plug-circle-bolt"></i>
-    <code>POST {{ modulo.endpoint }}</code>
-  </div>
-
-  <!-- Formulario dinámico de parámetros -->
-  <div class="form-section">
-    <h3 class="section-title"><i class="fa-solid fa-sliders"></i> Parámetros de Entrada</h3>
-
+<div class="panel-activo-horizontal" *ngIf="modulo">
+  <div class="form-horizontal">
+    
     <!-- 1. Caso: Simulación de metas -->
-    <div class="inputs-grid" *ngIf="modulo.id === 'simular-meta'">
+    <ng-container *ngIf="modulo.id === 'simular-meta'">
       <div class="input-group">
         <label>Nombre de la Meta</label>
         <input type="text" [(ngModel)]="nombreMeta" class="app-input" placeholder="Ej. Ahorro para auto" />
       </div>
 
       <div class="input-group">
-        <label>Monto Objetivo ($ / S/.)</label>
+        <label>Monto Objetivo</label>
         <input type="number" [(ngModel)]="montoObjetivo" class="app-input" />
       </div>
 
@@ -41,20 +19,46 @@
       </div>
 
       <div class="input-group">
-        <label>Aporte Mensual Deseado</label>
+        <label>Aporte Deseado</label>
         <input type="number" [(ngModel)]="aporteMensualDeseado" class="app-input" />
       </div>
-    </div>
+
+      <div class="input-group" style="min-width: 90px; flex: 0.5;">
+        <label>Plazo Años</label>
+        <input type="number" [(ngModel)]="aniosObjetivo" class="app-input" min="0" />
+      </div>
+
+      <div class="input-group" style="min-width: 90px; flex: 0.5;">
+        <label>Plazo Meses</label>
+        <input type="number" [(ngModel)]="mesesAdicionalesObjetivo" class="app-input" min="0" max="11" />
+      </div>
+      
+      <div class="ayudadita-box" *ngIf="!tieneResultado">
+        <i class="fa-solid fa-lightbulb icon-ayuda"></i>
+        <div class="ayudadita-content">
+          <h4>💡 ¿Cómo usar este simulador?</h4>
+          <p>
+            Completa los datos para que el coach financiero Luka arme tu plan de ahorro estratégico:
+          </p>
+          <ul class="ayudadita-lista">
+            <li><strong>🎯 Nombre y Monto:</strong> Definen qué quieres lograr y su costo real.</li>
+            <li><strong>💰 Ahorro Actual:</strong> El capital base del que partes hoy.</li>
+            <li><strong>⚡ Aporte Deseado:</strong> La cantidad de soles que puedes comprometer cada mes.</li>
+            <li><strong>📅 Plazo (Años y Meses):</strong> En cuánto tiempo aspiras a cumplir la meta.</li>
+          </ul>
+        </div>
+      </div>
+    </ng-container>
 
     <!-- 2. Caso: Clasificación de transacciones -->
-    <div class="inputs-grid" *ngIf="modulo.id === 'clasificar-transaccion'">
+    <ng-container *ngIf="modulo.id === 'clasificar-transaccion'">
       <div class="input-group">
-        <label>ID Temporal de la Transacción</label>
+        <label>ID Temporal</label>
         <input type="text" [(ngModel)]="idTemporal" class="app-input" />
       </div>
 
       <div class="input-group">
-        <label>Tipo de Movimiento</label>
+        <label>Tipo Movimiento</label>
         <select [(ngModel)]="tipoMovimiento" class="app-input select">
           <option value="GASTO">GASTO</option>
           <option value="INGRESO">INGRESO</option>
@@ -62,44 +66,21 @@
       </div>
 
       <div class="input-group full-width">
-        <label>Etiquetas / Palabras Clave</label>
+        <label>Etiquetas</label>
         <input type="text" [(ngModel)]="etiquetas" class="app-input" placeholder="Separadas por comas" />
       </div>
+    </ng-container>
 
-      <div class="input-group full-width">
-        <label>Notas adicionales</label>
-        <textarea [(ngModel)]="notas" class="app-input textarea" rows="2" placeholder="Detalles de la compra..."></textarea>
-      </div>
-    </div>
-
-    <!-- 3. Caso general: Filtros por fecha y tamaño de lote -->
-    <div class="inputs-grid" *ngIf="modulo.id !== 'simular-meta' && modulo.id !== 'clasificar-transaccion'">
+    <!-- 3. Caso general: Filtros por fecha -->
+    <ng-container *ngIf="modulo.id !== 'simular-meta' && modulo.id !== 'clasificar-transaccion'">
       <div class="input-group">
-        <label>Mes de consulta</label>
-        <select [(ngModel)]="mesSelect" class="app-input select">
-          <option [value]="1">Enero</option>
-          <option [value]="2">Febrero</option>
-          <option [value]="3">Marzo</option>
-          <option [value]="4">Abril</option>
-          <option [value]="5">Mayo</option>
-          <option [value]="6">Junio</option>
-          <option [value]="7">Julio</option>
-          <option [value]="8">Agosto</option>
-          <option [value]="9">Septiembre</option>
-          <option [value]="10">Octubre</option>
-          <option [value]="11">Noviembre</option>
-          <option [value]="12">Diciembre</option>
-        </select>
+        <label>Fecha Inicio</label>
+        <input type="date" [(ngModel)]="fechaInicio" class="app-input" />
       </div>
 
       <div class="input-group">
-        <label>Año</label>
-        <select [(ngModel)]="anioSelect" class="app-input select">
-          <option [value]="2024">2024</option>
-          <option [value]="2025">2025</option>
-          <option [value]="2026">2026</option>
-          <option [value]="2027">2027</option>
-        </select>
+        <label>Fecha Fin</label>
+        <input type="date" [(ngModel)]="fechaFin" class="app-input" />
       </div>
 
       <div class="input-group" *ngIf="modulo.filtroFecha">
@@ -110,32 +91,19 @@
           <option value="MENSUAL">Mensual</option>
         </select>
       </div>
+    </ng-container>
 
-      <div class="input-group">
-        <label>Lote de transacciones (Máx)</label>
-        <input type="number" [(ngModel)]="tamanioPagina" class="app-input" min="10" max="1000" />
-      </div>
+    <!-- Botón Ejecutar -->
+    <div class="btn-container">
+      <button class="btn-execute-horizontal" (click)="onEjecutar()" [disabled]="cargando" [style.background]="modulo.tagColor">
+        <span class="btn-content" *ngIf="!cargando">
+          <i class="fa-solid fa-bolt"></i> Consultar
+        </span>
+        <span class="btn-content font-bold animate-pulse" *ngIf="cargando">
+          <i class="fa-solid fa-circle-notch fa-spin"></i> Procesando...
+        </span>
+      </button>
     </div>
-  </div>
 
-  <!-- Flujo de ejecución descriptivo -->
-  <div class="execution-pipeline">
-    <p class="pipeline-title"><i class="fa-solid fa-diagram-project"></i> Flujo de Ejecución e Integración</p>
-    <div class="pipeline-steps">
-      <div class="step"><span class="bullet">1</span> API Gateway (Verificación JWT)</div>
-      <div class="step"><span class="bullet">2</span> Redis (Control de cuota semanal)</div>
-      <div class="step"><span class="bullet">3</span> ms-ia (Gemini 1.5 Pro + Pandas)</div>
-      <div class="step"><span class="bullet">4</span> Auditar (RabbitMQ audit event)</div>
-    </div>
   </div>
-
-  <!-- Botón Ejecutar -->
-  <button class="btn-execute" (click)="onEjecutar()" [disabled]="cargando" [style.background]="modulo.tagColor">
-    <span class="btn-content" *ngIf="!cargando">
-      <i class="fa-solid fa-bolt"></i> Ejecutar Análisis Inteligente
-    </span>
-    <span class="btn-content font-bold animate-pulse" *ngIf="cargando">
-      <i class="fa-solid fa-circle-notch fa-spin"></i> Procesando...
-    </span>
-  </button>
 </div>

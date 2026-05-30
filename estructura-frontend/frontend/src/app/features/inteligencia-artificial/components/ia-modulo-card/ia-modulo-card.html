@@ -1,17 +1,56 @@
-<div class="card-wrap" [class.activo]="activo" (click)="seleccionar.emit()">
-  <div class="card-header">
-    <div class="icon-orb" [style.color]="modulo.tagColor" [style.border-color]="modulo.tagColor + '44'">
-      <i [className]="modulo.icon"></i>
+<div class="cyber-module-card" [attr.data-color-profile]="modulo.colorProfile" [style.--card-color]="modulo.tagColor" [class.activo]="activo" [class.proximamente]="modulo.proximamente" (click)="seleccionar.emit()">
+  
+  <div class="cyber-border-fx"></div>
+  
+  <div class="card-layout">
+    
+    <!-- Encabezado superior -->
+    <div class="card-header-top">
+      <div class="hex-icon-wrapper" [style.color]="modulo.tagColor" [style.border-color]="modulo.tagColor + '44'">
+        <div class="hex-inner">
+          <i [className]="modulo.icon"></i>
+        </div>
+      </div>
+      <div class="title-category-group">
+        <h3 class="cyber-modulo-title">{{ modulo.label }}</h3>
+        
+        <!-- Tag normal para módulos activos -->
+        <span class="cyber-category-tag" *ngIf="!modulo.proximamente" [style.background]="modulo.tagColor + '15'" [style.color]="modulo.tagColor">
+          <i class="fa-solid fa-diagram-project"></i> {{ modulo.tag }}
+        </span>
+        
+        <!-- Tag de Próximamente -->
+        <span class="cyber-category-tag proximamente-tag" *ngIf="modulo.proximamente">
+          <i class="fa-solid fa-lock"></i> PRÓXIMAMENTE
+        </span>
+      </div>
     </div>
-    <span class="category-tag" [style.background]="modulo.tagColor + '15'" [style.color]="modulo.tagColor">
-      {{ modulo.tag }}
-    </span>
+
+    <!-- Descripción del módulo -->
+    <p class="cyber-modulo-desc">{{ modulo.descripcion }}</p>
+
+    <!-- Viñetas de Características (Lo que se analizará o generará) -->
+    <ul class="hero-feature-list">
+      <li *ngFor="let feat of modulo.features">
+        <i [className]="feat.icon" [style.color]="modulo.tagColor"></i> {{ feat.text }}
+      </li>
+      <!-- Default Fallback si no tiene features configuradas -->
+      <ng-container *ngIf="!modulo.features || modulo.features.length === 0">
+        <li><i class="fa-solid fa-circle-check" [style.color]="modulo.tagColor"></i> Análisis continuo con IA</li>
+        <li><i class="fa-solid fa-circle-check" [style.color]="modulo.tagColor"></i> Reportes interactivos</li>
+        <li><i class="fa-solid fa-circle-check" [style.color]="modulo.tagColor"></i> Consejos del Coach Financiero</li>
+      </ng-container>
+    </ul>
+
+    <!-- Botón interactivo deslizante (Solo para módulos activos) -->
+    <div class="cyber-hover-action" *ngIf="!modulo.proximamente">
+      <div class="action-btn-circle" [style.background]="modulo.tagColor" [style.box-shadow]="'0 0 15px ' + modulo.tagColor">
+        <i class="fa-solid fa-arrow-right"></i>
+      </div>
+    </div>
+    
   </div>
-  <div class="card-body">
-    <h3 class="modulo-title">{{ modulo.label }}</h3>
-    <p class="modulo-desc">{{ modulo.descripcion }}</p>
-  </div>
-  <div class="card-footer">
-    <span class="action-text">Configurar análisis <i class="fa-solid fa-arrow-right"></i></span>
-  </div>
+
+  <div class="cyber-corner top-left"></div>
+  <div class="cyber-corner bottom-right"></div>
 </div>
