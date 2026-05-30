@@ -1,25 +1,79 @@
 <section class="gastos-page">
-  <header class="gastos-page__header">
-    <h1>Gestión de Gastos</h1>
-    <p>Controla tus salidas de dinero, diarias y recurrentes.</p>
+  <header class="gastos-page__hero">
+    <div class="gastos-page__hero-copy">
+      <h1>Gestión de Gastos</h1>
+      <p>
+        Visualiza tus egresos pagados, tus próximos vencimientos y tus suscripciones recurrentes en un solo dashboard.
+      </p>
+    </div>
+    <button type="button" class="gastos-page__btn-main" (click)="abrirModal()">
+      <span aria-hidden="true">＋</span>
+      Registrar gasto
+    </button>
   </header>
 
-  <div class="gastos-page__acciones-top">
-    <button type="button" class="gastos-page__btn gastos-page__btn--principal" (click)="abrirModal()">+ Nuevo Registrar Gasto</button>
-    <button type="button" class="gastos-page__btn" [class.is-active]="tabActiva() === 'transacciones'" (click)="seleccionarTab('transacciones')">Transacciones</button>
-    <button type="button" class="gastos-page__btn" [class.is-active]="tabActiva() === 'analisis'" (click)="seleccionarTab('analisis')">Análisis</button>
-    <button type="button" class="gastos-page__btn" [class.is-active]="tabActiva() === 'presupuestos'" (click)="seleccionarTab('presupuestos')">Presupuestos</button>
+  <section class="gastos-page__kpis">
+    <article class="gastos-page__kpi gastos-page__kpi--salida">
+      <div class="gastos-page__kpi-head">
+        <span class="gastos-page__icon" aria-hidden="true">🧾</span>
+        <p>Total gastado</p>
+      </div>
+      <strong>S/ {{ totalGastado().toFixed(2) }}</strong>
+      <small>Este mes</small>
+      <em class="gastos-page__trend is-up">↑ {{ variacionGastado() }}% vs mes anterior</em>
+    </article>
+
+    <article class="gastos-page__kpi gastos-page__kpi--saldo">
+      <div class="gastos-page__kpi-head">
+        <span class="gastos-page__icon" aria-hidden="true">💼</span>
+        <p>Saldo actual</p>
+      </div>
+      <strong>S/ {{ saldoActual().toFixed(2) }}</strong>
+      <small>Disponible</small>
+      <em class="gastos-page__trend is-good">↑ {{ variacionSaldo() }}% vs mes anterior</em>
+    </article>
+
+    <article class="gastos-page__kpi gastos-page__kpi--pendiente">
+      <div class="gastos-page__kpi-head">
+        <span class="gastos-page__icon" aria-hidden="true">⏰</span>
+        <p>Pendiente por pagar</p>
+      </div>
+      <strong>S/ {{ totalPendiente().toFixed(2) }}</strong>
+      <small>{{ pendientesFiltrados().length }} pendientes</small>
+      <em class="gastos-page__trend is-up">↑ {{ variacionPendiente() }}% vs mes anterior</em>
+    </article>
+
+    <article class="gastos-page__kpi gastos-page__kpi--vencimiento">
+      <div class="gastos-page__kpi-head">
+        <span class="gastos-page__icon" aria-hidden="true">📅</span>
+        <p>Próximo vencimiento</p>
+      </div>
+      <strong>
+        @if (proximoVencimiento(); as proximo) {
+          {{ proximo.nombre }}
+        } @else {
+          Sin pagos
+        }
+      </strong>
+      <small>
+        @if (proximoVencimiento(); as proximo) {
+          {{ proximo.fechaVencimiento }} · S/ {{ proximo.monto.toFixed(2) }}
+        } @else {
+          No hay vencimientos registrados
+        }
+      </small>
+    </article>
+  </section>
+
+  <div class="gastos-page__tabs" role="tablist" aria-label="Filtros de gastos">
+    <button type="button" class="gastos-page__tab" [class.is-active]="tabActiva() === 'todos'" (click)="seleccionarTab('todos')">Todos</button>
+    <button type="button" class="gastos-page__tab" [class.is-active]="tabActiva() === 'pagados'" (click)="seleccionarTab('pagados')">Pagados</button>
+    <button type="button" class="gastos-page__tab" [class.is-active]="tabActiva() === 'pendientes'" (click)="seleccionarTab('pendientes')">Pendientes</button>
+    <button type="button" class="gastos-page__tab" [class.is-active]="tabActiva() === 'recurrentes'" (click)="seleccionarTab('recurrentes')">Recurrentes</button>
   </div>
 
-  <div class="gastos-page__kpis">
-    <article class="gastos-page__kpi gastos-page__kpi--rojo">
-      <span>TOTAL GASTADO</span>
-      <strong>S/ {{ totalGastado().toFixed(2) }}</strong>
-    </article>
-    <article class="gastos-page__kpi gastos-page__kpi--verde">
-      <span>SALDO ACTUAL</span>
-      <strong>S/ 0.00</strong>
-    </article>
+  <div class="gastos-page__integration-note" role="note">
+    {{ bannerIntegracion() }}
   </div>
 
   <div class="gastos-page__toolbar">
@@ -30,53 +84,232 @@
       (input)="actualizarBusqueda($any($event.target).value)"
       aria-label="Buscar gasto"
     />
-    <button type="button" class="gastos-page__btn-tool">Exportar Excel</button>
-    <button type="button" class="gastos-page__btn-tool">PDF</button>
-    <button type="button" class="gastos-page__btn-tool">Filtrar</button>
+    <div class="gastos-page__toolbar-actions">
+      <button type="button" class="gastos-page__btn-tool" disabled title="Próximamente">Exportar Excel</button>
+      <button type="button" class="gastos-page__btn-tool" disabled title="Próximamente">PDF</button>
+      <button type="button" class="gastos-page__btn-tool">Filtrar</button>
+    </div>
   </div>
 
-  <div class="gastos-page__bloques">
-    <section class="gastos-page__bloque">
-      <header>
-        <h3>Pendiente</h3>
-        <span>Total S/ {{ totalPendiente().toFixed(2) }}</span>
-      </header>
-      <div class="gastos-page__estado-vacio">
-        <p>No hay gastos registrados</p>
-      </div>
-    </section>
-
-    <section class="gastos-page__bloque">
-      <header>
-        <h3>Pagado</h3>
-        <span>Total S/ {{ totalPagado().toFixed(2) }}</span>
+  <section class="gastos-page__content-grid">
+    <section class="gastos-page__panel gastos-page__panel--left">
+      <header class="gastos-page__panel-header">
+        <div>
+          <h3>Gastos pagados</h3>
+          <p>Dinero ya gastado y confirmado</p>
+        </div>
+        <span class="gastos-page__chip is-success">{{ gastosFiltradosPagados().length }} movimientos</span>
       </header>
 
       @if (cargando()) {
-        <div class="gastos-page__estado-vacio">
-          <p>Cargando gastos...</p>
+        <div class="gastos-page__skeleton-list" aria-hidden="true">
+          <div></div><div></div><div></div><div></div>
         </div>
       } @else {
-        @if (gastosPagados().length === 0) {
-          <div class="gastos-page__estado-vacio">
-            <p>No hay gastos registrados</p>
+        @if (gastosFiltradosPagados().length === 0) {
+          <div class="gastos-page__empty">
+            <h4>Aún no hay gastos pagados</h4>
+            <p>Registra tu primer gasto para comenzar a visualizar tu flujo de egresos.</p>
           </div>
         } @else {
-          <ul class="gastos-page__lista">
-            @for (gasto of gastosPagados(); track gasto.id) {
-              <li>
-                <div>
-                  <strong>{{ gasto.categoriaNombre }}</strong>
-                  <small>{{ gasto.fechaTransaccion }}</small>
-                </div>
-                <div class="gastos-page__monto">S/ {{ gasto.monto.toFixed(2) }}</div>
-              </li>
-            }
-          </ul>
+          <div class="gastos-page__table-wrap">
+            <table class="gastos-page__table">
+              <thead>
+                <tr>
+                  <th><i class="fa-solid fa-receipt"></i> Gasto</th>
+                  <th><i class="fa-solid fa-tags"></i> Categoría</th>
+                  <th><i class="fa-solid fa-calendar-days"></i> Fecha</th>
+                  <th><i class="fa-solid fa-money-bill-wave"></i> Monto</th>
+                  <th><i class="fa-solid fa-circle-check"></i> Estado</th>
+                  <th><i class="fa-solid fa-credit-card"></i> Método de pago</th>
+                  <th><i class="fa-solid fa-gear"></i> Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (gasto of gastosFiltradosPagados(); track gasto.id) {
+                  <tr>
+                    <td>
+                      <div class="gastos-page__cell-main">
+                        <span class="gastos-page__icon-wrap" aria-hidden="true">
+                          <i class="fa-solid" [ngClass]="'fa-' + gasto.icono"></i>
+                        </span>
+                        <div>
+                          <strong>{{ gasto.nombre }}</strong>
+                          <small>{{ gasto.detalle }}</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="gastos-page__cat" [class]="'gastos-page__cat is-' + gasto.colorCategoria">{{ gasto.categoria }}</span></td>
+                    <td>
+                      <div class="gastos-page__cell-date">
+                        <span>{{ gasto.fecha }}</span>
+                        <small>{{ gasto.hora }}</small>
+                      </div>
+                    </td>
+                    <td><span class="gastos-page__amount">-S/ {{ gasto.monto.toFixed(2) }}</span></td>
+                    <td>
+                      <span class="gastos-page__badge" [class.is-paid]="gasto.estado === 'Pagado'" [class.is-warning]="gasto.estado === 'Pendiente'">
+                        <i class="fa-solid" [ngClass]="gasto.estado === 'Pagado' ? 'fa-circle-check' : 'fa-clock'"></i>
+                        {{ gasto.estado }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="gastos-page__pay-method">
+                        <i class="fa-solid" [ngClass]="
+                          gasto.metodo.toLowerCase().includes('yape') ? 'fa-mobile-screen-button' :
+                          gasto.metodo.toLowerCase().includes('efectivo') ? 'fa-money-bill-wave' :
+                          gasto.metodo.toLowerCase().includes('crédito') ? 'fa-credit-card' :
+                          gasto.metodo.toLowerCase().includes('débito') ? 'fa-credit-card' : 'fa-wallet'
+                        "></i>
+                        {{ gasto.metodo }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="gastos-page__row-actions">
+                        <button type="button" class="gastos-page__icon-btn is-edit" (click)="editarGasto(gasto.id)">
+                          <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button type="button" class="gastos-page__icon-btn is-delete" (click)="eliminarGasto(gasto.id)">
+                          <i class="fa-solid fa-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
         }
       }
     </section>
-  </div>
+
+    <section class="gastos-page__panel gastos-page__panel--right gastos-page__panel--pending">
+      <header class="gastos-page__panel-header">
+        <div>
+          <h3>Pendientes y recurrentes</h3>
+          <p>Próximos cargos programados</p>
+        </div>
+        <span class="gastos-page__chip is-warning">S/ {{ totalPendiente().toFixed(2) }}</span>
+      </header>
+
+      @if (pendientesFiltrados().length === 0) {
+        <div class="gastos-page__empty gastos-page__empty--compact">
+          <h4>No hay pendientes</h4>
+          <p>Todo está al día por ahora.</p>
+        </div>
+      } @else {
+        <div class="gastos-page__pending-list">
+          @for (pendiente of pendientesFiltrados(); track pendiente.id) {
+            <article class="gastos-page__pending-item">
+              <div class="gastos-page__pending-top">
+                <div class="gastos-page__pending-title-wrap">
+                  <span class="gastos-page__icon-wrap gastos-page__icon-wrap--pending" aria-hidden="true">
+                    <i class="fa-solid" [ngClass]="'fa-' + pendiente.categoriaIcono"></i>
+                  </span>
+                  <h4>{{ pendiente.nombre }}</h4>
+                  <p>{{ pendiente.frecuencia }} · {{ pendiente.metodoPago }}</p>
+                </div>
+                <span class="gastos-page__pending-amount">S/ {{ pendiente.monto.toFixed(2) }}</span>
+              </div>
+
+              <div class="gastos-page__pending-bottom">
+                <span class="gastos-page__pending-date">
+                  <i class="fa-solid fa-calendar-days"></i>
+                  {{ pendiente.fechaVencimiento }}
+                </span>
+
+                @if (pendiente.vencePronto) {
+                  <span class="gastos-page__badge is-warning">Vence pronto</span>
+                } @else {
+                  <span class="gastos-page__badge is-soft">Programado</span>
+                }
+              </div>
+
+              <button type="button" class="gastos-page__btn-mark" (click)="marcarPendienteComoPagado(pendiente.id)">
+                <i class="fa-solid fa-circle-check"></i>
+                Marcar pagado
+              </button>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  </section>
+
+  <section class="gastos-page__analytics">
+    <article class="gastos-page__widget">
+      <header><h4>Gastos por categoría</h4><span>Últimos 30 días</span></header>
+      <div class="gastos-page__donut-layout">
+        <div class="gastos-page__donut-wrap">
+          <svg viewBox="0 0 36 36" class="gastos-page__donut-svg" aria-label="Distribución de gastos por categoría">
+            <circle class="gastos-page__donut-track" cx="18" cy="18" r="15.91549430918954"></circle>
+            @for (item of donutCategorias(); track item.categoria) {
+              <circle
+                class="gastos-page__donut-segment"
+                cx="18"
+                cy="18"
+                r="15.91549430918954"
+                [attr.stroke]="item.color"
+                [attr.stroke-dasharray]="item.dasharray"
+                [attr.stroke-dashoffset]="item.dashoffset"
+              ></circle>
+            }
+            <g class="gastos-page__donut-text">
+              <text x="50%" y="47%">Total</text>
+              <text x="50%" y="64%">S/ {{ totalDonutCategorias().toFixed(2) }}</text>
+            </g>
+          </svg>
+        </div>
+        <div class="gastos-page__donut-legend">
+          @for (item of donutCategorias(); track item.categoria) {
+            <div class="gastos-page__legend-row">
+              <span class="gastos-page__legend-dot" [style.background]="item.color"></span>
+              <strong>{{ item.categoria }}</strong>
+              <small>{{ item.porcentaje.toFixed(0) }}%</small>
+            </div>
+          }
+        </div>
+      </div>
+    </article>
+    <article class="gastos-page__widget gastos-page__widget--avg-kpi">
+      <div class="gastos-page__kpi-icon-container gastos-page__kpi-icon-container--danger">
+        <i class="fa-solid fa-arrow-down"></i>
+      </div>
+      <span class="gastos-page__kpi-label">Gastos mensuales</span>
+      <strong class="gastos-page__kpi-value text-danger">S/ {{ gastoPromedioMensual().toFixed(2) }}</strong>
+      <div class="gastos-page__kpi-progress-wrapper">
+        <div class="gastos-page__kpi-progress-bar">
+          <span class="gastos-page__kpi-progress-fill"></span>
+        </div>
+        <small class="gastos-page__kpi-progress-text">
+          {{ variacionPromedioMensual() >= 0 ? variacionPromedioMensual().toFixed(0) : 0 }}% del presupuesto utilizado
+        </small>
+      </div>
+    </article>
+    <article class="gastos-page__widget">
+      <header>
+        <h4>Top días de gasto</h4>
+        <select class="gastos-page__trend-filter" [value]="filtroTendencia()" (change)="filtroTendencia.set($any($event.target).value)">
+          <option value="7d">Últimos 7 días</option>
+          <option value="30d">Últimos 30 días</option>
+          <option value="90d">Últimos 90 días</option>
+        </select>
+      </header>
+      <div class="gastos-page__rank-chart">
+        @for (dia of topDiasGasto(); track dia.etiqueta) {
+          <div class="gastos-page__rank-row">
+            <div class="gastos-page__rank-meta">
+              <strong>{{ dia.etiqueta }}</strong>
+              <small>S/ {{ dia.total.toFixed(2) }}</small>
+            </div>
+            <div class="gastos-page__rank-bar">
+              <span [style.width.%]="dia.porcentaje"></span>
+            </div>
+          </div>
+        }
+      </div>
+    </article>
+  </section>
 
   <button type="button" class="gastos-page__fab" (click)="abrirModal()" aria-label="Agregar gasto">+</button>
 
@@ -84,13 +317,31 @@
     <div class="gastos-page__overlay" (click)="cerrarModal()">
       <div class="gastos-page__modal" (click)="$event.stopPropagation()">
         <header class="gastos-page__modal-header">
-          <h2>Registrar gasto</h2>
+          <h2>{{ gastoEditandoId() ? 'Editar gasto' : 'Registrar gasto' }}</h2>
           <button type="button" class="gastos-page__close" (click)="cerrarModal()">×</button>
         </header>
 
-        <div class="gastos-page__form-grid">
+        <div class="gastos-page__form-grid gastos-page__form-grid--premium">
+          <div class="gastos-page__quick-amounts">
+            <button type="button" (click)="monto.set('20')">S/ 20</button>
+            <button type="button" (click)="monto.set('50')">S/ 50</button>
+            <button type="button" (click)="monto.set('100')">S/ 100</button>
+            <button type="button" (click)="monto.set('250')">S/ 250</button>
+          </div>
+
           <label>
-            Categoría
+            <span><i class="fa-solid fa-receipt"></i> Nombre del gasto</span>
+            <input
+              type="text"
+              [value]="nombreGasto()"
+              (input)="nombreGasto.set($any($event.target).value)"
+              placeholder="Ej. Almuerzo, Internet, Taxi"
+            />
+            @if (errores()['nombreGasto']) { <small class="gastos-page__error">{{ errores()['nombreGasto'] }}</small> }
+          </label>
+
+          <label>
+            <span><i class="fa-solid fa-tags"></i> Categoría</span>
             <select [value]="categoria()" (change)="categoria.set($any($event.target).value)">
               <option value="">Selecciona una categoría</option>
               @for (cat of categoriasDisponibles; track cat.id) {
@@ -101,27 +352,40 @@
           </label>
 
           <label>
-            Monto
+            <span><i class="fa-solid fa-wallet"></i> Monto</span>
             <input type="number" min="0" step="0.01" [value]="monto()" (input)="monto.set($any($event.target).value)" />
             @if (errores()['monto']) { <small class="gastos-page__error">{{ errores()['monto'] }}</small> }
           </label>
 
           <label class="gastos-page__form-col-full">
-            Descripción
+            <span><i class="fa-solid fa-note-sticky"></i> Descripción</span>
             <textarea rows="3" [value]="descripcion()" (input)="descripcion.set($any($event.target).value)"></textarea>
             @if (errores()['descripcion']) { <small class="gastos-page__error">{{ errores()['descripcion'] }}</small> }
           </label>
 
           <label>
-            Fecha
+            <span><i class="fa-solid fa-calendar-days"></i> Fecha</span>
             <input type="date" [value]="fecha()" (input)="fecha.set($any($event.target).value)" />
             @if (errores()['fecha']) { <small class="gastos-page__error">{{ errores()['fecha'] }}</small> }
           </label>
 
-          <fieldset>
+          <label>
+            <span><i class="fa-solid fa-credit-card"></i> Método de pago</span>
+            <select [value]="metodoPago()" (change)="metodoPago.set($any($event.target).value)">
+              @for (metodo of metodosPagoDisponibles; track metodo.id) {
+                <option [value]="metodo.id">{{ metodo.nombre }}</option>
+              }
+            </select>
+          </label>
+
+          <fieldset class="gastos-page__frequency">
             <legend>Tipo</legend>
-            <label><input type="radio" name="frecuencia" [checked]="tipoFrecuencia() === 'DIARIO'" (change)="tipoFrecuencia.set('DIARIO')" /> Diario</label>
-            <label><input type="radio" name="frecuencia" [checked]="tipoFrecuencia() === 'RECURRENTE'" (change)="tipoFrecuencia.set('RECURRENTE')" /> Recurrente</label>
+            <button type="button" [class.is-active]="tipoFrecuencia() === 'DIARIO'" (click)="tipoFrecuencia.set('DIARIO')">
+              <i class="fa-solid fa-sun"></i> Diario
+            </button>
+            <button type="button" [class.is-active]="tipoFrecuencia() === 'RECURRENTE'" (click)="tipoFrecuencia.set('RECURRENTE')">
+              <i class="fa-solid fa-repeat"></i> Recurrente
+            </button>
           </fieldset>
         </div>
 
@@ -132,9 +396,19 @@
         <footer class="gastos-page__modal-actions">
           <button type="button" class="gastos-page__btn-cancel" (click)="cerrarModal()">Cancelar</button>
           <button type="button" class="gastos-page__btn-save" [disabled]="guardandoGasto()" (click)="guardarGasto()">
-            {{ guardandoGasto() ? 'Guardando...' : 'Guardar' }}
+            {{ guardandoGasto() ? 'Guardando...' : (gastoEditandoId() ? 'Actualizar' : 'Guardar') }}
           </button>
         </footer>
+      </div>
+    </div>
+  }
+
+  @if (gastoPendienteEliminar(); as confirmacion) {
+    <div class="gastos-page__confirm-float" role="alertdialog" aria-modal="false">
+      <p>¿Seguro que deseas eliminar <strong>{{ confirmacion.nombre }}</strong>?</p>
+      <div class="gastos-page__confirm-actions">
+        <button type="button" class="gastos-page__confirm-cancel" (click)="cancelarEliminarGasto()">Cancelar</button>
+        <button type="button" class="gastos-page__confirm-delete" (click)="confirmarEliminarGasto()">Eliminar</button>
       </div>
     </div>
   }

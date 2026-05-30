@@ -56,4 +56,14 @@ export class Transacciones {
   obtenerPorId(id: string): Observable<TransaccionDTO> {
     return this.http.get<TransaccionDTO>(`${this.base}/${id}`);
   }
+
+  /* Actualizar transacción */
+  actualizar(id: string, request: TransaccionRequestDTO): Observable<TransaccionDTO> {
+    return this.http.put<TransaccionDTO>(`${this.base}/${id}`, request);
+  }
+
+  /* Eliminar transacción */
+  eliminar(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/${id}`);
+  }
 }
