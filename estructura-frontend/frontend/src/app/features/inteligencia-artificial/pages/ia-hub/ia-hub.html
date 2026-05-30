@@ -71,10 +71,11 @@
       <app-ia-reporte-anual *ngIf="moduloSeleccionado()?.id === 'reporte-completo'" [resultado]="resultado()" [cargando]="cargando()"></app-ia-reporte-anual>
       <app-ia-espejo-temporal *ngIf="moduloSeleccionado()?.id === 'espejo-temporal'" [resultado]="resultado()" [cargando]="cargando()"></app-ia-espejo-temporal>
       <app-ia-zona-entrenamiento *ngIf="moduloSeleccionado()?.id === 'zona-entrenamiento'"></app-ia-zona-entrenamiento>
+      <app-ia-comprobador-evolucion *ngIf="moduloSeleccionado()?.id === 'comprobador-evolucion'"></app-ia-comprobador-evolucion>
 
       <!-- Vista genérica -->
       <app-ia-resultado
-        *ngIf="moduloSeleccionado()?.id !== 'gasto-hormiga' && moduloSeleccionado()?.id !== 'predecir-gastos' && moduloSeleccionado()?.id !== 'habitos-financieros' && moduloSeleccionado()?.id !== 'reto-ahorro' && moduloSeleccionado()?.id !== 'simular-meta' && moduloSeleccionado()?.id !== 'estilo-vida' && moduloSeleccionado()?.id !== 'reporte-completo' && moduloSeleccionado()?.id !== 'espejo-temporal' && moduloSeleccionado()?.id !== 'zona-entrenamiento'"
+        *ngIf="moduloSeleccionado()?.id !== 'gasto-hormiga' && moduloSeleccionado()?.id !== 'predecir-gastos' && moduloSeleccionado()?.id !== 'habitos-financieros' && moduloSeleccionado()?.id !== 'reto-ahorro' && moduloSeleccionado()?.id !== 'simular-meta' && moduloSeleccionado()?.id !== 'estilo-vida' && moduloSeleccionado()?.id !== 'reporte-completo' && moduloSeleccionado()?.id !== 'espejo-temporal' && moduloSeleccionado()?.id !== 'zona-entrenamiento' && moduloSeleccionado()?.id !== 'comprobador-evolucion'"
         [resultado]="resultado()"
         [cargando]="cargando()">
       </app-ia-resultado>

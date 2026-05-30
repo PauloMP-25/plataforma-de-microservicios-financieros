@@ -20,6 +20,7 @@ import { IaReporteAnualComponent } from '../../components/ia-reporte-anual/ia-re
 import { IaEspejoTemporalComponent } from '../../components/ia-espejo-temporal/ia-espejo-temporal';
 import { IaEstiloVidaComponent } from '../../components/ia-estilo-vida/ia-estilo-vida';
 import { IaZonaEntrenamientoComponent } from '../../components/ia-zona-entrenamiento/ia-zona-entrenamiento';
+import { IaComprobadorEvolucionComponent } from '../../components/ia-comprobador-evolucion/ia-comprobador-evolucion';
 
 
 
@@ -154,11 +155,11 @@ const IA_MODULOS: IaModulo[] = [
     descripcion: 'Tu coach Luka te propone misiones semanales personalizadas. Supera los retos para inyectar capital directo a tus ahorros.',
     icon: 'fa-solid fa-trophy',
     tag: 'COACH',
-    tagColor: '#10b981',
+    tagColor: '#3b82f6',
     endpoint: '/api/v1/ia/reto-ahorro',
     filtroFecha: true,
     bentoClass: 'bento-wide',
-    colorProfile: 'matrix-green',
+    colorProfile: 'neon-blue',
     features: [
       { icon: 'fa-solid fa-gamepad', text: 'Misiones semanales de ahorro' },
       { icon: 'fa-solid fa-sack-dollar', text: 'Ahorro directo a metas' },
@@ -171,11 +172,11 @@ const IA_MODULOS: IaModulo[] = [
     descripcion: 'Luka proyecta tu futuro financiero basándose en tus decisiones de hoy. Observa el díptico de continuidad frente al de transformación.',
     icon: 'fa-solid fa-scale-unbalanced-flip',
     tag: 'ANÁLISIS',
-    tagColor: '#fbbf24',
+    tagColor: '#f97316',
     endpoint: '/api/v1/ia/espejo-temporal',
     filtroFecha: false,
     bentoClass: 'bento-wide',
-    colorProfile: 'cyber-gold',
+    colorProfile: 'neon-orange',
     features: [
       { icon: 'fa-solid fa-clock-rotate-left', text: 'Hitos a 3, 6 y 12 meses' },
       { icon: 'fa-solid fa-wand-magic-sparkles', text: 'Carta de transformación' },
@@ -188,11 +189,11 @@ const IA_MODULOS: IaModulo[] = [
     descripcion: 'Centro de Alto Rendimiento Financiero. Entrena tus finanzas y sigue las rutinas prescritas por tu Coach Luka.',
     icon: 'fa-solid fa-dumbbell',
     tag: 'COACH',
-    tagColor: '#10b981',
+    tagColor: '#14b8a6',
     endpoint: '/api/v1/ia/zona-entrenamiento',
     filtroFecha: false,
     bentoClass: 'bento-wide',
-    colorProfile: 'matrix-green',
+    colorProfile: 'neon-teal',
     features: [
       { icon: 'fa-solid fa-heart-pulse', text: 'Métricas de signos vitales' },
       { icon: 'fa-solid fa-clipboard-list', text: 'Rutinas de ahorro personalizadas' },
@@ -200,21 +201,20 @@ const IA_MODULOS: IaModulo[] = [
     ]
   },
   {
-    id: 'modulo-futuro-3',
-    label: 'Próximamente',
-    descripcion: 'Módulo inteligente adicional en planificación. Expandiendo las capacidades predictivas de nuestra red neuronal.',
-    icon: 'fa-solid fa-hourglass-end',
+    id: 'comprobador-evolucion',
+    label: 'Comprobador de Evolución',
+    descripcion: 'Sala de Radiología Financiera. Compara dos períodos de tiempo mediante un diagnóstico radiográfico y prescribe recetas de optimización.',
+    icon: 'fa-solid fa-bone',
     tag: 'ANÁLISIS',
-    tagColor: '#64748b',
-    endpoint: '',
+    tagColor: '#84cc16',
+    endpoint: '/api/v1/ia/comprobador-evolucion',
     filtroFecha: false,
     bentoClass: 'bento-wide',
-    colorProfile: 'cyber-grey',
-    proximamente: true,
+    colorProfile: 'phosphor-lime',
     features: [
-      { icon: 'fa-solid fa-hourglass-end', text: 'Análisis predictivo futuro' },
-      { icon: 'fa-solid fa-robot', text: 'Red neuronal ampliada' },
-      { icon: 'fa-solid fa-screwdriver-wrench', text: 'Módulo en planificación' }
+      { icon: 'fa-solid fa-skull-crossbones', text: 'Radiografía de categorías' },
+      { icon: 'fa-solid fa-prescription-bottle-medical', text: 'Receta de optimización' },
+      { icon: 'fa-solid fa-heart-pulse', text: 'Comparativa de índices y delta' }
     ]
   }
 ];
@@ -238,7 +238,8 @@ const IA_MODULOS: IaModulo[] = [
     IaEstiloVidaComponent,
     IaReporteAnualComponent,
     IaEspejoTemporalComponent,
-    IaZonaEntrenamientoComponent
+    IaZonaEntrenamientoComponent,
+    IaComprobadorEvolucionComponent
   ],
   templateUrl: './ia-hub.html',
   styleUrl: './ia-hub.scss'

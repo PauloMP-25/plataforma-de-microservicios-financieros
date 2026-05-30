@@ -1,6 +1,5 @@
-feat(ia): Nuevos módulos Espejo Temporal, Zona Entrenamiento y mejoras visuales
+feat(ia): Integración de Sala de Radiología (Comprobador de Evolución) y homogeneización de colores de la consola
 
-- Módulo Espejo Temporal (Módulo 5): Maquetado del frontend, tarjetas de continuidad/transformación y tipado de datos en el modelo general de IA.
-- Módulo Zona de Entrenamiento (Luka Gym): Implementado nuevo centro de entrenamiento financiero. Diseño altamente modular (avatar de estado físico, barra de pesos para Score Luka, animaciones de frecuencia cardíaca con SVG e interacciones de rutina).
-- Hábitos Financieros: Refinado visualmente el Coach. Se agregó un contenedor destacado para sugerencias de hábitos atómicos, y un estado de carga "EKG" prolongado para apreciar el diagnóstico.
-- IA Hub: Sustituidos los módulos "Próximamente" por los dos nuevos módulos. Resolución de referencias perdidas en rutas de importación.
+- Agregado el Módulo 9: "El Comprobador de Evolución" (Sala de Radiología) con arquitectura modular desacoplada en 6 componentes (selector de rangos, cargador láser EKG, esqueleto interactivo SVG con tooltips de hover, panel lateral de receta clínica estilo marfil y veredicto con corazón dinámico).
+- Corregida la colisión de colores y colorProfiles en la consola de IA (cada uno de los 10 módulos ahora posee un tono e identificador visual único).
+- Registrada la directiva del nuevo componente en la vista de orquestación central (IaHubComponent y su HTML).
