@@ -1,0 +1,12 @@
+<div class="oraculo-wisdom" *ngIf="consejoVisible()" [class.is-talking]="estaHablando()">
+  <div class="wisdom-header">
+    <span>CONSEJO DEL ORÁCULO LUKA</span>
+    <div class="avatar-container" [class.pulse-animation]="estaHablando()">
+      <i class="fa-solid fa-robot avatar-icon"></i>
+      <div class="sound-waves" *ngIf="estaHablando()">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+  <p class="wisdom-text" [innerHTML]="consejoTexto()"></p>
+</div>
