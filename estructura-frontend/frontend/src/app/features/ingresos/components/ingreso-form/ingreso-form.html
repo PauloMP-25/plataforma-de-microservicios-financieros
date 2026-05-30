@@ -1,0 +1,76 @@
+<form class="space-y-4" (ngSubmit)="guardar.emit()">
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <label class="block">
+      <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Monto *</span>
+      <input [(ngModel)]="model.monto" name="monto" type="number" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900" (ngModelChange)="onModelChange()" />
+    </label>
+    <label class="block">
+      <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Fecha de transacción *</span>
+      <input [(ngModel)]="model.fechaTransaccion" name="fechaTransaccion" type="text" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900" (ngModelChange)="onModelChange()" />
+    </label>
+  </div>
+
+  <label class="block">
+    <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Descripción / Nota *</span>
+    <textarea [(ngModel)]="model.descripcion" name="descripcion" rows="3" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900" (ngModelChange)="onModelChange()"></textarea>
+  </label>
+
+  <article class="rounded-xl border border-violet-200 bg-violet-50 p-3 dark:border-violet-500/30 dark:bg-violet-500/10">
+    <p class="text-xs text-violet-700 dark:text-violet-300">Categoría sugerida por IA</p>
+    <div class="mt-2 flex items-center justify-between">
+      <div>
+        <p class="font-semibold text-slate-800 dark:text-slate-100">{{ sugerencia.categoria }}</p>
+        <p class="text-xs text-emerald-600">{{ sugerencia.confianza * 100 | number:'1.0-0' }}% de coincidencia</p>
+      </div>
+      <button type="button" class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-400 px-5 py-2.5 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(34,211,238,.30)] transition-all duration-200 hover:-translate-y-0.5 hover:opacity-95" (click)="usarSugerencia.emit()">
+        ✨ Autoclasificar
+      </button>
+    </div>
+  </article>
+
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <label class="block">
+      <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Categoría *</span>
+      <select [(ngModel)]="model.categoria" name="categoria" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900" (ngModelChange)="onModelChange()">
+        <option *ngFor="let c of categorias" [value]="c.label">{{ c.label }}</option>
+      </select>
+    </label>
+    <label class="block">
+      <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Método de pago *</span>
+      <select [(ngModel)]="model.metodoPago" name="metodoPago" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900" (ngModelChange)="onModelChange()">
+        <option *ngFor="let m of metodos" [value]="m.value">{{ m.label }}</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="space-y-2">
+    <span class="block text-sm font-medium text-slate-700 dark:text-slate-200">Etiquetas</span>
+    <div class="flex flex-wrap gap-2">
+      <span *ngFor="let tag of model.etiquetas" class="inline-flex items-center gap-1 rounded-lg border border-violet-300 bg-violet-100 px-2 py-1 text-xs font-medium text-violet-700 dark:border-violet-500/40 dark:bg-violet-500/20 dark:text-violet-200">
+        {{ tag }}
+        <button type="button" class="text-[10px] opacity-80 hover:opacity-100" (click)="eliminarEtiqueta(tag)">✕</button>
+      </span>
+    </div>
+
+    <div class="grid grid-cols-1 gap-2 md:grid-cols-[1fr_auto]">
+      <input
+        [(ngModel)]="nuevaEtiqueta"
+        name="nuevaEtiqueta"
+        type="text"
+        maxlength="20"
+        placeholder="Ejemplos: Trabajo, Mensual, Extra, Proyecto"
+        class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900"
+      />
+      <button type="button" class="rounded-xl border border-violet-300 px-3 py-2 text-sm font-medium text-violet-700 dark:border-violet-500/50 dark:text-violet-300" (click)="agregarEtiqueta()">
+        Agregar etiqueta
+      </button>
+    </div>
+    <p class="text-xs text-slate-500 dark:text-slate-400">Solo una palabra por etiqueta.</p>
+  </div>
+
+  <div class="flex justify-end gap-3 pt-2">
+    <button type="button" class="rounded-xl border border-slate-300 px-4 py-2 text-sm dark:border-slate-600" (click)="cancelar.emit()">Cancelar</button>
+    <button type="submit" class="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(5,150,105,.30)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-emerald-500">Guardar ingreso</button>
+  </div>
+</form>
+

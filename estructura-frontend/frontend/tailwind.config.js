@@ -1,18 +1,21 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
+
   content: [
     "./src/**/*.{html,ts}",
   ],
+
   theme: {
     extend: {
       colors: {
-        // Vinculamos los colores de Tailwind a nuestras variables globales CSS
         primary: {
           DEFAULT: 'var(--color-primary)',
           light: 'var(--color-primary-light)',
           dark: 'var(--color-primary-dark)',
           soft: 'var(--color-primary-soft)',
         },
+        
         success: {
           DEFAULT: 'var(--color-success)',
           soft: 'var(--color-success-soft)',

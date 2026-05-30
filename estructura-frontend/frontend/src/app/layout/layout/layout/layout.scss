@@ -36,7 +36,7 @@
 
 .luka-main {
   flex: 1;
-  margin-left: var(--sidebar-width);
+  margin-left: var(--sidebar-w);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -44,38 +44,63 @@
   position: relative;
   z-index: 1;
 
-  &.collapsed {
-    margin-left: var(--sidebar-w-col, 80px);
-  }
+&.sidebar-collapsed,
+&.collapsed {
+  margin-left: var(--sidebar-w-col, 80px);
 }
 
 .luka-content {
   flex: 1;
-  margin-top: var(--header-height);
+  margin-top: 0;
   overflow-y: auto;
   background: linear-gradient(180deg, var(--bg-body) 0%, var(--bg-surface-soft) 100%);
+  padding: 24px 24px 32px;
 }
 
 .content-inner {
-  max-width: 1400px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: 1800px;
+  margin: 0;
   animation: fadeInUp 0.4s ease both;
+}
+
+/* ── Dark mode: quitar fondo extra para que no "ensucie" las secciones ── */
+body.theme-dark {
+  .luka-layout {
+    &::before,
+    &::after {
+      display: none;
+    }
+  }
+
+  .luka-content {
+    background: transparent;
+  }
 }
 
 /* ── Responsive ── */
 @media (max-width: 1024px) {
   .luka-main {
-    margin-left: 80px;
+    margin-left: var(--sidebar-w-col);
   }
 
   .luka-content {
-    padding: 20px 16px 32px;
+    padding: 16px 16px 28px;
   }
 }
 
 @media (max-width: 768px) {
   .luka-main {
     margin-left: 0;
+  }
+
+  .luka-content {
+    margin-top: 0;
+    padding: 16px 12px 24px;
+  }
+
+  .content-inner {
+    max-width: 100%;
   }
 }
 

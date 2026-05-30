@@ -1,104 +1,175 @@
 .gastos-page {
   display: grid;
-  gap: 16px;
+  gap: 20px;
   color: var(--text-primary);
+  background:
+    radial-gradient(circle at 15% -10%, color-mix(in srgb, var(--accent-primary) 11%, transparent), transparent 30%),
+    radial-gradient(circle at 85% -20%, color-mix(in srgb, var(--status-success) 9%, transparent), transparent 35%),
+    var(--bg-surface-soft);
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
-  padding: 16px;
+  padding: 20px;
 }
 
-.gastos-page__header {
+.gastos-page__hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+
+  .gastos-page__hero-copy {
+    display: grid;
+    gap: 8px;
+  }
+
   h1 {
     margin: 0;
-    font-size: 1.8rem;
-    font-weight: 700;
+    font-size: clamp(1.6rem, 1.2rem + 1.1vw, 2.2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
   }
 
   p {
-    margin: 6px 0 0;
+    margin: 0;
     color: var(--text-muted);
+    max-width: 680px;
   }
 }
 
-.gastos-page__acciones-top {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.gastos-page__btn,
-.gastos-page__btn-tool {
+.gastos-page__btn-main {
   min-height: 44px;
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  background: var(--bg-card);
-  color: var(--text-primary);
-  padding: 0 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.gastos-page__btn.is-active {
-  border-color: #1e3a8a;
-  color: #1e3a8a;
-  border-bottom-width: 3px;
-}
-
-.gastos-page__btn--principal {
+  border: 1px solid var(--accent-primary);
+  border-radius: 14px;
   background: var(--accent-primary);
   color: #fff;
-  border-color: var(--accent-primary);
+  padding: 0 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 22px color-mix(in srgb, var(--accent-primary) 38%, transparent);
+  }
 }
 
 .gastos-page__kpis {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
-  max-width: 800px;
-  margin: 0 auto;
-  width: 100%;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
 }
 
 .gastos-page__kpi {
   background: var(--bg-card);
-  border: none;
-  border-radius: 14px;
-  padding: 32px;
-  box-shadow: 0 4px 12px rgba(17, 24, 39, 0.06);
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 8px 28px rgba(17, 24, 39, 0.06);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 
-  span {
-    display: block;
-    font-size: 1rem;
-    color: #374151;
-    font-weight: 600;
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 28px rgba(17, 24, 39, 0.1);
+  }
+
+  .gastos-page__kpi-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+
+    p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+    }
+  }
+
+  .gastos-page__icon {
+    width: 34px;
+    height: 34px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
   }
 
   strong {
     display: block;
-    margin-top: 6px;
-    font-size: 1.7rem;
+    margin-top: 2px;
+    font-size: clamp(1.1rem, 0.95rem + .7vw, 1.6rem);
     line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  small {
+    display: block;
+    margin-top: 8px;
+    color: var(--text-muted);
   }
 }
 
-.gastos-page__kpi--rojo strong {
-  color: #dc2626;
+.gastos-page__kpi--salida strong {
+  color: var(--status-danger);
 }
 
-.gastos-page__kpi--amarillo strong {
-  color: #d97706;
+.gastos-page__kpi--saldo strong {
+  color: var(--status-success);
 }
 
-.gastos-page__kpi--verde strong {
-  color: #059669;
+.gastos-page__kpi--pendiente strong,
+.gastos-page__kpi--vencimiento strong {
+  color: var(--status-warning);
+}
+
+.gastos-page__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gastos-page__tab,
+.gastos-page__btn-tool {
+  min-height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  padding: 0 14px;
+  font-weight: 700;
+}
+
+.gastos-page__tab {
+  cursor: pointer;
+}
+
+.gastos-page__tab.is-active {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 8%, var(--bg-card));
+}
+
+.gastos-page__integration-note {
+  border: 1px dashed color-mix(in srgb, var(--status-warning) 55%, transparent);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: color-mix(in srgb, var(--status-warning) 60%, var(--text-primary));
+  background: color-mix(in srgb, var(--status-warning) 8%, var(--bg-card));
 }
 
 .gastos-page__toolbar {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr;
   gap: 10px;
   align-items: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 12px;
 
   input {
     min-height: 44px;
@@ -123,72 +194,144 @@
 }
 
 .gastos-page__btn-tool {
-  background: transparent;
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: transform .16s ease;
 
   &:hover {
-    background: var(--bg-surface-soft);
-    border-color: var(--border-color);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+    transform: none;
   }
 }
 
-.gastos-page__bloques {
+.gastos-page__content-grid {
   display: grid;
+  grid-template-columns: minmax(0, 1.95fr) minmax(220px, 0.65fr);
   gap: 14px;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
 }
 
-.gastos-page__bloque {
+.gastos-page__panel {
   background: var(--bg-card);
-  border: none;
-  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
   overflow: hidden;
+  box-shadow: 0 8px 28px rgba(17, 24, 39, 0.06);
+  backdrop-filter: blur(6px);
+}
 
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 14px;
-    border-bottom: none;
+.gastos-page__panel--pending {
+  background:
+    linear-gradient(160deg,
+      color-mix(in srgb, var(--accent-primary) 8%, var(--bg-card)) 0%,
+      color-mix(in srgb, var(--status-warning) 10%, var(--bg-card)) 100%);
+  box-shadow:
+    0 12px 26px rgba(17, 24, 39, 0.08),
+    inset 0 0 0 1px color-mix(in srgb, var(--accent-primary) 10%, transparent);
+}
 
-    h3 {
-      margin: 0;
-      font-size: 1rem;
-    }
+.gastos-page__panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-color);
 
-    span {
-      color: var(--text-muted);
-      font-weight: 600;
-    }
+  h3 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  p {
+    margin: 4px 0 0;
+    color: var(--text-muted);
+    font-size: .88rem;
   }
 }
 
-.gastos-page__estado-vacio {
-  padding: 24px;
+.gastos-page__chip {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: .78rem;
+  font-weight: 700;
+
+  &.is-success {
+    background: color-mix(in srgb, var(--status-success) 18%, transparent);
+    color: var(--status-success);
+  }
+
+  &.is-warning {
+    background: color-mix(in srgb, var(--status-warning) 18%, transparent);
+    color: var(--status-warning);
+  }
+}
+
+.gastos-page__skeleton-list {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+
+  div {
+    height: 70px;
+    border-radius: 14px;
+    background: linear-gradient(90deg, rgba(148,163,184,.25), rgba(148,163,184,.12), rgba(148,163,184,.25));
+    background-size: 200% 100%;
+    animation: pulse 1.4s infinite linear;
+  }
+}
+
+.gastos-page__empty {
+  padding: 28px 18px;
   text-align: center;
-  color: var(--text-muted);
 
-  &::before {
-    content: '🧾';
-    display: block;
-    font-size: 2rem;
-    margin-bottom: 8px;
+  h4 {
+    margin: 0 0 6px;
+  }
+
+  p {
+    margin: 0;
+    color: var(--text-muted);
+  }
+
+  &.gastos-page__empty--compact {
+    padding: 20px 14px;
   }
 }
 
-.gastos-page__lista {
+.gastos-page__paid-list {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 10px;
+  display: grid;
+  gap: 10px;
+}
 
-  li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 14px;
-    border-top: 1px solid var(--border-color);
+.gastos-page__paid-item {
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-card);
+  transition: transform .18s ease, box-shadow .18s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(17, 24, 39, .08);
   }
+}
+
+.gastos-page__paid-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 
   strong {
     display: block;
@@ -199,8 +342,919 @@
   }
 }
 
-.gastos-page__monto {
+.gastos-page__icon-chip {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: inline-grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+}
+
+.gastos-page__paid-meta {
+  display: grid;
+  gap: 5px;
+  justify-items: end;
+}
+
+.gastos-page__amount {
+  font-weight: 800;
+  color: #dc2626 !important;
+  text-shadow: 0 0 0 transparent;
+  letter-spacing: .01em;
+}
+
+.gastos-page__table tbody td:nth-child(4),
+.gastos-page__table tbody td:nth-child(4) * {
+  color: #dc2626 !important;
+}
+
+.gastos-page__table tbody tr:hover td:nth-child(4),
+.gastos-page__table tbody tr:hover td:nth-child(4) * {
+  color: #dc2626 !important;
+}
+
+.gastos-page__badge {
+  border-radius: 999px;
+  font-size: .74rem;
+  font-weight: 700;
+  padding: 4px 9px;
+
+  i {
+    margin-right: 5px;
+  }
+
+  &.is-paid {
+    background: color-mix(in srgb, var(--status-success) 24%, #ffffff);
+    color: color-mix(in srgb, var(--status-success) 88%, #0f172a);
+    border: 1px solid color-mix(in srgb, var(--status-success) 38%, transparent);
+  }
+
+  &.is-warning {
+    background: color-mix(in srgb, var(--status-warning) 18%, transparent);
+    color: var(--status-warning);
+  }
+
+  &.is-soft {
+    background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+    color: var(--accent-primary);
+  }
+}
+
+.gastos-page__trend {
+  display: inline-flex;
+  margin-top: 10px;
+  font-size: .82rem;
+  font-style: normal;
+  font-weight: 700;
+
+  &.is-up {
+    color: var(--status-danger);
+  }
+
+  &.is-good {
+    color: var(--status-success);
+  }
+}
+
+.gastos-page__table-wrap {
+  padding: 10px;
+  overflow-x: auto;
+}
+
+.gastos-page__table-wrap--compact {
+  max-height: 320px;
+  overflow: auto;
+  padding: 8px;
+
+  .gastos-page__table thead th,
+  .gastos-page__table tbody td {
+    padding: 8px 6px;
+    font-size: 0.8rem;
+  }
+
+  .gastos-page__btn-mark {
+    min-height: 32px;
+    font-size: 0.75rem;
+    padding: 0 8px;
+  }
+}
+
+.gastos-page__table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  thead th {
+    text-align: left;
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    color: var(--text-muted);
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+
+    i {
+      margin-right: 6px;
+      color: color-mix(in srgb, var(--accent-primary) 70%, var(--text-muted));
+    }
+  }
+
+  tbody tr {
+    transition: all 0.25s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 14px rgba(17, 24, 39, .06);
+      background: color-mix(in srgb, var(--accent-primary) 4%, var(--bg-card));
+    }
+  }
+
+  tbody td {
+    padding: 14px 10px;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+  }
+}
+
+.gastos-page__pay-method {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  i {
+    color: var(--accent-primary);
+  }
+}
+
+.gastos-page__row-actions {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.gastos-page__icon-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all .2s ease;
+
+  &.is-edit:hover {
+    color: #2563eb;
+    border-color: color-mix(in srgb, #2563eb 60%, var(--border-color));
+    background: color-mix(in srgb, #2563eb 10%, var(--bg-card));
+  }
+
+  &.is-delete:hover {
+    color: #dc2626;
+    border-color: color-mix(in srgb, #dc2626 60%, var(--border-color));
+    background: color-mix(in srgb, #dc2626 10%, var(--bg-card));
+  }
+}
+
+.gastos-page__confirm-float {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 1300;
+  width: min(360px, calc(100vw - 24px));
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, #ef4444 35%, var(--border-color));
+  background: var(--bg-card);
+  box-shadow: 0 18px 36px rgba(15, 23, 42, .22);
+  padding: 12px;
+
+  p {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: .9rem;
+  }
+}
+
+.gastos-page__confirm-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.gastos-page__confirm-cancel,
+.gastos-page__confirm-delete {
+  min-height: 34px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.gastos-page__confirm-cancel {
+  background: var(--bg-surface-soft);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.gastos-page__confirm-delete {
+  background: #dc2626;
+  color: #fff;
+  border-color: #b91c1c;
+}
+
+.gastos-page__cell-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  strong {
+    display: block;
+  }
+
+  small {
+    color: var(--text-muted);
+  }
+}
+
+.gastos-page__icon-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+
+  i {
+    color: var(--accent-primary);
+    font-size: 1rem;
+  }
+}
+
+.gastos-page__cat {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: .76rem;
+  font-weight: 700;
+
+  &.is-comida {
+    color: #d97706;
+    background: color-mix(in srgb, #f59e0b 20%, transparent);
+  }
+
+  &.is-hogar {
+    color: #059669;
+    background: color-mix(in srgb, #10b981 20%, transparent);
+  }
+
+  &.is-transporte {
+    color: #4f46e5;
+    background: color-mix(in srgb, #6366f1 20%, transparent);
+  }
+
+  &.is-servicios {
+    color: #db2777;
+    background: color-mix(in srgb, #ec4899 20%, transparent);
+  }
+
+  &.is-entretenimiento {
+    color: #2563eb;
+    background: color-mix(in srgb, #3b82f6 20%, transparent);
+  }
+
+  &.is-salud {
+    color: #d97706;
+    background: color-mix(in srgb, #f59e0b 20%, transparent);
+  }
+}
+
+.gastos-page__cell-date {
+  display: grid;
+  gap: 2px;
+
+  small {
+    color: var(--text-muted);
+  }
+}
+
+.gastos-page__table--pending {
+  td:last-child,
+  th:last-child {
+    width: 140px;
+    text-align: right;
+  }
+}
+
+.gastos-page__pending-cards {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+}
+
+.gastos-page__pending-list {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  max-height: 420px;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--accent-primary) 45%, #ffffff) transparent;
+
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: color-mix(in srgb, var(--bg-surface-soft) 75%, transparent);
+    border-radius: 999px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--accent-primary) 55%, #ffffff);
+    border-radius: 999px;
+    border: 2px solid color-mix(in srgb, var(--bg-card) 85%, transparent);
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--accent-primary) 75%, #ffffff);
+  }
+}
+
+.gastos-page__pending-item {
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--accent-primary) 4%, var(--bg-card));
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+  transition: all .25s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 18px rgba(17, 24, 39, .1);
+  }
+}
+
+.gastos-page__pending-title-wrap {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.gastos-page__icon-wrap--pending {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent-primary) 16%, #ffffff);
+
+  i {
+    color: var(--accent-primary);
+    font-size: 0.9rem;
+  }
+}
+
+.gastos-page__pending-top {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 8px;
+
+  h4 {
+    margin: 0;
+    font-size: .92rem;
+  }
+
+  p {
+    margin: 3px 0 0;
+    color: var(--text-muted);
+    font-size: .78rem;
+  }
+}
+
+.gastos-page__pending-amount {
+  font-weight: 800;
+  color: var(--status-danger);
+  white-space: nowrap;
+}
+
+.gastos-page__pending-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.gastos-page__pending-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .78rem;
+  color: var(--text-muted);
+}
+
+.gastos-page__pending-card {
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 12px;
+  background: var(--bg-card);
+  transition: transform .18s ease, box-shadow .18s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 18px rgba(17, 24, 39, .08);
+  }
+
+  .gastos-page__pending-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+
+    strong {
+      font-size: .96rem;
+    }
+  }
+
+  ul {
+    list-style: none;
+    margin: 0 0 12px;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+  }
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    color: var(--text-muted);
+
+    b {
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+  }
+}
+
+.gastos-page__btn-mark {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid var(--border-color);
+  background: color-mix(in srgb, var(--bg-card) 88%, #ffffff);
+  color: var(--text-primary);
+  border-radius: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px) scale(1.015);
+    box-shadow: 0 12px 22px color-mix(in srgb, var(--status-success) 50%, transparent);
+    filter: saturate(1.22) brightness(1.05);
+    background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%) !important;
+    color: #ffffff !important;
+    border-color: #15803d !important;
+  }
+
+  &:focus-visible,
+  &:active {
+    background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%) !important;
+    color: #ffffff !important;
+    border-color: #15803d !important;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  i {
+    margin-right: 6px;
+  }
+}
+
+.gastos-page__analytics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.gastos-page__widget {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 14px;
+  min-height: 120px;
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  h4 {
+    margin: 0;
+    font-size: .95rem;
+  }
+
+  span {
+    color: var(--text-muted);
+    font-size: .82rem;
+  }
+
+  p {
+    margin: 0;
+    color: var(--text-muted);
+  }
+}
+
+.gastos-page__chart-list {
+  display: grid;
+  gap: 10px;
+}
+
+.gastos-page__chart-item {
+  display: grid;
+  gap: 6px;
+}
+
+.gastos-page__chart-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+
+  strong {
+    font-size: .86rem;
+  }
+
+  span {
+    font-size: .78rem;
+    color: var(--text-muted);
+  }
+}
+
+.gastos-page__chart-bar {
+  height: 8px;
+  background: color-mix(in srgb, var(--accent-primary) 10%, var(--bg-surface-soft));
+  border-radius: 999px;
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+  }
+}
+
+.gastos-page__trend-bars {
+  min-height: 116px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(28px, 1fr);
+  align-items: end;
+  gap: 10px;
+}
+
+.gastos-page__trend-col {
+  height: 100%;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  align-items: end;
+  justify-items: center;
+  gap: 6px;
+
+  small {
+    color: var(--text-muted);
+    text-transform: capitalize;
+  }
+}
+
+.gastos-page__trend-fill {
+  width: 100%;
+  min-height: 8px;
+  border-radius: 10px 10px 4px 4px;
+  background: linear-gradient(180deg, #f97316 0%, #dc2626 100%);
+}
+
+.gastos-page__donut-layout {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.gastos-page__donut-wrap {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto;
+}
+
+.gastos-page__donut-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.gastos-page__donut-track {
+  fill: none;
+  stroke: color-mix(in srgb, var(--text-muted) 20%, transparent);
+  stroke-width: 3;
+}
+
+.gastos-page__donut-segment {
+  fill: none;
+  stroke-width: 3.2;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+.gastos-page__donut-text text {
+  text-anchor: middle;
+  fill: var(--text-primary);
+  font-size: 3.2px;
+  font-weight: 600;
+}
+
+.gastos-page__donut-text text:last-child {
+  font-size: 3.8px;
+  font-weight: 800;
+}
+
+.gastos-page__donut-legend {
+  display: grid;
+  gap: 8px;
+}
+
+.gastos-page__legend-row {
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  align-items: center;
+  gap: 8px;
+
+  strong { font-size: .82rem; }
+  small { color: var(--text-muted); }
+}
+
+.gastos-page__legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.gastos-page__line-card {
+  display: grid;
+  gap: 8px;
+}
+
+.gastos-page__line-svg {
+  width: 100%;
+  height: 120px;
+}
+
+.gastos-page__line-grid {
+  fill: none;
+  stroke: color-mix(in srgb, var(--text-muted) 20%, transparent);
+  stroke-width: .6;
+}
+
+.gastos-page__line-path {
+  fill: none;
+  stroke: #6366f1;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.gastos-page__line-point {
+  fill: #6366f1;
+  stroke: #ffffff;
+  stroke-width: .8;
+}
+
+.gastos-page__line-labels {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 6px;
+
+  small {
+    text-align: center;
+    color: var(--text-muted);
+    text-transform: capitalize;
+  }
+}
+
+.gastos-page__trend-filter {
+  min-height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface-soft);
+  color: var(--text-primary);
+  padding: 0 8px;
+  font-size: .78rem;
+  font-weight: 600;
+}
+
+.gastos-page__rank-chart {
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.gastos-page__rank-row {
+  display: grid;
+  gap: 6px;
+}
+
+.gastos-page__rank-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  strong { font-size: .8rem; }
+  small { font-size: .78rem; color: var(--text-muted); }
+}
+
+.gastos-page__rank-bar {
+  height: 9px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-primary) 10%, var(--bg-surface-soft));
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #6366f1 0%, #a78bfa 100%);
+  }
+}
+
+.gastos-page__avg-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.gastos-page__avg-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  strong {
+    display: block;
+    font-size: 1.8rem;
+    line-height: 1.1;
+    color: var(--text-primary);
+  }
+
+  small {
+    display: block;
+    margin-top: 4px;
+    font-weight: 700;
+    color: var(--text-muted);
+
+    &.is-up { color: var(--status-success); }
+    &.is-down { color: var(--status-danger); }
+  }
+}
+
+.gastos-page__avg-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: inline-grid;
+  place-items: center;
+  color: #2563eb;
+  background: color-mix(in srgb, #2563eb 16%, #ffffff);
+}
+
+.gastos-page__sparkline {
+  width: 120px;
+  height: 42px;
+}
+
+.gastos-page__sparkline-path {
+  fill: none;
+  stroke: #3b82f6;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.gastos-page__next-payments {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.gastos-page__next-payment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: color-mix(in srgb, var(--accent-primary) 4%, var(--bg-card));
+
+  strong {
+    display: block;
+    font-size: .84rem;
+  }
+
+  small {
+    color: var(--text-muted);
+    font-size: .74rem;
+  }
+}
+
+.gastos-page__next-payment-right {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+
+.gastos-page__next-payment-amount {
+  font-weight: 800;
   color: #dc2626;
+  font-size: .84rem;
+}
+
+.gastos-page__widget--avg-kpi {
+  min-height: 210px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.gastos-page__kpi-icon-container {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.gastos-page__kpi-icon-container--danger {
+  background: rgba(171, 71, 188, 0.14);
+  color: #ab47bc;
+}
+
+.gastos-page__kpi-label {
+  margin-top: 8px;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+
+.gastos-page__kpi-value {
+  font-size: 2.8rem;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.text-danger {
+  color: #ef4444;
+}
+
+.gastos-page__kpi-progress-wrapper {
+  margin-top: 2px;
+  display: grid;
+  gap: 7px;
+}
+
+.gastos-page__kpi-progress-bar {
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(171, 71, 188, 0.18);
+}
+
+.gastos-page__kpi-progress-fill {
+  display: block;
+  height: 100%;
+  width: 62%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ab47bc, #ddb7ff);
+}
+
+.gastos-page__kpi-progress-text {
+  color: var(--text-muted);
+  font-size: .95rem;
   font-weight: 700;
 }
 
@@ -217,7 +1271,7 @@
   font-size: 2rem;
   line-height: 1;
   cursor: pointer;
-  box-shadow: 0 12px 24px rgba(5, 150, 105, 0.35);
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--accent-primary) 40%, transparent);
 }
 
 .gastos-page__overlay {
@@ -232,11 +1286,14 @@
 
 .gastos-page__modal {
   width: min(680px, 100%);
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 94%, #ffffff) 0%, var(--bg-card) 100%);
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 20%, var(--border-color));
+  border-radius: 20px;
   padding: 24px;
   color: var(--text-primary);
+  box-shadow: 0 20px 48px rgba(15, 23, 42, .28);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
 }
 
 .gastos-page__modal-header {
@@ -244,6 +1301,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed color-mix(in srgb, var(--accent-primary) 28%, var(--border-color));
 
   h2 {
     margin: 0;
@@ -252,11 +1311,21 @@
 }
 
 .gastos-page__close {
-  border: none;
-  background: transparent;
-  color: var(--text-primary);
-  font-size: 2rem;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface-soft);
+  color: var(--text-muted);
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  font-size: 1.4rem;
+  line-height: 1;
   cursor: pointer;
+
+  &:hover {
+    color: var(--text-primary);
+    background: color-mix(in srgb, var(--accent-primary) 10%, var(--bg-card));
+    border-color: color-mix(in srgb, var(--accent-primary) 45%, var(--border-color));
+  }
 }
 
 .gastos-page__form-grid {
@@ -306,6 +1375,60 @@
   }
 }
 
+.gastos-page__quick-amounts {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+
+  button {
+    min-height: 38px;
+    border-radius: 10px;
+    border: 1px solid color-mix(in srgb, var(--accent-primary) 25%, var(--border-color));
+    background: color-mix(in srgb, var(--accent-primary) 8%, var(--bg-card));
+    color: var(--accent-primary);
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+      background: color-mix(in srgb, var(--accent-primary) 16%, var(--bg-card));
+      border-color: color-mix(in srgb, var(--accent-primary) 45%, var(--border-color));
+    }
+  }
+}
+
+.gastos-page__frequency {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+
+  legend {
+    padding: 0 6px;
+  }
+
+  button {
+    min-height: 40px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-surface-soft);
+    color: var(--text-primary);
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s ease;
+
+    &.is-active {
+      border-color: color-mix(in srgb, var(--accent-primary) 55%, var(--border-color));
+      background: color-mix(in srgb, var(--accent-primary) 14%, var(--bg-card));
+      color: var(--accent-primary);
+    }
+  }
+}
+
 .gastos-page__form-col-full {
   grid-column: 1 / -1;
 }
@@ -334,46 +1457,88 @@
   border-radius: 10px;
   padding: 0 16px;
   border: 1px solid transparent;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
+  color: #fff !important;
+  transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
 }
 
 .gastos-page__btn-cancel {
-  background: #e5e7eb;
-  color: #374151;
+  background: #dc2626 !important;
+  border-color: #b91c1c !important;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 18px rgba(220, 38, 38, .28);
+    filter: brightness(1.05);
+  }
 }
 
 .gastos-page__btn-save {
-  background: #059669;
-  color: #fff;
+  background: #16a34a !important;
+  border-color: #15803d !important;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 18px rgba(22, 163, 74, .3);
+    filter: brightness(1.05);
+  }
+
+  &:disabled {
+    opacity: .7;
+    cursor: not-allowed;
+    filter: grayscale(.12);
+  }
 }
 
 @media (max-width: 900px) {
   .gastos-page__kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gastos-page__content-grid {
     grid-template-columns: 1fr;
   }
 
-  .gastos-page__toolbar {
-    grid-template-columns: 1fr;
-  }
-
-  .gastos-page__toolbar-actions {
-    justify-content: flex-start;
-    flex-wrap: wrap;
+  .gastos-page__analytics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .gastos-page__form-grid {
     grid-template-columns: 1fr;
   }
+
+  .gastos-page__quick-amounts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gastos-page__donut-layout {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 560px) {
-  .gastos-page__toolbar {
+  .gastos-page__hero {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .gastos-page__kpis,
+  .gastos-page__analytics {
     grid-template-columns: 1fr;
   }
 
-  .gastos-page__btn,
+  .gastos-page__tab,
   .gastos-page__btn-tool {
     width: 100%;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: -200% 0;
   }
 }

@@ -5,6 +5,8 @@ import { RouterModule, Router,
          NavigationEnd, ActivatedRoute }    from '@angular/router';
 import { filter, map }                      from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
+import { SidebarStateService } from '../../../core/services/sidebar-state.service';
+import { FinancieroService } from '../../../core/services/Financiero.service';
 
 interface Breadcrumb  { label: string; route?: string; }
 
@@ -91,11 +93,18 @@ export class Header implements OnInit {
 
   constructor(
     public  auth:   AuthService,
+    public financiero: FinancieroService,
+    public sidebarState: SidebarStateService,
     private router: Router,
     private route:  ActivatedRoute
   ) {}
 
+  toggleSidebarMobile(): void {
+    this.sidebarState.toggleMobile();
+  }
+
   ngOnInit(): void {
+    this.financiero.cargarResumen();
 
     // Escucha cambios de ruta para actualizar título y breadcrumbs
     this.router.events
@@ -125,6 +134,46 @@ export class Header implements OnInit {
     setTimeout(() => {
       this.abrirMascota('¡Hola! 👋 ¿Ya registraste tus gastos de hoy?');
     }, 4000);
+  }
+
+  get totalIngresosMes(): number {
+    return this.financiero.resumen()?.totalIngresos ?? 3850;
+  }
+
+  get totalGastosMes(): number {
+    return this.financiero.resumen()?.totalGastos ?? 2950;
+  }
+
+  get balanceActual(): number {
+    return this.totalIngresosMes - this.totalGastosMes;
+  }
+
+  get saludTexto(): 'Buena' | 'Atención' | 'Crítica' {
+    if (this.totalIngresosMes <= 0) return 'Crítica';
+    const ratio = this.totalGastosMes / this.totalIngresosMes;
+    if (ratio <= 0.7) return 'Buena';
+    if (ratio <= 0.95) return 'Atención';
+    return 'Crítica';
+  }
+
+  get saludClase(): string {
+    switch (this.saludTexto) {
+      case 'Buena':
+        return 'health-badge--good';
+      case 'Atención':
+        return 'health-badge--warn';
+      default:
+        return 'health-badge--bad';
+    }
+  }
+
+  formatSoles(value: number): string {
+    return new Intl.NumberFormat('es-PE', {
+      style: 'currency',
+      currency: 'PEN',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value);
   }
 
   // Cierra todos los dropdowns al hacer clic fuera del header
