@@ -1,0 +1,6 @@
+feat(ia): Nuevos módulos Espejo Temporal, Zona Entrenamiento y mejoras visuales
+
+- Módulo Espejo Temporal (Módulo 5): Maquetado del frontend, tarjetas de continuidad/transformación y tipado de datos en el modelo general de IA.
+- Módulo Zona de Entrenamiento (Luka Gym): Implementado nuevo centro de entrenamiento financiero. Diseño altamente modular (avatar de estado físico, barra de pesos para Score Luka, animaciones de frecuencia cardíaca con SVG e interacciones de rutina).
+- Hábitos Financieros: Refinado visualmente el Coach. Se agregó un contenedor destacado para sugerencias de hábitos atómicos, y un estado de carga "EKG" prolongado para apreciar el diagnóstico.
+- IA Hub: Sustituidos los módulos "Próximamente" por los dos nuevos módulos. Resolución de referencias perdidas en rutas de importación.

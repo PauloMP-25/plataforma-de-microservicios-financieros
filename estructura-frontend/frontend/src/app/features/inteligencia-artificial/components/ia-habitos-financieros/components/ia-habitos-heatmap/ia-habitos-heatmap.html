@@ -1,0 +1,79 @@
+<div class="heatmap-panel card-premium">
+  <div class="panel-header">
+    <h3 class="panel-title">
+      <i class="fa-solid fa-calendar-days text-blue-400"></i>
+      Mapa de Calor Temporal
+    </h3>
+    <span class="heatmap-subtitle">Últimas 4 semanas de egresos variables</span>
+  </div>
+
+  <div class="heatmap-grid-container">
+    <div class="heatmap-days-header">
+      <div class="day-col-header" *ngFor="let day of ['L', 'M', 'M', 'J', 'V', 'S', 'D']; let i = index">
+        <div class="crown-wrapper" *ngIf="i === 5">
+          <i class="fa-solid fa-crown crown-icon"></i>
+        </div>
+        <span>{{ day }}</span>
+      </div>
+    </div>
+
+    <div class="heatmap-rows">
+      <div class="heatmap-row" *ngFor="let sem of heatmapSemanas(); let wIdx = index">
+        <div 
+          *ngFor="let celda of sem"
+          class="heatmap-cell"
+          [ngClass]="[getNivelColorClase(celda.nivel)]"
+          [class.cell-weekend]="esFinDeSemana(celda.diaSemana)"
+          (mouseenter)="onCellMouseEnter($event, celda)"
+          (mouseleave)="onCellMouseLeave()"
+        >
+          <span class="cell-day-num">{{ celda.diaNum }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div 
+      class="heatmap-tooltip" 
+      *ngIf="celdaHover() as cell" 
+      [style.left.px]="tooltipPos().x" 
+      [style.top.px]="tooltipPos().y"
+    >
+      <div class="tooltip-header">
+        <span>{{ cell.diaSemana }} {{ cell.diaNum }}</span>
+        <span class="tooltip-total">Total: S/ {{ cell.monto | number:'1.2-2' }}</span>
+      </div>
+      <div class="tooltip-tx-list">
+        <div class="tooltip-tx-item" *ngFor="let tx of cell.transacciones">
+          <div class="tx-details">
+            <i [className]="'tx-icon fa-solid ' + tx.icono"></i>
+            <span class="tx-desc">{{ tx.descripcion }}</span>
+          </div>
+          <span class="tx-amount">-S/ {{ tx.monto | number:'1.2-2' }}</span>
+        </div>
+        <div class="tooltip-empty" *ngIf="cell.transacciones.length === 0">
+          <i class="fa-solid fa-mug-hot"></i> Sin egresos significativos
+        </div>
+      </div>
+      <div class="tooltip-arrow"></div>
+    </div>
+  </div>
+
+  <div class="heatmap-legend">
+    <span class="legend-label">Bajo gasto</span>
+    <div class="legend-scale">
+      <span class="scale-box level-1"></span>
+      <span class="scale-box level-2"></span>
+      <span class="scale-box level-3"></span>
+      <span class="scale-box level-4"></span>
+      <span class="scale-box level-5"></span>
+    </div>
+    <span class="legend-label">Alto gasto</span>
+  </div>
+
+  <div class="badge-container">
+    <span class="badge-premium bg-amber-500/20 text-amber-300 border border-amber-500/30">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      Pico recurrente: Sábados
+    </span>
+  </div>
+</div>

@@ -16,8 +16,10 @@ import { IaPrediccionGastosComponent } from '../../components/ia-prediccion-gast
 import { IaHabitosFinancierosComponent } from '../../components/ia-habitos-financieros/ia-habitos-financieros';
 import { IaRetoAhorroComponent } from '../../components/ia-reto-ahorro/ia-reto-ahorro';
 import { IaSimularMetaComponent } from '../../components/ia-simular-meta/ia-simular-meta';
-import { IaEstiloVidaComponent } from '../../components/ia-estilo-vida/ia-estilo-vida';
 import { IaReporteAnualComponent } from '../../components/ia-reporte-anual/ia-reporte-anual';
+import { IaEspejoTemporalComponent } from '../../components/ia-espejo-temporal/ia-espejo-temporal';
+import { IaEstiloVidaComponent } from '../../components/ia-estilo-vida/ia-estilo-vida';
+import { IaZonaEntrenamientoComponent } from '../../components/ia-zona-entrenamiento/ia-zona-entrenamiento';
 
 
 
@@ -164,39 +166,37 @@ const IA_MODULOS: IaModulo[] = [
     ]
   },
   {
-    id: 'modulo-futuro-1',
-    label: 'Próximamente',
-    descripcion: 'Nuevo módulo de análisis en desarrollo. Muy pronto tu coach financiero Luka te sorprenderá con más herramientas inteligentes.',
-    icon: 'fa-solid fa-hourglass-start',
+    id: 'espejo-temporal',
+    label: 'El Espejo del Tiempo',
+    descripcion: 'Luka proyecta tu futuro financiero basándose en tus decisiones de hoy. Observa el díptico de continuidad frente al de transformación.',
+    icon: 'fa-solid fa-scale-unbalanced-flip',
     tag: 'ANÁLISIS',
-    tagColor: '#64748b',
-    endpoint: '',
+    tagColor: '#fbbf24',
+    endpoint: '/api/v1/ia/espejo-temporal',
     filtroFecha: false,
     bentoClass: 'bento-wide',
-    colorProfile: 'cyber-grey',
-    proximamente: true,
+    colorProfile: 'cyber-gold',
     features: [
-      { icon: 'fa-solid fa-hourglass-start', text: 'Nuevo análisis inteligente' },
-      { icon: 'fa-solid fa-circle-nodes', text: 'Integración con Luka Brain' },
-      { icon: 'fa-solid fa-microchip', text: 'Módulo en desarrollo' }
+      { icon: 'fa-solid fa-clock-rotate-left', text: 'Hitos a 3, 6 y 12 meses' },
+      { icon: 'fa-solid fa-wand-magic-sparkles', text: 'Carta de transformación' },
+      { icon: 'fa-solid fa-scale-unbalanced', text: 'Contador de impacto neto' }
     ]
   },
   {
-    id: 'modulo-futuro-2',
-    label: 'Próximamente',
-    descripcion: 'Nueva funcionalidad del Coach IA en fase de diseño. Estamos creando nuevas formas de optimizar tus finanzas diarias.',
-    icon: 'fa-solid fa-hourglass-half',
+    id: 'zona-entrenamiento',
+    label: 'Zona de Entrenamiento',
+    descripcion: 'Centro de Alto Rendimiento Financiero. Entrena tus finanzas y sigue las rutinas prescritas por tu Coach Luka.',
+    icon: 'fa-solid fa-dumbbell',
     tag: 'COACH',
-    tagColor: '#64748b',
-    endpoint: '',
+    tagColor: '#10b981',
+    endpoint: '/api/v1/ia/zona-entrenamiento',
     filtroFecha: false,
     bentoClass: 'bento-wide',
-    colorProfile: 'cyber-grey',
-    proximamente: true,
+    colorProfile: 'matrix-green',
     features: [
-      { icon: 'fa-solid fa-hourglass-half', text: 'Nueva mentoría del Coach' },
-      { icon: 'fa-solid fa-brain', text: 'Recomendaciones autónomas' },
-      { icon: 'fa-solid fa-gears', text: 'Funcionalidad en diseño' }
+      { icon: 'fa-solid fa-heart-pulse', text: 'Métricas de signos vitales' },
+      { icon: 'fa-solid fa-clipboard-list', text: 'Rutinas de ahorro personalizadas' },
+      { icon: 'fa-solid fa-person-running', text: 'Evaluación de perfil atlético' }
     ]
   },
   {
@@ -236,7 +236,9 @@ const IA_MODULOS: IaModulo[] = [
     IaRetoAhorroComponent,
     IaSimularMetaComponent,
     IaEstiloVidaComponent,
-    IaReporteAnualComponent
+    IaReporteAnualComponent,
+    IaEspejoTemporalComponent,
+    IaZonaEntrenamientoComponent
   ],
   templateUrl: './ia-hub.html',
   styleUrl: './ia-hub.scss'
@@ -355,7 +357,7 @@ export class IaHubComponent implements OnInit, OnDestroy {
         this.cargando.set(false);
         this.errorMsg.set('Ocurrió un error en la simulación estática: ' + err.message);
       }
-    }, 1500);
+    }, 2500);
   }
 
   private _generarRespuestaMock(modulo: IaModulo, payload?: any): RespuestaModuloDTO {
@@ -494,6 +496,57 @@ export class IaHubComponent implements OnInit, OnDestroy {
         ahorro_real: 85.00,
         gasto_real: 92.50
       },
+      'espejo-temporal': {
+        datosPresente: {
+          scoreActual: 42,
+          saldoActual: 85.00,
+          metasActivas: 1
+        },
+        proyeccionContinuidad: {
+          hitos3Meses: {
+            scoreProyectado: 38,
+            ahorroAcumulado: 30.00,
+            metasCumplidas: [],
+            metasFracasadas: ['Pichanga Semanal']
+          },
+          hitos6Meses: {
+            scoreProyectado: 35,
+            ahorroAcumulado: 50.00,
+            metasCumplidas: [],
+            metasFracasadas: ['Pichanga Semanal', 'Zapatillas de Futsal']
+          },
+          hitos12Meses: {
+            scoreProyectado: 30,
+            ahorroAcumulado: 100.00,
+            metasCumplidas: [],
+            metasFracasadas: ['Pichanga Semanal', 'Zapatillas de Futsal', 'Curso de Desarrollo Web']
+          }
+        },
+        proyeccionTransformacion: {
+          hitos3Meses: {
+            scoreProyectado: 65,
+            ahorroAcumulado: 450.00,
+            metasCumplidas: ['Pichanga Semanal'],
+            metasFracasadas: []
+          },
+          hitos6Meses: {
+            scoreProyectado: 78,
+            ahorroAcumulado: 950.00,
+            metasCumplidas: ['Pichanga Semanal', 'Zapatillas de Futsal'],
+            metasFracasadas: []
+          },
+          hitos12Meses: {
+            scoreProyectado: 85,
+            ahorroAcumulado: 1550.00,
+            metasCumplidas: ['Pichanga Semanal', 'Zapatillas de Futsal', 'Curso de Desarrollo Web'],
+            metasFracasadas: []
+          }
+        },
+        narrativasGemini: {
+          cartaContinuidad: 'Hola Paulo del futuro. Veo que sigues gastando en mototaxi en lugar de caminar esas pocas cuadras, y los "antojos" diarios se siguen consumiendo tu presupuesto. Hoy, después de un año, tu ahorro acumulado apenas llega a S/ 100. Tuviste que perderte la pichanga de los fines de semana varias veces porque no te alcanzaban los S/ 6 de la cuota, y tu meta de comprar las zapatillas de futsal y el Curso de Desarrollo Web siguen congeladas. Has continuado gastando en el corto plazo, y el mañana se ve idéntico al ayer.',
+          cartaTransformacion: 'Hola Paulo. Qué gran decisión tomaste al empezar a caminar, reduciendo esos gastos hormiga de transporte e impulsos diarios. Tras 12 meses de constancia, has acumulado S/ 1,550 en ahorros. No solo pagaste tu cuota de la pichanga sin preocupaciones y te compraste las zapatillas que querías, sino que lograste financiar tu Curso de Desarrollo Web e iniciar tu camino como programador. Este futuro alternativo brilla gracias al poder de tus pequeñas decisiones financieras.'
+        }
+      },
       'clasificar-transaccion': {
         descripcion: payload?.descripcion || 'Rappi Alimentos',
         monto: Number(payload?.monto) || 45.00,
@@ -513,6 +566,7 @@ export class IaHubComponent implements OnInit, OnDestroy {
       'reporte-completo': `Paulo, tu **Score LUKA es 78/100**. Has mantenido un crecimiento constante en tus ahorros desde el 1 de enero. Tu balance anual positivo de S/ 2,450.00 indica una gestión responsable, aunque detectamos un punto crítico en Marzo. Eres un 'Ahorrador Estratégico'. Tu gestión es superior al 80% de los usuarios de tu perfil. Mantén este ritmo y cerrarás el año con la solvencia necesaria para todas tus metas y estarás estrenando esa nueva laptop antes de lo previsto.`,
       'simular-meta': `¡Paulo, tu meta de la **'Laptop Gamer'** es **TOTALMENTE VIABLE** y estás más cerca de lo que crees! Con tu capacidad de ahorro actual de S/ 450.00 al mes y tu ahorro previo de S/ 500.00, en aproximadamente **6.5 meses** estarás estrenando equipo. Pero espera, he analizado tus finanzas y si logras optimizar solo un poco tus gastos de ocio, podrías subir ese aporte a S/ 550.00 y tenerla en solo 5 meses. ¡Imagina la potencia de ese procesador trabajando para ti medio año antes! Mantén el enfoque, cada sol ahorrado hoy es un frame más por segundo en tu nueva computadora. ¡Tú puedes!`,
       'reto-ahorro': '¡Misión: Operación Cocina en Casa! 🏆 Paulo, he detectado que tu \'Enemigo Final\' de esta semana son los Restaurantes. Tu misión, si decides aceptarla, es evitar comer fuera por los próximos 7 días. Si lo logras, habrás salvado **S/ 85.00** para tu fondo de la \'Laptop Gamer\'. ¿Aceptas el reto, Jugador 1?',
+      'espejo-temporal': 'Paulo, he aquí tus dos caminos. Si persistes en el gasto hormiga, tu laptop gamer seguirá siendo un sueño de S/ 100. Pero si eliges la transformación, te esperan S/ 1,550 en ahorros y tus metas cumplidas.',
       'clasificar-transaccion': `🏷️ **Clasificación sugerida:** Para "${payload?.descripcion || 'Rappi Alimentos'}" de S/. ${payload?.monto || 45.00}, Luka recomienda la categoría **"Alimentación"** con 95% de confianza.`
     };
 
@@ -607,6 +661,7 @@ export class IaHubComponent implements OnInit, OnDestroy {
       'reporte-completo': { valor: 720, etiqueta: 'Ahorro Neto este Mes', tendencia: 'ALZA', variacion_porcentaje: 25.4, unidad: 'S/.' },
       'simular-meta': { valor: Math.ceil((Number(payload?.monto_objetivo) || 3500) / (Number(payload?.aporte_mensual_deseado) || 350)), etiqueta: 'Meses Requeridos para la Meta', tendencia: 'ESTABLE', variacion_porcentaje: 0, unidad: 'meses' },
       'reto-ahorro': { valor: 85.00, etiqueta: 'Ahorro Estimado Total', tendencia: 'ALZA', variacion_porcentaje: 100, unidad: 'S/.' },
+      'espejo-temporal': { valor: 1450, etiqueta: 'Impacto Neto Proyectado a 12 Meses', tendencia: 'ALZA', variacion_porcentaje: 0, unidad: 'S/.' },
       'clasificar-transaccion': { valor: 95, etiqueta: 'Nivel de Confianza', tendencia: 'ALZA', variacion_porcentaje: 0, unidad: '%' }
     };
 

@@ -1,0 +1,31 @@
+<div class="consejo-container" [ngStyle]="{ '--cluster-color': currentCluster.color }">
+  <!-- Equalizer animation bars -->
+  <div class="equalizer-header">
+    <div class="eq-bars" [class.playing]="oraculoHablando">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </div>
+    <span class="coach-label">LUKA COACH IA</span>
+  </div>
+
+  <div class="neon-stage">
+    <div class="neon-backdrop"></div>
+    <div class="consejo-content">
+      <i class="fa-solid fa-quote-left quote-icon"></i>
+      <p class="typewriter-text">{{ textoMostrado() }}<span class="cursor" [class.blinking]="!oraculoHablando">|</span></p>
+    </div>
+  </div>
+
+  <div class="player-controls">
+    <div class="progress-bar">
+      <div class="progress-fill"></div>
+    </div>
+    <div class="time-labels">
+      <span>0:00</span>
+      <span>1:00</span>
+    </div>
+  </div>
+</div>

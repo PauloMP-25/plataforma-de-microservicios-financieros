@@ -1,0 +1,75 @@
+<div class="mirror-card" [ngClass]="'mirror-' + tipo">
+  <div class="mirror-glass-overlay"></div>
+  <div class="transformation-shine" *ngIf="tipo === 'transformacion'"></div>
+
+  <!-- Encabezado del Espejo -->
+  <div class="mirror-header">
+    <div class="mirror-icon" [class.animate-pulse]="tipo === 'transformacion'">
+      <i class="fa-solid" [ngClass]="tipo === 'transformacion' ? 'fa-wand-magic-sparkles' : 'fa-clock-rotate-left'"></i>
+    </div>
+    <div class="mirror-title-block">
+      <h3 class="mirror-title" [class.text-amber-400]="tipo === 'transformacion'">
+        {{ tipo === 'transformacion' ? 'Futuro de Transformación' : 'Futuro de Continuidad' }}
+      </h3>
+      <span class="mirror-subtitle" [class.text-amber-700]="tipo === 'transformacion'">
+        {{ tipo === 'transformacion' ? 'Si adoptas hábitos saludables' : 'Si continúas con tus hábitos actuales' }}
+      </span>
+    </div>
+  </div>
+
+  <!-- KPI Grid Corto -->
+  <div class="mirror-kpi-grid">
+    <div class="kpi-box" [class.box-premium]="tipo === 'transformacion'">
+      <span class="kpi-title" [class.text-emerald-400]="tipo === 'transformacion'">SCORE PROYECTADO</span>
+      <span class="kpi-value" [ngClass]="tipo === 'transformacion' ? 'score-good' : 'score-bad'">
+        {{ hitoData.scoreProyectado }}/100
+      </span>
+    </div>
+    <div class="kpi-box" [class.box-premium]="tipo === 'transformacion'">
+      <span class="kpi-title" [class.text-emerald-400]="tipo === 'transformacion'">AHORRO ESTIMADO</span>
+      <span class="kpi-value" [class.text-emerald-300]="tipo === 'transformacion'">
+        S/ {{ hitoData.ahorroAcumulado | number:'1.2-2' }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Estado de las Metas -->
+  <div class="mirror-goals-panel">
+    <h4 class="section-title">Impacto en Metas</h4>
+    
+    <!-- Metas Cumplidas -->
+    <div class="goals-list success-list">
+      <span class="list-label" [class.text-emerald-400]="tipo === 'transformacion'">Cumplidas:</span>
+      <div class="goals-tags">
+        <span class="goal-tag" [class.tag-success]="tipo === 'transformacion'" *ngFor="let meta of hitoData.metasCumplidas">
+          <i class="fa-solid fa-circle-check"></i> {{ meta }}
+        </span>
+        <span class="goal-tag-empty" *ngIf="hitoData.metasCumplidas.length === 0">
+          Ninguna meta alcanzable
+        </span>
+      </div>
+    </div>
+
+    <!-- Metas Fracasadas -->
+    <div class="goals-list failure-list">
+      <span class="list-label" [class.text-rose-400]="tipo === 'continuidad'">Fracasadas/Puestas en riesgo:</span>
+      <div class="goals-tags">
+        <span class="goal-tag tag-failed" *ngFor="let meta of hitoData.metasFracasadas">
+          <i class="fa-solid fa-circle-xmark"></i> {{ meta }}
+        </span>
+        <span class="goal-tag-empty" *ngIf="tipo === 'transformacion' && hitoData.metasFracasadas.length === 0">
+          <i class="fa-solid fa-shield-heart text-emerald-400"></i> Ninguna meta en riesgo
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Carta del Futuro (Narrativa) -->
+  <div class="mirror-letter-panel" [class.panel-premium]="tipo === 'transformacion'">
+    <div class="letter-badge" [class.text-amber-400]="tipo === 'transformacion'">
+      <i class="fa-solid" [ngClass]="tipo === 'transformacion' ? 'fa-circle-nodes' : 'fa-scroll'"></i>
+      {{ tipo === 'transformacion' ? 'Destello de Transformación' : 'El Espejo te habla' }}
+    </div>
+    <p class="letter-text" [class.text-slate-200]="tipo === 'transformacion'">{{ cartaText }}</p>
+  </div>
+</div>

@@ -69,10 +69,12 @@
       <app-ia-simular-meta *ngIf="moduloSeleccionado()?.id === 'simular-meta'" [resultado]="resultado()" [cargando]="cargando()"></app-ia-simular-meta>
       <app-ia-estilo-vida *ngIf="moduloSeleccionado()?.id === 'estilo-vida'" [resultado]="resultado()" [cargando]="cargando()"></app-ia-estilo-vida>
       <app-ia-reporte-anual *ngIf="moduloSeleccionado()?.id === 'reporte-completo'" [resultado]="resultado()" [cargando]="cargando()"></app-ia-reporte-anual>
+      <app-ia-espejo-temporal *ngIf="moduloSeleccionado()?.id === 'espejo-temporal'" [resultado]="resultado()" [cargando]="cargando()"></app-ia-espejo-temporal>
+      <app-ia-zona-entrenamiento *ngIf="moduloSeleccionado()?.id === 'zona-entrenamiento'"></app-ia-zona-entrenamiento>
 
       <!-- Vista genérica -->
       <app-ia-resultado
-        *ngIf="moduloSeleccionado()?.id !== 'gasto-hormiga' && moduloSeleccionado()?.id !== 'predecir-gastos' && moduloSeleccionado()?.id !== 'habitos-financieros' && moduloSeleccionado()?.id !== 'reto-ahorro' && moduloSeleccionado()?.id !== 'simular-meta' && moduloSeleccionado()?.id !== 'estilo-vida' && moduloSeleccionado()?.id !== 'reporte-completo'"
+        *ngIf="moduloSeleccionado()?.id !== 'gasto-hormiga' && moduloSeleccionado()?.id !== 'predecir-gastos' && moduloSeleccionado()?.id !== 'habitos-financieros' && moduloSeleccionado()?.id !== 'reto-ahorro' && moduloSeleccionado()?.id !== 'simular-meta' && moduloSeleccionado()?.id !== 'estilo-vida' && moduloSeleccionado()?.id !== 'reporte-completo' && moduloSeleccionado()?.id !== 'espejo-temporal' && moduloSeleccionado()?.id !== 'zona-entrenamiento'"
         [resultado]="resultado()"
         [cargando]="cargando()">
       </app-ia-resultado>

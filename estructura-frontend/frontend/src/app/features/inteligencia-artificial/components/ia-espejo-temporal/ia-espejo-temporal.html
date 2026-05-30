@@ -1,0 +1,58 @@
+<div class="espejo-container" *ngIf="!cargando">
+
+  <!-- Cabecera de Módulo -->
+  <div class="modulo-header">
+    <div class="modulo-badge">
+      <i class="fa-solid fa-mask text-amber-500"></i>
+      Módulo 5: El Espejo del Tiempo
+    </div>
+    <p class="modulo-lead">Una mirada profunda al impacto a largo plazo de tus decisiones diarias.</p>
+  </div>
+
+  <!-- Selector Temporal de Hitos -->
+  <div class="temporal-selector-bar">
+    <button 
+      class="btn-temp" 
+      [class.active]="hitoSeleccionado() === 3" 
+      (click)="setHito(3)">
+      <i class="fa-solid fa-calendar-minus"></i> 3 Meses
+    </button>
+    <button 
+      class="btn-temp" 
+      [class.active]="hitoSeleccionado() === 6" 
+      (click)="setHito(6)">
+      <i class="fa-solid fa-calendar-days"></i> 6 Meses
+    </button>
+    <button 
+      class="btn-temp" 
+      [class.active]="hitoSeleccionado() === 12" 
+      (click)="setHito(12)">
+      <i class="fa-solid fa-calendar-check"></i> 12 Meses
+    </button>
+  </div>
+
+  <!-- SECCIÓN A: CONTADOR CENTRAL DE IMPACTO -->
+  <app-ia-espejo-impact
+    [diferencia]="diferenciaNeta()">
+  </app-ia-espejo-impact>
+
+  <!-- SECCIÓN B: DÍPTICO DE ESPEJOS -->
+  <div class="split-mirrors-layout">
+    
+    <!-- Espejo Izquierdo: Futuro de Continuidad -->
+    <app-ia-espejo-card
+      tipo="continuidad"
+      [hitoData]="getHitoData('continuidad')"
+      [cartaText]="espejoData().narrativasGemini.cartaContinuidad">
+    </app-ia-espejo-card>
+
+    <!-- Espejo Derecho: Futuro de Transformación -->
+    <app-ia-espejo-card
+      tipo="transformacion"
+      [hitoData]="getHitoData('transformacion')"
+      [cartaText]="espejoData().narrativasGemini.cartaTransformacion">
+    </app-ia-espejo-card>
+
+  </div>
+
+</div>
