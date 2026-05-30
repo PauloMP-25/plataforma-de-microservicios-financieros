@@ -44,10 +44,9 @@
   position: relative;
   z-index: 1;
 
-  &.sidebar-collapsed,
-  &.collapsed {
-    margin-left: var(--sidebar-w-col);
-  }
+&.sidebar-collapsed,
+&.collapsed {
+  margin-left: var(--sidebar-w-col, 80px);
 }
 
 .luka-content {

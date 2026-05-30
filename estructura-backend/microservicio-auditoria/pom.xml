@@ -53,12 +53,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-amqp</artifactId>
         </dependency>
-        <!--STARTER-NETFLIX-EUREKA-CLIENT:
-        Cliente para el registro y descubrimiento de servicios con Eureka.-->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-        </dependency>
         <!--STARTER-DATA-JPA:
         Abstracción para el acceso a datos y persistencia con Hibernate.-->
         <dependency>

@@ -1,0 +1,21 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/db_luka_usuario
+    username: postgres
+    password: adminUTP
+  jpa:
+    hibernate:
+      ddl-auto: update
+  data:
+    redis:
+      repositories:
+        enabled: false
+  cache:
+    type: none
+
+eureka:
+  client:
+    enabled: false

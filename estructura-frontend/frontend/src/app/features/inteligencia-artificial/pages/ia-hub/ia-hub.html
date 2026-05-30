@@ -1,0 +1,91 @@
+<div class="hub-container cyber-theme">
+  <app-ia-hub-header [moduloActivo]="moduloSeleccionado()"></app-ia-hub-header>
+
+  <!-- Vista 1: Panel General -->
+  <div class="vista-general-ia" *ngIf="!moduloSeleccionado()">
+    
+    <app-ia-hub-controls
+      [tabs]="tabs"
+      [tabActiva]="tabActiva()"
+      [tabIcons]="tabIcons"
+      (tabChange)="cambiarTab($event)">
+    </app-ia-hub-controls>
+
+    <!-- Sub-vista A: Bento Box Grid -->
+    <div class="vista-bento-modulos">
+      <div class="bento-grid">
+        <div class="bento-node {{mod.bentoClass}}" *ngFor="let mod of modulosFiltrados()">
+          <app-ia-modulo-card
+            [modulo]="mod"
+            (seleccionar)="seleccionarModulo(mod)">
+          </app-ia-modulo-card>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Vista 2: Consola de Trabajo (Módulo Activo) -->
+  <div class="vista-consola" *ngIf="moduloSeleccionado() as mod">
+    
+    <!-- Barra de navegación / retroceso -->
+    <div class="console-nav cyber-nav">
+      <button class="btn-back cyber-btn-back" (click)="deseleccionarModulo()">
+        <i class="fa-solid fa-arrow-left"></i> DESCONECTAR TERMINAL
+      </button>
+      <span class="location-trail">
+        SYS.IA <span class="divider">/</span> {{ mod.label | uppercase }}
+      </span>
+    </div>
+
+    <!-- Banner de Error si falla -->
+    <div class="error-banner cyber-error" *ngIf="errorMsg()">
+      <div class="error-icon">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <div class="error-content">
+        <h4>FALLO DE CONEXIÓN NEURONAL</h4>
+        <p>{{ errorMsg() }}</p>
+      </div>
+    </div>
+
+    <!-- Barra de Filtros Horizontal -->
+    <div class="horizontal-filters-container">
+      <app-ia-panel-activo
+        [modulo]="mod"
+        [cargando]="cargando()"
+        [tieneResultado]="!!resultado()"
+        (ejecutar)="ejecutarAnalisis($event)">
+      </app-ia-panel-activo>
+    </div>
+
+    <!-- Contenedor de Resultados a Ancho Completo -->
+    <div class="console-results-fullwidth">
+      <!-- Módulos Específicos -->
+      <app-ia-gasto-hormiga *ngIf="moduloSeleccionado()?.id === 'gasto-hormiga'" [resultado]="resultado()" [cargando]="cargando()"></app-ia-gasto-hormiga>
+      <app-ia-prediccion-gastos *ngIf="moduloSeleccionado()?.id === 'predecir-gastos'" [resultado]="resultado()" [cargando]="cargando()"></app-ia-prediccion-gastos>
+      <app-ia-habitos-financieros *ngIf="moduloSeleccionado()?.id === 'habitos-financieros'" [resultado]="resultado()" [cargando]="cargando()"></app-ia-habitos-financieros>
+      <app-ia-reto-ahorro *ngIf="moduloSeleccionado()?.id === 'reto-ahorro'" [resultado]="resultado()" [cargando]="cargando()"></app-ia-reto-ahorro>
+      <app-ia-simular-meta *ngIf="moduloSeleccionado()?.id === 'simular-meta'" [resultado]="resultado()" [cargando]="cargando()"></app-ia-simular-meta>
+      <app-ia-estilo-vida *ngIf="moduloSeleccionado()?.id === 'estilo-vida'" [resultado]="resultado()" [cargando]="cargando()"></app-ia-estilo-vida>
+      <app-ia-reporte-anual *ngIf="moduloSeleccionado()?.id === 'reporte-completo'" [resultado]="resultado()" [cargando]="cargando()"></app-ia-reporte-anual>
+
+      <!-- Vista genérica -->
+      <app-ia-resultado
+        *ngIf="moduloSeleccionado()?.id !== 'gasto-hormiga' && moduloSeleccionado()?.id !== 'predecir-gastos' && moduloSeleccionado()?.id !== 'habitos-financieros' && moduloSeleccionado()?.id !== 'reto-ahorro' && moduloSeleccionado()?.id !== 'simular-meta' && moduloSeleccionado()?.id !== 'estilo-vida' && moduloSeleccionado()?.id !== 'reporte-completo'"
+        [resultado]="resultado()"
+        [cargando]="cargando()">
+      </app-ia-resultado>
+    </div>
+  </div>
+</div>
+
+<!-- Transición de inmersión limpia -->
+<div class="immersion-transition-overlay" [class.active]="transicionActiva()">
+  <div class="immersion-glow"></div>
+  <div class="immersion-hud">
+    <div class="warp-loader"></div>
+    <div class="warp-label">ESTABLECIENDO CONEXIÓN NEURONAL</div>
+    <div class="warp-sub">Cargando módulo de inteligencia artificial...</div>
+  </div>
+</div>

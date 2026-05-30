@@ -1,0 +1,77 @@
+<!-- =============================================
+     LUKA — IA Panel: Bloque completo autocontenido
+     Diseñado para insertarse en sidebar.html sin tocar nada más
+     ============================================= -->
+
+<!-- ── BOTÓN DISPARADOR DEL PANEL IA ── -->
+<div class="ia-trigger" (click)="togglePanel()" [class.ia-trigger--active]="panelAbierto()" [class.ia-trigger--collapsed]="!expanded">
+  <div class="ia-trigger-left">
+    <div class="ia-orb">
+      <i class="fa-solid fa-microchip-ai"></i>
+    </div>
+    <div class="ia-trigger-info" *ngIf="expanded">
+      <span class="ia-trigger-label">Inteligencia Artificial</span>
+      <span class="ia-trigger-sub">{{ IA_MODULOS_COUNT }} módulos · Gemini Pro</span>
+    </div>
+  </div>
+  <i *ngIf="expanded"
+     class="fa-solid ia-chevron"
+     [class.fa-chevron-down]="!panelAbierto()"
+     [class.fa-chevron-up]="panelAbierto()">
+  </i>
+</div>
+
+<!-- ── PANEL DESPLEGABLE ── -->
+<div class="ia-panel" [class.ia-panel--open]="panelAbierto()">
+
+  <!-- Cabecera del panel -->
+  <div class="ia-panel-header">
+    <div class="ia-panel-title-row">
+      <span class="ia-panel-title">
+        <i class="fa-solid fa-sparkles"></i> Centro de IA
+      </span>
+      <span class="ia-badge-gemini">Gemini Pro</span>
+    </div>
+    <p class="ia-panel-desc">
+      El cerebro de Luka. Analiza tus finanzas en tiempo real con IA generativa.
+    </p>
+  </div>
+
+  <!-- Tabs de filtro -->
+  <div class="ia-tabs">
+    <button
+      *ngFor="let tab of tabs"
+      class="ia-tab"
+      [class.ia-tab--active]="tabActiva() === tab"
+      (click)="cambiarTab(tab)"
+    >
+      <i [className]="tabIcons[tab]"></i>
+      <span>{{ tab }}</span>
+      <span class="ia-tab-count">{{ conteoPor(tab) }}</span>
+    </button>
+  </div>
+
+  <!-- Lista de módulos -->
+  <div class="ia-modulos-list">
+    <button
+      *ngFor="let m of modulosFiltrados()"
+      class="ia-modulo-card"
+      (click)="abrirModulo(m)"
+    >
+      <div class="ia-modulo-icon" [style.color]="m.tagColor">
+        <i [className]="m.icon"></i>
+      </div>
+      <div class="ia-modulo-body">
+        <span class="ia-modulo-nombre">{{ m.label }}</span>
+        <span class="ia-modulo-desc">{{ m.descripcion }}</span>
+      </div>
+    </button>
+  </div>
+
+  <!-- Footer del panel -->
+  <div class="ia-panel-footer">
+    <i class="fa-solid fa-shield-check"></i>
+    <span>Análisis con caché Redis · Auditoría AMQP</span>
+  </div>
+
+</div>

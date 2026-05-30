@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { NavigationEnd } from '@angular/router';
 
+
 // TODO: reemplazar con MascotaService.getMensajeDiario()
 const MASCOT_MSGS = [
   '¡Hola! 🌿 Registra tus gastos hoy y mantén tu racha.',

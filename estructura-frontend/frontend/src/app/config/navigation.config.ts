@@ -37,9 +37,9 @@ export const NAV_ITEMS: NavItem[] = [
     icon:  'fa-solid fa-wallet'
   },
   {
-    label: 'Perfil',
-    route: '/perfil',
-    icon:  'fa-solid fa-circle-user'
+    label: 'Inteligencia Artificial',
+    route: '/inteligencia-artificial',
+    icon:  'fa-solid fa-robot'
   },
 ];
 

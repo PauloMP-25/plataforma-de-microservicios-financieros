@@ -29,7 +29,6 @@ class Configuracion(BaseSettings):
     # Configuracion de la App
     # ══════════════════════════════════════════════════════════════════════════
     nombre_app: str = "Microservicio IA Financiera - LUKA"
-    id_app_eureka: str = "microservicio-ia"
     version_app: str = "4.0.0"
     puerto: int = Field(default=8086, ge=1024, le=65535)
     entorno: str = "desarrollo"
@@ -44,25 +43,6 @@ class Configuracion(BaseSettings):
 
     jwt_algoritmo: str = "HS256"
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # DESCUBRIMIENTO DE SERVICIOS (EUREKA)
-    # Usa la misma variable EUREKA_CLIENT_ENABLED que los microservicios Java
-    # ══════════════════════════════════════════════════════════════════════════
-    eureka_servidor_url: str = Field(
-        default="http://localhost:8761/eureka",
-        validation_alias="EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE",
-        description="URL del servidor Eureka (compartida con ms Java).",
-    )
-    eureka_instancia_host: str = Field(
-        default="microservicio-ia",
-        validation_alias="EUREKA_INSTANCE_HOSTNAME",
-    )
-    eureka_instancia_puerto: int = Field(default=8086, ge=1024, le=65535)
-    eureka_enable: bool = Field(
-        default=False,
-        validation_alias="EUREKA_CLIENT_ENABLED",
-        description="Habilita/deshabilita Eureka. Usar False en Render.",
-    )
     # ══════════════════════════════════════════════════════════════════════════
     # URLs DE MICROSERVICIOS JAVA
     # Usa las mismas variables URL_PROD_* que el API Gateway y los FeignClients
@@ -375,12 +355,7 @@ class Configuracion(BaseSettings):
                     # En caso de error de parseo, se mantienen los valores leídos individualmente
                     pass
         return self
-        # ── Propiedades calculadas ────────────────────────────────────────────────
- 
-    @property
-    def nombre_eureka_mayusculas(self) -> str:
-        """ID del servicio en mayúsculas para el dashboard de Eureka."""
-        return self.id_app_eureka.upper()
+    # ── Propiedades calculadas ────────────────────────────────────────────────
  
     @property
     def suma_porcentajes_regla(self) -> float:

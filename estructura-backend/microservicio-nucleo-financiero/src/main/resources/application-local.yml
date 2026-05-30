@@ -1,0 +1,21 @@
+server:
+  port: 8085
+
+spring:
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5432/db_luka_financiero
+    username: postgres
+    password: adminUTP
+  jpa:
+    hibernate:
+      ddl-auto: update
+  data:
+    redis:
+      repositories:
+        enabled: false
+  cache:
+    type: none
+
+eureka:
+  client:
+    enabled: false

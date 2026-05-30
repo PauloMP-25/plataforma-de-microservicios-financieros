@@ -1,0 +1,161 @@
+server:
+  port: 8090
+
+spring:
+  config:
+    import: optional:file:../../.env[.properties]
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      httpclient:
+        connect-timeout: 30000
+        response-timeout: 60s
+      discovery:
+        locator:
+          enabled: false
+
+      routes:
+        - id: servicio-usuario-docs
+          uri: http://localhost:8081
+          predicates:
+            - Path=/microservicio-usuario/v3/api-docs/**
+          filters:
+            - RewritePath=/microservicio-usuario/(?<remaining>.*), /${remaining}
+          metadata:
+            requiere-autenticacion: false
+
+        - id: servicio-usuario-auth
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/v1/auth/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: usuarioCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: false
+
+        - id: usuario-protegido
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/v1/auth/cambiar-password
+            - Path=/api/v1/auth/mi-cuenta
+            - Path=/api/v1/auth/logout
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: usuarioCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: true
+
+        - id: servicio-suscripciones
+          uri: http://localhost:8088
+          predicates:
+            - Path=/api/v1/suscripciones/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: suscripcionCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: true
+
+        - id: servicio-nucleo-financiero
+          uri: http://localhost:8085
+          predicates:
+            - Path=/api/v1/financiero/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: financieroCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: true
+
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:3000"
+              - "http://localhost:5173"
+              - ${FRONTEND_URL:http://localhost:3000}
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+              - PATCH
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+            maxAge: 3600
+
+eureka:
+  client:
+    enabled: false
+
+app:
+  security:
+    jwt:
+      secret-key: ${JWT_SECRET_KEY:}
+    rutas-publicas: "/auth/,/api/v1/mensajeria/otp/,/api/v1/pagos/webhook,/v3/api-docs,/swagger-ui,/actuator/,/error/,/interno/,/api/v1/clientes/perfil/inicial"
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    org.springframework.security: WARN
+    root: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, gateway
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 10
+        permitted-number-of-calls-in-half-open-state: 3
+        wait-duration-in-open-state: 5s
+        failure-rate-threshold: 50
+        event-consumer-buffer-size: 10
+    instances:
+      usuarioCB:
+        base-config: default
+      suscripcionCB:
+        base-config: default
+      financieroCB:
+        base-config: default
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 15s
+    instances:
+      usuarioCB:
+        base-config: default
+      suscripcionCB:
+        base-config: default
+      financieroCB:
+        base-config: default
