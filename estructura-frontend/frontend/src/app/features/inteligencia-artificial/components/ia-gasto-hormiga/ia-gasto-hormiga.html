@@ -1,0 +1,267 @@
+<!-- ==========================================================================
+     LUKA APP — Módulo Gasto Hormiga: "El Detective Financiero"
+     Tablero de Crímenes Financieros (Crime Board)
+     ========================================================================== -->
+
+<div class="detective-board" [class.alerta-critica]="esAlertaCritica()">
+
+  <!-- ═══════════════════════ ESTADO: CARGANDO ═══════════════════════ -->
+  <div class="scanner-overlay" *ngIf="cargando">
+    <div class="scanner-content">
+      <div class="scanner-lupa">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <div class="scan-line"></div>
+      </div>
+      <div class="scanner-particles">
+        <span *ngFor="let p of [1,2,3,4,5,6]" class="particle" [style.--i]="p"></span>
+      </div>
+      <p class="scanner-text">Escaneando transacciones sospechosas...</p>
+      <div class="scanner-progress">
+        <div class="scanner-progress-bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ ESTADO: SIN HORMIGAS ═══════════════════ -->
+  <div class="caso-cerrado" *ngIf="!cargando && resultado && !hayHormigas()">
+    <div class="sello-cerrado">
+      <div class="sello-borde">
+        <i class="fa-solid fa-shield-check"></i>
+        <h2>CASO CERRADO</h2>
+        <p>Sin Culpables Detectados</p>
+      </div>
+    </div>
+    <p class="cerrado-desc">
+      ¡Excelente! No se detectaron gastos hormiga significativos en este periodo.
+      Tu disciplina financiera es impecable, detective. 🎉
+    </p>
+  </div>
+
+  <!-- ═══════════════════ ESTADO: CON RESULTADOS ═══════════════════ -->
+  <div class="crime-board-layout" *ngIf="!cargando && resultado && hayHormigas()">
+
+    <!-- Título del tablero -->
+    <div class="mock-test-panel" style="display:flex; gap:8px; margin-bottom: 16px;">
+      <span style="font-size:0.8rem; color:#f59e0b; align-self:center; font-weight:bold;">Test Mock:</span>
+      <button (click)="cargarMock(0)" style="background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.4); color:#f59e0b; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:0.75rem;">0 Casos</button>
+      <button (click)="cargarMock(1)" style="background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.4); color:#f59e0b; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:0.75rem;">1 Caso</button>
+      <button (click)="cargarMock(2)" style="background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.4); color:#f59e0b; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:0.75rem;">2 Casos</button>
+      <button (click)="cargarMock(3)" style="background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.4); color:#f59e0b; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:0.75rem;">3 Casos</button>
+      <button (click)="cargarMock(5)" style="background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.4); color:#f59e0b; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:0.75rem;">5 Casos</button>
+    </div>
+
+    <!-- ══════════ CONSEJO DEL COACH IA (Arriba) ══════════ -->
+    <div class="consejo-detective" *ngIf="consejoVisible()">
+      <div class="consejo-avatar">
+        <i class="fa-solid fa-user-secret"></i>
+      </div>
+      <div class="consejo-content">
+        <span class="consejo-label">
+          <i class="fa-solid fa-message-dots"></i>
+          Informe del Coach Financiero
+        </span>
+        <div class="consejo-texto html-consejo" [innerHTML]="consejoHtml()"></div>
+      </div>
+    </div>
+
+    <div class="board-header">
+      <div class="board-title-row">
+        <div class="board-badge">
+          <i class="fa-solid fa-user-secret"></i>
+        </div>
+        <div>
+          <h2 class="board-title">Tablero de Crímenes Financieros</h2>
+          <p class="board-subtitle">
+            <span class="badge-count">{{ sospechosos().length }}</span>
+            sospechoso{{ sospechosos().length > 1 ? 's' : '' }} identificado{{ sospechosos().length > 1 ? 's' : '' }}
+          </p>
+        </div>
+      </div>
+      <div class="tendencia-badge" [ngClass]="getTendenciaClase()">
+        <i class="fa-solid"
+           [ngClass]="variacion() > 0 ? 'fa-arrow-trend-up' : variacion() < 0 ? 'fa-arrow-trend-down' : 'fa-minus'"></i>
+        <span>{{ getTendenciaTexto() }}</span>
+      </div>
+    </div>
+
+    <!-- ══════════ DOS ZONAS PRINCIPALES ══════════ -->
+    <div class="board-zones">
+
+      <!-- ZONA IZQUIERDA — "Los Sospechosos" -->
+      <div class="zona-sospechosos">
+        <div class="zona-header">
+          <i class="fa-solid fa-fingerprint"></i>
+          <h3>Los Sospechosos</h3>
+        </div>
+
+        <div class="fichas-container">
+          <!-- Estado vacío (0 casos) -->
+          <div class="estado-vacio-card" *ngIf="sospechosos().length === 0">
+            <div class="vacio-icon">
+              <i class="fa-solid fa-shield-check"></i>
+            </div>
+            <h4>¡Todo en orden!</h4>
+            <p>¡Felicidades! No he encontrado gastos hormiga. Tus finanzas están en perfecto estado. Sigue manteniendo tus buenos hábitos financieros.</p>
+          </div>
+
+          <div
+            *ngFor="let s of sospechosos(); let i = index"
+            class="ficha-policial"
+            [style.transform]="'rotate(' + s.rotacion + 'deg)'"
+            [style.animation-delay]="s.delay + 'ms'"
+            [class.ficha-hover]="cardHoveredIndex() === i"
+            (mouseenter)="onCardHover(i)"
+            (mouseleave)="onCardLeave()"
+          >
+            <!-- Pin de corcho -->
+            <div class="pin-corcho"></div>
+
+            <!-- Mugshot del icono -->
+            <div class="ficha-mugshot">
+              <i [className]="getIconoCategoria(s.categoria)"></i>
+            </div>
+
+            <!-- Datos policiales -->
+            <div class="ficha-datos">
+              <span class="ficha-categoria">{{ s.categoria }}</span>
+              <h4 class="ficha-nombre">{{ s.descripcion }}</h4>
+              <div class="ficha-stat">
+                <i class="fa-solid fa-repeat"></i>
+                <span>{{ s.frecuencia }}</span>
+              </div>
+              <div class="ficha-stat" *ngIf="s.promedio_por_compra">
+                <i class="fa-solid fa-receipt"></i>
+                <span>S/. {{ s.promedio_por_compra?.toFixed(2) }} prom.</span>
+              </div>
+              <div class="ficha-stat" *ngIf="s.dia_mayor_gasto && s.dia_mayor_gasto !== 'N/A'">
+                <i class="fa-solid fa-calendar-day"></i>
+                <span>Pico: {{ s.dia_mayor_gasto }}</span>
+              </div>
+              <div class="ficha-stat peligro-stat" *ngIf="s.nivelPeligro">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span [ngClass]="'badge-' + s.nivelPeligro?.toLowerCase()">Peligro: <strong>{{ s.nivelPeligro }}</strong></span>
+              </div>
+              <div class="ficha-stat alternativa-stat" *ngIf="s.alternativa">
+                <i class="fa-solid fa-lightbulb"></i>
+                <span>Sugerencia: <em>{{ s.alternativa }}</em></span>
+              </div>
+            </div>
+
+            <!-- Monto rojo de "evidencia" -->
+            <div class="ficha-monto">
+              <span class="monto-label">MONTO MENSUAL</span>
+              <span class="monto-valor">S/. {{ s.total.toFixed(2) }}</span>
+            </div>
+
+            <!-- Hilo rojo SVG animado (solo en hover) -->
+            <svg class="hilo-rojo" *ngIf="cardHoveredIndex() === i" viewBox="0 0 100 20" preserveAspectRatio="none">
+              <path d="M0,10 Q25,0 50,10 T100,10" stroke="#ef4444" stroke-width="1.5" fill="none"
+                    stroke-dasharray="200" class="hilo-path"/>
+            </svg>
+          </div>
+        </div>
+      </div> <!-- Cierre de zona-sospechosos -->
+
+      <!-- Separador Visual Central -->
+      <div class="board-divider"></div>
+
+      <!-- ZONA DERECHA — "El Impacto" -->
+      <div class="zona-impacto">
+        <div class="zona-header">
+          <i class="fa-solid fa-crosshairs"></i>
+          <h3>El Impacto</h3>
+        </div>
+
+        <!-- Top Row: Reloj y Principal Sospechoso juntos -->
+        <div class="impacto-top-row">
+          <!-- Reloj Analógico -->
+          <div class="reloj-container">
+            <div class="reloj-face">
+              <!-- Marcas de horas -->
+              <span *ngFor="let h of [1,2,3,4,5,6,7,8,9,10,11,12]"
+                    class="reloj-marca"
+                    [style.transform]="'rotate(' + (h * 30) + 'deg)'">
+              </span>
+              <!-- Manecilla de horas -->
+              <div class="manecilla manecilla-horas"
+                   [style.animation-duration]="velocidadReloj() === 0 ? '0s' : (velocidadReloj() * 12) + 's'"
+                   [style.animation-play-state]="velocidadReloj() === 0 ? 'paused' : 'running'"></div>
+              <!-- Manecilla de minutos -->
+              <div class="manecilla manecilla-minutos"
+                   [style.animation-duration]="velocidadReloj() === 0 ? '0s' : velocidadReloj() + 's'"
+                   [style.animation-play-state]="velocidadReloj() === 0 ? 'paused' : 'running'"></div>
+              <!-- Centro del reloj -->
+              <div class="reloj-centro">
+                <i class="fa-solid fa-dollar-sign"></i>
+              </div>
+            </div>
+            <p class="reloj-caption">
+              {{ relojCaption() }}
+            </p>
+          </div>
+
+          <!-- Principal Sospechoso Destacado -->
+          <div class="principal-sospechoso-card">
+            <div class="sospechoso-badge">
+              <i class="fa-solid fa-trophy"></i>
+              <span>SOSPECHOSO #1</span>
+            </div>
+            <h4 class="sospechoso-nombre">{{ principalSospechoso() }}</h4>
+          </div>
+        </div>
+
+        <!-- Odómetro de Fuga Mensual -->
+        <div class="odometro-card">
+          <span class="odometro-label">FUGA MENSUAL DETECTADA</span>
+          <div class="odometro-display">
+            <span class="odometro-moneda">S/.</span>
+            <span class="odometro-valor" #odometroValor>{{ odometroDisplay() }}</span>
+          </div>
+          <div class="odometro-sub">
+            <span class="odometro-anual">
+              <i class="fa-solid fa-calendar-xmark"></i>
+              Proyección Anual: <strong>S/. {{ proyeccionAnual().toFixed(2) }}</strong>
+            </span>
+          </div>
+          <div class="odometro-porcentaje" [class.porcentaje-critico]="esAlertaCritica()">
+            <div class="porcentaje-bar">
+              <div class="porcentaje-fill" [style.width.%]="porcentajeFuga()"></div>
+            </div>
+            <span>{{ porcentajeFuga() }}% de tu ingreso mensual</span>
+          </div>
+        </div>
+
+        <!-- Impacto a Largo Plazo (Para llenar espacio en pantallas grandes) -->
+        <div class="proyeccion-card" *ngIf="sospechosos().length > 2">
+          <div class="proyeccion-header">
+            <i class="fa-solid fa-chart-line"></i>
+            <h4>Impacto a Largo Plazo</h4>
+          </div>
+          <div class="proyeccion-stats">
+            <div class="proy-stat">
+              <span class="proy-label">En los próximos 3 meses:</span>
+              <strong class="proy-danger">S/. {{ (proyeccionAnual() / 4).toFixed(2) }}</strong>
+            </div>
+            <div class="proy-stat">
+              <span class="proy-label">A lo largo de todo un año:</span>
+              <strong class="proy-danger">S/. {{ proyeccionAnual().toFixed(2) }}</strong>
+            </div>
+          </div>
+          <div class="proyeccion-footer">
+            <i class="fa-solid fa-lightbulb"></i>
+            <span>Dinero que podrías estar invirtiendo.</span>
+          </div>
+        </div>
+
+        <!-- Alerta Máxima (Solo para 5 casos) -->
+        <div class="alerta-maxima-card" *ngIf="sospechosos().length === 5">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <div class="alerta-text">
+            <h4>Alerta Máxima</h4>
+            <p>Tienes múltiples focos de fuga de dinero. Es urgente tomar el control para no afectar gravemente tus finanzas.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

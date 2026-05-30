@@ -32,6 +32,10 @@ export class ClientePerfilService {
     return this.http.put<RespuestaDatosPersonales>(`${this.basePerfil}/${usuarioId}`, payload);
   }
 
+  eliminarCuenta(usuarioId: string): Observable<void> {
+    return this.http.delete<void>(`${this.basePerfil}/${usuarioId}`);
+  }
+
   consultarPerfilFinanciero(usuarioId: string): Observable<RespuestaPerfilFinanciero> {
     return this.http.get<RespuestaPerfilFinanciero>(`${this.basePerfilFinanciero}/${usuarioId}`);
   }
