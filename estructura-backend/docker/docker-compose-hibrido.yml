@@ -77,6 +77,9 @@ services:
       SPRING_REDIS_PASSWORD: ${REDIS_PASSWORD}
       SPRING_DATA_REDIS_SSL_ENABLED: "false"
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+    depends_on:
+      - redis
+      - rabbitmq
     deploy:
       resources:
         limits:
@@ -147,6 +150,9 @@ services:
       DB_USUARIO: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NOMBRE: db_microservicio_ia
+    depends_on:
+      - redis
+      - rabbitmq
     deploy:
       resources:
         limits:
@@ -223,7 +229,11 @@ services:
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       REDIS_SSL_ENABLED: "false"
+      # Forzamos apagar el SSL del application-docker.yml inyectando la propiedad de Spring
+      SPRING_DATA_REDIS_SSL_ENABLED: "false"
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+    depends_on:
+      - redis
     deploy:
       resources:
         limits:
