@@ -1,10 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { IngresoFormComponent } from '../../components/ingreso-form/ingreso-form';
 import { IngresoPreviewComponent } from '../../components/ingreso-preview/ingreso-preview';
 import { IngresoRecentListComponent } from '../../components/ingreso-recent-list/ingreso-recent-list';
 import { IngresosMockService } from '../../services/ingresos-mock.service';
+import { IngresosStateService } from '../../../../core/services/ingresos-state.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { Transacciones } from '../../../../core/services/transacciones';
+import { AppEventBus } from '../../../../core/services/app-event-bus.service';
+import { TransaccionRequestDTO } from '../../../../core/models/financiero/transaccion.model';
 import { DistribucionCategoria, IngresoFormData, IngresoReciente, OptionItem } from '../../types/ingresos.interfaces';
 
 @Component({
@@ -15,14 +20,23 @@ import { DistribucionCategoria, IngresoFormData, IngresoReciente, OptionItem } f
   styleUrl: './nuevo-ingreso-page.scss',
 })
 export class NuevoIngresoPage {
-  categorias: OptionItem[] = [];
-  metodos: OptionItem[] = [];
-  distribucion: DistribucionCategoria[] = [];
-  recientes: IngresoReciente[] = [];
+  private readonly stateService = inject(IngresosStateService);
+  private readonly authService = inject(AuthService);
+  private readonly transaccionesService = inject(Transacciones);
+  private readonly eventBus = inject(AppEventBus);
+  private readonly mock = inject(IngresosMockService);
+  private readonly router = inject(Router);
+
+  readonly metodos: OptionItem[] = [
+    { label: 'Efectivo', value: 'EFECTIVO' },
+    { label: 'Tarjeta', value: 'TARJETA' },
+    { label: 'Transferencia', value: 'TRANSFERENCIA' },
+    { label: 'Digital (Yape/Plin)', value: 'DIGITAL' },
+  ];
 
   form: IngresoFormData = {
     monto: 1500,
-    fechaTransaccion: '31/05/2025',
+    fechaTransaccion: new Date().toLocaleDateString('es-PE'), // dd/mm/yyyy
     descripcion: 'Pago mensual de la empresa ABC',
     categoria: 'Salario',
     metodoPago: 'TRANSFERENCIA',
@@ -31,27 +45,140 @@ export class NuevoIngresoPage {
 
   sugerencia = { categoria: 'Salario', confianza: 0.98 };
 
-  constructor(private mock: IngresosMockService, private router: Router) {
-    this.mock.getCategorias().subscribe(v => (this.categorias = v));
-    this.mock.getMetodosPago().subscribe(v => (this.metodos = v));
-    this.mock.getDistribucion().subscribe(v => (this.distribucion = v));
-    this.mock.getRecientes(5).subscribe(v => (this.recientes = v));
+  // ── Signals computados para enlazar al estado real ──
+  readonly categoriasSignal = computed<OptionItem[]>(() => {
+    const cats = this.stateService.categorias();
+    if (cats.length > 0) {
+      // Si la categoría por defecto es 'Salario', la mapeamos al UUID correspondiente una vez cargado
+      const match = cats.find(c => c.nombre.toLowerCase() === 'salario');
+      if (match && this.form.categoria === 'Salario') {
+        this.form.categoria = match.id;
+      }
+      return cats.map(c => ({ label: c.nombre, value: c.id }));
+    }
+    return [
+      { label: 'Salario', value: 'salario' },
+      { label: 'Freelance', value: 'freelance' },
+      { label: 'Inversiones', value: 'inversion' },
+      { label: 'Ventas', value: 'venta' },
+      { label: 'Otros Ingresos', value: 'otros' },
+    ];
+  });
+
+  readonly distribucionSignal = computed<DistribucionCategoria[]>(() => {
+    const transacciones = this.stateService.ingresos();
+    if (!transacciones.length) return [];
+    const map = new Map<string, number>();
+    let total = 0;
+    for (const t of transacciones) {
+      const cat = t.categoriaNombre || 'Otros';
+      const m = t.monto || 0;
+      map.set(cat, (map.get(cat) ?? 0) + m);
+      total += m;
+    }
+    const colores = ['#22c55e', '#7c3aed', '#f59e0b', '#06b6d4', '#ec4899', '#64748b'];
+    return Array.from(map.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([categoria, monto], idx) => ({
+        categoria,
+        monto,
+        porcentaje: total > 0 ? (monto / total) * 100 : 0,
+        color: colores[idx % colores.length]
+      }));
+  });
+
+  readonly recientesSignal = computed<IngresoReciente[]>(() => {
+    const transacciones = this.stateService.ingresos();
+    return transacciones.slice(0, 5).map(t => {
+      const fecha = new Date(t.fechaTransaccion);
+      return {
+        categoria: t.categoriaNombre || 'Otros',
+        descripcion: t.descripcion || t.notas || 'Ingreso registrado',
+        monto: t.monto || 0,
+        fecha: fecha.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
+      };
+    });
+  });
+
+  // Getters para mantener bindings de la plantilla HTML
+  get categorias(): OptionItem[] { return this.categoriasSignal(); }
+  get distribucion(): DistribucionCategoria[] { return this.distribucionSignal(); }
+  get recientes(): IngresoReciente[] { return this.recientesSignal(); }
+
+  constructor() {
+    this.stateService.cargarDatos();
   }
 
   onDescripcionChange(): void {
+    // Mantener la sugerencia basada en IA usando el mock (que simula el clasificador)
     this.mock.sugerirCategoria(this.form.descripcion).subscribe(v => (this.sugerencia = v));
   }
 
   usarSugerencia(): void {
-    this.form.categoria = this.sugerencia.categoria;
+    // Mapear el nombre sugerido al UUID correspondiente
+    const match = this.categorias.find(
+      c => c.label.toLowerCase() === this.sugerencia.categoria.toLowerCase()
+    );
+    if (match) {
+      this.form.categoria = match.value; // El formulario espera el UUID
+    }
   }
 
   guardar(): void {
-    this.mock.guardarIngreso(this.form).subscribe(() => this.router.navigate(['/ingresos']));
+    const usuarioId = this.authService.usuario()?.id;
+    if (!usuarioId) {
+      console.error('No se encontró sesión activa.');
+      return;
+    }
+
+    // Buscar el UUID de la categoría
+    let catId = '';
+    const selectedCat = this.form.categoria;
+    const match = this.categorias.find(
+      c => c.label.toLowerCase() === selectedCat.toLowerCase() || c.value === selectedCat
+    );
+    catId = match ? match.value : selectedCat;
+
+    // Normalizar la fecha del formulario 'dd/mm/yyyy' o similar a formato ISO
+    let fechaTransaccion = new Date().toISOString();
+    if (this.form.fechaTransaccion) {
+      const parts = this.form.fechaTransaccion.split('/');
+      if (parts.length === 3) {
+        // dd/mm/yyyy -> yyyy-mm-dd
+        fechaTransaccion = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0])).toISOString();
+      } else {
+        const parsed = new Date(this.form.fechaTransaccion);
+        if (!Number.isNaN(parsed.getTime())) {
+          fechaTransaccion = parsed.toISOString();
+        }
+      }
+    }
+
+    const payload: TransaccionRequestDTO = {
+      usuarioId,
+      nombreCliente: this.authService.usuario()?.nombreUsuario ?? 'Cliente',
+      monto: Number(this.form.monto),
+      tipo: 'INGRESO',
+      categoriaId: catId,
+      fechaTransaccion,
+      metodoPago: this.form.metodoPago,
+      etiquetas: this.form.etiquetas.join(','),
+      descripcion: this.form.descripcion
+    };
+
+    this.transaccionesService.registrar(payload).subscribe({
+      next: () => {
+        this.stateService.invalidarCache();
+        this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
+        this.router.navigate(['/ingresos']);
+      },
+      error: (err) => {
+        console.error('Error al registrar ingreso:', err);
+      }
+    });
   }
 
   cancelar(): void {
     this.router.navigate(['/ingresos']);
   }
 }
-
