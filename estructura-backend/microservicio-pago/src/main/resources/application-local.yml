@@ -1,14 +1,11 @@
 server:
-  port: 8081
+  port: 8087
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/db_luka_usuario
+    url: jdbc:postgresql://localhost:5432/db_luka_pagos
     username: postgres
     password: adminUTP
-  jpa:
-    hibernate:
-      ddl-auto: update
   rabbitmq:
     host: localhost
     port: 5672
@@ -22,10 +19,6 @@ spring:
       password: ""
       ssl:
         enabled: false
-      repositories:
-        enabled: false
-  cache:
-    type: none
 
 eureka:
   client:

@@ -296,6 +296,7 @@ async def get_dashboard_kpis(
     logger.info(f"[DASHBOARD-IA] Cache MISS para resumen de usuario_id={usuario_id}. Calculando...")
 
     # Consultar transacciones de ms-nucleo-financiero
+    error_conexion = False
     cliente = obtener_cliente_financiero()
     try:
         resp = await cliente.obtener_historial_transacciones_async(usuario_id, token, tamanio=200)
@@ -303,8 +304,9 @@ async def get_dashboard_kpis(
     except Exception as e:
         logger.error(f"[DASHBOARD-IA] Error consultando transacciones: {e}")
         datos_raw = []
+        error_conexion = True
 
-    if not datos_raw:
+    if error_conexion:
         logger.info(f"[DASHBOARD-IA] Cargando datos fallback mockups en KPIs para usuario_id={usuario_id}")
         datos_raw = MOCK_TRANSACCIONES
 
@@ -400,15 +402,17 @@ async def get_dashboard_graficos(
     logger.info(f"[DASHBOARD-IA] Cache MISS para graficos de usuario_id={usuario_id}. Calculando...")
 
     # Consultar transacciones
+    error_conexion = False
     cliente = obtener_cliente_financiero()
     try:
         resp = await cliente.obtener_historial_transacciones_async(usuario_id, token, tamanio=200)
         datos_raw = resp.get("datos", []) if resp else []
     except Exception as e:
-        logger.error(f"[DASHBOARD-IA] Error consultando transacciones para gráficos (usando fallback mockups): {e}")
+        logger.error(f"[DASHBOARD-IA] Error consultando transacciones para gráficos: {e}")
         datos_raw = []
+        error_conexion = True
 
-    if not datos_raw:
+    if error_conexion:
         logger.info(f"[DASHBOARD-IA] Cargando datos fallback mockups en Gráficos para usuario_id={usuario_id}")
         datos_raw = MOCK_TRANSACCIONES
 

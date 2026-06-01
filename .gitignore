@@ -78,3 +78,6 @@ scratch/
 guias/
 pruebas/
 disenos/
+
+# --- ANGULAR ENVIRONMENTS ---
+**/src/app/enviroments/environment.prod.ts
