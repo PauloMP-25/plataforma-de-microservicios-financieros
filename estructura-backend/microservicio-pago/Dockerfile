@@ -10,18 +10,18 @@ FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
 WORKDIR /build
 
 # 1. Primero instalamos la librería común localmente en el contenedor
-COPY estructura-backend/libreria-comun ./libreria-comun
+COPY libreria-comun ./libreria-comun
 RUN cd libreria-comun && mvn install -DskipTests -B
 
 # 2. Ahora preparamos el microservicio-pago
 WORKDIR /build/microservicio-pago
-COPY estructura-backend/microservicio-pago/pom.xml .
+COPY microservicio-pago/pom.xml .
 
 # Descargamos dependencias (esta capa se cachea)
 RUN mvn dependency:go-offline -B
 
 # Copiamos el código fuente y compilamos
-COPY estructura-backend/microservicio-pago/src ./src
+COPY microservicio-pago/src ./src
 RUN mvn package -DskipTests -B
 
 # Extraemos las capas

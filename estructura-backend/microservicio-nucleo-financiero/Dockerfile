@@ -10,18 +10,18 @@ FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
 WORKDIR /build
 
 # 1. Primero instalamos la librería común localmente en el contenedor
-COPY estructura-backend/libreria-comun ./libreria-comun
+COPY libreria-comun ./libreria-comun
 RUN cd libreria-comun && mvn install -DskipTests -B
 
 # 2. Ahora preparamos el microservicio-nucleo-financiero
 WORKDIR /build/microservicio-nucleo-financiero
-COPY estructura-backend/microservicio-nucleo-financiero/pom.xml .
+COPY microservicio-nucleo-financiero/pom.xml .
 
 # Descargamos dependencias (esta capa se cachea)
 RUN mvn dependency:go-offline -B
 
 # Copiamos el código fuente y compilamos
-COPY estructura-backend/microservicio-nucleo-financiero/src ./src
+COPY microservicio-nucleo-financiero/src ./src
 
 # Compilamos usando mvn directamente
 RUN mvn package -DskipTests -B
