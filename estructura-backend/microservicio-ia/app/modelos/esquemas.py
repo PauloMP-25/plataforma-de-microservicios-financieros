@@ -106,7 +106,7 @@ class SolicitudClasificacionDTO(BaseModel):
     id_temporal: str
     tipo_movimiento: str  # INGRESO / GASTO
     etiquetas: Optional[str] = ""
-    notas: Optional[str] = ""
+    descripcion: Optional[str] = ""
 
 class RespuestaClasificacionDTO(BaseModel):
     """Respuesta con las 3 sugerencias de la IA."""

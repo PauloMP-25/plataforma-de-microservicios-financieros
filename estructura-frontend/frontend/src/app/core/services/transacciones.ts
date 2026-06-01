@@ -13,7 +13,7 @@ import { PaginaDTO } from '../models/shared/pagina.model';
 @Injectable({ providedIn: 'root' })
 export class Transacciones {
 
-  private base = `${environment.gatewayUrl}/api/v1/transacciones`;
+  private base = `${environment.gatewayUrl}/api/v1/financiero/transacciones`;
 
   constructor(private http: HttpClient, private auth: AuthService) {}
 

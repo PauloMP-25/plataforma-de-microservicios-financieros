@@ -28,12 +28,17 @@ public class TransaccionMapper {
         }
         return RespuestaTransaccion.builder()
                 .id(entidad.getId())
+                .usuarioId(entidad.getUsuarioId())
+                .nombreCliente(entidad.getNombreCliente())
                 .monto(entidad.getMonto())
                 .tipo(entidad.getTipo().name())
                 .categoria(entidad.getCategoria().getNombre())
+                .categoriaIcono(entidad.getCategoria().getIcono())
                 .fechaTransaccion(entidad.getFechaTransaccion())
                 .metodoPago(entidad.getMetodoPago().name())
                 .etiquetas(entidad.getEtiquetas())
+                .descripcion(entidad.getDescripcion())
+                .estado("Completed")
                 .build();
     }
 }

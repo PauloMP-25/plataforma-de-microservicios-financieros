@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RespuestaModuloDTO } from '../../../../core/models/financiero/ia.model';
+import { IaHubComponent } from '../../pages/ia-hub/ia-hub';
 
-import { LukaSelectorRangosComponent } from './components/luka-selector-rangos/luka-selector-rangos';
 import { LukaEscanerCargaComponent } from './components/luka-escaner-carga/luka-escaner-carga';
 import { LukaEsqueletoSvgComponent, CategoriaHueso } from './components/luka-esqueleto-svg/luka-esqueleto-svg';
 import { LukaPanelSignosVitalesComponent, KPIEvolucion } from './components/luka-panel-signos-vitales/luka-panel-signos-vitales';
@@ -34,7 +35,6 @@ export interface EvolucionDashboardData {
   standalone: true,
   imports: [
     CommonModule,
-    LukaSelectorRangosComponent,
     LukaEscanerCargaComponent,
     LukaEsqueletoSvgComponent,
     LukaPanelSignosVitalesComponent,
@@ -44,7 +44,12 @@ export interface EvolucionDashboardData {
   templateUrl: './ia-comprobador-evolucion.html',
   styleUrl: './ia-comprobador-evolucion.scss'
 })
-export class IaComprobadorEvolucionComponent {
+export class IaComprobadorEvolucionComponent implements OnChanges {
+  @Input() resultado: RespuestaModuloDTO | null = null;
+  @Input() cargando = false;
+
+  private parentHub = inject(IaHubComponent);
+
   EstadoModulo = EstadoModulo;
   estadoActual: EstadoModulo = EstadoModulo.SELECTOR;
 
@@ -55,14 +60,15 @@ export class IaComprobadorEvolucionComponent {
   // Datos del Dashboard
   dashboardData!: EvolucionDashboardData;
 
-  onRangosConfirmados(event: any) {
-    this.estadoActual = EstadoModulo.ESCANEO;
-
-    // Simulación del escaneo médico de 2.4s (4 iteraciones de 600ms en el cargador)
-    setTimeout(() => {
-      this.cargarDashboardMock();
+  ngOnChanges(changes: SimpleChanges) {
+    if (this.cargando) {
+      this.estadoActual = EstadoModulo.ESCANEO;
+    } else if (this.resultado && this.resultado.insight && Object.keys(this.resultado.insight).length > 0) {
+      this.dashboardData = this.resultado.insight as EvolucionDashboardData;
       this.estadoActual = EstadoModulo.DASHBOARD;
-    }, 2400);
+    } else {
+      this.estadoActual = EstadoModulo.SELECTOR;
+    }
   }
 
   abrirReceta(categoriaId: string) {

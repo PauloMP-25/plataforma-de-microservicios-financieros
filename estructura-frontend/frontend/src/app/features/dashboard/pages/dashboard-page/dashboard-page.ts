@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { BalancesCard } from '../../components/balances-card/balances-card';
+import { Chart } from '../../components/chart/chart';
+import { Transacciones } from '../../components/transacciones/transacciones';
 
 interface Transaccion {
   id: number;
@@ -16,14 +19,13 @@ interface Transaccion {
 @Component({
   selector: 'app-dashboard-page',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, BalancesCard, Chart, Transacciones],
   templateUrl: './dashboard-page.html',
   styleUrls: ['./dashboard-page.scss']
 })
 export class DashboardPage implements OnInit {
   // Configuración de Filtros
   filtroTiempo: string = '30';
-  filtroTipo: string = 'todos';
   terminoBusqueda: string = '';
 
   // Datos Iniciales
@@ -50,18 +52,13 @@ export class DashboardPage implements OnInit {
   ];
 
   ngOnInit(): void {
-    // Inicializaciones adicionales si fueran necesarias
+    // Inicializaciones adicionales
   }
 
-  // Filtrado de transacciones
+  // Filtrado de transacciones por término de búsqueda y periodo (el tipo se filtra en el subcomponente)
   get transaccionesFiltradas(): Transaccion[] {
     return this.transacciones.filter(t => {
-      // 1. Filtro de tipo
-      if (this.filtroTipo !== 'todos' && t.tipo !== this.filtroTipo) {
-        return false;
-      }
-
-      // 2. Filtro de búsqueda por término
+      // 1. Filtro de búsqueda por término
       if (this.terminoBusqueda) {
         const query = this.terminoBusqueda.toLowerCase();
         const coincideDesc = t.descripcion.toLowerCase().includes(query);
@@ -71,7 +68,7 @@ export class DashboardPage implements OnInit {
         }
       }
 
-      // 3. Filtro por tiempo (días desde hoy)
+      // 2. Filtro por tiempo (días desde hoy)
       if (this.filtroTiempo !== 'todos') {
         const limiteDias = parseInt(this.filtroTiempo, 10);
         const fechaTransaccion = new Date(t.fecha);
@@ -86,9 +83,8 @@ export class DashboardPage implements OnInit {
     });
   }
 
-  // Cálculos dinámicos de KPIs basados en la lista de transacciones completa (o filtrada)
+  // Cálculos dinámicos de KPIs
   get totalBalance(): number {
-    // Asumimos un balance base histórico de $145,000 + la suma de ingresos - gastos visibles
     const base = 145000;
     const balanceTransacciones = this.transacciones.reduce((acc, t) => {
       if (t.estado === 'Failed') return acc;
@@ -148,25 +144,5 @@ export class DashboardPage implements OnInit {
         color: colores[cat] || '#859397'
       };
     }).sort((a, b) => b.total - a.total);
-  }
-
-  // Helper para mostrar colores de categoría amigables
-  getColorCategoria(cat: string): string {
-    const colores: { [key: string]: string } = {
-      food: 'var(--color-food)',
-      transport: 'var(--color-transport)',
-      leisure: 'var(--color-leisure)',
-      health: 'var(--color-health)',
-      SaaS: 'var(--color-primary)',
-      inversiones: 'var(--color-success)',
-      transferencia: 'var(--color-warning)',
-      salario: 'var(--color-success)'
-    };
-    return colores[cat] || 'var(--text-muted)';
-  }
-
-  // Formateador de moneda
-  formatCurrency(value: number): string {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
   }
 }

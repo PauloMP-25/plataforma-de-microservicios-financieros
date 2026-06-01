@@ -10,7 +10,7 @@ import { AuthService } from './auth.service';
 @Injectable({ providedIn: 'root' })
 export class FinancieroService {
  
-  private baseTransacciones = `${environment.gatewayUrl}/api/v1/transacciones`;
+  private baseTransacciones = `${environment.gatewayUrl}/api/v1/financiero/transacciones`;
   private baseCategorias    = `${environment.gatewayUrl}/api/v1/financiero/categorias`;
  
   // ── Estado reactivo ──

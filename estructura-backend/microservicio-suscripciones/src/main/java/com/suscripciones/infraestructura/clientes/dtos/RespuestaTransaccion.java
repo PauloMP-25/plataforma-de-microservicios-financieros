@@ -16,7 +16,7 @@ public record RespuestaTransaccion(
         LocalDateTime fechaTransaccion,
         MetodoPago metodoPago,
         String etiquetas,
-        String notas,
+        String descripcion,
         LocalDateTime fechaRegistro
 ) {
 }

@@ -2,12 +2,11 @@ import { Component, Input, OnInit, OnChanges, SimpleChanges, signal, computed } 
 import { CommonModule } from '@angular/common';
 import { RespuestaModuloDTO, InsightEspejoTemporalDTO } from '../../../../core/models/financiero/ia.model';
 import { IaEspejoCardComponent } from './components/ia-espejo-card/ia-espejo-card';
-import { IaEspejoImpactComponent } from './components/ia-espejo-impact/ia-espejo-impact';
 
 @Component({
   selector: 'app-ia-espejo-temporal',
   standalone: true,
-  imports: [CommonModule, IaEspejoCardComponent, IaEspejoImpactComponent],
+  imports: [CommonModule, IaEspejoCardComponent],
   templateUrl: './ia-espejo-temporal.html',
   styleUrl: './ia-espejo-temporal.scss'
 })
@@ -18,61 +17,72 @@ export class IaEspejoTemporalComponent implements OnInit, OnChanges {
   // Hito activo seleccionado para visualizar el díptico interactivo (3, 6, 12 meses)
   hitoSeleccionado = signal<3 | 6 | 12>(12);
 
+  @Input() set hitoSeleccionadoInput(value: 3 | 6 | 12) {
+    if (value) {
+      this.hitoSeleccionado.set(value);
+    }
+  }
+
   // Datos mock específicos para Paulo
   private mockInsight: InsightEspejoTemporalDTO = {
     datosPresente: {
       scoreActual: 42,
       saldoActual: 85.00,
-      metasActivas: 1
+      metasActivas: 3
     },
     proyeccionContinuidad: {
       hitos3Meses: {
         scoreProyectado: 38,
         ahorroAcumulado: 30.00,
         metasCumplidas: [],
-        metasFracasadas: ['Pichanga Semanal']
+        metasFracasadas: ['Viaje a Cusco']
       },
       hitos6Meses: {
         scoreProyectado: 35,
         ahorroAcumulado: 50.00,
         metasCumplidas: [],
-        metasFracasadas: ['Pichanga Semanal', 'Zapatillas de Futsal']
+        metasFracasadas: ['Viaje a Cusco', 'Laptop Gamer']
       },
       hitos12Meses: {
         scoreProyectado: 30,
         ahorroAcumulado: 100.00,
         metasCumplidas: [],
-        metasFracasadas: ['Pichanga Semanal', 'Zapatillas de Futsal', 'Curso de Desarrollo Web']
+        metasFracasadas: ['Viaje a Cusco', 'Laptop Gamer', 'Ahorro Departamento']
       }
     },
     proyeccionTransformacion: {
       hitos3Meses: {
         scoreProyectado: 65,
         ahorroAcumulado: 450.00,
-        metasCumplidas: ['Pichanga Semanal'],
+        metasCumplidas: ['Viaje a Cusco'],
         metasFracasadas: []
       },
       hitos6Meses: {
         scoreProyectado: 78,
         ahorroAcumulado: 950.00,
-        metasCumplidas: ['Pichanga Semanal', 'Zapatillas de Futsal'],
+        metasCumplidas: ['Viaje a Cusco', 'Laptop Gamer'],
         metasFracasadas: []
       },
       hitos12Meses: {
         scoreProyectado: 85,
         ahorroAcumulado: 1550.00,
-        metasCumplidas: ['Pichanga Semanal', 'Zapatillas de Futsal', 'Curso de Desarrollo Web'],
+        metasCumplidas: ['Viaje a Cusco', 'Laptop Gamer', 'Ahorro Departamento'],
         metasFracasadas: []
       }
     },
     narrativasGemini: {
-      cartaContinuidad: 'Hola Paulo del futuro. Veo que sigues gastando en mototaxi en lugar de caminar esas pocas cuadras, y los "antojos" diarios se siguen consumiendo tu presupuesto. Hoy, después de un año, tu ahorro acumulado apenas llega a S/ 100. Tuviste que perderte la pichanga de los fines de semana varias veces porque no te alcanzaban los S/ 6 de la cuota, y tu meta de comprar las zapatillas de futsal y el Curso de Desarrollo Web siguen congeladas. Has continuado gastando en el corto plazo, y el mañana se ve idéntico al ayer.',
-      cartaTransformacion: 'Hola Paulo. Qué gran decisión tomaste al empezar a caminar, reduciendo esos gastos hormiga de transporte e impulsos diarios. Tras 12 meses de constancia, has acumulado S/ 1,550 en ahorros. No solo pagaste tu cuota de la pichanga sin preocupaciones y te compraste las zapatillas que querías, sino que lograste financiar tu Curso de Desarrollo Web e iniciar tu camino como programador. Este futuro alternativo brilla gracias al poder de tus pequeñas decisiones financieras.'
+      cartaContinuidad: 'Hola Paulo del futuro. Veo que sigues gastando en mototaxi en lugar de caminar esas pocas cuadras, y los antojos diarios se siguen consumiendo tu presupuesto. Hoy, después de un año, tu ahorro acumulado apenas llega a S/ 100. Tus metas de realizar el Viaje a Cusco, comprar la Laptop Gamer y guardar para tu Ahorro Departamento siguen congeladas. Has continuado priorizando los gastos a corto plazo, y el mañana se ve idéntico al ayer.',
+      cartaTransformacion: 'Hola Paulo. Qué gran decisión de ahorro tomaste al reducir esos gastos hormiga de transporte y antojos de fin de semana. Tras 12 meses de constancia, has acumulado S/ 1,550 en ahorros. Gracias a esto, no solo lograste financiar tu Viaje a Cusco y comprar la Laptop Gamer que tanto querías, sino que también diste el primer paso sólido acumulando capital para tu Ahorro Departamento. Este futuro alternativo brilla gracias al poder de tus pequeñas decisiones financieras.'
     }
   };
 
   // Signal que contiene los datos del espejo actual
   espejoData = signal<InsightEspejoTemporalDTO>(this.mockInsight);
+
+  // Consejo del Coach Luka
+  consejoLuka = computed<string>(() => {
+    return this.resultado?.consejo || this.espejoData().narrativasGemini.cartaTransformacion;
+  });
 
   ngOnInit() {
     this.cargarDatos();

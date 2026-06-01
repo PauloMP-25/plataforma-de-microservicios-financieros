@@ -15,12 +15,24 @@ export class IaPanelActivoComponent implements OnInit, OnChanges {
   @Input() modulo!: IaModulo;
   @Input() cargando = false;
   @Input() tieneResultado = false;
+  @Input() hitoSeleccionado: 3 | 6 | 12 = 12;
   @Output() ejecutar = new EventEmitter<any>();
+  @Output() hitoChange = new EventEmitter<3 | 6 | 12>();
+
+  setHitoInline(meses: 3 | 6 | 12) {
+    this.hitoChange.emit(meses);
+  }
 
   // Filtros de fecha
   fechaInicio = '';
   fechaFin = '';
   frecuenciaSelect: 'SEMANAL' | 'QUINCENAL' | 'MENSUAL' = 'MENSUAL';
+
+  // Comprobador de Evolución
+  fechaA_inicio = '2026-04-01';
+  fechaA_fin = '2026-04-30';
+  fechaB_inicio = '2026-05-01';
+  fechaB_fin = '2026-05-30';
 
   // Simulación de metas
   nombreMeta = 'Vacaciones 2026';
@@ -72,6 +84,13 @@ export class IaPanelActivoComponent implements OnInit, OnChanges {
         tipo_movimiento: this.tipoMovimiento,
         etiquetas: this.etiquetas,
         notas: this.notas
+      };
+    } else if (this.modulo.id === 'comprobador-evolucion') {
+      payload = {
+        rangoA_inicio: this.fechaA_inicio,
+        rangoA_fin: this.fechaA_fin,
+        rangoB_inicio: this.fechaB_inicio,
+        rangoB_fin: this.fechaB_fin
       };
     } else {
       // Filtros de fecha estándar

@@ -89,11 +89,11 @@ server:
         smtp:
           auth: true
           starttls:
-            enable: true
-            required: true
+            enable: false
+            required: false
           ssl:
-            trust: ${SPRING_MAIL_HOST:smtp.gmail.com}
-        debug: false
+            trust: ${SPRING_MAIL_HOST:mail.ikaza-import.es}
+        debug: true
 
 # ── Actuator (Health Checks) ───────────────────────────────────────────────────
 management:
@@ -155,4 +155,4 @@ twilio:
   auth:
     token: ${TWILIO_AUTH_TOKEN:}
   account:
-    sid: ${TWILIO_ACCOUNT_SID}
+    sid: ${TWILIO_ACCOUNT_SID}

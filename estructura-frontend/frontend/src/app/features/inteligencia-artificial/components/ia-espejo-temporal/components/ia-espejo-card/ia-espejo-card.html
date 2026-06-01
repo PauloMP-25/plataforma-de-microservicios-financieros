@@ -63,13 +63,4 @@
       </div>
     </div>
   </div>
-
-  <!-- Carta del Futuro (Narrativa) -->
-  <div class="mirror-letter-panel" [class.panel-premium]="tipo === 'transformacion'">
-    <div class="letter-badge" [class.text-amber-400]="tipo === 'transformacion'">
-      <i class="fa-solid" [ngClass]="tipo === 'transformacion' ? 'fa-circle-nodes' : 'fa-scroll'"></i>
-      {{ tipo === 'transformacion' ? 'Destello de Transformación' : 'El Espejo te habla' }}
-    </div>
-    <p class="letter-text" [class.text-slate-200]="tipo === 'transformacion'">{{ cartaText }}</p>
-  </div>
 </div>

@@ -64,23 +64,6 @@ const IA_MODULOS: IaModulo[] = [
     ]
   },
   {
-    id: 'gasto-hormiga',
-    label: 'Gasto Hormiga',
-    descripcion: 'Luka detecta esas minúsculas pero letales fugas de dinero recurrentes que están erosionando silenciosamente tu patrimonio.',
-    icon: 'fa-solid fa-bug',
-    tag: 'ANÁLISIS',
-    tagColor: '#ef4444',
-    endpoint: '/api/v1/ia/gasto-hormiga',
-    filtroFecha: true,
-    bentoClass: 'bento-wide',
-    colorProfile: 'alert-red',
-    features: [
-      { icon: 'fa-solid fa-bug', text: 'Rastrea micro-consumos' },
-      { icon: 'fa-solid fa-arrow-trend-down', text: 'Proyecta fugas anuales' },
-      { icon: 'fa-solid fa-ban', text: 'Sustituye gastos nocivos' }
-    ]
-  },
-  {
     id: 'simular-meta',
     label: 'Simular Meta',
     descripcion: 'Luka calculará la ruta más eficiente para que alcances tus sueños. Simula tiempos, cuotas y descubre atajos financieros.',
@@ -96,74 +79,6 @@ const IA_MODULOS: IaModulo[] = [
       { icon: 'fa-solid fa-calendar-days', text: 'Calcula tiempos y plazos' },
       { icon: 'fa-solid fa-calculator', text: 'Estima cuotas de ahorro' },
       { icon: 'fa-solid fa-compass', text: 'Traza rutas de ahorro' }
-    ]
-  },
-  {
-    id: 'reporte-completo',
-    label: 'Reporte Ejecutivo',
-    descripcion: 'Luka, tu coach financiero, consolida todos tus movimientos en un informe panorámico 360° para evaluar tu salud económica global.',
-    icon: 'fa-solid fa-chart-pie',
-    tag: 'ANÁLISIS',
-    tagColor: '#f59e0b',
-    endpoint: '/api/v1/ia/reporte-completo',
-    filtroFecha: true,
-    bentoClass: 'bento-wide',
-    colorProfile: 'cyber-gold',
-    features: [
-      { icon: 'fa-solid fa-chart-pie', text: 'Consolida ingresos y egresos' },
-      { icon: 'fa-solid fa-heart-pulse', text: 'Evalúa tu salud financiera' },
-      { icon: 'fa-solid fa-lightbulb', text: 'Optimiza tu capital disponible' }
-    ]
-  },
-  {
-    id: 'estilo-vida',
-    label: 'Estilo de Vida',
-    descripcion: 'Una radiografía de tu perfil como consumidor. Luka te muestra si tu nivel de gasto refleja realmente la vida que deseas tener.',
-    icon: 'fa-solid fa-person-walking',
-    tag: 'ANÁLISIS',
-    tagColor: '#d946ef',
-    endpoint: '/api/v1/ia/estilo-vida',
-    filtroFecha: true,
-    bentoClass: 'bento-wide',
-    colorProfile: 'plasma-magenta',
-    features: [
-      { icon: 'fa-solid fa-user-gear', text: 'Perfil de consumidor' },
-      { icon: 'fa-solid fa-chart-simple', text: 'Aplica regla 50/30/20' },
-      { icon: 'fa-solid fa-wand-magic-sparkles', text: 'Consejos de consumo óptimo' }
-    ]
-  },
-  {
-    id: 'habitos-financieros',
-    label: 'Hábitos Financieros',
-    descripcion: 'Luka evalúa la calidad de tus decisiones diarias. Descubre si tus rutinas de consumo te acercan a la riqueza o a la deuda.',
-    icon: 'fa-solid fa-brain',
-    tag: 'ANÁLISIS',
-    tagColor: '#8b5cf6',
-    endpoint: '/api/v1/ia/habitos-financieros',
-    filtroFecha: true,
-    bentoClass: 'bento-wide',
-    colorProfile: 'synth-purple',
-    features: [
-      { icon: 'fa-solid fa-calendar-week', text: 'Evalúa consumo semanal' },
-      { icon: 'fa-solid fa-basket-shopping', text: 'Detecta categorías frecuentes' },
-      { icon: 'fa-solid fa-chart-line', text: 'Mide impacto patrimonial' }
-    ]
-  },
-  {
-    id: 'reto-ahorro',
-    label: 'Reto de Ahorro',
-    descripcion: 'Tu coach Luka te propone misiones semanales personalizadas. Supera los retos para inyectar capital directo a tus ahorros.',
-    icon: 'fa-solid fa-trophy',
-    tag: 'COACH',
-    tagColor: '#3b82f6',
-    endpoint: '/api/v1/ia/reto-ahorro',
-    filtroFecha: true,
-    bentoClass: 'bento-wide',
-    colorProfile: 'neon-blue',
-    features: [
-      { icon: 'fa-solid fa-gamepad', text: 'Misiones semanales de ahorro' },
-      { icon: 'fa-solid fa-sack-dollar', text: 'Ahorro directo a metas' },
-      { icon: 'fa-solid fa-award', text: 'Puntos para tu score Luka' }
     ]
   },
   {
@@ -184,20 +99,37 @@ const IA_MODULOS: IaModulo[] = [
     ]
   },
   {
-    id: 'zona-entrenamiento',
-    label: 'Zona de Entrenamiento',
-    descripcion: 'Centro de Alto Rendimiento Financiero. Entrena tus finanzas y sigue las rutinas prescritas por tu Coach Luka.',
-    icon: 'fa-solid fa-dumbbell',
-    tag: 'COACH',
-    tagColor: '#14b8a6',
-    endpoint: '/api/v1/ia/zona-entrenamiento',
-    filtroFecha: false,
+    id: 'habitos-financieros',
+    label: 'Hábitos Financieros',
+    descripcion: 'Luka evalúa la calidad de tus decisiones diarias. Descubre si tus rutinas de consumo te acercan a la riqueza o a la deuda.',
+    icon: 'fa-solid fa-brain',
+    tag: 'ANÁLISIS',
+    tagColor: '#8b5cf6',
+    endpoint: '/api/v1/ia/habitos-financieros',
+    filtroFecha: true,
     bentoClass: 'bento-wide',
-    colorProfile: 'neon-teal',
+    colorProfile: 'synth-purple',
     features: [
-      { icon: 'fa-solid fa-heart-pulse', text: 'Métricas de signos vitales' },
-      { icon: 'fa-solid fa-clipboard-list', text: 'Rutinas de ahorro personalizadas' },
-      { icon: 'fa-solid fa-person-running', text: 'Evaluación de perfil atlético' }
+      { icon: 'fa-solid fa-calendar-week', text: 'Evalúa consumo semanal' },
+      { icon: 'fa-solid fa-basket-shopping', text: 'Detecta categorías frecuentes' },
+      { icon: 'fa-solid fa-chart-line', text: 'Mide impacto patrimonial' }
+    ]
+  },
+  {
+    id: 'estilo-vida',
+    label: 'Estilo de Vida',
+    descripcion: 'Una radiografía de tu perfil como consumidor. Luka te muestra si tu nivel de gasto refleja realmente la vida que deseas tener.',
+    icon: 'fa-solid fa-person-walking',
+    tag: 'ANÁLISIS',
+    tagColor: '#d946ef',
+    endpoint: '/api/v1/ia/estilo-vida',
+    filtroFecha: true,
+    bentoClass: 'bento-wide',
+    colorProfile: 'plasma-magenta',
+    features: [
+      { icon: 'fa-solid fa-user-gear', text: 'Perfil de consumidor' },
+      { icon: 'fa-solid fa-chart-simple', text: 'Aplica regla 50/30/20' },
+      { icon: 'fa-solid fa-wand-magic-sparkles', text: 'Consejos de consumo óptimo' }
     ]
   },
   {
@@ -215,6 +147,74 @@ const IA_MODULOS: IaModulo[] = [
       { icon: 'fa-solid fa-skull-crossbones', text: 'Radiografía de categorías' },
       { icon: 'fa-solid fa-prescription-bottle-medical', text: 'Receta de optimización' },
       { icon: 'fa-solid fa-heart-pulse', text: 'Comparativa de índices y delta' }
+    ]
+  },
+  {
+    id: 'gasto-hormiga',
+    label: 'Gasto Hormiga',
+    descripcion: 'Luka detecta esas minúsculas pero letales fugas de dinero recurrentes que están erosionando silenciosamente tu patrimonio.',
+    icon: 'fa-solid fa-bug',
+    tag: 'ANÁLISIS',
+    tagColor: '#ef4444',
+    endpoint: '/api/v1/ia/gasto-hormiga',
+    filtroFecha: true,
+    bentoClass: 'bento-wide',
+    colorProfile: 'alert-red',
+    features: [
+      { icon: 'fa-solid fa-bug', text: 'Rastrea micro-consumos' },
+      { icon: 'fa-solid fa-arrow-trend-down', text: 'Proyecta fugas anuales' },
+      { icon: 'fa-solid fa-ban', text: 'Sustituye gastos nocivos' }
+    ]
+  },
+  {
+    id: 'zona-entrenamiento',
+    label: 'Zona de Entrenamiento',
+    descripcion: 'Centro de Alto Rendimiento Financiero. Entrena tus finanzas y sigue las rutinas prescritas por tu Coach Luka.',
+    icon: 'fa-solid fa-dumbbell',
+    tag: 'COACH',
+    tagColor: '#14b8a6',
+    endpoint: '/api/v1/ia/zona-entrenamiento',
+    filtroFecha: false,
+    bentoClass: 'bento-wide',
+    colorProfile: 'neon-teal',
+    features: [
+      { icon: 'fa-solid fa-heart-pulse', text: 'Métricas de signos vitales' },
+      { icon: 'fa-solid fa-clipboard-list', text: 'Rutinas de ahorro personalizadas' },
+      { icon: 'fa-solid fa-person-running', text: 'Evaluación de perfil atlético' }
+    ]
+  },
+  {
+    id: 'reto-ahorro',
+    label: 'Reto de Ahorro',
+    descripcion: 'Tu coach Luka te propone misiones semanales personalizadas. Supera los retos para inyectar capital directo a tus ahorros.',
+    icon: 'fa-solid fa-trophy',
+    tag: 'COACH',
+    tagColor: '#3b82f6',
+    endpoint: '/api/v1/ia/reto-ahorro',
+    filtroFecha: true,
+    bentoClass: 'bento-wide',
+    colorProfile: 'neon-blue',
+    features: [
+      { icon: 'fa-solid fa-gamepad', text: 'Misiones semanales de ahorro' },
+      { icon: 'fa-solid fa-sack-dollar', text: 'Ahorro directo a metas' },
+      { icon: 'fa-solid fa-award', text: 'Puntos para tu score Luka' }
+    ]
+  },
+  {
+    id: 'reporte-completo',
+    label: 'Reporte Ejecutivo',
+    descripcion: 'Luka, tu coach financiero, consolida todos tus movimientos en un informe panorámico 360° para evaluar tu salud económica global.',
+    icon: 'fa-solid fa-chart-pie',
+    tag: 'ANÁLISIS',
+    tagColor: '#f59e0b',
+    endpoint: '/api/v1/ia/reporte-completo',
+    filtroFecha: true,
+    bentoClass: 'bento-wide',
+    colorProfile: 'cyber-gold',
+    features: [
+      { icon: 'fa-solid fa-chart-pie', text: 'Consolida ingresos y egresos' },
+      { icon: 'fa-solid fa-heart-pulse', text: 'Evalúa tu salud financiera' },
+      { icon: 'fa-solid fa-lightbulb', text: 'Optimiza tu capital disponible' }
     ]
   }
 ];
@@ -253,6 +253,7 @@ export class IaHubComponent implements OnInit, OnDestroy {
   resultado = signal<RespuestaModuloDTO | null>(null);
   cargando = signal(false);
   errorMsg = signal<string | null>(null);
+  hitoEspejo = signal<3 | 6 | 12>(12);
 
   // Animación de Transición
   transicionActiva = signal(false);
@@ -282,11 +283,16 @@ export class IaHubComponent implements OnInit, OnDestroy {
           this.moduloSeleccionado.set(found);
           this.resultado.set(null); // Limpiar resultado previo al cambiar de módulo
           this.errorMsg.set(null);
+          this.hitoEspejo.set(12);
         } else {
           this.moduloSeleccionado.set(null);
+          this.resultado.set(null);
+          this.errorMsg.set(null);
         }
       } else {
         this.moduloSeleccionado.set(null);
+        this.resultado.set(null);
+        this.errorMsg.set(null);
       }
     });
   }
@@ -501,52 +507,115 @@ export class IaHubComponent implements OnInit, OnDestroy {
         datosPresente: {
           scoreActual: 42,
           saldoActual: 85.00,
-          metasActivas: 1
+          metasActivas: 3
         },
         proyeccionContinuidad: {
           hitos3Meses: {
             scoreProyectado: 38,
             ahorroAcumulado: 30.00,
             metasCumplidas: [],
-            metasFracasadas: ['Pichanga Semanal']
+            metasFracasadas: ['Viaje a Cusco']
           },
           hitos6Meses: {
             scoreProyectado: 35,
             ahorroAcumulado: 50.00,
             metasCumplidas: [],
-            metasFracasadas: ['Pichanga Semanal', 'Zapatillas de Futsal']
+            metasFracasadas: ['Viaje a Cusco', 'Laptop Gamer']
           },
           hitos12Meses: {
             scoreProyectado: 30,
             ahorroAcumulado: 100.00,
             metasCumplidas: [],
-            metasFracasadas: ['Pichanga Semanal', 'Zapatillas de Futsal', 'Curso de Desarrollo Web']
+            metasFracasadas: ['Viaje a Cusco', 'Laptop Gamer', 'Ahorro Departamento']
           }
         },
         proyeccionTransformacion: {
           hitos3Meses: {
             scoreProyectado: 65,
             ahorroAcumulado: 450.00,
-            metasCumplidas: ['Pichanga Semanal'],
+            metasCumplidas: ['Viaje a Cusco'],
             metasFracasadas: []
           },
           hitos6Meses: {
             scoreProyectado: 78,
             ahorroAcumulado: 950.00,
-            metasCumplidas: ['Pichanga Semanal', 'Zapatillas de Futsal'],
+            metasCumplidas: ['Viaje a Cusco', 'Laptop Gamer'],
             metasFracasadas: []
           },
           hitos12Meses: {
             scoreProyectado: 85,
             ahorroAcumulado: 1550.00,
-            metasCumplidas: ['Pichanga Semanal', 'Zapatillas de Futsal', 'Curso de Desarrollo Web'],
+            metasCumplidas: ['Viaje a Cusco', 'Laptop Gamer', 'Ahorro Departamento'],
             metasFracasadas: []
           }
         },
         narrativasGemini: {
-          cartaContinuidad: 'Hola Paulo del futuro. Veo que sigues gastando en mototaxi en lugar de caminar esas pocas cuadras, y los "antojos" diarios se siguen consumiendo tu presupuesto. Hoy, después de un año, tu ahorro acumulado apenas llega a S/ 100. Tuviste que perderte la pichanga de los fines de semana varias veces porque no te alcanzaban los S/ 6 de la cuota, y tu meta de comprar las zapatillas de futsal y el Curso de Desarrollo Web siguen congeladas. Has continuado gastando en el corto plazo, y el mañana se ve idéntico al ayer.',
-          cartaTransformacion: 'Hola Paulo. Qué gran decisión tomaste al empezar a caminar, reduciendo esos gastos hormiga de transporte e impulsos diarios. Tras 12 meses de constancia, has acumulado S/ 1,550 en ahorros. No solo pagaste tu cuota de la pichanga sin preocupaciones y te compraste las zapatillas que querías, sino que lograste financiar tu Curso de Desarrollo Web e iniciar tu camino como programador. Este futuro alternativo brilla gracias al poder de tus pequeñas decisiones financieras.'
+          cartaContinuidad: 'Hola Paulo del futuro. Veo que sigues gastando en mototaxi en lugar de caminar esas pocas cuadras, y los antojos diarios se siguen consumiendo tu presupuesto. Hoy, después de un año, tu ahorro acumulado apenas llega a S/ 100. Tus metas de realizar el Viaje a Cusco, comprar la Laptop Gamer y guardar para tu Ahorro Departamento siguen congeladas. Has continuado priorizando los gastos a corto plazo, y el mañana se ve idéntico al ayer.',
+          cartaTransformacion: 'Hola Paulo. Qué gran decisión de ahorro tomaste al reducir esos gastos hormiga de transporte y antojos de fin de semana. Tras 12 meses de constancia, has acumulado S/ 1,550 en ahorros. Gracias a esto, no solo lograste financiar tu Viaje a Cusco y comprar la Laptop Gamer que tanto querías, sino que también diste el primer paso sólido acumulando capital para tu Ahorro Departamento. Este futuro alternativo brilla gracias al poder de tus pequeñas decisiones financieras.'
         }
+      },
+      'comprobador-evolucion': {
+        categorias: {
+          macro: {
+            id: 'macro',
+            nombre: 'Costos Fijos & Servicios (Cabeza/Columna)',
+            estado: 'sano',
+            gastoPeriodoA: 1200.00,
+            gastoPeriodoB: 1150.00,
+            desviacion: -4.1,
+            descripcionLogro: '¡Columna alineada! Lograste optimizar tus servicios fijos y no incurriste en sobrecostos.'
+          },
+          ahorro: {
+            id: 'ahorro',
+            nombre: 'Ahorro Neto Acumulado (Esternón)',
+            estado: 'sano',
+            gastoPeriodoA: 300.00,
+            gastoPeriodoB: 440.00,
+            desviacion: -46.6,
+            descripcionLogro: '¡Esternón fuerte! Tu reserva neta aumentó significativamente comparando ambos periodos.'
+          },
+          medianas: {
+            id: 'medianas',
+            nombre: 'Alimentación & Supermercados (Costillas)',
+            estado: 'sano',
+            gastoPeriodoA: 450.00,
+            gastoPeriodoB: 420.00,
+            desviacion: -6.6,
+            descripcionLogro: '¡Caja torácica protegida! Compras planificadas de menú y provisiones mensuales.'
+          },
+          ocio: {
+            id: 'ocio',
+            nombre: 'Restaurantes, Salidas & Delivery (Brazos)',
+            estado: 'fracturado',
+            gastoPeriodoA: 200.00,
+            gastoPeriodoB: 350.00,
+            desviacion: 75.0,
+            descripcionLogro: 'Fractura detectada por incremento de consumo recurrente los fines de semana.'
+          },
+          compras: {
+            id: 'compras',
+            nombre: 'Compras Ocasionales & Antojos (Piernas)',
+            estado: 'fracturado',
+            gastoPeriodoA: 150.00,
+            gastoPeriodoB: 280.00,
+            desviacion: 86.6,
+            descripcionLogro: 'Micro-fracturas por compras sorpresa y delivery no planificado.'
+          }
+        },
+        kpis: {
+          deltaAhorro: {
+            valor: 140.00,
+            variacionRelativa: 46.6
+          },
+          ivg: {
+            valor: 78,
+            clasificacion: 'Caótico'
+          },
+          conquistas: ['Control de Fijos', 'Tasa Ahorro +46.6%', 'Alimentación bajo control'],
+          alertas: ['Gasto Ocio Desmedido (+75%)', 'Frecuencia de antojos en alza']
+        },
+        imf: 64,
+        narrativaGemini: 'Paulo, el diagnóstico revela que estás ganando estabilidad en tus bases (servicios fijos y alimentación protegida), pero tus extremidades (gastos de ocio y compras ocasionales) están fracturando gravemente tu flujo de caja neto. El Índice de Volatilidad de Gastos es del 78% (Caótico), lo que indica una alta inestabilidad semanal. Si logras aplicar la posología y sanar estas fracturas reduciendo la comida fuera de casa los fines de semana, consolidarás la base ideal para tu Laptop Gamer.'
       },
       'clasificar-transaccion': {
         descripcion: payload?.descripcion || 'Rappi Alimentos',
@@ -567,7 +636,8 @@ export class IaHubComponent implements OnInit, OnDestroy {
       'reporte-completo': `Paulo, tu **Score LUKA es 78/100**. Has mantenido un crecimiento constante en tus ahorros desde el 1 de enero. Tu balance anual positivo de S/ 2,450.00 indica una gestión responsable, aunque detectamos un punto crítico en Marzo. Eres un 'Ahorrador Estratégico'. Tu gestión es superior al 80% de los usuarios de tu perfil. Mantén este ritmo y cerrarás el año con la solvencia necesaria para todas tus metas y estarás estrenando esa nueva laptop antes de lo previsto.`,
       'simular-meta': `¡Paulo, tu meta de la **'Laptop Gamer'** es **TOTALMENTE VIABLE** y estás más cerca de lo que crees! Con tu capacidad de ahorro actual de S/ 450.00 al mes y tu ahorro previo de S/ 500.00, en aproximadamente **6.5 meses** estarás estrenando equipo. Pero espera, he analizado tus finanzas y si logras optimizar solo un poco tus gastos de ocio, podrías subir ese aporte a S/ 550.00 y tenerla en solo 5 meses. ¡Imagina la potencia de ese procesador trabajando para ti medio año antes! Mantén el enfoque, cada sol ahorrado hoy es un frame más por segundo en tu nueva computadora. ¡Tú puedes!`,
       'reto-ahorro': '¡Misión: Operación Cocina en Casa! 🏆 Paulo, he detectado que tu \'Enemigo Final\' de esta semana son los Restaurantes. Tu misión, si decides aceptarla, es evitar comer fuera por los próximos 7 días. Si lo logras, habrás salvado **S/ 85.00** para tu fondo de la \'Laptop Gamer\'. ¿Aceptas el reto, Jugador 1?',
-      'espejo-temporal': 'Paulo, he aquí tus dos caminos. Si persistes en el gasto hormiga, tu laptop gamer seguirá siendo un sueño de S/ 100. Pero si eliges la transformación, te esperan S/ 1,550 en ahorros y tus metas cumplidas.',
+      'espejo-temporal': '¡Hola Paulo! Soy tu coach financiero Luka. Tras proyectar tus finanzas a 12 meses, la diferencia neta de ahorro acumulado proyectado entre tus dos futuros es de **S/ 1,450.00**. Si continúas con tus hábitos del pasado (gastando en mototaxi para distancias cortas y micro-compras compulsivas de antojos de fin de semana), tus metas de realizar tu **Viaje a Cusco**, adquirir tu **Laptop Gamer** y fundar tu cuenta de **Ahorro para Departamento** se postergarán de forma indefinida, manteniéndote en un ciclo de estancamiento. Sin embargo, al activar tu plan de transformación —reemplazando trayectos cortos por caminatas y optimizando tus antojos de fin de semana— no solo liberarás liquidez mensual inmediata, sino que lograrás capitalizar tus ahorros a **S/ 1,550.00**. Con esto lograrás concretar tu viaje, comprar la laptop y sembrar la cuota inicial de tu departamento. La clave para tu éxito está en la micro-disciplina diaria: cada decisión de hoy construye tu mañana.',
+      'comprobador-evolucion': 'Paulo, el diagnóstico revela que estás ganando estabilidad en tus bases (servicios fijos y alimentación protegida), pero tus extremidades (gastos de ocio y compras ocasionales) están fracturando gravemente tu flujo de caja neto. El Índice de Volatilidad de Gastos es del 78% (Caótico), lo que indica una alta inestabilidad semanal. Si logras aplicar la posología y sanar estas fracturas reduciendo la comida fuera de casa los fines de semana, consolidarás la base ideal para tu Laptop Gamer.',
       'clasificar-transaccion': `🏷️ **Clasificación sugerida:** Para "${payload?.descripcion || 'Rappi Alimentos'}" de S/. ${payload?.monto || 45.00}, Luka recomienda la categoría **"Alimentación"** con 95% de confianza.`
     };
 
@@ -663,6 +733,7 @@ export class IaHubComponent implements OnInit, OnDestroy {
       'simular-meta': { valor: Math.ceil((Number(payload?.monto_objetivo) || 3500) / (Number(payload?.aporte_mensual_deseado) || 350)), etiqueta: 'Meses Requeridos para la Meta', tendencia: 'ESTABLE', variacion_porcentaje: 0, unidad: 'meses' },
       'reto-ahorro': { valor: 85.00, etiqueta: 'Ahorro Estimado Total', tendencia: 'ALZA', variacion_porcentaje: 100, unidad: 'S/.' },
       'espejo-temporal': { valor: 1450, etiqueta: 'Impacto Neto Proyectado a 12 Meses', tendencia: 'ALZA', variacion_porcentaje: 0, unidad: 'S/.' },
+      'comprobador-evolucion': { valor: 64, etiqueta: 'Índice de Salud Financiera Metódica (IMF)', tendencia: 'BAJA', variacion_porcentaje: 0, unidad: '%' },
       'clasificar-transaccion': { valor: 95, etiqueta: 'Nivel de Confianza', tendencia: 'ALZA', variacion_porcentaje: 0, unidad: '%' }
     };
 

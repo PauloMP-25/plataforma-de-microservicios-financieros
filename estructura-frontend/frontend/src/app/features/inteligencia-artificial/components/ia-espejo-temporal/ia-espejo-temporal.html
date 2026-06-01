@@ -1,57 +1,154 @@
-<div class="espejo-container" *ngIf="!cargando">
+<div class="espejo-container" [class.loading-active]="cargando">
 
-  <!-- Cabecera de Módulo -->
-  <div class="modulo-header">
-    <div class="modulo-badge">
-      <i class="fa-solid fa-mask text-amber-500"></i>
-      Módulo 5: El Espejo del Tiempo
+  <!-- Escáner de luz diagonal para animación de carga en el panel principal -->
+  <div class="loading-overlay-scanner" *ngIf="cargando">
+    <div class="scan-glow-line"></div>
+  </div>
+
+  <!-- VISTA CENTRAL DE INVOCACIÓN (Inicial o Cargando) -->
+  <div class="espejo-prompt-content" *ngIf="!resultado || cargando">
+    <div class="prompt-orb" [class.pulse-glow]="cargando">
+      <i class="fa-solid fa-clock-rotate-left"></i>
     </div>
-    <p class="modulo-lead">Una mirada profunda al impacto a largo plazo de tus decisiones diarias.</p>
-  </div>
-
-  <!-- Selector Temporal de Hitos -->
-  <div class="temporal-selector-bar">
-    <button 
-      class="btn-temp" 
-      [class.active]="hitoSeleccionado() === 3" 
-      (click)="setHito(3)">
-      <i class="fa-solid fa-calendar-minus"></i> 3 Meses
-    </button>
-    <button 
-      class="btn-temp" 
-      [class.active]="hitoSeleccionado() === 6" 
-      (click)="setHito(6)">
-      <i class="fa-solid fa-calendar-days"></i> 6 Meses
-    </button>
-    <button 
-      class="btn-temp" 
-      [class.active]="hitoSeleccionado() === 12" 
-      (click)="setHito(12)">
-      <i class="fa-solid fa-calendar-check"></i> 12 Meses
-    </button>
-  </div>
-
-  <!-- SECCIÓN A: CONTADOR CENTRAL DE IMPACTO -->
-  <app-ia-espejo-impact
-    [diferencia]="diferenciaNeta()">
-  </app-ia-espejo-impact>
-
-  <!-- SECCIÓN B: DÍPTICO DE ESPEJOS -->
-  <div class="split-mirrors-layout">
     
-    <!-- Espejo Izquierdo: Futuro de Continuidad -->
-    <app-ia-espejo-card
-      tipo="continuidad"
-      [hitoData]="getHitoData('continuidad')"
-      [cartaText]="espejoData().narrativasGemini.cartaContinuidad">
-    </app-ia-espejo-card>
+    <h3 *ngIf="!cargando">EL ESPEJO DEL TIEMPO</h3>
+    <h3 *ngIf="cargando" class="animate-pulse text-amber-500">ESCANEANDO LÍNEAS TEMPORALES...</h3>
+    
+    <p class="prompt-desc">
+      Una mirada profunda al impacto a largo plazo de tus decisiones diarias en tus metas y patrimonio.
+    </p>
 
-    <!-- Espejo Derecho: Futuro de Transformación -->
-    <app-ia-espejo-card
-      tipo="transformacion"
-      [hitoData]="getHitoData('transformacion')"
-      [cartaText]="espejoData().narrativasGemini.cartaTransformacion">
-    </app-ia-espejo-card>
+    <p class="prompt-sub" *ngIf="!cargando">
+      Define el rango de fechas en la barra superior y presiona el botón <strong>"EJECUTAR ANÁLISIS"</strong>.
+    </p>
+    <p class="prompt-sub animate-pulse text-slate-400" *ngIf="cargando">
+      Luka está analizando tus registros con Gemini Pro. Proyectando destinos a 3, 6 y 12 meses...
+    </p>
+  </div>
+
+  <!-- VISTA DE RESULTADOS (Cuando ya cargó y resultado != null) -->
+  <div class="resultado-espejo-layout" *ngIf="resultado && !cargando">
+    
+    <!-- 1. SECCIÓN SUPERIOR: EL PRESENTE (Consejo de Luka - Fila de Ancho Completo) -->
+    <div class="mirror-presente-banner mirror-frame-glass">
+      <div class="mirror-glass-sheen"></div>
+      
+      <!-- Espejo circular animado a la izquierda -->
+      <div class="presente-mirror-aside">
+        <div class="mystic-mirror-circle-mini">
+          <div class="mirror-glow-effect"></div>
+          <div class="avatar-luka-outer">
+            <i class="fa-solid fa-robot"></i>
+            <div class="pulse-ring"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Texto del consejo a la derecha -->
+      <div class="presente-content-body">
+        <h4 class="presente-title">CONSEJO DE LUKA</h4>
+        <div class="luka-advice-text" [innerHTML]="consejoLuka()"></div>
+      </div>
+    </div>
+
+    <!-- 2. SECCIÓN CENTRAL: Dos Columnas (Pasado vs Futuro) -->
+    <div class="mirror-dual-columns-grid">
+
+      <!-- COLUMNA 1: EL PASADO -->
+      <div class="mirror-column">
+        <div class="column-header-clean">
+          <i class="fa-solid fa-hourglass-start past-color-icon"></i>
+          <span>EL PASADO</span>
+        </div>
+        
+        <div class="past-cards-vertical-stack">
+          <!-- Tarjeta: Score Inicial -->
+          <div class="past-card card-glass glow-past">
+            <div class="past-metric-header">
+              <i class="fa-solid fa-gauge-simple-high text-slate-400"></i>
+              <span class="past-metric-label">SCORE INICIAL</span>
+            </div>
+            <div class="past-metric-value text-slate-300">
+              {{ espejoData().datosPresente.scoreActual }}/100
+            </div>
+            <p class="past-metric-desc">Salud financiera al iniciar el periodo analizado.</p>
+          </div>
+
+          <!-- Tarjeta: Ahorro Base -->
+          <div class="past-card card-glass glow-past">
+            <div class="past-metric-header">
+              <i class="fa-solid fa-wallet text-slate-400"></i>
+              <span class="past-metric-label">SALDO INICIAL</span>
+            </div>
+            <div class="past-metric-value text-slate-300">
+              S/ {{ espejoData().datosPresente.saldoActual | number:'1.2-2' }}
+            </div>
+            <p class="past-metric-desc">Capital base disponible en tus cuentas de ahorro.</p>
+          </div>
+
+          <!-- Tarjeta: Metas Activas -->
+          <div class="past-card card-glass glow-past">
+            <div class="past-metric-header">
+              <i class="fa-solid fa-bullseye text-slate-400"></i>
+              <span class="past-metric-label">METAS ACTIVAS</span>
+            </div>
+            <div class="past-metric-value text-slate-300">
+              {{ espejoData().datosPresente.metasActivas }} {{ espejoData().datosPresente.metasActivas === 1 ? 'Meta' : 'Metas' }}
+            </div>
+            <p class="past-metric-desc">Objetivos de ahorro que tenías vigentes.</p>
+          </div>
+
+          <!-- Tarjeta: Fugas Críticas -->
+          <div class="past-card card-glass habit-warning-card">
+            <div class="past-metric-header">
+              <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
+              <span class="past-metric-label text-amber-500">FUGAS CRÍTICAS DETECTADAS</span>
+            </div>
+            <p class="past-metric-desc text-slate-300">
+              Micro-consumos recurrentes en transporte y antojos de fin de semana limitan tu capacidad de inyectar capital directo a tus ahorros.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUMNA 2: EL FUTURO (Dividida en 2 filas) -->
+      <div class="mirror-column">
+        <div class="column-header-clean">
+          <i class="fa-solid fa-wand-magic-sparkles future-color-icon"></i>
+          <span>EL FUTURO (PROYECCIONES A {{ hitoSeleccionado() }} MESES)</span>
+        </div>
+
+        <div class="future-cards-vertical-rows">
+          <!-- Fila 1: Futuro de Continuidad -->
+          <app-ia-espejo-card
+            tipo="continuidad"
+            [hitoData]="getHitoData('continuidad')">
+          </app-ia-espejo-card>
+
+          <!-- Fila 2: Futuro de Transformación -->
+          <app-ia-espejo-card
+            tipo="transformacion"
+            [hitoData]="getHitoData('transformacion')">
+          </app-ia-espejo-card>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 3. SECCIÓN INFERIOR: PIE DE PÁGINA (Diferencia Neta - Fila de Ancho Completo) -->
+    <div class="mirror-footer-layout mirror-frame-glass">
+      <div class="mirror-glass-sheen"></div>
+      <div class="net-difference-horizontal">
+        <div class="diff-icon-glow">
+          <i class="fa-solid fa-scale-unbalanced"></i>
+        </div>
+        <div class="diff-info">
+          <span class="diff-label">DIFERENCIA NETA ESTIMADA</span>
+          <h2 class="diff-value">S/ {{ diferenciaNeta() | number:'1.2-2' }}</h2>
+          <p class="diff-desc">Impacto financiero neto acumulado proyectado entre continuar con tus hábitos del pasado frente a tu futuro de transformación a {{ hitoSeleccionado() }} meses.</p>
+        </div>
+      </div>
+    </div>
 
   </div>
 

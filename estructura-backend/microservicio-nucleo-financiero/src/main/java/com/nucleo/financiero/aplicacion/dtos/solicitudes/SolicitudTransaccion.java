@@ -18,7 +18,7 @@ import java.util.UUID;
  * @param categoriaId   ID de la categoría pre-existente.
  * @param metodoPago    Forma en que se realizó el pago.
  * @param etiquetas     Metadatos opcionales separados por comas.
- * @param notas         Detalle adicional de la transacción.
+ * @param descripcion   Detalle adicional de la transacción.
  */
 public record SolicitudTransaccion(
         @NotNull(message = "El usuarioId es obligatorio")
@@ -41,6 +41,6 @@ public record SolicitudTransaccion(
         MetodoPago metodoPago,
 
         String etiquetas,
-        String notas
+        String descripcion
 ) {
 }

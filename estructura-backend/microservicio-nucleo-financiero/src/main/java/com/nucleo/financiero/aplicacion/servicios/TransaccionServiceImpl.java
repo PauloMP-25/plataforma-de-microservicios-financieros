@@ -176,7 +176,7 @@ public class TransaccionServiceImpl implements ITransaccionService {
                 .fechaTransaccion(LocalDateTime.now())
                 .metodoPago(request.metodoPago())
                 .etiquetas(request.etiquetas())
-                .notas(request.notas())
+                .descripcion(request.descripcion())
                 .build();
     }
 
