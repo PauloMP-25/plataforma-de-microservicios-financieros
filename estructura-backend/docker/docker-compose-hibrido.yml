@@ -30,11 +30,11 @@ services:
     <<: *spring-base
     container_name: luka-ms-usuario
     build:
-      context: ../microservicio-usuario
-      dockerfile: Dockerfile.local
+      context: ..
+      dockerfile: microservicio-usuario/Dockerfile
     environment:
       <<: *env-common
-      SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_usuario?sslmode=require
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_usuario?sslmode=${DB_SSL_MODE:-require}
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
@@ -51,11 +51,11 @@ services:
     <<: *spring-base
     container_name: luka-ms-cliente
     build:
-      context: ../microservicio-cliente
-      dockerfile: Dockerfile.local
+      context: ..
+      dockerfile: microservicio-cliente/Dockerfile
     environment:
       <<: *env-common
-      SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_cliente?sslmode=require
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_cliente?sslmode=${DB_SSL_MODE:-require}
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
@@ -71,11 +71,11 @@ services:
     <<: *spring-base
     container_name: luka-ms-mensajeria
     build:
-      context: ../microservicio-mensajeria
-      dockerfile: Dockerfile.local
+      context: ..
+      dockerfile: microservicio-mensajeria/Dockerfile
     environment:
       <<: *env-common
-      SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_mensajeria?sslmode=require
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_mensajeria?sslmode=${DB_SSL_MODE:-require}
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
@@ -120,11 +120,11 @@ services:
     <<: *spring-base
     container_name: luka-ms-auditoria
     build:
-      context: ../microservicio-auditoria
-      dockerfile: Dockerfile.local
+      context: ..
+      dockerfile: microservicio-auditoria/Dockerfile
     environment:
       <<: *env-common
-      SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_auditoria?sslmode=require
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_auditoria?sslmode=${DB_SSL_MODE:-require}
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
@@ -137,11 +137,11 @@ services:
     <<: *spring-base
     container_name: luka-ms-nucleo-financiero
     build:
-      context: ../microservicio-nucleo-financiero
-      dockerfile: Dockerfile.local
+      context: ..
+      dockerfile: microservicio-nucleo-financiero/Dockerfile
     environment:
       <<: *env-common
-      SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_financiero?sslmode=require
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_financiero?sslmode=${DB_SSL_MODE:-require}
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
@@ -157,12 +157,12 @@ services:
     <<: *spring-base
     container_name: luka-ms-pago
     build:
-      context: ../microservicio-pago
-      dockerfile: Dockerfile.local
+      context: ..
+      dockerfile: microservicio-pago/Dockerfile
     environment:
       <<: *env-common
       SERVER_PORT: 8087
-      SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_pagos?sslmode=require
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_pagos?sslmode=${DB_SSL_MODE:-require}
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
@@ -177,8 +177,8 @@ services:
     <<: *spring-base
     container_name: luka-gateway
     build:
-      context: ../infraestructura/api-gateway
-      dockerfile: Dockerfile.local
+      context: ..
+      dockerfile: infraestructura/api-gateway/Dockerfile
     ports:
       - "${GATEWAY_PORT:-8080}:8080"
     environment:

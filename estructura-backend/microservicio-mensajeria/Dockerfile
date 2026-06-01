@@ -13,18 +13,18 @@ WORKDIR /build
 ENV MAVEN_OPTS="-Xmx256m"
 
 # 1. Primero instalamos la librería común localmente en el contenedor
-COPY estructura-backend/libreria-comun ./libreria-comun
+COPY libreria-comun ./libreria-comun
 RUN cd libreria-comun && mvn install -DskipTests -B
 
 # 2. Ahora preparamos el microservicio-mensajeria
 WORKDIR /build/microservicio-mensajeria
-COPY estructura-backend/microservicio-mensajeria/pom.xml .
+COPY microservicio-mensajeria/pom.xml .
 
 # Descargamos dependencias (esta capa se cachea)
 RUN mvn dependency:go-offline -B
 
 # Copiamos el código fuente y compilamos
-COPY estructura-backend/microservicio-mensajeria/src ./src
+COPY microservicio-mensajeria/src ./src
 
 # Compilamos usando mvn directamente
 RUN mvn package -DskipTests -B
