@@ -100,6 +100,8 @@ services:
       WHATSAPP_TOKEN: ${WHATSAPP_TOKEN}
       WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
       WHATSAPP_API_VERSION: ${WHATSAPP_API_VERSION}
+    depends_on:
+      - rabbitmq
     deploy:
       resources:
         limits:
@@ -120,6 +122,8 @@ services:
       WHATSAPP_TOKEN: ${WHATSAPP_TOKEN}
       WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
       WHATSAPP_API_VERSION: ${WHATSAPP_API_VERSION}
+    depends_on:
+      - rabbitmq
     deploy:
       resources:
         limits:
@@ -170,6 +174,8 @@ services:
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+    depends_on:
+      - rabbitmq
     deploy:
       resources:
         limits:
@@ -190,6 +196,8 @@ services:
       WHATSAPP_TOKEN: ${WHATSAPP_TOKEN}
       WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
       WHATSAPP_API_VERSION: ${WHATSAPP_API_VERSION}
+    depends_on:
+      - rabbitmq
     deploy:
       resources:
         limits:
@@ -210,6 +218,8 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+    depends_on:
+      - rabbitmq
     deploy:
       resources:
         limits:
