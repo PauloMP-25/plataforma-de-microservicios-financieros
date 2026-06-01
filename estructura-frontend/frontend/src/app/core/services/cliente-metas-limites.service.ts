@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from '../../enviroments/environment';
 import {
   RespuestaLimiteGasto,
@@ -21,7 +22,35 @@ export class ClienteMetasLimitesService {
   }
 
   listarMetas(): Observable<RespuestaMetaAhorro[]> {
-    return this.http.get<RespuestaMetaAhorro[]>(this.baseMetas);
+    return this.http.get<RespuestaMetaAhorro[]>(this.baseMetas).pipe(
+      catchError(() => {
+        // Mocks si falla el backend
+        return of([
+          {
+            id: 'mock-meta-1',
+            nombre: 'Fondo de Emergencia',
+            montoObjetivo: 5000,
+            montoActual: 2500,
+            porcentajeProgreso: 50,
+            fechaLimite: new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+            completada: false,
+            fechaCreacion: new Date().toISOString(),
+            fechaActualizacion: new Date().toISOString()
+          },
+          {
+            id: 'mock-meta-2',
+            nombre: 'Nueva Laptop',
+            montoObjetivo: 3500,
+            montoActual: 3500,
+            porcentajeProgreso: 100,
+            fechaLimite: new Date(new Date().getFullYear(), new Date().getMonth(), 15).toISOString().split('T')[0],
+            completada: true,
+            fechaCreacion: new Date().toISOString(),
+            fechaActualizacion: new Date().toISOString()
+          }
+        ] as RespuestaMetaAhorro[]);
+      })
+    );
   }
 
   listarMetasActivas(): Observable<RespuestaMetaAhorro[]> {

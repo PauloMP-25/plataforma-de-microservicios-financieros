@@ -1,0 +1,49 @@
+<div class="gym-container bg-slate-950 text-slate-200 p-6 min-h-[600px] rounded-2xl relative overflow-hidden">
+  
+  <!-- Cyberpunk background accents -->
+  <div class="absolute top-0 right-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="absolute bottom-0 left-0 w-64 h-64 bg-red-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8 relative z-10">
+    <div>
+      <h2 class="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent flex items-center gap-3">
+        <i class="fa-solid fa-dumbbell text-emerald-500"></i>
+        LUKA GYM
+      </h2>
+      <p class="text-slate-400 mt-1">Centro de Alto Rendimiento Financiero</p>
+    </div>
+    
+    <div class="flex gap-4">
+      <button class="btn-cyberpunk group" (click)="consultarEntrenamiento('2026-05-23', '2026-05-30')">
+        <span class="relative z-10 flex items-center gap-2">
+          <i class="fa-solid" [ngClass]="cargando() ? 'fa-spinner fa-spin' : 'fa-bolt'"></i>
+          {{ cargando() ? 'ANALIZANDO...' : 'EVALUAR ATLETA' }}
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Contenido Principal -->
+  <div *ngIf="entrenamientoCargado()" class="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10 fade-in-up">
+    
+    <!-- Columna Izquierda: Atleta y Score (4 columnas) -->
+    <div class="lg:col-span-4 flex flex-col gap-6 h-full">
+      <app-ia-zona-avatar class="flex-grow w-full" [estado]="estado()"></app-ia-zona-avatar>
+      <app-ia-zona-score-bar class="flex-none w-full" [score]="estado().scoreLuka"></app-ia-zona-score-bar>
+    </div>
+
+    <!-- Columna Derecha: Signos Vitales y Ejercicios (8 columnas) -->
+    <div class="lg:col-span-8 flex flex-col gap-6 h-full">
+      <app-ia-zona-vitales class="flex-none w-full" [metricas]="metricas()"></app-ia-zona-vitales>
+      <app-ia-zona-rutina class="flex-grow w-full" [rutinas]="rutinas()"></app-ia-zona-rutina>
+    </div>
+
+  </div>
+
+  <!-- Empty State Pre-Carga -->
+  <div *ngIf="!entrenamientoCargado() && !cargando()" class="flex flex-col items-center justify-center h-full opacity-50 py-20">
+    <i class="fa-solid fa-dna text-6xl text-slate-700 mb-4 animate-[pulse_3s_ease-in-out_infinite]"></i>
+    <p class="text-slate-500 text-lg">Inicia la evaluación para prescribir la rutina.</p>
+  </div>
+</div>

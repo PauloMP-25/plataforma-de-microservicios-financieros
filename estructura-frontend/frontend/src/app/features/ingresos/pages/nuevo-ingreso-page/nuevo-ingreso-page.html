@@ -18,9 +18,10 @@
           [categorias]="categorias"
           [metodos]="metodos"
           [model]="form"
-          [sugerencia]="sugerencia"
+          [sugerencias]="sugerencias"
           (modelChange)="form = $event; onDescripcionChange()"
-          (usarSugerencia)="usarSugerencia()"
+          (seleccionarSugerencia)="seleccionarSugerencia($event)"
+          (crearCategoriaManualmente)="crearCategoriaManualmente($event)"
           (guardar)="guardar()"
           (cancelar)="cancelar()">
         </app-ingreso-form>

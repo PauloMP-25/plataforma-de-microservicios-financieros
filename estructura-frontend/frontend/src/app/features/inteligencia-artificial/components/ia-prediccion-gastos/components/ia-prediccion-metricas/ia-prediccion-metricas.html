@@ -1,0 +1,60 @@
+<div class="metrics-footer">
+  <!-- Columna Izquierda: Educación Financiera -->
+  <div class="footer-education">
+    <div class="metric-edu edu-small">
+      <i class="fa-solid fa-arrow-trend-up" style="color: #cbd5e1;"></i>
+      <div>
+        <span class="edu-title" style="color: #cbd5e1;">Tendencia</span>
+        <p>Indica si tu ritmo de gasto está acelerando o disminuyendo en comparación al mes anterior.</p>
+      </div>
+    </div>
+    <div class="metric-edu edu-small" style="border-left-color: #10b981;">
+      <i class="fa-solid fa-shield-halved" style="color: #10b981;"></i>
+      <div>
+        <span class="edu-title" style="color: #10b981;">Riesgo</span>
+        <p>Evalúa la probabilidad de exceder tu presupuesto si mantienes el nivel de gastos actual.</p>
+      </div>
+    </div>
+    <div class="metric-edu edu-small" style="border-left-color: #f59e0b;">
+      <i class="fa-solid fa-scale-balanced" style="color: #f59e0b;"></i>
+      <div>
+        <span class="edu-title" style="color: #f59e0b;">Ahorro / Déficit Estimado</span>
+        <p>Muestra el saldo proyectado basándose en tu presupuesto y proyecciones de gasto futuro.</p>
+      </div>
+    </div>
+    <div class="metric-edu edu-small" style="border-left-color: #38bdf8;">
+      <i class="fa-solid fa-money-bill-wave" style="color: #38bdf8;"></i>
+      <div>
+        <span class="edu-title" style="color: #38bdf8;">Ingreso / Meta</span>
+        <p>El presupuesto total o meta de ingreso que has definido como límite para este mes.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Columna Derecha: Indicadores Horizontales con explicación -->
+  <div class="footer-kpis">
+    <div class="metric-card">
+      <span class="metric-lbl">Promedio Histórico</span>
+      <span class="metric-val font-numeric">S/. {{ promedioHistorico | number:'1.2-2' }}</span>
+    </div>
+    <div class="metric-edu edu-small">
+      <i class="fa-solid fa-clock-rotate-left"></i>
+      <div>
+        <span class="edu-title">Promedio Histórico</span>
+        <p>Tu gasto típico en meses pasados.</p>
+      </div>
+    </div>
+
+    <div class="metric-card highlight-border">
+      <span class="metric-lbl">Proyección Próxima</span>
+      <span class="metric-val purple-glow font-numeric">S/. {{ proyeccionProximoMes | number:'1.2-2' }}</span>
+    </div>
+    <div class="metric-edu highlight-edu edu-small">
+      <i class="fa-solid fa-wand-magic-sparkles"></i>
+      <div>
+        <span class="edu-title">Proyección Próxima</span>
+        <p>Gasto previsto si mantienes tus hábitos.</p>
+      </div>
+    </div>
+  </div>
+</div>

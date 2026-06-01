@@ -1,0 +1,95 @@
+<div class="evolution-container" [class.loading-active]="cargando">
+  <!-- Glowing Background Accents -->
+  <div class="absolute -top-40 -left-40 w-96 h-96 bg-lime-500/5 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+  <!-- Header -->
+  <div class="w-full flex items-center justify-between mb-6 border-b border-slate-900 pb-4 relative z-10">
+    <div>
+      <h2 class="text-3xl font-black bg-gradient-to-r from-lime-400 to-cyan-400 bg-clip-text text-transparent flex items-center gap-3">
+        <i class="fa-solid fa-chart-line text-lime-400"></i>
+        COMPROBADOR DE EVOLUCIÓN
+      </h2>
+      <p class="text-xs text-slate-500 uppercase tracking-widest mt-1">Comparación y Diagnóstico de Hábitos Financieros</p>
+    </div>
+
+    <!-- Back Button (Only visible in Dashboard state) -->
+    <div *ngIf="estadoActual === EstadoModulo.DASHBOARD">
+      <button (click)="resetearModulo()" class="flex items-center gap-2 text-xs font-mono border border-slate-800 bg-slate-950/60 hover:bg-slate-900 text-slate-400 hover:text-slate-100 hover:border-slate-700 px-4 py-2 rounded-xl transition-all duration-300">
+        <i class="fa-solid fa-rotate-left"></i> NUEVA RADIOGRAFÍA
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content Flow -->
+  <div class="flex-grow flex items-center justify-center relative z-10">
+    <!-- State 1: Evolution Placeholder -->
+    <div *ngIf="estadoActual === EstadoModulo.SELECTOR" class="placeholder-evolution-direct fade-in-up">
+      <div class="mystic-orb-evolution">
+        <div class="glow-ring"></div>
+        <div class="glow-ring-2"></div>
+        <i class="fa-solid fa-chart-line icon-evolution-pulse"></i>
+      </div>
+      
+      <h3 class="placeholder-title">
+        COMPROBADOR DE EVOLUCIÓN
+      </h3>
+      <p class="placeholder-desc">
+        Analiza y compara el comportamiento de tu estructura financiera entre dos periodos para diagnosticar la evolución de tus metas y flujos de caja.
+      </p>
+
+      <!-- Waveform/Scanning animation inside the placeholder -->
+      <div class="scanning-wave-box">
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+      </div>
+      
+      <p class="placeholder-action">
+        Define los periodos de fechas arriba y presiona "Consultar"
+      </p>
+    </div>
+
+    <!-- State 2: EKG Scanner Loading -->
+    <luka-escaner-carga *ngIf="estadoActual === EstadoModulo.ESCANEO" 
+                        class="w-full">
+    </luka-escaner-carga>
+
+    <!-- State 3: Dashboard -->
+    <div *ngIf="estadoActual === EstadoModulo.DASHBOARD" 
+         class="grid grid-cols-12 gap-6 w-full h-full fade-in-up">
+      
+      <!-- Esqueleto central (8 columns on XL) -->
+      <div class="col-span-12 lg:col-span-7 xl:col-span-8 flex flex-col justify-between h-full">
+        <luka-esqueleto-svg [data]="dashboardData.categorias" 
+                            (onCategoriaClick)="abrirReceta($event)"
+                            class="w-full h-full">
+        </luka-esqueleto-svg>
+      </div>
+      
+      <!-- KPIs Panel (4 columns on XL) -->
+      <div class="col-span-12 lg:col-span-5 xl:col-span-4 h-full">
+        <luka-panel-signos-vitales [kpis]="dashboardData.kpis" 
+                                   class="w-full h-full">
+        </luka-panel-signos-vitales>
+      </div>
+      
+      <!-- Final Verdict Banner (Full Width bottom) -->
+      <div class="col-span-full mt-4">
+        <luka-veredicto-final [imf]="dashboardData.imf" 
+                              [narrativa]="dashboardData.narrativaGemini"
+                              class="w-full">
+        </luka-veredicto-final>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Medical Recipe Drawer Modal -->
+  <luka-receta-medica [isOpen]="isModalOpen" 
+                      [categoria]="categoriaSeleccionada" 
+                      (onClose)="cerrarReceta()">
+  </luka-receta-medica>
+</div>

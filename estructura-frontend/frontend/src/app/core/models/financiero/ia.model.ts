@@ -14,7 +14,8 @@ export type ModuloIa =
   | 'REPORTE_COMPLETO'
   | 'HABITOS_FINANCIEROS'
   | 'RETO_AHORRO_DINAMICO'
-  | 'ANALISIS_ESTILO_VIDA';
+  | 'ANALISIS_ESTILO_VIDA'
+  | 'ESPEJO_TEMPORAL';
 
 export interface SolicitudIaDTO {
   idUsuario: string;
@@ -46,6 +47,7 @@ export interface SolicitudClasificacionDTO {
   tipo_movimiento: 'INGRESO' | 'GASTO';
   etiquetas?: string;
   notas?: string;
+  descripcion?: string;
 }
 
 // ── DTOs de Salida de ms-ia ──
@@ -102,4 +104,37 @@ export interface RespuestaIaDTO {
   metadataGrafico?: MetadataGraficoIaDTO;
   kpiPrincipal?: number;
   kpiLabel?: string;
+}
+
+// ── Modelos Específicos para Módulo 5: Espejo Temporal ──
+
+export interface DatosPresenteDTO {
+  scoreActual: number;
+  saldoActual: number;
+  metasActivas: number;
+}
+
+export interface ProyeccionHitoDTO {
+  scoreProyectado: number;
+  ahorroAcumulado: number;
+  metasCumplidas: string[];
+  metasFracasadas: string[];
+}
+
+export interface ProyeccionFuturaDTO {
+  hitos3Meses: ProyeccionHitoDTO;
+  hitos6Meses: ProyeccionHitoDTO;
+  hitos12Meses: ProyeccionHitoDTO;
+}
+
+export interface NarrativasGeminiDTO {
+  cartaContinuidad: string;
+  cartaTransformacion: string;
+}
+
+export interface InsightEspejoTemporalDTO {
+  datosPresente: DatosPresenteDTO;
+  proyeccionContinuidad: ProyeccionFuturaDTO;
+  proyeccionTransformacion: ProyeccionFuturaDTO;
+  narrativasGemini: NarrativasGeminiDTO;
 }

@@ -113,12 +113,13 @@ export class Header implements OnInit {
         map(() => {
           let r = this.route;
           while (r.firstChild) r = r.firstChild;
-          return r.snapshot.data;
+          return { data: r.snapshot.data, queryParams: r.snapshot.queryParams };
         })
       )
-      .subscribe(data => {
+      .subscribe(({data, queryParams}) => {
         this.pageTitle   = data['title']       ?? 'Luka';
-        this.breadcrumbs = data['breadcrumbs'] ?? [];
+        this.breadcrumbs = data['breadcrumbs'] ? [...data['breadcrumbs']] : [];
+        this.actualizarBreadcrumbsModulo(queryParams);
         this.closeAll();
       });
 
@@ -126,14 +127,33 @@ export class Header implements OnInit {
     let r = this.route;
     while (r.firstChild) r = r.firstChild;
     const data       = r.snapshot.data;
+    const queryParams = r.snapshot.queryParams;
     this.pageTitle   = data['title']       ?? 'Resumen';
-    this.breadcrumbs = data['breadcrumbs'] ?? [];
+    this.breadcrumbs = data['breadcrumbs'] ? [...data['breadcrumbs']] : [];
+    this.actualizarBreadcrumbsModulo(queryParams);
 
     // Mascota aparece automáticamente a los 4s
     // TODO: mensaje personalizado desde MascotaService
     setTimeout(() => {
       this.abrirMascota('¡Hola! 👋 ¿Ya registraste tus gastos de hoy?');
     }, 4000);
+  }
+
+  private actualizarBreadcrumbsModulo(queryParams: any): void {
+    const modulo = queryParams['modulo'];
+    if (modulo) {
+      const MODULO_NOMBRES: Record<string, string> = {
+        'predecir-gastos': 'PREDICCIÓN DE GASTOS',
+        'gasto-hormiga': 'GASTOS HORMIGA',
+        'simular-meta': 'SIMULAR META',
+        'reporte-completo': 'REPORTE EJECUTIVO',
+        'estilo-vida': 'ESTILO DE VIDA',
+        'habitos-financieros': 'HÁBITOS FINANCIEROS',
+        'reto-ahorro': 'RETO DE AHORRO'
+      };
+      const nombre = MODULO_NOMBRES[modulo] || modulo.replace(/-/g, ' ').toUpperCase();
+      this.breadcrumbs.push({ label: nombre });
+    }
   }
 
   get totalIngresosMes(): number {

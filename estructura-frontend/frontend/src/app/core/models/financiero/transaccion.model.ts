@@ -16,6 +16,7 @@ export interface TransaccionDTO {
   metodoPago:        MetodoPago;
   etiquetas:         string | null;   
   notas:             string | null;
+  descripcion:       string | null;
   fechaRegistro:     string;          
 }
  
@@ -30,6 +31,7 @@ export interface TransaccionRequestDTO {
   metodoPago:        MetodoPago;
   etiquetas?:        string;          // opcional
   notas?:            string;          // opcional
+  descripcion?:      string;          // opcional
 }
  
 // ─── Filtros para listarHistorial ─────────────────────────────────────────────

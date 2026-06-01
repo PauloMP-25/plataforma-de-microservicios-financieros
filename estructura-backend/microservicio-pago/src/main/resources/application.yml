@@ -3,6 +3,8 @@ spring:
     import: optional:file:../.env[.properties]
   application:
     name: microservicio-pago
+  profiles:
+    active: local
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/db_luka_pagos}
     username: ${DATABASE_USER:postgres}

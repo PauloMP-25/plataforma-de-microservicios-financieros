@@ -1,0 +1,117 @@
+.metrics-footer {
+  display: grid;
+  grid-template-columns: 1.3fr 0.7fr;
+  grid-template-rows: repeat(4, 1fr);
+  grid-auto-flow: column;
+  gap: 1rem 2rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  align-items: stretch;
+}
+
+.footer-education, .footer-kpis {
+  display: contents;
+}
+
+.metric-card {
+  background: rgba(30, 41, 59, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  height: 100%;
+
+  .metric-lbl {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+
+  .metric-val {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #f8fafc;
+  }
+
+  &.highlight-border {
+    border: 1px solid rgba(168, 85, 247, 0.35);
+    background: rgba(168, 85, 247, 0.04);
+  }
+
+  .purple-glow {
+    color: #e9d5ff;
+    text-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
+  }
+
+  &:hover {
+    background: rgba(30, 41, 59, 0.45);
+    transform: translateY(-2px);
+  }
+}
+
+.font-numeric {
+  font-family: 'Outfit', 'Inter', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.metric-edu {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(15, 23, 42, 0.5);
+  padding: 14px 18px;
+  border-radius: 8px;
+  border-left: 3px solid #38bdf8;
+  height: 100%;
+
+  i {
+    color: #38bdf8;
+    margin-top: 2px;
+    font-size: 1.2rem;
+  }
+  
+  .edu-title {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #38bdf8;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #cbd5e1;
+  }
+
+  &.highlight-edu {
+    border-left-color: #a855f7;
+    i { color: #a855f7; }
+    .edu-title { color: #a855f7; }
+  }
+
+  &.edu-small {
+    padding: 12px 16px;
+    i { font-size: 1.15rem; }
+    p { font-size: 0.85rem; }
+    .edu-title { font-size: 0.85rem; margin-bottom: 3px; }
+  }
+}
+
+@media (max-width: 900px) {
+  .metrics-footer {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    grid-auto-flow: row;
+  }
+}

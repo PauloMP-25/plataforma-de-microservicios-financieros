@@ -67,3 +67,22 @@ management:
 # Este nuevo documento YAML se procesa DESPUÉS del import de spring.config.import,
 # lo que permite sobrescribir los valores importados de .env localmente.
 URL_PROD_FINANCIERO: http://localhost:8085
+
+spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ""
+      ssl:
+        enabled: false
+
+eureka:
+  client:
+    enabled: false

@@ -2,7 +2,7 @@
 <div class="modulo-simulador-contenedor" *ngIf="resultado" [class.es-viable]="esViableSimulado()">
 
   <!-- Respuesta de Producción de Luka -->
-  <app-meta-respuesta-coach [consejo]="resultado?.consejo"></app-meta-respuesta-coach>
+  <app-meta-respuesta-coach [consejo]="resultado.consejo"></app-meta-respuesta-coach>
 
   <!-- Cabecera del Simulador (HUD) -->
   <div class="simulador-header">
@@ -12,7 +12,7 @@
           [class.fa-triangle-exclamation]="!esViableSimulado()"></i>
         <span>{{ esViableSimulado() ? 'PROYECCIÓN VIABLE' : 'AJUSTAR PLAN' }}</span>
       </div>
-      <h2 class="meta-nombre-titulo">{{ resultado?.insight?.meta_nombre || 'Laptop Gamer' }}</h2>
+      <h2 class="meta-nombre-titulo">{{ resultado.insight?.meta_nombre || 'Laptop Gamer' }}</h2>
     </div>
 
     <div class="simulador-kpis-grid">

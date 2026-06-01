@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../enviroments/environment';
 import { AuthService } from './auth.service';
 import {
@@ -9,23 +10,27 @@ import {
   TransaccionFiltros,
 } from '../models/financiero/transaccion.model';
 import { PaginaDTO } from '../models/shared/pagina.model';
+import { ResultadoApi } from '../models/auth/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class Transacciones {
 
-  private base = `${environment.gatewayUrl}/api/v1/transacciones`;
+  private base = `${environment.gatewayUrl}/api/v1/financiero/transacciones`;
 
   constructor(private http: HttpClient, private auth: AuthService) {}
 
-  
-  /*Registrar una transacción (ingreso o gasto)*/
+  /* Registrar una transacción (ingreso o gasto) */
   registrar(request: TransaccionRequestDTO): Observable<TransaccionDTO> {
-    return this.http.post<TransaccionDTO>(this.base, request);
+    return this.http.post<ResultadoApi<TransaccionDTO>>(this.base, request).pipe(
+      map(res => res.datos)
+    );
   }
 
   /* Registrar varias transacciones a la vez */
   registrarLote(requests: TransaccionRequestDTO[]): Observable<TransaccionDTO[]> {
-    return this.http.post<TransaccionDTO[]>(`${this.base}/lote`, requests);
+    return this.http.post<ResultadoApi<TransaccionDTO[]>>(`${this.base}/lote`, requests).pipe(
+      map(res => res.datos)
+    );
   }
 
   /**
@@ -49,21 +54,39 @@ export class Transacciones {
       .set('pagina',  filtros.pagina  ?? 0)
       .set('tamanio', filtros.tamanio ?? 20);
 
-    return this.http.get<PaginaDTO<TransaccionDTO>>(`${this.base}/historial`, { params });
+    return this.http.get<ResultadoApi<TransaccionDTO[]>>(`${this.base}/historial`, { params }).pipe(
+      map(resp => {
+        const content = resp.datos || [];
+        const pag = resp.pagina;
+        return {
+          content: content,
+          totalElements: pag ? pag.totalElementos : content.length,
+          totalPages: pag ? pag.totalPaginas : 1,
+          number: pag ? pag.numeroPagina : 0,
+          size: pag ? pag.tamañoPagina : content.length
+        } as PaginaDTO<TransaccionDTO>;
+      })
+    );
   }
 
   /* Detalle de una transacción por ID */
   obtenerPorId(id: string): Observable<TransaccionDTO> {
-    return this.http.get<TransaccionDTO>(`${this.base}/${id}`);
+    return this.http.get<ResultadoApi<TransaccionDTO>>(`${this.base}/${id}`).pipe(
+      map(res => res.datos)
+    );
   }
 
   /* Actualizar transacción */
   actualizar(id: string, request: TransaccionRequestDTO): Observable<TransaccionDTO> {
-    return this.http.put<TransaccionDTO>(`${this.base}/${id}`, request);
+    return this.http.put<ResultadoApi<TransaccionDTO>>(`${this.base}/${id}`, request).pipe(
+      map(res => res.datos)
+    );
   }
 
   /* Eliminar transacción */
   eliminar(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.base}/${id}`);
+    return this.http.delete<ResultadoApi<void>>(`${this.base}/${id}`).pipe(
+      map(() => undefined)
+    );
   }
 }

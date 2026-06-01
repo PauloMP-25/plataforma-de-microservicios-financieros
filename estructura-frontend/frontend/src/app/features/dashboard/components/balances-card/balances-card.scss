@@ -1,0 +1,151 @@
+/* ── Estilos de Glassmorphism Genéricos ── */
+.glass-card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  position: relative;
+  border-radius: var(--radius-lg);
+
+  &:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.25);
+  }
+}
+
+/* ── Brillos (Glows) Temáticos ── */
+.glow-cyan:hover {
+  box-shadow: 0 12px 40px 0 rgba(34, 211, 238, 0.15);
+  border-color: rgba(34, 211, 238, 0.3);
+}
+.glow-green:hover {
+  box-shadow: 0 12px 40px 0 rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+.glow-purple:hover {
+  box-shadow: 0 12px 40px 0 rgba(171, 71, 188, 0.15);
+  border-color: rgba(171, 71, 188, 0.3);
+}
+.glow-indigo:hover {
+  box-shadow: 0 12px 40px 0 rgba(91, 106, 240, 0.15);
+  border-color: rgba(91, 106, 240, 0.3);
+}
+
+/* ── KPI GRID ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.kpi-card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 150px;
+
+  .kpi-icon-container {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 16px;
+  }
+
+  .kpi-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .kpi-value {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin: 4px 0 8px;
+    line-height: 1.2;
+  }
+
+  .kpi-trend {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+
+    &.trend-up {
+      color: var(--color-success);
+    }
+  }
+
+  .kpi-sparkline {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 35px;
+    overflow: hidden;
+    opacity: 0.8;
+  }
+
+  /* Barras de progreso de presupuestos */
+  .kpi-progress-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 6px;
+
+    .kpi-progress-bar {
+      height: 6px;
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+
+    .kpi-progress-fill {
+      height: 100%;
+      border-radius: var(--radius-full);
+      &.bg-purple {
+        background: linear-gradient(90deg, #ab47bc, #ddb7ff);
+      }
+    }
+
+    .kpi-progress-text {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+  }
+}
+
+/* Colores suaves para los contenedores de iconos */
+.bg-cyan-soft { background: rgba(34, 211, 238, 0.1); }
+.text-cyan { color: #22d3ee; }
+.bg-green-soft { background: rgba(34, 197, 94, 0.1); }
+.text-green { color: #22c55e; }
+.bg-purple-soft { background: rgba(171, 71, 188, 0.1); }
+.text-purple { color: #ab47bc; }
+.bg-indigo-soft { background: rgba(91, 106, 240, 0.1); }
+.text-indigo { color: #5b6af0; }
+
+.text-mono {
+  font-feature-settings: "tnum";
+}
+
+@media (max-width: 768px) {
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}

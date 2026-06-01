@@ -43,11 +43,21 @@
     <!-- Título del tablero -->
     <div class="mock-test-panel" style="display:flex; gap:8px; margin-bottom: 16px;">
       <span style="font-size:0.8rem; color:#f59e0b; align-self:center; font-weight:bold;">Test Mock:</span>
-      <button (click)="cargarMock(0)" style="background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.4); color:#f59e0b; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:0.75rem;">0 Casos</button>
-      <button (click)="cargarMock(1)" style="background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.4); color:#f59e0b; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:0.75rem;">1 Caso</button>
-      <button (click)="cargarMock(2)" style="background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.4); color:#f59e0b; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:0.75rem;">2 Casos</button>
-      <button (click)="cargarMock(3)" style="background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.4); color:#f59e0b; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:0.75rem;">3 Casos</button>
-      <button (click)="cargarMock(5)" style="background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.4); color:#f59e0b; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:0.75rem;">5 Casos</button>
+      <button (click)="cargarMock(0)"
+        style="background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.4); color:#f59e0b; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:0.75rem;">0
+        Casos</button>
+      <button (click)="cargarMock(1)"
+        style="background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.4); color:#f59e0b; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:0.75rem;">1
+        Caso</button>
+      <button (click)="cargarMock(2)"
+        style="background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.4); color:#f59e0b; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:0.75rem;">2
+        Casos</button>
+      <button (click)="cargarMock(3)"
+        style="background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.4); color:#f59e0b; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:0.75rem;">3
+        Casos</button>
+      <button (click)="cargarMock(5)"
+        style="background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.4); color:#f59e0b; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:0.75rem;">5
+        Casos</button>
     </div>
 
     <!-- ══════════ CONSEJO DEL COACH IA (Arriba) ══════════ -->
@@ -79,7 +89,7 @@
       </div>
       <div class="tendencia-badge" [ngClass]="getTendenciaClase()">
         <i class="fa-solid"
-           [ngClass]="variacion() > 0 ? 'fa-arrow-trend-up' : variacion() < 0 ? 'fa-arrow-trend-down' : 'fa-minus'"></i>
+          [ngClass]="variacion() > 0 ? 'fa-arrow-trend-up' : variacion() < 0 ? 'fa-arrow-trend-down' : 'fa-minus'"></i>
         <span>{{ getTendenciaTexto() }}</span>
       </div>
     </div>
@@ -101,18 +111,13 @@
               <i class="fa-solid fa-shield-check"></i>
             </div>
             <h4>¡Todo en orden!</h4>
-            <p>¡Felicidades! No he encontrado gastos hormiga. Tus finanzas están en perfecto estado. Sigue manteniendo tus buenos hábitos financieros.</p>
+            <p>¡Felicidades! No he encontrado gastos hormiga. Tus finanzas están en perfecto estado. Sigue manteniendo
+              tus buenos hábitos financieros.</p>
           </div>
 
-          <div
-            *ngFor="let s of sospechosos(); let i = index"
-            class="ficha-policial"
-            [style.transform]="'rotate(' + s.rotacion + 'deg)'"
-            [style.animation-delay]="s.delay + 'ms'"
-            [class.ficha-hover]="cardHoveredIndex() === i"
-            (mouseenter)="onCardHover(i)"
-            (mouseleave)="onCardLeave()"
-          >
+          <div *ngFor="let s of sospechosos(); let i = index" class="ficha-policial"
+            [style.transform]="'rotate(' + s.rotacion + 'deg)'" [style.animation-delay]="s.delay + 'ms'"
+            [class.ficha-hover]="cardHoveredIndex() === i" (mouseenter)="onCardHover(i)" (mouseleave)="onCardLeave()">
             <!-- Pin de corcho -->
             <div class="pin-corcho"></div>
 
@@ -131,7 +136,7 @@
               </div>
               <div class="ficha-stat" *ngIf="s.promedio_por_compra">
                 <i class="fa-solid fa-receipt"></i>
-                <span>S/. {{ s.promedio_por_compra?.toFixed(2) }} prom.</span>
+                <span>S/. {{ s.promedio_por_compra.toFixed(2) }} prom.</span>
               </div>
               <div class="ficha-stat" *ngIf="s.dia_mayor_gasto && s.dia_mayor_gasto !== 'N/A'">
                 <i class="fa-solid fa-calendar-day"></i>
@@ -139,7 +144,8 @@
               </div>
               <div class="ficha-stat peligro-stat" *ngIf="s.nivelPeligro">
                 <i class="fa-solid fa-triangle-exclamation"></i>
-                <span [ngClass]="'badge-' + s.nivelPeligro?.toLowerCase()">Peligro: <strong>{{ s.nivelPeligro }}</strong></span>
+                <span [ngClass]="'badge-' + s.nivelPeligro.toLowerCase()">Peligro: <strong>{{ s.nivelPeligro
+                    }}</strong></span>
               </div>
               <div class="ficha-stat alternativa-stat" *ngIf="s.alternativa">
                 <i class="fa-solid fa-lightbulb"></i>
@@ -155,8 +161,8 @@
 
             <!-- Hilo rojo SVG animado (solo en hover) -->
             <svg class="hilo-rojo" *ngIf="cardHoveredIndex() === i" viewBox="0 0 100 20" preserveAspectRatio="none">
-              <path d="M0,10 Q25,0 50,10 T100,10" stroke="#ef4444" stroke-width="1.5" fill="none"
-                    stroke-dasharray="200" class="hilo-path"/>
+              <path d="M0,10 Q25,0 50,10 T100,10" stroke="#ef4444" stroke-width="1.5" fill="none" stroke-dasharray="200"
+                class="hilo-path" />
             </svg>
           </div>
         </div>
@@ -178,18 +184,17 @@
           <div class="reloj-container">
             <div class="reloj-face">
               <!-- Marcas de horas -->
-              <span *ngFor="let h of [1,2,3,4,5,6,7,8,9,10,11,12]"
-                    class="reloj-marca"
-                    [style.transform]="'rotate(' + (h * 30) + 'deg)'">
+              <span *ngFor="let h of [1,2,3,4,5,6,7,8,9,10,11,12]" class="reloj-marca"
+                [style.transform]="'rotate(' + (h * 30) + 'deg)'">
               </span>
               <!-- Manecilla de horas -->
               <div class="manecilla manecilla-horas"
-                   [style.animation-duration]="velocidadReloj() === 0 ? '0s' : (velocidadReloj() * 12) + 's'"
-                   [style.animation-play-state]="velocidadReloj() === 0 ? 'paused' : 'running'"></div>
+                [style.animation-duration]="velocidadReloj() === 0 ? '0s' : (velocidadReloj() * 12) + 's'"
+                [style.animation-play-state]="velocidadReloj() === 0 ? 'paused' : 'running'"></div>
               <!-- Manecilla de minutos -->
               <div class="manecilla manecilla-minutos"
-                   [style.animation-duration]="velocidadReloj() === 0 ? '0s' : velocidadReloj() + 's'"
-                   [style.animation-play-state]="velocidadReloj() === 0 ? 'paused' : 'running'"></div>
+                [style.animation-duration]="velocidadReloj() === 0 ? '0s' : velocidadReloj() + 's'"
+                [style.animation-play-state]="velocidadReloj() === 0 ? 'paused' : 'running'"></div>
               <!-- Centro del reloj -->
               <div class="reloj-centro">
                 <i class="fa-solid fa-dollar-sign"></i>
@@ -258,7 +263,8 @@
           <i class="fa-solid fa-triangle-exclamation"></i>
           <div class="alerta-text">
             <h4>Alerta Máxima</h4>
-            <p>Tienes múltiples focos de fuga de dinero. Es urgente tomar el control para no afectar gravemente tus finanzas.</p>
+            <p>Tienes múltiples focos de fuga de dinero. Es urgente tomar el control para no afectar gravemente tus
+              finanzas.</p>
           </div>
         </div>
       </div>

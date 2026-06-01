@@ -66,6 +66,7 @@ server:
         initial-interval: 1000ms
         max-attempts: 3
 
+
 # ── Actuator (Health Checks) ───────────────────────────────────────────────────
 management:
   endpoints:

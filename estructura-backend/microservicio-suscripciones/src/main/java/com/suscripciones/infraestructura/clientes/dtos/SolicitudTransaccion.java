@@ -14,6 +14,6 @@ public record SolicitudTransaccion(
         UUID categoriaId,
         MetodoPago metodoPago,
         String etiquetas,
-        String notas
+        String descripcion
 ) {
 }
