@@ -7,6 +7,7 @@ import { FinancieroService } from '../../../../core/services/Financiero.service'
 import { forkJoin } from 'rxjs';
 import { AppEventBus } from '../../../../core/services/app-event-bus.service';
 import { GastosStateService } from '../../../../core/services/gastos-state.service';
+import { IaService } from '../../../../core/services/ia.service';
 
 @Component({
   selector: 'app-gastos-page',
@@ -21,7 +22,9 @@ export class GastosPage {
   private readonly financieroService = inject(FinancieroService);
   private readonly eventBus = inject(AppEventBus);
   private readonly stateService = inject(GastosStateService);
+  private readonly iaService = inject(IaService);
 
+  readonly sugerenciasIa = signal<string[]>([]);
   readonly cargando = computed(() => this.stateService.cargando());
   readonly terminoBusqueda = signal('');
   readonly tabActiva = signal<'todos' | 'pagados' | 'pendientes' | 'recurrentes'>('todos');
@@ -94,6 +97,13 @@ export class GastosPage {
           { id: 'hogar', nombre: 'Hogar' },
           { id: 'otros', nombre: 'Otros' },
         ];
+  }
+
+  get categoriasConCrear(): any[] {
+    return [
+      ...this.categoriasDisponibles,
+      { id: 'CREAR_NUEVA', nombre: '＋ Crear nueva categoría...' }
+    ];
   }
 
   readonly metodosPagoDisponibles: Array<{ id: MetodoPago; nombre: string }> = [
@@ -534,6 +544,64 @@ export class GastosPage {
     });
   }
 
+  onDescripcionChange(desc: string): void {
+    const d = desc.trim();
+    if (!d || d.length < 4) {
+      this.sugerenciasIa.set([]);
+      return;
+    }
+
+    this.iaService.getClasificarTransaccion({
+      id_temporal: 'nuevo-gasto',
+      tipo_movimiento: 'GASTO',
+      descripcion: d
+    }).subscribe({
+      next: (res) => {
+        if (res.datos && res.datos.sugerencias) {
+          this.sugerenciasIa.set(res.datos.sugerencias);
+        }
+      },
+      error: () => {
+        const matched = ['Alimentos', 'Transporte', 'Servicios', 'Hogar', 'Salud', 'Educación', 'Entretenimiento'].filter(c => 
+          c.toLowerCase().includes(d.toLowerCase())
+        );
+        this.sugerenciasIa.set(matched.length > 0 ? matched : ['Otros Gastos']);
+      }
+    });
+  }
+
+  confirmarCrearCategoriaGasto(nombre: string): void {
+    const nameTrim = nombre.trim();
+    if (!nameTrim) return;
+
+    const match = this.categoriasDisponibles.find(
+      c => c.nombre.toLowerCase() === nameTrim.toLowerCase()
+    );
+    if (match) {
+      this.categoria.set(match.id);
+      return;
+    }
+
+    this.financieroService.crearCategoria({
+      nombre: nameTrim,
+      descripcion: 'Categoría personalizada de gastos',
+      icono: this.iconoCategoria(nameTrim),
+      tipo: 'GASTO'
+    }).subscribe({
+      next: (cat) => {
+        this.stateService.categorias.update(cats => [...cats, cat]);
+        this.categoria.set(cat.id);
+      },
+      error: (err) => {
+        console.error('Error al crear categoría de gasto:', err);
+      }
+    });
+  }
+
+  seleccionarSugerenciaGasto(nombre: string): void {
+    this.confirmarCrearCategoriaGasto(nombre);
+  }
+
   private validarFormulario(): Record<string, string> {
     const out: Record<string, string> = {};
 
@@ -567,6 +635,7 @@ export class GastosPage {
     this.tipoFrecuencia.set('DIARIO');
     this.errores.set({});
     this.mensajeFormulario.set('');
+    this.sugerenciasIa.set([]);
   }
 
   private parseNotas(notas: string | null, fallbackCategoria: string): { nombre: string; detalle: string } {

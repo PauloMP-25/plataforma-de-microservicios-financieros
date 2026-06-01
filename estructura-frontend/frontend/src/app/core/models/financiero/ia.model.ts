@@ -47,6 +47,7 @@ export interface SolicitudClasificacionDTO {
   tipo_movimiento: 'INGRESO' | 'GASTO';
   etiquetas?: string;
   notas?: string;
+  descripcion?: string;
 }
 
 // ── DTOs de Salida de ms-ia ──

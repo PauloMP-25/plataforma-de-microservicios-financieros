@@ -344,12 +344,33 @@
             <span><i class="fa-solid fa-tags"></i> Categoría</span>
             <select [value]="categoria()" (change)="categoria.set($any($event.target).value)">
               <option value="">Selecciona una categoría</option>
-              @for (cat of categoriasDisponibles; track cat.id) {
+              @for (cat of categoriasConCrear; track cat.id) {
                 <option [value]="cat.id">{{ cat.nombre }}</option>
               }
             </select>
             @if (errores()['categoria']) { <small class="gastos-page__error">{{ errores()['categoria'] }}</small> }
           </label>
+
+          <!-- Creación en línea de categoría en Gastos -->
+          @if (categoria() === 'CREAR_NUEVA') {
+            <div class="gastos-page__form-col-full mt-1.5 p-2.5 rounded-xl border border-dashed border-violet-300 bg-violet-50/30 dark:border-violet-500/30">
+              <span class="text-xs font-bold text-violet-700 dark:text-violet-300">Nombre de la nueva categoría</span>
+              <div class="flex gap-2">
+                <input 
+                  type="text" 
+                  #nuevaCatInput
+                  placeholder="Ej: Mascotas, Regalos..." 
+                  class="w-full rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-900"
+                />
+                <button 
+                  type="button" 
+                  class="rounded-lg bg-violet-600 px-3 py-1 text-xs font-bold text-white shadow-sm hover:bg-violet-500"
+                  (click)="confirmarCrearCategoriaGasto(nuevaCatInput.value); nuevaCatInput.value = ''">
+                  Crear
+                </button>
+              </div>
+            </div>
+          }
 
           <label>
             <span><i class="fa-solid fa-wallet"></i> Monto</span>
@@ -359,9 +380,27 @@
 
           <label class="gastos-page__form-col-full">
             <span><i class="fa-solid fa-note-sticky"></i> Descripción</span>
-            <textarea rows="3" [value]="descripcion()" (input)="descripcion.set($any($event.target).value)"></textarea>
+            <textarea rows="3" [value]="descripcion()" (input)="descripcion.set($any($event.target).value); onDescripcionChange($any($event.target).value)"></textarea>
             @if (errores()['descripcion']) { <small class="gastos-page__error">{{ errores()['descripcion'] }}</small> }
           </label>
+
+          <!-- Sugerencias IA en Gastos -->
+          @if (sugerenciasIa().length > 0) {
+            <div class="gastos-page__form-col-full rounded-xl border border-violet-200 bg-violet-50/20 p-3">
+              <p class="text-xs font-bold text-violet-700 dark:text-violet-300 mb-2">✨ Categorías sugeridas por IA (haz clic para auto-seleccionar o crear):</p>
+              <div class="flex flex-wrap gap-2">
+                @for (sug of sugerenciasIa(); track sug) {
+                  <button 
+                    type="button" 
+                    class="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-white px-2.5 py-1.5 text-xs font-extrabold text-slate-700 shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-indigo-950/40"
+                    (click)="seleccionarSugerenciaGasto(sug)">
+                    <i class="fa-solid fa-sparkles text-indigo-500"></i>
+                    {{ sug }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
 
           <label>
             <span><i class="fa-solid fa-calendar-days"></i> Fecha</span>

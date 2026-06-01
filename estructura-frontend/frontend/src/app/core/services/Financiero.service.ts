@@ -4,7 +4,7 @@ import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../enviroments/environment';
 import { ResumenFinancieroDTO}  from '../models/financiero/resumen.model';
-import { CategoriaDTO, TipoMovimiento } from '../models/financiero/categoria.model';
+import { CategoriaDTO, CategoriaRequestDTO, TipoMovimiento } from '../models/financiero/categoria.model';
 import { AuthService } from './auth.service';
 import { ResultadoApi } from '../models/auth/user.model';
  
@@ -53,6 +53,12 @@ export class FinancieroService {
     let params = new HttpParams();
     if (tipo) params = params.set('tipo', tipo);
     return this.http.get<ResultadoApi<CategoriaDTO[]>>(this.baseCategorias, { params }).pipe(
+      map(resp => resp.datos)
+    );
+  }
+
+  crearCategoria(request: CategoriaRequestDTO): Observable<CategoriaDTO> {
+    return this.http.post<ResultadoApi<CategoriaDTO>>(this.baseCategorias, request).pipe(
       map(resp => resp.datos)
     );
   }

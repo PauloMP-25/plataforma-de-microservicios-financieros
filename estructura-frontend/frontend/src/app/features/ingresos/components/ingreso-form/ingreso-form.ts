@@ -14,22 +14,42 @@ export class IngresoFormComponent {
   @Input() metodos: OptionItem[] = [];
   @Input() model: IngresoFormData = {
     monto: 1500,
-    fechaTransaccion: '31/05/2025',
-    descripcion: 'Pago mensual de la empresa ABC',
-    categoria: 'Salario',
+    fechaTransaccion: '',
+    descripcion: '',
+    categoria: '',
     metodoPago: 'TRANSFERENCIA',
-    etiquetas: ['Trabajo', 'Mensual'],
+    etiquetas: [],
   };
-  @Input() sugerencia = { categoria: 'Salario', confianza: 0.98 };
+  @Input() sugerencias: string[] = [];
 
   @Output() modelChange = new EventEmitter<IngresoFormData>();
   @Output() guardar = new EventEmitter<void>();
   @Output() cancelar = new EventEmitter<void>();
-  @Output() usarSugerencia = new EventEmitter<void>();
+  @Output() seleccionarSugerencia = new EventEmitter<string>();
+  @Output() crearCategoriaManualmente = new EventEmitter<string>();
 
   nuevaEtiqueta = '';
+  nuevaCategoriaNombre = '';
 
-  onModelChange(): void { this.modelChange.emit(this.model); }
+  // Getters to inject the custom option safely
+  get categoriasConCrear(): OptionItem[] {
+    return [
+      ...this.categorias,
+      { label: '＋ Crear nueva categoría...', value: 'CREAR_NUEVA' }
+    ];
+  }
+
+  onModelChange(): void { 
+    this.modelChange.emit(this.model); 
+  }
+
+  confirmarCrearCategoria(): void {
+    const nombre = (this.nuevaCategoriaNombre || '').trim();
+    if (!nombre) return;
+    
+    this.crearCategoriaManualmente.emit(nombre);
+    this.nuevaCategoriaNombre = '';
+  }
 
   agregarEtiqueta(): void {
     const raw = (this.nuevaEtiqueta || '').trim();
@@ -47,4 +67,3 @@ export class IngresoFormComponent {
     this.onModelChange();
   }
 }
-
