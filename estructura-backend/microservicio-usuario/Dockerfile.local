@@ -1,18 +1,45 @@
-# ⚡ Dockerfile.local — LUKA APP (Optimized for Local JARs)
-# Usa el JAR ya construido en Windows para evitar descargas en Docker.
+# ═══════════════════════════════════════════════════════════════════
+#  LUKA APP — Dockerfile.local (Modo Híbrido - Autocompilable)
+#  Compila el código dentro de Docker usando Maven.
+# ═══════════════════════════════════════════════════════════════════
 
-FROM eclipse-temurin:21-jre-alpine
+# ── ETAPA 1: BUILD ───────────────────────────────────────────────────────────
+FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
+WORKDIR /build
 
-RUN apk add --no-cache curl tzdata && \
+# 1. Instalar librería común
+COPY libreria-comun ./libreria-comun
+RUN cd libreria-comun && mvn install -DskipTests -B
+
+# 2. Compilar el microservicio-usuario
+WORKDIR /build/microservicio-usuario
+COPY microservicio-usuario/pom.xml .
+RUN mvn dependency:go-offline -B
+COPY microservicio-usuario/src ./src
+RUN mvn package -DskipTests -B
+RUN java -Djarmode=layertools -jar target/*.jar extract --destination /build/extracted
+
+# ── ETAPA 2: RUNTIME ─────────────────────────────────────────────────────────
+FROM eclipse-temurin:21-jre-alpine AS runtime
+
+RUN apk add --no-cache curl dumb-init tzdata && \
     cp /usr/share/zoneinfo/America/Lima /etc/localtime && \
     echo "America/Lima" > /etc/timezone && \
     apk del tzdata
 
+RUN addgroup -S lukaapp && adduser -S lukaapp -G lukaapp
 WORKDIR /app
 
-# Copia el JAR generado por Maven en Windows
-COPY target/*.jar app.jar
+COPY --from=builder --chown=lukaapp:lukaapp /build/extracted/dependencies/ ./
+COPY --from=builder --chown=lukaapp:lukaapp /build/extracted/spring-boot-loader/ ./
+COPY --from=builder --chown=lukaapp:lukaapp /build/extracted/snapshot-dependencies/ ./
+COPY --from=builder --chown=lukaapp:lukaapp /build/extracted/application/ ./
 
-EXPOSE 8080
+USER lukaapp
+ENV PORT=8081
+EXPOSE 8081
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8081/actuator/health || exit 1
 
-ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-XX:+UseG1GC", "-jar", "app.jar"]
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["sh", "-c", "exec java -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:docker} -Dserver.port=${PORT} org.springframework.boot.loader.launch.JarLauncher"]

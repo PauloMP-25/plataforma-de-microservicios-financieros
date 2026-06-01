@@ -30,8 +30,8 @@ services:
     <<: *spring-base
     container_name: luka-ms-usuario
     build:
-      context: ../microservicio-usuario
-      dockerfile: Dockerfile.local
+      context: ..
+      dockerfile: microservicio-usuario/Dockerfile.local
     environment:
       <<: *env-common
       SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_usuario?sslmode=require
@@ -51,8 +51,8 @@ services:
     <<: *spring-base
     container_name: luka-ms-cliente
     build:
-      context: ../microservicio-cliente
-      dockerfile: Dockerfile.local
+      context: ..
+      dockerfile: microservicio-cliente/Dockerfile.local
     environment:
       <<: *env-common
       SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_cliente?sslmode=require
@@ -71,8 +71,8 @@ services:
     <<: *spring-base
     container_name: luka-ms-mensajeria
     build:
-      context: ../microservicio-mensajeria
-      dockerfile: Dockerfile.local
+      context: ..
+      dockerfile: microservicio-mensajeria/Dockerfile.local
     environment:
       <<: *env-common
       SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_mensajeria?sslmode=require
@@ -90,7 +90,8 @@ services:
   ms-ia:
     container_name: luka-ms-ia
     build:
-      context: ../microservicio-ia
+      context: ..
+      dockerfile: microservicio-ia/Dockerfile.local
     networks:
       - luka-network
     environment:
@@ -120,8 +121,8 @@ services:
     <<: *spring-base
     container_name: luka-ms-auditoria
     build:
-      context: ../microservicio-auditoria
-      dockerfile: Dockerfile.local
+      context: ..
+      dockerfile: microservicio-auditoria/Dockerfile.local
     environment:
       <<: *env-common
       SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_auditoria?sslmode=require
@@ -137,8 +138,8 @@ services:
     <<: *spring-base
     container_name: luka-ms-nucleo-financiero
     build:
-      context: ../microservicio-nucleo-financiero
-      dockerfile: Dockerfile.local
+      context: ..
+      dockerfile: microservicio-nucleo-financiero/Dockerfile.local
     environment:
       <<: *env-common
       SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_financiero?sslmode=require
@@ -157,8 +158,8 @@ services:
     <<: *spring-base
     container_name: luka-ms-pago
     build:
-      context: ../microservicio-pago
-      dockerfile: Dockerfile.local
+      context: ..
+      dockerfile: microservicio-pago/Dockerfile.local
     environment:
       <<: *env-common
       SERVER_PORT: 8087
@@ -177,8 +178,8 @@ services:
     <<: *spring-base
     container_name: luka-gateway
     build:
-      context: ../infraestructura/api-gateway
-      dockerfile: Dockerfile.local
+      context: ..
+      dockerfile: infraestructura/api-gateway/Dockerfile.local
     ports:
       - "${GATEWAY_PORT:-8080}:8080"
     environment:
