@@ -43,10 +43,16 @@
   </app-balances-card>
 
   <!-- ── SECCIÓN DE GRÁFICOS ANALÍTICOS (DOS COLUMNAS) ── -->
-  <app-chart 
-    [flujoCaja]="flujoCajaPuntos" 
-    [distribucion]="distribucionCategorias">
-  </app-chart>
+  @defer (on immediate) {
+    <app-chart 
+      [flujoCaja]="flujoCajaPuntos" 
+      [distribucion]="distribucionCategorias">
+    </app-chart>
+  } @placeholder {
+    <div class="card glass-panel flex items-center justify-center p-8 text-center" style="min-height: 250px; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 8px;">
+      <i class="fa-solid fa-spinner fa-spin"></i> Cargando gráficos analíticos y cálculos SVG...
+    </div>
+  }
 
   <!-- ── TABLA DE TRANSACCIONES RECIENTES ── -->
   <app-transacciones 

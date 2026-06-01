@@ -35,7 +35,7 @@ from app.mensajeria.consumidor_ia import ConsumidorIA
 from app.mensajeria.outbox_scheduler import OutboxScheduler
 from app.mensajeria.escuchador_sincronizacion_ia import EscuchadorSincronizacionIA
 from app.mensajeria.escuchador_cambio_datos_ia import EscuchadorCambioDatosIA
-from app.routers import analisis
+from app.routers import analisis, dashboard
 from app.persistencia.database import inicializar_db
 
 
@@ -293,6 +293,7 @@ app.add_exception_handler(Exception, luka_exception_handler)
 
 # ── Router principal con los 10 módulos + /analisis-completo ─────────────────
 app.include_router(analisis.router)
+app.include_router(dashboard.router)
 
 # ── Health Check ─────────────────────────────────────────────────────────────
 @app.get(

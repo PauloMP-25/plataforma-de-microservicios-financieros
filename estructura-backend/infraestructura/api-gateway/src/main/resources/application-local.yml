@@ -84,6 +84,49 @@ spring:
           metadata:
             requiere-autenticacion: true
 
+        - id: servicio-cliente-interno
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/v1/clientes/perfil/inicial
+            - Path=/api/v1/clientes/interno/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: clienteCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: false
+
+        - id: servicio-cliente
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/v1/clientes/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: clienteCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: true
+
+        - id: servicio-ia
+          uri: http://localhost:8086
+          predicates:
+            - Path=/api/v1/ia/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: iaCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: true
+
       globalcors:
         corsConfigurations:
           '[/**]':
@@ -148,6 +191,10 @@ resilience4j:
         base-config: default
       financieroCB:
         base-config: default
+      clienteCB:
+        base-config: default
+      iaCB:
+        base-config: default
   timelimiter:
     configs:
       default:
@@ -158,4 +205,8 @@ resilience4j:
       suscripcionCB:
         base-config: default
       financieroCB:
+        base-config: default
+      clienteCB:
+        base-config: default
+      iaCB:
         base-config: default

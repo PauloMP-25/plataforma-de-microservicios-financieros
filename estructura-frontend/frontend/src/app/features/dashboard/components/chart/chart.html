@@ -1,3 +1,4 @@
+ Marian
 <section class="analytics-section">
   
   <!-- Columna Izquierda: Flujo de Caja (Line Chart SVG) -->
@@ -33,30 +34,31 @@
         <line x1="40" y1="130" x2="480" y2="130" stroke="rgba(255,255,255,0.04)" stroke-dasharray="3"/>
         <line x1="40" y1="180" x2="480" y2="180" stroke="rgba(255,255,255,0.08)"/>
 
-        <!-- Eje X Meses -->
-        <text x="50" y="200" fill="var(--text-muted)" font-size="9" text-anchor="middle">Ene</text>
-        <text x="150" y="200" fill="var(--text-muted)" font-size="9" text-anchor="middle">Feb</text>
-        <text x="250" y="200" fill="var(--text-muted)" font-size="9" text-anchor="middle">Mar</text>
-        <text x="350" y="200" fill="var(--text-muted)" font-size="9" text-anchor="middle">Abr</text>
-        <text x="450" y="200" fill="var(--text-muted)" font-size="9" text-anchor="middle">May</text>
+        <!-- Eje X Meses (Dinámico) -->
+        <text *ngFor="let punto of flujoCaja; let i = index" [attr.x]="50 + i * 100" y="200" fill="var(--text-muted)" font-size="9" text-anchor="middle">
+          {{ punto.mes }}
+        </text>
 
-        <!-- Eje Y Valores -->
-        <text x="30" y="34" fill="var(--text-muted)" font-size="8" text-anchor="end">$4,500</text>
-        <text x="30" y="84" fill="var(--text-muted)" font-size="8" text-anchor="end">$3,000</text>
-        <text x="30" y="134" fill="var(--text-muted)" font-size="8" text-anchor="end">$1,500</text>
-        <text x="30" y="184" fill="var(--text-muted)" font-size="8" text-anchor="end">$0</text>
+        <!-- Eje Y Valores (Dinámico) -->
+        <text *ngFor="let label of yAxisLabels; let i = index" x="30" [attr.y]="34 + i * 50" fill="var(--text-muted)" font-size="8" text-anchor="end">
+          {{ label }}
+        </text>
 
-        <!-- Gráfico de Ingresos (Línea + Relleno) -->
-        <path d="M 50 120 Q 150 70 250 110 T 350 50 T 450 35 L 450 180 L 50 180 Z" fill="url(#ingresosGrad)" />
-        <path d="M 50 120 Q 150 70 250 110 T 350 50 T 450 35" fill="none" stroke="#22d3ee" stroke-width="2.5" />
+        <!-- Gráfico de Ingresos (Línea + Relleno Dinámico) -->
+        <path *ngIf="ingresosFillPath" [attr.d]="ingresosFillPath" fill="url(#ingresosGrad)" />
+        <path *ngIf="ingresosPath" [attr.d]="ingresosPath" fill="none" stroke="#22d3ee" stroke-width="2.5" />
 
-        <!-- Gráfico de Gastos (Línea + Relleno) -->
-        <path d="M 50 150 Q 150 120 250 145 T 350 110 T 450 160 L 450 180 L 50 180 Z" fill="url(#gastosGrad)" />
-        <path d="M 50 150 Q 150 120 250 145 T 350 110 T 450 160" fill="none" stroke="#ab47bc" stroke-width="2.5" stroke-dasharray="1"/>
+        <!-- Gráfico de Gastos (Línea + Relleno Dinámico) -->
+        <path *ngIf="gastosFillPath" [attr.d]="gastosFillPath" fill="url(#gastosGrad)" />
+        <path *ngIf="gastosPath" [attr.d]="gastosPath" fill="none" stroke="#ab47bc" stroke-width="2.5" stroke-dasharray="1"/>
 
-        <!-- Puntos interactivos destacados (Mayo) -->
-        <circle cx="450" cy="35" r="4" fill="#22d3ee" stroke="#0F172A" stroke-width="1.5" class="chart-node"/>
-        <circle cx="450" cy="160" r="4" fill="#ab47bc" stroke="#0F172A" stroke-width="1.5" class="chart-node"/>
+        <!-- Nodos / Puntos interactivos interactivos (Dinámicos) -->
+        <circle *ngFor="let p of puntosIngresos" [attr.cx]="p.cx" [attr.cy]="p.cy" r="4" fill="#22d3ee" stroke="#0F172A" stroke-width="1.5" class="chart-node">
+          <title>Ingresos: {{ formatCurrency(p.valor) }}</title>
+        </circle>
+        <circle *ngFor="let p of puntosGastos" [attr.cx]="p.cx" [attr.cy]="p.cy" r="4" fill="#ab47bc" stroke="#0F172A" stroke-width="1.5" class="chart-node">
+          <title>Egresos: {{ formatCurrency(p.valor) }}</title>
+        </circle>
       </svg>
     </div>
   </div>
@@ -73,20 +75,13 @@
           <circle class="donut-hole" cx="18" cy="18" r="15.91549430918954" fill="transparent"></circle>
           <circle class="donut-ring" cx="18" cy="18" r="15.91549430918954" fill="transparent" stroke="rgba(255,255,255,0.05)" stroke-width="3"></circle>
           
-          <!-- Segmentos dinámicos en base a los datos. Siendo representativo: 
-               SaaS (44%), Food (20%), Leisure (26%), Health (10%)
-          -->
-          <!-- SaaS: 44% (dasharray="44 56", offset="100") -->
-          <circle class="donut-segment" cx="18" cy="18" r="15.91549430918954" fill="transparent" stroke="#5B6AF0" stroke-width="3.2" stroke-dasharray="44 56" stroke-dashoffset="100"></circle>
-          <!-- Leisure: 26% (dasharray="26 74", offset="56") -->
-          <circle class="donut-segment" cx="18" cy="18" r="15.91549430918954" fill="transparent" stroke="#AB47BC" stroke-width="3.2" stroke-dasharray="26 74" stroke-dashoffset="56"></circle>
-          <!-- Food: 20% (dasharray="20 80", offset="30") -->
-          <circle class="donut-segment" cx="18" cy="18" r="15.91549430918954" fill="transparent" stroke="#FF7043" stroke-width="3.2" stroke-dasharray="20 80" stroke-dashoffset="30"></circle>
-          <!-- Health: 10% (dasharray="10 90", offset="10") -->
-          <circle class="donut-segment" cx="18" cy="18" r="15.91549430918954" fill="transparent" stroke="#26C6DA" stroke-width="3.2" stroke-dasharray="10 90" stroke-dashoffset="10"></circle>
+          <!-- Segmentos dinámicos en base a los datos. -->
+          <circle *ngFor="let seg of segmentosDona" class="donut-segment" cx="18" cy="18" r="15.91549430918954" fill="transparent" [attr.stroke]="seg.color" stroke-width="3.2" [attr.stroke-dasharray]="seg.dashArray" [attr.stroke-dashoffset]="seg.dashOffset">
+            <title>{{ seg.categoria }}: {{ seg.porcentaje | number:'1.0-0' }}%</title>
+          </circle>
 
           <g class="donut-text">
-            <text x="50%" y="47%" class="donut-percent">100%</text>
+            <text x="50%" y="47%" class="donut-percent" font-size="5" text-anchor="middle" fill="#FFFFFF">{{ formatCurrency(totalGastado) }}</text>
             <text x="50%" y="65%" class="donut-label">Gastos</text>
           </g>
         </svg>

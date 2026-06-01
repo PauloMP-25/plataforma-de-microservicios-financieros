@@ -1,10 +1,12 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Transacciones } from '../../../../core/services/transacciones';
 import { MetodoPago, TransaccionDTO, TransaccionRequestDTO } from '../../../../core/models/financiero/transaccion.model';
 import { AuthService } from '../../../../core/services/auth.service';
 import { FinancieroService } from '../../../../core/services/Financiero.service';
 import { forkJoin } from 'rxjs';
+import { AppEventBus } from '../../../../core/services/app-event-bus.service';
+import { GastosStateService } from '../../../../core/services/gastos-state.service';
 
 @Component({
   selector: 'app-gastos-page',
@@ -17,11 +19,13 @@ export class GastosPage {
   private readonly transaccionesService = inject(Transacciones);
   private readonly authService = inject(AuthService);
   private readonly financieroService = inject(FinancieroService);
+  private readonly eventBus = inject(AppEventBus);
+  private readonly stateService = inject(GastosStateService);
 
-  readonly cargando = signal(false);
+  readonly cargando = computed(() => this.stateService.cargando());
   readonly terminoBusqueda = signal('');
   readonly tabActiva = signal<'todos' | 'pagados' | 'pendientes' | 'recurrentes'>('todos');
-  readonly gastos = signal<TransaccionDTO[]>([]);
+  readonly gastos = computed(() => this.stateService.gastos());
   readonly modalAbierto = signal(false);
   readonly guardandoGasto = signal(false);
   readonly mensajeFormulario = signal('');
@@ -39,9 +43,13 @@ export class GastosPage {
   readonly errores = signal<Record<string, string>>({});
   readonly eliminadosIds = signal<string[]>([]);
 
-  readonly saldoActual = signal(0);
-  readonly variacionGastado = signal(0);
-  readonly variacionSaldo = signal(0);
+  readonly saldoActual = computed(() => Number(this.stateService.resumenActual()?.balance ?? 0));
+  readonly totalGastadoActual = computed(() => Number(this.stateService.resumenActual()?.totalGastos ?? 0));
+  readonly totalGastosAnterior = computed(() => Number(this.stateService.resumenAnterior()?.totalGastos ?? 0));
+  readonly saldoAnterior = computed(() => Number(this.stateService.resumenAnterior()?.balance ?? 0));
+
+  readonly variacionGastado = computed(() => this.calcularVariacion(this.totalGastadoActual(), this.totalGastosAnterior()));
+  readonly variacionSaldo = computed(() => this.calcularVariacion(this.saldoActual(), this.saldoAnterior()));
   readonly variacionPendiente = signal(0);
   readonly bannerIntegracion = signal(
     'Integración en curso: historial de gastos (OK). Pendientes/Recurrentes dependen de Suscripciones (falta implementar backend).'
@@ -74,15 +82,19 @@ export class GastosPage {
     colorCategoria: 'comida' | 'hogar' | 'transporte' | 'servicios' | 'entretenimiento' | 'salud';
   }>>([]);
 
-  readonly usarMockVisualPagados = signal(false);
+  readonly usarMockVisualPagados = signal(true);
 
-  readonly categoriasDisponibles = [
-    { id: 'alimentos', nombre: 'Alimentos' },
-    { id: 'transporte', nombre: 'Transporte' },
-    { id: 'servicios', nombre: 'Servicios' },
-    { id: 'hogar', nombre: 'Hogar' },
-    { id: 'otros', nombre: 'Otros' },
-  ];
+  get categoriasDisponibles(): any[] {
+    return this.stateService.categorias().length > 0
+      ? this.stateService.categorias()
+      : [
+          { id: 'alimentos', nombre: 'Alimentos' },
+          { id: 'transporte', nombre: 'Transporte' },
+          { id: 'servicios', nombre: 'Servicios' },
+          { id: 'hogar', nombre: 'Hogar' },
+          { id: 'otros', nombre: 'Otros' },
+        ];
+  }
 
   readonly metodosPagoDisponibles: Array<{ id: MetodoPago; nombre: string }> = [
     { id: 'DIGITAL', nombre: 'Digital (Yape/Plin)' },
@@ -274,12 +286,13 @@ export class GastosPage {
               nombre,
               detalle,
               categoria,
+              categoriaId: g.categoriaId,
               fecha: fecha.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }),
               hora: fecha.toLocaleTimeString('es-PE', { hour: 'numeric', minute: '2-digit' }),
               monto: Number(g.monto || 0),
               metodo: g.metodoPago || 'DIGITAL',
               estado: 'Pagado' as const,
-              icono: this.iconoCategoria(categoria),
+              icono: g.categoriaIcono || this.iconoCategoria(categoria),
               colorCategoria: this.colorCategoria(categoria),
             };
           });
@@ -314,7 +327,14 @@ export class GastosPage {
   });
 
   constructor() {
-    this.cargarGastos();
+    this.stateService.cargarDatos();
+    effect(() => {
+      if (this.stateService.gastos().length > 0) {
+        this.usarMockVisualPagados.set(false);
+      } else {
+        this.usarMockVisualPagados.set(true);
+      }
+    });
   }
 
   seleccionarTab(tab: 'todos' | 'pagados' | 'pendientes' | 'recurrentes'): void {
@@ -366,6 +386,17 @@ export class GastosPage {
     this.monto.set(String(gasto.monto));
     this.fecha.set(this.fechaIsoDesdeTexto(gasto.fecha));
     this.metodoPago.set(this.normalizarMetodoPago(gasto.metodo));
+    
+    // Encontrar ID de categoría a partir de filas o por nombre como fallback
+    let catId = (gasto as any).categoriaId || '';
+    if (!catId) {
+      const match = this.categoriasDisponibles.find(
+        (c) => c.nombre.toLowerCase() === gasto.categoria.toLowerCase()
+      );
+      catId = match ? match.id : '';
+    }
+    this.categoria.set(catId);
+    
     this.modalAbierto.set(true);
   }
 
@@ -390,7 +421,8 @@ export class GastosPage {
     this.transaccionesService.eliminar(id).subscribe({
       next: () => {
         this.gastoPendienteEliminar.set(null);
-        this.cargarGastos();
+        this.stateService.invalidarCache();
+        this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
       },
       error: () => this.mensajeFormulario.set('No se pudo eliminar el gasto.'),
     });
@@ -455,13 +487,13 @@ export class GastosPage {
         notas: `${this.nombreGasto().trim()}|${this.descripcion().trim()}|${this.tipoFrecuencia()}`,
       };
 
-      this.guardandoGasto.set(true);
       this.transaccionesService.actualizar(editId, requestEdit).subscribe({
         next: () => {
           this.guardandoGasto.set(false);
           this.modalAbierto.set(false);
           this.resetFormulario();
-          this.cargarGastos();
+          this.stateService.invalidarCache();
+          this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
         },
         error: () => {
           this.guardandoGasto.set(false);
@@ -488,12 +520,12 @@ export class GastosPage {
       notas: `${this.nombreGasto().trim()}|${this.descripcion().trim()}|${this.tipoFrecuencia()}`,
     };
 
-    this.guardandoGasto.set(true);
     this.transaccionesService.registrar(request).subscribe({
       next: () => {
         this.guardandoGasto.set(false);
         this.modalAbierto.set(false);
-        this.cargarGastos();
+        this.stateService.invalidarCache();
+        this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
       },
       error: () => {
         this.guardandoGasto.set(false);
@@ -579,58 +611,7 @@ export class GastosPage {
   }
 
   private cargarGastos(): void {
-    this.cargando.set(true);
-
-    this.transaccionesService.listarHistorial({ tipo: 'GASTO', pagina: 0, tamanio: 20 }).subscribe({
-      next: (pagina) => {
-        this.gastos.set(pagina?.content ?? []);
-        this.usarMockVisualPagados.set(false);
-        this.cargarIndicadoresFrontend();
-        this.cargando.set(false);
-      },
-      error: () => {
-        // TODO(backend): Mantener mock visual si falla endpoint real de historial
-        this.gastos.set([]);
-        this.usarMockVisualPagados.set(true);
-        this.saldoActual.set(0);
-        this.variacionGastado.set(0);
-        this.variacionSaldo.set(0);
-        this.variacionPendiente.set(0);
-        this.cargando.set(false);
-      },
-    });
-  }
-
-  private cargarIndicadoresFrontend(): void {
-    const hoy = new Date();
-    const mesActual = hoy.getMonth() + 1;
-    const anioActual = hoy.getFullYear();
-    const anterior = new Date(anioActual, hoy.getMonth() - 1, 1);
-    const mesAnterior = anterior.getMonth() + 1;
-    const anioAnterior = anterior.getFullYear();
-
-    forkJoin({
-      actual: this.financieroService.getResumen(mesActual, anioActual),
-      anterior: this.financieroService.getResumen(mesAnterior, anioAnterior),
-    }).subscribe({
-      next: ({ actual, anterior }) => {
-        const totalGastosActual = Number(actual?.totalGastos ?? 0);
-        const totalGastosAnterior = Number(anterior?.totalGastos ?? 0);
-        const saldoActual = Number(actual?.balance ?? 0);
-        const saldoAnterior = Number(anterior?.balance ?? 0);
-
-        this.saldoActual.set(saldoActual);
-        this.variacionGastado.set(this.calcularVariacion(totalGastosActual, totalGastosAnterior));
-        this.variacionSaldo.set(this.calcularVariacion(saldoActual, saldoAnterior));
-        this.variacionPendiente.set(0);
-      },
-      error: () => {
-        this.saldoActual.set(0);
-        this.variacionGastado.set(0);
-        this.variacionSaldo.set(0);
-        this.variacionPendiente.set(0);
-      },
-    });
+    this.stateService.cargarDatos();
   }
 
   private calcularVariacion(actual: number, previo: number): number {

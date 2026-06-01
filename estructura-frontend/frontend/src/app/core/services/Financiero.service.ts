@@ -1,11 +1,12 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../enviroments/environment';
 import { ResumenFinancieroDTO}  from '../models/financiero/resumen.model';
 import { CategoriaDTO, TipoMovimiento } from '../models/financiero/categoria.model';
 import { AuthService } from './auth.service';
+import { ResultadoApi } from '../models/auth/user.model';
  
 @Injectable({ providedIn: 'root' })
 export class FinancieroService {
@@ -27,7 +28,8 @@ export class FinancieroService {
     if (mes)  params = params.set('mes',  mes);
     if (anio) params = params.set('anio', anio);
  
-    return this.http.get<ResumenFinancieroDTO>(`${this.baseTransacciones}/resumen`, { params }).pipe(
+    return this.http.get<ResultadoApi<ResumenFinancieroDTO>>(`${this.baseTransacciones}/resumen`, { params }).pipe(
+      map(resp => resp.datos),
       catchError(() => {
         // Fallback a mock si falla el backend
         return of({
@@ -50,7 +52,9 @@ export class FinancieroService {
   getCategorias(tipo?: TipoMovimiento): Observable<CategoriaDTO[]> {
     let params = new HttpParams();
     if (tipo) params = params.set('tipo', tipo);
-    return this.http.get<CategoriaDTO[]>(this.baseCategorias, { params });
+    return this.http.get<ResultadoApi<CategoriaDTO[]>>(this.baseCategorias, { params }).pipe(
+      map(resp => resp.datos)
+    );
   }
  
   cargarResumen(): void {
