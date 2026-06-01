@@ -1,5 +1,5 @@
-# 🛡️ LUKA APP — docker-compose-hibrido.yml (v2.0 - Fully Parameterized)
-# Optimizado para ahorro de RAM y conexión híbrida Cloud/Local
+# 🛡️ LUKA APP — docker-compose-hibrido.yml (v3.0 - Local Services + Cloud DB)
+# Optimizado para ahorro de RAM y conexión a DB Externa/Local
 
 networks:
   luka-network:
@@ -14,33 +14,68 @@ x-spring-base: &spring-base
 x-env-common: &env-common
   SPRING_PROFILES_ACTIVE: docker
   SPRING_MAIN_ALLOW_BEAN_DEFINITION_OVERRIDING: "true"
-  # RabbitMQ (Local Windows)
-  SPRING_RABBITMQ_HOST: host.docker.internal
+  # RabbitMQ (Interno en Docker)
+  SPRING_RABBITMQ_HOST: rabbitmq
   SPRING_RABBITMQ_PORT: 5672
   SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER}
   SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
   SPRING_RABBITMQ_VIRTUAL_HOST: ${RABBITMQ_VHOST}
-  # JVM Optimization
+  # JVM Optimization (Consumo mínimo de recursos)
   JAVA_OPTS: "-Xms128m -Xmx384m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
 
 services:
 
+  # ── INFRAESTRUCTURA LOCAL (Caché y Mensajería) ─────────────────────────────
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: luka-rabbitmq
+    hostname: rabbitmq
+    restart: unless-stopped
+    networks:
+      - luka-network
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-/}
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+
+  redis:
+    image: redis:7-alpine
+    container_name: luka-redis
+    hostname: redis
+    restart: unless-stopped
+    networks:
+      - luka-network
+    ports:
+      - "6379:6379"
+    deploy:
+      resources:
+        limits:
+          memory: 150M
+
+  # ── MICROSERVICIOS ─────────────────────────────────────────────────────────
 
   ms-usuario:
     <<: *spring-base
     container_name: luka-ms-usuario
     build:
       context: ..
-      dockerfile: microservicio-usuario/Dockerfile
+      dockerfile: microservicio-usuario/Dockerfile.local
     environment:
       <<: *env-common
       SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_usuario?sslmode=${DB_SSL_MODE:-require}
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
-      SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
+      SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
       SPRING_REDIS_PASSWORD: ${REDIS_PASSWORD}
-      SPRING_DATA_REDIS_SSL_ENABLED: "true"
+      SPRING_DATA_REDIS_SSL_ENABLED: "false"
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
     deploy:
       resources:
@@ -52,7 +87,7 @@ services:
     container_name: luka-ms-cliente
     build:
       context: ..
-      dockerfile: microservicio-cliente/Dockerfile
+      dockerfile: microservicio-cliente/Dockerfile.local
     environment:
       <<: *env-common
       SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_cliente?sslmode=${DB_SSL_MODE:-require}
@@ -72,7 +107,7 @@ services:
     container_name: luka-ms-mensajeria
     build:
       context: ..
-      dockerfile: microservicio-mensajeria/Dockerfile
+      dockerfile: microservicio-mensajeria/Dockerfile.local
     environment:
       <<: *env-common
       SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_mensajeria?sslmode=${DB_SSL_MODE:-require}
@@ -90,22 +125,23 @@ services:
   ms-ia:
     container_name: luka-ms-ia
     build:
-      context: ../microservicio-ia
+      context: ..
+      dockerfile: microservicio-ia/Dockerfile.local
     networks:
       - luka-network
     environment:
       GEMINI_API_KEY: ${GEMINI_API_KEY}
-      REDIS_HOST: ${REDIS_HOST}
+      REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD}
-      REDIS_SSL: "true"
-      RABBITMQ_HOST: host.docker.internal
+      REDIS_SSL: "false"
+      RABBITMQ_HOST: rabbitmq
       RABBITMQ_PUERTO: 5672
       RABBITMQ_USUARIO: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       RABBITMQ_VHOST: ${RABBITMQ_VHOST}
       JWT_CLAVE_SECRETA: ${JWT_SECRET_KEY}
-      # Neon para persistencia IA
+      # Neon/Postgres para persistencia IA
       DB_HOST: ${NEON_HOST}
       DB_PORT: 5432
       DB_USUARIO: ${DB_USER}
@@ -121,7 +157,7 @@ services:
     container_name: luka-ms-auditoria
     build:
       context: ..
-      dockerfile: microservicio-auditoria/Dockerfile
+      dockerfile: microservicio-auditoria/Dockerfile.local
     environment:
       <<: *env-common
       SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_auditoria?sslmode=${DB_SSL_MODE:-require}
@@ -138,7 +174,7 @@ services:
     container_name: luka-ms-nucleo-financiero
     build:
       context: ..
-      dockerfile: microservicio-nucleo-financiero/Dockerfile
+      dockerfile: microservicio-nucleo-financiero/Dockerfile.local
     environment:
       <<: *env-common
       SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_financiero?sslmode=${DB_SSL_MODE:-require}
@@ -158,7 +194,7 @@ services:
     container_name: luka-ms-pago
     build:
       context: ..
-      dockerfile: microservicio-pago/Dockerfile
+      dockerfile: microservicio-pago/Dockerfile.local
     environment:
       <<: *env-common
       SERVER_PORT: 8087
@@ -178,15 +214,15 @@ services:
     container_name: luka-gateway
     build:
       context: ..
-      dockerfile: infraestructura/api-gateway/Dockerfile
+      dockerfile: infraestructura/api-gateway/Dockerfile.local
     ports:
       - "${GATEWAY_PORT:-8080}:8080"
     environment:
       <<: *env-common
-      REDIS_HOST: ${REDIS_HOST}
+      REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD}
-      REDIS_SSL_ENABLED: "true"
+      REDIS_SSL_ENABLED: "false"
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
     deploy:
       resources:

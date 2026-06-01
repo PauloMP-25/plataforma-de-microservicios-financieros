@@ -10,18 +10,18 @@ FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
 WORKDIR /build
 
 # 1. Primero instalamos la librería común localmente en el contenedor
-COPY libreria-comun ./libreria-comun
+COPY estructura-backend/libreria-comun ./libreria-comun
 RUN cd libreria-comun && mvn install -DskipTests -B
 
 # 2. Ahora preparamos el microservicio-usuario
 WORKDIR /build/microservicio-usuario
-COPY microservicio-usuario/pom.xml .
+COPY estructura-backend/microservicio-usuario/pom.xml .
 
 # Descargamos dependencias (esta capa se cachea)
 RUN mvn dependency:go-offline -B
 
 # Copiamos el código fuente y compilamos
-COPY microservicio-usuario/src ./src
+COPY estructura-backend/microservicio-usuario/src ./src
 RUN mvn package -DskipTests -B
 
 # Extraemos las capas (esta parte sigue igual)
