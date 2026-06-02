@@ -22,6 +22,13 @@ x-env-common: &env-common
   SPRING_RABBITMQ_VIRTUAL_HOST: /
   # Eureka deshabilitado por estándar local del repositorio
   EUREKA_CLIENT_ENABLED: "false"
+  SPRING_CLOUD_DISCOVERY_ENABLED: "false"
+  # Actuator local: exponer endpoints básicos y evitar que dependencias opcionales marquen DOWN
+  MANAGEMENT_ENDPOINTS_WEB_BASE_PATH: /actuator
+  MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics,gateway
+  MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: always
+  MANAGEMENT_HEALTH_REDIS_ENABLED: "false"
+  MANAGEMENT_HEALTH_DISCOVERY_ENABLED: "false"
   # JVM Optimization (Consumo mínimo de recursos)
   JAVA_OPTS: "-Xms128m -Xmx384m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
 
@@ -63,6 +70,8 @@ services:
   ms-usuario:
     <<: *spring-base
     container_name: luka-ms-usuario
+    env_file:
+      - ../.env
     ports:
       - "8081:8081"
     build:
@@ -74,14 +83,15 @@ services:
       DB_PORT: 5432
       DB_USER: postgres
       DB_PASSWORD: 12345
-      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/db_microservicio_usuario
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/db_luka_usuario
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: 12345
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
       SPRING_REDIS_PASSWORD: ${REDIS_PASSWORD}
       SPRING_DATA_REDIS_SSL_ENABLED: "false"
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      LUKA_JWT_CLAVE_SECRETA: ${JWT_SECRET_KEY:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
     depends_on:
       - redis
       - rabbitmq
@@ -106,10 +116,10 @@ services:
       DB_PORT: 5432
       DB_USER: postgres
       DB_PASSWORD: 12345
-      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/db_microservicio_cliente
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/db_luka_cliente
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: 12345
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
       WHATSAPP_TOKEN: ${WHATSAPP_TOKEN}
       WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
       WHATSAPP_API_VERSION: ${WHATSAPP_API_VERSION}
@@ -136,10 +146,10 @@ services:
       DB_PORT: 5432
       DB_USER: postgres
       DB_PASSWORD: 12345
-      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/db_microservicio_mensajeria
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/db_luka_mensajeria
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: 12345
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
       TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
       TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
       TWILIO_PHONE_NUMBER: ${TWILIO_PHONE_NUMBER}
@@ -164,10 +174,10 @@ services:
     networks:
       - luka-network
     environment:
-      GEMINI_API_KEY: ${GEMINI_API_KEY}
-      GEMINI_MODELO: ${GEMINI_MODELO}
-      GEMINI_MAX_TOKENS: ${GEMINI_MAX_TOKENS}
-      GEMINI_TEMPERATURA: ${GEMINI_TEMPERATURA}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-local-dev-gemini-key}
+      GEMINI_MODELO: ${GEMINI_MODELO:-gemini-2.0-flash}
+      GEMINI_MAX_TOKENS: ${GEMINI_MAX_TOKENS:-1024}
+      GEMINI_TEMPERATURA: ${GEMINI_TEMPERATURA:-0.7}
       SPRING_PROFILES_ACTIVE: local
       EUREKA_CLIENT_ENABLED: "false"
       REDIS_HOST: redis
@@ -179,14 +189,20 @@ services:
       RABBITMQ_USUARIO: guest
       RABBITMQ_PASSWORD: guest
       RABBITMQ_VHOST: /
-      JWT_CLAVE_SECRETA: ${JWT_SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      JWT_CLAVE_SECRETA: ${JWT_SECRET_KEY:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
       # PostgreSQL local (host)
       DB_HOST: host.docker.internal
       DB_PORT: 5432
       DB_USER: postgres
       DB_PASSWORD: 12345
       DB_USUARIO: postgres
-      DB_NOMBRE: db_microservicio_ia
+      DB_NOMBRE: db_luka_ia
+      DB_NAME_IA: db_luka_ia
+      SPRING_DATASOURCE_NAME: db_luka_ia
+      SPRING_DATASOURCE_URL: postgresql://postgres:12345@host.docker.internal:5432/db_luka_ia
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 12345
     depends_on:
       - redis
       - rabbitmq
@@ -211,10 +227,10 @@ services:
       DB_PORT: 5432
       DB_USER: postgres
       DB_PASSWORD: 12345
-      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/db_microservicio_auditoria
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/db_luka_auditoria
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: 12345
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
     depends_on:
       - rabbitmq
     extra_hosts:
@@ -238,10 +254,10 @@ services:
       DB_PORT: 5432
       DB_USER: postgres
       DB_PASSWORD: 12345
-      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/db_microservicio_financiero
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/db_luka_financiero
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: 12345
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
       WHATSAPP_TOKEN: ${WHATSAPP_TOKEN}
       WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
       WHATSAPP_API_VERSION: ${WHATSAPP_API_VERSION}
@@ -269,12 +285,12 @@ services:
       DB_PORT: 5432
       DB_USER: postgres
       DB_PASSWORD: 12345
-      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/db_microservicio_pagos
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/db_luka_pagos
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: 12345
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
-      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_local_dev_placeholder}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-whsec_local_dev_placeholder}
     depends_on:
       - rabbitmq
     extra_hosts:
@@ -298,9 +314,12 @@ services:
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       REDIS_SSL_ENABLED: "false"
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD:-}
       # Forzamos apagar el SSL del application-docker.yml inyectando la propiedad de Spring
       SPRING_DATA_REDIS_SSL_ENABLED: "false"
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
       # Redirigir el trafico del gateway hacia los contenedores locales (y evitar Render)
       URL_PROD_USUARIO: http://ms-usuario:8081
       URL_PROD_CLIENTE: http://ms-cliente:8083
