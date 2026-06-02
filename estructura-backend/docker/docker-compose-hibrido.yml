@@ -61,6 +61,8 @@ services:
   ms-usuario:
     <<: *spring-base
     container_name: luka-ms-usuario
+    ports:
+      - "8081:8081"
     build:
       context: ..
       dockerfile: microservicio-usuario/Dockerfile.local
@@ -85,6 +87,8 @@ services:
   ms-cliente:
     <<: *spring-base
     container_name: luka-ms-cliente
+    ports:
+      - "8083:8083"
     build:
       context: ..
       dockerfile: microservicio-cliente/Dockerfile.local
@@ -107,6 +111,8 @@ services:
   ms-mensajeria:
     <<: *spring-base
     container_name: luka-ms-mensajeria
+    ports:
+      - "8084:8084"
     build:
       context: ..
       dockerfile: microservicio-mensajeria/Dockerfile.local
@@ -128,6 +134,8 @@ services:
 
   ms-ia:
     container_name: luka-ms-ia
+    ports:
+      - "8086:8086"
     build:
       context: ..
       dockerfile: microservicio-ia/Dockerfile.local
@@ -162,6 +170,8 @@ services:
   ms-auditoria:
     <<: *spring-base
     container_name: luka-ms-auditoria
+    ports:
+      - "8082:8082"
     build:
       context: ..
       dockerfile: microservicio-auditoria/Dockerfile.local
@@ -181,6 +191,8 @@ services:
   ms-nucleo-financiero:
     <<: *spring-base
     container_name: luka-ms-nucleo-financiero
+    ports:
+      - "8085:8085"
     build:
       context: ..
       dockerfile: microservicio-nucleo-financiero/Dockerfile.local
@@ -203,6 +215,8 @@ services:
   ms-pagos:
     <<: *spring-base
     container_name: luka-ms-pago
+    ports:
+      - "8087:8087"
     build:
       context: ..
       dockerfile: microservicio-pago/Dockerfile.local
@@ -239,6 +253,14 @@ services:
       # Forzamos apagar el SSL del application-docker.yml inyectando la propiedad de Spring
       SPRING_DATA_REDIS_SSL_ENABLED: "false"
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      # Redirigir el trafico del gateway hacia los contenedores locales (y evitar Render)
+      URL_PROD_USUARIO: http://ms-usuario:8081
+      URL_PROD_CLIENTE: http://ms-cliente:8083
+      URL_PROD_AUDITORIA: http://ms-auditoria:8082
+      URL_PROD_FINANCIERO: http://ms-nucleo-financiero:8085
+      URL_PROD_MENSAJERIA: http://ms-mensajeria:8084
+      URL_PROD_IA: http://ms-ia:8086
+      URL_PROD_PAGO: http://ms-pagos:8087
     depends_on:
       - redis
     deploy:
