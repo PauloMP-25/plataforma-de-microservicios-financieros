@@ -1,5 +1,5 @@
-# 🛡️ LUKA APP — docker-compose-hibrido.yml (v3.0 - Local Services + Cloud DB)
-# Optimizado para ahorro de RAM y conexión a DB Externa/Local
+# 🛡️ LUKA APP — docker-compose-hibrido.yml (v4.0 - 100% LOCAL)
+# Optimizado para entorno local: microservicios en Docker + PostgreSQL en host
 
 networks:
   luka-network:
@@ -12,7 +12,7 @@ x-spring-base: &spring-base
     - luka-network
 
 x-env-common: &env-common
-  SPRING_PROFILES_ACTIVE: docker
+  SPRING_PROFILES_ACTIVE: local
   SPRING_MAIN_ALLOW_BEAN_DEFINITION_OVERRIDING: "true"
   # RabbitMQ (Interno en Docker) - Forzado a guest en entorno local
   SPRING_RABBITMQ_HOST: rabbitmq
@@ -20,6 +20,8 @@ x-env-common: &env-common
   SPRING_RABBITMQ_USERNAME: guest
   SPRING_RABBITMQ_PASSWORD: guest
   SPRING_RABBITMQ_VIRTUAL_HOST: /
+  # Eureka deshabilitado por estándar local del repositorio
+  EUREKA_CLIENT_ENABLED: "false"
   # JVM Optimization (Consumo mínimo de recursos)
   JAVA_OPTS: "-Xms128m -Xmx384m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
 
@@ -68,9 +70,13 @@ services:
       dockerfile: microservicio-usuario/Dockerfile.local
     environment:
       <<: *env-common
-      SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_usuario?sslmode=${DB_SSL_MODE:-require}
-      SPRING_DATASOURCE_USERNAME: ${DB_USER}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: host.docker.internal
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: 12345
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/db_microservicio_usuario
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 12345
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
       SPRING_REDIS_PASSWORD: ${REDIS_PASSWORD}
@@ -79,6 +85,8 @@ services:
     depends_on:
       - redis
       - rabbitmq
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     deploy:
       resources:
         limits:
@@ -94,15 +102,21 @@ services:
       dockerfile: microservicio-cliente/Dockerfile.local
     environment:
       <<: *env-common
-      SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_cliente?sslmode=${DB_SSL_MODE:-require}
-      SPRING_DATASOURCE_USERNAME: ${DB_USER}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: host.docker.internal
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: 12345
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/db_microservicio_cliente
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 12345
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       WHATSAPP_TOKEN: ${WHATSAPP_TOKEN}
       WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
       WHATSAPP_API_VERSION: ${WHATSAPP_API_VERSION}
     depends_on:
       - rabbitmq
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     deploy:
       resources:
         limits:
@@ -118,15 +132,23 @@ services:
       dockerfile: microservicio-mensajeria/Dockerfile.local
     environment:
       <<: *env-common
-      SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_mensajeria?sslmode=${DB_SSL_MODE:-require}
-      SPRING_DATASOURCE_USERNAME: ${DB_USER}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: host.docker.internal
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: 12345
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/db_microservicio_mensajeria
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 12345
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      WHATSAPP_TOKEN: ${WHATSAPP_TOKEN}
-      WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
-      WHATSAPP_API_VERSION: ${WHATSAPP_API_VERSION}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
+      TWILIO_PHONE_NUMBER: ${TWILIO_PHONE_NUMBER}
+      GMAIL_USER: ${GMAIL_USER}
+      GMAIL_PASSWORD: ${GMAIL_PASSWORD}
     depends_on:
       - rabbitmq
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     deploy:
       resources:
         limits:
@@ -143,6 +165,11 @@ services:
       - luka-network
     environment:
       GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODELO: ${GEMINI_MODELO}
+      GEMINI_MAX_TOKENS: ${GEMINI_MAX_TOKENS}
+      GEMINI_TEMPERATURA: ${GEMINI_TEMPERATURA}
+      SPRING_PROFILES_ACTIVE: local
+      EUREKA_CLIENT_ENABLED: "false"
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD}
@@ -153,15 +180,18 @@ services:
       RABBITMQ_PASSWORD: guest
       RABBITMQ_VHOST: /
       JWT_CLAVE_SECRETA: ${JWT_SECRET_KEY}
-      # Neon/Postgres para persistencia IA
-      DB_HOST: ${NEON_HOST}
+      # PostgreSQL local (host)
+      DB_HOST: host.docker.internal
       DB_PORT: 5432
-      DB_USUARIO: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_USER: postgres
+      DB_PASSWORD: 12345
+      DB_USUARIO: postgres
       DB_NOMBRE: db_microservicio_ia
     depends_on:
       - redis
       - rabbitmq
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     deploy:
       resources:
         limits:
@@ -177,12 +207,18 @@ services:
       dockerfile: microservicio-auditoria/Dockerfile.local
     environment:
       <<: *env-common
-      SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_auditoria?sslmode=${DB_SSL_MODE:-require}
-      SPRING_DATASOURCE_USERNAME: ${DB_USER}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: host.docker.internal
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: 12345
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/db_microservicio_auditoria
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 12345
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
     depends_on:
       - rabbitmq
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     deploy:
       resources:
         limits:
@@ -198,15 +234,21 @@ services:
       dockerfile: microservicio-nucleo-financiero/Dockerfile.local
     environment:
       <<: *env-common
-      SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_financiero?sslmode=${DB_SSL_MODE:-require}
-      SPRING_DATASOURCE_USERNAME: ${DB_USER}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: host.docker.internal
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: 12345
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/db_microservicio_financiero
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 12345
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       WHATSAPP_TOKEN: ${WHATSAPP_TOKEN}
       WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
       WHATSAPP_API_VERSION: ${WHATSAPP_API_VERSION}
     depends_on:
       - rabbitmq
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     deploy:
       resources:
         limits:
@@ -223,14 +265,20 @@ services:
     environment:
       <<: *env-common
       SERVER_PORT: 8087
-      SPRING_DATASOURCE_URL: jdbc:postgresql://${NEON_HOST}/db_microservicio_pagos?sslmode=${DB_SSL_MODE:-require}
-      SPRING_DATASOURCE_USERNAME: ${DB_USER}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: host.docker.internal
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: 12345
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/db_microservicio_pagos
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 12345
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
     depends_on:
       - rabbitmq
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     deploy:
       resources:
         limits:
