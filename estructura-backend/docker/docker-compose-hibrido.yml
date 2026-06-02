@@ -14,12 +14,12 @@ x-spring-base: &spring-base
 x-env-common: &env-common
   SPRING_PROFILES_ACTIVE: docker
   SPRING_MAIN_ALLOW_BEAN_DEFINITION_OVERRIDING: "true"
-  # RabbitMQ (Interno en Docker)
+  # RabbitMQ (Interno en Docker) - Forzado a guest en entorno local
   SPRING_RABBITMQ_HOST: rabbitmq
   SPRING_RABBITMQ_PORT: 5672
-  SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER}
-  SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
-  SPRING_RABBITMQ_VIRTUAL_HOST: ${RABBITMQ_VHOST}
+  SPRING_RABBITMQ_USERNAME: guest
+  SPRING_RABBITMQ_PASSWORD: guest
+  SPRING_RABBITMQ_VIRTUAL_HOST: /
   # JVM Optimization (Consumo mínimo de recursos)
   JAVA_OPTS: "-Xms128m -Xmx384m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
 
@@ -37,13 +37,10 @@ services:
       - "5672:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
-      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-/}
-    deploy:
-      resources:
-        limits:
-          memory: 300M
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_VHOST: /
+    # Se remueve el límite de memoria estricto para evitar que RabbitMQ se quede colgado al iniciar
 
   redis:
     image: redis:7-alpine
@@ -144,9 +141,9 @@ services:
       REDIS_SSL: "false"
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PUERTO: 5672
-      RABBITMQ_USUARIO: ${RABBITMQ_USER}
-      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
-      RABBITMQ_VHOST: ${RABBITMQ_VHOST}
+      RABBITMQ_USUARIO: guest
+      RABBITMQ_PASSWORD: guest
+      RABBITMQ_VHOST: /
       JWT_CLAVE_SECRETA: ${JWT_SECRET_KEY}
       # Neon/Postgres para persistencia IA
       DB_HOST: ${NEON_HOST}
