@@ -49,11 +49,12 @@ fi
 echo -e "${GREEN}✅ Grupo 1 y Grupo 2 detectados${NC}"
 echo ""
 
-SERVICES="ms-nucleo-financiero ms-ia ms-pagos"
+SERVICES="ms-nucleo-financiero ms-ia ms-suscripciones ms-pagos"
 
 echo -e "${YELLOW}📦 Levantando servicios:${NC}"
 echo "   • ms-nucleo-financiero → puerto 8085"
 echo "   • ms-ia               → puerto 8086"
+echo "   • ms-suscripciones    → puerto 8088"
 echo "   • ms-pagos            → puerto 8087"
 echo ""
 

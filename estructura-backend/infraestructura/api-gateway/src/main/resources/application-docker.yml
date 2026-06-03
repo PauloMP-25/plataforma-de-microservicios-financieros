@@ -42,9 +42,72 @@ spring:
         - id: servicio-usuario-docs
           uri: ${URL_PROD_USUARIO:https://luka-usuario.onrender.com}
           predicates:
-            - Path=/microservicio-usuario/v3/api-docs/**
+            - Path=/microservicio-usuario/v3/api-docs/**, /microservicio-usuario/swagger-ui/**, /microservicio-usuario/swagger-ui.html
           filters:
             - RewritePath=/microservicio-usuario/(?<remaining>.*), /${remaining}
+          metadata:
+            requiere-autenticacion: false
+
+        - id: servicio-cliente-docs
+          uri: ${URL_PROD_CLIENTE:https://luka-cliente.onrender.com}
+          predicates:
+            - Path=/microservicio-cliente/v3/api-docs/**, /microservicio-cliente/swagger-ui/**, /microservicio-cliente/swagger-ui.html
+          filters:
+            - RewritePath=/microservicio-cliente/(?<remaining>.*), /${remaining}
+          metadata:
+            requiere-autenticacion: false
+
+        - id: servicio-auditoria-docs
+          uri: ${URL_PROD_AUDITORIA:https://luka-auditoria.onrender.com}
+          predicates:
+            - Path=/microservicio-auditoria/v3/api-docs/**, /microservicio-auditoria/swagger-ui/**, /microservicio-auditoria/swagger-ui.html
+          filters:
+            - RewritePath=/microservicio-auditoria/(?<remaining>.*), /${remaining}
+          metadata:
+            requiere-autenticacion: false
+
+        - id: servicio-mensajeria-docs
+          uri: ${URL_PROD_MENSAJERIA:https://luka-mensajeria.onrender.com}
+          predicates:
+            - Path=/microservicio-mensajeria/v3/api-docs/**, /microservicio-mensajeria/swagger-ui/**, /microservicio-mensajeria/swagger-ui.html
+          filters:
+            - RewritePath=/microservicio-mensajeria/(?<remaining>.*), /${remaining}
+          metadata:
+            requiere-autenticacion: false
+
+        - id: servicio-financiero-docs
+          uri: ${URL_PROD_FINANCIERO:https://luka-financiero.onrender.com}
+          predicates:
+            - Path=/microservicio-financiero/v3/api-docs/**, /microservicio-financiero/swagger-ui/**, /microservicio-financiero/swagger-ui.html
+          filters:
+            - RewritePath=/microservicio-financiero/(?<remaining>.*), /${remaining}
+          metadata:
+            requiere-autenticacion: false
+
+        - id: servicio-ia-docs
+          uri: ${URL_PROD_IA:https://luka-ia-ojw0.onrender.com}
+          predicates:
+            - Path=/microservicio-ia/v3/api-docs/**, /microservicio-ia/swagger-ui/**, /microservicio-ia/swagger-ui.html
+          filters:
+            - RewritePath=/microservicio-ia/(?<remaining>.*), /${remaining}
+          metadata:
+            requiere-autenticacion: false
+
+        - id: servicio-pagos-docs
+          uri: ${URL_PROD_PAGO:https://luka-pagos.onrender.com}
+          predicates:
+            - Path=/microservicio-pagos/v3/api-docs/**, /microservicio-pagos/swagger-ui/**, /microservicio-pagos/swagger-ui.html
+          filters:
+            - RewritePath=/microservicio-pagos/(?<remaining>.*), /${remaining}
+          metadata:
+            requiere-autenticacion: false
+
+        - id: servicio-suscripciones-docs
+          uri: ${URL_PROD_SUSCRIPCIONES:https://luka-suscripciones.onrender.com}
+          predicates:
+            - Path=/microservicio-suscripciones/v3/api-docs/**, /microservicio-suscripciones/swagger-ui/**, /microservicio-suscripciones/swagger-ui.html
+          filters:
+            - RewritePath=/microservicio-suscripciones/(?<remaining>.*), /${remaining}
           metadata:
             requiere-autenticacion: false
 

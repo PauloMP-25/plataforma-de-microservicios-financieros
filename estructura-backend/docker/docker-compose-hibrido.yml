@@ -218,3 +218,23 @@ services:
       resources:
         limits:
           memory: 256M
+
+  ms-suscripciones:
+    <<: *spring-base
+    container_name: luka-ms-suscripciones
+    ports:
+      - "8088:8088"
+    build:
+      context: ..
+      dockerfile: microservicio-suscripciones/Dockerfile.local
+    environment:
+      <<: *env-common
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal/db_luka_suscripciones?sslmode=disable
+      SPRING_DATASOURCE_USERNAME: 
+      SPRING_DATASOURCE_PASSWORD: 
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      URL_PROD_FINANCIERO: http://ms-nucleo-financiero:8085
+    deploy:
+      resources:
+        limits:
+          memory: 256M
