@@ -43,7 +43,7 @@
           <span class="pf-kpi__value" [ngClass]="balanceNeto()! >= 0 ? 'text-success' : 'text-danger'">
             S/ {{ formatMoneda(balanceNeto()!) }}
           </span>
-          <span class="pf-kpi__sub text-muted">Balance neto mensual (Ingresos - Gastos)</span>
+          <span class="pf-kpi__sub text-muted">Dinero disponible</span>
           @if (variacionBalance() !== null) {
             <span class="pf-kpi__variation" [ngClass]="variacionBalance()! >= 0 ? 'pf-kpi__variation--up' : 'pf-kpi__variation--down'">
               <i class="fa-solid" [ngClass]="variacionBalance()! >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'"></i>
