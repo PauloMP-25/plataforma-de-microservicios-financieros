@@ -1,0 +1,619 @@
+.meta-form-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  min-height: calc(100vh - var(--header-height));
+
+  /* ── Cabecera ── */
+  &__header {
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.75rem;
+    box-shadow: var(--shadow-sm);
+  }
+
+  &__header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  &__header-title {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  &__btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: var(--transition);
+    align-self: flex-start;
+
+    &:hover {
+      color: var(--color-primary);
+      transform: translateX(-3px);
+    }
+  }
+
+  &__title-wrapper {
+    h1 {
+      font-family: var(--font-heading);
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-top: 0.5rem;
+    }
+
+    p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-top: 0.25rem;
+    }
+  }
+
+  /* ── Mensajes de Estado ── */
+  &__alert {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.9rem;
+
+    &--success {
+      background: var(--color-success-soft);
+      color: var(--color-success);
+      border: 1.5px solid rgba(34, 197, 94, 0.2);
+    }
+
+    &--danger {
+      background: var(--color-danger-soft);
+      color: var(--color-danger);
+      border: 1.5px solid rgba(239, 68, 68, 0.2);
+    }
+  }
+
+  /* ── Spinner ── */
+  &__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem;
+    gap: 1rem;
+    color: var(--text-secondary);
+  }
+
+  &__spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: wave-spin 1s linear infinite;
+  }
+
+  /* ── Formulario Container ── */
+  &__container {
+    padding: 2rem;
+    border: 1.5px solid var(--border-color);
+  }
+
+  /* ── Layout de Dos Columnas ── */
+  &__form-two-columns {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+
+    @media (min-width: 768px) {
+      grid-template-columns: 1.15fr 0.85fr;
+      align-items: stretch;
+    }
+
+    .form-col-left {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      order: 1;
+
+      @media (min-width: 768px) {
+        order: unset;
+      }
+
+      .form-row {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+
+        .meta-form-page__form-group {
+          flex: 1;
+          min-width: 140px;
+        }
+      }
+    }
+
+    .form-col-right {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      align-items: center;
+      justify-content: flex-start;
+      background: var(--bg-surface-soft);
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.5rem 1.25rem;
+      box-sizing: border-box;
+      order: 3;
+
+      @media (min-width: 768px) {
+        min-height: 380px;
+        order: unset;
+      }
+    }
+  }
+
+  /* ── Grupos de Entrada ── */
+  &__form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+
+      &.form-label-purpose {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+      }
+    }
+
+    input, select {
+      height: 42px;
+      padding: 0.5rem 0.85rem;
+      background: var(--bg-body);
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      font-family: var(--font-main);
+      outline: none;
+      transition: var(--transition);
+
+      &:focus {
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(91, 106, 240, 0.15);
+      }
+    }
+
+    .error-msg {
+      color: var(--color-danger);
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+  }
+
+  /* ── Selector Visual de Propósito ── */
+  &__purpose-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.35rem;
+
+    .purpose-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.65rem 0.5rem;
+      background: var(--bg-body);
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-family: var(--font-main);
+      transition: var(--transition-bounce);
+
+      i {
+        font-size: 1.15rem;
+        transition: transform 0.2s ease;
+      }
+
+      span {
+        font-size: 0.72rem;
+        font-weight: 700;
+      }
+
+      &:hover {
+        border-color: var(--color-primary-light);
+        color: var(--text-primary);
+        transform: translateY(-2px);
+
+        i {
+          transform: scale(1.1);
+        }
+      }
+
+      &--active {
+        background: var(--color-primary-soft);
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+        box-shadow: 0 4px 10px rgba(91, 106, 240, 0.12);
+
+        i {
+          transform: scale(1.15);
+        }
+      }
+    }
+  }
+
+  /* ── Botones Rápidos de Fecha ── */
+  .quick-dates-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.4rem;
+
+    .btn-quick-date {
+      background: var(--bg-body);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-secondary);
+      padding: 0.35rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font-main);
+      transition: var(--transition);
+
+      &:hover {
+        background: var(--color-primary-soft);
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+      }
+    }
+  }
+
+  /* ── Caja de Vista Previa ── */
+  &__preview-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+
+    h4 {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-align: center;
+    }
+  }
+
+  /* ── Ficha Resumen de Meta ── */
+  &__summary-details {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin: 1.25rem 0 0.25rem 0;
+    padding-top: 1.25rem;
+    border-top: 1.5px solid var(--border-color);
+
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+
+      .label {
+        color: var(--text-secondary);
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        letter-spacing: 0.03em;
+      }
+
+      .value {
+        color: var(--text-primary);
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+
+        i {
+          font-size: 0.95rem;
+          color: var(--color-primary);
+        }
+      }
+
+      .font-mono {
+        font-family: var(--font-heading);
+        font-weight: 800;
+      }
+
+      .text-truncate {
+        max-width: 155px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
+  /* ── Proyección: Ahorro Mensual Recomendado ── */
+  &__recommended-savings {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    width: 100%;
+    padding: 1.25rem;
+    background: rgba(91, 106, 240, 0.08);
+    border: 1.5px solid rgba(91, 106, 240, 0.25);
+    border-radius: var(--radius-md);
+    margin-top: auto;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    position: relative;
+    overflow: hidden;
+    animation: fadeIn 0.4s ease;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3.5px;
+      background: linear-gradient(90deg, #8ea2ff, #5b6af0);
+    }
+
+    .recommend-title {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    .recommend-value {
+      font-family: var(--font-heading);
+      font-size: 1.65rem;
+      font-weight: 900;
+      color: var(--color-primary);
+    }
+
+    .recommend-desc {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+  }
+
+  /* ── Acciones del Formulario al Pie ── */
+  &__actions-container {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    order: 2;
+    margin-top: 0;
+    border-top: none;
+    padding-top: 0;
+    border-bottom: 1.5px solid var(--border-color);
+    padding-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
+
+    @media (min-width: 768px) {
+      order: unset;
+      margin-top: 1rem;
+      border-top: 1.5px solid var(--border-color);
+      padding-top: 1.5rem;
+      border-bottom: none;
+      padding-bottom: 0;
+      margin-bottom: 0;
+    }
+
+    button {
+      height: 42px;
+      padding: 0 1.5rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-main);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: var(--transition);
+    }
+
+    .btn-cancel {
+      background: var(--bg-body);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-secondary);
+      &:hover { background: var(--border-color); color: var(--text-primary); }
+    }
+
+    .btn-save {
+      background: var(--color-primary);
+      color: #ffffff;
+      &:hover { background: var(--color-primary-light); }
+      &:disabled { background: var(--text-muted); cursor: not-allowed; }
+    }
+  }
+
+  /* ── Gráfico Circular de Burbuja / Agua ── */
+  .bubble-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 125px;
+    height: 125px;
+    position: relative;
+    user-select: none;
+    border-radius: 50%;
+    padding: 4px;
+    box-sizing: border-box;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+
+    &--preview {
+      width: 180px;
+      height: 180px;
+      padding: 5px;
+
+      .bubble {
+        .bubble__category-icon {
+          font-size: 2.1rem;
+          margin-bottom: 4px;
+        }
+
+        .bubble__number {
+          font-size: 2.2rem;
+        }
+      }
+    }
+  }
+
+  .bubble {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: none;
+    box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(255, 255, 255, 0.05);
+    background: var(--bg-body);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+
+    &__water {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: translateY(100%);
+      pointer-events: none;
+    }
+
+    &__wave {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      width: 250%;
+      height: 250%;
+      border-radius: 40%;
+      transform: translateX(-50%) translateY(60%);
+      animation: wave-spin 6s linear infinite;
+      opacity: 0.85;
+
+      &--back {
+        left: 50%;
+        border-radius: 45%;
+        animation: wave-spin-reverse 8s linear infinite;
+        opacity: 0.5;
+        margin-bottom: 6px;
+      }
+    }
+
+    &__content {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-heading);
+      color: var(--text-primary);
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.4);
+    }
+
+    &__category-icon {
+      font-size: 1.45rem;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+      opacity: 0.95;
+    }
+
+    &__number {
+      font-size: 1.4rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+  }
+
+  // Theme color variables for waves and shadows
+  .bubble-container--active {
+    box-shadow: 0 0 12px rgba(91, 106, 240, 0.15);
+    .bubble__wave {
+      background: linear-gradient(180deg, #8ea2ff 0%, #5b6af0 100%);
+      &--back {
+        background: linear-gradient(180deg, #9be7ff 0%, #4db8ff 100%);
+      }
+    }
+  }
+
+  .bubble-container--success {
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.2);
+    .bubble__wave {
+      background: linear-gradient(180deg, #86efac 0%, #22c55e 100%);
+      &--back {
+        background: linear-gradient(180deg, #a7f3d0 0%, #10b981 100%);
+      }
+    }
+  }
+
+  .bubble-container--danger {
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.15);
+    .bubble__wave {
+      background: linear-gradient(180deg, #fca5a5 0%, #ef4444 100%);
+      &--back {
+        background: linear-gradient(180deg, #fecaca 0%, #dc2626 100%);
+      }
+    }
+  }
+}
+
+/* ── Animaciones ── */
+@keyframes wave-spin {
+  from {
+    transform: translateX(-50%) translateY(60%) rotate(0deg);
+  }
+  to {
+    transform: translateX(-50%) translateY(60%) rotate(360deg);
+  }
+}
+@keyframes wave-spin-reverse {
+  from {
+    transform: translateX(-50%) translateY(60%) rotate(0deg);
+  }
+  to {
+    transform: translateX(-50%) translateY(60%) rotate(-360deg);
+  }
+}

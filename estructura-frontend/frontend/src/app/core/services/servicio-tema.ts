@@ -31,11 +31,13 @@ export class ServicioTema {
       const esOscuro = this.temaOscuro();
       document.body.classList.toggle('theme-dark', esOscuro);
       document.body.classList.toggle('dark', esOscuro);
+      document.body.classList.toggle('tema-claro', !esOscuro);
       localStorage.setItem(this.STORAGE_KEY, esOscuro ? 'oscuro' : 'claro');
       console.debug('[TemaDebug][ServicioTema] apply =>', {
         esOscuro,
         bodyThemeDark: document.body.classList.contains('theme-dark'),
         bodyDark: document.body.classList.contains('dark'),
+        bodyTemaClaro: document.body.classList.contains('tema-claro'),
         persisted: localStorage.getItem(this.STORAGE_KEY)
       });
     });

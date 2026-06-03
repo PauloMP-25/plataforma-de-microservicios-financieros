@@ -7,10 +7,13 @@
           <i class="fa-solid fa-bullseye"></i>
         </div>
         <div>
-          <h1>Metas de Ahorro</h1>
-          <p>Define tus objetivos financieros, realiza un seguimiento de tu progreso y haz realidad tus proyectos.</p>
+          <h1>Metas Financieras</h1>
+          <p>Alcanza tus objetivos y construye tu futuro financiero.</p>
         </div>
       </div>
+      <button class="metas-page__btn-nueva" (click)="abrirCrearMeta()">
+        <i class="fa-solid fa-plus"></i> Nueva Meta
+      </button>
     </div>
   </header>
 
@@ -35,377 +38,411 @@
       <p>Sincronizando tus metas de ahorro...</p>
     </div>
   } @else {
-    <!-- Panel Resumen Superior: KPI Cards -->
+    <!-- Panel Resumen Superior: KPI Cards (Mockup LUKA Layout) -->
     <div class="metas-page__resumen-dashboard anim-fade-up">
-      <!-- Tarjeta KPI 1: Total Ahorrado -->
+      <!-- Tarjeta KPI 1: Metas Activas -->
       <article class="metas-page__kpi-card card">
-        <div class="metas-page__kpi-header">
-          <span class="metas-page__kpi-title">Total Acumulado</span>
-          <i class="fa-solid fa-piggy-bank text-primary"></i>
+        <div class="metas-page__kpi-icon text-primary">
+          <i class="fa-solid fa-bullseye"></i>
         </div>
-        <div class="metas-page__kpi-body">
-          <div class="metas-page__monto-total">
-            <span class="metas-page__moneda">S/</span>
-            <span class="metas-page__cifra">{{ totalAhorrado().toFixed(2) }}</span>
-          </div>
-          <div class="metas-page__kpi-desc">
-            Ahorro distribuido en <strong>{{ metasActivas().length }}</strong> meta(s) activa(s) y <strong>{{ metasCompletadas().length }}</strong> completada(s).
-          </div>
+        <div class="metas-page__kpi-info">
+          <span class="metas-page__kpi-title">Metas activas</span>
+          <span class="metas-page__kpi-value">{{ metasActivasCount() }}</span>
+          <span class="metas-page__kpi-sub">En progreso</span>
         </div>
       </article>
 
-      <!-- Tarjeta KPI 2: Meta Próxima -->
+      <!-- Tarjeta KPI 2: Metas Cumplidas -->
       <article class="metas-page__kpi-card card">
-        <div class="metas-page__kpi-header">
-          <span class="metas-page__kpi-title">Próxima Fecha Límite</span>
-          <i class="fa-regular fa-clock text-warning"></i>
+        <div class="metas-page__kpi-icon text-success">
+          <i class="fa-solid fa-circle-check"></i>
         </div>
-        <div class="metas-page__kpi-body">
+        <div class="metas-page__kpi-info">
+          <span class="metas-page__kpi-title">Metas cumplidas</span>
+          <span class="metas-page__kpi-value">{{ metasCumplidasCount() }}</span>
+          <span class="metas-page__kpi-sub">¡Felicidades!</span>
+        </div>
+      </article>
+
+      <!-- Tarjeta KPI 3: Monto Disponible -->
+      <article class="metas-page__kpi-card card">
+        <div class="metas-page__kpi-icon text-info">
+          <i class="fa-solid fa-wallet"></i>
+        </div>
+        <div class="metas-page__kpi-info">
+          <span class="metas-page__kpi-title">Monto disponible</span>
+          <span class="metas-page__kpi-value">S/ {{ ahorroDisponible().toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+          <span class="metas-page__kpi-sub">Para avanzar en tus metas</span>
+        </div>
+      </article>
+
+      <!-- Tarjeta KPI 4: Próxima Meta por Vencer -->
+      <article class="metas-page__kpi-card card">
+        <div class="metas-page__kpi-icon text-warning">
+          <i class="fa-regular fa-calendar"></i>
+        </div>
+        <div class="metas-page__kpi-info">
+          <span class="metas-page__kpi-title">Próxima meta</span>
           @if (metaMasCercana(); as masCercana) {
-            <div class="metas-page__meta-cercana">
-              <span class="metas-page__cercana-nombre">{{ masCercana.nombre }}</span>
-              <span class="badge" [ngClass]="{
-                'badge-danger': calcularDiasRestantes(masCercana.fechaLimite) <= 7,
-                'badge-warning': calcularDiasRestantes(masCercana.fechaLimite) > 7 && calcularDiasRestantes(masCercana.fechaLimite) <= 30,
-                'badge-success': calcularDiasRestantes(masCercana.fechaLimite) > 30
-              }">
-                <i class="fa-regular fa-hourglass-half"></i>
-                Quedan {{ calcularDiasRestantes(masCercana.fechaLimite) }} días
-              </span>
-            </div>
-            <div class="metas-page__kpi-desc">
-              Fecha límite: <strong>{{ masCercana.fechaLimite | date:'dd/MM/yyyy' }}</strong>. Progreso: <strong>{{ masCercana.porcentajeProgreso.toFixed(0) }}%</strong>
-            </div>
+            <span class="metas-page__kpi-value-text">{{ obtenerCategoriaYNombre(masCercana.nombre).nombre }}</span>
+            <span class="metas-page__kpi-sub text-warning">Vence el {{ masCercana.fechaLimite | date:'dd/MM/yyyy' }}</span>
           } @else {
-            <div class="metas-page__no-cercana">
-              <span>Sin metas activas</span>
-            </div>
-            <div class="metas-page__kpi-desc">
-              ¡Crea un nuevo objetivo para empezar a ahorrar hoy mismo!
-            </div>
+            <span class="metas-page__kpi-value-text">Ninguna</span>
+            <span class="metas-page__kpi-sub">Crea un objetivo</span>
           }
         </div>
       </article>
     </div>
 
-    <!-- Cuadrícula Principal (Dos Columnas Simétricas) -->
-    <div class="metas-page__main-grid anim-fade-up">
-      <!-- Columna Izquierda: Formulario de Creación y Aporte Rápido -->
-      <section class="metas-page__left-col">
-        <div class="metas-page__col-header">
-          <h2>
-            <i class="fa-solid fa-circle-plus text-primary"></i>
-            Nueva Meta de Ahorro
-          </h2>
-          <p>Establece un nuevo objetivo y define su presupuesto inicial.</p>
+    <!-- Barra de Filtros -->
+    <div class="metas-page__filters card anim-fade-up">
+      <div class="metas-page__filters-grid">
+        <!-- Filtro Estado -->
+        <div class="metas-page__filter-group">
+          <label for="filtroEstado">Estado</label>
+          <select id="filtroEstado" [value]="filtroEstado()" (change)="filtroEstado.set($any($event.target).value)">
+            <option value="Todas">Todas</option>
+            <option value="Activas">Activas</option>
+            <option value="Cumplidas">Cumplidas</option>
+            <option value="Vencidas">Vencidas</option>
+          </select>
         </div>
 
-        <!-- Tarjeta 1: Crear Meta -->
-        <div class="card metas-page__form-card">
+        <!-- Filtro Mes -->
+        <div class="metas-page__filter-group">
+          <label for="filtroMes">Mes</label>
+          <select id="filtroMes" [value]="filtroMes()" (change)="filtroMes.set($any($event.target).value)">
+            <option value="Todos">Todos</option>
+            <option value="0">Enero</option>
+            <option value="1">Febrero</option>
+            <option value="2">Marzo</option>
+            <option value="3">Abril</option>
+            <option value="4">Mayo</option>
+            <option value="5">Junio</option>
+            <option value="6">Julio</option>
+            <option value="7">Agosto</option>
+            <option value="8">Septiembre</option>
+            <option value="9">Octubre</option>
+            <option value="10">Noviembre</option>
+            <option value="11">Diciembre</option>
+          </select>
+        </div>
 
-          <form [formGroup]="formulario" (ngSubmit)="guardarMeta()" class="metas-page__form">
-            <!-- Campo: Nombre de la Meta -->
-            <div class="metas-page__form-group">
-              <label for="nombre">Nombre de la Meta</label>
-              <div class="metas-page__input-wrapper">
-                <i class="fa-solid fa-pen-nib input-icon"></i>
-                <input
-                  id="nombre"
-                  type="text"
-                  formControlName="nombre"
-                  placeholder="Ej. Vacaciones de Verano, Laptop nueva..."
-                />
-              </div>
-              @if (formulario.get('nombre')?.invalid && formulario.get('nombre')?.touched) {
-                <small class="metas-page__form-error">
-                  El nombre es obligatorio y debe tener entre 3 y 150 caracteres.
-                </small>
-              }
-            </div>
+        <!-- Filtro Año -->
+        <div class="metas-page__filter-group">
+          <label for="filtroAnio">Año</label>
+          <select id="filtroAnio" [value]="filtroAnio()" (change)="filtroAnio.set($any($event.target).value)">
+            <option value="Todos">Todos</option>
+            <option value="2025">2025</option>
+            <option value="2026">2026</option>
+            <option value="2027">2027</option>
+            <option value="2028">2028</option>
+          </select>
+        </div>
 
-            <div class="metas-page__form-row">
-              <!-- Campo: Monto Objetivo -->
-              <div class="metas-page__form-group">
-                <label for="montoObjetivo">Monto Objetivo (S/)</label>
-                <div class="metas-page__input-wrapper">
-                  <i class="fa-solid fa-flag-checkered input-icon"></i>
-                  <input
-                    id="montoObjetivo"
-                    type="number"
-                    formControlName="montoObjetivo"
-                    placeholder="Ej. 2000"
-                    min="1"
-                  />
-                </div>
-                @if (formulario.get('montoObjetivo')?.invalid && formulario.get('montoObjetivo')?.touched) {
-                  <small class="metas-page__form-error">
-                    El monto objetivo debe ser mayor a S/ 1.00.
-                  </small>
-                }
-              </div>
+        <!-- Rango de Monto Objetivo -->
+        <div class="metas-page__filter-group">
+          <label>Rango de monto objetivo (S/)</label>
+          <div class="metas-page__range-inputs">
+            <input type="number" placeholder="Mínimo" [value]="filtroMontoMin()" (input)="filtroMontoMin.set($any($event.target).value ? +$any($event.target).value : null)">
+            <span>-</span>
+            <input type="number" placeholder="Máximo" [value]="filtroMontoMax()" (input)="filtroMontoMax.set($any($event.target).value ? +$any($event.target).value : null)">
+          </div>
+        </div>
 
-              <!-- Campo: Monto Inicial -->
-              <div class="metas-page__form-group">
-                <label for="montoActual">Ahorro Inicial (S/)</label>
-                <div class="metas-page__input-wrapper">
-                  <i class="fa-solid fa-wallet input-icon"></i>
-                  <input
-                    id="montoActual"
-                    type="number"
-                    formControlName="montoActual"
-                    placeholder="Ej. 100"
-                    min="0"
-                  />
-                </div>
-                @if (formulario.get('montoActual')?.invalid && formulario.get('montoActual')?.touched) {
-                  <small class="metas-page__form-error">
-                    El monto inicial no puede ser negativo.
-                  </small>
-                }
-              </div>
-            </div>
+        <!-- Botones de Acción de Filtros -->
+        <div class="metas-page__filter-actions">
+          <button type="button" class="btn-clear" (click)="limpiarFiltros()">
+            <i class="fa-solid fa-rotate-left"></i> Limpiar
+          </button>
+        </div>
+      </div>
+    </div>
 
-            <!-- Campo: Fecha Límite -->
-            <div class="metas-page__form-group">
-              <label for="fechaLimite">Fecha Límite</label>
-              <div class="metas-page__input-wrapper">
-                <i class="fa-regular fa-calendar input-icon"></i>
-                <input
-                  id="fechaLimite"
-                  type="date"
-                  formControlName="fechaLimite"
-                  [min]="fechaMinima"
-                />
-              </div>
-              @if (formulario.get('fechaLimite')?.invalid && formulario.get('fechaLimite')?.touched) {
-                <small class="metas-page__form-error">
-                  Ingresa una fecha límite futura.
-                </small>
-              }
-            </div>
+    <!-- Sección Principal: Grid de Tarjetas e Información -->
+    <div class="metas-page__layout-container">
+      <div class="metas-page__content-area anim-fade-up">
+        <div class="metas-page__section-title">
+          <h2>Mis Metas ({{ metasFiltradas().length }})</h2>
+        </div>
 
-            <!-- Botón de Envío -->
-            <div class="metas-page__form-actions">
-              <button type="submit" [disabled]="formulario.invalid || cargando()" class="metas-page__btn-submit">
-                @if (cargando() && metas().length > 0) {
-                  <i class="fa-solid fa-spinner fa-spin"></i> Procesando...
-                } @else {
-                  <i class="fa-solid fa-floppy-disk"></i> Crear Objetivo
-                }
+        <!-- Grid de Metas -->
+        <div class="metas-page__grid">
+          @for (meta of metasFiltradas(); track meta.id) {
+            <article class="metas-page__card card" 
+                     [ngClass]="{
+                       'metas-page__card--selected': metaSeleccionada()?.id === meta.id,
+                       'metas-page__card--success': meta.completada,
+                       'metas-page__card--danger': esVencida(meta) && !meta.completada,
+                       'metas-page__card--active': !meta.completada && !esVencida(meta)
+                     }"
+                     (click)="seleccionarMeta(meta, $event)">
+              
+              <!-- Botón de Opciones (Tres Puntos) -->
+              <button type="button" class="card-options-btn" (click)="seleccionarMeta(meta, $event); $event.stopPropagation()">
+                <i class="fa-solid fa-ellipsis-vertical"></i>
+                <span class="tooltip">Ver detalles</span>
               </button>
-            </div>
-          </form>
-        </div>
 
-        <!-- Tarjeta 2: Aporte Rápido Global -->
-        @if (metasActivas().length > 0) {
-          <div class="card metas-page__aporte-card">
-            <div class="metas-page__col-header">
-              <h2>
-                <i class="fa-solid fa-circle-dollar-to-slot text-success"></i>
-                Aporte Rápido
-              </h2>
-              <p>Agrega fondos instantáneamente a cualquiera de tus metas activas.</p>
-            </div>
+                  <!-- Encabezado de la Tarjeta Minimalista -->
+              <div class="metas-page__card-header">
+                <div class="metas-page__card-category">
+                  <i [class]="meta.iconoVisual" class="metas-page__card-category-icon" [ngClass]="'text-' + obtenerColorEstado(meta)"></i>
+                  <h3>{{ meta.nombreVisual }}</h3>
+                </div>
+              </div>
+ 
+              <!-- Lógica de Progreso de la Tarjeta (Burbuja Centralizada) -->
+              <div class="metas-page__card-body">
+                <!-- Gráfico de Burbuja de Agua (CSS Wave) -->
+                <div class="bubble-container" 
+                     [ngClass]="'bubble-container--' + obtenerColorEstado(meta)"
+                     [style.background]="'conic-gradient(' + obtenerColorProgreso(meta) + ' ' + meta.porcentajeProgreso + '%, var(--border-color) 0)'">
+                  <div class="bubble">
+                    <div class="bubble__water" [style.transform]="'translateY(' + (meta.porcentajeProgreso >= 100 ? 15 : (100 - meta.porcentajeProgreso)) + '%)'">
+                      <div class="bubble__wave bubble__wave--front"></div>
+                      <div class="bubble__wave bubble__wave--back"></div>
+                    </div>
+                    <div class="bubble__content">
+                      <i [class]="meta.iconoVisual" class="bubble__category-icon"></i>
+                      <span class="bubble__number">{{ meta.porcentajeProgreso.toFixed(0) }}%</span>
+                    </div>
+                  </div>
+                </div>
 
-            <div class="metas-page__aporte-form">
-              <!-- Selector de Meta -->
-              <div class="metas-page__form-group">
-                <label for="selectMeta">Seleccionar Meta</label>
-                <select id="selectMeta" class="metas-page__select" [value]="metaSeleccionadaId()" (change)="metaSeleccionadaId.set($any($event.target).value)">
-                  @for (meta of metasActivas(); track meta.id) {
-                    <option [value]="meta.id">{{ meta.nombre }} (S/ {{ meta.montoActual.toFixed(2) }} saved)</option>
+                <!-- Detalles Financieros Minimalistas -->
+                <div class="metas-page__card-minimal-details">
+                  @if (meta.completada) {
+                    <span class="monto-principal text-success">S/ {{ meta.montoObjetivo.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+                    <span class="sub-label text-secondary">{{ (meta.fechaActualizacion || meta.fechaCreacion) | date:'dd/MM/yyyy' }}</span>
+                  } @else {
+                    <span class="monto-principal">
+                      S/ {{ meta.montoAplicado.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }} 
+                      <span class="monto-total">/ S/ {{ meta.montoObjetivo.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+                    </span>
+                    <span class="sub-label" [ngClass]="esVencida(meta) ? 'text-danger' : 'text-secondary'">
+                      {{ meta.fechaLimite | date:'dd/MM/yyyy' }}
+                    </span>
                   }
-                </select>
-              </div>
-
-              <!-- Monto del Aporte -->
-              <div class="metas-page__form-group">
-                <label for="montoAporteGlobal">Monto a Ahorrar (S/)</label>
-                <div class="metas-page__input-wrapper">
-                  <i class="fa-solid fa-money-bill-transfer input-icon"></i>
-                  <input
-                    id="montoAporteGlobal"
-                    type="number"
-                    [value]="montoAporteGlobal()"
-                    (input)="montoAporteGlobal.set($any($event.target).value ? +$any($event.target).value : null)"
-                    placeholder="Monto"
-                    min="1"
-                  />
                 </div>
               </div>
 
-              <!-- Botones Rápidos -->
-              <div class="metas-page__quick-amounts">
-                <button type="button" class="btn-quick-amount" (click)="aportarMontoRapido(20)">+ S/ 20</button>
-                <button type="button" class="btn-quick-amount" (click)="aportarMontoRapido(50)">+ S/ 50</button>
-                <button type="button" class="btn-quick-amount" (click)="aportarMontoRapido(100)">+ S/ 100</button>
-                <button type="button" class="btn-quick-amount" (click)="aportarMontoRapido(200)">+ S/ 200</button>
+              <!-- Footer de la Tarjeta (Acción y Estado) -->
+              <div class="metas-page__card-footer" (click)="$event.stopPropagation()">
+                @if (meta.puedeCompletar && !meta.completada) {
+                  <button type="button" class="btn-action btn-action--complete" (click)="solicitarCompletarMeta(meta)">
+                    <i class="fa-solid fa-circle-check"></i> Completar
+                  </button>
+                }
+
+                <!-- Badge de Estado -->
+                <span class="card-badge badge" [ngClass]="{
+                  'badge-success': meta.completada,
+                  'badge-danger': esVencida(meta) && !meta.completada,
+                  'badge-primary': !meta.completada && !esVencida(meta)
+                }">
+                  {{ meta.completada ? 'Cumplida' : (esVencida(meta) ? 'Vencida' : 'Activa') }}
+                </span>
               </div>
 
-              <button type="button" [disabled]="!montoAporteGlobal() || montoAporteGlobal()! <= 0 || cargando()" (click)="guardarAporteGlobal()" class="metas-page__btn-aporte-submit">
-                <i class="fa-solid fa-vault"></i> Realizar Depósito
-              </button>
-            </div>
-          </div>
-        }
-      </section>
-
-      <!-- Columna Derecha: Listado de Metas Activas -->
-      <section class="metas-page__right-col">
-        <div class="metas-page__col-header flex-between">
-          <div>
-            <h2>
-              <i class="fa-solid fa-list-check text-primary"></i>
-              Tus Objetivos en Curso
-            </h2>
-            <p>Monitorea tu porcentaje de avance y mantén la consistencia.</p>
-          </div>
-          <span class="badge badge-info">{{ metasActivas().length }} activas</span>
-        </div>
-
-        <div class="metas-page__metas-list">
-          @for (meta of metasActivas(); track meta.id) {
-            <article class="metas-page__meta-card card">
-              <div class="metas-page__meta-info">
-                <div class="metas-page__meta-main">
-                  <h3>{{ meta.nombre }}</h3>
-                  <div class="metas-page__meta-limit-info">
-                    <span class="meta-label">Límite: {{ meta.fechaLimite | date:'dd/MM/yyyy' }}</span>
-                    <!-- Alerta de Urgencia -->
-                    @if (calcularDiasRestantes(meta.fechaLimite) <= 7) {
-                      <span class="badge badge-danger-soft text-danger font-sm">
-                        <i class="fa-solid fa-triangle-exclamation"></i> ¡Últimos días!
-                      </span>
-                    }
-                  </div>
-                </div>
-
-                <div class="metas-page__meta-valores">
-                  <div class="meta-monto-actual">
-                    S/ {{ meta.montoActual.toFixed(2) }}
-                  </div>
-                  <div class="meta-monto-objetivo">
-                    de S/ {{ meta.montoObjetivo.toFixed(2) }}
-                  </div>
-                </div>
-              </div>
-
-              <!-- Barra de Progreso Avanzada con Indicadores HSL -->
-              <div class="metas-page__progress-wrapper">
-                <div class="metas-page__progress-bar-container">
-                  <div class="metas-page__progress-bar"
-                       [style.width.%]="meta.porcentajeProgreso"
-                       [ngClass]="{
-                         'metas-page__progress-bar--bajo': meta.porcentajeProgreso < 30,
-                         'metas-page__progress-bar--medio': meta.porcentajeProgreso >= 30 && meta.porcentajeProgreso < 75,
-                         'metas-page__progress-bar--alto': meta.porcentajeProgreso >= 75
-                       }">
-                  </div>
-                </div>
-                <div class="metas-page__progress-text">
-                  <span>Avance: <strong>{{ meta.porcentajeProgreso.toFixed(1) }}%</strong></span>
-                  <span>Faltan: <strong>S/ {{ (meta.montoObjetivo - meta.montoActual).toFixed(2) }}</strong></span>
-                </div>
-              </div>
-
-              <!-- Panel Inline de Aporte Rápido -->
-              @if (editandoMetaId() === meta.id) {
-                <div class="metas-page__inline-aporte anim-fade-up">
-                  <div class="metas-page__inline-input">
-                    <i class="fa-solid fa-sack-dollar text-success"></i>
-                    <input
-                      type="number"
-                      [value]="montoAporte()"
-                      (input)="montoAporte.set($any($event.target).value ? +$any($event.target).value : null)"
-                      placeholder="Monto a aportar..."
-                      min="1"
-                    />
-                  </div>
-                  <div class="metas-page__inline-actions">
-                    <button type="button" class="btn-inline-save" [disabled]="!montoAporte() || montoAporte()! <= 0 || cargando()" (click)="guardarAporteInline(meta)">
-                      Ahorrar
-                    </button>
-                    <button type="button" class="btn-inline-cancel" (click)="toggleAporteInline(meta.id)">
-                      Cancelar
-                    </button>
-                  </div>
-                </div>
-              }
-
-              <!-- Acciones de Tarjeta -->
-              <div class="metas-page__meta-actions">
-                <button type="button" class="btn-meta-action btn-meta-action--aporte" (click)="toggleAporteInline(meta.id)">
-                  <i class="fa-solid fa-coins"></i> {{ editandoMetaId() === meta.id ? 'Cerrar' : 'Aportar' }}
-                </button>
-                <button type="button" class="btn-meta-action btn-meta-action--delete" (click)="eliminarMeta(meta.id)">
-                  <i class="fa-regular fa-trash-can"></i> Eliminar
-                </button>
-              </div>
             </article>
           } @empty {
-            <div class="metas-page__empty-list card">
-              <i class="fa-solid fa-vault empty-icon"></i>
-              <h3>No tienes metas de ahorro configuradas</h3>
-              <p>Define tus primeros objetivos en el formulario de la izquierda y haz un seguimiento de tu éxito.</p>
+            <div class="metas-page__empty-grid card">
+              <i class="fa-solid fa-vault"></i>
+              <h3>No se encontraron metas de ahorro</h3>
+              <p>Haz clic en "+ Nueva Meta" para agregar tu primer objetivo financiero.</p>
             </div>
           }
         </div>
-      </section>
-    </div>
-
-    <!-- Sección Inferior: Historial de Metas Cumplidas (Hall of Fame) -->
-    <div class="metas-page__historial card anim-fade-up">
-      <div class="metas-page__historial-header flex-between">
-        <div>
-          <h2>
-            <i class="fa-solid fa-trophy text-warning"></i>
-            Metas Alcanzadas
-          </h2>
-          <p>¡Tus éxitos acumulados! Has completado estas metas de ahorro con éxito.</p>
-        </div>
-        <span class="badge badge-success">{{ metasCompletadas().length }} logradas</span>
       </div>
 
-      <div class="metas-page__table-wrapper">
-        @if (metasCompletadas().length > 0) {
-          <table class="metas-page__table">
-            <thead>
-              <tr>
-                <th>Objetivo</th>
-                <th>Monto Alcanzado</th>
-                <th>Fecha de Creación</th>
-                <th>Fecha de Cumplimiento</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (meta of metasCompletadas(); track meta.id) {
-                <tr>
-                  <td>
-                    <div class="metas-page__table-goal-name">
-                      <i class="fa-solid fa-circle-check text-success"></i>
-                      <strong>{{ meta.nombre }}</strong>
+      <!-- Panel Lateral Derecho: Detalles de la Meta Seleccionada -->
+      @if (metaSeleccionada(); as seleccionada) {
+        <div class="metas-page__sidebar-backdrop" (click)="cerrarDetalle()">
+          <aside class="metas-page__sidebar card" (click)="$event.stopPropagation()">
+            <div class="metas-page__sidebar-header">
+              <h2>Detalle de la meta</h2>
+              <button class="btn-close" (click)="cerrarDetalle()">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <div class="metas-page__sidebar-content">
+              <!-- Icono y Nombre -->
+              <div class="metas-page__sidebar-title-section">
+                <div class="metas-page__sidebar-icon-circle" [ngClass]="'metas-page__sidebar-icon-circle--' + obtenerColorEstado(seleccionada)">
+                  <i [class]="seleccionada.iconoVisual"></i>
+                </div>
+                <div>
+                  <h3>{{ seleccionada.nombreVisual }}</h3>
+                  <span class="badge" [ngClass]="{
+                    'badge-success': seleccionada.completada,
+                    'badge-danger': esVencida(seleccionada) && !seleccionada.completada,
+                    'badge-primary': !seleccionada.completada && !esVencida(seleccionada)
+                  }">
+                    {{ seleccionada.completada ? 'Cumplida' : (esVencida(seleccionada) ? 'Vencida' : 'Activa') }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Gráfico de Burbuja Grande (Sin textos de etiquetas) -->
+              <div class="metas-page__sidebar-bubble-section">
+                <div class="bubble-container bubble-container--large" 
+                     [ngClass]="'bubble-container--' + obtenerColorEstado(seleccionada)"
+                     [style.background]="'conic-gradient(' + obtenerColorProgreso(seleccionada) + ' ' + seleccionada.porcentajeProgreso + '%, var(--border-color) 0)'">
+                  <div class="bubble bubble--large">
+                    <div class="bubble__water" [style.transform]="'translateY(' + (seleccionada.porcentajeProgreso >= 100 ? 15 : (100 - seleccionada.porcentajeProgreso)) + '%)'">
+                      <div class="bubble__wave bubble__wave--front"></div>
+                      <div class="bubble__wave bubble__wave--back"></div>
                     </div>
-                  </td>
-                  <td><strong>S/ {{ meta.montoActual.toFixed(2) }}</strong></td>
-                  <td>{{ meta.fechaCreacion | date:'dd/MM/yyyy' }}</td>
-                  <td>{{ (meta.fechaActualizacion || meta.fechaCreacion) | date:'dd/MM/yyyy' }}</td>
-                  <td>
-                    <span class="badge badge-success-soft text-success">
-                      <i class="fa-solid fa-circle-check"></i> LOGRADA
-                    </span>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        } @else {
-          <div class="metas-page__empty-history">
-            <i class="fa-solid fa-award"></i>
-            <p>Tus metas completadas aparecerán aquí. ¡Comienza a ahorrar para alcanzar tu primer logro!</p>
+                    <div class="bubble__content">
+                      <i [class]="seleccionada.iconoVisual" class="bubble__category-icon"></i>
+                      <span class="bubble__number">{{ seleccionada.porcentajeProgreso.toFixed(0) }}%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Valores Financieros y Fechas -->
+              <div class="metas-page__sidebar-details-grid">
+                <div class="detail-item">
+                  <span class="label">Monto Aplicado</span>
+                  <span class="value text-success">S/ {{ seleccionada.montoAplicado.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="label">Monto Objetivo</span>
+                  <span class="value">S/ {{ seleccionada.montoObjetivo.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+                </div>
+
+                <div class="detail-item-wide border-t border-b border-color py-3 my-2">
+                  @if (!seleccionada.completada) {
+                    <div class="flex-between">
+                      <span class="label">Faltan ahorrar</span>
+                      <span class="value text-warning">S/ {{ (seleccionada.montoObjetivo - seleccionada.montoAplicado).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+                    </div>
+                  }
+                </div>
+
+                @if (seleccionada.completada) {
+                  <div class="detail-item">
+                    <span class="label"><i class="fa-solid fa-award text-success"></i> Completada el</span>
+                    <span class="value">{{ (seleccionada.fechaActualizacion || seleccionada.fechaCreacion) | date:'dd/MM/yyyy' }}</span>
+                  </div>
+                }
+                <div class="detail-item">
+                  <span class="label"><i class="fa-regular fa-calendar-days"></i> Fecha de inicio</span>
+                  <span class="value">{{ seleccionada.fechaCreacion | date:'dd/MM/yyyy' }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="label"><i class="fa-regular fa-calendar-check"></i> Fecha objetivo</span>
+                  <span class="value">{{ seleccionada.fechaLimite | date:'dd/MM/yyyy' }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="label"><i class="fa-regular fa-clock"></i> Categoría</span>
+                  <span class="value">{{ seleccionada.categoriaVisual }}</span>
+                </div>
+                @if (seleccionada.completada) {
+                  <div class="detail-item">
+                    <span class="label"><i class="fa-solid fa-hourglass-end"></i> Tiempo empleado</span>
+                    <span class="value">{{ calcularTiempoEmpleado(seleccionada.fechaCreacion, seleccionada.fechaActualizacion || seleccionada.fechaCreacion) }}</span>
+                  </div>
+                }
+              </div>
+
+              <!-- Acciones del Sidebar -->
+              <div class="metas-page__sidebar-actions">
+                @if (!seleccionada.completada) {
+                  @if (seleccionada.puedeCompletar) {
+                    <button type="button" class="btn-sidebar btn-sidebar--complete" (click)="solicitarCompletarMeta(seleccionada)">
+                      <i class="fa-solid fa-circle-check"></i> Completar Meta
+                    </button>
+                  } @else {
+                    <button type="button" class="btn-sidebar btn-sidebar--progress" disabled>
+                      <i class="fa-solid fa-spinner fa-spin"></i> En Progreso
+                    </button>
+                  }
+                  <button type="button" class="btn-sidebar btn-sidebar--edit" (click)="abrirEditarMeta(seleccionada)">
+                    <i class="fa-regular fa-pen-to-square"></i> Editar Meta
+                  </button>
+                }
+                <button type="button" class="btn-sidebar btn-sidebar--delete" (click)="eliminarMeta(seleccionada.id)">
+                  <i class="fa-regular fa-trash-can"></i> Eliminar Meta
+                </button>
+              </div>
+
+              <!-- Caja de Impacto Financiero -->
+              <div class="metas-page__sidebar-impact">
+                <h4><i class="fa-solid fa-chart-line"></i> Impacto en tus finanzas</h4>
+                @if (seleccionada.completada) {
+                  <p>Esta meta ya fue completada. El monto de S/ {{ seleccionada.montoObjetivo.toFixed(2) }} se descontó de tu ingreso disponible y se registró como un gasto en tu historial financiero.</p>
+                } @else {
+                  <p>Al completar esta meta, se descontarán S/ {{ seleccionada.montoObjetivo.toFixed(2) }} de tu balance disponible global y se guardará la transacción correspondiente en la categoría de gastos.</p>
+                }
+              </div>
+            </div>
+          </aside>
+        </div>
+      }
+    </div>
+  }
+
+
+
+  <!-- Modal de Confirmación de Completado de Meta -->
+  @if (modalConfirmarCompletar(); as metaConfirmar) {
+    <div class="metas-page__modal-backdrop" (click)="cerrarModalCompletar()">
+      <div class="metas-page__confirm-modal card" (click)="$event.stopPropagation()">
+        
+        <header class="metas-page__confirm-header">
+          <i class="fa-solid fa-circle-question icon-question"></i>
+          <h3>¿Deseas completar esta meta?</h3>
+        </header>
+
+        <div class="metas-page__confirm-body">
+          <p class="desc-warning">
+            El monto objetivo será descontado de tu ahorro disponible y se registrará como un gasto en tu historial financiero.
+          </p>
+
+          <div class="metas-page__confirm-data">
+            <div class="data-row">
+              <span class="label">Meta:</span>
+              <strong class="value text-primary">{{ metaConfirmar.nombreVisual }}</strong>
+            </div>
+            <div class="data-row">
+              <span class="label">Monto objetivo:</span>
+              <strong class="value">S/ {{ metaConfirmar.montoObjetivo.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</strong>
+            </div>
+            <div class="data-row">
+              <span class="label">Saldo disponible actual:</span>
+              <strong class="value text-success">S/ {{ ahorroDisponible().toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</strong>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <div class="data-row">
+              <span class="label">Saldo disponible restante:</span>
+              <strong class="value" [ngClass]="(ahorroDisponible() - metaConfirmar.montoObjetivo) < 0 ? 'text-danger' : 'text-success'">
+                S/ {{ (ahorroDisponible() - metaConfirmar.montoObjetivo).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+              </strong>
+            </div>
           </div>
-        }
+          
+          @if ((ahorroDisponible() - metaConfirmar.montoObjetivo) < 0) {
+            <small class="error-msg py-2 block"><i class="fa-solid fa-triangle-exclamation"></i> Advertencia: Tu saldo disponible quedará en negativo.</small>
+          }
+        </div>
+
+        <footer class="metas-page__confirm-footer">
+          <button type="button" class="btn-cancel" (click)="cerrarModalCompletar()">Cancelar</button>
+          <button type="button" class="btn-confirm" [disabled]="cargando()" (click)="confirmarCompletarMeta()">
+            @if (cargando()) {
+              <i class="fa-solid fa-spinner fa-spin"></i> Procesando...
+            } @else {
+              Confirmar y completar
+            }
+          </button>
+        </footer>
+
       </div>
     </div>
   }

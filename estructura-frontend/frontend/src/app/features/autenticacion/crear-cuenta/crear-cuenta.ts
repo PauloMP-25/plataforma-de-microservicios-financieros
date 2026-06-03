@@ -13,7 +13,7 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class CrearCuenta {
   /** Emite cuando el registro es exitoso para pasar al paso de verificación */
-  @Output() registroExitoso = new EventEmitter<{ medio: 'correo' | 'celular'; destino: string; usuarioId: string; correo: string; telefono?: string }>();
+  @Output() registroExitoso = new EventEmitter<{ medio: 'correo' | 'celular'; destino: string; usuarioId: string }>();
 
   formulario: FormGroup;
   mostrarPassword = false;
@@ -31,11 +31,7 @@ export class CrearCuenta {
       nombreUsuario: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(100)]],
       correo: ['', [Validators.required, Validators.email]],
       celular: [''],
-      password: ['', [
-        Validators.required,
-        Validators.minLength(8),
-        Validators.pattern(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#]).*/)
-      ]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
       confirmarPassword: ['', [Validators.required]]
     }, { validators: this.validarCoincidencia });
   }
@@ -89,9 +85,7 @@ export class CrearCuenta {
           this.registroExitoso.emit({
             medio: this.usarCelular ? 'celular' : 'correo',
             destino: this.usarCelular ? this.formulario.value.celular : this.formulario.value.correo,
-            usuarioId: resp.datos, // El UUID del usuario creado
-            correo: this.formulario.value.correo,
-            telefono: this.formulario.value.celular || undefined
+            usuarioId: resp.datos // El UUID del usuario creado
           });
         } else {
           this.errorMensaje = resp.mensaje || 'Error al registrar usuario';
@@ -99,18 +93,9 @@ export class CrearCuenta {
       },
       error: (err) => {
         this.cargando = false;
-        this.errorMensaje = this.obtenerMensajeErrorRegistro(err);
+        this.errorMensaje = err.error?.mensaje || 'Error de conexión con el servidor';
         console.error('Error Registro:', err);
       }
     });
-  }
-
-  private obtenerMensajeErrorRegistro(err: any): string {
-    const detalles = err.error?.detalles;
-    if (Array.isArray(detalles) && detalles.length > 0) {
-      return detalles.join(' · ');
-    }
-
-    return err.error?.mensaje || 'Error al registrar usuario. Verifica los datos ingresados.';
   }
 }
