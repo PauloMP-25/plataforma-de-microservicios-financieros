@@ -128,7 +128,7 @@
 // ── Responsive ──
 @media (max-width: 768px) {
   .auth__contenedor-maestro {
-    flex-direction: column-reverse;
+    flex-direction: column;
     min-height: auto;
     max-width: 440px;
   }
