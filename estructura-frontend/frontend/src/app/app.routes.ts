@@ -16,6 +16,14 @@ export const routes: Routes = [
     loadChildren: () => import('./features/recuperar-contrasena/recuperar-contrasena.routes').then(m => m.RECUPERAR_CONTRASENA_ROUTES)
   },
 
+  // ── Sistema Administrativo Independiente ──
+  {
+    path: 'admin',
+    loadChildren: () =>
+      import('./features/admin/admin.routes')
+        .then(m => m.ADMIN_ROUTES)
+  },
+
   // ── Rutas Privadas (Dashboard) ──
   {
     path: '',
