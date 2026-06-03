@@ -1154,10 +1154,3 @@
   }
 }
 
-/* Anular transform del ancestro en móvil para asegurar que position: fixed responda al viewport */
-@media (max-width: 1023px) {
-  ::ng-deep .content-inner {
-    animation: none !important;
-    transform: none !important;
-  }
-}
