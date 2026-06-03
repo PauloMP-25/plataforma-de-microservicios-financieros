@@ -230,6 +230,11 @@ export class MetaFormPage implements OnInit {
     this.formulario.get('categoria')?.setValue(catId);
   }
 
+  obtenerColorProgreso(pct: number): string {
+    if (pct >= 100) return '#22c55e';
+    return '#5b6af0';
+  }
+
   getAhorroSugeridoInfo(): { cuota: number; meses: number } {
     if (!this.formulario) return { cuota: 0, meses: 0 };
     

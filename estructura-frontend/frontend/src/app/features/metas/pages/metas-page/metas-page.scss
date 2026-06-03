@@ -458,16 +458,17 @@
     height: 125px;
     position: relative;
     user-select: none;
+    border-radius: 50%;
+    padding: 4px;
+    box-sizing: border-box;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
 
     &--large {
       width: 180px;
       height: 180px;
+      padding: 5px;
 
       .bubble {
-        width: 170px;
-        height: 170px;
-        border-width: 5px;
-
         .bubble__category-icon {
           font-size: 2.2rem;
           margin-bottom: 4px;
@@ -482,12 +483,9 @@
     &--preview {
       width: 130px;
       height: 130px;
+      padding: 4px;
 
       .bubble {
-        width: 120px;
-        height: 120px;
-        border-width: 4px;
-
         .bubble__category-icon {
           font-size: 1.55rem;
           margin-bottom: 2px;
@@ -502,12 +500,12 @@
 
   .bubble {
     position: relative;
-    width: 115px;
-    height: 115px;
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
-    border: 4px solid var(--border-color);
-    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.04);
-    background: var(--bg-surface-soft);
+    border: none;
+    box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(255, 255, 255, 0.05);
+    background: var(--bg-body);
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -523,23 +521,23 @@
       transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
       transform: translateY(100%);
       pointer-events: none;
-      border-radius: 50%;
     }
 
     &__wave {
       position: absolute;
-      top: -142%;
+      top: -192%;
       left: -50%;
       width: 200%;
       height: 200%;
-      background: var(--bg-card); // matches card container to hide the top excess
-      border-radius: 40%;
-      animation: wave-spin 7s linear infinite;
+      background: var(--bg-body);
+      border-radius: 45%;
+      animation: wave-spin 6s linear infinite;
 
       &--back {
-        animation: wave-spin 11s linear infinite;
+        left: -53%;
+        border-radius: 43%;
+        animation: wave-spin-reverse 10s linear infinite;
         opacity: 0.45;
-        border-radius: 36%;
       }
     }
 
@@ -569,31 +567,20 @@
     }
   }
 
-  // Theme color variables for waves
+  // Theme color variables for waves and shadows
   .bubble-container--active {
-    .bubble { border-color: rgba(91, 106, 240, 0.7); }
+    box-shadow: 0 0 12px rgba(91, 106, 240, 0.15);
     .bubble__water { background: rgba(91, 106, 240, 0.4); }
   }
 
   .bubble-container--success {
-    .bubble { border-color: rgba(34, 197, 94, 0.7); }
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.2);
     .bubble__water { background: rgba(34, 197, 94, 0.4); }
   }
 
   .bubble-container--danger {
-    .bubble { border-color: rgba(239, 68, 68, 0.7); }
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.15);
     .bubble__water { background: rgba(239, 68, 68, 0.4); }
-  }
-
-  // Wave mask matching container backgrounds
-  .metas-page__card {
-    .bubble__wave { background: var(--bg-card); }
-  }
-  .metas-page__sidebar {
-    .bubble__wave { background: var(--bg-card); }
-  }
-  .metas-page__modal-container {
-    .bubble__wave { background: var(--bg-card); }
   }
 
   /* ── Panel Lateral Derecho (Sidebar Detalle) ── */
@@ -934,4 +921,8 @@
 @keyframes wave-spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+@keyframes wave-spin-reverse {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(-360deg); }
 }

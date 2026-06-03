@@ -119,13 +119,12 @@
             @let formCatSelected = formulario.get('categoria')?.value || 'Otros';
             @let formIconSelected = obtenerIconoCategoria(formCatSelected);
             
-            <div class="bubble-container bubble-container--preview bubble-container--active">
+            <div class="bubble-container bubble-container--preview bubble-container--active"
+                 [style.background]="'conic-gradient(' + obtenerColorProgreso(formPct) + ' ' + formPct + '%, var(--border-color) 0)'">
               <div class="bubble">
                 <div class="bubble__water" [style.transform]="'translateY(' + (100 - formPct) + '%)'">
-                  @if (formPct < 100) {
-                    <div class="bubble__wave bubble__wave--front"></div>
-                    <div class="bubble__wave bubble__wave--back"></div>
-                  }
+                  <div class="bubble__wave bubble__wave--front"></div>
+                  <div class="bubble__wave bubble__wave--back"></div>
                 </div>
                 <div class="bubble__content">
                   <i [class]="formIconSelected" class="bubble__category-icon"></i>

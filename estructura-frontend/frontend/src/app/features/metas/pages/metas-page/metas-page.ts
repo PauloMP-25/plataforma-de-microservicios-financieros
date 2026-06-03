@@ -338,6 +338,12 @@ export class MetasPage implements OnInit {
     return 'active';
   }
 
+  obtenerColorProgreso(meta: any): string {
+    if (meta.completada) return '#22c55e';
+    if (this.esVencida(meta)) return '#ef4444';
+    return '#5b6af0';
+  }
+
   esVencida(meta: RespuestaMetaAhorro): boolean {
     if (!meta.fechaLimite) return false;
     const limite = new Date(meta.fechaLimite + 'T00:00:00');
