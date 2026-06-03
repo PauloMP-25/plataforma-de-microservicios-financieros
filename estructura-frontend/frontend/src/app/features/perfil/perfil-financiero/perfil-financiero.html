@@ -40,21 +40,20 @@
       <div class="pf-kpi__body">
         <span class="pf-kpi__label">Patrimonio operativo neto <i class="fa-regular fa-circle-question pf-kpi__hint"></i></span>
         @if (balanceNeto() !== null) {
-          <span class="pf-kpi__value text-success">
+          <span class="pf-kpi__value" [ngClass]="balanceNeto()! >= 0 ? 'text-success' : 'text-danger'">
             S/ {{ formatMoneda(balanceNeto()!) }}
           </span>
-          <span class="pf-kpi__sub text-muted">Ingresos - Gastos</span>
+          <span class="pf-kpi__sub text-muted">Balance neto mensual (Ingresos - Gastos)</span>
           @if (variacionBalance() !== null) {
-            <span class="pf-kpi__variation pf-kpi__variation--up">
-              <i class="fa-solid fa-arrow-trend-up"></i>
-              +12.5% vs Abril 2025
+            <span class="pf-kpi__variation" [ngClass]="variacionBalance()! >= 0 ? 'pf-kpi__variation--up' : 'pf-kpi__variation--down'">
+              <i class="fa-solid" [ngClass]="variacionBalance()! >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'"></i>
+              {{ variacionBalance()! >= 0 ? '+' : '' }}{{ variacionBalance()!.toFixed(1) }}% vs {{ nombreMesAnterior() }}
             </span>
           }
         } @else {
           <span class="pf-kpi__value pf-kpi__value--empty">Sin datos</span>
         }
       </div>
-
     </article>
 
     <!-- Índice de Salud Financiera -->
@@ -73,8 +72,13 @@
               <span class="pf-kpi__health-shimmer"></span>
             </div>
           </div>
-          <span class="pf-kpi__sub text-health">{{ idx.etiqueta }}</span>
-          <span class="pf-kpi__variation pf-kpi__variation--up"><i class="fa-solid fa-arrow-trend-up"></i> +8 pts vs Abril 2025</span>
+          <span class="pf-kpi__sub text-health">Nivel de salud: {{ idx.etiqueta }}</span>
+          @if (variacionSalud() !== null) {
+            <span class="pf-kpi__variation" [ngClass]="variacionSalud()! >= 0 ? 'pf-kpi__variation--up' : 'pf-kpi__variation--down'">
+              <i class="fa-solid" [ngClass]="variacionSalud()! >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'"></i>
+              {{ variacionSalud()! >= 0 ? '+' : '' }}{{ variacionSalud() }} pts vs {{ nombreMesAnterior() }}
+            </span>
+          }
         } @else {
           <span class="pf-kpi__value pf-kpi__value--empty">Sin datos suficientes</span>
         }
@@ -111,23 +115,22 @@
         <i class="fa-solid fa-piggy-bank"></i>
       </div>
       <div class="pf-kpi__body">
-        <span class="pf-kpi__label">Tasa de capacidad de ahorro real <i class="fa-regular fa-circle-question pf-kpi__hint"></i></span>
+        <span class="pf-kpi__label">Tasa de ahorro real <i class="fa-regular fa-circle-question pf-kpi__hint"></i></span>
         @if (capacidadAhorro() !== null) {
           <span class="pf-kpi__value text-warning">
             {{ capacidadAhorro()!.toFixed(1) }}%
           </span>
-          <span class="pf-kpi__sub text-muted">(Ingresos - Gastos) / Ingresos</span>
+          <span class="pf-kpi__sub text-muted">Porcentaje de ingresos ahorrado</span>
           @if (variacionAhorro() !== null) {
-            <span class="pf-kpi__variation pf-kpi__variation--up">
-              <i class="fa-solid fa-arrow-trend-up"></i>
-              +3.2% vs Abril 2025
+            <span class="pf-kpi__variation" [ngClass]="variacionAhorro()! >= 0 ? 'pf-kpi__variation--up' : 'pf-kpi__variation--down'">
+              <i class="fa-solid" [ngClass]="variacionAhorro()! >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'"></i>
+              {{ variacionAhorro()! >= 0 ? '+' : '' }}{{ variacionAhorro()!.toFixed(1) }}% vs {{ nombreMesAnterior() }}
             </span>
           }
         } @else {
           <span class="pf-kpi__value pf-kpi__value--empty">Sin datos suficientes</span>
         }
       </div>
-
     </article>
   </div>
 

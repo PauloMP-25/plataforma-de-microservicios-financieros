@@ -109,6 +109,29 @@ export class PerfilFinanciero implements OnInit {
     return capacidadActual - capacidadAnt;
   });
 
+  variacionSalud = computed(() => {
+    const actual = this.indicesSalud();
+    const ant = this.resumenAnterior();
+    if (!actual || !ant || ant.totalIngresos === 0) return null;
+    const ratioAnt = ((ant.totalIngresos - ant.totalGastos) / ant.totalIngresos) * 100;
+    const scoreAnt = Math.min(100, Math.max(0, ratioAnt));
+    return actual.score - Math.round(scoreAnt);
+  });
+
+  nombreMesAnterior = computed(() => {
+    const nombresMeses = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    const periodo = this.periodosDisponibles.find(p => p.key === this.periodoSeleccionadoKey());
+    if (!periodo) return 'mes anterior';
+    const mes = periodo.mes;
+    const anio = periodo.anio;
+    const mesAnterior = mes === 1 ? 12 : mes - 1;
+    const anioAnterior = mes === 1 ? anio - 1 : anio;
+    return `${nombresMeses[mesAnterior - 1]} ${anioAnterior}`;
+  });
+
   // ── Logros ──────────────────────────────────────────────────
   logrosFinancieros = computed<LogroFinanciero[]>(() => {
     const r = this.resumenActual();
