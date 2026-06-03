@@ -78,6 +78,11 @@
       cursor: pointer;
       outline: none;
       width: 100%;
+
+      option {
+        background-color: var(--bg-card);
+        color: var(--text-primary);
+      }
     }
 
     i {
@@ -772,7 +777,7 @@
     grid-template-columns: 1fr 1fr;
     gap: 2rem;
 
-    @media (max-width: 1650px) {
+    @media (max-width: 992px) {
       grid-template-columns: 1fr;
       gap: 1.5rem;
     }
