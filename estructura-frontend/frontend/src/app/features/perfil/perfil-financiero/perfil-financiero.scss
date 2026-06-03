@@ -80,6 +80,7 @@
       option {
         background-color: var(--bg-card);
         color: var(--text-primary);
+        font-size: 0.85rem;
       }
     }
 
@@ -95,6 +96,26 @@
 
     .fa-chevron-down {
       right: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      font-size: 0.8rem;
+
+      select {
+        padding: 0.5rem 1.8rem 0.5rem 1.8rem;
+        
+        option {
+          font-size: 0.78rem;
+        }
+      }
+
+      .fa-calendar {
+        left: 0.75rem;
+      }
+
+      .fa-chevron-down {
+        right: 0.75rem;
+      }
     }
   }
 
@@ -117,6 +138,11 @@
       background: var(--bg-surface-soft);
       border-color: var(--color-primary-light);
       transform: translateY(-1px);
+    }
+
+    @media (max-width: 768px) {
+      font-size: 0.8rem;
+      padding: 0.5rem 1rem;
     }
   }
 
