@@ -1,5 +1,6 @@
-# 🛡️ LUKA APP — docker-compose-hibrido.yml (v3.0 - Local Services + Cloud DB)
-# Optimizado para ahorro de RAM y conexión a DB Externa/Local
+# 🛡️ LUKA APP — docker-compose-hibrido.yml (v4.0 - Solo Microservicios)
+# BD, RabbitMQ y Redis corren LOCALMENTE (no en Docker)
+# Los contenedores solo levantan los microservicios Java/Python
 
 networks:
   luka-network:
@@ -14,49 +15,18 @@ x-spring-base: &spring-base
 x-env-common: &env-common
   SPRING_PROFILES_ACTIVE: docker
   SPRING_MAIN_ALLOW_BEAN_DEFINITION_OVERRIDING: "true"
-  # RabbitMQ (Interno en Docker) - Forzado a guest en entorno local
-  SPRING_RABBITMQ_HOST: rabbitmq
+  # RabbitMQ LOCAL (instalado en el host, no en Docker)
+  SPRING_RABBITMQ_HOST: host.docker.internal
   SPRING_RABBITMQ_PORT: 5672
   SPRING_RABBITMQ_USERNAME: guest
   SPRING_RABBITMQ_PASSWORD: guest
   SPRING_RABBITMQ_VIRTUAL_HOST: /
-  # JVM Optimization (Consumo mínimo de recursos)
-  JAVA_OPTS: "-Xms128m -Xmx384m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
+  # JVM Optimization — heap reducido para entorno local (máximo ~200 MB por servicio Java)
+  JAVA_OPTS: "-Xms64m -Xmx200m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1"
 
 services:
 
-  # ── INFRAESTRUCTURA LOCAL (Caché y Mensajería) ─────────────────────────────
-  rabbitmq:
-    image: rabbitmq:3.13-management-alpine
-    container_name: luka-rabbitmq
-    hostname: rabbitmq
-    restart: unless-stopped
-    networks:
-      - luka-network
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-      RABBITMQ_DEFAULT_VHOST: /
-    # Se remueve el límite de memoria estricto para evitar que RabbitMQ se quede colgado al iniciar
-
-  redis:
-    image: redis:7-alpine
-    container_name: luka-redis
-    hostname: redis
-    restart: unless-stopped
-    networks:
-      - luka-network
-    ports:
-      - "6379:6379"
-    deploy:
-      resources:
-        limits:
-          memory: 150M
-
-  # ── MICROSERVICIOS ─────────────────────────────────────────────────────────
+  # ── MICROSERVICIOS (BD/RabbitMQ/Redis corren localmente en el host) ────────
 
   ms-usuario:
     <<: *spring-base
@@ -71,18 +41,15 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal/db_microservicio_usuario?sslmode=disable
       SPRING_DATASOURCE_USERNAME: 
       SPRING_DATASOURCE_PASSWORD: 
-      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_HOST: host.docker.internal
       SPRING_DATA_REDIS_PORT: 6379
       SPRING_REDIS_PASSWORD: ${REDIS_PASSWORD}
       SPRING_DATA_REDIS_SSL_ENABLED: "false"
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-    depends_on:
-      - redis
-      - rabbitmq
     deploy:
       resources:
         limits:
-          memory: 450M
+          memory: 256M
 
   ms-cliente:
     <<: *spring-base
@@ -101,12 +68,10 @@ services:
       WHATSAPP_TOKEN: ${WHATSAPP_TOKEN}
       WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
       WHATSAPP_API_VERSION: ${WHATSAPP_API_VERSION}
-    depends_on:
-      - rabbitmq
     deploy:
       resources:
         limits:
-          memory: 450M
+          memory: 256M
 
   ms-mensajeria:
     <<: *spring-base
@@ -125,12 +90,10 @@ services:
       WHATSAPP_TOKEN: ${WHATSAPP_TOKEN}
       WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
       WHATSAPP_API_VERSION: ${WHATSAPP_API_VERSION}
-    depends_on:
-      - rabbitmq
     deploy:
       resources:
         limits:
-          memory: 450M
+          memory: 256M
 
   ms-ia:
     container_name: luka-ms-ia
@@ -143,29 +106,26 @@ services:
       - luka-network
     environment:
       GEMINI_API_KEY: ${GEMINI_API_KEY}
-      REDIS_HOST: redis
+      REDIS_HOST: host.docker.internal
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       REDIS_SSL: "false"
-      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_HOST: host.docker.internal
       RABBITMQ_PUERTO: 5672
       RABBITMQ_USUARIO: guest
       RABBITMQ_PASSWORD: guest
       RABBITMQ_VHOST: /
       JWT_CLAVE_SECRETA: ${JWT_SECRET_KEY}
-      # Neon/Postgres para persistencia IA
+      # Postgres local
       DB_HOST: host.docker.internal
       DB_PORT: 5432
       DB_USUARIO: 
       DB_PASSWORD: 
       DB_NOMBRE: db_microservicio_ia
-    depends_on:
-      - redis
-      - rabbitmq
     deploy:
       resources:
         limits:
-          memory: 600M
+          memory: 350M
 
   ms-auditoria:
     <<: *spring-base
@@ -181,12 +141,10 @@ services:
       SPRING_DATASOURCE_USERNAME: 
       SPRING_DATASOURCE_PASSWORD: 
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-    depends_on:
-      - rabbitmq
     deploy:
       resources:
         limits:
-          memory: 450M
+          memory: 256M
 
   ms-nucleo-financiero:
     <<: *spring-base
@@ -205,12 +163,10 @@ services:
       WHATSAPP_TOKEN: ${WHATSAPP_TOKEN}
       WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
       WHATSAPP_API_VERSION: ${WHATSAPP_API_VERSION}
-    depends_on:
-      - rabbitmq
     deploy:
       resources:
         limits:
-          memory: 450M
+          memory: 256M
 
   ms-pagos:
     <<: *spring-base
@@ -229,12 +185,10 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
-    depends_on:
-      - rabbitmq
     deploy:
       resources:
         limits:
-          memory: 450M
+          memory: 256M
 
   api-gateway:
     <<: *spring-base
@@ -246,14 +200,13 @@ services:
       - "${GATEWAY_PORT:-8080}:8080"
     environment:
       <<: *env-common
-      REDIS_HOST: redis
+      REDIS_HOST: host.docker.internal
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       REDIS_SSL_ENABLED: "false"
-      # Forzamos apagar el SSL del application-docker.yml inyectando la propiedad de Spring
       SPRING_DATA_REDIS_SSL_ENABLED: "false"
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      # Redirigir el trafico del gateway hacia los contenedores locales (y evitar Render)
+      # Redirigir el trafico del gateway hacia los contenedores locales
       URL_PROD_USUARIO: http://ms-usuario:8081
       URL_PROD_CLIENTE: http://ms-cliente:8083
       URL_PROD_AUDITORIA: http://ms-auditoria:8082
@@ -261,9 +214,7 @@ services:
       URL_PROD_MENSAJERIA: http://ms-mensajeria:8084
       URL_PROD_IA: http://ms-ia:8086
       URL_PROD_PAGO: http://ms-pagos:8087
-    depends_on:
-      - redis
     deploy:
       resources:
         limits:
-          memory: 450M
+          memory: 256M

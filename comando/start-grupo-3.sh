@@ -1,7 +1,8 @@
 #!/bin/bash
 # ============================================================================
-# GRUPO 3: Financiero + IA + Suscripciones + Pagos
-# Dependencias: Grupo 1 + Grupo 2
+# GRUPO 3: Financiero + IA + Pagos
+# Requiere: Grupo 1 + Grupo 2 corriendo
+# BD, RabbitMQ y Redis corren LOCALMENTE (no en Docker)
 # ============================================================================
 
 set -e
@@ -13,58 +14,61 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
-BACKEND_DIR="$PROJECT_ROOT/estructura-backend"
-DOCKER_DIR="$BACKEND_DIR/docker"
+DOCKER_DIR="$PROJECT_ROOT/estructura-backend/docker"
+COMPOSE_FILE="docker-compose-hibrido.yml"
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${BLUE}  🚀 GRUPO 3: Financiero + IA + Suscripciones + Pagos${NC}"
+echo -e "${BLUE}  🚀 GRUPO 3: Financiero + IA + Pagos${NC}"
+echo -e "${YELLOW}  📌 BD/RabbitMQ/Redis: locales (host)${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
-# Validar que Grupo 1 y 2 estén corriendo
-cd "$DOCKER_DIR"
-GATEWAY_RUNNING=$(docker-compose ps | grep "api-gateway" | grep "Up" || echo "")
-USUARIO_RUNNING=$(docker-compose ps | grep "ms-usuario" | grep "Up" || echo "")
-
-if [ -z "$GATEWAY_RUNNING" ]; then
-    echo -e "${RED}❌ GRUPO 1 no está ejecutándose${NC}"
-    echo -e "${YELLOW}Ejecuta primero: ./start-grupo-1.sh${NC}"
+if [ ! -d "$DOCKER_DIR" ]; then
+    echo -e "${RED}❌ Error: Carpeta Docker no encontrada en $DOCKER_DIR${NC}"
     exit 1
 fi
 
+cd "$DOCKER_DIR"
+
+# Validar Grupo 1
+GATEWAY_RUNNING=$(docker-compose -f "$COMPOSE_FILE" ps | grep "api-gateway" | grep "Up" || echo "")
+if [ -z "$GATEWAY_RUNNING" ]; then
+    echo -e "${RED}❌ GRUPO 1 no está ejecutándose${NC}"
+    echo -e "${YELLOW}Ejecuta primero: devbackend-g1${NC}"
+    exit 1
+fi
+
+# Validar Grupo 2
+USUARIO_RUNNING=$(docker-compose -f "$COMPOSE_FILE" ps | grep "ms-usuario" | grep "Up" || echo "")
 if [ -z "$USUARIO_RUNNING" ]; then
     echo -e "${RED}❌ GRUPO 2 no está ejecutándose${NC}"
-    echo -e "${YELLOW}Ejecuta primero: ./start-grupo-2.sh${NC}"
+    echo -e "${YELLOW}Ejecuta primero: devbackend-g2${NC}"
     exit 1
 fi
 
 echo -e "${GREEN}✅ Grupo 1 y Grupo 2 detectados${NC}"
 echo ""
 
-# Servicios del grupo 3
-SERVICES="ms-nucleo-financiero ms-ia ms-suscripciones ms-pago"
+SERVICES="ms-nucleo-financiero ms-ia ms-pagos"
 
 echo -e "${YELLOW}📦 Levantando servicios:${NC}"
-echo "   • ms-nucleo-financiero"
-echo "   • ms-ia"
-echo "   • ms-suscripciones"
-echo "   • ms-pago"
+echo "   • ms-nucleo-financiero → puerto 8085"
+echo "   • ms-ia               → puerto 8086"
+echo "   • ms-pagos            → puerto 8087"
 echo ""
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${GREEN}🐳 Ejecutando: docker-compose up -d $SERVICES${NC}"
+echo -e "${GREEN}🐳 Ejecutando con: $COMPOSE_FILE${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
-docker-compose up -d $SERVICES
+docker-compose -f "$COMPOSE_FILE" up -d $SERVICES
 
 echo ""
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${GREEN}✅ GRUPO 3 levantado exitosamente${NC}"
+echo -e "${GREEN}✅ GRUPO 3 levantado — ✨ LUKA ECOSYSTEM OPERACIONAL ✨${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
-echo -e "${YELLOW}📊 Stack completo de Luka:${NC}"
-docker-compose ps
-echo ""
-echo -e "${GREEN}✨ ¡LUKA ECOSYSTEM 100% OPERACIONAL! ✨${NC}"
+echo -e "${YELLOW}📊 Stack completo:${NC}"
+docker-compose -f "$COMPOSE_FILE" ps
 echo ""

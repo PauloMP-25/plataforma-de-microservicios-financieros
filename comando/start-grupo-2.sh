@@ -1,7 +1,8 @@
 #!/bin/bash
 # ============================================================================
 # GRUPO 2: Usuario + Cliente + Mensajería
-# Dependencias: Grupo 1 (API Gateway + Auditoría)
+# Requiere: Grupo 1 corriendo (api-gateway + ms-auditoria)
+# BD, RabbitMQ y Redis corren LOCALMENTE (no en Docker)
 # ============================================================================
 
 set -e
@@ -13,48 +14,52 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
-BACKEND_DIR="$PROJECT_ROOT/estructura-backend"
-DOCKER_DIR="$BACKEND_DIR/docker"
+DOCKER_DIR="$PROJECT_ROOT/estructura-backend/docker"
+COMPOSE_FILE="docker-compose-hibrido.yml"
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${BLUE}  🚀 GRUPO 2: Usuario + Cliente + Mensajería${NC}"
+echo -e "${YELLOW}  📌 BD/RabbitMQ/Redis: locales (host)${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
-# Validar que Grupo 1 esté corriendo
-cd "$DOCKER_DIR"
-GATEWAY_RUNNING=$(docker-compose ps | grep "api-gateway" | grep "Up" || echo "")
-
-if [ -z "$GATEWAY_RUNNING" ]; then
-    echo -e "${YELLOW}⚠️  GRUPO 1 no está ejecutándose${NC}"
-    echo -e "${YELLOW}Ejecuta primero: ./start-grupo-1.sh${NC}"
+if [ ! -d "$DOCKER_DIR" ]; then
+    echo -e "${RED}❌ Error: Carpeta Docker no encontrada en $DOCKER_DIR${NC}"
     exit 1
 fi
 
+cd "$DOCKER_DIR"
+
+# Validar que Grupo 1 esté corriendo
+GATEWAY_RUNNING=$(docker-compose -f "$COMPOSE_FILE" ps | grep "api-gateway" | grep "Up" || echo "")
+if [ -z "$GATEWAY_RUNNING" ]; then
+    echo -e "${YELLOW}⚠️  GRUPO 1 no está ejecutándose${NC}"
+    echo -e "${YELLOW}Ejecuta primero: devbackend-g1${NC}"
+    exit 1
+fi
 echo -e "${GREEN}✅ Grupo 1 detectado${NC}"
 echo ""
 
-# Servicios del grupo 2
 SERVICES="ms-usuario ms-cliente ms-mensajeria"
 
 echo -e "${YELLOW}📦 Levantando servicios:${NC}"
-echo "   • ms-usuario"
-echo "   • ms-cliente"
-echo "   • ms-mensajeria"
+echo "   • ms-usuario      → puerto 8081"
+echo "   • ms-cliente      → puerto 8083"
+echo "   • ms-mensajeria   → puerto 8084"
 echo ""
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${GREEN}🐳 Ejecutando: docker-compose up -d $SERVICES${NC}"
+echo -e "${GREEN}🐳 Ejecutando con: $COMPOSE_FILE${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
-docker-compose up -d $SERVICES
+docker-compose -f "$COMPOSE_FILE" up -d $SERVICES
 
 echo ""
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${GREEN}✅ GRUPO 2 levantado exitosamente${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
-echo -e "${YELLOW}📊 Estado de contenedores activos:${NC}"
-docker-compose ps | grep -E "ms-usuario|ms-cliente|ms-mensajeria|api-gateway|ms-auditoria" || true
+echo -e "${YELLOW}📊 Estado:${NC}"
+docker-compose -f "$COMPOSE_FILE" ps | grep -E "ms-usuario|ms-cliente|ms-mensajeria" || true
 echo ""

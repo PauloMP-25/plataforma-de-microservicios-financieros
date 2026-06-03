@@ -1,7 +1,7 @@
 #!/bin/bash
 # ============================================================================
 # GRUPO 1: API Gateway + Microservicio Auditoría
-# Dependencias: PostgreSQL + RabbitMQ
+# BD, RabbitMQ y Redis corren LOCALMENTE (no en Docker)
 # ============================================================================
 
 set -e
@@ -13,15 +13,15 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
-BACKEND_DIR="$PROJECT_ROOT/estructura-backend"
-DOCKER_DIR="$BACKEND_DIR/docker"
+DOCKER_DIR="$PROJECT_ROOT/estructura-backend/docker"
+COMPOSE_FILE="docker-compose-hibrido.yml"
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${BLUE}  🚀 GRUPO 1: API Gateway + Auditoría${NC}"
+echo -e "${YELLOW}  📌 BD/RabbitMQ/Redis: locales (host)${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
-# Validar directorio
 if [ ! -d "$DOCKER_DIR" ]; then
     echo -e "${RED}❌ Error: Carpeta Docker no encontrada en $DOCKER_DIR${NC}"
     exit 1
@@ -31,36 +31,27 @@ cd "$DOCKER_DIR"
 echo -e "${GREEN}✅ Ubicación: $(pwd)${NC}"
 echo ""
 
-# Servicios del grupo 1
-SERVICES="postgres-auditoria postgres-usuario postgres-cliente postgres-financiero postgres-mensajeria postgres-ia postgres-pagos rabbitmq api-gateway ms-auditoria"
+SERVICES="api-gateway ms-auditoria"
 
 echo -e "${YELLOW}📦 Levantando servicios:${NC}"
-echo "   • postgres-auditoria"
-echo "   • postgres-usuario"
-echo "   • postgres-cliente"
-echo "   • postgres-financiero"
-echo "   • postgres-mensajeria"
-echo "   • postgres-ia"
-echo "   • postgres-pagos"
-echo "   • rabbitmq"
-echo "   • api-gateway"
-echo "   • ms-auditoria"
+echo "   • api-gateway     → puerto 8080"
+echo "   • ms-auditoria    → puerto 8082"
 echo ""
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${GREEN}🐳 Ejecutando: docker-compose up -d $SERVICES${NC}"
+echo -e "${GREEN}🐳 Ejecutando con: $COMPOSE_FILE${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
-docker-compose up -d $SERVICES
+docker-compose -f "$COMPOSE_FILE" up -d $SERVICES
 
 echo ""
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${GREEN}✅ GRUPO 1 levantado exitosamente${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
-echo -e "${YELLOW}📊 Estado de contenedores:${NC}"
-docker-compose ps | grep -E "api-gateway|ms-auditoria"
+echo -e "${YELLOW}📊 Estado:${NC}"
+docker-compose -f "$COMPOSE_FILE" ps | grep -E "api-gateway|ms-auditoria"
 echo ""
-echo -e "${YELLOW}🌐 API Gateway disponible en:${NC} http://localhost:8080"
+echo -e "${YELLOW}🌐 API Gateway:${NC} http://localhost:8080"
 echo ""
