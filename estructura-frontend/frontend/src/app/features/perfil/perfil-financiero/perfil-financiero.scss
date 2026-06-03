@@ -46,17 +46,14 @@
   }
 
   &__date-select {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 2.2rem 0.6rem 1rem;
     border-radius: 8px;
     background: var(--bg-card);
     border: 1.5px solid var(--border-color);
     color: var(--text-primary);
     font-size: 0.88rem;
     font-weight: 600;
-    cursor: pointer;
     box-shadow: var(--shadow-sm);
     position: relative;
     transition: all 0.2s ease;
@@ -78,6 +75,7 @@
       cursor: pointer;
       outline: none;
       width: 100%;
+      padding: 0.6rem 2.2rem 0.6rem 2.2rem;
 
       option {
         background-color: var(--bg-card);
@@ -87,12 +85,16 @@
 
     i {
       color: var(--text-secondary);
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .fa-calendar {
+      left: 1rem;
     }
 
     .fa-chevron-down {
-      position: absolute;
       right: 1rem;
-      pointer-events: none;
     }
   }
 
