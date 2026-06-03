@@ -68,6 +68,7 @@ GEMINI.md
 graphify-out/
 .graphify_cache/
 .continue/
+.agents/
 .skills/
 .cursorrules
 memoria.md
