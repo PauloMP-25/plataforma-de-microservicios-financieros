@@ -962,6 +962,21 @@
 
 
   /* ── Modal de Confirmación de Completado ── */
+  &__modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease-out;
+  }
+
   &__confirm-modal {
     width: 90%;
     max-width: 440px;
@@ -1137,5 +1152,13 @@
   }
   to {
     transform: translateY(0);
+  }
+}
+
+/* Anular transform del ancestro en móvil para asegurar que position: fixed responda al viewport */
+@media (max-width: 1023px) {
+  ::ng-deep .content-inner {
+    animation: none !important;
+    transform: none !important;
   }
 }
