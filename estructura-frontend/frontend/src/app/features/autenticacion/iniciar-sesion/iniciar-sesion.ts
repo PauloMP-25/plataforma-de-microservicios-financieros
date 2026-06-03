@@ -56,8 +56,11 @@ export class IniciarSesion {
       },
       error: (err) => {
         this.cargando = false;
+        if (err.status === 403) {
+          this.errorMensaje = err.error?.mensaje || 'Tu cuenta aún no está activada. Crea la cuenta nuevamente o solicita un nuevo OTP.';
+          return;
+        }
         this.errorMensaje = err.error?.mensaje || 'Error de conexión con el servidor';
-        console.error('Error Login:', err);
       }
     });
   }

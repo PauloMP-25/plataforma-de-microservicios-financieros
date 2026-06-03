@@ -63,7 +63,7 @@
     <label class="auth__label">CONTRASEÑA</label>
     <div class="auth__input-grupo" [class.auth__input-grupo--error]="formulario.get('password')?.touched && formulario.get('password')?.invalid">
       <i class="fas fa-lock auth__input-icono"></i>
-      <input [type]="mostrarPassword ? 'text' : 'password'" formControlName="password" placeholder="Mínimo 6 caracteres" class="auth__input" id="input-password-registro">
+      <input [type]="mostrarPassword ? 'text' : 'password'" formControlName="password" placeholder="Mín. 8, mayúscula, minúscula, número y símbolo" class="auth__input" id="input-password-registro">
       <button type="button" class="auth__btn-ojo" (click)="alternarPassword()">
         <i [class]="mostrarPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
       </button>
@@ -72,7 +72,10 @@
       La contraseña es obligatoria
     </span>
     <span class="auth__error" *ngIf="formulario.get('password')?.touched && formulario.get('password')?.hasError('minlength')">
-      Mínimo 6 caracteres
+      Mínimo 8 caracteres
+    </span>
+    <span class="auth__error" *ngIf="formulario.get('password')?.touched && formulario.get('password')?.hasError('pattern')">
+      Debe incluir mayúscula, minúscula, número y un símbolo (@$!%*?&amp;#)
     </span>
   </div>
 
