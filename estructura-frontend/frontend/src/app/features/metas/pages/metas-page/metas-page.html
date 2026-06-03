@@ -218,7 +218,7 @@
                       @if (esVencida(meta)) {
                         Venció el {{ meta.fechaLimite | date:'dd/MM/yyyy' }}
                       } @else {
-                        Faltan S/ {{ (meta.montoObjetivo - meta.montoAplicado).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }} • {{ meta.fechaLimite | date:'dd/MM/yyyy' }}
+                        Vence el {{ meta.fechaLimite | date:'dd/MM/yyyy' }}
                       }
                     </span>
                   }
