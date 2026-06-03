@@ -249,21 +249,40 @@ export class PerfilFinanciero implements OnInit {
   // ── Tendencia SVG ────────────────────────────────────────────
   tendenciaNormalizada = computed(() => {
     const puntos = this.tendencia();
-    if (puntos.length === 0) return { ingresos: [], gastos: [], ahorro: [] };
-    const todos = puntos.flatMap(p => [p.ingresos, p.gastos, p.ahorro]);
-    const maxVal = Math.max(...todos, 1);
     const h = 160;
     const w = 480;
-    const mapY = (v: number) => h - (v / maxVal) * (h - 20);
-    const mapX = (i: number) => (i / (puntos.length - 1)) * w;
+    const mapY = (v: number) => {
+      const maxVal = puntos.length > 0 ? Math.max(...puntos.flatMap(p => [p.ingresos, p.gastos, p.ahorro]), 1) : 1;
+      return h - (v / maxVal) * (h - 20);
+    };
+    const mapX = (i: number) => {
+      const denom = puntos.length > 1 ? puntos.length - 1 : 1;
+      return (i / denom) * w;
+    };
+
+    if (puntos.length === 0) {
+      return {
+        ingresos: '',
+        gastos: '',
+        ahorro: '',
+        puntos: [],
+        maxVal: 1,
+        mapY,
+        mapX,
+        h,
+        w,
+      };
+    }
+
     const toPath = (valores: number[]) =>
       valores.map((v, i) => `${i === 0 ? 'M' : 'L'} ${mapX(i).toFixed(1)},${mapY(v).toFixed(1)}`).join(' ');
+
     return {
       ingresos: toPath(puntos.map(p => p.ingresos)),
       gastos: toPath(puntos.map(p => p.gastos)),
       ahorro: toPath(puntos.map(p => p.ahorro)),
       puntos,
-      maxVal,
+      maxVal: Math.max(...puntos.flatMap(p => [p.ingresos, p.gastos, p.ahorro]), 1),
       mapY,
       mapX,
       h,

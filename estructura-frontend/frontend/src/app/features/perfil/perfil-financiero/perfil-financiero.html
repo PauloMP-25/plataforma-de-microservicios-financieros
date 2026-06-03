@@ -29,7 +29,7 @@
   <div class="pf-page__kpis anim-fade-up">
 
     <!-- Balance Financiero Neto -->
-    <article class="pf-kpi card">
+    <article class="pf-kpi card pf-kpi--balance" [class.pf-kpi--success]="balanceNeto()! >= 0" [class.pf-kpi--danger]="balanceNeto()! < 0">
       <div class="pf-kpi__icon-wrap pf-kpi__icon-wrap--primary">
         <i class="fa-solid fa-wallet"></i>
       </div>
@@ -51,14 +51,21 @@
         }
       </div>
       <div class="pf-kpi__sparkline">
-        <svg viewBox="0 0 80 30" fill="none">
-          <polyline points="0,25 15,20 30,22 45,12 60,15 80,8" stroke="var(--color-success)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg viewBox="0 0 80 30" fill="none" class="pf-sparkline-svg">
+          <defs>
+            <linearGradient id="balance-sparkline-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" [attr.stop-color]="balanceNeto() !== null && balanceNeto()! >= 0 ? 'var(--color-success)' : 'var(--color-danger)'" stop-opacity="0.2"/>
+              <stop offset="100%" [attr.stop-color]="balanceNeto() !== null && balanceNeto()! >= 0 ? 'var(--color-success)' : 'var(--color-danger)'" stop-opacity="0.0"/>
+            </linearGradient>
+          </defs>
+          <path [attr.d]="'M 0,25 L 15,20 L 30,22 L 45,12 L 60,15 L 80,8 L 80,30 L 0,30 Z'" fill="url(#balance-sparkline-grad)" class="pf-sparkline-area" />
+          <path [attr.d]="'M 0,25 L 15,20 L 30,22 L 45,12 L 60,15 L 80,8'" [attr.stroke]="balanceNeto() !== null && balanceNeto()! >= 0 ? 'var(--color-success)' : 'var(--color-danger)'" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="pf-sparkline-line" />
         </svg>
       </div>
     </article>
 
     <!-- Índice de Salud Financiera -->
-    <article class="pf-kpi card">
+    <article class="pf-kpi card pf-kpi--health" [ngClass]="'pf-kpi--' + (indicesSalud() ? colorIndice(indicesSalud()!.score) : 'primary')">
       <div class="pf-kpi__icon-wrap" [ngClass]="'pf-kpi__icon-wrap--' + (indicesSalud() ? colorIndice(indicesSalud()!.score) : 'primary')">
         <i class="fa-solid fa-heart-pulse"></i>
       </div>
@@ -69,7 +76,9 @@
             <span class="pf-kpi__value-big">{{ idx.score }}</span><span class="pf-kpi__value-max">/ 100</span>
           </span>
           <div class="pf-kpi__health-bar">
-            <div class="pf-kpi__health-fill" [style.width.%]="idx.score" [ngClass]="'pf-kpi__health-fill--' + colorIndice(idx.score)"></div>
+            <div class="pf-kpi__health-fill" [style.width.%]="idx.score" [ngClass]="'pf-kpi__health-fill--' + colorIndice(idx.score)">
+              <span class="pf-kpi__health-shimmer"></span>
+            </div>
           </div>
           <span class="pf-kpi__sub" [ngClass]="'text-' + colorIndice(idx.score)">{{ idx.etiqueta }}</span>
           <span class="pf-kpi__variation pf-kpi__variation--up"><i class="fa-solid fa-arrow-trend-up"></i> +8 pts vs mes anterior</span>
@@ -80,7 +89,7 @@
     </article>
 
     <!-- Progreso de Logros -->
-    <article class="pf-kpi card">
+    <article class="pf-kpi card pf-kpi--logros pf-kpi--warning">
       <div class="pf-kpi__icon-wrap pf-kpi__icon-wrap--warning">
         <i class="fa-solid fa-trophy"></i>
       </div>
@@ -93,6 +102,7 @@
         <div class="pf-kpi__health-bar">
           <div class="pf-kpi__health-fill pf-kpi__health-fill--warning"
                [style.width.%]="progresoLogros().total > 0 ? (progresoLogros().desbloqueados / progresoLogros().total) * 100 : 0">
+            <span class="pf-kpi__health-shimmer"></span>
           </div>
         </div>
         <span class="pf-kpi__sub text-muted">Logros alcanzados</span>
@@ -103,7 +113,7 @@
     </article>
 
     <!-- Capacidad de Ahorro Real -->
-    <article class="pf-kpi card">
+    <article class="pf-kpi card pf-kpi--saving" [class.pf-kpi--success]="capacidadAhorro()! >= 20" [class.pf-kpi--warning]="capacidadAhorro()! > 0 && capacidadAhorro()! < 20" [class.pf-kpi--danger]="capacidadAhorro()! <= 0">
       <div class="pf-kpi__icon-wrap pf-kpi__icon-wrap--success">
         <i class="fa-solid fa-piggy-bank"></i>
       </div>
@@ -125,8 +135,15 @@
         }
       </div>
       <div class="pf-kpi__sparkline">
-        <svg viewBox="0 0 80 30" fill="none">
-          <polyline points="0,20 15,18 30,15 45,17 60,12 80,10" stroke="var(--color-warning)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg viewBox="0 0 80 30" fill="none" class="pf-sparkline-svg">
+          <defs>
+            <linearGradient id="saving-sparkline-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" [attr.stop-color]="capacidadAhorro() !== null && capacidadAhorro()! >= 20 ? 'var(--color-success)' : (capacidadAhorro() !== null && capacidadAhorro()! > 0 ? 'var(--color-warning)' : 'var(--color-danger)')" stop-opacity="0.2"/>
+              <stop offset="100%" [attr.stop-color]="capacidadAhorro() !== null && capacidadAhorro()! >= 20 ? 'var(--color-success)' : (capacidadAhorro() !== null && capacidadAhorro()! > 0 ? 'var(--color-warning)' : 'var(--color-danger)')" stop-opacity="0.0"/>
+            </linearGradient>
+          </defs>
+          <path [attr.d]="'M 0,20 L 15,18 L 30,15 L 45,17 L 60,12 L 80,10 L 80,30 L 0,30 Z'" fill="url(#saving-sparkline-grad)" class="pf-sparkline-area" />
+          <path [attr.d]="'M 0,20 L 15,18 L 30,15 L 45,17 L 60,12 L 80,10'" [attr.stroke]="capacidadAhorro() !== null && capacidadAhorro()! >= 20 ? 'var(--color-success)' : (capacidadAhorro() !== null && capacidadAhorro()! > 0 ? 'var(--color-warning)' : 'var(--color-danger)')" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="pf-sparkline-line" />
         </svg>
       </div>
     </article>
@@ -219,17 +236,51 @@
       @if (tendencia().length > 0) {
         <div class="pf-tendencia__chart-wrap">
           <svg class="pf-tendencia__svg" viewBox="0 0 500 180" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="trend-ingresos-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#22c55e" stop-opacity="0.18"/>
+                <stop offset="100%" stop-color="#22c55e" stop-opacity="0.0"/>
+              </linearGradient>
+              <linearGradient id="trend-gastos-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#ef4444" stop-opacity="0.14"/>
+                <stop offset="100%" stop-color="#ef4444" stop-opacity="0.0"/>
+              </linearGradient>
+              <linearGradient id="trend-ahorro-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#5b6af0" stop-opacity="0.10"/>
+                <stop offset="100%" stop-color="#5b6af0" stop-opacity="0.0"/>
+              </linearGradient>
+            </defs>
+
             <!-- Líneas de guía horizontales -->
             <line x1="0" y1="40" x2="500" y2="40" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="4,4"/>
             <line x1="0" y1="80" x2="500" y2="80" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="4,4"/>
             <line x1="0" y1="120" x2="500" y2="120" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="4,4"/>
             <line x1="0" y1="160" x2="500" y2="160" stroke="var(--border-color)" stroke-width="1"/>
+
+            <!-- Áreas con Gradientes -->
+            <path [attr.d]="tendenciaNormalizada().ingresos + ' L ' + tendenciaNormalizada().w + ',' + tendenciaNormalizada().h + ' L 0,' + tendenciaNormalizada().h + ' Z'" fill="url(#trend-ingresos-grad)" class="trend-area" />
+            <path [attr.d]="tendenciaNormalizada().gastos + ' L ' + tendenciaNormalizada().w + ',' + tendenciaNormalizada().h + ' L 0,' + tendenciaNormalizada().h + ' Z'" fill="url(#trend-gastos-grad)" class="trend-area" />
+            <path [attr.d]="tendenciaNormalizada().ahorro + ' L ' + tendenciaNormalizada().w + ',' + tendenciaNormalizada().h + ' L 0,' + tendenciaNormalizada().h + ' Z'" fill="url(#trend-ahorro-grad)" class="trend-area" />
+
             <!-- Línea de Ingresos -->
-            <path [attr.d]="tendenciaNormalizada().ingresos" stroke="#22c55e" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <path [attr.d]="tendenciaNormalizada().ingresos" stroke="#22c55e" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="trend-line trend-line--ingresos"/>
             <!-- Línea de Gastos -->
-            <path [attr.d]="tendenciaNormalizada().gastos" stroke="#ef4444" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <path [attr.d]="tendenciaNormalizada().gastos" stroke="#ef4444" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="trend-line trend-line--gastos"/>
             <!-- Línea de Ahorro -->
-            <path [attr.d]="tendenciaNormalizada().ahorro" stroke="#5b6af0" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6,3"/>
+            <path [attr.d]="tendenciaNormalizada().ahorro" stroke="#5b6af0" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6,3" class="trend-line trend-line--ahorro"/>
+
+            <!-- Nodos Interactivos (Círculos) -->
+            @for (punto of tendencia(); track punto.mes; let i = $index) {
+              <circle [attr.cx]="tendenciaNormalizada().mapX(i)" [attr.cy]="tendenciaNormalizada().mapY(punto.ingresos)" r="4.5" fill="#22c55e" stroke="var(--bg-card)" stroke-width="1.5" class="trend-node trend-node--ingresos">
+                <title>Ingresos ({{ punto.mes }}): S/ {{ formatMoneda(punto.ingresos) }}</title>
+              </circle>
+              <circle [attr.cx]="tendenciaNormalizada().mapX(i)" [attr.cy]="tendenciaNormalizada().mapY(punto.gastos)" r="4.5" fill="#ef4444" stroke="var(--bg-card)" stroke-width="1.5" class="trend-node trend-node--gastos">
+                <title>Gastos ({{ punto.mes }}): S/ {{ formatMoneda(punto.gastos) }}</title>
+              </circle>
+              <circle [attr.cx]="tendenciaNormalizada().mapX(i)" [attr.cy]="tendenciaNormalizada().mapY(punto.ahorro)" r="4" fill="#5b6af0" stroke="var(--bg-card)" stroke-width="1.5" class="trend-node trend-node--ahorro">
+                <title>Ahorro ({{ punto.mes }}): S/ {{ formatMoneda(punto.ahorro) }}</title>
+              </circle>
+            }
           </svg>
           <!-- Etiquetas del eje X -->
           <div class="pf-tendencia__eje-x">
@@ -282,7 +333,7 @@
             </path>
           }
           <!-- Agujero central -->
-          <circle cx="75" cy="75" r="38" fill="var(--bg-card)"/>
+          <circle cx="75" cy="75" r="38" fill="var(--bg-card)" class="pf-dona__center"/>
           <!-- Texto central -->
           <text x="75" y="70" text-anchor="middle" class="pf-dona__label-main" font-size="10" fill="var(--text-secondary)">
             {{ vistaDona() === 'ingresos' ? 'Ingresos' : 'Gastos' }}
@@ -320,3 +371,4 @@
 
   } <!-- fin @else -->
 </section>
+
