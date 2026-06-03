@@ -170,7 +170,12 @@
         <div class="metas-page__grid">
           @for (meta of metasFiltradas(); track meta.id) {
             <article class="metas-page__card card" 
-                     [ngClass]="{'metas-page__card--selected': metaSeleccionada()?.id === meta.id}"
+                     [ngClass]="{
+                       'metas-page__card--selected': metaSeleccionada()?.id === meta.id,
+                       'metas-page__card--success': meta.completada,
+                       'metas-page__card--danger': esVencida(meta) && !meta.completada,
+                       'metas-page__card--active': !meta.completada && !esVencida(meta)
+                     }"
                      (click)="seleccionarMeta(meta)">
               
               <!-- Encabezado de la Tarjeta Minimalista -->
