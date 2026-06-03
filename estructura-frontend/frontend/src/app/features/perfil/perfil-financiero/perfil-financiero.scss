@@ -453,6 +453,8 @@
   }
 
   &__health-fill {
+    position: relative;
+    overflow: hidden;
     height: 100%;
     border-radius: 3px;
     transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
