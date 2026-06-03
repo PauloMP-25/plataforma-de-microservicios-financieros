@@ -362,16 +362,16 @@
   &__card-header {
     width: 100%;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
+    gap: 0.75rem;
   }
 
   &__card-category {
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 0.5rem;
-    max-width: 100%;
+    max-width: calc(100% - 85px);
 
     h3 {
       font-family: var(--font-heading);
@@ -381,7 +381,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 200px;
+      max-width: 100%;
       margin: 0;
     }
   }

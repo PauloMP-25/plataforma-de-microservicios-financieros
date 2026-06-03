@@ -177,15 +177,22 @@
                        'metas-page__card--active': !meta.completada && !esVencida(meta)
                      }"
                      (click)="seleccionarMeta(meta)">
-              
-              <!-- Encabezado de la Tarjeta Minimalista -->
+                  <!-- Encabezado de la Tarjeta Minimalista -->
               <div class="metas-page__card-header">
                 <div class="metas-page__card-category">
                   <i [class]="meta.iconoVisual" class="metas-page__card-category-icon" [ngClass]="'text-' + obtenerColorEstado(meta)"></i>
                   <h3>{{ meta.nombreVisual }}</h3>
                 </div>
+                <!-- Badge de Estado -->
+                <span class="badge" [ngClass]="{
+                  'badge-success': meta.completada,
+                  'badge-danger': esVencida(meta) && !meta.completada,
+                  'badge-primary': !meta.completada && !esVencida(meta)
+                }">
+                  {{ meta.completada ? 'Cumplida' : (esVencida(meta) ? 'Vencida' : 'Activa') }}
+                </span>
               </div>
-
+ 
               <!-- Lógica de Progreso de la Tarjeta (Burbuja Centralizada) -->
               <div class="metas-page__card-body">
                 <!-- Gráfico de Burbuja de Agua (CSS Wave) -->
@@ -193,7 +200,7 @@
                      [ngClass]="'bubble-container--' + obtenerColorEstado(meta)"
                      [style.background]="'conic-gradient(' + obtenerColorProgreso(meta) + ' ' + meta.porcentajeProgreso + '%, var(--border-color) 0)'">
                   <div class="bubble">
-                    <div class="bubble__water" [style.transform]="'translateY(' + (100 - meta.porcentajeProgreso) + '%)'">
+                    <div class="bubble__water" [style.transform]="'translateY(' + (meta.porcentajeProgreso >= 100 ? 15 : (100 - meta.porcentajeProgreso)) + '%)'">
                       <div class="bubble__wave bubble__wave--front"></div>
                       <div class="bubble__wave bubble__wave--back"></div>
                     </div>
@@ -265,8 +272,8 @@
                 <h3>{{ seleccionada.nombreVisual }}</h3>
                 <span class="badge" [ngClass]="{
                   'badge-success': seleccionada.completada,
-                  'badge-warning': esVencida(seleccionada) && !seleccionada.completada,
-                  'badge-info': !seleccionada.completada && !esVencida(seleccionada)
+                  'badge-danger': esVencida(seleccionada) && !seleccionada.completada,
+                  'badge-primary': !seleccionada.completada && !esVencida(seleccionada)
                 }">
                   {{ seleccionada.completada ? 'Cumplida' : (esVencida(seleccionada) ? 'Vencida' : 'Activa') }}
                 </span>
@@ -279,7 +286,7 @@
                    [ngClass]="'bubble-container--' + obtenerColorEstado(seleccionada)"
                    [style.background]="'conic-gradient(' + obtenerColorProgreso(seleccionada) + ' ' + seleccionada.porcentajeProgreso + '%, var(--border-color) 0)'">
                 <div class="bubble bubble--large">
-                  <div class="bubble__water" [style.transform]="'translateY(' + (100 - seleccionada.porcentajeProgreso) + '%)'">
+                  <div class="bubble__water" [style.transform]="'translateY(' + (seleccionada.porcentajeProgreso >= 100 ? 15 : (100 - seleccionada.porcentajeProgreso)) + '%)'">
                     <div class="bubble__wave bubble__wave--front"></div>
                     <div class="bubble__wave bubble__wave--back"></div>
                   </div>
