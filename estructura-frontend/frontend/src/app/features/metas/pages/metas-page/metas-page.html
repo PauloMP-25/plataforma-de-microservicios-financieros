@@ -208,18 +208,14 @@
                 <div class="metas-page__card-minimal-details">
                   @if (meta.completada) {
                     <span class="monto-principal text-success">S/ {{ meta.montoObjetivo.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
-                    <span class="sub-label text-secondary">Alcanzada el {{ (meta.fechaActualizacion || meta.fechaCreacion) | date:'dd/MM/yyyy' }}</span>
+                    <span class="sub-label text-secondary">{{ (meta.fechaActualizacion || meta.fechaCreacion) | date:'dd/MM/yyyy' }}</span>
                   } @else {
                     <span class="monto-principal">
                       S/ {{ meta.montoAplicado.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }} 
                       <span class="monto-total">/ S/ {{ meta.montoObjetivo.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
                     </span>
                     <span class="sub-label" [ngClass]="esVencida(meta) ? 'text-danger' : 'text-secondary'">
-                      @if (esVencida(meta)) {
-                        Venció el {{ meta.fechaLimite | date:'dd/MM/yyyy' }}
-                      } @else {
-                        Vence el {{ meta.fechaLimite | date:'dd/MM/yyyy' }}
-                      }
+                      {{ meta.fechaLimite | date:'dd/MM/yyyy' }}
                     </span>
                   }
                 </div>
