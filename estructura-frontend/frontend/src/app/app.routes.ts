@@ -4,7 +4,8 @@ import { Layout } from './layout/layout/layout/layout';
 export const routes: Routes = [
   // ── Rutas Públicas ──
   {
-    path: 'inicio',
+    path: '',
+    pathMatch: 'full',
     loadComponent: () => import('./features/inicio/inicio').then(m => m.Inicio)
   },
   {
@@ -86,13 +87,13 @@ export const routes: Routes = [
 
       {
         path: '',
-        redirectTo: '/inicio',
+        redirectTo: '/dashboard',
         pathMatch: 'full'
       }
     ]
   },
   {
     path: '**',
-    redirectTo: '/inicio'
+    redirectTo: '/'
   }
 ];

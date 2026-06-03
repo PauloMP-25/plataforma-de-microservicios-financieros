@@ -285,13 +285,19 @@
           <li><i class="fas fa-check"></i> Dashboard básico</li>
           <li><i class="fas fa-check"></i> Seguimiento de ingresos y gastos</li>
           <li><i class="fas fa-check"></i> Hasta 3 metas de ahorro</li>
-          <li><i class="fas fa-check"></i> Reportes mensuales</li>
           <li><i class="fas fa-check"></i> Hasta 3 presupuestos</li>
-          <li class="inactivo"><i class="fas fa-times"></i> Asistente IA</li>
-          <li class="inactivo"><i class="fas fa-times"></i> Alertas y recomendaciones IA</li>
-          <li class="inactivo"><i class="fas fa-times"></i> Soporte prioritario</li>
+          <ng-container *ngIf="mostrarMasGratis">
+            <li><i class="fas fa-check"></i> Reportes mensuales</li>
+            <li class="inactivo"><i class="fas fa-times"></i> Asistente IA</li>
+            <li class="inactivo"><i class="fas fa-times"></i> Alertas y recomendaciones IA</li>
+            <li class="inactivo"><i class="fas fa-times"></i> Soporte prioritario</li>
+          </ng-container>
         </ul>
-        <a routerLink="/autenticacion/crear-cuenta" class="inicio__btn inicio__btn--grande inicio__btn--secundario" style="width: 100%; justify-content: center;">
+        <button class="inicio__btn-saber-mas" (click)="mostrarMasGratis = !mostrarMasGratis" type="button">
+          {{ mostrarMasGratis ? 'Ver menos' : 'Saber más...' }}
+          <i class="fas" [class.fa-chevron-up]="mostrarMasGratis" [class.fa-chevron-down]="!mostrarMasGratis"></i>
+        </button>
+        <a routerLink="/autenticacion/crear-cuenta" class="inicio__btn inicio__btn--grande inicio__btn--secundario" style="width: 100%; justify-content: center; margin-top: 15px;">
           Comenzar Gratis
         </a>
       </div>
@@ -305,7 +311,7 @@
         </div>
         <div class="inicio__precio-monto">
           <span class="moneda">S/</span>
-          <span class="valor">9.90</span>
+          <span class="valor">19.90</span>
           <span class="periodo">/mes</span>
         </div>
         <ul class="inicio__precio-lista">
@@ -313,12 +319,18 @@
           <li><i class="fas fa-check"></i> <strong>Asistente IA Financiero</strong></li>
           <li><i class="fas fa-check"></i> <strong>Alertas inteligentes predicativas</strong></li>
           <li><i class="fas fa-check"></i> <strong>Recomendaciones personalizadas</strong></li>
-          <li><i class="fas fa-check"></i> Metas de ahorro ilimitadas</li>
-          <li><i class="fas fa-check"></i> Presupuestos ilimitados</li>
-          <li><i class="fas fa-check"></i> Reportes en tiempo real</li>
-          <li><i class="fas fa-check"></i> Soporte prioritario 24/7</li>
+          <ng-container *ngIf="mostrarMasPro">
+            <li><i class="fas fa-check"></i> Metas de ahorro ilimitadas</li>
+            <li><i class="fas fa-check"></i> Presupuestos ilimitados</li>
+            <li><i class="fas fa-check"></i> Reportes en tiempo real</li>
+            <li><i class="fas fa-check"></i> Soporte prioritario 24/7</li>
+          </ng-container>
         </ul>
-        <a routerLink="/autenticacion/crear-cuenta" class="inicio__btn inicio__btn--grande inicio__btn--primario" style="width: 100%; justify-content: center;">
+        <button class="inicio__btn-saber-mas" (click)="mostrarMasPro = !mostrarMasPro" type="button">
+          {{ mostrarMasPro ? 'Ver menos' : 'Saber más...' }}
+          <i class="fas" [class.fa-chevron-up]="mostrarMasPro" [class.fa-chevron-down]="!mostrarMasPro"></i>
+        </button>
+        <a routerLink="/autenticacion/crear-cuenta" class="inicio__btn inicio__btn--grande inicio__btn--primario" style="width: 100%; justify-content: center; margin-top: 15px;">
           Obtener Pro
         </a>
       </div>
