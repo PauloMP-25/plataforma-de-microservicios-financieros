@@ -174,8 +174,7 @@
                        'metas-page__card--selected': metaSeleccionada()?.id === meta.id,
                        'metas-page__card--success': meta.completada,
                        'metas-page__card--danger': esVencida(meta) && !meta.completada,
-                       'metas-page__card--active': !meta.completada && !esVencida(meta),
-                       'metas-page__card--has-action': meta.puedeCompletar && !meta.completada
+                       'metas-page__card--active': !meta.completada && !esVencida(meta)
                      }"
                      (click)="seleccionarMeta(meta, $event)">
               
@@ -228,23 +227,23 @@
                 </div>
               </div>
 
-              <!-- Acción de la Tarjeta (Solo se muestra cuando se puede completar) -->
-              @if (meta.puedeCompletar && !meta.completada) {
-                <div class="metas-page__card-action" (click)="$event.stopPropagation()">
+              <!-- Footer de la Tarjeta (Acción y Estado) -->
+              <div class="metas-page__card-footer" (click)="$event.stopPropagation()">
+                @if (meta.puedeCompletar && !meta.completada) {
                   <button type="button" class="btn-action btn-action--complete" (click)="solicitarCompletarMeta(meta)">
-                    <i class="fa-solid fa-circle-check"></i> Completar meta
+                    <i class="fa-solid fa-circle-check"></i> Completar
                   </button>
-                </div>
-              }
+                }
 
-              <!-- Badge de Estado -->
-              <span class="card-badge badge" [ngClass]="{
-                'badge-success': meta.completada,
-                'badge-danger': esVencida(meta) && !meta.completada,
-                'badge-primary': !meta.completada && !esVencida(meta)
-              }">
-                {{ meta.completada ? 'Cumplida' : (esVencida(meta) ? 'Vencida' : 'Activa') }}
-              </span>
+                <!-- Badge de Estado -->
+                <span class="card-badge badge" [ngClass]="{
+                  'badge-success': meta.completada,
+                  'badge-danger': esVencida(meta) && !meta.completada,
+                  'badge-primary': !meta.completada && !esVencida(meta)
+                }">
+                  {{ meta.completada ? 'Cumplida' : (esVencida(meta) ? 'Vencida' : 'Activa') }}
+                </span>
+              </div>
 
             </article>
           } @empty {
