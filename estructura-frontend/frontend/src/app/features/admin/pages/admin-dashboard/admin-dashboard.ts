@@ -38,6 +38,7 @@ export class AdminDashboard implements OnInit {
   data = signal<AdminDashboardData | null>(null);
   cargando = signal(true);
   seccionActiva = signal<AdminSeccion>('dashboard');
+  modoClaro = signal(false);
   busquedaUsuarios = signal('');
   filtroEstadoUsuarios = signal<UsuarioEstado | 'TODOS'>('TODOS');
   usuarioSeleccionado = signal<AdminUsuario | null>(null);
@@ -96,6 +97,10 @@ export class AdminDashboard implements OnInit {
 
   mostrarSeccion(seccion: AdminSeccion): void {
     this.seccionActiva.set(seccion);
+  }
+
+  alternarTema(): void {
+    this.modoClaro.update((valor) => !valor);
   }
 
   tituloSeccionActual(): string {
