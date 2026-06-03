@@ -173,31 +173,24 @@
                      [ngClass]="{'metas-page__card--selected': metaSeleccionada()?.id === meta.id}"
                      (click)="seleccionarMeta(meta)">
               
-              <!-- Encabezado de la Tarjeta -->
+              <!-- Encabezado de la Tarjeta Minimalista -->
               <div class="metas-page__card-header">
                 <div class="metas-page__card-category">
-                  <div class="metas-page__card-icon" [ngClass]="'metas-page__card-icon--' + obtenerColorEstado(meta)">
-                    <i [class]="meta.iconoVisual"></i>
-                  </div>
+                  <i [class]="meta.iconoVisual" class="metas-page__card-category-icon" [ngClass]="'text-' + obtenerColorEstado(meta)"></i>
                   <h3>{{ meta.nombreVisual }}</h3>
                 </div>
-                <span class="badge" [ngClass]="{
-                  'badge-success': meta.completada,
-                  'badge-warning': esVencida(meta) && !meta.completada,
-                  'badge-info': !meta.completada && !esVencida(meta)
-                }">
-                  {{ meta.completada ? 'Cumplida' : (esVencida(meta) ? 'Vencida' : 'Activa') }}
-                </span>
               </div>
 
-              <!-- Lógica de Progreso de la Tarjeta -->
+              <!-- Lógica de Progreso de la Tarjeta (Burbuja Centralizada) -->
               <div class="metas-page__card-body">
                 <!-- Gráfico de Burbuja de Agua (CSS Wave) -->
                 <div class="bubble-container" [ngClass]="'bubble-container--' + obtenerColorEstado(meta)">
                   <div class="bubble">
                     <div class="bubble__water" [style.transform]="'translateY(' + (100 - meta.porcentajeProgreso) + '%)'">
-                      <div class="bubble__wave bubble__wave--front"></div>
-                      <div class="bubble__wave bubble__wave--back"></div>
+                      @if (meta.porcentajeProgreso < 100) {
+                        <div class="bubble__wave bubble__wave--front"></div>
+                        <div class="bubble__wave bubble__wave--back"></div>
+                      }
                     </div>
                     <div class="bubble__content">
                       <i [class]="meta.iconoVisual" class="bubble__category-icon"></i>
@@ -206,51 +199,35 @@
                   </div>
                 </div>
 
-                <!-- Detalles Financieros de la Meta -->
-                <div class="metas-page__card-details">
-                  <div class="detail-row">
-                    <span class="detail-label">Objetivo:</span>
-                    <span class="detail-value">S/ {{ meta.montoObjetivo.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
-                  </div>
-                  <div class="detail-row">
-                    <span class="detail-label">Aplicado:</span>
-                    <span class="detail-value text-success">S/ {{ meta.montoAplicado.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
-                  </div>
-                  
-                  <div class="detail-divider"></div>
-                  
-                  <div class="detail-footer-info">
-                    @if (meta.completada) {
-                      <span class="text-success"><i class="fa-solid fa-circle-check"></i> Completada el {{ (meta.fechaActualizacion || meta.fechaCreacion) | date:'dd/MM/yyyy' }}</span>
-                    } @else {
-                      <div class="detail-row">
-                        <span class="detail-label">Faltan:</span>
-                        <span class="detail-value text-warning">S/ {{ (meta.montoObjetivo - meta.montoAplicado).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
-                      </div>
-                      <div class="detail-row font-sm text-secondary">
-                        <span><i class="fa-regular fa-clock"></i> Vence el {{ meta.fechaLimite | date:'dd/MM/yyyy' }}</span>
-                      </div>
-                    }
-                  </div>
+                <!-- Detalles Financieros Minimalistas -->
+                <div class="metas-page__card-minimal-details">
+                  @if (meta.completada) {
+                    <span class="monto-principal text-success">S/ {{ meta.montoObjetivo.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+                    <span class="sub-label text-secondary">Alcanzada el {{ (meta.fechaActualizacion || meta.fechaCreacion) | date:'dd/MM/yyyy' }}</span>
+                  } @else {
+                    <span class="monto-principal">
+                      S/ {{ meta.montoAplicado.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }} 
+                      <span class="monto-total">/ S/ {{ meta.montoObjetivo.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+                    </span>
+                    <span class="sub-label" [ngClass]="esVencida(meta) ? 'text-danger' : 'text-secondary'">
+                      @if (esVencida(meta)) {
+                        Venció el {{ meta.fechaLimite | date:'dd/MM/yyyy' }}
+                      } @else {
+                        Faltan S/ {{ (meta.montoObjetivo - meta.montoAplicado).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }} • {{ meta.fechaLimite | date:'dd/MM/yyyy' }}
+                      }
+                    </span>
+                  }
                 </div>
               </div>
 
-              <!-- Acción de la Tarjeta -->
-              <div class="metas-page__card-action" (click)="$event.stopPropagation()">
-                @if (meta.completada) {
-                  <button type="button" class="btn-action btn-action--completed" disabled>
-                    <i class="fa-solid fa-circle-check"></i> Completada
-                  </button>
-                } @else if (meta.puedeCompletar) {
+              <!-- Acción de la Tarjeta (Solo se muestra cuando se puede completar) -->
+              @if (meta.puedeCompletar && !meta.completada) {
+                <div class="metas-page__card-action" (click)="$event.stopPropagation()">
                   <button type="button" class="btn-action btn-action--complete" (click)="solicitarCompletarMeta(meta)">
                     <i class="fa-solid fa-circle-check"></i> Completar meta
                   </button>
-                } @else {
-                  <button type="button" class="btn-action btn-action--progress" disabled>
-                    En progreso
-                  </button>
-                }
-              </div>
+                </div>
+              }
 
             </article>
           } @empty {
@@ -296,8 +273,10 @@
               <div class="bubble-container bubble-container--large" [ngClass]="'bubble-container--' + obtenerColorEstado(seleccionada)">
                 <div class="bubble bubble--large">
                   <div class="bubble__water" [style.transform]="'translateY(' + (100 - seleccionada.porcentajeProgreso) + '%)'">
-                    <div class="bubble__wave bubble__wave--front"></div>
-                    <div class="bubble__wave bubble__wave--back"></div>
+                    @if (seleccionada.porcentajeProgreso < 100) {
+                      <div class="bubble__wave bubble__wave--front"></div>
+                      <div class="bubble__wave bubble__wave--back"></div>
+                    }
                   </div>
                   <div class="bubble__content">
                     <i [class]="seleccionada.iconoVisual" class="bubble__category-icon"></i>

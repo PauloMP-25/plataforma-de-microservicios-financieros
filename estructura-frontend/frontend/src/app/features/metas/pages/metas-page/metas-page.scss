@@ -318,10 +318,11 @@
 
   &__card {
     width: 100%;
-    max-width: 360px;
+    max-width: 320px;
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 1.25rem;
     cursor: pointer;
     border: 1.5px solid var(--border-color);
@@ -335,87 +336,92 @@
   }
 
   &__card-header {
+    width: 100%;
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 0.5rem;
+    justify-content: center;
+    align-items: center;
   }
 
   &__card-category {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    justify-content: center;
+    gap: 0.5rem;
+    max-width: 100%;
 
     h3 {
       font-family: var(--font-heading);
-      font-size: 1.1rem;
-      font-weight: 700;
+      font-size: 1.15rem;
+      font-weight: 800;
       color: var(--text-primary);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 160px;
+      max-width: 200px;
+      margin: 0;
     }
   }
 
-  &__card-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: var(--radius-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.95rem;
-
-    &--success { background: var(--color-success-soft); color: var(--color-success); }
-    &--danger { background: var(--color-danger-soft); color: var(--color-danger); }
-    &--active { background: var(--color-primary-soft); color: var(--color-primary); }
+  &__card-category-icon {
+    font-size: 1.2rem;
+    
+    // Status text colors
+    &.text-success { color: var(--color-success); }
+    &.text-danger { color: var(--color-danger); }
+    &.text-active { color: var(--color-primary); }
   }
 
   &__card-body {
     display: flex;
+    flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 1.25rem;
+    width: 100%;
+    text-align: center;
   }
 
-  &__card-details {
-    flex: 1;
+  &__card-minimal-details {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 0.35rem;
+    width: 100%;
 
-    .detail-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.85rem;
-    }
-
-    .detail-label {
-      color: var(--text-secondary);
-      font-weight: 600;
-    }
-
-    .detail-value {
+    .monto-principal {
+      font-family: var(--font-heading);
+      font-size: 1.35rem;
+      font-weight: 900;
       color: var(--text-primary);
-      font-weight: 700;
+
+      &.text-success {
+        color: var(--color-success);
+      }
     }
 
-    .detail-divider {
-      height: 1px;
-      background: var(--border-color);
-      margin: 0.35rem 0;
+    .monto-total {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text-secondary);
     }
 
-    .detail-footer-info {
+    .sub-label {
       font-size: 0.8rem;
       font-weight: 600;
-      margin-top: 0.25rem;
+      color: var(--text-secondary);
+
+      &.text-danger {
+        color: var(--color-danger);
+      }
+      &.text-secondary {
+        color: var(--text-secondary);
+      }
     }
   }
 
   &__card-action {
-    margin-top: auto;
+    width: 100%;
+    margin-top: 0.25rem;
     
     .btn-action {
       width: 100%;
@@ -431,12 +437,6 @@
       cursor: pointer;
       transition: var(--transition);
 
-      &--completed {
-        background: var(--color-success-soft);
-        color: var(--color-success);
-        cursor: not-allowed;
-      }
-
       &--complete {
         background: var(--color-success);
         color: #ffffff;
@@ -445,12 +445,6 @@
           background: #16a34a;
           box-shadow: 0 4px 10px rgba(34, 197, 94, 0.25);
         }
-      }
-
-      &--progress {
-        background: var(--bg-surface-soft);
-        color: var(--text-muted);
-        cursor: not-allowed;
       }
     }
   }
