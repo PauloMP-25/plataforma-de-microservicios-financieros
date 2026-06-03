@@ -174,7 +174,8 @@
                        'metas-page__card--selected': metaSeleccionada()?.id === meta.id,
                        'metas-page__card--success': meta.completada,
                        'metas-page__card--danger': esVencida(meta) && !meta.completada,
-                       'metas-page__card--active': !meta.completada && !esVencida(meta)
+                       'metas-page__card--active': !meta.completada && !esVencida(meta),
+                       'metas-page__card--has-action': meta.puedeCompletar && !meta.completada
                      }"
                      (click)="seleccionarMeta(meta)">
                   <!-- Encabezado de la Tarjeta Minimalista -->
@@ -183,14 +184,6 @@
                   <i [class]="meta.iconoVisual" class="metas-page__card-category-icon" [ngClass]="'text-' + obtenerColorEstado(meta)"></i>
                   <h3>{{ meta.nombreVisual }}</h3>
                 </div>
-                <!-- Badge de Estado -->
-                <span class="badge" [ngClass]="{
-                  'badge-success': meta.completada,
-                  'badge-danger': esVencida(meta) && !meta.completada,
-                  'badge-primary': !meta.completada && !esVencida(meta)
-                }">
-                  {{ meta.completada ? 'Cumplida' : (esVencida(meta) ? 'Vencida' : 'Activa') }}
-                </span>
               </div>
  
               <!-- Lógica de Progreso de la Tarjeta (Burbuja Centralizada) -->
@@ -240,6 +233,15 @@
                   </button>
                 </div>
               }
+
+              <!-- Badge de Estado -->
+              <span class="card-badge badge" [ngClass]="{
+                'badge-success': meta.completada,
+                'badge-danger': esVencida(meta) && !meta.completada,
+                'badge-primary': !meta.completada && !esVencida(meta)
+              }">
+                {{ meta.completada ? 'Cumplida' : (esVencida(meta) ? 'Vencida' : 'Activa') }}
+              </span>
 
             </article>
           } @empty {
