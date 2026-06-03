@@ -13,8 +13,26 @@ import { VerificarCodigo } from '../../recuperar-contrasena/verificar-codigo/ver
   styleUrl: './contenedor-autenticacion.scss',
 })
 export class ContenedorAutenticacion implements OnInit {
-  vistaActual: 'login' | 'registro' | 'verificar' | 'exito' = 'login';
+  vistaActual: 'login' | 'registro' | 'canal' | 'verificar' | 'exito' = 'login';
 
+  cargandoOtp = false;
+  infoOtp = '';
+  errorOtp = '';
+  correoActivacion = '';
+  telefonoActivacion = '';
+  canalSeleccionado: 'EMAIL' | 'SMS' | 'WHATSAPP' = 'EMAIL';
+
+  seleccionarCanal(canal: 'EMAIL' | 'SMS' | 'WHATSAPP'): void {
+    this.canalSeleccionado = canal;
+  }
+
+  enviarCodigoActivacion(): void {
+    this.cargandoOtp = true;
+    setTimeout(() => {
+      this.cargandoOtp = false;
+      this.vistaActual = 'verificar';
+    }, 1000);
+  }
   /** Datos del registro para el paso de verificación */
   medioVerificacion: 'correo' | 'celular' = 'correo';
   destinoVerificacion = '';
