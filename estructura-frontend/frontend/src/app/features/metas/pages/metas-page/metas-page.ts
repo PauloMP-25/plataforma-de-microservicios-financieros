@@ -1,8 +1,8 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ClienteMetasLimitesService } from '../../../../core/services/cliente-metas-limites.service';
-import { RespuestaMetaAhorro, SolicitudMetaAhorro } from '../../../../core/models/cliente/meta-limite.model';
+import { RespuestaMetaAhorro } from '../../../../core/models/cliente/meta-limite.model';
 import { FinancieroService } from '../../../../core/services/Financiero.service';
 import { Transacciones } from '../../../../core/services/transacciones';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -13,21 +13,17 @@ import { forkJoin } from 'rxjs';
 @Component({
   selector: 'app-metas-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule],
   templateUrl: './metas-page.html',
   styleUrl: './metas-page.scss',
 })
 export class MetasPage implements OnInit {
-  private fb = inject(FormBuilder);
+  private router = inject(Router);
   private metasService = inject(ClienteMetasLimitesService);
   private financieroService = inject(FinancieroService);
   private transaccionesService = inject(Transacciones);
   private authService = inject(AuthService);
   private eventBus = inject(AppEventBus);
-
-  // Formularios
-  formularioCrear!: FormGroup;
-  formularioEditar!: FormGroup;
 
   // Estado
   metas = signal<RespuestaMetaAhorro[]>([]);
@@ -36,8 +32,6 @@ export class MetasPage implements OnInit {
   exitoMensaje = signal<string>('');
 
   // Modales y Paneles
-  mostrarFormulario = signal<boolean>(false);
-  editandoMeta = signal<any | null>(null);
   metaSeleccionada = signal<any | null>(null);
   modalConfirmarCompletar = signal<any | null>(null);
 
@@ -47,8 +41,6 @@ export class MetasPage implements OnInit {
   filtroAnio = signal<string>('Todos');
   filtroMontoMin = signal<number | null>(null);
   filtroMontoMax = signal<number | null>(null);
-
-  fechaMinima = '';
 
   // Exponer Math para la plantilla HTML
   protected readonly Math = Math;
@@ -263,48 +255,8 @@ export class MetasPage implements OnInit {
   });
 
   ngOnInit(): void {
-    const hoy = new Date();
-    this.fechaMinima = hoy.toISOString().split('T')[0];
-
-    this.inicializarFormularios();
     this.financieroService.cargarResumen();
     this.cargarMetas();
-  }
-
-  inicializarFormularios(): void {
-    const hoy = new Date();
-    const unMesDespues = new Date(hoy.getFullYear(), hoy.getMonth() + 1, hoy.getDate());
-    const fechaDefecto = unMesDespues.toISOString().split('T')[0];
-
-    // Formulario Crear
-    this.formularioCrear = this.fb.group({
-      nombre: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(150)]],
-      categoria: ['Otros', Validators.required],
-      montoObjetivo: [null, [Validators.required, Validators.min(1.00)]],
-      montoActual: [0.00, [Validators.required, Validators.min(0.00)]],
-      fechaLimite: [fechaDefecto, [Validators.required, this.validarFechaFutura.bind(this)]]
-    });
-
-    // Formulario Editar
-    this.formularioEditar = this.fb.group({
-      nombre: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(150)]],
-      categoria: ['Otros', Validators.required],
-      montoObjetivo: [null, [Validators.required, Validators.min(1.00)]],
-      montoActual: [0.00, [Validators.required, Validators.min(0.00)]],
-      fechaLimite: ['', [Validators.required, this.validarFechaFutura.bind(this)]]
-    });
-  }
-
-  validarFechaFutura(control: any): { [key: string]: boolean } | null {
-    if (control.value) {
-      const fechaSeleccionada = new Date(control.value + 'T00:00:00');
-      const hoy = new Date();
-      hoy.setHours(0, 0, 0, 0);
-      if (fechaSeleccionada <= hoy) {
-        return { fechaPasada: true };
-      }
-    }
-    return null;
   }
 
   cargarMetas(): void {
@@ -313,10 +265,19 @@ export class MetasPage implements OnInit {
 
     this.metasService.listarMetas().subscribe({
       next: (data) => {
-        // Si el backend no tiene metas o devuelve la lista de mocks por defecto del backend,
-        // pre-cargamos nuestros mocks de prueba detallados (Viaje, Laptop, etc.)
         if (!data || data.length === 0 || data[0].id === 'mock-meta-1') {
-          this.metas.set(this.mockMetasIniciales);
+          // Fallback a localStorage o mocks iniciales
+          const localMetasStr = localStorage.getItem('luka_mock_metas');
+          if (localMetasStr) {
+            try {
+              this.metas.set(JSON.parse(localMetasStr));
+            } catch (e) {
+              this.metas.set(this.mockMetasIniciales);
+            }
+          } else {
+            this.metas.set(this.mockMetasIniciales);
+            localStorage.setItem('luka_mock_metas', JSON.stringify(this.mockMetasIniciales));
+          }
         } else {
           this.metas.set(data);
         }
@@ -331,7 +292,17 @@ export class MetasPage implements OnInit {
       },
       error: (err) => {
         console.error('Error al recuperar metas de la API, usando mocks iniciales:', err);
-        this.metas.set(this.mockMetasIniciales);
+        const localMetasStr = localStorage.getItem('luka_mock_metas');
+        if (localMetasStr) {
+          try {
+            this.metas.set(JSON.parse(localMetasStr));
+          } catch (e) {
+            this.metas.set(this.mockMetasIniciales);
+          }
+        } else {
+          this.metas.set(this.mockMetasIniciales);
+          localStorage.setItem('luka_mock_metas', JSON.stringify(this.mockMetasIniciales));
+        }
         this.cargando.set(false);
       }
     });
@@ -398,199 +369,11 @@ export class MetasPage implements OnInit {
   }
 
   abrirCrearMeta(): void {
-    const hoy = new Date();
-    const unMesDespues = new Date(hoy.getFullYear(), hoy.getMonth() + 1, hoy.getDate());
-    const fechaDefecto = unMesDespues.toISOString().split('T')[0];
-
-    this.formularioCrear.reset({
-      nombre: '',
-      categoria: 'Viaje', // Selección inicial sugerida
-      montoObjetivo: null,
-      montoActual: 0.00,
-      fechaLimite: fechaDefecto
-    });
-    this.editandoMeta.set(null);
-    this.mostrarFormulario.set(true);
-  }
-
-  // Helper para el formulario: Ajusta la fecha sumando meses
-  setFechaRapida(meses: number, formType: 'crear' | 'editar'): void {
-    const hoy = new Date();
-    const nuevaFecha = new Date(hoy.getFullYear(), hoy.getMonth() + meses, hoy.getDate());
-    const fechaStr = nuevaFecha.toISOString().split('T')[0];
-
-    const form = formType === 'crear' ? this.formularioCrear : this.formularioEditar;
-    form.get('fechaLimite')?.setValue(fechaStr);
-  }
-
-  // Helper para el formulario: Cambiar categoría mediante el clic visual
-  seleccionarCategoriaForm(catId: string, formType: 'crear' | 'editar'): void {
-    const form = formType === 'crear' ? this.formularioCrear : this.formularioEditar;
-    form.get('categoria')?.setValue(catId);
-  }
-
-  // Simulación: Calcula el ahorro mensual sugerido
-  getAhorroSugeridoInfo(formType: 'crear' | 'editar'): { cuota: number; meses: number } {
-    const form = formType === 'crear' ? this.formularioCrear : this.formularioEditar;
-    const obj = form.get('montoObjetivo')?.value || 0;
-    const act = form.get('montoActual')?.value || 0;
-    const fecha = form.get('fechaLimite')?.value;
-
-    if (!fecha || obj <= 0) return { cuota: 0, meses: 0 };
-
-    const limite = new Date(fecha + 'T00:00:00');
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
-
-    let meses = (limite.getFullYear() - hoy.getFullYear()) * 12 + (limite.getMonth() - hoy.getMonth());
-    
-    if (meses <= 0) {
-      const dias = Math.ceil((limite.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
-      if (dias <= 0) return { cuota: 0, meses: 0 };
-      return { cuota: Math.max(0, obj - act), meses: 1 };
-    }
-
-    const cuota = Math.max(0, (obj - act) / meses);
-    return { cuota, meses };
-  }
-
-  guardarNuevaMeta(): void {
-    if (this.formularioCrear.invalid) {
-      this.formularioCrear.markAllAsTouched();
-      return;
-    }
-
-    this.cargando.set(true);
-    this.errorMensaje.set('');
-    this.exitoMensaje.set('');
-
-    const formVal = this.formularioCrear.value;
-    const nombreConPrefijo = `[${formVal.categoria}] ${formVal.nombre}`;
-
-    const payload: SolicitudMetaAhorro = {
-      nombre: nombreConPrefijo,
-      montoObjetivo: formVal.montoObjetivo,
-      montoActual: formVal.montoActual ?? 0,
-      fechaLimite: formVal.fechaLimite
-    };
-
-    // Si es un ID mock (estamos probando local sin backend real)
-    // añadimos la meta localmente para simular el éxito inmediato del servicio.
-    this.metasService.crearMeta(payload).subscribe({
-      next: (nuevaMeta) => {
-        const datosVisuales = this.obtenerCategoriaYNombre(nuevaMeta.nombre);
-        this.exitoMensaje.set(`Meta "${datosVisuales.nombre}" creada con éxito.`);
-        this.mostrarFormulario.set(false);
-        this.cargarMetas();
-        setTimeout(() => this.exitoMensaje.set(''), 4000);
-      },
-      error: () => {
-        // En caso de que falle el backend de base, simulamos la creación en el mock
-        const nuevoMock: RespuestaMetaAhorro = {
-          id: 'mock-meta-' + (this.metas().length + 1),
-          nombre: nombreConPrefijo,
-          montoObjetivo: payload.montoObjetivo,
-          montoActual: payload.montoActual || 0,
-          porcentajeProgreso: payload.montoObjetivo > 0 ? ((payload.montoActual || 0) / payload.montoObjetivo) * 100 : 0,
-          fechaLimite: payload.fechaLimite,
-          completada: false,
-          fechaCreacion: new Date().toISOString(),
-          fechaActualizacion: new Date().toISOString()
-        };
-        this.metas.update(items => [nuevoMock, ...items]);
-        this.exitoMensaje.set(`Meta "${formVal.nombre}" creada con éxito (Modo Pruebas).`);
-        this.mostrarFormulario.set(false);
-        this.cargando.set(false);
-        setTimeout(() => this.exitoMensaje.set(''), 4000);
-      }
-    });
+    this.router.navigate(['/metas/nueva']);
   }
 
   abrirEditarMeta(meta: any): void {
-    const datosVisuales = this.obtenerCategoriaYNombre(meta.nombre);
-    this.editandoMeta.set(meta);
-    this.formularioEditar.reset({
-      nombre: datosVisuales.nombre,
-      categoria: datosVisuales.categoria || 'Otros',
-      montoObjetivo: meta.montoObjetivo,
-      montoActual: meta.montoActual,
-      fechaLimite: meta.fechaLimite
-    });
-    this.mostrarFormulario.set(true);
-  }
-
-  guardarEdicionMeta(): void {
-    if (this.formularioEditar.invalid) {
-      this.formularioEditar.markAllAsTouched();
-      return;
-    }
-
-    const metaOriginal = this.editandoMeta();
-    if (!metaOriginal) return;
-
-    this.cargando.set(true);
-    this.errorMensaje.set('');
-    this.exitoMensaje.set('');
-
-    const formVal = this.formularioEditar.value;
-    const nombreConPrefijo = `[${formVal.categoria}] ${formVal.nombre}`;
-
-    // Al no tener endpoint general de edición (PUT) en el backend,
-    // simulamos la actualización eliminando el registro previo y recreándolo.
-    this.metasService.eliminarMeta(metaOriginal.id).subscribe({
-      next: () => {
-        const payload: SolicitudMetaAhorro = {
-          nombre: nombreConPrefijo,
-          montoObjetivo: formVal.montoObjetivo,
-          montoActual: formVal.montoActual ?? 0,
-          fechaLimite: formVal.fechaLimite
-        };
-
-        this.metasService.crearMeta(payload).subscribe({
-          next: () => {
-            this.exitoMensaje.set(`Meta "${formVal.nombre}" actualizada con éxito.`);
-            this.mostrarFormulario.set(false);
-            this.editandoMeta.set(null);
-            
-            // Si estaba seleccionada en el panel de detalle, deseleccionarla
-            if (this.metaSeleccionada()?.id === metaOriginal.id) {
-              this.metaSeleccionada.set(null);
-            }
-
-            this.cargarMetas();
-            setTimeout(() => this.exitoMensaje.set(''), 4000);
-          },
-          error: (err) => {
-            console.error('Error al recrear meta editada:', err);
-            this.errorMensaje.set('No se pudo recrear la meta modificada.');
-            this.cargando.set(false);
-          }
-        });
-      },
-      error: () => {
-        // Simulación offline si falla
-        this.metas.update(items => items.map(i => {
-          if (i.id === metaOriginal.id) {
-            return {
-              ...i,
-              nombre: nombreConPrefijo,
-              montoObjetivo: formVal.montoObjetivo,
-              montoActual: formVal.montoActual ?? 0,
-              porcentajeProgreso: formVal.montoObjetivo > 0 ? ((formVal.montoActual ?? 0) / formVal.montoObjetivo) * 100 : 0,
-              fechaLimite: formVal.fechaLimite,
-              fechaActualizacion: new Date().toISOString()
-            };
-          }
-          return i;
-        }));
-        
-        this.exitoMensaje.set(`Meta "${formVal.nombre}" actualizada con éxito (Modo Pruebas).`);
-        this.mostrarFormulario.set(false);
-        this.editandoMeta.set(null);
-        this.cargando.set(false);
-        setTimeout(() => this.exitoMensaje.set(''), 4000);
-      }
-    });
+    this.router.navigate(['/metas/editar', meta.id]);
   }
 
   eliminarMeta(metaId: string): void {
@@ -604,6 +387,7 @@ export class MetasPage implements OnInit {
 
     this.metasService.eliminarMeta(metaId).subscribe({
       next: () => {
+        this.removerMockLocalmente(metaId);
         this.exitoMensaje.set('Meta de ahorro eliminada con éxito.');
         if (this.metaSeleccionada()?.id === metaId) {
           this.metaSeleccionada.set(null);
@@ -612,7 +396,7 @@ export class MetasPage implements OnInit {
         setTimeout(() => this.exitoMensaje.set(''), 4000);
       },
       error: () => {
-        // Simulación offline si falla
+        this.removerMockLocalmente(metaId);
         this.metas.update(items => items.filter(i => i.id !== metaId));
         if (this.metaSeleccionada()?.id === metaId) {
           this.metaSeleccionada.set(null);
@@ -622,6 +406,19 @@ export class MetasPage implements OnInit {
         setTimeout(() => this.exitoMensaje.set(''), 4000);
       }
     });
+  }
+
+  private removerMockLocalmente(id: string): void {
+    const localMetasStr = localStorage.getItem('luka_mock_metas');
+    if (localMetasStr) {
+      try {
+        let lista = JSON.parse(localMetasStr);
+        lista = lista.filter((m: any) => m.id !== id);
+        localStorage.setItem('luka_mock_metas', JSON.stringify(lista));
+      } catch (e) {
+        console.error(e);
+      }
+    }
   }
 
   // Selección para panel de detalle
@@ -653,19 +450,17 @@ export class MetasPage implements OnInit {
 
     const usuario = this.authService.usuario();
     
-    // Preparar el gasto para el historial
     const transaccionPayload: TransaccionRequestDTO = {
       usuarioId: usuario?.id ?? '',
       nombreCliente: usuario?.nombreUsuario ?? 'Cliente',
       monto: meta.montoObjetivo,
       tipo: 'GASTO',
-      categoriaId: 'otros', // Se guarda en otros / compras generales
+      categoriaId: 'otros',
       fechaTransaccion: new Date().toISOString(),
       metodoPago: 'DIGITAL',
       notas: `Meta alcanzada: ${meta.nombreVisual}|Gasto registrado automáticamente al cumplir el objetivo financiero|DIARIO`
     };
 
-    // Lanzar concurrentemente la creación de la transacción y la actualización de la meta
     forkJoin({
       gasto: this.transaccionesService.registrar(transaccionPayload),
       meta: this.metasService.actualizarProgresoMeta(meta.id, meta.montoObjetivo)
@@ -675,17 +470,16 @@ export class MetasPage implements OnInit {
         this.modalConfirmarCompletar.set(null);
         this.metaSeleccionada.set(null);
         
-        // Refrescar balance del FinancieroService y listado
         this.financieroService.cargarResumen();
         this.cargarMetas();
         
-        // Notificar cambios de transacciones
         this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
         
         setTimeout(() => this.exitoMensaje.set(''), 5000);
       },
       error: () => {
         // Simulación offline si falla
+        this.marcarMockComoCompletadoLocalmente(meta.id, meta.montoObjetivo);
         this.metas.update(items => items.map(i => {
           if (i.id === meta.id) {
             return {
@@ -705,6 +499,29 @@ export class MetasPage implements OnInit {
         setTimeout(() => this.exitoMensaje.set(''), 5000);
       }
     });
+  }
+
+  private marcarMockComoCompletadoLocalmente(id: string, montoObjetivo: number): void {
+    const localMetasStr = localStorage.getItem('luka_mock_metas');
+    if (localMetasStr) {
+      try {
+        let lista = JSON.parse(localMetasStr);
+        lista = lista.map((m: any) => {
+          if (m.id === id) {
+            return {
+              ...m,
+              montoActual: montoObjetivo,
+              completada: true,
+              fechaActualizacion: new Date().toISOString()
+            };
+          }
+          return m;
+        });
+        localStorage.setItem('luka_mock_metas', JSON.stringify(lista));
+      } catch (e) {
+        console.error(e);
+      }
+    }
   }
 
   limpiarFiltros(): void {
