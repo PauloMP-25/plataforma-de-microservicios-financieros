@@ -12,13 +12,15 @@ spring:
       httpclient:
         connect-timeout: 30000
         response-timeout: 60s
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin RETAIN_FIRST
       discovery:
         locator:
           enabled: false
 
       routes:
         - id: servicio-usuario-docs
-          uri: http://localhost:8081
+          uri: ${URL_PROD_USUARIO:http://localhost:8081}
           predicates:
             - Path=/microservicio-usuario/v3/api-docs/**
           filters:
@@ -27,7 +29,7 @@ spring:
             requiere-autenticacion: false
 
         - id: servicio-usuario-auth
-          uri: http://localhost:8081
+          uri: ${URL_PROD_USUARIO:http://localhost:8081}
           predicates:
             - Path=/api/v1/auth/**
           filters:
@@ -41,7 +43,7 @@ spring:
             requiere-autenticacion: false
 
         - id: usuario-protegido
-          uri: http://localhost:8081
+          uri: ${URL_PROD_USUARIO:http://localhost:8081}
           predicates:
             - Path=/api/v1/auth/cambiar-password
             - Path=/api/v1/auth/mi-cuenta
