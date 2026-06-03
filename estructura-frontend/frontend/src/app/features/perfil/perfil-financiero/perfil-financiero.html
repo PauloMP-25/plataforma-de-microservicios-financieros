@@ -1,1 +1,322 @@
-<p>perfil-financiero works!</p>
+<section class="pf-page">
+
+  <!-- ── Cabecera ── -->
+  <header class="pf-page__header card anim-fade-up">
+    <div class="pf-page__header-left">
+      <div class="pf-page__header-icon">
+        <i class="fa-solid fa-chart-pie"></i>
+      </div>
+      <div>
+        <h1>Perfil Financiero</h1>
+        <p>Tu resumen financiero personal y progreso general</p>
+      </div>
+    </div>
+    <div class="pf-page__header-actions">
+      <button class="pf-page__btn-export" type="button">
+        <i class="fa-solid fa-file-arrow-down"></i> Exportar PDF
+      </button>
+    </div>
+  </header>
+
+  @if (cargando() && !resumenActual()) {
+    <div class="pf-page__loading">
+      <div class="pf-page__spinner"></div>
+      <p>Calculando tu perfil financiero...</p>
+    </div>
+  } @else {
+
+  <!-- ── KPI Cards ── -->
+  <div class="pf-page__kpis anim-fade-up">
+
+    <!-- Balance Financiero Neto -->
+    <article class="pf-kpi card">
+      <div class="pf-kpi__icon-wrap pf-kpi__icon-wrap--primary">
+        <i class="fa-solid fa-wallet"></i>
+      </div>
+      <div class="pf-kpi__body">
+        <span class="pf-kpi__label">Patrimonio operativo neto <i class="fa-regular fa-circle-question pf-kpi__hint"></i></span>
+        @if (balanceNeto() !== null) {
+          <span class="pf-kpi__value" [class.text-success]="balanceNeto()! >= 0" [class.text-danger]="balanceNeto()! < 0">
+            S/ {{ formatMoneda(balanceNeto()!) }}
+          </span>
+          <span class="pf-kpi__sub text-muted">Ingresos - Gastos</span>
+          @if (variacionBalance() !== null) {
+            <span class="pf-kpi__variation" [class.pf-kpi__variation--up]="variacionBalance()! >= 0" [class.pf-kpi__variation--down]="variacionBalance()! < 0">
+              <i [class]="variacionBalance()! >= 0 ? 'fa-solid fa-arrow-trend-up' : 'fa-solid fa-arrow-trend-down'"></i>
+              {{ variacionBalance()! >= 0 ? '+' : '' }}{{ variacionBalance()!.toFixed(1) }}% vs mes anterior
+            </span>
+          }
+        } @else {
+          <span class="pf-kpi__value pf-kpi__value--empty">Sin datos</span>
+        }
+      </div>
+      <div class="pf-kpi__sparkline">
+        <svg viewBox="0 0 80 30" fill="none">
+          <polyline points="0,25 15,20 30,22 45,12 60,15 80,8" stroke="var(--color-success)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </article>
+
+    <!-- Índice de Salud Financiera -->
+    <article class="pf-kpi card">
+      <div class="pf-kpi__icon-wrap" [ngClass]="'pf-kpi__icon-wrap--' + (indicesSalud() ? colorIndice(indicesSalud()!.score) : 'primary')">
+        <i class="fa-solid fa-heart-pulse"></i>
+      </div>
+      <div class="pf-kpi__body">
+        <span class="pf-kpi__label">Índice de salud financiera <i class="fa-regular fa-circle-question pf-kpi__hint"></i></span>
+        @if (indicesSalud(); as idx) {
+          <span class="pf-kpi__value-with-max">
+            <span class="pf-kpi__value-big">{{ idx.score }}</span><span class="pf-kpi__value-max">/ 100</span>
+          </span>
+          <div class="pf-kpi__health-bar">
+            <div class="pf-kpi__health-fill" [style.width.%]="idx.score" [ngClass]="'pf-kpi__health-fill--' + colorIndice(idx.score)"></div>
+          </div>
+          <span class="pf-kpi__sub" [ngClass]="'text-' + colorIndice(idx.score)">{{ idx.etiqueta }}</span>
+          <span class="pf-kpi__variation pf-kpi__variation--up"><i class="fa-solid fa-arrow-trend-up"></i> +8 pts vs mes anterior</span>
+        } @else {
+          <span class="pf-kpi__value pf-kpi__value--empty">Sin datos suficientes</span>
+        }
+      </div>
+    </article>
+
+    <!-- Progreso de Logros -->
+    <article class="pf-kpi card">
+      <div class="pf-kpi__icon-wrap pf-kpi__icon-wrap--warning">
+        <i class="fa-solid fa-trophy"></i>
+      </div>
+      <div class="pf-kpi__body">
+        <span class="pf-kpi__label">Progreso global de logros <i class="fa-regular fa-circle-question pf-kpi__hint"></i></span>
+        <span class="pf-kpi__value-with-max">
+          <span class="pf-kpi__value-big">{{ progresoLogros().desbloqueados }}</span>
+          <span class="pf-kpi__value-max">/ {{ progresoLogros().total }}</span>
+        </span>
+        <div class="pf-kpi__health-bar">
+          <div class="pf-kpi__health-fill pf-kpi__health-fill--warning"
+               [style.width.%]="progresoLogros().total > 0 ? (progresoLogros().desbloqueados / progresoLogros().total) * 100 : 0">
+          </div>
+        </div>
+        <span class="pf-kpi__sub text-muted">Logros alcanzados</span>
+        <span class="pf-kpi__variation pf-kpi__variation--neutral">
+          {{ progresoLogros().total > 0 ? ((progresoLogros().desbloqueados / progresoLogros().total) * 100).toFixed(0) : 0 }}% completado
+        </span>
+      </div>
+    </article>
+
+    <!-- Capacidad de Ahorro Real -->
+    <article class="pf-kpi card">
+      <div class="pf-kpi__icon-wrap pf-kpi__icon-wrap--success">
+        <i class="fa-solid fa-piggy-bank"></i>
+      </div>
+      <div class="pf-kpi__body">
+        <span class="pf-kpi__label">Tasa de capacidad de ahorro real <i class="fa-regular fa-circle-question pf-kpi__hint"></i></span>
+        @if (capacidadAhorro() !== null) {
+          <span class="pf-kpi__value" [class.text-success]="capacidadAhorro()! >= 20" [class.text-warning]="capacidadAhorro()! > 0 && capacidadAhorro()! < 20" [class.text-danger]="capacidadAhorro()! <= 0">
+            {{ capacidadAhorro()!.toFixed(1) }}%
+          </span>
+          <span class="pf-kpi__sub text-muted">(Ingresos - Gastos) / Ingresos</span>
+          @if (variacionAhorro() !== null) {
+            <span class="pf-kpi__variation" [class.pf-kpi__variation--up]="variacionAhorro()! >= 0" [class.pf-kpi__variation--down]="variacionAhorro()! < 0">
+              <i [class]="variacionAhorro()! >= 0 ? 'fa-solid fa-arrow-trend-up' : 'fa-solid fa-arrow-trend-down'"></i>
+              {{ variacionAhorro()! >= 0 ? '+' : '' }}{{ variacionAhorro()!.toFixed(1) }} pts vs mes anterior
+            </span>
+          }
+        } @else {
+          <span class="pf-kpi__value pf-kpi__value--empty">Sin datos suficientes</span>
+        }
+      </div>
+      <div class="pf-kpi__sparkline">
+        <svg viewBox="0 0 80 30" fill="none">
+          <polyline points="0,20 15,18 30,15 45,17 60,12 80,10" stroke="var(--color-warning)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </article>
+  </div>
+
+  <!-- ── Banner Premium ── -->
+  <div class="pf-page__premium-banner anim-fade-up">
+    <div class="pf-premium__left">
+      <div class="pf-premium__icon">
+        <i class="fa-solid fa-crown"></i>
+      </div>
+      <div>
+        <h3>Resumen de situación financiera</h3>
+        <p>Obtén un análisis completo de tu salud financiera, tendencias, riesgos y recomendaciones personalizadas para mejorar tus finanzas.</p>
+      </div>
+    </div>
+    <div class="pf-premium__right">
+      <button class="pf-premium__btn" type="button">
+        <i class="fa-solid fa-lock"></i> Ver resumen de situación
+      </button>
+      <span class="pf-premium__label">Disponible en LUKA · Premium</span>
+    </div>
+  </div>
+
+  <!-- ── Fila Principal: Logros + Tendencia ── -->
+  <div class="pf-page__main-row anim-fade-up">
+
+    <!-- Logros Financieros -->
+    <section class="pf-logros card">
+      <div class="pf-logros__header">
+        <div class="pf-logros__title-wrap">
+          <i class="fa-solid fa-medal text-warning"></i>
+          <h2>Logros financieros</h2>
+        </div>
+        <p class="pf-logros__sub">Sigue avanzando y desbloquea más logros.</p>
+      </div>
+
+      <div class="pf-logros__grid">
+        @for (logro of logrosVisibles(); track logro.id) {
+          <div class="pf-logro-card" [class.pf-logro-card--desbloqueado]="logro.desbloqueado">
+            <div class="pf-logro-card__icon-wrap" [ngClass]="'pf-logro-card__icon-wrap--' + logro.iconoColor">
+              <i [class]="logro.icono"></i>
+              @if (logro.desbloqueado) {
+                <span class="pf-logro-card__check"><i class="fa-solid fa-check"></i></span>
+              } @else {
+                <span class="pf-logro-card__lock"><i class="fa-solid fa-lock"></i></span>
+              }
+            </div>
+            <span class="pf-logro-card__titulo">{{ logro.titulo }}</span>
+            @if (logro.desbloqueado) {
+              <span class="pf-logro-card__estado badge badge-success">¡Desbloqueado!</span>
+            } @else {
+              <div class="pf-logro-card__progreso-bar">
+                <div class="pf-logro-card__progreso-fill" [style.width.%]="(logro.progreso / logro.meta) * 100"></div>
+              </div>
+              <span class="pf-logro-card__estado text-muted">{{ logro.progreso }} / {{ logro.meta }}</span>
+            }
+          </div>
+        }
+      </div>
+
+      <button class="pf-logros__ver-todos" type="button" (click)="toggleLogros()">
+        {{ mostrarTodosLogros() ? 'Ver menos' : 'Ver todos los logros' }}
+        <i [class]="mostrarTodosLogros() ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-right'"></i>
+      </button>
+    </section>
+
+    <!-- Tendencia Financiera -->
+    <section class="pf-tendencia card">
+      <div class="pf-tendencia__header">
+        <div>
+          <h2>Tendencia financiera</h2>
+          <p class="text-muted">Identifica mejoras o deterioros en tu situación financiera</p>
+        </div>
+        <div class="pf-tendencia__filtros">
+          <button [class.active]="filtroTendencia() === 3" (click)="cambiarTendencia(3)" type="button">3 meses</button>
+          <button [class.active]="filtroTendencia() === 6" (click)="cambiarTendencia(6)" type="button">6 meses</button>
+          <button [class.active]="filtroTendencia() === 12" (click)="cambiarTendencia(12)" type="button">12 meses</button>
+        </div>
+      </div>
+
+      <!-- Leyenda -->
+      <div class="pf-tendencia__leyenda">
+        <span><span class="dot dot--ingresos"></span> Ingresos</span>
+        <span><span class="dot dot--gastos"></span> Gastos</span>
+        <span><span class="dot dot--ahorro"></span> Ahorro</span>
+      </div>
+
+      <!-- SVG Gráfico de Líneas -->
+      @if (tendencia().length > 0) {
+        <div class="pf-tendencia__chart-wrap">
+          <svg class="pf-tendencia__svg" viewBox="0 0 500 180" preserveAspectRatio="none">
+            <!-- Líneas de guía horizontales -->
+            <line x1="0" y1="40" x2="500" y2="40" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="4,4"/>
+            <line x1="0" y1="80" x2="500" y2="80" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="4,4"/>
+            <line x1="0" y1="120" x2="500" y2="120" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="4,4"/>
+            <line x1="0" y1="160" x2="500" y2="160" stroke="var(--border-color)" stroke-width="1"/>
+            <!-- Línea de Ingresos -->
+            <path [attr.d]="tendenciaNormalizada().ingresos" stroke="#22c55e" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Línea de Gastos -->
+            <path [attr.d]="tendenciaNormalizada().gastos" stroke="#ef4444" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Línea de Ahorro -->
+            <path [attr.d]="tendenciaNormalizada().ahorro" stroke="#5b6af0" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6,3"/>
+          </svg>
+          <!-- Etiquetas del eje X -->
+          <div class="pf-tendencia__eje-x">
+            @for (punto of tendencia(); track punto.mes; let i = $index) {
+              <span>{{ punto.mes }}</span>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Valores del mes actual -->
+      @if (resumenActual(); as r) {
+        <div class="pf-tendencia__valores">
+          <div class="pf-tendencia__valor">
+            <span class="label">Ingresos</span>
+            <span class="value text-success">S/ {{ formatMoneda(r.totalIngresos) }}</span>
+          </div>
+          <div class="pf-tendencia__valor">
+            <span class="label">Gastos</span>
+            <span class="value text-danger">S/ {{ formatMoneda(r.totalGastos) }}</span>
+          </div>
+          <div class="pf-tendencia__valor">
+            <span class="label">Ahorro</span>
+            <span class="value text-primary">S/ {{ formatMoneda(r.totalIngresos - r.totalGastos) }}</span>
+          </div>
+        </div>
+      }
+    </section>
+  </div>
+
+  <!-- ── Composición Financiera ── -->
+  <section class="pf-composicion card anim-fade-up">
+    <div class="pf-composicion__header">
+      <div>
+        <h2>Composición de ingresos y gastos por categoría <i class="fa-regular fa-circle-question pf-kpi__hint"></i></h2>
+      </div>
+      <div class="pf-composicion__tabs">
+        <button [class.active]="vistaDona() === 'ingresos'" (click)="cambiarDona('ingresos')" type="button">Ingresos</button>
+        <button [class.active]="vistaDona() === 'gastos'" (click)="cambiarDona('gastos')" type="button">Gastos</button>
+      </div>
+    </div>
+
+    <div class="pf-composicion__body">
+      <!-- Gráfico Dona SVG -->
+      <div class="pf-dona-wrap">
+        <svg class="pf-dona__svg" viewBox="0 0 150 150">
+          @for (seg of donaSegmentos(); track seg.nombre) {
+            <path [attr.d]="seg.d" [attr.fill]="seg.color" opacity="0.9" class="pf-dona__seg">
+              <title>{{ seg.nombre }}: {{ seg.porcentaje }}%</title>
+            </path>
+          }
+          <!-- Agujero central -->
+          <circle cx="75" cy="75" r="38" fill="var(--bg-card)"/>
+          <!-- Texto central -->
+          <text x="75" y="70" text-anchor="middle" class="pf-dona__label-main" font-size="10" fill="var(--text-secondary)">
+            {{ vistaDona() === 'ingresos' ? 'Ingresos' : 'Gastos' }}
+          </text>
+          <text x="75" y="85" text-anchor="middle" class="pf-dona__label-value" font-size="9" font-weight="800" fill="var(--text-primary)">
+            S/ {{ formatMoneda(totalComposicion()) }}
+          </text>
+        </svg>
+      </div>
+
+      <!-- Tabla de Categorías -->
+      <div class="pf-composicion__tabla">
+        @for (cat of composicionActual(); track cat.nombre) {
+          <div class="pf-composicion__fila">
+            <div class="pf-composicion__dot-nombre">
+              <span class="pf-composicion__dot" [style.background]="cat.color"></span>
+              <span class="pf-composicion__cat-nombre">{{ cat.nombre }}</span>
+            </div>
+            <span class="pf-composicion__porcentaje text-secondary">{{ cat.porcentaje }}%</span>
+            <span class="pf-composicion__monto">S/ {{ formatMoneda(cat.monto) }}</span>
+            <div class="pf-composicion__barra-wrap">
+              <div class="pf-composicion__barra-fill" [style.width.%]="cat.porcentaje" [style.background]="cat.color"></div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Nota de Pie ── -->
+  <footer class="pf-page__footer anim-fade-up">
+    <i class="fa-solid fa-circle-info"></i>
+    <span>Los cálculos de todos los indicadores son realizados por el backend. Los datos se muestran según el período seleccionado y el usuario autenticado.</span>
+  </footer>
+
+  } <!-- fin @else -->
+</section>
