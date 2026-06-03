@@ -1,0 +1,254 @@
+<main class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="flex min-h-screen">
+    <aside class="sticky top-0 hidden h-screen w-72 shrink-0 flex-col border-r border-white/10 bg-slate-950/95 p-5 shadow-2xl shadow-black/30 lg:flex">
+      <div class="flex items-center gap-3 rounded-2xl border border-primary/25 bg-primary/10 p-4">
+        <div class="grid h-12 w-12 place-items-center rounded-xl bg-primary text-white shadow-lg shadow-primary/30">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div>
+          <p class="text-xs font-extrabold uppercase tracking-[0.24em] text-primary">Luka Admin</p>
+          <h1 class="font-heading text-lg font-extrabold text-white">Sistema Admin</h1>
+        </div>
+      </div>
+
+      <nav class="mt-6 space-y-2 text-sm font-bold">
+        <a href="#usuarios-admin" class="flex items-center gap-3 rounded-xl bg-white/10 px-4 py-3 text-white transition hover:bg-primary/20 hover:text-primary">
+          <i class="fa-solid fa-users w-5 text-primary"></i>Usuarios
+        </a>
+        <a href="#pagos-admin" class="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-300 transition hover:bg-primary/20 hover:text-primary">
+          <i class="fa-solid fa-credit-card w-5"></i>Pagos y suscripciones
+        </a>
+        <a href="#servicios-admin" class="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-300 transition hover:bg-primary/20 hover:text-primary">
+          <i class="fa-solid fa-server w-5"></i>Microservicios
+        </a>
+        <a href="#seguridad-admin" class="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-300 transition hover:bg-primary/20 hover:text-primary">
+          <i class="fa-solid fa-user-lock w-5"></i>Seguridad
+        </a>
+        <a href="#auditoria-admin" class="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-300 transition hover:bg-primary/20 hover:text-primary">
+          <i class="fa-solid fa-clipboard-list w-5"></i>Auditoría
+        </a>
+        <a href="#perfil-admin" class="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-300 transition hover:bg-primary/20 hover:text-primary">
+          <i class="fa-solid fa-user-shield w-5"></i>Perfil administrador
+        </a>
+      </nav>
+    </aside>
+
+    <div class="min-w-0 flex-1">
+      <header class="sticky top-0 z-20 border-b border-white/10 bg-slate-950/90 px-4 py-4 backdrop-blur sm:px-6 lg:px-8">
+        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p class="text-xs font-extrabold uppercase tracking-[0.24em] text-primary">Panel administrativo</p>
+            <h2 class="font-heading text-2xl font-extrabold text-white">Dashboard Admin Luka</h2>
+            <p class="mt-1 text-sm text-slate-300">Vista operativa separada del dashboard de usuario.</p>
+          </div>
+          <div class="flex flex-wrap gap-3">
+            <button class="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-primary-dark">
+              <i class="fa-solid fa-rotate mr-2"></i>Actualizar
+            </button>
+            <button type="button" (click)="salir()" class="rounded-xl border border-danger/30 bg-danger/10 px-4 py-2 text-sm font-bold text-danger transition hover:-translate-y-0.5 hover:bg-danger hover:text-white">
+              <i class="fa-solid fa-right-from-bracket mr-2"></i>Salir
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <section class="relative isolate mx-auto max-w-[1800px] space-y-6 px-4 py-6 pb-8 sm:px-6 lg:px-8">
+        <div class="pointer-events-none absolute -right-20 -top-24 -z-10 h-72 w-72 rounded-full bg-primary/20 blur-3xl"></div>
+        <div class="pointer-events-none absolute left-20 top-80 -z-10 h-56 w-56 rounded-full bg-info/20 blur-3xl"></div>
+
+  <div *ngIf="cargando()" class="rounded-xl border border-border bg-card p-8 text-center text-text-secondary">
+    <i class="fa-solid fa-spinner fa-spin mr-2 text-primary"></i>Cargando tablero administrativo...
+  </div>
+
+  <ng-container *ngIf="data() as dashboard">
+    <section id="perfil-admin" class="rounded-xl border border-white/10 bg-slate-900/90 p-5 shadow-sm backdrop-blur">
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex items-center gap-4">
+          <div class="grid h-16 w-16 place-items-center rounded-2xl bg-primary text-2xl font-extrabold text-white shadow-lg shadow-primary/30">
+            {{ auth.usuario()?.nombreUsuario?.charAt(0)?.toUpperCase() ?? 'A' }}
+          </div>
+          <div>
+            <p class="text-xs font-extrabold uppercase tracking-[0.24em] text-primary">Perfil administrador</p>
+            <h2 class="font-heading text-2xl font-extrabold text-white">{{ auth.usuario()?.nombreUsuario ?? 'Administrador' }}</h2>
+            <p class="mt-1 text-sm text-slate-300">Rol operativo para gestión de usuarios, pagos, seguridad y auditoría.</p>
+          </div>
+        </div>
+        <div class="grid gap-3 text-sm sm:grid-cols-3">
+          <div class="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+            <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Estado</p>
+            <p class="mt-1 font-extrabold text-success">Activo</p>
+          </div>
+          <div class="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+            <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Permisos</p>
+            <p class="mt-1 font-extrabold text-white">Administrador</p>
+          </div>
+          <div class="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+            <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Sesión</p>
+            <p class="mt-1 font-extrabold text-info">Panel interno</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="rounded-xl border border-danger/20 bg-danger/10 p-4 text-sm text-text-primary">
+      <div class="flex items-start gap-3">
+        <i class="fa-solid fa-triangle-exclamation mt-1 text-danger"></i>
+        <div class="flex-1">
+          <strong class="text-danger">{{ dashboard.alertas.length }} alertas activas:</strong>
+          <span class="ml-1 text-text-secondary">rutas Gateway admin pendientes, IPs bloqueadas y usuarios bloqueados por OTP.</span>
+        </div>
+      </div>
+    </div>
+
+    <section id="usuarios-admin" class="space-y-4">
+      <div>
+        <h2 class="font-heading text-xl font-extrabold text-white">Usuarios</h2>
+        <p class="text-sm text-slate-300">Métricas generales de usuarios, altas y actividad administrativa.</p>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <app-admin-kpi-card *ngFor="let kpi of dashboard.kpis" [kpi]="kpi"></app-admin-kpi-card>
+      </div>
+    </section>
+
+    <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
+      <div class="space-y-4">
+        <article class="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 class="font-heading text-lg font-extrabold text-text-primary">Ingresos por mes</h2>
+              <p class="text-sm text-text-secondary">Bloque visual preparado para conectar pagos admin.</p>
+            </div>
+            <div class="inline-flex rounded-xl bg-surface-soft p-1 text-xs font-bold text-text-muted">
+              <button class="rounded-lg bg-card px-4 py-2 text-primary shadow-sm">6M</button>
+              <button class="px-4 py-2">1A</button>
+              <button class="px-4 py-2">Todo</button>
+            </div>
+          </div>
+
+          <div class="flex h-64 items-end gap-3 rounded-xl border border-border bg-surface-soft/60 p-4">
+            <div *ngFor="let item of dashboard.graficoIngresos" class="flex h-full flex-1 flex-col justify-end gap-2 text-center">
+              <div class="flex flex-1 items-end justify-center gap-1">
+                <div class="w-4 rounded-t-lg bg-primary/80 transition-all" [style.height]="alturaBarra(item.ingresos)"></div>
+                <div class="w-4 rounded-t-lg bg-info/70 transition-all" [style.height]="alturaBarra(item.egresos)"></div>
+              </div>
+              <span class="text-xs font-bold text-text-muted">{{ item.mes }}</span>
+            </div>
+          </div>
+        </article>
+
+        <article id="pagos-admin" class="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+          <div class="flex items-center justify-between border-b border-border p-5">
+            <div>
+              <h2 class="font-heading text-lg font-extrabold text-text-primary">Pagos y suscripciones</h2>
+              <p class="text-sm text-text-secondary">Base real: endpoints de pagos admin.</p>
+            </div>
+            <span class="text-xs font-extrabold uppercase tracking-widest text-primary">Ver historial</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[680px] text-left text-sm">
+              <thead class="bg-surface-soft text-[11px] uppercase tracking-[0.18em] text-text-muted">
+                <tr>
+                  <th class="px-5 py-3">ID</th>
+                  <th class="px-5 py-3">Usuario</th>
+                  <th class="px-5 py-3">Monto</th>
+                  <th class="px-5 py-3">Plan</th>
+                  <th class="px-5 py-3">Estado</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-border">
+                <tr *ngFor="let pago of dashboard.pagos" class="transition hover:bg-primary/5">
+                  <td class="px-5 py-4 font-mono text-xs text-text-muted">#{{ pago.id }}</td>
+                  <td class="px-5 py-4 font-bold text-text-primary">{{ pago.usuario }}</td>
+                  <td class="px-5 py-4 font-mono text-text-primary">{{ pago.monto }}</td>
+                  <td class="px-5 py-4 text-xs font-extrabold text-info">{{ pago.plan }}</td>
+                  <td class="px-5 py-4"><app-admin-status-badge [texto]="pago.estado" [tipo]="tipoPago(pago)"></app-admin-status-badge></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </div>
+
+      <aside id="servicios-admin" class="space-y-4">
+        <article class="rounded-xl border border-border bg-card shadow-sm">
+          <div class="border-b border-border p-5">
+            <h2 class="font-heading text-lg font-extrabold text-text-primary">Microservicios</h2>
+            <p class="text-sm text-text-secondary">Estado operativo esperado 8080-8088.</p>
+          </div>
+          <div class="divide-y divide-border">
+            <div *ngFor="let servicio of dashboard.servicios" class="flex items-center gap-3 p-4 transition hover:bg-primary/5">
+              <span class="h-2.5 w-2.5 rounded-full" [ngClass]="estadoServicioClases(servicio)"></span>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center justify-between gap-3">
+                  <p class="truncate text-sm font-extrabold text-text-primary">{{ servicio.nombre }}</p>
+                  <span class="font-mono text-xs text-text-muted">:{{ servicio.puerto }}</span>
+                </div>
+                <p class="truncate text-xs text-text-secondary">{{ servicio.descripcion }}</p>
+              </div>
+              <span class="font-mono text-xs font-bold" [class.text-success]="servicio.estado === 'healthy'" [class.text-warning]="servicio.estado === 'warning'" [class.text-danger]="servicio.estado === 'down'">
+                {{ servicio.latencia }}
+              </span>
+            </div>
+          </div>
+        </article>
+
+        <article id="auditoria-admin" class="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <h2 class="font-heading text-lg font-extrabold text-text-primary">Auditoría</h2>
+          <div class="mt-4 space-y-3">
+            <div *ngFor="let alerta of dashboard.alertas" class="rounded-xl border border-border bg-surface-soft p-4">
+              <div class="flex gap-3">
+                <i [class]="alerta.icono" class="mt-1 text-warning"></i>
+                <div>
+                  <p class="font-bold text-text-primary">{{ alerta.titulo }}</p>
+                  <p class="text-sm text-text-secondary">{{ alerta.descripcion }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </aside>
+    </div>
+
+    <div id="seguridad-admin" class="grid gap-4 xl:grid-cols-2">
+      <article class="rounded-xl border border-border bg-card shadow-sm">
+        <div class="flex items-center justify-between border-b border-border p-5">
+          <h2 class="font-heading text-lg font-extrabold text-text-primary">IPs en lista negra</h2>
+          <button class="text-xs font-extrabold uppercase tracking-widest text-primary">Bloquear IP</button>
+        </div>
+        <div class="divide-y divide-border">
+          <div *ngFor="let ip of dashboard.ipsBloqueadas" class="grid gap-2 p-4 text-sm sm:grid-cols-[1fr_1fr_auto_auto] sm:items-center">
+            <span class="font-mono font-bold text-danger">{{ ip.ip }}</span>
+            <span class="text-text-secondary">{{ ip.motivo }}</span>
+            <span class="font-mono text-xs text-text-muted">{{ ip.tiempo }}</span>
+            <button class="rounded-lg border border-border bg-surface-soft px-3 py-2 text-xs text-text-secondary hover:border-danger/40 hover:text-danger">
+              <i class="fa-solid fa-unlock"></i>
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <article class="rounded-xl border border-border bg-card shadow-sm">
+        <div class="flex items-center justify-between border-b border-border p-5">
+          <h2 class="font-heading text-lg font-extrabold text-text-primary">Usuarios bloqueados OTP</h2>
+          <button class="text-xs font-extrabold uppercase tracking-widest text-primary">Ver todos</button>
+        </div>
+        <div class="divide-y divide-border">
+          <div *ngFor="let otp of dashboard.otpsBloqueados" class="flex flex-wrap items-center gap-3 p-4 text-sm">
+            <span class="flex-1 font-bold text-text-primary">{{ otp.usuario }}</span>
+            <app-admin-status-badge [texto]="otp.estado" [tipo]="otp.estado === 'Bloqueado' ? 'error' : 'warn'"></app-admin-status-badge>
+            <span class="font-mono text-xs font-bold text-danger">{{ otp.intentos }} intentos</span>
+            <button class="rounded-lg border border-border bg-surface-soft px-3 py-2 text-xs text-text-secondary hover:border-success/40 hover:text-success">
+              <i class="fa-solid fa-check"></i>
+            </button>
+          </div>
+        </div>
+      </article>
+    </div>
+
+  </ng-container>
+      </section>
+    </div>
+  </div>
+</main>
