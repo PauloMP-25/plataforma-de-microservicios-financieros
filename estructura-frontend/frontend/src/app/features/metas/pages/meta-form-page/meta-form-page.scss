@@ -441,10 +441,10 @@
       position: absolute;
       left: 50%;
       bottom: 0;
-      width: 280px;
-      height: 280px;
+      width: 250%;
+      height: 250%;
       border-radius: 40%;
-      transform: translateX(-50%) translateY(62%);
+      transform: translateX(-50%) translateY(60%);
       animation: wave-spin 6s linear infinite;
       opacity: 0.85;
 
@@ -518,17 +518,17 @@
 /* ── Animaciones ── */
 @keyframes wave-spin {
   from {
-    transform: translateX(-50%) translateY(62%) rotate(0deg);
+    transform: translateX(-50%) translateY(60%) rotate(0deg);
   }
   to {
-    transform: translateX(-50%) translateY(62%) rotate(360deg);
+    transform: translateX(-50%) translateY(60%) rotate(360deg);
   }
 }
 @keyframes wave-spin-reverse {
   from {
-    transform: translateX(-50%) translateY(62%) rotate(0deg);
+    transform: translateX(-50%) translateY(60%) rotate(0deg);
   }
   to {
-    transform: translateX(-50%) translateY(62%) rotate(-360deg);
+    transform: translateX(-50%) translateY(60%) rotate(-360deg);
   }
 }
