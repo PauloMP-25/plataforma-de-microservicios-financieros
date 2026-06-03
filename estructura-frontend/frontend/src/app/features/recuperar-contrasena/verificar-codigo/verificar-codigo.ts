@@ -16,8 +16,6 @@ export class VerificarCodigo {
 
   /** ID del usuario para activación (opcional si es para recuperación) */
   @Input() usuarioId = '';
-  /** Correo del usuario para activar cuenta con OTP */
-  @Input() correoActivacion = '';
   /** Medio de verificación: 'correo' o 'celular' */
   @Input() medioVerificacion: 'correo' | 'celular' = 'correo';
   /** Destino al que se envió el código (email o teléfono) */
@@ -113,7 +111,7 @@ export class VerificarCodigo {
     if (this.usuarioId) {
       const telefono = this.medioVerificacion === 'celular' ? this.destinoVerificacion : undefined;
       
-      this.authService.activarCuenta(this.correoActivacion || this.destinoVerificacion, codigo, telefono).subscribe({
+      this.authService.activarCuenta(this.usuarioId, codigo, telefono).subscribe({
         next: (resp) => {
           this.cargando = false;
           if (resp.exito) {

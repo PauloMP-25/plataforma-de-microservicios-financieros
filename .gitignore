@@ -32,8 +32,6 @@ venv/
 ENV/
 .env.book.env
 .env
-.env.local
-*.env.local
 
 # --- ANGULAR (Estructura Frontend) ---
 **/node_modules/
@@ -43,7 +41,7 @@ ENV/
 .eslintcache
 angular.json
 package-lock.json
-dev-frontend.sh
+
 # ── DOCKER & INFRAESTRUCTURA ──────────────────────────────────────────────────
 
 # Ignorar archivos de secretos y configuración local
@@ -80,10 +78,6 @@ scratch/
 guias/
 pruebas/
 disenos/
-obsidian-vault/
 
 # --- ANGULAR ENVIRONMENTS ---
 **/src/app/enviroments/environment.prod.ts
-
-# --- LOCAL GUIDE ---
-07-COmandos.md
