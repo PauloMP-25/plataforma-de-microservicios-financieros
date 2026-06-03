@@ -18,10 +18,11 @@ import {
   SolicitudLogin, SolicitudRegistro,
   RespuestaAutenticacion, UsuarioSesion,
   SolicitudRecuperacion, SolicitudCambioPassword,
-  ResultadoApi
+  ResultadoApi, SolicitudReenvioOtp
 } from '../models/auth/user.model';
 
 const TOKEN_KEY = 'luka_token';
+const REFRESH_TOKEN_KEY = 'luka_refresh_token';
 const USUARIO_KEY = 'luka_usuario';
 
 @Injectable({ providedIn: 'root' })
@@ -53,10 +54,15 @@ export class AuthService {
   }
 
   // ── Activar cuenta ──
-  activarCuenta(usuarioId: string, codigoOtp: string, telefono?: string): Observable<ResultadoApi<string>> {
-    const params: any = { codigoOtp };
+  activarCuenta(correo: string, codigoOtp: string, telefono?: string): Observable<ResultadoApi<string>> {
+    const params: any = { correo, codigoOtp };
     if (telefono) params.telefono = telefono;
-    return this.http.put<ResultadoApi<string>>(`${this.base}/activar/${usuarioId}`, null, { params });
+    return this.http.put<ResultadoApi<string>>(`${this.base}/activar`, null, { params });
+  }
+
+  // ── Solicitar OTP de activación ──
+  solicitarOtpActivacion(solicitud: SolicitudReenvioOtp): Observable<ResultadoApi<string>> {
+    return this.http.post<ResultadoApi<string>>(`${this.base}/solicitar-otp`, solicitud);
   }
 
   // ── Recuperar password ──
@@ -80,9 +86,21 @@ export class AuthService {
     return this.http.post(`${this.base}/logout`, {})
   };
 
+  // ── Refrescar token ──
+  refrescarToken(): Observable<ResultadoApi<RespuestaAutenticacion>> {
+    const refreshToken = this.getRefreshToken();
+    return this.http.post<ResultadoApi<RespuestaAutenticacion>>(`${this.base}/refrescar-token`, { refreshToken })
+      .pipe(tap(resp => {
+        if (resp.exito) {
+          this.guardarSesion(resp.datos);
+        }
+      }));
+  }
+
   // ── Logout ──
   logout(): void {
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USUARIO_KEY);
     this._usuario.set(null);
     this.router.navigate(['/login']);
@@ -93,6 +111,10 @@ export class AuthService {
     return localStorage.getItem(TOKEN_KEY);
   }
 
+  getRefreshToken(): string | null {
+    return localStorage.getItem(REFRESH_TOKEN_KEY);
+  }
+
   // ── Privados ──
   private guardarSesion(resp: RespuestaAutenticacion): void {
     const sesion: UsuarioSesion = {
@@ -100,9 +122,12 @@ export class AuthService {
       nombreUsuario: resp.nombreUsuario,
       roles: resp.roles,
       token: resp.tokenAcceso,
-      expiraEn: resp.expiraEn
+      refreshToken: resp.refreshToken,
+      expiraEn: resp.expiraEn,
+      refreshExpiraEn: resp.refreshExpiraEn
     };
     localStorage.setItem(TOKEN_KEY, resp.tokenAcceso);
+    localStorage.setItem(REFRESH_TOKEN_KEY, resp.refreshToken);
     localStorage.setItem(USUARIO_KEY, JSON.stringify(sesion));
     this._usuario.set(sesion);
   }

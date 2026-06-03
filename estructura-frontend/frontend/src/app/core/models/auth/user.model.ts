@@ -18,11 +18,25 @@ export interface SolicitudRegistro {
 
 export interface RespuestaAutenticacion {
   tokenAcceso:   string;
+  refreshToken:  string;
   tipoToken:     string;   
   expiraEn:      number;
+  refreshExpiraEn: number;
   idUsuario:     string;   
   nombreUsuario: string;
   roles:         string[];
+}
+
+export interface SolicitudRefreshToken {
+  refreshToken: string;
+}
+
+export type TipoVerificacionOtp = 'EMAIL' | 'SMS' | 'WHATSAPP';
+
+export interface SolicitudReenvioOtp {
+  email: string;
+  telefono?: string;
+  tipo: TipoVerificacionOtp;
 }
 
 // ── Usuario en sesión ──
@@ -31,7 +45,9 @@ export interface UsuarioSesion {
   nombreUsuario: string;
   roles:        string[];
   token:        string;
+  refreshToken?: string;
   expiraEn:     number;
+  refreshExpiraEn?: number;
 }
 
 // ── Recuperación de contraseña ──
@@ -51,6 +67,7 @@ export interface ResultadoApi<T> {
   error?:  string;
   mensaje: string;
   datos:   T;
+  detalles?: string[];
   pagina?: any;
 }
 

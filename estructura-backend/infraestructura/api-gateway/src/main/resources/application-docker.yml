@@ -33,6 +33,8 @@ spring:
       httpclient:
         connect-timeout: 30000
         response-timeout: ${GATEWAY_RESPONSE_TIMEOUT:60s} # Consistente con local y parametrizable
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin RETAIN_FIRST
       discovery:
         locator:
           enabled: true
