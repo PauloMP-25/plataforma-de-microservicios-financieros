@@ -1,7 +1,7 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FinancieroService } from '../../../core/services/Financiero.service';
-import { Transacciones } from '../../../core/services/transacciones';
 import { ClienteMetasLimitesService } from '../../../core/services/cliente-metas-limites.service';
 import { AppEventBus } from '../../../core/services/app-event-bus.service';
 import { ResumenFinancieroDTO } from '../../../core/models/financiero/resumen.model';
@@ -21,6 +21,7 @@ export interface LogroFinanciero {
 
 export interface PuntoTendencia {
   mes: string;
+  anio: number;
   ingresos: number;
   gastos: number;
   ahorro: number;
@@ -42,9 +43,9 @@ export interface CategoriaComposicion {
 })
 export class PerfilFinanciero implements OnInit {
   private financieroService = inject(FinancieroService);
-  private transaccionesService = inject(Transacciones);
   private metasService = inject(ClienteMetasLimitesService);
   private eventBus = inject(AppEventBus);
+  private destroyRef = inject(DestroyRef);
 
   // ── Estado ──────────────────────────────────────────────────
   cargando = signal<boolean>(false);
@@ -53,11 +54,11 @@ export class PerfilFinanciero implements OnInit {
   metasCompletadas = signal<number>(0);
   metasTotal = signal<number>(0);
   filtroTendencia = signal<3 | 6 | 12>(6);
-  filtroComposicionMes = signal<number>(new Date().getMonth() + 1);
-  filtroComposicionAnio = signal<number>(new Date().getFullYear());
   tendencia = signal<PuntoTendencia[]>([]);
   mostrarTodosLogros = signal<boolean>(false);
-  vistaDona = signal<'ingresos' | 'gastos'>('ingresos');
+  
+  periodosDisponibles: { key: string; label: string; mes: number; anio: number }[] = [];
+  periodoSeleccionadoKey = signal<string>('');
 
   // ── KPIs Computados ─────────────────────────────────────────
   balanceNeto = computed(() => {
@@ -236,63 +237,7 @@ export class PerfilFinanciero implements OnInit {
     ];
   });
 
-  composicionActual = computed(() =>
-    this.vistaDona() === 'ingresos' ? this.composicionIngresos() : this.composicionGastos()
-  );
-
-  totalComposicion = computed(() =>
-    this.vistaDona() === 'ingresos'
-      ? this.resumenActual()?.totalIngresos ?? 0
-      : this.resumenActual()?.totalGastos ?? 0
-  );
-
-  // ── Tendencia SVG ────────────────────────────────────────────
-  tendenciaNormalizada = computed(() => {
-    const puntos = this.tendencia();
-    const h = 160;
-    const w = 480;
-    const mapY = (v: number) => {
-      const maxVal = puntos.length > 0 ? Math.max(...puntos.flatMap(p => [p.ingresos, p.gastos, p.ahorro]), 1) : 1;
-      return h - (v / maxVal) * (h - 20);
-    };
-    const mapX = (i: number) => {
-      const denom = puntos.length > 1 ? puntos.length - 1 : 1;
-      return (i / denom) * w;
-    };
-
-    if (puntos.length === 0) {
-      return {
-        ingresos: '',
-        gastos: '',
-        ahorro: '',
-        puntos: [],
-        maxVal: 1,
-        mapY,
-        mapX,
-        h,
-        w,
-      };
-    }
-
-    const toPath = (valores: number[]) =>
-      valores.map((v, i) => `${i === 0 ? 'M' : 'L'} ${mapX(i).toFixed(1)},${mapY(v).toFixed(1)}`).join(' ');
-
-    return {
-      ingresos: toPath(puntos.map(p => p.ingresos)),
-      gastos: toPath(puntos.map(p => p.gastos)),
-      ahorro: toPath(puntos.map(p => p.ahorro)),
-      puntos,
-      maxVal: Math.max(...puntos.flatMap(p => [p.ingresos, p.gastos, p.ahorro]), 1),
-      mapY,
-      mapX,
-      h,
-      w,
-    };
-  });
-
-  // ── Dona SVG ─────────────────────────────────────────────────
-  donaSegmentos = computed(() => {
-    const cats = this.composicionActual();
+  private calcularSegmentos(cats: CategoriaComposicion[]) {
     const radio = 60;
     const cx = 75;
     const cy = 75;
@@ -311,23 +256,103 @@ export class PerfilFinanciero implements OnInit {
       const d = `M ${cx},${cy} L ${x1.toFixed(2)},${y1.toFixed(2)} A ${radio},${radio} 0 ${largeArc},1 ${x2.toFixed(2)},${y2.toFixed(2)} Z`;
       return { ...cat, d };
     });
+  }
+
+  donaSegmentosIngresos = computed(() => this.calcularSegmentos(this.composicionIngresos()));
+  donaSegmentosGastos = computed(() => this.calcularSegmentos(this.composicionGastos()));
+
+  // ── Tendencia SVG ────────────────────────────────────────────
+  tendenciaNormalizada = computed(() => {
+    const puntos = this.tendencia();
+    const h = 160;
+    const w = 500;
+    const mapY = (v: number) => {
+      const maxVal = puntos.length > 0 ? Math.max(...puntos.flatMap(p => [p.ingresos, p.gastos]), 1) : 1;
+      return h - (v / maxVal) * (h - 20);
+    };
+    const mapX = (i: number) => {
+      const denom = puntos.length > 1 ? puntos.length - 1 : 1;
+      return 10 + (i / denom) * (w - 20);
+    };
+
+    if (puntos.length === 0) {
+      return {
+        ingresos: '',
+        gastos: '',
+        puntos: [],
+        maxVal: 1,
+        mapY,
+        mapX,
+        h,
+        w,
+      };
+    }
+
+    const toPath = (valores: number[]) =>
+      valores.map((v, i) => `${i === 0 ? 'M' : 'L'} ${mapX(i).toFixed(1)},${mapY(v).toFixed(1)}`).join(' ');
+
+    return {
+      ingresos: toPath(puntos.map(p => p.ingresos)),
+      gastos: toPath(puntos.map(p => p.gastos)),
+      puntos,
+      maxVal: Math.max(...puntos.flatMap(p => [p.ingresos, p.gastos]), 1),
+      mapY,
+      mapX,
+      h,
+      w,
+    };
   });
 
   readonly meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
   ngOnInit(): void {
+    this.generarPeriodos();
     this.cargarDatos();
-    this.eventBus.on('TRANSACTION_MODIFIED').subscribe(() => this.cargarDatos());
+    this.eventBus.on('TRANSACTION_MODIFIED')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.cargarDatos());
+  }
+
+  generarPeriodos(): void {
+    const nombresMeses = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    const hoy = new Date();
+    const lista = [];
+    for (let i = 0; i < 24; i++) {
+      const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+      const mes = d.getMonth() + 1;
+      const anio = d.getFullYear();
+      const label = `${nombresMeses[d.getMonth()]} ${anio}`;
+      const key = `${anio}-${mes}`;
+      lista.push({ key, label, mes, anio });
+    }
+    this.periodosDisponibles = lista;
+    const mayo2025 = lista.find(p => p.mes === 5 && p.anio === 2025);
+    if (mayo2025) {
+      this.periodoSeleccionadoKey.set(mayo2025.key);
+    } else if (lista.length > 0) {
+      this.periodoSeleccionadoKey.set(lista[0].key);
+    }
+  }
+
+  onPeriodoChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.periodoSeleccionadoKey.set(select.value);
+    this.cargarDatos();
   }
 
   cargarDatos(): void {
     this.cargando.set(true);
-    const hoy = new Date();
-    const mesAnterior = hoy.getMonth() === 0 ? 12 : hoy.getMonth();
-    const anioAnterior = hoy.getMonth() === 0 ? hoy.getFullYear() - 1 : hoy.getFullYear();
+    const periodo = this.periodosDisponibles.find(p => p.key === this.periodoSeleccionadoKey());
+    const mes = periodo ? periodo.mes : new Date().getMonth() + 1;
+    const anio = periodo ? periodo.anio : new Date().getFullYear();
+    const mesAnterior = mes === 1 ? 12 : mes - 1;
+    const anioAnterior = mes === 1 ? anio - 1 : anio;
 
     forkJoin({
-      actual: this.financieroService.getResumen(),
+      actual: this.financieroService.getResumen(mes, anio),
       anterior: this.financieroService.getResumen(mesAnterior, anioAnterior),
       metas: this.metasService.listarMetas(),
     }).subscribe({
@@ -341,32 +366,48 @@ export class PerfilFinanciero implements OnInit {
         this.cargando.set(false);
       },
       error: () => {
+        const factorMes = mes * 230;
+        const factorAnio = (anio % 10) * 120;
+        const totalIngresos = 3800 + (factorMes % 1500) + factorAnio;
+        const totalGastos = 2200 + (factorMes % 900) + (factorAnio % 400);
+        const balance = totalIngresos - totalGastos;
+        const cantIng = 2 + (mes % 3);
+        const cantGas = 10 + (mes % 8);
+
+        const factorMesAnt = mesAnterior * 230;
+        const factorAnioAnt = (anioAnterior % 10) * 120;
+        const totalIngresosAnt = 3800 + (factorMesAnt % 1500) + factorAnioAnt;
+        const totalGastosAnt = 2200 + (factorMesAnt % 900) + (factorAnioAnt % 400);
+        const balanceAnt = totalIngresosAnt - totalGastosAnt;
+        const cantIngAnt = 2 + (mesAnterior % 3);
+        const cantGasAnt = 10 + (mesAnterior % 8);
+
         this.resumenActual.set({
-          desde: new Date().toISOString(),
-          hasta: new Date().toISOString(),
-          totalIngresos: 6800,
-          totalGastos: 2950,
-          balance: 3850,
-          cantidadIngresos: 5,
-          cantidadGastos: 22,
-          totalTransacciones: 27,
-          promedioIngreso: 1360,
-          promedioGasto: 134.09,
+          desde: new Date(anio, mes - 1, 1).toISOString(),
+          hasta: new Date(anio, mes, 0).toISOString(),
+          totalIngresos,
+          totalGastos,
+          balance,
+          cantidadIngresos: cantIng,
+          cantidadGastos: cantGas,
+          totalTransacciones: cantIng + cantGas,
+          promedioIngreso: Math.round(totalIngresos / cantIng),
+          promedioGasto: Math.round(totalGastos / cantGas),
         });
         this.resumenAnterior.set({
-          desde: new Date().toISOString(),
-          hasta: new Date().toISOString(),
-          totalIngresos: 6050,
-          totalGastos: 2800,
-          balance: 3250,
-          cantidadIngresos: 4,
-          cantidadGastos: 18,
-          totalTransacciones: 22,
-          promedioIngreso: 1512.5,
-          promedioGasto: 155.56,
+          desde: new Date(anioAnterior, mesAnterior - 1, 1).toISOString(),
+          hasta: new Date(anioAnterior, mesAnterior, 0).toISOString(),
+          totalIngresos: totalIngresosAnt,
+          totalGastos: totalGastosAnt,
+          balance: balanceAnt,
+          cantidadIngresos: cantIngAnt,
+          cantidadGastos: cantGasAnt,
+          totalTransacciones: cantIngAnt + cantGasAnt,
+          promedioIngreso: Math.round(totalIngresosAnt / cantIngAnt),
+          promedioGasto: Math.round(totalGastosAnt / cantGasAnt),
         });
-        this.metasCompletadas.set(1);
-        this.metasTotal.set(6);
+        this.metasCompletadas.set(3);
+        this.metasTotal.set(8);
         this.generarTendencia(this.filtroTendencia());
         this.cargando.set(false);
       },
@@ -382,6 +423,7 @@ export class PerfilFinanciero implements OnInit {
       const gas = 2200 + Math.random() * 1500;
       puntos.push({
         mes: this.meses[fecha.getMonth()],
+        anio: fecha.getFullYear(),
         ingresos: Math.round(ing),
         gastos: Math.round(gas),
         ahorro: Math.round(Math.max(0, ing - gas)),
@@ -399,16 +441,7 @@ export class PerfilFinanciero implements OnInit {
     this.mostrarTodosLogros.update(v => !v);
   }
 
-  cambiarDona(vista: 'ingresos' | 'gastos'): void {
-    this.vistaDona.set(vista);
-  }
 
-  etiquetaIndice(score: number): string {
-    if (score >= 75) return 'Excelente';
-    if (score >= 50) return 'Saludable';
-    if (score >= 25) return 'Regular';
-    return 'Crítico';
-  }
 
   colorIndice(score: number): string {
     if (score >= 75) return 'success';
@@ -419,6 +452,10 @@ export class PerfilFinanciero implements OnInit {
 
   formatMoneda(valor: number): string {
     return valor.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  formatMonedaSinDecimales(valor: number): string {
+    return valor.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
   }
 
   private logrosMock(): LogroFinanciero[] {
