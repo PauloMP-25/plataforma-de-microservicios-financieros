@@ -204,6 +204,17 @@ $max-ancho: 1200px;
     font-family: 'Nunito', sans-serif;
     font-size: 0.9rem;
     font-weight: 700;
+
+    i {
+      transition: transform 0.25s ease;
+    }
+
+    &:hover {
+      transform: none;
+      i {
+        transform: rotate(20deg);
+      }
+    }
   }
 }
 
