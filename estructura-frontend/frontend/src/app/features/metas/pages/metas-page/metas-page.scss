@@ -402,6 +402,71 @@
         backdrop-filter: blur(8px);
       }
     }
+
+    .card-options-btn {
+      position: absolute;
+      top: 0.85rem;
+      right: 0.85rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.2s ease, color 0.2s ease;
+      z-index: 15;
+      color: var(--text-secondary);
+
+      &:hover {
+        background: var(--bg-surface-soft);
+        color: var(--text-primary);
+        transform: scale(1.05);
+
+        .tooltip {
+          opacity: 1;
+          visibility: visible;
+          transform: translateX(-50%) translateY(-2px);
+        }
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+
+      .tooltip {
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%) translateY(4px);
+        background: var(--text-primary);
+        color: var(--bg-card);
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: var(--radius-sm);
+        white-space: nowrap;
+        box-shadow: var(--shadow-sm);
+        z-index: 20;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+
+        &::after {
+          content: '';
+          position: absolute;
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          border-width: 4px;
+          border-style: solid;
+          border-color: var(--text-primary) transparent transparent transparent;
+        }
+      }
+    }
   }
 
   &__card-header {
@@ -670,19 +735,55 @@
   }
 
   /* ── Panel Lateral Derecho (Sidebar Detalle) ── */
+  &__sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    animation: fadeIn 0.3s ease-out;
+
+    @media (min-width: 1024px) {
+      display: contents;
+      position: static;
+      background: none;
+      backdrop-filter: none;
+      z-index: auto;
+      animation: none;
+    }
+  }
+
   &__sidebar {
     width: 100%;
+    max-width: 600px;
     background: var(--bg-card);
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    border: 1.5px solid var(--border-color);
+    border: none;
+    border-top: 1.5px solid var(--border-color);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.15);
+    animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 
     @media (min-width: 1024px) {
       width: 380px;
       position: sticky;
       top: calc(var(--header-height) + 1.5rem);
+      max-height: none;
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      animation: none;
     }
   }
 
@@ -1018,5 +1119,23 @@
   }
   to {
     transform: translateX(-50%) translateY(60%) rotate(-360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
   }
 }

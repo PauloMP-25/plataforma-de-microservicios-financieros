@@ -428,7 +428,10 @@ export class MetasPage implements OnInit {
   }
 
   // Selección para panel de detalle
-  seleccionarMeta(meta: any): void {
+  seleccionarMeta(meta: any, event?: Event): void {
+    if (event && window.innerWidth < 1024 && !(event.target as HTMLElement).closest('.card-options-btn')) {
+      return;
+    }
     this.metaSeleccionada.set(meta);
   }
 
