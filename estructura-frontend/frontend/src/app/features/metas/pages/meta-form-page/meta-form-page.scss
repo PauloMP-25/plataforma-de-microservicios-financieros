@@ -119,7 +119,7 @@
     gap: 2rem;
 
     @media (min-width: 768px) {
-      grid-template-columns: 1.25fr 0.75fr;
+      grid-template-columns: 1.15fr 0.85fr;
       align-items: stretch;
     }
 
@@ -143,13 +143,13 @@
     .form-col-right {
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: 1.25rem;
       align-items: center;
       justify-content: flex-start;
       background: var(--bg-surface-soft);
       border: 1.5px solid var(--border-color);
       border-radius: var(--radius-md);
-      padding: 1.75rem;
+      padding: 1.5rem 1.25rem;
       box-sizing: border-box;
 
       @media (min-width: 768px) {
@@ -303,6 +303,57 @@
     }
   }
 
+  /* ── Ficha Resumen de Meta ── */
+  &__summary-details {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin: 1.25rem 0 0.25rem 0;
+    padding-top: 1.25rem;
+    border-top: 1.5px solid var(--border-color);
+
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+
+      .label {
+        color: var(--text-secondary);
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        letter-spacing: 0.03em;
+      }
+
+      .value {
+        color: var(--text-primary);
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+
+        i {
+          font-size: 0.95rem;
+          color: var(--color-primary);
+        }
+      }
+
+      .font-mono {
+        font-family: var(--font-heading);
+        font-weight: 800;
+      }
+
+      .text-truncate {
+        max-width: 155px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
   /* ── Proyección: Ahorro Mensual Recomendado ── */
   &__recommended-savings {
     display: flex;
@@ -311,13 +362,26 @@
     justify-content: center;
     gap: 0.35rem;
     width: 100%;
-    padding: 1.15rem;
-    background: rgba(91, 106, 240, 0.06);
-    border: 1.5px dashed var(--color-primary);
+    padding: 1.25rem;
+    background: rgba(91, 106, 240, 0.08);
+    border: 1.5px solid rgba(91, 106, 240, 0.25);
     border-radius: var(--radius-md);
     margin-top: auto;
     text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    position: relative;
+    overflow: hidden;
     animation: fadeIn 0.4s ease;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3.5px;
+      background: linear-gradient(90deg, #8ea2ff, #5b6af0);
+    }
 
     .recommend-title {
       font-size: 0.72rem;
@@ -328,7 +392,7 @@
 
     .recommend-value {
       font-family: var(--font-heading);
-      font-size: 1.5rem;
+      font-size: 1.65rem;
       font-weight: 900;
       color: var(--color-primary);
     }
@@ -395,18 +459,18 @@
     transition: background 0.3s ease, box-shadow 0.3s ease;
 
     &--preview {
-      width: 130px;
-      height: 130px;
-      padding: 4px;
+      width: 180px;
+      height: 180px;
+      padding: 5px;
 
       .bubble {
         .bubble__category-icon {
-          font-size: 1.55rem;
-          margin-bottom: 2px;
+          font-size: 2.1rem;
+          margin-bottom: 4px;
         }
 
         .bubble__number {
-          font-size: 1.5rem;
+          font-size: 2.2rem;
         }
       }
     }

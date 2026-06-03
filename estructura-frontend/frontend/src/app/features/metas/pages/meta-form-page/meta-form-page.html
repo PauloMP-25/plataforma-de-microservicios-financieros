@@ -111,13 +111,15 @@
         <div class="form-col-right">
           <!-- Vista Previa de la Burbuja de Progreso -->
           <div class="meta-form-page__preview-box">
-            <h4>Vista previa del progreso</h4>
+            <h4>Vista previa de tu meta</h4>
             
+            @let formName = formulario.get('nombre')?.value || '';
             @let formObj = formulario.get('montoObjetivo')?.value || 0;
             @let formAct = formulario.get('montoActual')?.value || 0;
             @let formPct = formObj > 0 ? Math.min(100, (formAct / formObj) * 100) : 0;
             @let formCatSelected = formulario.get('categoria')?.value || 'Otros';
             @let formIconSelected = obtenerIconoCategoria(formCatSelected);
+            @let formDate = formulario.get('fechaLimite')?.value;
             
             <div class="bubble-container bubble-container--preview bubble-container--active"
                  [style.background]="'conic-gradient(' + obtenerColorProgreso(formPct) + ' ' + formPct + '%, var(--border-color) 0)'">
@@ -132,6 +134,34 @@
                 </div>
               </div>
             </div>
+
+            <!-- Ficha Resumen Interactiva -->
+            <div class="meta-form-page__summary-details">
+              <div class="summary-item">
+                <span class="label">Propósito</span>
+                <span class="value">
+                  <i [class]="formIconSelected"></i> {{ formCatSelected }}
+                </span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Nombre</span>
+                <span class="value text-truncate" [title]="formName || 'Sin nombre'">
+                  {{ formName || 'Sin nombre aún' }}
+                </span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Meta Objetivo</span>
+                <span class="value font-mono">S/ {{ formObj.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Ahorro Inicial</span>
+                <span class="value text-success font-mono">S/ {{ formAct.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Fecha Límite</span>
+                <span class="value">{{ formDate ? (formDate | date:'dd/MM/yyyy') : 'No establecida' }}</span>
+              </div>
+            </div>
           </div>
 
           <!-- Cuadro de Proyección: Ahorro Mensual Recomendado -->
@@ -139,7 +169,7 @@
           @if (sugerido.cuota > 0) {
             <div class="meta-form-page__recommended-savings anim-fade-up">
               <span class="recommend-title">AHORRO MENSUAL RECOMENDADO</span>
-              <span class="recommend-value">S/. {{ sugerido.cuota.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+              <span class="recommend-value">S/ {{ sugerido.cuota.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
               <span class="recommend-desc">Durante {{ sugerido.meses }} meses</span>
             </div>
           }
