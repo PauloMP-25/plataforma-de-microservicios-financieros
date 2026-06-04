@@ -45,7 +45,7 @@ cerrarModalPlanes(): void {
   readonly formNombres = signal('');
   readonly formApellidos = signal('');
   readonly formTelefono = signal('');
-  readonly formDireccion = signal('');
+  readonly formPais = signal('');
   readonly formCiudad = signal('');
 
   readonly coloresDisponibles = ['#6d4aff', '#4361ee', '#12b3a6', '#db2777', '#ea580c'];
@@ -85,7 +85,7 @@ cerrarModalPlanes(): void {
       this.formNombres.set(p.nombres ?? '');
       this.formApellidos.set(p.apellidos ?? '');
       this.formTelefono.set(p.telefono ?? '');
-      this.formDireccion.set(p.direccion ?? '');
+      this.formPais.set(p.pais ?? '');
       this.formCiudad.set(p.ciudad ?? '');
     }
     this.mensajePerfil.set('');
@@ -113,7 +113,7 @@ cerrarModalPlanes(): void {
       nombres: this.formNombres().trim(),
       apellidos: this.formApellidos().trim(),
       telefono: this.formTelefono().trim(),
-      direccion: this.formDireccion().trim(),
+      pais: this.formPais().trim(),
       ciudad: this.formCiudad().trim(),
     };
 
