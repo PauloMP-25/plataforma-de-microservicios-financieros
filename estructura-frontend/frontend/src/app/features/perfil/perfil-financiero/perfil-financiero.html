@@ -7,6 +7,9 @@
       <p>Tu resumen financiero personal y progreso general</p>
     </div>
     <div class="pf-page__header-actions">
+      <button class="pf-page__btn-config" type="button" (click)="abrirModalConfig()">
+        <i class="fa-solid fa-gear"></i> Configurar Perfil
+      </button>
       <div class="pf-page__date-select">
         <i class="fa-regular fa-calendar"></i>
         <select [value]="periodoSeleccionadoKey()" (change)="onPeriodoChange($event)">
@@ -377,4 +380,82 @@
   </footer>
 
   }
+
+  <!-- ── Modal Configuración Perfil Financiero ── -->
+  @if (modalConfigAbierto()) {
+    <div class="pf-modal-backdrop" (click)="cerrarModalConfig()">
+      <div class="pf-modal" (click)="$event.stopPropagation()">
+        <header class="pf-modal__header">
+          <h2>Configurar Perfil Financiero</h2>
+          <button type="button" class="pf-modal__close" (click)="cerrarModalConfig()"><i class="fa-solid fa-xmark"></i></button>
+        </header>
+
+        <div class="pf-modal__body">
+          <p class="pf-modal__subtitle">Esta información permite a Luka proporcionarte recomendaciones de IA y análisis personalizados.</p>
+
+          <div class="pf-form-group">
+            <label for="ocupacion">Ocupación / Profesión</label>
+            <div class="pf-input-wrapper" [class.has-error]="erroresConfig()['ocupacion']">
+              <i class="fa-solid fa-briefcase pf-input-icon"></i>
+              <input id="ocupacion" type="text" [ngModel]="formConfig().ocupacion" (input)="actualizarCampoConfig('ocupacion', $any($event.target).value)" placeholder="Ej. Ingeniero de Software, Médico..." />
+            </div>
+            @if (erroresConfig()['ocupacion']) { <small class="pf-error-text">{{ erroresConfig()['ocupacion'] }}</small> }
+          </div>
+
+          <div class="pf-form-group">
+            <label for="ingresoMensual">Ingreso Mensual Estimado (S/)</label>
+            <div class="pf-input-wrapper" [class.has-error]="erroresConfig()['ingresoMensual']">
+              <i class="fa-solid fa-money-bill pf-input-icon"></i>
+              <input id="ingresoMensual" type="number" [ngModel]="formConfig().ingresoMensual" (input)="actualizarCampoConfig('ingresoMensual', $any($event.target).valueAsNumber)" placeholder="Ej. 3500" min="0" />
+            </div>
+            @if (erroresConfig()['ingresoMensual']) { <small class="pf-error-text">{{ erroresConfig()['ingresoMensual'] }}</small> }
+          </div>
+
+          <div class="pf-form-group">
+            <label for="estiloVida">Estilo de Vida</label>
+            <div class="pf-input-wrapper" [class.has-error]="erroresConfig()['estiloVida']">
+              <i class="fa-solid fa-leaf pf-input-icon"></i>
+              <select id="estiloVida" [ngModel]="formConfig().estiloVida" (change)="actualizarCampoConfig('estiloVida', $any($event.target).value)">
+                <option value="Ahorrativo">Ahorrativo</option>
+                <option value="Conservador">Conservador</option>
+                <option value="Equilibrado">Equilibrado</option>
+                <option value="Dinamico">Dinámico</option>
+                <option value="Premium">Premium</option>
+              </select>
+            </div>
+            @if (erroresConfig()['estiloVida']) { <small class="pf-error-text">{{ erroresConfig()['estiloVida'] }}</small> }
+          </div>
+
+          <div class="pf-form-group">
+            <label for="tonoIA">Tono del Asistente IA</label>
+            <div class="pf-input-wrapper" [class.has-error]="erroresConfig()['tonoIA']">
+              <i class="fa-solid fa-robot pf-input-icon"></i>
+              <select id="tonoIA" [ngModel]="formConfig().tonoIA" (change)="actualizarCampoConfig('tonoIA', $any($event.target).value)">
+                <option value="Amigable">Amigable y Cercano</option>
+                <option value="Formal">Formal y Analítico</option>
+                <option value="Directo">Directo y al Grano</option>
+                <option value="Motivador">Motivador y Entusiasta</option>
+              </select>
+            </div>
+            @if (erroresConfig()['tonoIA']) { <small class="pf-error-text">{{ erroresConfig()['tonoIA'] }}</small> }
+          </div>
+
+          @if (mensajeConfig()) {
+            <div class="pf-alert" [class.pf-alert--success]="mensajeConfig()?.tipo === 'success'" [class.pf-alert--error]="mensajeConfig()?.tipo === 'error'">
+              <i class="fa-solid" [ngClass]="mensajeConfig()?.tipo === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'"></i>
+              <span>{{ mensajeConfig()?.texto }}</span>
+            </div>
+          }
+        </div>
+
+        <footer class="pf-modal__footer">
+          <button type="button" class="pf-btn pf-btn--secondary" (click)="cerrarModalConfig()">Cancelar</button>
+          <button type="button" class="pf-btn pf-btn--primary" [disabled]="configurando()" (click)="guardarConfiguracion()">
+            {{ configurando() ? 'Guardando...' : 'Guardar Perfil' }}
+          </button>
+        </footer>
+      </div>
+    </div>
+  }
+
 </section>
