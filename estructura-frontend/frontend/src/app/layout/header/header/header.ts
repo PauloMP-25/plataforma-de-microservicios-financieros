@@ -1,12 +1,14 @@
 
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule }                     from '@angular/common';
 import { RouterModule, Router,
          NavigationEnd, ActivatedRoute }    from '@angular/router';
 import { filter, map }                      from 'rxjs/operators';
+import { Subscription }                     from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { SidebarStateService } from '../../../core/services/sidebar-state.service';
 import { FinancieroService } from '../../../core/services/Financiero.service';
+import { AppEventBus } from '../../../core/services/app-event-bus.service';
 
 interface Breadcrumb  { label: string; route?: string; }
 
@@ -38,7 +40,7 @@ const FLOAT_MSGS = [
   templateUrl: './header.html',
   styleUrl:    './header.scss'
 })
-export class Header implements OnInit {
+export class Header implements OnInit, OnDestroy {
 
 
   pageTitle   = 'Resumen';
@@ -91,12 +93,15 @@ export class Header implements OnInit {
   floatBounce     = false;
   floatBadgeCount = 1;   // mock
 
+  private txSub?: Subscription;
+
   constructor(
     public  auth:   AuthService,
     public financiero: FinancieroService,
     public sidebarState: SidebarStateService,
     private router: Router,
-    private route:  ActivatedRoute
+    private route:  ActivatedRoute,
+    private eventBus: AppEventBus
   ) {}
 
   toggleSidebarMobile(): void {
@@ -105,6 +110,10 @@ export class Header implements OnInit {
 
   ngOnInit(): void {
     this.financiero.cargarResumen();
+
+    this.txSub = this.eventBus.on('TRANSACTION_MODIFIED').subscribe(() => {
+      this.financiero.cargarResumen();
+    });
 
     // Escucha cambios de ruta para actualizar título y breadcrumbs
     this.router.events
@@ -137,6 +146,10 @@ export class Header implements OnInit {
     setTimeout(() => {
       this.abrirMascota('¡Hola! 👋 ¿Ya registraste tus gastos de hoy?');
     }, 4000);
+  }
+
+  ngOnDestroy(): void {
+    this.txSub?.unsubscribe();
   }
 
   private actualizarBreadcrumbsModulo(queryParams: any): void {

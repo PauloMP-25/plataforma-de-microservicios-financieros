@@ -28,8 +28,8 @@ Este manual sirve como referencia técnica para mapear las rutas llamadas desde 
 | Método | Endpoint | Descripción | Body / Parámetros | FUNCIONAL |
 | :--- | :--- | :--- | :--- | :---: |
 | **POST** | `/api/v1/clientes/perfil/inicial` | Crea el perfil en blanco al registrarse | Query: `usuarioId={usuarioId}` | `[x]` |
-| **GET** | `/api/v1/clientes/perfil/{usuarioId}` | Consulta los datos personales del cliente | Ninguno | `[ ]` |
-| **PUT** | `/api/v1/clientes/perfil/{usuarioId}` | Actualiza datos personales del cliente | `SolicitudDatosPersonales` (JSON) | `[ ]` |
+| **GET** | `/api/v1/clientes/perfil/{usuarioId}` | Consulta los datos personales del cliente | Ninguno | `[x]` |
+| **PUT** | `/api/v1/clientes/perfil/{usuarioId}` | Actualiza datos personales del cliente | `SolicitudDatosPersonales` (JSON) | `[x]` |
 | **DELETE**| `/api/v1/clientes/perfil/{usuarioId}` | Elimina el perfil y cuenta | Ninguno | `[ ]` |
 | **GET** | `/api/v1/clientes/perfil-financiero/{usuarioId}` | Obtiene el perfil financiero actual | Ninguno | `[ ]` |
 | **PUT** | `/api/v1/clientes/perfil-financiero/{usuarioId}` | Actualiza el perfil financiero | `SolicitudPerfilFinanciero` (JSON) | `[ ]` |
@@ -62,14 +62,14 @@ Este manual sirve como referencia técnica para mapear las rutas llamadas desde 
 
 | Método | Endpoint | Descripción | Body / Parámetros | FUNCIONAL |
 | :--- | :--- | :--- | :--- | :---: |
-| **POST** | `/api/v1/financiero/transacciones` | Registra una transacción (ingreso/gasto) | `TransaccionRequestDTO` (JSON) | `[ ]` |
+| **POST** | `/api/v1/financiero/transacciones` | Registra una transacción (ingreso/gasto) | `TransaccionRequestDTO` (JSON) | `[x]` |
 | **POST** | `/api/v1/financiero/transacciones/lote`| Registra múltiples transacciones a la vez | `TransaccionRequestDTO[]` (JSON) | `[ ]` |
-| **GET** | `/api/v1/financiero/transacciones/historial`| Historial paginado con filtros de búsqueda | Params: `usuarioId`, `tipo`, `categoriaId`, `mes`, `anio`, `pagina`, `tamanio` | `[ ]` |
+| **GET** | `/api/v1/financiero/transacciones/historial`| Historial paginado con filtros de búsqueda | Params: `usuarioId`, `tipo`, `categoriaId`, `mes`, `anio`, `pagina`, `tamanio` | `[x]` |
 | **GET** | `/api/v1/financiero/transacciones/{id}`| Detalle de una transacción por ID | Ninguno | `[ ]` |
 | **PUT** | `/api/v1/financiero/transacciones/{id}`| Actualiza los datos de la transacción | `TransaccionRequestDTO` (JSON) | `[ ]` |
 | **DELETE**| `/api/v1/financiero/transacciones/{id}`| Elimina la transacción del sistema | Ninguno | `[ ]` |
-| **GET** | `/api/v1/financiero/transacciones/resumen`| Sumatorias de ingresos, egresos y balance | Params: `usuarioId`, `mes` (opcional), `anio` (opcional) | `[ ]` |
-| **GET** | `/api/v1/financiero/categorias` | Lista categorías para ingresos/gastos | Params: `tipo` ('INGRESO' / 'GASTO') | `[ ]` |
+| **GET** | `/api/v1/financiero/transacciones/resumen`| Sumatorias de ingresos, egresos y balance | Params: `usuarioId`, `mes` (opcional), `anio` (opcional) | `[x]` |
+| **GET** | `/api/v1/financiero/categorias` | Lista categorías para ingresos/gastos | Params: `tipo` ('INGRESO' / 'GASTO') | `[x]` |
 | **POST** | `/api/v1/financiero/categorias` | Crea una categoría personalizada | `CategoriaRequestDTO` (JSON) | `[ ]` |
 
 ---
@@ -81,7 +81,7 @@ Este manual sirve como referencia técnica para mapear las rutas llamadas desde 
 | Método | Endpoint | Descripción | Headers Requeridos | FUNCIONAL |
 | :--- | :--- | :--- | :--- | :---: |
 | **GET** | `/api/v1/dashboard/resumen` | Datos del perfil, KPIs acumulados y transacciones recientes | `X-Usuario-Id` (UUID), `Authorization` (Bearer token) | `[ ]` |
-| **GET** | `/api/v1/dashboard/graficos` | Puntos para gráfico de flujo de caja e ingresos/egresos | `X-Usuario-Id` (UUID), `Authorization` (Bearer token) | `[ ]` |
+| **GET** | `/api/v1/dashboard/graficos` | Puntos para gráfico de flujo de caja e ingresos/egresos | `X-Usuario-Id` (UUID), `Authorization` (Bearer token) | `[x]` |
 
 ---
 

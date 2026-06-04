@@ -79,19 +79,19 @@
             <div class="perfil-cliente__field-group">
               <label class="perfil-cliente__label">Fecha de nacimiento</label>
               <div class="perfil-cliente__birth-row">
-                <select class="perfil-cliente__input" [value]="fechaPartes().dia" (change)="actualizarFechaNacimientoParte('dia', $any($event.target).value)">
+                <select class="perfil-cliente__input" [ngModel]="fechaPartes().dia" (change)="actualizarFechaNacimientoParte('dia', $any($event.target).value)">
                   <option value="">Día</option>
                   @for (d of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]; track d) {
                     <option [value]="d">{{ d }}</option>
                   }
                 </select>
-                <select class="perfil-cliente__input" [value]="fechaPartes().mes" (change)="actualizarFechaNacimientoParte('mes', $any($event.target).value)">
+                <select class="perfil-cliente__input" [ngModel]="fechaPartes().mes" (change)="actualizarFechaNacimientoParte('mes', $any($event.target).value)">
                   <option value="">Mes</option>
                   @for (mes of mesesCatalogo; track mes.value) {
                     <option [value]="mes.value">{{ mes.label }}</option>
                   }
                 </select>
-                <select class="perfil-cliente__input" [value]="fechaPartes().anio" (change)="actualizarFechaNacimientoParte('anio', $any($event.target).value)">
+                <select class="perfil-cliente__input" [ngModel]="fechaPartes().anio" (change)="actualizarFechaNacimientoParte('anio', $any($event.target).value)">
                   <option value="">Año</option>
                   @for (anio of aniosNacimiento(); track anio) {
                     <option [value]="anio">{{ anio }}</option>
@@ -131,7 +131,7 @@
                       [class.flag--mx]="selectedPais().codigo === 'MX'"
                       [class.flag--us]="selectedPais().codigo === 'US'"
                     ></span>
-                    <select class="perfil-cliente__input" [value]="form().pais" (change)="actualizarCampo('pais', $any($event.target).value)">
+                    <select class="perfil-cliente__input" [ngModel]="form().pais" (change)="actualizarCampo('pais', $any($event.target).value)">
                       @for (pais of paisesCatalogo; track pais.codigo) {
                         <option [value]="pais.codigo">{{ pais.prefijo }} · {{ pais.nombre }}</option>
                       }
@@ -150,7 +150,7 @@
               <label class="perfil-cliente__label" for="pais">País</label>
               <div class="perfil-cliente__field perfil-cliente__field--full">
                 <span class="perfil-cliente__field-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a15 15 0 0 1 0 18"/><path d="M12 3a15 15 0 0 0 0 18"/></svg></span>
-                <select id="pais" class="perfil-cliente__input" [value]="form().pais" (change)="actualizarCampo('pais', $any($event.target).value)">
+                <select id="pais" class="perfil-cliente__input" [ngModel]="form().pais" (change)="actualizarCampo('pais', $any($event.target).value)">
                   @for (pais of paisesCatalogo; track pais.codigo) {
                     <option [value]="pais.codigo">{{ pais.nombre }}</option>
                   }
@@ -162,7 +162,7 @@
               <label class="perfil-cliente__label" for="ciudad">Ciudad</label>
               <div class="perfil-cliente__field perfil-cliente__field--full" [class.perfil-cliente__field--error]="errores().ciudad">
                 <span class="perfil-cliente__field-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 9h.01M9 12h.01M9 15h.01M15 9h.01M15 12h.01M15 15h.01"/></svg></span>
-                <select id="ciudad" class="perfil-cliente__input" [disabled]="!form().pais" [value]="form().ciudad" (change)="actualizarCampo('ciudad', $any($event.target).value)">
+                <select id="ciudad" class="perfil-cliente__input" [disabled]="!form().pais" [ngModel]="form().ciudad" (change)="actualizarCampo('ciudad', $any($event.target).value)">
                   <option value="">Selecciona una ciudad</option>
                   @for (ciudad of ciudadesDisponibles(); track ciudad) {
                     <option [value]="ciudad">{{ ciudad }}</option>
@@ -176,7 +176,7 @@
               <label class="perfil-cliente__label" for="genero">Género</label>
               <div class="perfil-cliente__field perfil-cliente__field--full" [class.perfil-cliente__field--error]="errores().genero">
                 <span class="perfil-cliente__field-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M12 12v9"/><path d="M8 18h8"/></svg></span>
-                <select id="genero" class="perfil-cliente__input" [value]="form().genero" (change)="actualizarCampo('genero', $any($event.target).value)">
+                <select id="genero" class="perfil-cliente__input" [ngModel]="form().genero" (change)="actualizarCampo('genero', $any($event.target).value)">
                   <option value="">Selecciona un género</option>
                   @for (genero of generosCatalogo; track genero) {
                     <option [value]="genero">{{ genero }}</option>

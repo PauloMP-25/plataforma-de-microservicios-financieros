@@ -21,12 +21,14 @@ export class IngresoFormComponent {
     etiquetas: [],
   };
   @Input() sugerencias: string[] = [];
+  @Input() clasificandoIa = false;
 
   @Output() modelChange = new EventEmitter<IngresoFormData>();
   @Output() guardar = new EventEmitter<void>();
   @Output() cancelar = new EventEmitter<void>();
   @Output() seleccionarSugerencia = new EventEmitter<string>();
   @Output() crearCategoriaManualmente = new EventEmitter<string>();
+  @Output() clasificarIa = new EventEmitter<void>();
 
   nuevaEtiqueta = '';
   nuevaCategoriaNombre = '';

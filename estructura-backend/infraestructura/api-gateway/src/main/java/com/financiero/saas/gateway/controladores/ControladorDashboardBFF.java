@@ -79,6 +79,7 @@ public class ControladorDashboardBFF {
      */
     @GetMapping("/resumen")
     public Mono<ResponseEntity<ResultadoApi<?>>> getResumen(
+            @RequestParam(required = false, defaultValue = "false") boolean refresh,
             @RequestHeader(value = "X-Usuario-Id", required = false) String usuarioId,
             @RequestHeader(value = HttpHeaders.AUTHORIZATION) String authHeader) {
 
@@ -107,10 +108,15 @@ public class ControladorDashboardBFF {
         String keyPerfil = "dashboard:perfil:" + finalUsuarioId;
         String keyResumen = "dashboard:resumen:" + finalUsuarioId;
 
-        log.info("[BFF-DASHBOARD] Petición unificada /resumen recibida para usuarioId={}", finalUsuarioId);
+        log.info("[BFF-DASHBOARD] Petición unificada /resumen recibida para usuarioId={}, refresh={}", finalUsuarioId, refresh);
+
+        Mono<Void> deleteCacheMono = refresh ? 
+            redisTemplate.delete(keyPerfil, keyResumen).then() : 
+            Mono.empty();
 
         // 1. Obtener perfil de usuario (Caché 24h o ms-cliente)
-        Mono<JsonNode> perfilMono = redisTemplate.opsForValue().get(keyPerfil)
+        Mono<JsonNode> perfilMono = deleteCacheMono.then(Mono.defer(() -> 
+            redisTemplate.opsForValue().get(keyPerfil)
                 .map(this::parseJsonSilently)
                 .doOnNext(node -> log.debug("[BFF-DASHBOARD] Cache HIT para perfil de usuarioId={}", finalUsuarioId))
                 .switchIfEmpty(Mono.defer(() -> {
@@ -124,16 +130,17 @@ public class ControladorDashboardBFF {
                                 }
                                 return Mono.just(node);
                             });
-                }));
+                }))));
 
         // 2. Obtener resumen KPIs y recientes (Caché 15m o ms-ia que escribe en caché)
-        Mono<JsonNode> kpiMono = redisTemplate.opsForValue().get(keyResumen)
+        Mono<JsonNode> kpiMono = deleteCacheMono.then(Mono.defer(() ->
+            redisTemplate.opsForValue().get(keyResumen)
                 .map(this::parseJsonSilently)
                 .doOnNext(node -> log.debug("[BFF-DASHBOARD] Cache HIT para KPIs de usuarioId={}", finalUsuarioId))
                 .switchIfEmpty(Mono.defer(() -> {
                     log.debug("[BFF-DASHBOARD] Cache MISS para KPIs de usuarioId={}. Consultando ms-ia...", finalUsuarioId);
                     return fetchKPIsFromService(finalUsuarioId, authHeader);
-                }));
+                }))));
 
         // 3. Unificar reactivamente con Mono.zip
         return Mono.zip(perfilMono, kpiMono)
@@ -192,6 +199,7 @@ public class ControladorDashboardBFF {
      */
     @GetMapping("/graficos")
     public Mono<ResponseEntity<ResultadoApi<?>>> getGraficos(
+            @RequestParam(required = false, defaultValue = "false") boolean refresh,
             @RequestHeader(value = "X-Usuario-Id", required = false) String usuarioId,
             @RequestHeader(value = HttpHeaders.AUTHORIZATION) String authHeader) {
 
@@ -219,9 +227,14 @@ public class ControladorDashboardBFF {
         final String finalUsuarioId = resolvedUsuarioId;
         String keyGraficos = "dashboard:graficos:" + finalUsuarioId;
 
-        log.info("[BFF-DASHBOARD] Petición /graficos recibida para usuarioId={}", finalUsuarioId);
+        log.info("[BFF-DASHBOARD] Petición /graficos recibida para usuarioId={}, refresh={}", finalUsuarioId, refresh);
 
-        return redisTemplate.opsForValue().get(keyGraficos)
+        Mono<Void> deleteCacheMono = refresh ? 
+            redisTemplate.delete(keyGraficos).then() : 
+            Mono.empty();
+
+        return deleteCacheMono.then(Mono.defer(() -> 
+            redisTemplate.opsForValue().get(keyGraficos)
                 .map(this::parseJsonSilently)
                 .doOnNext(node -> log.debug("[BFF-DASHBOARD] Cache HIT para gráficos de usuarioId={}", finalUsuarioId))
                 .map(node -> {
@@ -257,7 +270,7 @@ public class ControladorDashboardBFF {
                                 ResponseEntity<ResultadoApi<?>> responseEntity = ResponseEntity.ok(body);
                                 return responseEntity;
                             });
-                }))
+                })))
                 .onErrorResume(error -> {
                     log.error("[BFF-DASHBOARD] Error al obtener gráficos para usuarioId={}: {}", finalUsuarioId, error.getMessage());
                     ResultadoApi<?> errBody = ResultadoApi.falla(
