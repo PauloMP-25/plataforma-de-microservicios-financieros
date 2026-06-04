@@ -31,6 +31,11 @@ export class MetasPage implements OnInit {
   errorMensaje = signal<string>('');
   exitoMensaje = signal<string>('');
 
+  // Paginación
+  paginaActual = signal<number>(0);
+  totalPaginas = signal<number>(1);
+  tamanioPagina = 10;
+
   // Modales y Paneles
   metaSeleccionada = signal<any | null>(null);
   modalConfirmarCompletar = signal<any | null>(null);
@@ -56,80 +61,10 @@ export class MetasPage implements OnInit {
     { id: 'Otros', nombre: 'Otros', icono: 'fa-solid fa-bullseye' }
   ];
 
-  // Mocks por defecto si el backend está vacío o falla (coincidente con las imágenes)
-  readonly mockMetasIniciales: RespuestaMetaAhorro[] = [
-    {
-      id: 'mock-meta-1',
-      nombre: '[Viaje] Viaje a Cancún',
-      montoObjetivo: 2000,
-      montoActual: 2000,
-      porcentajeProgreso: 100,
-      fechaLimite: '2026-11-29',
-      completada: true,
-      fechaCreacion: '2025-01-15',
-      fechaActualizacion: '2026-11-29'
-    },
-    {
-      id: 'mock-meta-2',
-      nombre: '[Tecnología] Laptop',
-      montoObjetivo: 300,
-      montoActual: 300,
-      porcentajeProgreso: 100,
-      fechaLimite: '2025-08-15',
-      completada: true,
-      fechaCreacion: '2024-10-10',
-      fechaActualizacion: '2025-08-15'
-    },
-    {
-      id: 'mock-meta-3',
-      nombre: '[Auto] Auto',
-      montoObjetivo: 5000,
-      montoActual: 1700,
-      porcentajeProgreso: 34,
-      fechaLimite: '2026-03-10',
-      completada: false,
-      fechaCreacion: '2025-02-01',
-      fechaActualizacion: '2025-02-01'
-    },
-    {
-      id: 'mock-meta-4',
-      nombre: '[Estudios] Estudios',
-      montoObjetivo: 5100,
-      montoActual: 1700,
-      porcentajeProgreso: 33,
-      fechaLimite: '2027-04-20',
-      completada: false,
-      fechaCreacion: '2025-01-20',
-      fechaActualizacion: '2025-01-20'
-    },
-    {
-      id: 'mock-meta-5',
-      nombre: '[Tecnología] Nuevo Celular',
-      montoObjetivo: 1500,
-      montoActual: 850,
-      porcentajeProgreso: 57,
-      fechaLimite: '2026-05-05',
-      completada: false,
-      fechaCreacion: '2025-03-01',
-      fechaActualizacion: '2025-03-01'
-    },
-    {
-      id: 'mock-meta-6',
-      nombre: '[Otros] Muebles',
-      montoObjetivo: 2500,
-      montoActual: 250,
-      porcentajeProgreso: 10,
-      fechaLimite: '2025-09-20',
-      completada: false,
-      fechaCreacion: '2024-12-01',
-      fechaActualizacion: '2024-12-01'
-    }
-  ];
-
   // Ahorro disponible cargado desde FinancieroService (balance general)
   ahorroDisponible = computed(() => {
     const resumen = this.financieroService.resumen();
-    return resumen ? resumen.balance : 1700; // fallback a 1700 si no ha cargado
+    return resumen ? resumen.balance : 0;
   });
 
   // Cálculo secuencial/híbrido del avance de las metas activas usando el saldo restante
@@ -151,10 +86,10 @@ export class MetasPage implements OnInit {
 
     const activasCalculadas = activasOrdenadas.map(meta => {
       const datosVisuales = this.obtenerCategoriaYNombre(meta.nombre);
-      const faltante = Math.max(0, meta.montoObjetivo - meta.montoActual);
+      const faltante = meta.montoObjetivo;
       const adicionalAplicado = Math.min(faltante, saldoRestante);
 
-      const montoAplicado = meta.montoActual + adicionalAplicado;
+      const montoAplicado = adicionalAplicado;
       saldoRestante = Math.max(0, saldoRestante - adicionalAplicado);
 
       const porcentaje = meta.montoObjetivo > 0 
@@ -167,7 +102,7 @@ export class MetasPage implements OnInit {
         categoriaVisual: datosVisuales.categoria,
         iconoVisual: datosVisuales.icono,
         montoAplicado: montoAplicado,
-        porcentajeProgreso: porcentaje,
+        porcentajeProgreso: Math.min(100, porcentaje),
         puedeCompletar: porcentaje >= 100
       };
     });
@@ -263,23 +198,14 @@ export class MetasPage implements OnInit {
     this.cargando.set(true);
     this.errorMensaje.set('');
 
-    this.metasService.listarMetas().subscribe({
-      next: (data) => {
-        if (!data || data.length === 0 || data[0].id === 'mock-meta-1') {
-          // Fallback a localStorage o mocks iniciales
-          const localMetasStr = localStorage.getItem('luka_mock_metas');
-          if (localMetasStr) {
-            try {
-              this.metas.set(JSON.parse(localMetasStr));
-            } catch (e) {
-              this.metas.set(this.mockMetasIniciales);
-            }
-          } else {
-            this.metas.set(this.mockMetasIniciales);
-            localStorage.setItem('luka_mock_metas', JSON.stringify(this.mockMetasIniciales));
-          }
+    this.metasService.listarMetas(this.paginaActual(), this.tamanioPagina).subscribe({
+      next: (pagina) => {
+        if (pagina && pagina.content) {
+          this.metas.set(pagina.content);
+          this.totalPaginas.set(pagina.totalPages || 1);
         } else {
-          this.metas.set(data);
+          this.metas.set([]);
+          this.totalPaginas.set(1);
         }
         this.cargando.set(false);
 
@@ -291,21 +217,27 @@ export class MetasPage implements OnInit {
         }
       },
       error: (err) => {
-        console.error('Error al recuperar metas de la API, usando mocks iniciales:', err);
-        const localMetasStr = localStorage.getItem('luka_mock_metas');
-        if (localMetasStr) {
-          try {
-            this.metas.set(JSON.parse(localMetasStr));
-          } catch (e) {
-            this.metas.set(this.mockMetasIniciales);
-          }
-        } else {
-          this.metas.set(this.mockMetasIniciales);
-          localStorage.setItem('luka_mock_metas', JSON.stringify(this.mockMetasIniciales));
-        }
+        console.error('Error al recuperar metas de la API:', err);
+        this.errorMensaje.set('Hubo un error al cargar tus metas. Por favor, intenta de nuevo.');
+        this.metas.set([]);
+        this.totalPaginas.set(1);
         this.cargando.set(false);
       }
     });
+  }
+
+  paginaAnterior(): void {
+    if (this.paginaActual() > 0) {
+      this.paginaActual.update(p => p - 1);
+      this.cargarMetas();
+    }
+  }
+
+  paginaSiguiente(): void {
+    if (this.paginaActual() < this.totalPaginas() - 1) {
+      this.paginaActual.update(p => p + 1);
+      this.cargarMetas();
+    }
   }
 
   // Descomponer prefijo del nombre

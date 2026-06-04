@@ -12,7 +12,7 @@ interface Transaccion {
   id: string;
   fechaTransaccion: string;
   descripcion: string;
-  categoriaNombre: string;
+  categoria: string;
   tipo: 'INGRESO' | 'GASTO';
   monto: number;
   estado: string;
@@ -65,7 +65,7 @@ export class DashboardPage implements OnInit, OnDestroy {
     if (query) {
       txs = txs.filter(t => {
         const coincideDesc = t.descripcion?.toLowerCase().includes(query);
-        const coincideCat = t.categoriaNombre?.toLowerCase().includes(query);
+        const coincideCat = t.categoria?.toLowerCase().includes(query);
         return coincideDesc || coincideCat;
       });
     }

@@ -188,6 +188,7 @@ body {
   border: 1.5px solid var(--border-color);
   box-shadow: var(--shadow-sm);
   transition: var(--transition);
+  will-change: transform, box-shadow;
 
   &:hover {
     box-shadow: var(--shadow-md);
@@ -222,7 +223,10 @@ body {
   100% { background-position:  200% 0; }
 }
 
-.anim-fade-up   { animation: fadeInUp 0.5s ease both; }
+.anim-fade-up   { 
+  animation: fadeInUp 0.5s ease both;
+  will-change: transform, opacity;
+}
 .anim-float     { animation: float 3s ease-in-out infinite; }
 .anim-pulse     { animation: pulse-soft 2s ease-in-out infinite; }
 

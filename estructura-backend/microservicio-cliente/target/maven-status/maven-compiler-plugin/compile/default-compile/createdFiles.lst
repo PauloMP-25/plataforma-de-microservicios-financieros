@@ -43,7 +43,6 @@ com/cliente/presentacion/controladores/ControladorPerfil.class
 com/cliente/infraestructura/configuracion/PropiedadesJwt.class
 com/cliente/presentacion/controladores/ControladorInterno.class
 com/cliente/aplicacion/dtos/solicitudes/SolicitudDatosPersonales.class
-com/cliente/dominio/especificaciones/MetaAhorroSpecs.class
 com/cliente/dominio/repositorios/MetaAhorroRepositorio.class
 com/cliente/aplicacion/excepciones/ClienteNoEncontradoException.class
 com/cliente/aplicacion/servicios/ServicioLimiteGastoImpl.class

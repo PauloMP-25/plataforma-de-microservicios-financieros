@@ -76,7 +76,7 @@ export class NuevoIngresoPage {
     const map = new Map<string, number>();
     let total = 0;
     for (const t of transacciones) {
-      const cat = t.categoriaNombre || 'Otros';
+      const cat = t.categoria || 'Otros';
       const m = t.monto || 0;
       map.set(cat, (map.get(cat) ?? 0) + m);
       total += m;
@@ -97,7 +97,7 @@ export class NuevoIngresoPage {
     return transacciones.slice(0, 5).map(t => {
       const fecha = new Date(t.fechaTransaccion);
       return {
-        categoria: t.categoriaNombre || 'Otros',
+        categoria: t.categoria || 'Otros',
         descripcion: t.descripcion || t.notas || 'Ingreso registrado',
         monto: t.monto || 0,
         fecha: fecha.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })

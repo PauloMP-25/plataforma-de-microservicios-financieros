@@ -16,7 +16,6 @@
 /media/paulo/datos/proyecto-desarrollo-web-integrado/estructura-backend/microservicio-cliente/src/main/java/com/cliente/dominio/repositorios/LimiteGastoRepositorio.java
 /media/paulo/datos/proyecto-desarrollo-web-integrado/estructura-backend/microservicio-cliente/src/main/java/com/cliente/infraestructura/mensajeria/PublicadorAuditoria.java
 /media/paulo/datos/proyecto-desarrollo-web-integrado/estructura-backend/microservicio-cliente/src/main/java/com/cliente/aplicacion/dtos/respuestas/RespuestaLimiteGasto.java
-/media/paulo/datos/proyecto-desarrollo-web-integrado/estructura-backend/microservicio-cliente/src/main/java/com/cliente/dominio/especificaciones/MetaAhorroSpecs.java
 /media/paulo/datos/proyecto-desarrollo-web-integrado/estructura-backend/microservicio-cliente/src/main/java/com/cliente/MicroservicioClienteApplication.java
 /media/paulo/datos/proyecto-desarrollo-web-integrado/estructura-backend/microservicio-cliente/src/main/java/com/cliente/aplicacion/servicios/ServicioLimiteGastoImpl.java
 /media/paulo/datos/proyecto-desarrollo-web-integrado/estructura-backend/microservicio-cliente/src/main/java/com/cliente/presentacion/controladores/ControladorMetaAhorro.java

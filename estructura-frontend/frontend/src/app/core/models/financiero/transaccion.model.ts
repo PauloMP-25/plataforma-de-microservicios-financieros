@@ -10,7 +10,7 @@ export interface TransaccionDTO {
   monto:             number;          
   tipo:              TipoMovimiento;  
   categoriaId:       string;          
-  categoriaNombre:   string;          
+  categoria:         string;          
   categoriaIcono:    string;          
   fechaTransaccion:  string;          
   metodoPago:        MetodoPago;

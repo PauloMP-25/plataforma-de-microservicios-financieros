@@ -6,6 +6,9 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Pageable;
+import com.libreria.comun.respuesta.Paginacion;
+
 /**
  * Interfaz de puerto para la gestión de metas de ahorro.
  *
@@ -16,17 +19,17 @@ public interface ServicioMetaAhorro {
 
     RespuestaMetaAhorro crear(UUID usuarioIdToken, SolicitudMetaAhorro solicitud, String ipOrigen);
 
+    RespuestaMetaAhorro actualizarMeta(UUID metaId, UUID usuarioIdToken, SolicitudMetaAhorro solicitud, String ipOrigen);
+
     RespuestaMetaAhorro actualizarProgreso(UUID metaId, UUID usuarioIdToken, BigDecimal nuevoMontoActual, String ipOrigen);
 
-    List<RespuestaMetaAhorro> listar(UUID usuarioIdToken);
+    Paginacion<RespuestaMetaAhorro> listar(UUID usuarioIdToken, Pageable pageable);
 
-    List<RespuestaMetaAhorro> listarActivas(UUID usuarioIdToken);
+    Paginacion<RespuestaMetaAhorro> listarActivas(UUID usuarioIdToken, Pageable pageable);
 
     RespuestaMetaAhorro consultar(UUID metaId, UUID usuarioIdToken);
 
     void eliminar(UUID metaId, UUID usuarioIdToken, String ipOrigen);
-
-    List<RespuestaMetaAhorro> buscar(UUID usuarioIdToken, Boolean completada, java.time.LocalDate venceAntes, Double progresoBajo);
 
     /**
      * Consulta interna del listado de metas sin validación de JWT (uso para Facade).

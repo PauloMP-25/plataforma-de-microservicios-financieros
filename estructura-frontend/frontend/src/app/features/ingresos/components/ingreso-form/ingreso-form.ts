@@ -32,6 +32,7 @@ export class IngresoFormComponent {
 
   nuevaEtiqueta = '';
   nuevaCategoriaNombre = '';
+  nuevaCategoria = '';
 
   // Getters to inject the custom option safely
   get categoriasConCrear(): OptionItem[] {
@@ -46,7 +47,7 @@ export class IngresoFormComponent {
   }
 
   confirmarCrearCategoria(): void {
-    const nombre = (this.nuevaCategoriaNombre || '').trim();
+    const nombre = (this.nuevaCategoria || '').trim();
     if (!nombre) return;
     
     this.crearCategoriaManualmente.emit(nombre);

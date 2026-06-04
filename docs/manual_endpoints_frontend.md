@@ -45,12 +45,13 @@ Este manual sirve como referencia técnica para mapear las rutas llamadas desde 
 
 | Método     | Endpoint                                   | Descripción                                   | Body / Parámetros              | FUNCIONAL |
 |:---------- |:------------------------------------------ |:--------------------------------------------- |:------------------------------ |:---------:|
-| **POST**   | `/api/v1/clientes/metas`                   | Crea una nueva meta de ahorro                 | `SolicitudMetaAhorro` (JSON)   | `[ ]`     |
-| **GET**    | `/api/v1/clientes/metas`                   | Lista todas las metas de ahorro               | Ninguno (Mock fallback activo) | `[ ]`     |
-| **GET**    | `/api/v1/clientes/metas/activas`           | Lista las metas activas vigentes              | Ninguno                        | `[ ]`     |
+| **POST**   | `/api/v1/clientes/metas`                   | Crea una nueva meta de ahorro                 | `SolicitudMetaAhorro` (JSON)   | `[x]`     |
+| **PUT**    | `/api/v1/clientes/metas/{metaId}`          | Actualiza datos de la meta de ahorro          | `SolicitudMetaAhorro` (JSON)   | `[x]`     |
+| **GET**    | `/api/v1/clientes/metas`                   | Lista todas las metas de ahorro               | Parámetros: `page`, `size`     | `[x]`     |
+| **GET**    | `/api/v1/clientes/metas/activas`           | Lista las metas activas vigentes              | Parámetros: `page`, `size`     | `[x]`     |
 | **GET**    | `/api/v1/clientes/metas/{metaId}`          | Detalle de una meta específica                | Ninguno                        | `[ ]`     |
 | **PATCH**  | `/api/v1/clientes/metas/{metaId}/progreso` | Actualiza el ahorro actual de la meta         | `{ montoActual }` (JSON)       | `[ ]`     |
-| **DELETE** | `/api/v1/clientes/metas/{metaId}`          | Elimina la meta de ahorro                     | Ninguno                        | `[ ]`     |
+| **DELETE** | `/api/v1/clientes/metas/{metaId}`          | Elimina la meta de ahorro (soft delete)       | Ninguno                        | `[x]`     |
 | **POST**   | `/api/v1/clientes/limites`                 | Crea un límite de gasto mensual (presupuesto) | `SolicitudLimiteGasto` (JSON)  | `[ ]`     |
 | **GET**    | `/api/v1/clientes/limites/activo`          | Obtiene el límite activo del mes              | Ninguno                        | `[ ]`     |
 | **PATCH**  | `/api/v1/clientes/limites`                 | Modifica el límite activo actual              | `SolicitudLimiteGasto` (JSON)  | `[ ]`     |

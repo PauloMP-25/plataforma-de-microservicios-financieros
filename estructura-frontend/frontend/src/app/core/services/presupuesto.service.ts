@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../enviroments/environment';
 import { PresupuestoDTO, SolicitudPresupuesto } from '../models/financiero/presupuesto.model';
+import { ResultadoApi } from '../models/auth/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class PresupuestoService {
@@ -12,40 +13,34 @@ export class PresupuestoService {
   constructor(private http: HttpClient) {}
 
   crear(payload: SolicitudPresupuesto): Observable<PresupuestoDTO> {
-    return this.http.post<PresupuestoDTO>(this.base, payload);
+    return this.http.post<ResultadoApi<PresupuestoDTO>>(this.base, payload).pipe(
+      map(res => res.datos)
+    );
   }
 
   obtenerActivo(): Observable<PresupuestoDTO> {
-    return this.http.get<PresupuestoDTO>(`${this.base}/activo`).pipe(
-      catchError(() => {
-        // Mock si falla la conexión
-        const hoy = new Date();
-        return of({
-          id: 'mock-presupuesto-1',
-          usuarioId: 'usuario-1',
-          montoLimite: 3500,
-          porcentajeAlerta: 80,
-          fechaInicio: new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString(),
-          fechaFin: new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).toISOString(),
-          activo: true,
-          fechaCreacion: new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString()
-        } as PresupuestoDTO);
-      })
+    return this.http.get<ResultadoApi<PresupuestoDTO>>(`${this.base}/activo`).pipe(
+      map(res => res.datos)
     );
   }
 
   actualizar(payload: SolicitudPresupuesto): Observable<PresupuestoDTO> {
-    return this.http.patch<PresupuestoDTO>(this.base, payload);
+    return this.http.patch<ResultadoApi<PresupuestoDTO>>(this.base, payload).pipe(
+      map(res => res.datos)
+    );
   }
 
   listarHistorial(): Observable<PresupuestoDTO[]> {
-    return this.http.get<PresupuestoDTO[]>(this.base).pipe(
+    return this.http.get<ResultadoApi<PresupuestoDTO[]>>(this.base).pipe(
+      map(res => res.datos),
       catchError(() => of([]))
     );
   }
 
   eliminarActivo(): Observable<void> {
-    return this.http.delete<void>(this.base);
+    return this.http.delete<ResultadoApi<void>>(this.base).pipe(
+      map(() => undefined)
+    );
   }
 }
 

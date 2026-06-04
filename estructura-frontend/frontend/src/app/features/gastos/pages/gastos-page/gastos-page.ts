@@ -291,7 +291,7 @@ export class GastosPage {
 
           return data.map((g) => {
             const fecha = new Date(g.fechaTransaccion);
-            const categoria = g.categoriaNombre || 'Otros';
+            const categoria = g.categoria || 'Otros';
             const { nombre, detalle } = this.parseNotas(g.notas, categoria);
 
             return {
