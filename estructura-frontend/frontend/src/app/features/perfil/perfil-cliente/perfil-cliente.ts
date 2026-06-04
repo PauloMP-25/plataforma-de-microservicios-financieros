@@ -300,15 +300,23 @@ export class PerfilCliente {
     const f = this.form();
     const telefonoCompleto = `${f.telefonoCodigoPais}${f.telefonoNumero}`.trim();
 
+    const generoMapa: Record<string, string> = {
+      'Masculino': 'MASCULINO',
+      'Femenino': 'FEMENINO',
+      'Otro': 'OTRO',
+      'Prefiero no decirlo': 'PREFIERO_NO_DECIR'
+    };
+    const generoBackend = generoMapa[f.genero] || f.genero;
+
     this.clientePerfilService.actualizarPerfil(usuarioId, {
       dni: f.dni || p.dni,
       nombres: f.nombres,
       apellidos: f.apellidos,
-      genero: f.genero,
+      genero: generoBackend,
       edad: Number(f.edad || p.edad || 0),
       telefono: telefonoCompleto,
       fotoPerfilUrl: p.fotoPerfilUrl,
-      direccion: p.direccion,
+      pais: f.pais,
       ciudad: f.ciudad,
     }).subscribe({
       next: (perfilActualizado) => {
@@ -318,9 +326,16 @@ export class PerfilCliente {
         this.mensajeExito.set('Datos personales actualizados correctamente.');
         setTimeout(() => this.mensajeExito.set(''), 2500);
       },
-      error: () => {
+      error: (err: any) => {
         this.guardandoPerfil.set(false);
-        this.mensajeError.set('No se pudo guardar. Inténtalo nuevamente.');
+        let mensaje = 'No se pudo guardar los cambios. Intente nuevamente.';
+        if (err?.error?.mensaje) {
+          mensaje = err.error.mensaje;
+          if (err.error.detalles && err.error.detalles.length > 0) {
+            mensaje += ' Detalles: ' + err.error.detalles.join(', ');
+          }
+        }
+        this.mensajeError.set(mensaje);
       }
     });
   }
@@ -377,9 +392,17 @@ export class PerfilCliente {
 
   private hidratarFormularioDesdePerfil(perfil: RespuestaDatosPersonales): void {
     const correo = this.correoUsuario();
-    const pais = this.paisDesdeTelefono(perfil.telefono) ?? 'PE';
+    const pais = perfil.pais ?? 'PE';
     const prefijo = this.paisesCatalogo.find(x => x.codigo === pais)?.prefijo ?? '+51';
     const numero = this.numeroSinPrefijo(perfil.telefono, prefijo);
+
+    const generoMapaInv: Record<string, string> = {
+      'MASCULINO': 'Masculino',
+      'FEMENINO': 'Femenino',
+      'OTRO': 'Otro',
+      'PREFIERO_NO_DECIR': 'Prefiero no decirlo'
+    };
+    const generoFrontend = generoMapaInv[perfil.genero] || perfil.genero || '';
 
     const nextForm: PerfilForm = {
       nombres: perfil.nombres ?? '',
@@ -392,7 +415,7 @@ export class PerfilCliente {
       telefonoNumero: numero,
       pais,
       ciudad: perfil.ciudad ?? '',
-      genero: perfil.genero ?? ''
+      genero: generoFrontend
     };
 
     this.fechaDia.set('');
