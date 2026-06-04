@@ -458,6 +458,22 @@ export class GastosPage {
       return;
     }
 
+    const getLocalIsoString = (dateString: string): string => {
+      let localDate = new Date();
+      if (dateString) {
+        const parts = dateString.split('-');
+        if (parts.length === 3) {
+          localDate = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        } else {
+          localDate = new Date(dateString);
+        }
+      }
+      const now = new Date();
+      localDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+      const tzOffset = localDate.getTimezoneOffset() * 60000;
+      return new Date(localDate.getTime() - tzOffset).toISOString().slice(0, 19);
+    };
+
     const editId = this.gastoEditandoId();
     if (editId) {
       if (editId.startsWith('g') || editId.startsWith('mock-')) {
@@ -489,21 +505,7 @@ export class GastosPage {
         return;
       }
 
-      const getLocalIsoString = (dateString: string): string => {
-        let localDate = new Date();
-        if (dateString) {
-          const parts = dateString.split('-');
-          if (parts.length === 3) {
-            localDate = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-          } else {
-            localDate = new Date(dateString);
-          }
-        }
-        const now = new Date();
-        localDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
-        const tzOffset = localDate.getTimezoneOffset() * 60000;
-        return new Date(localDate.getTime() - tzOffset).toISOString().slice(0, 19);
-      };
+
 
       const requestEdit: TransaccionRequestDTO = {
         usuarioId: usuarioIdEdit,

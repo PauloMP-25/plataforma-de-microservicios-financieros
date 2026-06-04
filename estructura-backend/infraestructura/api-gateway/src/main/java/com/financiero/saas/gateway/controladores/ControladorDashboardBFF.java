@@ -270,9 +270,10 @@ public class ControladorDashboardBFF {
                                 ResponseEntity<ResultadoApi<?>> responseEntity = ResponseEntity.ok(body);
                                 return responseEntity;
                             });
-                })))
-                .onErrorResume(error -> {
-                    log.error("[BFF-DASHBOARD] Error al obtener gráficos para usuarioId={}: {}", finalUsuarioId, error.getMessage());
+                })) // Cierra el switchIfEmpty inner defer
+        )) // Cierra outer Mono.defer y deleteCacheMono.then
+        .onErrorResume(error -> {
+            log.error("[BFF-DASHBOARD] Error al obtener gráficos para usuarioId={}: {}", finalUsuarioId, error.getMessage());
                     ResultadoApi<?> errBody = ResultadoApi.falla(
                             CodigoError.ERROR_INTERNO,
                             "Error al recuperar los datos de gráficos: " + error.getMessage(),
