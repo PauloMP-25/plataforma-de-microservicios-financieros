@@ -59,6 +59,11 @@ export class AuthService {
     return this.http.put<ResultadoApi<string>>(`${this.base}/activar/${usuarioId}`, null, { params });
   }
 
+  // ── Solicitar OTP Activacion ──
+  solicitarOtpActivacion(solicitud: { email: string; tipo: 'EMAIL' | 'SMS' | 'WHATSAPP'; telefono?: string }): Observable<ResultadoApi<string>> {
+    return this.http.post<ResultadoApi<string>>(`${this.base}/solicitar-otp`, solicitud);
+  }
+
   // ── Recuperar password ──
   solicitarRecuperacion(solicitud: any): Observable<ResultadoApi<string>> {
     return this.http.post<ResultadoApi<string>>(`${this.base}/recuperar-solicitar`, solicitud);

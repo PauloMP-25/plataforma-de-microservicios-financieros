@@ -644,6 +644,16 @@
     font-weight: 600;
   }
 
+  &__field--error {
+    border-color: #d13a3a !important;
+    background-color: #fffafa !important;
+  }
+
+  &__input--error {
+    border-color: #d13a3a !important;
+    background-color: #fffafa !important;
+  }
+
   &__hint {
     margin: 0;
     color: #6f7692;

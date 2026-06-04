@@ -37,7 +37,7 @@ help:
 @echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 @echo "  make help              Muestra esta ayuda"
 @echo ""
-@echo "💾 Partición: /media/paulo/Nuevo vol/ (189 GB)"
+@echo "💾 Partición: /media/paulo/datos/ (932 GB)"
 @echo ""
 
 # ════════════════════════════════════════════════════════════════════════════

@@ -34,11 +34,14 @@ public class FiltroTrazabilidadGlobal implements GlobalFilter, Ordered {
         HttpHeaders headers = exchange.getRequest().getHeaders();
         String correlationId = headers.getFirst(CORRELATION_ID_HEADER);
 
+        String path = exchange.getRequest().getURI().getPath();
+        String method = exchange.getRequest().getMethod().name();
+
         if (correlationId == null || correlationId.isEmpty()) {
             correlationId = UUID.randomUUID().toString();
-            log.debug("[TRAZABILIDAD] Generando nuevo Trace-ID: {}", correlationId);
+            log.info("[GATEWAY-PETICION] Generando Trace-ID: {} para [{} {}]", correlationId, method, path);
         } else {
-            log.debug("[TRAZABILIDAD] Propagando Trace-ID existente: {}", correlationId);
+            log.info("[GATEWAY-PETICION] Propagando Trace-ID: {} para [{} {}]", correlationId, method, path);
         }
 
         // Inyectamos el ID en la petición que va hacia los microservicios

@@ -463,6 +463,8 @@ services:
       # WhatsApp
       WHATSAPP_API_TOKEN: ${WHATSAPP_API_TOKEN}
       WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
+      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
       JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8084/actuator/health" ]
@@ -582,6 +584,7 @@ services:
 
       # ── Seguridad JWT (compartido con Java) ──────────────────────────────
       JWT_CLAVE_SECRETA: ${JWT_SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       JWT_ALGORITMO: HS256
 
       # ── Parámetros de análisis IA ─────────────────────────────────────────
@@ -671,18 +674,6 @@ services:
     image: luka/api-gateway:latest
     depends_on:
       redis:
-        condition: service_healthy
-      ms-usuario:
-        condition: service_healthy
-      ms-cliente:
-        condition: service_healthy
-      ms-auditoria:
-        condition: service_healthy
-      ms-mensajeria:
-        condition: service_healthy
-      ms-nucleo-financiero:
-        condition: service_healthy
-      ms-ia:
         condition: service_healthy
     ports:
       # ← ÚNICO PUERTO EXPUESTO AL MUNDO EXTERIOR

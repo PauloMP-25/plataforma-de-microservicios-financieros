@@ -71,14 +71,24 @@ graphify-out/
 .agents/
 .skills/
 .cursorrules
-memoria.md
-
 
 # --- CARPETAS ---
 scratch/
 guias/
 pruebas/
 disenos/
+comando/
+comando/**
+memoria.md
+guia_instalacion_linux.md
+dev-backend.sh
+comando/Makefile
+comando/README.md
+comando/luka-utils.sh
+comando/start-grupo-1.sh
+comando/start-grupo-2.sh
+comando/start-grupo-3.sh
+
 
 # --- ANGULAR ENVIRONMENTS ---
 **/src/app/enviroments/environment.prod.ts

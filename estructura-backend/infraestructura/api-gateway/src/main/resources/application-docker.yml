@@ -37,6 +37,8 @@ spring:
         locator:
           enabled: true
           lower-case-service-id: true
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
 
       routes:
         - id: servicio-usuario-docs
@@ -282,6 +284,7 @@ spring:
           '[/**]':
             allowedOrigins:
               - "http://localhost:3000"
+              - "http://localhost:4200"
               - "http://localhost:5173"
               - ${FRONTEND_URL:http://localhost:3000}
             allowedMethods:

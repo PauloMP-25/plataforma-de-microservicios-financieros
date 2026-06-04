@@ -31,7 +31,7 @@ fi
 cd "$DOCKER_DIR"
 
 # Validar que Grupo 1 esté corriendo
-GATEWAY_RUNNING=$(docker-compose -f "$COMPOSE_FILE" ps | grep "api-gateway" | grep "Up" || echo "")
+GATEWAY_RUNNING=$(docker-compose -f "$COMPOSE_FILE" ps --services --filter status=running | grep -E "^api-gateway$" || echo "")
 if [ -z "$GATEWAY_RUNNING" ]; then
     echo -e "${YELLOW}⚠️  GRUPO 1 no está ejecutándose${NC}"
     echo -e "${YELLOW}Ejecuta primero: devbackend-g1${NC}"
@@ -53,7 +53,7 @@ echo -e "${GREEN}🐳 Ejecutando con: $COMPOSE_FILE${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
-docker-compose -f "$COMPOSE_FILE" up -d $SERVICES
+docker-compose --env-file ../.env -f "$COMPOSE_FILE" up -d $SERVICES
 
 echo ""
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
@@ -61,5 +61,5 @@ echo -e "${GREEN}✅ GRUPO 2 levantado exitosamente${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 echo -e "${YELLOW}📊 Estado:${NC}"
-docker-compose -f "$COMPOSE_FILE" ps | grep -E "ms-usuario|ms-cliente|ms-mensajeria" || true
+docker-compose -f "$COMPOSE_FILE" ps ms-usuario ms-cliente ms-mensajeria
 echo ""

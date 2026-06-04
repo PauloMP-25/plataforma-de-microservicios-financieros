@@ -43,7 +43,7 @@ echo -e "${GREEN}🐳 Ejecutando con: $COMPOSE_FILE${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
-docker-compose -f "$COMPOSE_FILE" up -d $SERVICES
+docker-compose --env-file ../.env -f "$COMPOSE_FILE" up -d $SERVICES
 
 echo ""
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
@@ -51,7 +51,7 @@ echo -e "${GREEN}✅ GRUPO 1 levantado exitosamente${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 echo -e "${YELLOW}📊 Estado:${NC}"
-docker-compose -f "$COMPOSE_FILE" ps | grep -E "api-gateway|ms-auditoria"
+docker-compose -f "$COMPOSE_FILE" ps api-gateway ms-auditoria
 echo ""
 echo -e "${YELLOW}🌐 API Gateway:${NC} http://localhost:8080"
 echo ""

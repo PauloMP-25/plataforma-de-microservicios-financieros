@@ -4,6 +4,7 @@ import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { IniciarSesion } from '../iniciar-sesion/iniciar-sesion';
 import { CrearCuenta } from '../crear-cuenta/crear-cuenta';
 import { VerificarCodigo } from '../../recuperar-contrasena/verificar-codigo/verificar-codigo';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-contenedor-autenticacion',
@@ -28,10 +29,32 @@ export class ContenedorAutenticacion implements OnInit {
 
   enviarCodigoActivacion(): void {
     this.cargandoOtp = true;
-    setTimeout(() => {
-      this.cargandoOtp = false;
-      this.vistaActual = 'verificar';
-    }, 1000);
+    this.errorOtp = '';
+    this.infoOtp = '';
+
+    const payload = {
+      email: this.correoActivacion,
+      tipo: this.canalSeleccionado,
+      telefono: this.canalSeleccionado !== 'EMAIL' ? this.telefonoActivacion : undefined
+    };
+
+    this.authService.solicitarOtpActivacion(payload).subscribe({
+      next: (resp) => {
+        this.cargandoOtp = false;
+        if (resp.exito) {
+          this.medioVerificacion = this.canalSeleccionado === 'EMAIL' ? 'correo' : 'celular';
+          this.destinoVerificacion = this.canalSeleccionado === 'EMAIL' ? this.correoActivacion : this.telefonoActivacion;
+          this.vistaActual = 'verificar';
+        } else {
+          this.errorOtp = resp.mensaje || 'Error al enviar el código de verificación';
+        }
+      },
+      error: (err) => {
+        this.cargandoOtp = false;
+        this.errorOtp = err.error?.mensaje || 'Error de conexión con el servidor';
+        console.error('Error al enviar OTP:', err);
+      }
+    });
   }
   /** Datos del registro para el paso de verificación */
   medioVerificacion: 'correo' | 'celular' = 'correo';
@@ -41,7 +64,8 @@ export class ContenedorAutenticacion implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private location: Location
+    private location: Location,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -59,12 +83,12 @@ export class ContenedorAutenticacion implements OnInit {
     this.location.go(ruta);
   }
 
-  /** Maneja el registro exitoso y muestra la verificación de código */
-  onRegistroExitoso(datos: { medio: 'correo' | 'celular'; destino: string; usuarioId: string }): void {
-    this.medioVerificacion = datos.medio;
-    this.destinoVerificacion = datos.destino;
+  /** Maneja el registro exitoso y muestra la selección de canal */
+  onRegistroExitoso(datos: { correo: string; celular?: string; usuarioId: string }): void {
+    this.correoActivacion = datos.correo;
+    this.telefonoActivacion = datos.celular || '';
     this.usuarioId = datos.usuarioId;
-    this.vistaActual = 'verificar';
+    this.vistaActual = 'canal';
   }
 
   /** Maneja la verificación exitosa del código */

@@ -100,6 +100,10 @@ export class PerfilCliente {
   formOriginal = signal<PerfilForm | null>(null);
   errores = signal<Partial<Record<PerfilFormKey, string>>>({});
 
+  fechaDia = signal<string>('');
+  fechaMes = signal<string>('');
+  fechaAnio = signal<string>('');
+
   cambioPassword = signal<SolicitudCambioPassword>({
     passwordActual: '',
     nuevoPassword: '',
@@ -109,6 +113,18 @@ export class PerfilCliente {
   avatarConfig = computed(() => this.avatarService.avatarConfig());
   avatarConfigActual = signal<AvatarConfig>(this.avatarService.avatarConfig());
   usuarioSesion = computed(() => this.authService.usuario());
+
+  readonly correoUsuario = computed(() => {
+    const token = this.authService.usuario()?.token;
+    if (!token) return '';
+    try {
+      const payload = token.split('.')[1];
+      const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+      return decoded.sub || '';
+    } catch {
+      return '';
+    }
+  });
 
   actividadesRecientes = signal<ActividadReciente[]>([
     { titulo: 'Actualización de perfil', detalle: 'Se editaron datos personales', fecha: 'Hace 2 días' },
@@ -158,14 +174,10 @@ export class PerfilCliente {
   });
 
   readonly fechaPartes = computed(() => {
-    const raw = this.form().fechaNacimiento;
-    if (!raw) return { dia: '', mes: '', anio: '' };
-    const parsed = new Date(raw);
-    if (Number.isNaN(parsed.getTime())) return { dia: '', mes: '', anio: '' };
     return {
-      dia: String(parsed.getDate()),
-      mes: String(parsed.getMonth()),
-      anio: String(parsed.getFullYear())
+      dia: this.fechaDia(),
+      mes: this.fechaMes(),
+      anio: this.fechaAnio()
     };
   });
 
@@ -200,11 +212,16 @@ export class PerfilCliente {
   }
 
   actualizarCampo(campo: PerfilFormKey, valor: string): void {
-    this.form.update(state => ({ ...state, [campo]: valor }));
+    let valorSaneado = valor;
+    if (campo === 'dni') {
+      valorSaneado = valor.replace(/\D/g, '').slice(0, 8);
+    }
+
+    this.form.update(state => ({ ...state, [campo]: valorSaneado }));
     this.errores.update(e => ({ ...e, [campo]: undefined }));
 
     if (campo === 'pais') {
-      const pais = this.paisesCatalogo.find(p => p.codigo === valor);
+      const pais = this.paisesCatalogo.find(p => p.codigo === valorSaneado);
       this.form.update(state => ({
         ...state,
         telefonoCodigoPais: pais?.prefijo ?? state.telefonoCodigoPais,
@@ -224,10 +241,13 @@ export class PerfilCliente {
   }
 
   actualizarFechaNacimientoParte(parte: 'dia' | 'mes' | 'anio', valor: string): void {
-    const partes = this.fechaPartes();
-    const dia = parte === 'dia' ? valor : partes.dia;
-    const mes = parte === 'mes' ? valor : partes.mes;
-    const anio = parte === 'anio' ? valor : partes.anio;
+    if (parte === 'dia') this.fechaDia.set(valor);
+    if (parte === 'mes') this.fechaMes.set(valor);
+    if (parte === 'anio') this.fechaAnio.set(valor);
+
+    const dia = this.fechaDia();
+    const mes = this.fechaMes();
+    const anio = this.fechaAnio();
 
     if (!dia || !mes || !anio) return;
 
@@ -249,6 +269,19 @@ export class PerfilCliente {
     this.form.set({ ...original });
     this.errores.set({});
     this.mensajeError.set('');
+
+    if (original.fechaNacimiento) {
+      const parsed = new Date(original.fechaNacimiento);
+      if (!Number.isNaN(parsed.getTime())) {
+        this.fechaDia.set(String(parsed.getDate()));
+        this.fechaMes.set(String(parsed.getMonth()));
+        this.fechaAnio.set(String(parsed.getFullYear()));
+        return;
+      }
+    }
+    this.fechaDia.set('');
+    this.fechaMes.set('');
+    this.fechaAnio.set('');
   }
 
   guardarDatosPerfil(): void {
@@ -343,7 +376,7 @@ export class PerfilCliente {
   }
 
   private hidratarFormularioDesdePerfil(perfil: RespuestaDatosPersonales): void {
-    const correo = this.usuarioSesion()?.nombreUsuario ?? '';
+    const correo = this.correoUsuario();
     const pais = this.paisDesdeTelefono(perfil.telefono) ?? 'PE';
     const prefijo = this.paisesCatalogo.find(x => x.codigo === pais)?.prefijo ?? '+51';
     const numero = this.numeroSinPrefijo(perfil.telefono, prefijo);
@@ -361,6 +394,10 @@ export class PerfilCliente {
       ciudad: perfil.ciudad ?? '',
       genero: perfil.genero ?? ''
     };
+
+    this.fechaDia.set('');
+    this.fechaMes.set('');
+    this.fechaAnio.set('');
 
     this.form.set(nextForm);
     this.formOriginal.set({ ...nextForm });
