@@ -9,6 +9,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { AppEventBus } from '../../../core/services/app-event-bus.service';
 import { ResumenFinancieroDTO } from '../../../core/models/financiero/resumen.model';
 import { SolicitudPerfilFinanciero } from '../../../core/models/cliente/perfil-cliente.model';
+import { RespuestaMetaAhorro } from '../../../core/models/cliente/meta-limite.model';
 import { forkJoin } from 'rxjs';
 
 export interface LogroFinanciero {
@@ -82,7 +83,7 @@ export class PerfilFinanciero implements OnInit {
 
   // ── Handlers Modal ───────────────────────────────────────────
   abrirModalConfig(): void {
-    const usuario = this.authService.getUsuarioActual();
+    const usuario = this.authService.usuario();
     if (!usuario) return;
     
     // Cargar perfil real del backend para el modal
@@ -141,7 +142,7 @@ export class PerfilFinanciero implements OnInit {
   guardarConfiguracion(): void {
     if (!this.validarFormConfig()) return;
 
-    const usuario = this.authService.getUsuarioActual();
+    const usuario = this.authService.usuario();
     if (!usuario) return;
 
     this.configurando.set(true);
@@ -482,9 +483,9 @@ export class PerfilFinanciero implements OnInit {
       next: ({ actual, anterior, metas }) => {
         this.resumenActual.set(actual);
         this.resumenAnterior.set(anterior);
-        const completadas = metas.filter(m => m.completada).length;
+        const completadas = metas.content.filter((m: RespuestaMetaAhorro) => m.completada).length;
         this.metasCompletadas.set(completadas);
-        this.metasTotal.set(metas.length);
+        this.metasTotal.set(metas.content.length);
         this.generarTendencia(this.filtroTendencia());
         this.cargando.set(false);
       },

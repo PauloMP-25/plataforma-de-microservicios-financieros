@@ -270,6 +270,17 @@ export class MetasPage implements OnInit {
     return 'active';
   }
 
+  obtenerTextoEstado(meta: any): string {
+    if (meta.completada) return 'Cumplida';
+    if (this.esVencida(meta)) return 'Vencida';
+    return 'Activa';
+  }
+
+  formatMoneda(valor: number): string {
+    if (valor === null || valor === undefined) return '0.00';
+    return valor.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
   obtenerColorProgreso(meta: any): string {
     if (meta.completada) return '#22c55e';
     if (this.esVencida(meta)) return '#ef4444';
@@ -304,6 +315,15 @@ export class MetasPage implements OnInit {
       return `${difDias} días`;
     }
     return `${difMeses} meses`;
+  }
+
+  obtenerTiempoEmpleadoMeta(meta: RespuestaMetaAhorro): string {
+    const fin = meta.fechaActualizacion || meta.fechaCreacion;
+    return this.calcularTiempoEmpleado(meta.fechaCreacion, fin);
+  }
+
+  obtenerFechaActualizacionOCreacion(meta: RespuestaMetaAhorro): string {
+    return meta.fechaActualizacion || meta.fechaCreacion;
   }
 
   abrirCrearMeta(): void {
@@ -471,5 +491,33 @@ export class MetasPage implements OnInit {
     this.filtroAnio.set('Todos');
     this.filtroMontoMin.set(null);
     this.filtroMontoMax.set(null);
+  }
+
+  mostrarDashboard(): boolean {
+    return !this.cargando() || this.metas().length > 0;
+  }
+
+  mostrarBotonCompletar(meta: any): boolean {
+    return !!(meta && !meta.completada && meta.puedeCompletar);
+  }
+
+  mostrarBotonProgreso(meta: any): boolean {
+    return !!(meta && !meta.completada && !meta.puedeCompletar);
+  }
+
+  mostrarBotonEditar(meta: any): boolean {
+    return !!(meta && !meta.completada);
+  }
+
+  mostrarCajaExito(meta: any): boolean {
+    return !!(meta && meta.completada);
+  }
+
+  mostrarCajaProgreso(meta: any): boolean {
+    return !!(meta && !meta.completada);
+  }
+
+  saldoNegativoAlCompletar(meta: any): boolean {
+    return !!(meta && meta.montoObjetivo > this.ahorroDisponible());
   }
 }
