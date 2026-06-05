@@ -232,7 +232,10 @@ export class PerfilFinanciero implements OnInit {
 
   logrosVisibles = computed(() => {
     const todos = this.logrosFinancieros();
-    return this.mostrarTodosLogros() ? todos : todos.slice(0, 4);
+    if (this.mostrarTodosLogros()) {
+      return todos;
+    }
+    return todos.filter(l => l.desbloqueado).slice(0, 3);
   });
 
   // ── Composición por categorías (mock avanzado) ───────────────
