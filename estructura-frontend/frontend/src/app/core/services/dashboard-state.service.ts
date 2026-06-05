@@ -118,4 +118,20 @@ export class DashboardStateService {
     this.cargarResumen(true);
     this.cargarGraficos(true);
   }
+
+  /**
+   * Limpia completamente el estado de las signals.
+   * Útil para cuando un usuario cierra sesión.
+   */
+  limpiarEstado(): void {
+    this.ultimoRefrescoKPIs = 0;
+    this.perfil.set(null);
+    this.resumen.set(null);
+    this.recientes.set([]);
+    this.flujoCaja.set([]);
+    this.distribucionGastos.set([]);
+    this.loadingResumen.set(false);
+    this.loadingGraficos.set(false);
+    this.error.set(null);
+  }
 }

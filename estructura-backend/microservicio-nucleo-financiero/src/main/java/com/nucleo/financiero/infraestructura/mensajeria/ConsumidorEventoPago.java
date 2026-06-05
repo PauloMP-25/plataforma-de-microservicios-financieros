@@ -52,7 +52,8 @@ public class ConsumidorEventoPago {
                     categoriaId, // Categoría recuperada dinámicamente
                     MetodoPago.TRANSFERENCIA, // Stripe se considera transferencia electrónica
                     "pago,suscripcion," + evento.planNuevo(),
-                    "Compra de suscripción mensual plan " + evento.planNuevo() + " (Stripe ID: " + evento.stripeSessionId() + ")"
+                    "Compra de suscripción mensual plan " + evento.planNuevo() + " (Stripe ID: " + evento.stripeSessionId() + ")",
+                    java.time.LocalDateTime.now()
             );
 
             servicioTransaccion.registrar(ingreso, "SYSTEM-PAGOS");

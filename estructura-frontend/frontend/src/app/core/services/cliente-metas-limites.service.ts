@@ -1,14 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../enviroments/environment';
 import {
   RespuestaLimiteGasto,
   RespuestaMetaAhorro,
   SolicitudLimiteGasto,
-  SolicitudMetaAhorro
+  SolicitudMetaAhorro,
+  Pagina
 } from '../models/cliente/meta-limite.model';
+import { ResultadoApi } from '../models/auth/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class ClienteMetasLimitesService {
@@ -18,75 +20,88 @@ export class ClienteMetasLimitesService {
   constructor(private http: HttpClient) {}
 
   crearMeta(payload: SolicitudMetaAhorro): Observable<RespuestaMetaAhorro> {
-    return this.http.post<RespuestaMetaAhorro>(this.baseMetas, payload);
+    return this.http.post<ResultadoApi<RespuestaMetaAhorro>>(this.baseMetas, payload).pipe(
+      map(res => res.datos)
+    );
   }
 
-  listarMetas(): Observable<RespuestaMetaAhorro[]> {
-    return this.http.get<RespuestaMetaAhorro[]>(this.baseMetas).pipe(
+  actualizarMeta(metaId: string, payload: SolicitudMetaAhorro): Observable<RespuestaMetaAhorro> {
+    return this.http.put<ResultadoApi<RespuestaMetaAhorro>>(`${this.baseMetas}/${metaId}`, payload).pipe(
+      map(res => res.datos)
+    );
+  }
+
+  listarMetas(page: number = 0, size: number = 10): Observable<Pagina<RespuestaMetaAhorro>> {
+    const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
+    return this.http.get<ResultadoApi<Pagina<RespuestaMetaAhorro>>>(this.baseMetas, { params }).pipe(
+      map(res => res.datos),
       catchError(() => {
-        // Mocks si falla el backend
-        return of([
-          {
-            id: 'mock-meta-1',
-            nombre: 'Fondo de Emergencia',
-            montoObjetivo: 5000,
-            montoActual: 2500,
-            porcentajeProgreso: 50,
-            fechaLimite: new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
-            completada: false,
-            fechaCreacion: new Date().toISOString(),
-            fechaActualizacion: new Date().toISOString()
-          },
-          {
-            id: 'mock-meta-2',
-            nombre: 'Nueva Laptop',
-            montoObjetivo: 3500,
-            montoActual: 3500,
-            porcentajeProgreso: 100,
-            fechaLimite: new Date(new Date().getFullYear(), new Date().getMonth(), 15).toISOString().split('T')[0],
-            completada: true,
-            fechaCreacion: new Date().toISOString(),
-            fechaActualizacion: new Date().toISOString()
-          }
-        ] as RespuestaMetaAhorro[]);
+        // Fallback vacío si falla para no romper la app
+        return of({
+          contenido: [],
+          totalElementos: 0,
+          totalPaginas: 0,
+          tamañoPagina: size,
+          numeroPagina: page,
+          esUltima: true
+        } as unknown as Pagina<RespuestaMetaAhorro>);
       })
     );
   }
 
-  listarMetasActivas(): Observable<RespuestaMetaAhorro[]> {
-    return this.http.get<RespuestaMetaAhorro[]>(`${this.baseMetas}/activas`);
+  listarMetasActivas(page: number = 0, size: number = 10): Observable<Pagina<RespuestaMetaAhorro>> {
+    const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
+    return this.http.get<ResultadoApi<Pagina<RespuestaMetaAhorro>>>(`${this.baseMetas}/activas`, { params }).pipe(
+      map(res => res.datos)
+    );
   }
 
   obtenerMeta(metaId: string): Observable<RespuestaMetaAhorro> {
-    return this.http.get<RespuestaMetaAhorro>(`${this.baseMetas}/${metaId}`);
+    return this.http.get<ResultadoApi<RespuestaMetaAhorro>>(`${this.baseMetas}/${metaId}`).pipe(
+      map(res => res.datos)
+    );
   }
 
   actualizarProgresoMeta(metaId: string, montoActual: number): Observable<RespuestaMetaAhorro> {
-    return this.http.patch<RespuestaMetaAhorro>(`${this.baseMetas}/${metaId}/progreso`, { montoActual });
+    return this.http.patch<ResultadoApi<RespuestaMetaAhorro>>(`${this.baseMetas}/${metaId}/progreso`, { montoActual }).pipe(
+      map(res => res.datos)
+    );
   }
 
   eliminarMeta(metaId: string): Observable<void> {
-    return this.http.delete<void>(`${this.baseMetas}/${metaId}`);
+    return this.http.delete<ResultadoApi<void>>(`${this.baseMetas}/${metaId}`).pipe(
+      map(() => undefined)
+    );
   }
 
   crearLimite(payload: SolicitudLimiteGasto): Observable<RespuestaLimiteGasto> {
-    return this.http.post<RespuestaLimiteGasto>(this.baseLimites, payload);
+    return this.http.post<ResultadoApi<RespuestaLimiteGasto>>(this.baseLimites, payload).pipe(
+      map(res => res.datos)
+    );
   }
 
   obtenerLimiteActivo(): Observable<RespuestaLimiteGasto> {
-    return this.http.get<RespuestaLimiteGasto>(`${this.baseLimites}/activo`);
+    return this.http.get<ResultadoApi<RespuestaLimiteGasto>>(`${this.baseLimites}/activo`).pipe(
+      map(res => res.datos)
+    );
   }
 
   actualizarLimite(payload: SolicitudLimiteGasto): Observable<RespuestaLimiteGasto> {
-    return this.http.patch<RespuestaLimiteGasto>(this.baseLimites, payload);
+    return this.http.patch<ResultadoApi<RespuestaLimiteGasto>>(this.baseLimites, payload).pipe(
+      map(res => res.datos)
+    );
   }
 
   listarHistorialLimites(): Observable<RespuestaLimiteGasto[]> {
-    return this.http.get<RespuestaLimiteGasto[]>(this.baseLimites);
+    return this.http.get<ResultadoApi<RespuestaLimiteGasto[]>>(this.baseLimites).pipe(
+      map(res => res.datos)
+    );
   }
 
   desactivarLimiteActivo(): Observable<void> {
-    return this.http.delete<void>(this.baseLimites);
+    return this.http.delete<ResultadoApi<void>>(this.baseLimites).pipe(
+      map(() => undefined)
+    );
   }
 }
 

@@ -53,9 +53,10 @@
       <h2 class="kpi-value text-mono text-danger">{{ formatCurrency(totalGastos) }}</h2>
       <div class="kpi-progress-wrapper">
         <div class="kpi-progress-bar">
-          <div class="kpi-progress-fill bg-purple" style="width: 62%"></div>
+          <div class="kpi-progress-fill bg-purple" [style.width.%]="porcentajeUso"></div>
         </div>
-        <span class="kpi-progress-text">62% del presupuesto utilizado</span>
+        <span class="kpi-progress-text" *ngIf="presupuestoActivo > 0">{{ porcentajeUso }}% del presupuesto utilizado</span>
+        <span class="kpi-progress-text" *ngIf="presupuestoActivo === 0">Sin presupuesto mensual activo</span>
       </div>
     </div>
   </div>

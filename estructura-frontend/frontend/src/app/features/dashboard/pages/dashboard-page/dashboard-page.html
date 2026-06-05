@@ -1,62 +1,84 @@
 <div class="dashboard-container anim-fade-up">
 
-  <!-- ── FILTROS SUPERIORES Y CONTROL ── -->
-  <header class="dashboard-header card glass-panel">
-    <div class="header-left">
-      <h1 class="dashboard-title">Resumen de Cuenta</h1>
-      <p class="dashboard-subtitle">Control integral de tu rendimiento financiero y transacciones</p>
+  @if (stateService.loadingResumen() && stateService.resumen() === null) {
+    <!-- ── ESTADO DE CARGA GLOBAL ── -->
+    <div class="global-loading flex flex-col items-center justify-center p-12 text-center" style="min-height: 400px; color: var(--text-muted); gap: 1rem;">
+      <i class="fa-solid fa-spinner fa-spin-pulse" style="font-size: 3rem; color: var(--color-primary);"></i>
+      <h2 style="font-size: 1.2rem; font-weight: 500; margin-top: 1rem;">Cargando tu información financiera...</h2>
+      <p style="font-size: 0.9rem; opacity: 0.7;">Calculando balances y preparando gráficos interactivos</p>
     </div>
-    
-    <div class="header-filters">
-      <!-- Buscador de transacciones -->
-      <div class="search-box">
-        <i class="fa-solid fa-magnifying-glass search-icon"></i>
-        <input 
-          type="text" 
-          placeholder="Buscar descripción o categoría..." 
-          [(ngModel)]="terminoBusqueda"
-          class="search-input"
-        />
-        <button *ngIf="terminoBusqueda" class="clear-search" (click)="terminoBusqueda = ''">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
+  } @else {
 
-      <!-- Selector de periodo -->
-      <div class="filter-group">
-        <label class="filter-label">Periodo</label>
-        <div class="period-selector">
-          <button [class.active]="filtroTiempo === '7'" (click)="filtroTiempo = '7'">7D</button>
-          <button [class.active]="filtroTiempo === '30'" (click)="filtroTiempo = '30'">30D</button>
-          <button [class.active]="filtroTiempo === 'todos'" (click)="filtroTiempo = 'todos'">Todos</button>
+    <!-- ── FILTROS SUPERIORES Y CONTROL ── -->
+    <header class="dashboard-header card glass-panel">
+      <div class="header-left">
+        <h1 class="dashboard-title">Resumen de Cuenta</h1>
+        <p class="dashboard-subtitle">Control integral de tu rendimiento financiero y transacciones</p>
+      </div>
+      
+      <div class="header-filters">
+        <!-- Buscador de transacciones -->
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input 
+            type="text" 
+            placeholder="Buscar descripción o categoría..." 
+            [(ngModel)]="terminoBusqueda"
+            class="search-input"
+          />
+          <button *ngIf="terminoBusqueda" class="clear-search" (click)="terminoBusqueda = ''">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Selector de periodo -->
+        <div class="filter-group">
+          <label class="filter-label">Periodo</label>
+          <div class="period-selector">
+            <button [class.active]="filtroTiempo === '7'" (click)="filtroTiempo = '7'">7D</button>
+            <button [class.active]="filtroTiempo === '30'" (click)="filtroTiempo = '30'">30D</button>
+            <button [class.active]="filtroTiempo === 'todos'" (click)="filtroTiempo = 'todos'">Todos</button>
+          </div>
         </div>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <!-- ── FILA DE KPIs (INDICADORES CLAVE) ── -->
-  <app-balances-card 
-    [totalBalance]="totalBalance" 
-    [totalIngresos]="totalIngresos" 
-    [totalGastos]="totalGastos" 
-    [tasaAhorro]="tasaAhorro">
-  </app-balances-card>
+    <!-- ── FILA DE KPIs (INDICADORES CLAVE) ── -->
+    @defer (on viewport) {
+      <app-balances-card 
+        [totalBalance]="totalBalance" 
+        [totalIngresos]="totalIngresos" 
+        [totalGastos]="totalGastos" 
+        [tasaAhorro]="tasaAhorro">
+      </app-balances-card>
+    } @placeholder {
+      <div class="card glass-panel flex items-center justify-center p-4 text-center" style="min-height: 120px; color: var(--text-muted);">
+        <i class="fa-solid fa-spinner fa-spin"></i> Cargando balances...
+      </div>
+    }
 
-  <!-- ── SECCIÓN DE GRÁFICOS ANALÍTICOS (DOS COLUMNAS) ── -->
-  @defer (on immediate) {
-    <app-chart 
-      [flujoCaja]="flujoCajaPuntos" 
-      [distribucion]="distribucionCategorias">
-    </app-chart>
-  } @placeholder {
-    <div class="card glass-panel flex items-center justify-center p-8 text-center" style="min-height: 250px; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 8px;">
-      <i class="fa-solid fa-spinner fa-spin"></i> Cargando gráficos analíticos y cálculos SVG...
-    </div>
+    <!-- ── SECCIÓN DE GRÁFICOS ANALÍTICOS (DOS COLUMNAS) ── -->
+    @defer (on viewport) {
+      <app-chart 
+        [flujoCaja]="flujoCajaPuntos" 
+        [distribucion]="distribucionCategorias">
+      </app-chart>
+    } @placeholder {
+      <div class="card glass-panel flex items-center justify-center p-8 text-center" style="min-height: 250px; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <i class="fa-solid fa-spinner fa-spin"></i> Cargando gráficos analíticos y cálculos SVG...
+      </div>
+    }
+
+    <!-- ── TABLA DE TRANSACCIONES RECIENTES ── -->
+    @defer (on viewport) {
+      <app-transacciones 
+        [transacciones]="transaccionesFiltradas">
+      </app-transacciones>
+    } @placeholder {
+      <div class="card glass-panel flex items-center justify-center p-8 text-center" style="min-height: 200px; color: var(--text-muted);">
+        <i class="fa-solid fa-spinner fa-spin"></i> Cargando transacciones recientes...
+      </div>
+    }
   }
-
-  <!-- ── TABLA DE TRANSACCIONES RECIENTES ── -->
-  <app-transacciones 
-    [transacciones]="transaccionesFiltradas">
-  </app-transacciones>
 
 </div>

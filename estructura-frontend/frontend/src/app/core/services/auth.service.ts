@@ -9,9 +9,10 @@
 //   POST /api/v1/auth/reset-password
 // =============================================
 
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { DashboardStateService } from './dashboard-state.service';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../enviroments/environment';
 import {
@@ -34,6 +35,8 @@ export class AuthService {
   usuario = this._usuario.asReadonly();
   logueado = computed(() => !!this._usuario());
   esPremium = computed(() => this._usuario()?.roles?.includes('PREMIUM') ?? false);
+
+  private dashboardState = inject(DashboardStateService);
 
   constructor(private http: HttpClient, private router: Router) { }
 
@@ -85,11 +88,11 @@ export class AuthService {
     return this.http.post(`${this.base}/logout`, {})
   };
 
-  // ── Logout ──
   logout(): void {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USUARIO_KEY);
     this._usuario.set(null);
+    this.dashboardState.limpiarEstado();
     this.router.navigate(['/login']);
   }
 

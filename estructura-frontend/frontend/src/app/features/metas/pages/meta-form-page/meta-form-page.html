@@ -64,8 +64,13 @@
           <div class="meta-form-page__form-group">
             <label for="formNombre">NOMBRE DE TU META</label>
             <input id="formNombre" type="text" formControlName="nombre" placeholder="Ej. Mi Viaje a Cancún, Nueva Laptop..." />
-            @if (formulario.get('nombre')?.invalid && formulario.get('nombre')?.touched) {
-              <small class="error-msg">El nombre es obligatorio y debe tener entre 3 y 150 caracteres.</small>
+            @if (formulario.get('nombre')?.touched && formulario.get('nombre')?.errors) {
+              @if (formulario.get('nombre')?.errors?.['required']) {
+                <small class="error-msg"><i class="fa-solid fa-triangle-exclamation"></i> El nombre es obligatorio.</small>
+              }
+              @if (formulario.get('nombre')?.errors?.['minlength']) {
+                <small class="error-msg"><i class="fa-solid fa-triangle-exclamation"></i> Debe tener al menos 3 caracteres.</small>
+              }
             }
           </div>
 
@@ -74,8 +79,13 @@
             <div class="meta-form-page__form-group">
               <label for="formMontoObj">MONTO OBJETIVO (S/)</label>
               <input id="formMontoObj" type="number" formControlName="montoObjetivo" placeholder="Ej. 5000" />
-              @if (formulario.get('montoObjetivo')?.invalid && formulario.get('montoObjetivo')?.touched) {
-                <small class="error-msg">Debe ser al menos S/ 1.00.</small>
+              @if (formulario.get('montoObjetivo')?.touched && formulario.get('montoObjetivo')?.errors) {
+                @if (formulario.get('montoObjetivo')?.errors?.['required']) {
+                  <small class="error-msg"><i class="fa-solid fa-triangle-exclamation"></i> El monto es obligatorio.</small>
+                }
+                @if (formulario.get('montoObjetivo')?.errors?.['min']) {
+                  <small class="error-msg"><i class="fa-solid fa-triangle-exclamation"></i> Debe ser al menos S/ 1.00.</small>
+                }
               }
             </div>
 
@@ -83,8 +93,13 @@
             <div class="meta-form-page__form-group">
               <label for="formMontoAct">AHORRO INICIAL (S/)</label>
               <input id="formMontoAct" type="number" formControlName="montoActual" placeholder="Ej. 0" />
-              @if (formulario.get('montoActual')?.invalid && formulario.get('montoActual')?.touched) {
-                <small class="error-msg">No puede ser negativo.</small>
+              @if (formulario.get('montoActual')?.touched && formulario.get('montoActual')?.errors) {
+                @if (formulario.get('montoActual')?.errors?.['required']) {
+                  <small class="error-msg"><i class="fa-solid fa-triangle-exclamation"></i> Requerido (usa 0 si no tienes ahorro).</small>
+                }
+                @if (formulario.get('montoActual')?.errors?.['min']) {
+                  <small class="error-msg"><i class="fa-solid fa-triangle-exclamation"></i> No puede ser negativo.</small>
+                }
               }
             </div>
           </div>
@@ -93,8 +108,13 @@
           <div class="meta-form-page__form-group">
             <label for="formFecha">¿PARA CUÁNDO LO NECESITAS?</label>
             <input id="formFecha" type="date" formControlName="fechaLimite" [min]="fechaMinima" />
-            @if (formulario.get('fechaLimite')?.invalid && formulario.get('fechaLimite')?.touched) {
-              <small class="error-msg">Elige una fecha posterior o igual a hoy.</small>
+            @if (formulario.get('fechaLimite')?.touched && formulario.get('fechaLimite')?.errors) {
+              @if (formulario.get('fechaLimite')?.errors?.['required']) {
+                <small class="error-msg"><i class="fa-solid fa-triangle-exclamation"></i> La fecha es obligatoria.</small>
+              }
+              @if (formulario.get('fechaLimite')?.errors?.['fechaPasada']) {
+                <small class="error-msg"><i class="fa-solid fa-triangle-exclamation"></i> Elige una fecha posterior o igual a hoy.</small>
+              }
             }
 
             <!-- Botones Rápidos de Fecha -->
