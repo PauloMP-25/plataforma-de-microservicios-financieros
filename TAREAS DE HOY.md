@@ -8,10 +8,11 @@ Este documento detalla los objetivos para la próxima sesión de desarrollo.
 Implementar dos tarjetas métricas adicionales en el header de la aplicación para mostrar las cuotas de uso de IA del usuario en base a su plan/rol actual.
 
 - [ ] **Mapeo de Roles de Plan:**
-  - Leer el plan desde el token del usuario en `AuthService` (roles: `PREMIUM` o `ESTUDIANTE` / `NORMAL`).
+  - Leer el plan desde el token del usuario en `AuthService` (roles: `PREMIUM`, `PRO` y `FREE`).
   - Definir las cuotas correspondientes:
-    - **Premium:** 50 consultas analíticas de IA, 20 clasificaciones automáticas.
-    - **Estudiante/Normal:** 20 consultas analíticas de IA, 10 clasificaciones automáticas.
+    - **PREMIUM:** 50 consultas analíticas de IA, 20 clasificaciones automáticas (según plan Premium).
+    - **PRO:** 20 consultas analíticas de IA, 10 clasificaciones automáticas (según plan Pro).
+    - **FREE:** 5 consultas analíticas de IA, 2 clasificaciones automáticas (cuota básica gratuita).
 - [ ] **Agregar Cards al Header:**
   - Diseñar dos pills adicionales en el header (`metric-pill--ia-analitica` y `metric-pill--ia-clasificar`) utilizando el sistema de diseño de LUKA.
   - Mostrar la cuota restante (ej. `Consultas IA: 35/50` y `Autoclasificar: 12/20`).
