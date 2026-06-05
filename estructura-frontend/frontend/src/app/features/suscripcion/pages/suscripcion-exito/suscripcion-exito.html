@@ -1,0 +1,26 @@
+<div class="exito-page">
+  <div class="exito-page__container">
+    <div *ngIf="cargando()" class="exito-page__loading">
+      <div class="spinner"></div>
+      <p>Sincronizando tu pago con LUKA APP...</p>
+      <small>Esperando confirmación segura de Stripe Checkout</small>
+    </div>
+
+    <div *ngIf="!cargando() && error()" class="exito-page__error glass-panel">
+      <i class="fa-solid fa-circle-exclamation error-icon"></i>
+      <h2>Estado de Suscripción</h2>
+      <p>{{ error() }}</p>
+      <button class="btn-primary" (click)="navegarAlDashboard()">Ir al Dashboard</button>
+    </div>
+
+    <app-suscripcion-card
+      *ngIf="!cargando() && !error()"
+      [plan]="plan()"
+      [monto]="monto()"
+      [moneda]="moneda()"
+      [fechaVencimiento]="fechaVencimiento()"
+      [cargando]="cargando()"
+      (irAlDashboard)="navegarAlDashboard()">
+    </app-suscripcion-card>
+  </div>
+</div>

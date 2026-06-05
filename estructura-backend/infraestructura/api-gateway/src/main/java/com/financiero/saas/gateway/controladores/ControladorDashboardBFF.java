@@ -297,8 +297,8 @@ public class ControladorDashboardBFF {
                 .map(responseStr -> {
                     try {
                         JsonNode root = objectMapper.readTree(responseStr);
-                        if (root.has("data") && !root.get("data").isNull()) {
-                            return root.get("data");
+                        if (root.has("datos") && !root.get("datos").isNull()) {
+                            return root.get("datos");
                         }
                         return objectMapper.createObjectNode();
                     } catch (Exception e) {
@@ -325,8 +325,8 @@ public class ControladorDashboardBFF {
                 .map(responseStr -> {
                     try {
                         JsonNode root = objectMapper.readTree(responseStr);
-                        if (root.has("data") && !root.get("data").isNull()) {
-                            return root.get("data");
+                        if (root.has("datos") && !root.get("datos").isNull()) {
+                            return root.get("datos");
                         }
                         return objectMapper.createObjectNode();
                     } catch (Exception e) {
@@ -353,8 +353,8 @@ public class ControladorDashboardBFF {
                 .map(responseStr -> {
                     try {
                         JsonNode root = objectMapper.readTree(responseStr);
-                        if (root.has("data") && !root.get("data").isNull()) {
-                            return root.get("data");
+                        if (root.has("datos") && !root.get("datos").isNull()) {
+                            return root.get("datos");
                         }
                         return objectMapper.createObjectNode();
                     } catch (Exception e) {
