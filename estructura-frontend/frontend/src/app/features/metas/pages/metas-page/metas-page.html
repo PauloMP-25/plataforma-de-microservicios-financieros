@@ -100,7 +100,7 @@
         <!-- Filtro Estado -->
         <div class="metas-page__filter-group">
           <label for="filtroEstado">Estado</label>
-          <select id="filtroEstado" [value]="filtroEstado()" (change)="filtroEstado.set($any($event.target).value)">
+          <select id="filtroEstado" [value]="filtroEstado()" (change)="filtroEstado.set($any($event.target).value); paginaActual.set(1)">
             <option value="Todas">Todas</option>
             <option value="Activas">Activas</option>
             <option value="Cumplidas">Cumplidas</option>
@@ -111,7 +111,7 @@
         <!-- Filtro Mes -->
         <div class="metas-page__filter-group">
           <label for="filtroMes">Mes</label>
-          <select id="filtroMes" [value]="filtroMes()" (change)="filtroMes.set($any($event.target).value)">
+          <select id="filtroMes" [value]="filtroMes()" (change)="filtroMes.set($any($event.target).value); paginaActual.set(1)">
             <option value="Todos">Todos</option>
             <option value="0">Enero</option>
             <option value="1">Febrero</option>
@@ -131,7 +131,7 @@
         <!-- Filtro Año -->
         <div class="metas-page__filter-group">
           <label for="filtroAnio">Año</label>
-          <select id="filtroAnio" [value]="filtroAnio()" (change)="filtroAnio.set($any($event.target).value)">
+          <select id="filtroAnio" [value]="filtroAnio()" (change)="filtroAnio.set($any($event.target).value); paginaActual.set(1)">
             <option value="Todos">Todos</option>
             <option value="2025">2025</option>
             <option value="2026">2026</option>
@@ -144,9 +144,9 @@
         <div class="metas-page__filter-group">
           <label>Rango de monto objetivo (S/)</label>
           <div class="metas-page__range-inputs">
-            <input type="number" placeholder="Mínimo" [value]="filtroMontoMin()" (input)="filtroMontoMin.set($any($event.target).value ? +$any($event.target).value : null)">
+            <input type="number" placeholder="Mínimo" [value]="filtroMontoMin()" (input)="filtroMontoMin.set($any($event.target).value ? +$any($event.target).value : null); paginaActual.set(1)">
             <span>-</span>
-            <input type="number" placeholder="Máximo" [value]="filtroMontoMax()" (input)="filtroMontoMax.set($any($event.target).value ? +$any($event.target).value : null)">
+            <input type="number" placeholder="Máximo" [value]="filtroMontoMax()" (input)="filtroMontoMax.set($any($event.target).value ? +$any($event.target).value : null); paginaActual.set(1)">
           </div>
         </div>
 
@@ -168,7 +168,7 @@
 
         <!-- Grid de Metas -->
         <div class="metas-page__grid">
-          @for (meta of metasFiltradas(); track meta.id) {
+          @for (meta of metasPaginadas(); track meta.id) {
             <article class="metas-page__card card" 
                      [ngClass]="{
                        'metas-page__card--selected': metaSeleccionada()?.id === meta.id,
@@ -255,6 +255,39 @@
             </div>
           }
         </div>
+
+        <!-- Controles de Paginación Premium -->
+        @if (totalPaginas() > 1) {
+          <div class="metas-page__pagination">
+            <button 
+              type="button" 
+              class="pagination-btn" 
+              [disabled]="paginaActual() === 1" 
+              (click)="anteriorPagina()">
+              <i class="fa-solid fa-chevron-left"></i> Anterior
+            </button>
+            
+            <div class="pagination-pages">
+              @for (p of paginasArray(); track p) {
+                <button 
+                  type="button" 
+                  class="pagination-page-btn" 
+                  [class.active]="paginaActual() === p" 
+                  (click)="cambiarPagina(p)">
+                  {{ p }}
+                </button>
+              }
+            </div>
+            
+            <button 
+              type="button" 
+              class="pagination-btn" 
+              [disabled]="paginaActual() === totalPaginas()" 
+              (click)="siguientePagina()">
+              Siguiente <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+        }
       </div>
 
       <!-- Panel Lateral Derecho: Detalles de la Meta Seleccionada -->

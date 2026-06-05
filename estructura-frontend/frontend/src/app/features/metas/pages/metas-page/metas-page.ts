@@ -42,6 +42,10 @@ export class MetasPage implements OnInit {
   filtroMontoMin = signal<number | null>(null);
   filtroMontoMax = signal<number | null>(null);
 
+  // Paginación reactiva
+  paginaActual = signal<number>(1);
+  readonly pageSize = 6;
+
   // Exponer Math para la plantilla HTML
   protected readonly Math = Math;
 
@@ -123,6 +127,17 @@ export class MetasPage implements OnInit {
       completada: false,
       fechaCreacion: '2024-12-01',
       fechaActualizacion: '2024-12-01'
+    },
+    {
+      id: 'mock-meta-7',
+      nombre: '[Emergencia] Fondo de Emergencia',
+      montoObjetivo: 1000,
+      montoActual: 300,
+      porcentajeProgreso: 30,
+      fechaLimite: '2026-12-31',
+      completada: false,
+      fechaCreacion: '2025-04-10',
+      fechaActualizacion: '2025-04-10'
     }
   ];
 
@@ -238,6 +253,30 @@ export class MetasPage implements OnInit {
     }
 
     return listado;
+  });
+
+  // Metas paginadas para mostrar 6 por página
+  totalPaginas = computed(() => {
+    return Math.ceil(this.metasFiltradas().length / this.pageSize) || 1;
+  });
+
+  paginasArray = computed(() => {
+    const total = this.totalPaginas();
+    const arr = [];
+    for (let i = 1; i <= total; i++) {
+      arr.push(i);
+    }
+    return arr;
+  });
+
+  metasPaginadas = computed(() => {
+    const listado = this.metasFiltradas();
+    const page = this.paginaActual();
+    const total = this.totalPaginas();
+    const cappedPage = page > total ? total : page;
+    const inicio = (cappedPage - 1) * this.pageSize;
+    const fin = inicio + this.pageSize;
+    return listado.slice(inicio, fin);
   });
 
   // KPIs
@@ -539,5 +578,24 @@ export class MetasPage implements OnInit {
     this.filtroAnio.set('Todos');
     this.filtroMontoMin.set(null);
     this.filtroMontoMax.set(null);
+    this.paginaActual.set(1);
+  }
+
+  cambiarPagina(pagina: number): void {
+    if (pagina >= 1 && pagina <= this.totalPaginas()) {
+      this.paginaActual.set(pagina);
+    }
+  }
+
+  siguientePagina(): void {
+    if (this.paginaActual() < this.totalPaginas()) {
+      this.paginaActual.update(p => p + 1);
+    }
+  }
+
+  anteriorPagina(): void {
+    if (this.paginaActual() > 1) {
+      this.paginaActual.update(p => p - 1);
+    }
   }
 }

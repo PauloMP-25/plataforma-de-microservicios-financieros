@@ -1117,6 +1117,82 @@
       text-align: center;
     }
   }
+
+  /* ── Paginación Premium ── */
+  &__pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding: 0.5rem;
+    width: 100%;
+
+    .pagination-btn {
+      height: 38px;
+      padding: 0 1.25rem;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: var(--transition-bounce);
+
+      &:hover:not([disabled]) {
+        background: var(--bg-surface-soft);
+        color: var(--text-primary);
+        border-color: var(--color-primary);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(91, 106, 240, 0.1);
+      }
+
+      &[disabled] {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: var(--bg-surface-soft);
+      }
+    }
+
+    .pagination-pages {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .pagination-page-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-secondary);
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-bounce);
+
+      &:hover:not(.active) {
+        background: var(--bg-surface-soft);
+        color: var(--text-primary);
+        border-color: var(--color-primary);
+      }
+
+      &.active {
+        background: var(--color-primary);
+        border-color: var(--color-primary);
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(91, 106, 240, 0.25);
+      }
+    }
+  }
 }
 
 /* ── Animaciones y Efectos ── */
