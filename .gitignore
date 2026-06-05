@@ -47,6 +47,9 @@ package-lock.json
 # Ignorar archivos de secretos y configuración local
 docker/.env
 docker/docker-compose.override.yml
+estructura-backend/.env.local
+**/env.local
+**/.env.local
 
 # Ignorar datos persistentes si decidieras mapear carpetas (ej: ./data/postgres)
 **/data/
@@ -92,3 +95,11 @@ comando/start-grupo-3.sh
 
 # --- ANGULAR ENVIRONMENTS ---
 **/src/app/enviroments/environment.prod.ts
+
+# --- LOCAL UTILITIES & CONFIGS ---
+Makefile
+configurar-espacio-docker.sh
+configurar-terminator.sh
+payload.json
+estructura-backend/ESTANDAR_ARQUITECTURA_MICROSERVICIOS.md
+

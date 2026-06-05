@@ -34,11 +34,43 @@ export class AuthService {
   private _usuario = signal<UsuarioSesion | null>(this.cargarDesdStorage());
   usuario = this._usuario.asReadonly();
   logueado = computed(() => !!this._usuario());
-  esPremium = computed(() => this._usuario()?.roles?.includes('PREMIUM') ?? false);
+  esPremium = computed(() => this._usuario()?.roles?.some(r => r === 'PREMIUM' || r === 'ROLE_PREMIUM') ?? false);
+  esPro = computed(() => this._usuario()?.roles?.some(r => r === 'PRO' || r === 'ROLE_PRO') ?? false);
 
   private dashboardState = inject(DashboardStateService);
 
-  constructor(private http: HttpClient, private router: Router) { }
+  constructor(private http: HttpClient, private router: Router) {
+    if (this.getToken()) {
+      this.obtenerUsuarioActual().subscribe({
+        error: (err) => console.debug('[AuthService] No se pudo autorefrescar el usuario al inicializar:', err)
+      });
+    }
+  }
+
+  // ── Obtener/Refrescar Usuario Actual ──
+  obtenerUsuarioActual(): Observable<ResultadoApi<RespuestaAutenticacion>> {
+    return this.http.get<ResultadoApi<RespuestaAutenticacion>>(`${this.base}/me`).pipe(
+      tap(resp => {
+        if (resp.exito) {
+          this.actualizarSesion(resp.datos);
+        }
+      })
+    );
+  }
+
+  actualizarSesion(resp: RespuestaAutenticacion): void {
+    const sesion: UsuarioSesion = {
+      id: resp.idUsuario,
+      nombreUsuario: resp.nombreUsuario,
+      roles: resp.roles,
+      token: resp.tokenAcceso,
+      expiraEn: resp.expiraEn
+    };
+    localStorage.setItem(TOKEN_KEY, resp.tokenAcceso);
+    localStorage.setItem(USUARIO_KEY, JSON.stringify(sesion));
+    this._usuario.set(sesion);
+    this.dashboardState.marcarForzarRefresco();
+  }
 
   // ── Login ──
   login(solicitud: SolicitudLogin): Observable<ResultadoApi<RespuestaAutenticacion>> {

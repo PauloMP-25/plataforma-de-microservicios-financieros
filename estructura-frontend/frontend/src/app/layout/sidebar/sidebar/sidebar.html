@@ -1,6 +1,6 @@
 <div class="sidebar-backdrop" *ngIf="sidebarState.mobileOpen()" (click)="closeMobile()"></div>
 
-<nav class="sidebar" [class.collapsed]="sidebarState.collapsed()" [class.mobile-open]="sidebarState.mobileOpen()">
+<nav class="sidebar" [class.collapsed]="sidebarState.collapsed()" [class.mobile-open]="sidebarState.mobileOpen()" [class.modal-open]="modalPlanesAbierto()">
 
   <!-- ── LOGO  ── -->
   <div class="sidebar-header">
@@ -193,8 +193,8 @@
             </div>
           </div>
 
-          <button type="button" class="plan-card__button plan-card__button--pro">
-            ✨ Elegir Plan Pro
+          <button type="button" class="plan-card__button plan-card__button--pro" (click)="comprarPlan('PRO')" [disabled]="comprandoPlan()">
+            {{ comprandoPlan() ? 'Redirigiendo...' : '✨ Elegir Plan Pro' }}
           </button>
 
           <p class="plan-card__secure">
@@ -283,8 +283,8 @@
             </div>
           </div>
 
-          <button type="button" class="plan-card__button plan-card__button--premium">
-            ✨ Elegir Plan Premium
+          <button type="button" class="plan-card__button plan-card__button--premium" (click)="comprarPlan('PREMIUM')" [disabled]="comprandoPlan()">
+            {{ comprandoPlan() ? 'Redirigiendo...' : '✨ Elegir Plan Premium' }}
           </button>
 
           <p class="plan-card__secure">

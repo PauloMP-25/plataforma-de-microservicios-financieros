@@ -10,6 +10,7 @@ import { SidebarStateService } from '../../../core/services/sidebar-state.servic
 import { FinancieroService } from '../../../core/services/Financiero.service';
 import { AppEventBus } from '../../../core/services/app-event-bus.service';
 import { Transacciones } from '../../../core/services/transacciones';
+import { IaService } from '../../../core/services/ia.service';
 
 interface Breadcrumb  { label: string; route?: string; }
 
@@ -42,6 +43,7 @@ const FLOAT_MSGS = [
   styleUrl:    './header.scss'
 })
 export class Header implements OnInit, OnDestroy {
+  public readonly iaService = inject(IaService);
 
 
   pageTitle   = 'Resumen';

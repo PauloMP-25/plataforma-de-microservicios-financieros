@@ -52,7 +52,7 @@
 .luka-content {
   flex: 1;
   margin-top: 0;
-  overflow-y: auto;
+  overflow: auto;
   background: linear-gradient(180deg, var(--bg-body) 0%, var(--bg-surface-soft) 100%);
   padding: 24px 24px 32px;
 }

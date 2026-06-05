@@ -77,6 +77,14 @@ export const routes: Routes = [
             .then(m => m.PERFIL_ROUTES)
       },
       
+      // ── Suscripcion ──
+      {
+        path: 'suscripcion',
+        loadChildren: () =>
+          import('./features/suscripcion/suscripcion.routes')
+            .then(m => m.SUSCRIPCION_ROUTES)
+      },
+      
       // -- Ayuda --
       {
         path: 'ayuda',

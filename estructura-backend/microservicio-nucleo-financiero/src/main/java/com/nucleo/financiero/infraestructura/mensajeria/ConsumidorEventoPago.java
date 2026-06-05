@@ -28,27 +28,25 @@ public class ConsumidorEventoPago {
     private final CategoriaRepository categoriaRepository;
 
     /**
-     * Al detectar un pago exitoso, lo registra como un INGRESO en el núcleo financiero.
+     * Al detectar un pago exitoso, lo registra como un GASTO en el núcleo financiero.
      */
     @RabbitListener(queues = NombresCola.PAGOS_EXITOSOS_FINANCIERO)
-    public void registrarIngresoSuscripcion(EventoPagoExitosoDTO evento) {
-        log.info("[FINANCIERO-CONSUMER] Registrando ingreso por suscripción: {} - {}", 
+    public void registrarGastoSuscripcion(EventoPagoExitosoDTO evento) {
+        log.info("[FINANCIERO-CONSUMER] Registrando gasto por suscripción: {} - {}", 
             evento.planNuevo(), evento.monto());
 
         try {
-            // Buscamos dinámicamente la categoría adecuada para un ingreso de suscripción.
-            // Primero se intenta con "Otros Ingresos", de lo contrario se utiliza "Salario" (ambas creadas por defecto).
-            Categoria categoria = categoriaRepository.findByNombreIgnoreCase("Otros Ingresos")
-                    .or(() -> categoriaRepository.findByNombreIgnoreCase("Salario"))
-                    .orElseThrow(() -> new IllegalArgumentException("No se encontró una categoría por defecto para procesar el pago."));
+            // Buscamos dinámicamente la categoría adecuada para un gasto de suscripción.
+            Categoria categoria = categoriaRepository.findByNombreIgnoreCase("Suscripciones")
+                    .orElseThrow(() -> new IllegalArgumentException("No se encontró la categoría 'Suscripciones' para procesar el pago."));
 
             UUID categoriaId = categoria.getId();
 
-            SolicitudTransaccion ingreso = new SolicitudTransaccion(
+            SolicitudTransaccion gasto = new SolicitudTransaccion(
                     evento.usuarioId(),
                     "Suscripción LUKA APP",
                     evento.monto(),
-                    TipoMovimiento.INGRESO,
+                    TipoMovimiento.GASTO,
                     categoriaId, // Categoría recuperada dinámicamente
                     MetodoPago.TRANSFERENCIA, // Stripe se considera transferencia electrónica
                     "pago,suscripcion," + evento.planNuevo(),
@@ -56,8 +54,8 @@ public class ConsumidorEventoPago {
                     java.time.LocalDateTime.now()
             );
 
-            servicioTransaccion.registrar(ingreso, "SYSTEM-PAGOS");
-            log.info("[FINANCIERO-SUCCESS] Ingreso registrado para usuario: {}", evento.usuarioId());
+            servicioTransaccion.registrar(gasto, "SYSTEM-PAGOS");
+            log.info("[FINANCIERO-SUCCESS] Gasto registrado para usuario: {}", evento.usuarioId());
         } catch (IllegalArgumentException | ExcepcionRecursoNoEncontrado e) {
             log.error("[FINANCIERO-ERROR] Error de negocio al procesar pago (no se relanza): {}", e.getMessage());
         } catch (Exception e) {
