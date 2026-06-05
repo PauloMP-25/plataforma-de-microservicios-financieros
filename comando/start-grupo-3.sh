@@ -30,23 +30,17 @@ fi
 
 cd "$DOCKER_DIR"
 
-# Validar Grupo 1
-GATEWAY_RUNNING=$(docker-compose -f "$COMPOSE_FILE" ps --services --filter status=running | grep -E "^api-gateway$" || echo "")
-if [ -z "$GATEWAY_RUNNING" ]; then
-    echo -e "${RED}❌ GRUPO 1 no está ejecutándose${NC}"
-    echo -e "${YELLOW}Ejecuta primero: devbackend-g1${NC}"
+# Validar que la infraestructura local (devinfra) esté ejecutándose
+POSTGRES_RUNNING=$(docker ps -q --filter name=luka-postgres-infra --filter status=running)
+REDIS_RUNNING=$(docker ps -q --filter name=luka-redis-infra --filter status=running)
+RABBIT_RUNNING=$(docker ps -q --filter name=luka-rabbitmq-infra --filter status=running)
+
+if [ -z "$POSTGRES_RUNNING" ] || [ -z "$REDIS_RUNNING" ] || [ -z "$RABBIT_RUNNING" ]; then
+    echo -e "${RED}❌ Error: La infraestructura local (devinfra) no está ejecutándose.${NC}"
+    echo -e "${YELLOW}Por favor, ejecuta primero: devinfra${NC}"
     exit 1
 fi
-
-# Validar Grupo 2
-USUARIO_RUNNING=$(docker-compose -f "$COMPOSE_FILE" ps --services --filter status=running | grep -E "^ms-usuario$" || echo "")
-if [ -z "$USUARIO_RUNNING" ]; then
-    echo -e "${RED}❌ GRUPO 2 no está ejecutándose${NC}"
-    echo -e "${YELLOW}Ejecuta primero: devbackend-g2${NC}"
-    exit 1
-fi
-
-echo -e "${GREEN}✅ Grupo 1 y Grupo 2 detectados${NC}"
+echo -e "${GREEN}✅ Infraestructura local detectada (Postgres, Redis, RabbitMQ)${NC}"
 echo ""
 
 SERVICES="ms-nucleo-financiero ms-ia ms-suscripciones ms-pagos"
@@ -58,12 +52,20 @@ echo "   • ms-suscripciones    → puerto 8088"
 echo "   • ms-pagos            → puerto 8087"
 echo ""
 
+for service in $SERVICES; do
+    echo -e "${YELLOW}🗑️ Deteniendo y removiendo contenedor anterior para: $service...${NC}"
+    docker-compose -f "$COMPOSE_FILE" rm -f -s -v $service || true
+    echo -e "${YELLOW}🔨 Compilando y construyendo imagen para: $service...${NC}"
+    docker-compose --env-file ../.env -f "$COMPOSE_FILE" build $service
+done
+
+echo ""
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${GREEN}🐳 Ejecutando con: $COMPOSE_FILE${NC}"
+echo -e "${GREEN}🐳 Creando contenedores con: $COMPOSE_FILE${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
-docker-compose --env-file ../.env -f "$COMPOSE_FILE" up -d $SERVICES
+docker-compose --env-file ../.env -f "$COMPOSE_FILE" up --no-start --no-build --force-recreate $SERVICES
 
 echo ""
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"

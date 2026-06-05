@@ -4,21 +4,22 @@ Este manual sirve como referencia técnica para mapear las rutas llamadas desde 
 
 ---
 
-## 🔐 1. Autenticación (`AuthService` → `ms-usuario`)
+## 🔐 1. Autenticación y Datos Personales (`AuthService` → `ms-usuario`)
 
-* **Prefijo en API Gateway:** `/api/v1/auth`
+* **Prefijo en API Gateway:** `/api/v1/auth`, `/api/v1/datos-personales`
 * **Microservicio destino:** `ms-usuario` (Puerto interno: `8081`)
 
-| Método   | Endpoint                           | Descripción                          | Body / Parámetros                              | FUNCIONAL |
-|:-------- |:---------------------------------- |:------------------------------------ |:---------------------------------------------- |:---------:|
-| **POST** | `/api/v1/auth/login`               | Inicia sesión del usuario            | `SolicitudLogin` (JSON)                        | `[x]`     |
-| **POST** | `/api/v1/auth/registrar`           | Registra un nuevo usuario            | `SolicitudRegistro` (JSON)                     | `[x]`     |
-| **PUT**  | `/api/v1/auth/activar/{usuarioId}` | Activa la cuenta con código OTP      | Params: `codigoOtp`, `telefono` (opcional)     | `[x]`     |
-| **POST** | `/api/v1/auth/solicitar-otp`       | Solicita reenvío de OTP              | `email`, `tipo` ('EMAIL'/'SMS'/'WHATSAPP')     | `[x]`     |
-| **POST** | `/api/v1/auth/recuperar-solicitar` | Solicita link/código de recuperación | `{ email }` (JSON)                             | `[ ]`     |
-| **POST** | `/api/v1/auth/recuperar-confirmar` | Confirma OTP y cambia password       | Params: `registroId`, `codigoOtp`. Body: `dto` | `[ ]`     |
-| **PUT**  | `/api/v1/auth/cambiar-password`    | Cambia la contraseña (autenticado)   | `SolicitudCambioPassword` (JSON)               | `[ ]`     |
-| **POST** | `/api/v1/auth/logout`              | Cierra la sesión en el backend       | Ninguno                                        | `[x]`     |
+| Método   | Endpoint                              | Descripción                          | Body / Parámetros                              | FUNCIONAL |
+|:-------- |:------------------------------------- |:------------------------------------ |:---------------------------------------------- |:---------:|
+| **POST** | `/api/v1/auth/login`                  | Inicia sesión del usuario            | `SolicitudLogin` (JSON)                        | `[x]`     |
+| **POST** | `/api/v1/auth/registrar`              | Registra un nuevo usuario            | `SolicitudRegistro` (JSON)                     | `[x]`     |
+| **PUT**  | `/api/v1/auth/activar/{usuarioId}`    | Activa la cuenta con código OTP      | Params: `codigoOtp`, `telefono` (opcional)     | `[x]`     |
+| **POST** | `/api/v1/auth/solicitar-otp`          | Solicita reenvío de OTP              | `email`, `tipo` ('EMAIL'/'SMS'/'WHATSAPP')     | `[x]`     |
+| **POST** | `/api/v1/auth/recuperar-solicitar`    | Solicita link/código de recuperación | `{ email }` (JSON)                             | `[ ]`     |
+| **POST** | `/api/v1/auth/recuperar-confirmar`    | Confirma OTP y cambia password       | Params: `registroId`, `codigoOtp`. Body: `dto` | `[ ]`     |
+| **PUT**  | `/api/v1/auth/cambiar-password`       | Cambia la contraseña (autenticado)   | `SolicitudCambioPassword` (JSON)               | `[ ]`     |
+| **POST** | `/api/v1/auth/logout`                 | Cierra la sesión en el backend       | Ninguno                                        | `[x]`     |
+| **PUT**  | `/api/v1/datos-personales/telefono/{u}`| Sincroniza teléfono verificado       | Path: `usuarioId`. Param: `telefono`           | `[x]`     |
 
 ---
 
@@ -49,14 +50,14 @@ Este manual sirve como referencia técnica para mapear las rutas llamadas desde 
 | **PUT**    | `/api/v1/clientes/metas/{metaId}`          | Actualiza datos de la meta de ahorro          | `SolicitudMetaAhorro` (JSON)   | `[x]`     |
 | **GET**    | `/api/v1/clientes/metas`                   | Lista todas las metas de ahorro               | Parámetros: `page`, `size`     | `[x]`     |
 | **GET**    | `/api/v1/clientes/metas/activas`           | Lista las metas activas vigentes              | Parámetros: `page`, `size`     | `[x]`     |
-| **GET**    | `/api/v1/clientes/metas/{metaId}`          | Detalle de una meta específica                | Ninguno                        | `[ ]`     |
-| **PATCH**  | `/api/v1/clientes/metas/{metaId}/progreso` | Actualiza el ahorro actual de la meta         | `{ montoActual }` (JSON)       | `[ ]`     |
+| **GET**    | `/api/v1/clientes/metas/{metaId}`          | Detalle de una meta específica                | Ninguno                        | `[x]`     |
+| **PATCH**  | `/api/v1/clientes/metas/{metaId}/progreso` | Actualiza el ahorro actual de la meta         | `{ montoActual }` (JSON)       | `[x]`     |
 | **DELETE** | `/api/v1/clientes/metas/{metaId}`          | Elimina la meta de ahorro (soft delete)       | Ninguno                        | `[x]`     |
-| **POST**   | `/api/v1/clientes/limites`                 | Crea un límite de gasto mensual (presupuesto) | `SolicitudLimiteGasto` (JSON)  | `[ ]`     |
-| **GET**    | `/api/v1/clientes/limites/activo`          | Obtiene el límite activo del mes              | Ninguno                        | `[ ]`     |
-| **PATCH**  | `/api/v1/clientes/limites`                 | Modifica el límite activo actual              | `SolicitudLimiteGasto` (JSON)  | `[ ]`     |
-| **GET**    | `/api/v1/clientes/limites`                 | Historial de límites/presupuestos del cliente | Ninguno                        | `[ ]`     |
-| **DELETE** | `/api/v1/clientes/limites`                 | Elimina/desactiva el límite mensual activo    | Ninguno                        | `[ ]`     |
+| **POST**   | `/api/v1/clientes/limites`                 | Crea un límite de gasto mensual (presupuesto) | `SolicitudLimiteGasto` (JSON)  | `[x]`     |
+| **GET**    | `/api/v1/clientes/limites/activo`          | Obtiene el límite activo del mes              | Ninguno                        | `[x]`     |
+| **PATCH**  | `/api/v1/clientes/limites`                 | Modifica el límite activo actual              | `SolicitudLimiteGasto` (JSON)  | `[x]`     |
+| **GET**    | `/api/v1/clientes/limites`                 | Historial de límites/presupuestos del cliente | Ninguno                        | `[x]`     |
+| **DELETE** | `/api/v1/clientes/limites`                 | Elimina/desactiva el límite mensual activo    | Ninguno                        | `[x]`     |
 
 ---
 
@@ -68,14 +69,14 @@ Este manual sirve como referencia técnica para mapear las rutas llamadas desde 
 | Método     | Endpoint                                     | Descripción                                | Body / Parámetros                                                              | FUNCIONAL |
 |:---------- |:-------------------------------------------- |:------------------------------------------ |:------------------------------------------------------------------------------ |:---------:|
 | **POST**   | `/api/v1/financiero/transacciones`           | Registra una transacción (ingreso/gasto)   | `TransaccionRequestDTO` (JSON)                                                 | `[x]`     |
-| **POST**   | `/api/v1/financiero/transacciones/lote`      | Registra múltiples transacciones a la vez  | `TransaccionRequestDTO[]` (JSON)                                               | `[ ]`     |
-| **GET**    | `/api/v1/financiero/transacciones/historial` | Historial paginado con filtros de búsqueda | Params: `usuarioId`, `tipo`, `categoriaId`, `mes`, `anio`, `pagina`, `tamanio` | `[ ]`     |
-| **GET**    | `/api/v1/financiero/transacciones/{id}`      | Detalle de una transacción por ID          | Ninguno                                                                        | `[ ]`     |
-| **PUT**    | `/api/v1/financiero/transacciones/{id}`      | Actualiza los datos de la transacción      | `TransaccionRequestDTO` (JSON)                                                 | `[ ]`     |
-| **DELETE** | `/api/v1/financiero/transacciones/{id}`      | Elimina la transacción del sistema         | Ninguno                                                                        | `[ ]`     |
+| **POST**   | `/api/v1/financiero/transacciones/lote`      | Registra múltiples transacciones a la vez  | `TransaccionRequestDTO[]` (JSON)                                               | `[x]`     |
+| **GET**    | `/api/v1/financiero/transacciones/historial` | Historial paginado con filtros de búsqueda | Params: `usuarioId`, `tipo`, `categoriaId`, `mes`, `anio`, `pagina`, `tamanio` | `[x]`     |
+| **GET**    | `/api/v1/financiero/transacciones/{id}`      | Detalle de una transacción por ID          | Ninguno                                                                        | `[x]`     |
+| **PUT**    | `/api/v1/financiero/transacciones/{id}`      | Actualiza los datos de la transacción      | `TransaccionRequestDTO` (JSON)                                                 | `[x]`     |
+| **DELETE** | `/api/v1/financiero/transacciones/{id}`      | Elimina la transacción del sistema         | Ninguno                                                                        | `[x]`     |
 | **GET**    | `/api/v1/financiero/transacciones/resumen`   | Sumatorias de ingresos, egresos y balance  | Params: `usuarioId`, `mes` (opcional), `anio` (opcional)                       | `[x]`     |
 | **GET**    | `/api/v1/financiero/categorias`              | Lista categorías para ingresos/gastos      | Params: `tipo` ('INGRESO' / 'GASTO')                                           | `[x]`     |
-| **POST**   | `/api/v1/financiero/categorias`              | Crea una categoría personalizada           | `CategoriaRequestDTO` (JSON)                                                   | `[ ]`     |
+| **POST**   | `/api/v1/financiero/categorias`              | Crea una categoría personalizada           | `CategoriaRequestDTO` (JSON)                                                   | `[x]`     |
 
 ---
 
@@ -86,8 +87,8 @@ Este manual sirve como referencia técnica para mapear las rutas llamadas desde 
 
 | Método  | Endpoint                     | Descripción                                                 | Headers Requeridos                                    | FUNCIONAL |
 |:------- |:---------------------------- |:----------------------------------------------------------- |:----------------------------------------------------- |:---------:|
-| **GET** | `/api/v1/dashboard/resumen`  | Datos del perfil, KPIs acumulados y transacciones recientes | `X-Usuario-Id` (UUID), `Authorization` (Bearer token) | `[ ]`     |
-| **GET** | `/api/v1/dashboard/graficos` | Puntos para gráfico de flujo de caja e ingresos/egresos     | `X-Usuario-Id` (UUID), `Authorization` (Bearer token) | `[ ]`     |
+| **GET** | `/api/v1/dashboard/resumen`  | Datos del perfil, KPIs acumulados y transacciones recientes | `X-Usuario-Id` (UUID), `Authorization` (Bearer token) | `[x]`     |
+| **GET** | `/api/v1/dashboard/graficos` | Puntos para gráfico de flujo de caja e ingresos/egresos     | `X-Usuario-Id` (UUID), `Authorization` (Bearer token) | `[x]`     |
 
 ---
 
@@ -138,3 +139,32 @@ Este manual sirve como referencia técnica para mapear las rutas llamadas desde 
 | **GET**  | `/api/v1/auditoria/transacciones`     | Lista auditoría de transacciones         | Params: `servicioOrigen`, `desde`, `hasta`, `pagina`, `tamanio` | `[x]`     |
 | **POST** | `/api/v1/auditoria/registrar`         | Registra evento general en el log        | `RegistroAuditoriaRequestDTO` (JSON)                            | `[x]`     |
 | **GET**  | `/api/v1/auditoria/registros`         | Lista logs de eventos de auditoría       | Params: `modulo`, `nivel`, `pagina`, `tamanio`                  | `[x]`     |
+
+---
+
+## 💳 9. Monetización y Pagos (`SuscripcionPremium` → `ms-pago`)
+
+* **Prefijo en API Gateway:** `/api/v1/pagos`
+* **Microservicio destino:** `ms-pago` (Puerto interno: `8087`)
+
+| Método   | Endpoint                      | Descripción                                    | Body / Parámetros                  | FUNCIONAL |
+|:-------- |:----------------------------- |:---------------------------------------------- |:---------------------------------- |:---------:|
+| **POST** | `/api/v1/pagos/checkout`      | Inicia sesión de checkout Stripe (Plan Premium)| `SolicitudPagoDTO` (JSON)          | `[x]`     |
+| **GET**  | `/api/v1/pagos/mi-suscripcion`| Obtiene estado de la suscripción del cliente   | Ninguno                            | `[x]`     |
+| **POST** | `/api/v1/pagos/webhook`       | Recibe notificaciones asíncronas de Stripe     | Payload bruto de Stripe            | `[x]`     |
+
+---
+
+## 📅 10. Suscripciones y Gastos Recurrentes (`SuscripcionService` → `ms-suscripciones`)
+
+* **Prefijo en API Gateway:** `/api/v1/suscripciones`
+* **Microservicio destino:** `ms-suscripciones` (Puerto interno: `8088`)
+
+| Método   | Endpoint                                   | Descripción                                     | Body / Parámetros                  | FUNCIONAL |
+|:-------- |:------------------------------------------ |:----------------------------------------------- |:---------------------------------- |:---------:|
+| **POST** | `/api/v1/suscripciones`                    | Crea una nueva suscripción de servicios         | `SolicitudCrearSuscripcion` (JSON) | `[x]`     |
+| **GET**  | `/api/v1/suscripciones/{id}`               | Consulta una suscripción por ID                 | Ninguno                            | `[x]`     |
+| **GET**  | `/api/v1/suscripciones/usuario/{usuarioId}`| Lista suscripciones paginadas del usuario       | Params: `pagina`, `tamanio`, etc.  | `[x]`     |
+| **POST** | `/api/v1/suscripciones/{id}/pagar`         | Registra pago manual (Header: Idempotency-Key)  | `SolicitudRegistrarPago` (JSON)    | `[x]`     |
+| **POST** | `/api/v1/suscripciones/{id}/cancelar`      | Cancela suscripción recurrente                  | Ninguno                            | `[x]`     |
+| **PUT**  | `/api/v1/suscripciones/{id}`               | Actualiza detalles de la suscripción            | `SolicitudEditarSuscripcion` (JSON)| `[x]`     |

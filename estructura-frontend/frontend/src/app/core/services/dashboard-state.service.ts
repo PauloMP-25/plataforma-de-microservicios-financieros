@@ -33,7 +33,14 @@ export class DashboardStateService {
   // Duración de caché local en ms (15 minutos)
   private readonly CACHE_DURATION_MS = 15 * 60 * 1000;
 
+  // Bandera para forzar actualización del backend al iniciar sesión
+  private forzarProximoRefresco = false;
+
   constructor(private http: HttpClient) {}
+
+  marcarForzarRefresco(): void {
+    this.forzarProximoRefresco = true;
+  }
 
   /**
    * Carga el perfil del usuario, los KPIs (resumen) y las transacciones recientes.
@@ -41,7 +48,8 @@ export class DashboardStateService {
    */
   cargarResumen(forzar: boolean = false): void {
     const ahora = Date.now();
-    if (!forzar && this.resumen() && (ahora - this.ultimoRefrescoKPIs < this.CACHE_DURATION_MS)) {
+    const forzarFinal = forzar || this.forzarProximoRefresco;
+    if (!forzarFinal && this.resumen() && (ahora - this.ultimoRefrescoKPIs < this.CACHE_DURATION_MS)) {
       // Retener estado local (caché cliente activa)
       return;
     }
@@ -49,7 +57,7 @@ export class DashboardStateService {
     this.loadingResumen.set(true);
     this.error.set(null);
 
-    const url = forzar ? `${this.base}/resumen?refresh=true` : `${this.base}/resumen`;
+    const url = forzarFinal ? `${this.base}/resumen?refresh=true` : `${this.base}/resumen`;
     this.http.get<ResultadoApi<any>>(url).subscribe({
       next: (resp) => {
         if (resp.exito && resp.datos) {
@@ -61,6 +69,7 @@ export class DashboardStateService {
           this.error.set(resp.mensaje || 'Error al cargar resumen');
         }
         this.loadingResumen.set(false);
+        this.limpiarBanderaRefresco();
       },
       error: (err) => {
         // Fallback a mock si falla el BFF
@@ -84,6 +93,7 @@ export class DashboardStateService {
         this.recientes.set([]);
         this.error.set(null);
         this.loadingResumen.set(false);
+        this.limpiarBanderaRefresco();
       }
     });
   }
@@ -94,7 +104,8 @@ export class DashboardStateService {
   cargarGraficos(forzar: boolean = false): void {
     this.loadingGraficos.set(true);
 
-    const url = forzar ? `${this.base}/graficos?refresh=true` : `${this.base}/graficos`;
+    const forzarFinal = forzar || this.forzarProximoRefresco;
+    const url = forzarFinal ? `${this.base}/graficos?refresh=true` : `${this.base}/graficos`;
     this.http.get<ResultadoApi<any>>(url).subscribe({
       next: (resp) => {
         if (resp.exito && resp.datos) {
@@ -102,12 +113,22 @@ export class DashboardStateService {
           this.distribucionGastos.set(resp.datos.distribucionGastos || []);
         }
         this.loadingGraficos.set(false);
+        this.limpiarBanderaRefresco();
       },
       error: (err) => {
         console.error('[DashboardStateService] Error cargando gráficos:', err);
         this.loadingGraficos.set(false);
+        this.limpiarBanderaRefresco();
       }
     });
+  }
+
+  private limpiarBanderaRefresco(): void {
+    if (this.forzarProximoRefresco) {
+      setTimeout(() => {
+        this.forzarProximoRefresco = false;
+      }, 0);
+    }
   }
 
   /**

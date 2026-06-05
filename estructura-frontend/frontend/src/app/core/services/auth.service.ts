@@ -113,6 +113,8 @@ export class AuthService {
     localStorage.setItem(TOKEN_KEY, resp.tokenAcceso);
     localStorage.setItem(USUARIO_KEY, JSON.stringify(sesion));
     this._usuario.set(sesion);
+    // Forzar refresco limpio del dashboard tras login
+    this.dashboardState.marcarForzarRefresco();
   }
 
   private cargarDesdStorage(): UsuarioSesion | null {

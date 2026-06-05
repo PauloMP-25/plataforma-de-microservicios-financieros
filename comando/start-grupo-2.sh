@@ -30,14 +30,17 @@ fi
 
 cd "$DOCKER_DIR"
 
-# Validar que Grupo 1 esté corriendo
-GATEWAY_RUNNING=$(docker-compose -f "$COMPOSE_FILE" ps --services --filter status=running | grep -E "^api-gateway$" || echo "")
-if [ -z "$GATEWAY_RUNNING" ]; then
-    echo -e "${YELLOW}⚠️  GRUPO 1 no está ejecutándose${NC}"
-    echo -e "${YELLOW}Ejecuta primero: devbackend-g1${NC}"
+# Validar que la infraestructura local (devinfra) esté ejecutándose
+POSTGRES_RUNNING=$(docker ps -q --filter name=luka-postgres-infra --filter status=running)
+REDIS_RUNNING=$(docker ps -q --filter name=luka-redis-infra --filter status=running)
+RABBIT_RUNNING=$(docker ps -q --filter name=luka-rabbitmq-infra --filter status=running)
+
+if [ -z "$POSTGRES_RUNNING" ] || [ -z "$REDIS_RUNNING" ] || [ -z "$RABBIT_RUNNING" ]; then
+    echo -e "${RED}❌ Error: La infraestructura local (devinfra) no está ejecutándose.${NC}"
+    echo -e "${YELLOW}Por favor, ejecuta primero: devinfra${NC}"
     exit 1
 fi
-echo -e "${GREEN}✅ Grupo 1 detectado${NC}"
+echo -e "${GREEN}✅ Infraestructura local detectada (Postgres, Redis, RabbitMQ)${NC}"
 echo ""
 
 SERVICES="ms-usuario ms-cliente ms-mensajeria"
@@ -48,12 +51,20 @@ echo "   • ms-cliente      → puerto 8083"
 echo "   • ms-mensajeria   → puerto 8084"
 echo ""
 
+for service in $SERVICES; do
+    echo -e "${YELLOW}🗑️ Deteniendo y removiendo contenedor anterior para: $service...${NC}"
+    docker-compose -f "$COMPOSE_FILE" rm -f -s -v $service || true
+    echo -e "${YELLOW}🔨 Compilando y construyendo imagen para: $service...${NC}"
+    docker-compose --env-file ../.env -f "$COMPOSE_FILE" build $service
+done
+
+echo ""
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${GREEN}🐳 Ejecutando con: $COMPOSE_FILE${NC}"
+echo -e "${GREEN}🐳 Creando contenedores con: $COMPOSE_FILE${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
-docker-compose --env-file ../.env -f "$COMPOSE_FILE" up -d $SERVICES
+docker-compose --env-file ../.env -f "$COMPOSE_FILE" up --no-start --no-build --force-recreate $SERVICES
 
 echo ""
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"

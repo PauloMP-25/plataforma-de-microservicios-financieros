@@ -54,6 +54,14 @@
           <strong class="metric-value">{{ formatSoles(balanceActual) }}</strong>
         </div>
       </article>
+
+      <article class="metric-pill metric-pill--streak" title="Racha de transacciones: días consecutivos registrando movimientos">
+        <span class="metric-icon"><i class="fa-solid fa-fire"></i></span>
+        <div class="metric-copy">
+          <span class="metric-label">Racha de ingresos</span>
+          <strong class="metric-value">{{ rachaDias() }} {{ rachaDias() === 1 ? 'día' : 'días' }}</strong>
+        </div>
+      </article>
     </div>
 
     <!-- ═════ PERFIL ═════ -->
