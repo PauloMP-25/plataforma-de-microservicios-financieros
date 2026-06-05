@@ -87,7 +87,7 @@ export class DashboardPage implements OnInit, OnDestroy {
 
   // Cálculos reactivos de KPIs expuestos a la vista (leídos del Signal)
   get totalBalance(): number {
-    return this.stateService.resumen()?.balance ?? 145000;
+    return this.stateService.resumen()?.balance ?? 0;
   }
 
   get totalIngresos(): number {

@@ -52,19 +52,10 @@ fi
 # 2. Advertencia de almacenamiento Docker
 echo -e "${BLUE}🔍 Verificando almacenamiento Docker...${NC}"
 DOCKER_ROOT=$(docker info 2>/dev/null | grep "Docker Root Dir" | cut -d':' -f2- | xargs || echo "")
-if [[ "$DOCKER_ROOT" == *"/media/paulo/Memoria Linux"* ]]; then
-    echo -e "${GREEN}✅ Docker está configurado en Memoria Linux ($DOCKER_ROOT).${NC}"
+if [[ "$DOCKER_ROOT" == *"/media/paulo/Memoria Linux"* || "$DOCKER_ROOT" == "/var/lib/docker"* || "$DOCKER_ROOT" == *"/media/paulo/datos"* ]]; then
+    echo -e "${GREEN}✅ Docker está configurado correctamente ($DOCKER_ROOT).${NC}"
 else
-    echo -e "${YELLOW}⚠️  Aviso: Docker NO está configurado para usar 'Memoria Linux'.${NC}"
-    echo -e "Actualmente usa: ${RED}$DOCKER_ROOT${NC}"
-    echo -e "Puedes cambiarlo ejecutando: ${GREEN}sudo ./configurar-espacio-docker.sh${NC}"
-    echo ""
-    read -p "¿Deseas continuar de todas formas con el arranque? (s/n): " -n 1 -r
-    echo ""
-    if [[ ! $REPLY =~ ^[Ss]$ ]]; then
-        echo -e "${RED}Arranque cancelado por el usuario.${NC}"
-        exit 1
-    fi
+    echo -e "${YELLOW}⚠️  Aviso: Docker usa: $DOCKER_ROOT${NC}"
 fi
 echo ""
 
@@ -74,13 +65,13 @@ cd "$DOCKER_DIR"
 # 3. Definición de Grupos de Servicios (Solo microservicios activos)
 GRUPO_1="api-gateway ms-auditoria"
 GRUPO_2="ms-usuario ms-cliente ms-mensajeria"
-GRUPO_3="ms-nucleo-financiero ms-ia ms-pagos"
+GRUPO_3="ms-nucleo-financiero ms-ia ms-pagos ms-suscripciones"
 
 # Iniciar Grupo 1
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${GREEN}📦 Levantar Grupo 1: API Gateway + Auditoría...${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-docker-compose -f "$COMPOSE_FILE" up -d $GRUPO_1
+docker-compose --env-file ../.env -f "$COMPOSE_FILE" up -d $GRUPO_1
 echo ""
 
 echo -e "${YELLOW}⏳ Esperando 10 segundos para inicializar infraestructura...${NC}"
@@ -91,7 +82,7 @@ echo ""
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${GREEN}📦 Levantar Grupo 2: Usuario + Cliente + Mensajería...${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-docker-compose -f "$COMPOSE_FILE" up -d $GRUPO_2
+docker-compose --env-file ../.env -f "$COMPOSE_FILE" up -d $GRUPO_2
 echo ""
 
 echo -e "${YELLOW}⏳ Esperando 5 segundos para estabilización...${NC}"
@@ -102,7 +93,7 @@ echo ""
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${GREEN}📦 Levantar Grupo 3: Financiero + IA + Pagos...${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-docker-compose -f "$COMPOSE_FILE" up -d $GRUPO_3
+docker-compose --env-file ../.env -f "$COMPOSE_FILE" up -d $GRUPO_3
 echo ""
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"

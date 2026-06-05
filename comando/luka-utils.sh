@@ -12,7 +12,7 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
-DOCKER_DIR="$PROJECT_ROOT/proyecto-desarrollo-web-integrado.worktrees/agents-configurar-entorno-espanol/estructura-backend/docker"
+DOCKER_DIR="$PROJECT_ROOT/estructura-backend/docker"
 
 # ════════════════════════════════════════════════════════════════════════════
 # DASHBOARD - Muestra estado completo del sistema
@@ -34,9 +34,9 @@ dashboard() {
     # Resumen por grupo
     echo -e "${BLUE}📊 RESUMEN POR GRUPO:${NC}"
     
-    GROUP1=$(docker-compose ps | grep -E "api-gateway|ms-auditoria" | grep "Up" | wc -l)
-    GROUP2=$(docker-compose ps | grep -E "ms-usuario|ms-cliente|ms-mensajeria" | grep "Up" | wc -l)
-    GROUP3=$(docker-compose ps | grep -E "ms-nucleo-financiero|ms-ia|ms-suscripciones|ms-pago" | grep "Up" | wc -l)
+    GROUP1=$(docker-compose ps --services --filter status=running | grep -E "^(api-gateway|ms-auditoria)$" | wc -l)
+    GROUP2=$(docker-compose ps --services --filter status=running | grep -E "^(ms-usuario|ms-cliente|ms-mensajeria)$" | wc -l)
+    GROUP3=$(docker-compose ps --services --filter status=running | grep -E "^(ms-nucleo-financiero|ms-ia|ms-suscripciones|ms-pago|ms-pagos)$" | wc -l)
     
     echo -e "   Grupo 1: ${GREEN}$GROUP1${NC}/2 servicios"
     echo -e "   Grupo 2: ${GREEN}$GROUP2${NC}/3 servicios"

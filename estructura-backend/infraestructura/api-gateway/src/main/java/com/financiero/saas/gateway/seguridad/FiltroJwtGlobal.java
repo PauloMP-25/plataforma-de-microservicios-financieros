@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.cors.reactive.CorsUtils;
 import java.util.List;
 import java.nio.charset.StandardCharsets;
 
@@ -40,6 +41,11 @@ public class FiltroJwtGlobal implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        // 0. Si es una petición de Pre-flight (CORS OPTIONS), la dejamos pasar sin validar JWT
+        if (CorsUtils.isPreFlightRequest(exchange.getRequest())) {
+            return chain.filter(exchange);
+        }
+
         String path = exchange.getRequest().getURI().getPath();
 
         log.debug("Verificando JWT para petición: [{} {}]", exchange.getRequest().getMethod(), path);

@@ -1,0 +1,71 @@
+version: '3.9'
+
+services:
+  postgres-infra:
+    image: postgres:16-alpine
+    container_name: luka-postgres-infra
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: adminUTP
+      POSTGRES_DB: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - vol-postgres-infra:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  redis-infra:
+    image: redis:7-alpine
+    container_name: luka-redis-infra
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  rabbitmq-infra:
+    image: rabbitmq:3.13-management-alpine
+    container_name: luka-rabbitmq-infra
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_VHOST: /
+    volumes:
+      - vol-rabbitmq-infra-data:/var/lib/rabbitmq
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+volumes:
+  vol-postgres-infra:
+    driver: local
+  vol-rabbitmq-infra-data:
+    driver: local

@@ -14,18 +14,37 @@ class CacheRedis:
     """
     def __init__(self):
         try:
+            password_to_use = config.redis_password or None
             self._client = redis.Redis(
                 host=config.redis_host,
                 port=config.redis_port,
                 db=config.redis_db,
-                password=config.redis_password or None,
+                password=password_to_use,
                 ssl=config.redis_ssl,
                 decode_responses=True
             )
             self._client.ping()
             logger.info("[CACHE-REDIS] Conexión establecida con éxito.")
         except Exception as e:
-            logger.error(f"[CACHE-REDIS] Error al conectar: {e}")
+            err_msg = str(e)
+            if "without any password configured" in err_msg or "no password is set" in err_msg:
+                logger.warning(f"[CACHE-REDIS] El servidor Redis no requiere contraseña. Reintentando sin contraseña... ({e})")
+                try:
+                    self._client = redis.Redis(
+                        host=config.redis_host,
+                        port=config.redis_port,
+                        db=config.redis_db,
+                        password=None,
+                        ssl=config.redis_ssl,
+                        decode_responses=True
+                    )
+                    self._client.ping()
+                    logger.info("[CACHE-REDIS] Conexión establecida con éxito (sin contraseña).")
+                    return
+                except Exception as retry_e:
+                    logger.error(f"[CACHE-REDIS] Fallo en reintento de conexión sin contraseña: {retry_e}")
+            else:
+                logger.error(f"[CACHE-REDIS] Error al conectar: {e}")
             self._client = None
 
     def obtener_firma(self, clave: str) -> Optional[str]:

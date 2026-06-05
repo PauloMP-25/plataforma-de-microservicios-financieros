@@ -6,7 +6,7 @@ export interface SolicitudDatosPersonales {
   edad: number;
   telefono: string;
   fotoPerfilUrl?: string;
-  direccion?: string;
+  pais?: string;
   ciudad?: string;
 }
 
@@ -18,7 +18,7 @@ export interface RespuestaDatosPersonales {
   edad: number;
   telefono: string;
   fotoPerfilUrl: string;
-  direccion: string;
+  pais: string;
   ciudad: string;
   datosCompletos: boolean;
   fechaCreacion: string;

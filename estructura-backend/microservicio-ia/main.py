@@ -111,13 +111,29 @@ def _iniciar_escuchadores_adicionales() -> None:
     # 1. Sincronización de Perfil (Redis)
     try:
         import redis
-        redis_client = redis.Redis(
-            host=config.redis_host,
-            port=config.redis_port,
-            db=config.redis_db,
-            password=config.redis_password or None,
-            decode_responses=True,
-        )
+        try:
+            redis_client = redis.Redis(
+                host=config.redis_host,
+                port=config.redis_port,
+                db=config.redis_db,
+                password=config.redis_password or None,
+                decode_responses=True,
+            )
+            redis_client.ping()
+        except Exception as conn_err:
+            err_str = str(conn_err)
+            if "without any password configured" in err_str or "no password is set" in err_str:
+                logger.warning(f"[MAIN] Redis no requiere contraseña. Reintentando sin contraseña... ({conn_err})")
+                redis_client = redis.Redis(
+                    host=config.redis_host,
+                    port=config.redis_port,
+                    db=config.redis_db,
+                    password=None,
+                    decode_responses=True,
+                )
+                redis_client.ping()
+            else:
+                raise conn_err
         _escuchador_sync = EscuchadorSincronizacionIA(redis_client)
         threading.Thread(target=_escuchador_sync.iniciar, name="hilo-sync-perfil", daemon=True).start()
         _escuchador_sync_activo = True

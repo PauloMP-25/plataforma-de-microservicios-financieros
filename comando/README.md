@@ -7,7 +7,7 @@ Centro de atajos para desarrollo completo del backend y frontend.
 ## 📋 **Estructura de Carpeta**
 
 ```
-/media/paulo/Nuevo vol/proyecto-desarrollo-web-integrado/comando/
+/media/paulo/datos/proyecto-desarrollo-web-integrado/comando/
 ├── Makefile                    # Comandos unificados
 ├── dev-frontend.sh            # Inicia Angular 17
 ├── start-grupo-1.sh           # API Gateway + Auditoría
@@ -52,7 +52,7 @@ make help            # Ver todos los comandos
 ### **Levantar Microservicios**
 
 ```bash
-cd "/media/paulo/Nuevo vol/proyecto-desarrollo-web-integrado/comando"
+cd "/media/paulo/datos/proyecto-desarrollo-web-integrado/comando"
 
 # Grupo 1 (ejecutar primero)
 ./start-grupo-1.sh
@@ -133,7 +133,7 @@ Los grupos **DEBEN levantarse en orden**, cada uno depende del anterior:
 
 Todos los volúmenes Docker se almacenan en:
 ```
-/media/paulo/Nuevo vol/ (189 GB)
+/media/paulo/datos/ (932 GB)
 ```
 
 Volúmenes existentes:
@@ -186,4 +186,4 @@ make clean
 
 **Última actualización:** 2024  
 **Versión:** 1.0  
-**Partición:** `/media/paulo/Nuevo vol/` (189 GB)
+**Partición:** `/media/paulo/datos/` (932 GB)
