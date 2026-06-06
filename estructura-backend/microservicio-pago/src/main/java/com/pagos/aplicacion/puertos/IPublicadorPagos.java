@@ -11,8 +11,9 @@ public interface IPublicadorPagos {
      * Notifica al sistema que un pago se ha completado con éxito.
      * 
      * @param pago Entidad de pago completada.
+     * @param emailUsuario Correo electrónico del usuario.
      */
-    void publicarPagoExitoso(Pago pago);
+    void publicarPagoExitoso(Pago pago, String emailUsuario);
 
     /**
      * Notifica al sistema que un pago ha fallado o expirado.

@@ -50,7 +50,7 @@ public class ConsumidorEventoPago {
                     categoriaId, // Categoría recuperada dinámicamente
                     MetodoPago.TRANSFERENCIA, // Stripe se considera transferencia electrónica
                     "pago,suscripcion," + evento.planNuevo(),
-                    "Compra de suscripción mensual plan " + evento.planNuevo() + " (Stripe ID: " + evento.stripeSessionId() + ")",
+                    "Suscripcion mensual plan " + evento.planNuevo() + " LUKA APP",
                     java.time.LocalDateTime.now()
             );
 
