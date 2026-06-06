@@ -79,8 +79,20 @@ public class ServicioWebhookImpl implements IServicioWebhook {
         // Auditar el cambio de estado (Transaccional)
         publicadorAuditoria.auditarCambioEstadoPago(pago, "PENDIENTE");
 
+        // Extraer el email del usuario de la sesión de Stripe (el cual fue ingresado al checkout)
+        String emailUsuario = null;
+        if (sesion.getCustomerDetails() != null) {
+            emailUsuario = sesion.getCustomerDetails().getEmail();
+        }
+        if (emailUsuario == null || emailUsuario.isBlank()) {
+            emailUsuario = sesion.getCustomerEmail();
+        }
+        if (emailUsuario == null || emailUsuario.isBlank()) {
+            emailUsuario = "usuario@luka.com";
+        }
+
         // Notificar al ecosistema
-        publicadorPagos.publicarPagoExitoso(pago);
+        publicadorPagos.publicarPagoExitoso(pago, emailUsuario);
     }
 
     private void procesarSesionExpirada(Event evento) {

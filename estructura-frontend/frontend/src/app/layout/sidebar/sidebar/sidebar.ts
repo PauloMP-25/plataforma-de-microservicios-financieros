@@ -88,6 +88,7 @@ isPerfilSection = false;
 readonly perfilNavItems = [
   { route: '/perfil/cliente',       label: 'Perfil Cliente',    icon: 'fa-solid fa-user' },
   { route: '/perfil/financiero',    label: 'Perfil Financiero', icon: 'fa-solid fa-chart-pie' },
+  { route: '/suscripcion/luka',     label: 'Mi Suscripción',    icon: 'fa-solid fa-crown' },
   { route: '/perfil/configuracion', label: 'Configuración',     icon: 'fa-solid fa-gear' },
   { route: '/perfil/historial',     label: 'Historial',         icon: 'fa-solid fa-clock-rotate-left' },
   { route: '/perfil/transacciones', label: 'Transacciones',     icon: 'fa-solid fa-arrow-right-arrow-left' },
