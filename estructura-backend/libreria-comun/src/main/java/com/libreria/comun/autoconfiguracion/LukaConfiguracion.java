@@ -6,6 +6,8 @@ import com.libreria.comun.mensajeria.PublicadorEventosBase;
 import com.libreria.comun.seguridad.FiltroJwt;
 import com.libreria.comun.seguridad.PuntoEntradaJwt;
 import com.libreria.comun.seguridad.ServicioJwt;
+import com.libreria.comun.seguridad.FiltroAutenticacionInterna;
+import com.libreria.comun.seguridad.InterceptorFeignSeguridad;
 import com.libreria.comun.utilidades.CalculadorFechasStrategy;
 import com.libreria.comun.utilidades.CalculadorFechasCalendario;
 import com.libreria.comun.utilidades.CalculadorFechasDiasHabiles;
@@ -69,6 +71,21 @@ public class LukaConfiguracion {
     @org.springframework.context.annotation.Configuration
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     public static class ServletSecurityConfig {
+
+        @Value("${LUKA_INTERNAL_TOKEN:}")
+        private String tokenInterno;
+
+        @Bean
+        @ConditionalOnMissingBean
+        public FiltroAutenticacionInterna filtroAutenticacionInterna() {
+            return new FiltroAutenticacionInterna(tokenInterno);
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public InterceptorFeignSeguridad interceptorFeignSeguridad() {
+            return new InterceptorFeignSeguridad();
+        }
 
         @Bean
         @ConditionalOnMissingBean
