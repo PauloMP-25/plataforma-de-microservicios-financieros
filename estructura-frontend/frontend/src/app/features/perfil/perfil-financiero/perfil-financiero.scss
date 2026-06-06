@@ -180,49 +180,75 @@
     }
   }
 
-  /* ── Banner Luka Premium (Lavender a Indigo) ── */
+  /* ── Banner Luka Premium (Golden Premium Theme) ── */
   &__premium-banner {
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: 1.5rem;
-    padding: 1.5rem 2rem;
-    border-radius: 12px;
-    background: #f3f0ff;
-    border: 1px solid #e9d5ff;
-    box-shadow: var(--shadow-sm);
+    padding: 1.6rem 2.2rem;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #fffcf2 0%, #fef3c7 100%);
+    border: 1.5px solid #fcd34d;
+    box-shadow: 0 4px 20px rgba(251, 191, 36, 0.12);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(253, 230, 138, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
 
     body.theme-dark & {
-      background: #1e1b4b;
-      border-color: #312e81;
+      background: linear-gradient(135deg, #181524 0%, #2b1f10 100%);
+      border-color: rgba(245, 158, 11, 0.35);
+      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
     }
 
     .pf-premium__left {
       display: flex;
       align-items: center;
       gap: 1.25rem;
+      position: relative;
+      z-index: 2;
 
       h3 {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: #581c87;
-        margin: 0 0 0.25rem 0;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #78350f;
+        margin: 0 0 0.3rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+
+        &::after {
+          content: '👑';
+          font-size: 0.95rem;
+        }
 
         body.theme-dark & {
-          color: #f3e8ff;
+          color: #fef3c7;
         }
       }
 
       p {
         font-size: 0.88rem;
-        color: #6b21a8;
+        color: #92400e;
         margin: 0;
         max-width: 600px;
-        line-height: 1.4;
+        line-height: 1.45;
+        font-weight: 500;
 
         body.theme-dark & {
-          color: #c084fc;
+          color: #f59e0b;
+          opacity: 0.9;
         }
       }
     }
@@ -230,21 +256,23 @@
     .pf-premium__icon {
       width: 48px;
       height: 48px;
-      background: #c084fc;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
       color: #fff;
-      border-radius: 10px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.35rem;
-      box-shadow: 0 4px 10px rgba(192, 132, 252, 0.2);
+      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.35);
     }
 
     .pf-premium__right {
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      gap: 0.35rem;
+      gap: 0.4rem;
+      position: relative;
+      z-index: 2;
       
       @media (max-width: 768px) {
         align-items: flex-start;
@@ -252,47 +280,40 @@
     }
 
     .pf-premium__btn--secondary {
-      background: #fff;
-      color: #6b21a8;
-      border: 1.5px solid #6b21a8;
-      padding: 0.5rem 1.25rem;
+      background: linear-gradient(135deg, #fcc233 0%, #f59e0b 100%);
+      color: #1e1b4b;
+      border: none;
+      padding: 0.6rem 1.4rem;
       font-size: 0.88rem;
-      font-weight: 600;
+      font-weight: 800;
       border-radius: 8px;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      box-shadow: 0 2px 4px rgba(107, 33, 168, 0.05);
-      transition: all 0.2s ease;
-
-      body.theme-dark & {
-        background: #121b2e;
-        color: #c084fc;
-        border-color: #c084fc;
-      }
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
       &:hover {
-        background: #fdfaff;
-        border-color: #581c87;
-        color: #581c87;
-        transform: translateY(-1px);
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(217, 119, 6, 0.45);
+        color: #ffffff;
+      }
 
-        body.theme-dark & {
-          background: #16243e;
-          border-color: #e9d5ff;
-          color: #e9d5ff;
-        }
+      &:active {
+        transform: translateY(0);
       }
     }
 
     .pf-premium__label {
       font-size: 0.75rem;
-      color: #701a75;
-      font-weight: 600;
+      color: #b45309;
+      font-weight: 700;
+      letter-spacing: 0.02em;
 
       body.theme-dark & {
-        color: #d8b4fe;
+        color: #fcd34d;
       }
     }
   }
