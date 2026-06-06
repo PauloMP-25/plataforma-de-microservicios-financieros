@@ -228,11 +228,6 @@
         align-items: center;
         gap: 0.4rem;
 
-        &::after {
-          content: '👑';
-          font-size: 0.95rem;
-        }
-
         body.theme-dark & {
           color: #fef3c7;
         }
