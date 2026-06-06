@@ -10,8 +10,16 @@ spring:
   application:
     name: microservicio-nucleo-financiero
 
-server:
-  port: 8085
+  # ── Redis ────────────────────────────────────────────────────────────────────
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:redis}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      password: ${SPRING_REDIS_PASSWORD:}
+      connect-timeout: 2s
+      timeout: 1s
+      ssl:
+        enabled: ${SPRING_DATA_REDIS_SSL_ENABLED:false}
 
   # ── Base de datos ────────────────────────────────────────────────────────────
   datasource:
@@ -65,6 +73,9 @@ server:
         enabled: true
         initial-interval: 1000ms
         max-attempts: 3
+
+server:
+  port: 8085
 
 # ── Actuator (Health Checks) ───────────────────────────────────────────────────
 management:

@@ -46,6 +46,8 @@ export class NuevoIngresoPage {
   };
 
   readonly sugerenciasSignal = signal<string[]>([]);
+  readonly guardando = signal<boolean>(false);
+  readonly clasificandoIa = signal<boolean>(false);
   get sugerencias(): string[] { return this.sugerenciasSignal(); }
 
   // ── Signals computados para enlazar al estado real ──
@@ -74,7 +76,7 @@ export class NuevoIngresoPage {
     const map = new Map<string, number>();
     let total = 0;
     for (const t of transacciones) {
-      const cat = t.categoriaNombre || 'Otros';
+      const cat = t.categoria || 'Otros';
       const m = t.monto || 0;
       map.set(cat, (map.get(cat) ?? 0) + m);
       total += m;
@@ -95,7 +97,7 @@ export class NuevoIngresoPage {
     return transacciones.slice(0, 5).map(t => {
       const fecha = new Date(t.fechaTransaccion);
       return {
-        categoria: t.categoriaNombre || 'Otros',
+        categoria: t.categoria || 'Otros',
         descripcion: t.descripcion || t.notas || 'Ingreso registrado',
         monto: t.monto || 0,
         fecha: fecha.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -112,12 +114,14 @@ export class NuevoIngresoPage {
     this.stateService.cargarDatos();
   }
 
-  onDescripcionChange(): void {
+  clasificarConIa(): void {
     const desc = this.form.descripcion?.trim();
     if (!desc || desc.length < 4) {
       this.sugerenciasSignal.set([]);
       return;
     }
+    if (this.clasificandoIa()) return;
+    this.clasificandoIa.set(true);
 
     this.iaService.getClasificarTransaccion({
       id_temporal: 'nuevo-ingreso',
@@ -126,11 +130,13 @@ export class NuevoIngresoPage {
       etiquetas: this.form.etiquetas.join(',')
     }).subscribe({
       next: (res) => {
+        this.clasificandoIa.set(false);
         if (res.datos && res.datos.sugerencias) {
           this.sugerenciasSignal.set(res.datos.sugerencias);
         }
       },
       error: () => {
+        this.clasificandoIa.set(false);
         // Fallback local
         const matched = ['Salario', 'Freelance', 'Inversiones', 'Ventas', 'Otros Ingresos'].filter(c => 
           c.toLowerCase().includes(desc.toLowerCase())
@@ -201,17 +207,25 @@ export class NuevoIngresoPage {
     );
     catId = match ? match.value : selectedCat;
 
+    const getLocalIsoString = (date: Date): string => {
+      const now = new Date();
+      date.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+      const tzOffset = date.getTimezoneOffset() * 60000;
+      return new Date(date.getTime() - tzOffset).toISOString().slice(0, 19);
+    };
+
     // Normalizar la fecha del formulario 'dd/mm/yyyy' o similar a formato ISO
-    let fechaTransaccion = new Date().toISOString();
+    let fechaTransaccion = getLocalIsoString(new Date());
     if (this.form.fechaTransaccion) {
       const parts = this.form.fechaTransaccion.split('/');
       if (parts.length === 3) {
         // dd/mm/yyyy -> yyyy-mm-dd
-        fechaTransaccion = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0])).toISOString();
+        const local = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
+        fechaTransaccion = getLocalIsoString(local);
       } else {
         const parsed = new Date(this.form.fechaTransaccion);
         if (!Number.isNaN(parsed.getTime())) {
-          fechaTransaccion = parsed.toISOString();
+          fechaTransaccion = getLocalIsoString(parsed);
         }
       }
     }

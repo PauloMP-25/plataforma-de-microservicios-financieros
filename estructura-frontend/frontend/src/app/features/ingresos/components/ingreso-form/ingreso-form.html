@@ -15,6 +15,19 @@
     <textarea [(ngModel)]="model.descripcion" name="descripcion" rows="3" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900" (ngModelChange)="onModelChange()"></textarea>
   </label>
 
+  <div class="flex justify-end mt-2">
+    <button
+      type="button"
+      class="inline-flex items-center gap-1.5 rounded-lg border border-violet-300 bg-violet-50 px-3 py-1.5 text-xs font-bold text-violet-700 shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:bg-violet-100 hover:text-violet-800 dark:border-violet-500/40 dark:bg-violet-500/15 dark:text-violet-300 dark:hover:bg-violet-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+      [disabled]="(model.descripcion?.trim()?.length || 0) < 4 || clasificandoIa"
+      (click)="clasificarIa.emit()">
+      <i class="fa-solid fa-wand-magic-sparkles"></i>
+      {{ clasificandoIa ? 'Analizando...' : '✨ Sugerir categoría con IA' }}
+    </button>
+  </div>
+
+
+
   <article *ngIf="sugerencias.length > 0" class="rounded-xl border border-violet-200 bg-violet-50 p-3 dark:border-violet-500/30 dark:bg-violet-500/10">
     <p class="text-xs font-bold text-violet-700 dark:text-violet-300 mb-2">✨ Categorías sugeridas por IA (haz clic para auto-seleccionar o crear):</p>
     <div class="flex flex-wrap gap-2">

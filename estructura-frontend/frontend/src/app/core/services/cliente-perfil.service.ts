@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../enviroments/environment';
 import {
   RespuestaDatosPersonales,
@@ -8,6 +9,7 @@ import {
   SolicitudDatosPersonales,
   SolicitudPerfilFinanciero
 } from '../models/cliente/perfil-cliente.model';
+import { ResultadoApi } from '../models/auth/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class ClientePerfilService {
@@ -17,11 +19,15 @@ export class ClientePerfilService {
   constructor(private http: HttpClient) {}
 
   crearPerfilInicial(usuarioId: string): Observable<RespuestaDatosPersonales> {
-    return this.http.post<RespuestaDatosPersonales>(`${this.basePerfil}/inicial?usuarioId=${usuarioId}`, {});
+    return this.http.post<ResultadoApi<RespuestaDatosPersonales>>(`${this.basePerfil}/inicial?usuarioId=${usuarioId}`, {}).pipe(
+      map(res => res.datos)
+    );
   }
 
   consultarPerfil(usuarioId: string): Observable<RespuestaDatosPersonales> {
-    return this.http.get<RespuestaDatosPersonales>(`${this.basePerfil}/${usuarioId}`);
+    return this.http.get<ResultadoApi<RespuestaDatosPersonales>>(`${this.basePerfil}/${usuarioId}`).pipe(
+      map(res => res.datos)
+    );
   }
 
   obtenerPerfil(usuarioId: string): Observable<RespuestaDatosPersonales> {
@@ -29,19 +35,26 @@ export class ClientePerfilService {
   }
 
   actualizarPerfil(usuarioId: string, payload: SolicitudDatosPersonales): Observable<RespuestaDatosPersonales> {
-    return this.http.put<RespuestaDatosPersonales>(`${this.basePerfil}/${usuarioId}`, payload);
+    return this.http.put<ResultadoApi<RespuestaDatosPersonales>>(`${this.basePerfil}/${usuarioId}`, payload).pipe(
+      map(res => res.datos)
+    );
   }
 
   eliminarCuenta(usuarioId: string): Observable<void> {
-    return this.http.delete<void>(`${this.basePerfil}/${usuarioId}`);
+    return this.http.delete<ResultadoApi<void>>(`${this.basePerfil}/${usuarioId}`).pipe(
+      map(() => undefined)
+    );
   }
 
   consultarPerfilFinanciero(usuarioId: string): Observable<RespuestaPerfilFinanciero> {
-    return this.http.get<RespuestaPerfilFinanciero>(`${this.basePerfilFinanciero}/${usuarioId}`);
+    return this.http.get<ResultadoApi<RespuestaPerfilFinanciero>>(`${this.basePerfilFinanciero}/${usuarioId}`).pipe(
+      map(res => res.datos)
+    );
   }
 
   guardarPerfilFinanciero(usuarioId: string, payload: SolicitudPerfilFinanciero): Observable<RespuestaPerfilFinanciero> {
-    return this.http.put<RespuestaPerfilFinanciero>(`${this.basePerfilFinanciero}/${usuarioId}`, payload);
+    return this.http.put<ResultadoApi<RespuestaPerfilFinanciero>>(`${this.basePerfilFinanciero}/${usuarioId}`, payload).pipe(
+      map(res => res.datos)
+    );
   }
 }
-

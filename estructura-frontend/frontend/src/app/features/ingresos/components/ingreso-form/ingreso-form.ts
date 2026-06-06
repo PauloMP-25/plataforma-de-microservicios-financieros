@@ -21,15 +21,18 @@ export class IngresoFormComponent {
     etiquetas: [],
   };
   @Input() sugerencias: string[] = [];
+  @Input() clasificandoIa = false;
 
   @Output() modelChange = new EventEmitter<IngresoFormData>();
   @Output() guardar = new EventEmitter<void>();
   @Output() cancelar = new EventEmitter<void>();
   @Output() seleccionarSugerencia = new EventEmitter<string>();
   @Output() crearCategoriaManualmente = new EventEmitter<string>();
+  @Output() clasificarIa = new EventEmitter<void>();
 
   nuevaEtiqueta = '';
   nuevaCategoriaNombre = '';
+  nuevaCategoria = '';
 
   // Getters to inject the custom option safely
   get categoriasConCrear(): OptionItem[] {
@@ -44,7 +47,7 @@ export class IngresoFormComponent {
   }
 
   confirmarCrearCategoria(): void {
-    const nombre = (this.nuevaCategoriaNombre || '').trim();
+    const nombre = (this.nuevaCategoria || '').trim();
     if (!nombre) return;
     
     this.crearCategoriaManualmente.emit(nombre);

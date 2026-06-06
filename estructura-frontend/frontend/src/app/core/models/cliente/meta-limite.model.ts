@@ -5,6 +5,14 @@ export interface SolicitudMetaAhorro {
   fechaLimite: string;
 }
 
+export interface Pagina<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+}
+
 export interface RespuestaMetaAhorro {
   id: string;
   nombre: string;

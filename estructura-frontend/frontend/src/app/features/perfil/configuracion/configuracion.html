@@ -224,8 +224,8 @@
             </div>
           </div>
 
-          <button type="button" class="plan-card__button plan-card__button--pro">
-            ✨ Elegir Plan Pro
+          <button type="button" class="plan-card__button plan-card__button--pro" (click)="comprarPlan('PRO')" [disabled]="comprandoPlan()">
+            {{ comprandoPlan() ? 'Redirigiendo...' : '✨ Elegir Plan Pro' }}
           </button>
 
           <p class="plan-card__secure">
@@ -314,8 +314,8 @@
             </div>
           </div>
 
-          <button type="button" class="plan-card__button plan-card__button--premium">
-            ✨ Elegir Plan Premium
+          <button type="button" class="plan-card__button plan-card__button--premium" (click)="comprarPlan('PREMIUM')" [disabled]="comprandoPlan()">
+            {{ comprandoPlan() ? 'Redirigiendo...' : '✨ Elegir Plan Premium' }}
           </button>
 
           <p class="plan-card__secure">

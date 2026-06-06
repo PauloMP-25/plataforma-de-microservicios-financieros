@@ -75,9 +75,6 @@ spring:
         initial-interval: 1000ms
         max-attempts: 3
 
-server:
-  port: 8084
-
   # ── Correo (Spring Mail) ───────────────────────────────────────────────────────
   mail:
     host: ${SPRING_MAIL_HOST:smtp.gmail.com}
@@ -89,11 +86,14 @@ server:
         smtp:
           auth: true
           starttls:
-            enable: false
-            required: false
+            enable: true
+            required: true
           ssl:
-            trust: ${SPRING_MAIL_HOST:mail.ikaza-import.es}
-        debug: true
+            trust: ${SPRING_MAIL_HOST:smtp.gmail.com}
+        debug: false
+
+server:
+  port: 8084
 
 # ── Actuator (Health Checks) ───────────────────────────────────────────────────
 management:
@@ -113,17 +113,17 @@ management:
     db:
       enabled: true
     mail:
-      enabled: false
+      enabled: true
     diskspace:
       enabled: false    # Innecesario en contenedores
 
 # ── Logging ────────────────────────────────────────────────────────────────────
 logging:
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5p [%X{correlationId:-NoID}] - %msg%n"
   level:
     root: INFO
-    "org.springframework.web": INFO
+    "org.springframework.web.servlet.DispatcherServlet": INFO
     "org.hibernate.SQL": WARN
 
 # ── Configuración Luka (JWT) ─────────────────────────────────────────

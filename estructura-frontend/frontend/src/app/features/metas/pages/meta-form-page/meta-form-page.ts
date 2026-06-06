@@ -281,23 +281,15 @@ export class MetaFormPage implements OnInit {
     };
 
     if (this.modoEdicion && this.metaId) {
-      // Flujo de edición: eliminar + recrear en API, o mock offline
-      this.metasService.eliminarMeta(this.metaId).subscribe({
+      // Flujo de edición
+      this.metasService.actualizarMeta(this.metaId, payload).subscribe({
         next: () => {
-          this.metasService.crearMeta(payload).subscribe({
-            next: () => {
-              this.exitoMensaje.set(`Meta "${formVal.nombre}" actualizada con éxito.`);
-              this.finalizarConExito();
-            },
-            error: (err) => {
-              console.error('Error al recrear meta editada:', err);
-              this.errorMensaje.set('No se pudo guardar la meta editada en el servidor.');
-              this.cargando.set(false);
-            }
-          });
+          this.exitoMensaje.set(`Meta "${formVal.nombre}" actualizada con éxito.`);
+          this.finalizarConExito();
         },
-        error: () => {
-          // Edición offline/mock
+        error: (err) => {
+          console.error('Error al actualizar meta editada:', err);
+          // Edición offline/mock fallback
           this.actualizarMockLocalmente(this.metaId!, payload);
           this.exitoMensaje.set(`Meta "${formVal.nombre}" actualizada con éxito (Modo Pruebas).`);
           this.finalizarConExito();

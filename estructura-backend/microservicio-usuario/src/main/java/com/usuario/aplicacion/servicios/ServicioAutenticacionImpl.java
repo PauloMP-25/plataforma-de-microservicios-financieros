@@ -367,4 +367,14 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
         // 2. Registrar evento de auditoría interna si fuera necesario (opcional)
         publicadorAuditoria.publicarAcceso(usuarioId, "SISTEMA-SYNC", EstadoEvento.EXITO, "TELEFONO_SINCRONIZADO_OTP");
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public RespuestaAutenticacion obtenerUsuarioActual(UUID usuarioId) {
+        log.info("[AUTH] Obteniendo usuario actual y refrescando token para ID: {}", usuarioId);
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado con ID: " + usuarioId));
+
+        return generarRespuestaAuth(usuario);
+    }
 }

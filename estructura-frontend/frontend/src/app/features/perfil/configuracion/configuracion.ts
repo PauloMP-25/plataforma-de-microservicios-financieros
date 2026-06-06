@@ -5,6 +5,7 @@ import { ClientePerfilService } from '../../../core/services/cliente-perfil.serv
 import { RespuestaDatosPersonales, SolicitudDatosPersonales } from '../../../core/models/cliente/perfil-cliente.model';
 import { AvatarService } from '../../../core/services/avatar.service';
 import { ServicioTema } from '../../../core/services/servicio-tema';
+import { SuscripcionService } from '../../../core/services/suscripcion.service';
 import { finalize } from 'rxjs';
 
 @Component({
@@ -17,19 +18,41 @@ import { finalize } from 'rxjs';
 export class Configuracion {
 
   modalPlanesAbierto = signal(false);
+  comprandoPlan = signal(false);
 
-abrirModalPlanes(): void {
-  this.modalPlanesAbierto.set(true);
-}
+  abrirModalPlanes(): void {
+    this.modalPlanesAbierto.set(true);
+  }
 
-cerrarModalPlanes(): void {
-  this.modalPlanesAbierto.set(false);
-}
+  cerrarModalPlanes(): void {
+    this.modalPlanesAbierto.set(false);
+  }
+
+  comprarPlan(plan: 'PRO' | 'PREMIUM'): void {
+    if (this.comprandoPlan()) return;
+    this.comprandoPlan.set(true);
+
+    this.suscripcionService.crearSesionCheckout(plan)
+      .pipe(finalize(() => this.comprandoPlan.set(false)))
+      .subscribe({
+        next: (sesion) => {
+          if (sesion && sesion.urlCheckout) {
+            window.location.href = sesion.urlCheckout;
+          } else {
+            console.error('No se recibió la URL de Stripe Checkout');
+          }
+        },
+        error: (err) => {
+          console.error('Error al iniciar Checkout de Stripe:', err);
+        }
+      });
+  }
   // Servicios usados:
   readonly authService = inject(AuthService);
   readonly avatarService = inject(AvatarService);
   readonly servicioTema = inject(ServicioTema);
   private readonly clientePerfilService = inject(ClientePerfilService);
+  private readonly suscripcionService = inject(SuscripcionService);
 
   readonly tema = signal<'oscuro' | 'claro'>('claro');
   readonly colorPrincipal = signal<string>('#6d4aff');
@@ -45,7 +68,7 @@ cerrarModalPlanes(): void {
   readonly formNombres = signal('');
   readonly formApellidos = signal('');
   readonly formTelefono = signal('');
-  readonly formDireccion = signal('');
+  readonly formPais = signal('');
   readonly formCiudad = signal('');
 
   readonly coloresDisponibles = ['#6d4aff', '#4361ee', '#12b3a6', '#db2777', '#ea580c'];
@@ -85,7 +108,7 @@ cerrarModalPlanes(): void {
       this.formNombres.set(p.nombres ?? '');
       this.formApellidos.set(p.apellidos ?? '');
       this.formTelefono.set(p.telefono ?? '');
-      this.formDireccion.set(p.direccion ?? '');
+      this.formPais.set(p.pais ?? '');
       this.formCiudad.set(p.ciudad ?? '');
     }
     this.mensajePerfil.set('');
@@ -113,7 +136,7 @@ cerrarModalPlanes(): void {
       nombres: this.formNombres().trim(),
       apellidos: this.formApellidos().trim(),
       telefono: this.formTelefono().trim(),
-      direccion: this.formDireccion().trim(),
+      pais: this.formPais().trim(),
       ciudad: this.formCiudad().trim(),
     };
 

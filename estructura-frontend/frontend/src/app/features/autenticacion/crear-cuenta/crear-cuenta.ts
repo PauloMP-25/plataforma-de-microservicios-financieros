@@ -12,8 +12,8 @@ import { AuthService } from '../../../core/services/auth.service';
   styleUrl: './crear-cuenta.scss',
 })
 export class CrearCuenta {
-  /** Emite cuando el registro es exitoso para pasar al paso de verificación */
-  @Output() registroExitoso = new EventEmitter<{ medio: 'correo' | 'celular'; destino: string; usuarioId: string }>();
+  /** Emite cuando el registro es exitoso para pasar al paso de selección de canal */
+  @Output() registroExitoso = new EventEmitter<{ correo: string; celular?: string; usuarioId: string }>();
 
   formulario: FormGroup;
   mostrarPassword = false;
@@ -83,8 +83,8 @@ export class CrearCuenta {
         if (resp.exito) {
           // Emitir evento para mostrar verificación de código, pasando el usuarioId recibido
           this.registroExitoso.emit({
-            medio: this.usarCelular ? 'celular' : 'correo',
-            destino: this.usarCelular ? this.formulario.value.celular : this.formulario.value.correo,
+            correo: this.formulario.value.correo,
+            celular: this.usarCelular ? this.formulario.value.celular : undefined,
             usuarioId: resp.datos // El UUID del usuario creado
           });
         } else {

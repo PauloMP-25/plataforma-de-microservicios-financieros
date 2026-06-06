@@ -1,10 +1,15 @@
 import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FinancieroService } from '../../../core/services/Financiero.service';
 import { ClienteMetasLimitesService } from '../../../core/services/cliente-metas-limites.service';
+import { ClientePerfilService } from '../../../core/services/cliente-perfil.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { AppEventBus } from '../../../core/services/app-event-bus.service';
 import { ResumenFinancieroDTO } from '../../../core/models/financiero/resumen.model';
+import { SolicitudPerfilFinanciero } from '../../../core/models/cliente/perfil-cliente.model';
+import { RespuestaMetaAhorro } from '../../../core/models/cliente/meta-limite.model';
 import { forkJoin } from 'rxjs';
 
 export interface LogroFinanciero {
@@ -37,13 +42,15 @@ export interface CategoriaComposicion {
 @Component({
   selector: 'app-perfil-financiero',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './perfil-financiero.html',
   styleUrl: './perfil-financiero.scss',
 })
 export class PerfilFinanciero implements OnInit {
   private financieroService = inject(FinancieroService);
   private metasService = inject(ClienteMetasLimitesService);
+  private perfilService = inject(ClientePerfilService);
+  private authService = inject(AuthService);
   private eventBus = inject(AppEventBus);
   private destroyRef = inject(DestroyRef);
 
@@ -59,6 +66,100 @@ export class PerfilFinanciero implements OnInit {
   
   periodosDisponibles: { key: string; label: string; mes: number; anio: number }[] = [];
   periodoSeleccionadoKey = signal<string>('');
+
+  // ── Modal Configuración ──────────────────────────────────────
+  modalConfigAbierto = signal<boolean>(false);
+  configurando = signal<boolean>(false);
+  
+  formConfig = signal<SolicitudPerfilFinanciero>({
+    ocupacion: '',
+    ingresoMensual: 0,
+    estiloVida: 'Equilibrado',
+    tonoIA: 'Amigable'
+  });
+  
+  erroresConfig = signal<{ [key: string]: string }>({});
+  mensajeConfig = signal<{ texto: string, tipo: 'success' | 'error' } | null>(null);
+
+  // ── Handlers Modal ───────────────────────────────────────────
+  abrirModalConfig(): void {
+    const usuario = this.authService.usuario();
+    if (!usuario) return;
+    
+    // Cargar perfil real del backend para el modal
+    this.perfilService.consultarPerfilFinanciero(usuario.id).subscribe({
+      next: (perfil) => {
+        this.formConfig.set({
+          ocupacion: perfil.ocupacion || '',
+          ingresoMensual: perfil.ingresoMensual || 0,
+          estiloVida: perfil.estiloVida || 'Equilibrado',
+          tonoIA: perfil.tonoIA || 'Amigable'
+        });
+        this.modalConfigAbierto.set(true);
+      },
+      error: () => {
+        // Fallback si no existe, abre con los datos por defecto
+        this.modalConfigAbierto.set(true);
+      }
+    });
+  }
+
+  cerrarModalConfig(): void {
+    this.modalConfigAbierto.set(false);
+    this.erroresConfig.set({});
+    this.mensajeConfig.set(null);
+  }
+
+  actualizarCampoConfig(campo: keyof SolicitudPerfilFinanciero, valor: string | number): void {
+    this.formConfig.update(f => ({ ...f, [campo]: valor }));
+    // Limpiar error de ese campo
+    const errs = { ...this.erroresConfig() };
+    delete errs[campo];
+    this.erroresConfig.set(errs);
+  }
+
+  validarFormConfig(): boolean {
+    const data = this.formConfig();
+    const errores: { [key: string]: string } = {};
+
+    if (!data.ocupacion || data.ocupacion.trim().length < 3) {
+      errores['ocupacion'] = 'La ocupación debe tener al menos 3 caracteres.';
+    }
+    if (data.ingresoMensual === null || data.ingresoMensual === undefined || data.ingresoMensual <= 0) {
+      errores['ingresoMensual'] = 'El ingreso mensual debe ser mayor a 0.';
+    }
+    if (!data.estiloVida) {
+      errores['estiloVida'] = 'Selecciona un estilo de vida.';
+    }
+    if (!data.tonoIA) {
+      errores['tonoIA'] = 'Selecciona un tono para la IA.';
+    }
+
+    this.erroresConfig.set(errores);
+    return Object.keys(errores).length === 0;
+  }
+
+  guardarConfiguracion(): void {
+    if (!this.validarFormConfig()) return;
+
+    const usuario = this.authService.usuario();
+    if (!usuario) return;
+
+    this.configurando.set(true);
+    this.mensajeConfig.set(null);
+
+    this.perfilService.guardarPerfilFinanciero(usuario.id, this.formConfig()).subscribe({
+      next: () => {
+        this.configurando.set(false);
+        this.mensajeConfig.set({ texto: 'Perfil financiero actualizado exitosamente.', tipo: 'success' });
+        setTimeout(() => this.cerrarModalConfig(), 2000);
+      },
+      error: () => {
+        this.configurando.set(false);
+        this.mensajeConfig.set({ texto: 'Ocurrió un error al guardar. Intenta de nuevo.', tipo: 'error' });
+      }
+    });
+  }
 
   // ── KPIs Computados ─────────────────────────────────────────
   balanceNeto = computed(() => {
@@ -382,9 +483,9 @@ export class PerfilFinanciero implements OnInit {
       next: ({ actual, anterior, metas }) => {
         this.resumenActual.set(actual);
         this.resumenAnterior.set(anterior);
-        const completadas = metas.filter(m => m.completada).length;
+        const completadas = metas.content.filter((m: RespuestaMetaAhorro) => m.completada).length;
         this.metasCompletadas.set(completadas);
-        this.metasTotal.set(metas.length);
+        this.metasTotal.set(metas.content.length);
         this.generarTendencia(this.filtroTendencia());
         this.cargando.set(false);
       },
