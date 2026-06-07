@@ -30,13 +30,13 @@ public class PublicadorPagosImpl implements IPublicadorPagos {
     @SuppressWarnings("null")
     @Override
     @Transactional
-    public void publicarPagoExitoso(Pago pago) {
-        log.info("[OUTBOX] Preparando evento de pago exitoso para usuario: {}", pago.getUsuarioId());
+    public void publicarPagoExitoso(Pago pago, String emailUsuario) {
+        log.info("[OUTBOX] Preparando evento de pago exitoso para usuario: {} con email: {}", pago.getUsuarioId(), emailUsuario);
 
         EventoPagoExitosoDTO evento = new EventoPagoExitosoDTO(
             pago.getId(),
             pago.getUsuarioId(),
-            pago.getUsuarioId().toString(), // Asumimos email o ID como string por ahora si no hay email en Pago
+            emailUsuario,
             pago.getDetalles().get(0).getPlanSolicitado().name(),
             pago.getDetalles().get(0).getMonto(),
             pago.getDetalles().get(0).getMoneda(),
@@ -46,25 +46,32 @@ public class PublicadorPagosImpl implements IPublicadorPagos {
         );
 
         // Paso 1: Persistir en la Bandeja de Salida (Misma transacción que el negocio)
+        BandejaSalida entrada = null;
         try {
-            BandejaSalida entrada = BandejaSalida.builder()
+            entrada = BandejaSalida.builder()
                 .tipoEvento(RoutingKeys.PAGO_EXITOSO)
                 .payload(objectMapper.writeValueAsString(evento))
                 .procesado(false)
                 .intentos(0)
                 .build();
-            repositorioBandejaSalida.save(entrada);
+            entrada = repositorioBandejaSalida.save(entrada);
         } catch (Exception e) {
             log.error("[OUTBOX-ERROR] No se pudo guardar en bandeja de salida: {}", e.getMessage());
             throw new RuntimeException("Fallo crítico en patrón Outbox", e);
         }
 
-        // Paso 2: Publicar en RabbitMQ (Fuego y olvido, el scheduler reintentará si falla)
+        // Paso 2: Publicar en RabbitMQ (Si tiene éxito, se marca como procesado de inmediato)
         try {
             rabbitTemplate.convertAndSend(NombresExchange.PAGOS, RoutingKeys.PAGO_EXITOSO, evento);
             log.info("[RABBITMQ] Evento enviado exitosamente: {}", RoutingKeys.PAGO_EXITOSO);
+            
+            // Marcar de inmediato como procesado para evitar la latencia de 60 segundos del scheduler
+            entrada.setProcesado(true);
+            entrada.setFechaProceso(java.time.LocalDateTime.now());
+            repositorioBandejaSalida.save(entrada);
+            log.info("[OUTBOX-IMMEDIATE] Evento de pago exitoso marcado como procesado localmente en outbox.");
         } catch (Exception e) {
-            log.warn("[RABBITMQ-WARN] Fallo al enviar a RabbitMQ. El reintentador se encargará. Error: {}", e.getMessage());
+            log.warn("[RABBITMQ-WARN] Fallo al enviar a RabbitMQ de forma inmediata. El reintentador se encargará. Error: {}", e.getMessage());
         }
     }
 

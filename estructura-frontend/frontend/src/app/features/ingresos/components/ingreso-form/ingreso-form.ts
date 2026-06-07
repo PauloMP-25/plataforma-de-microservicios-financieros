@@ -47,7 +47,7 @@ export class IngresoFormComponent {
   }
 
   confirmarCrearCategoria(): void {
-    const nombre = (this.nuevaCategoria || '').trim();
+    const nombre = (this.nuevaCategoriaNombre || '').trim();
     if (!nombre) return;
     
     this.crearCategoriaManualmente.emit(nombre);

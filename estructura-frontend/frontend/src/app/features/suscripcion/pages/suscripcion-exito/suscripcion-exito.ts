@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
 import { SuscripcionService } from '../../../../core/services/suscripcion.service';
 import { SuscripcionCard } from '../../components/suscripcion-card/suscripcion-card';
+import { AppEventBus } from '../../../../core/services/app-event-bus.service';
 import { finalize } from 'rxjs';
 
 @Component({
@@ -18,6 +19,7 @@ export class SuscripcionExito implements OnInit {
   private router = inject(Router);
   private authService = inject(AuthService);
   private suscripcionService = inject(SuscripcionService);
+  private eventBus = inject(AppEventBus);
 
   cargando = signal(true);
   error = signal<string | null>(null);
@@ -43,6 +45,7 @@ export class SuscripcionExito implements OnInit {
         const tienePro = this.authService.esPro();
 
         if ((tienePremium || tienePro) || intentos >= 15) {
+          this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
           this.obtenerDetallesSuscripcion();
         } else {
           setTimeout(() => {
@@ -53,6 +56,7 @@ export class SuscripcionExito implements OnInit {
       error: (err) => {
         console.error('Error al sincronizar sesión:', err);
         if (intentos >= 15) {
+          this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
           this.obtenerDetallesSuscripcion();
         } else {
           setTimeout(() => {

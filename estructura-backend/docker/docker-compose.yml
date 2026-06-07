@@ -647,6 +647,7 @@ services:
       # Stripe
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL}
       # JWT
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
     healthcheck:
