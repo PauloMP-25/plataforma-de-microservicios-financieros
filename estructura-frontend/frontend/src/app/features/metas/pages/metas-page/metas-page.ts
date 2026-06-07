@@ -47,6 +47,7 @@ export class MetasPage implements OnInit {
   filtroMontoMin = signal<number | null>(null);
   filtroMontoMax = signal<number | null>(null);
 
+
   // Exponer Math para la plantilla HTML
   protected readonly Math = Math;
 
@@ -174,6 +175,7 @@ export class MetasPage implements OnInit {
 
     return listado;
   });
+
 
   // KPIs
   metasActivasCount = computed(() => this.metasCalculadas().filter(m => !m.completada).length);
@@ -491,6 +493,7 @@ export class MetasPage implements OnInit {
     this.filtroAnio.set('Todos');
     this.filtroMontoMin.set(null);
     this.filtroMontoMax.set(null);
+    this.paginaActual.set(0);
   }
 
   mostrarDashboard(): boolean {
