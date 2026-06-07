@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { AvatarConfig, AvatarService, AuthService, ClientePerfilService } from '../../../core/services';
 import { AvatarDisplay } from './components/avatar-display/avatar-display';
 import { AvatarSelector } from './components/avatar-selector/avatar-selector';
@@ -38,7 +39,7 @@ type PerfilFormKey = keyof PerfilForm;
 @Component({
   selector: 'app-perfil-cliente',
   standalone: true,
-  imports: [AvatarDisplay, AvatarSelector],
+  imports: [AvatarDisplay, AvatarSelector, FormsModule],
   templateUrl: './perfil-cliente.html',
   styleUrl: './perfil-cliente.scss',
 })
@@ -100,6 +101,10 @@ export class PerfilCliente {
   formOriginal = signal<PerfilForm | null>(null);
   errores = signal<Partial<Record<PerfilFormKey, string>>>({});
 
+  fechaDia = signal<string>('');
+  fechaMes = signal<string>('');
+  fechaAnio = signal<string>('');
+
   cambioPassword = signal<SolicitudCambioPassword>({
     passwordActual: '',
     nuevoPassword: '',
@@ -109,6 +114,18 @@ export class PerfilCliente {
   avatarConfig = computed(() => this.avatarService.avatarConfig());
   avatarConfigActual = signal<AvatarConfig>(this.avatarService.avatarConfig());
   usuarioSesion = computed(() => this.authService.usuario());
+
+  readonly correoUsuario = computed(() => {
+    const token = this.authService.usuario()?.token;
+    if (!token) return '';
+    try {
+      const payload = token.split('.')[1];
+      const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+      return decoded.sub || '';
+    } catch {
+      return '';
+    }
+  });
 
   actividadesRecientes = signal<ActividadReciente[]>([
     { titulo: 'Actualización de perfil', detalle: 'Se editaron datos personales', fecha: 'Hace 2 días' },
@@ -158,14 +175,10 @@ export class PerfilCliente {
   });
 
   readonly fechaPartes = computed(() => {
-    const raw = this.form().fechaNacimiento;
-    if (!raw) return { dia: '', mes: '', anio: '' };
-    const parsed = new Date(raw);
-    if (Number.isNaN(parsed.getTime())) return { dia: '', mes: '', anio: '' };
     return {
-      dia: String(parsed.getDate()),
-      mes: String(parsed.getMonth()),
-      anio: String(parsed.getFullYear())
+      dia: this.fechaDia(),
+      mes: this.fechaMes(),
+      anio: this.fechaAnio()
     };
   });
 
@@ -190,6 +203,40 @@ export class PerfilCliente {
   guardarAvatar(config: AvatarConfig): void {
     this.avatarService.setAvatar(config);
     this.avatarConfigActual.set(config);
+
+    const usuarioId = this.authService.usuario()?.id;
+    const p = this.perfil();
+    if (usuarioId && p) {
+      const f = this.form();
+      const telefonoCompleto = `${f.telefonoCodigoPais}${f.telefonoNumero}`.trim();
+      const avatarSerializado = JSON.stringify(config);
+
+      const generoMapa: Record<string, string> = {
+        'Masculino': 'MASCULINO',
+        'Femenino': 'FEMENINO',
+        'Otro': 'OTRO',
+        'Prefiero no decirlo': 'PREFIERO_NO_DECIR'
+      };
+      const generoBackend = generoMapa[f.genero] || f.genero;
+
+      this.clientePerfilService.actualizarPerfil(usuarioId, {
+        dni: f.dni || p.dni,
+        nombres: f.nombres,
+        apellidos: f.apellidos,
+        genero: generoBackend,
+        edad: Number(f.edad || p.edad || 0),
+        telefono: telefonoCompleto,
+        fotoPerfilUrl: avatarSerializado,
+        pais: f.pais,
+        ciudad: f.ciudad,
+      }).subscribe({
+        next: (perfilActualizado) => {
+          this.perfil.set(perfilActualizado);
+          this.hidratarFormularioDesdePerfil(perfilActualizado);
+        }
+      });
+    }
+
     this.cerrarModalAvatar();
     this.mensajeExito.set('Cambios guardados correctamente.');
     setTimeout(() => this.mensajeExito.set(''), 2500);
@@ -200,11 +247,16 @@ export class PerfilCliente {
   }
 
   actualizarCampo(campo: PerfilFormKey, valor: string): void {
-    this.form.update(state => ({ ...state, [campo]: valor }));
+    let valorSaneado = valor;
+    if (campo === 'dni') {
+      valorSaneado = valor.replace(/\D/g, '').slice(0, 8);
+    }
+
+    this.form.update(state => ({ ...state, [campo]: valorSaneado }));
     this.errores.update(e => ({ ...e, [campo]: undefined }));
 
     if (campo === 'pais') {
-      const pais = this.paisesCatalogo.find(p => p.codigo === valor);
+      const pais = this.paisesCatalogo.find(p => p.codigo === valorSaneado);
       this.form.update(state => ({
         ...state,
         telefonoCodigoPais: pais?.prefijo ?? state.telefonoCodigoPais,
@@ -224,10 +276,13 @@ export class PerfilCliente {
   }
 
   actualizarFechaNacimientoParte(parte: 'dia' | 'mes' | 'anio', valor: string): void {
-    const partes = this.fechaPartes();
-    const dia = parte === 'dia' ? valor : partes.dia;
-    const mes = parte === 'mes' ? valor : partes.mes;
-    const anio = parte === 'anio' ? valor : partes.anio;
+    if (parte === 'dia') this.fechaDia.set(valor);
+    if (parte === 'mes') this.fechaMes.set(valor);
+    if (parte === 'anio') this.fechaAnio.set(valor);
+
+    const dia = this.fechaDia();
+    const mes = this.fechaMes();
+    const anio = this.fechaAnio();
 
     if (!dia || !mes || !anio) return;
 
@@ -249,6 +304,19 @@ export class PerfilCliente {
     this.form.set({ ...original });
     this.errores.set({});
     this.mensajeError.set('');
+
+    if (original.fechaNacimiento) {
+      const parsed = new Date(original.fechaNacimiento);
+      if (!Number.isNaN(parsed.getTime())) {
+        this.fechaDia.set(String(parsed.getDate()));
+        this.fechaMes.set(String(parsed.getMonth()));
+        this.fechaAnio.set(String(parsed.getFullYear()));
+        return;
+      }
+    }
+    this.fechaDia.set('');
+    this.fechaMes.set('');
+    this.fechaAnio.set('');
   }
 
   guardarDatosPerfil(): void {
@@ -267,15 +335,23 @@ export class PerfilCliente {
     const f = this.form();
     const telefonoCompleto = `${f.telefonoCodigoPais}${f.telefonoNumero}`.trim();
 
+    const generoMapa: Record<string, string> = {
+      'Masculino': 'MASCULINO',
+      'Femenino': 'FEMENINO',
+      'Otro': 'OTRO',
+      'Prefiero no decirlo': 'PREFIERO_NO_DECIR'
+    };
+    const generoBackend = generoMapa[f.genero] || f.genero;
+
     this.clientePerfilService.actualizarPerfil(usuarioId, {
       dni: f.dni || p.dni,
       nombres: f.nombres,
       apellidos: f.apellidos,
-      genero: f.genero,
+      genero: generoBackend,
       edad: Number(f.edad || p.edad || 0),
       telefono: telefonoCompleto,
       fotoPerfilUrl: p.fotoPerfilUrl,
-      direccion: p.direccion,
+      pais: f.pais,
       ciudad: f.ciudad,
     }).subscribe({
       next: (perfilActualizado) => {
@@ -285,9 +361,16 @@ export class PerfilCliente {
         this.mensajeExito.set('Datos personales actualizados correctamente.');
         setTimeout(() => this.mensajeExito.set(''), 2500);
       },
-      error: () => {
+      error: (err: any) => {
         this.guardandoPerfil.set(false);
-        this.mensajeError.set('No se pudo guardar. Inténtalo nuevamente.');
+        let mensaje = 'No se pudo guardar los cambios. Intente nuevamente.';
+        if (err?.error?.mensaje) {
+          mensaje = err.error.mensaje;
+          if (err.error.detalles && err.error.detalles.length > 0) {
+            mensaje += ' Detalles: ' + err.error.detalles.join(', ');
+          }
+        }
+        this.mensajeError.set(mensaje);
       }
     });
   }
@@ -343,10 +426,29 @@ export class PerfilCliente {
   }
 
   private hidratarFormularioDesdePerfil(perfil: RespuestaDatosPersonales): void {
-    const correo = this.usuarioSesion()?.nombreUsuario ?? '';
-    const pais = this.paisDesdeTelefono(perfil.telefono) ?? 'PE';
+    const correo = this.correoUsuario();
+    const pais = perfil.pais ?? 'PE';
     const prefijo = this.paisesCatalogo.find(x => x.codigo === pais)?.prefijo ?? '+51';
     const numero = this.numeroSinPrefijo(perfil.telefono, prefijo);
+
+    if (perfil.fotoPerfilUrl) {
+      try {
+        const config = JSON.parse(perfil.fotoPerfilUrl);
+        if (config && config.figura) {
+          this.avatarService.setAvatar(config);
+        }
+      } catch {
+        // Ignorar si no es una cadena JSON válida
+      }
+    }
+
+    const generoMapaInv: Record<string, string> = {
+      'MASCULINO': 'Masculino',
+      'FEMENINO': 'Femenino',
+      'OTRO': 'Otro',
+      'PREFIERO_NO_DECIR': 'Prefiero no decirlo'
+    };
+    const generoFrontend = generoMapaInv[perfil.genero] || perfil.genero || '';
 
     const nextForm: PerfilForm = {
       nombres: perfil.nombres ?? '',
@@ -359,8 +461,12 @@ export class PerfilCliente {
       telefonoNumero: numero,
       pais,
       ciudad: perfil.ciudad ?? '',
-      genero: perfil.genero ?? ''
+      genero: generoFrontend
     };
+
+    this.fechaDia.set('');
+    this.fechaMes.set('');
+    this.fechaAnio.set('');
 
     this.form.set(nextForm);
     this.formOriginal.set({ ...nextForm });

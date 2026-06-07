@@ -62,6 +62,10 @@ public class MetaAhorro {
     @Builder.Default
     private Boolean completada = false;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean activa = true;
+
     @Column(name = "fecha_creacion", nullable = false, updatable = false)
     private LocalDateTime fechaCreacion;
 

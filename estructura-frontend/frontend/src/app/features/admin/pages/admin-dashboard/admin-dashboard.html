@@ -1,47 +1,53 @@
-<main class="min-h-screen bg-slate-950 text-slate-100">
+<main class="admin-shell min-h-screen transition-colors duration-300" [class.modo-claro]="modoClaro()" [ngClass]="modoClaro() ? 'bg-slate-100 text-slate-900' : 'bg-slate-950 text-slate-100'">
   <div class="flex min-h-screen">
-    <aside class="sticky top-0 hidden h-screen w-72 shrink-0 flex-col border-r border-white/10 bg-slate-950/95 p-5 shadow-2xl shadow-black/30 lg:flex">
+    <aside class="sticky top-0 hidden h-screen w-72 shrink-0 flex-col border-r p-5 shadow-2xl shadow-black/30 transition-colors duration-300 lg:flex" [ngClass]="modoClaro() ? 'border-slate-200 bg-white/95' : 'border-white/10 bg-slate-950/95'">
       <div class="flex items-center gap-3 rounded-2xl border border-primary/25 bg-primary/10 p-4">
         <div class="grid h-12 w-12 place-items-center rounded-xl bg-primary text-white shadow-lg shadow-primary/30">
           <i class="fa-solid fa-shield-halved"></i>
         </div>
         <div>
           <p class="text-xs font-extrabold uppercase tracking-[0.24em] text-primary">Luka Admin</p>
-          <h1 class="font-heading text-lg font-extrabold text-white">Sistema Admin</h1>
+          <h1 class="font-heading text-lg font-extrabold" [ngClass]="modoClaro() ? 'text-slate-900' : 'text-white'">Sistema Admin</h1>
         </div>
       </div>
 
       <nav class="mt-6 space-y-2 text-sm font-bold">
-        <a href="#usuarios-admin" class="flex items-center gap-3 rounded-xl bg-white/10 px-4 py-3 text-white transition hover:bg-primary/20 hover:text-primary">
-          <i class="fa-solid fa-users w-5 text-primary"></i>Usuarios
-        </a>
-        <a href="#pagos-admin" class="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-300 transition hover:bg-primary/20 hover:text-primary">
+        <button type="button" (click)="mostrarSeccion('dashboard')" class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition hover:bg-primary/20 hover:text-primary" [class.bg-white\/10]="seccionActiva() === 'dashboard'" [class.text-white]="seccionActiva() === 'dashboard'" [class.text-slate-300]="seccionActiva() !== 'dashboard'">
+          <i class="fa-solid fa-gauge-high w-5 text-primary"></i>Dashboard
+        </button>
+        <button type="button" (click)="mostrarSeccion('usuarios')" class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition hover:bg-primary/20 hover:text-primary" [class.bg-white\/10]="seccionActiva() === 'usuarios'" [class.text-white]="seccionActiva() === 'usuarios'" [class.text-slate-300]="seccionActiva() !== 'usuarios'">
+          <i class="fa-solid fa-users w-5"></i>Usuarios
+        </button>
+        <button type="button" (click)="mostrarSeccion('pagos')" class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition hover:bg-primary/20 hover:text-primary" [class.bg-white\/10]="seccionActiva() === 'pagos'" [class.text-white]="seccionActiva() === 'pagos'" [class.text-slate-300]="seccionActiva() !== 'pagos'">
           <i class="fa-solid fa-credit-card w-5"></i>Pagos y suscripciones
-        </a>
-        <a href="#servicios-admin" class="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-300 transition hover:bg-primary/20 hover:text-primary">
+        </button>
+        <button type="button" (click)="mostrarSeccion('microservicios')" class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition hover:bg-primary/20 hover:text-primary" [class.bg-white\/10]="seccionActiva() === 'microservicios'" [class.text-white]="seccionActiva() === 'microservicios'" [class.text-slate-300]="seccionActiva() !== 'microservicios'">
           <i class="fa-solid fa-server w-5"></i>Microservicios
-        </a>
-        <a href="#seguridad-admin" class="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-300 transition hover:bg-primary/20 hover:text-primary">
+        </button>
+        <button type="button" (click)="mostrarSeccion('seguridad')" class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition hover:bg-primary/20 hover:text-primary" [class.bg-white\/10]="seccionActiva() === 'seguridad'" [class.text-white]="seccionActiva() === 'seguridad'" [class.text-slate-300]="seccionActiva() !== 'seguridad'">
           <i class="fa-solid fa-user-lock w-5"></i>Seguridad
-        </a>
-        <a href="#auditoria-admin" class="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-300 transition hover:bg-primary/20 hover:text-primary">
+        </button>
+        <button type="button" (click)="mostrarSeccion('auditoria')" class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition hover:bg-primary/20 hover:text-primary" [class.bg-white\/10]="seccionActiva() === 'auditoria'" [class.text-white]="seccionActiva() === 'auditoria'" [class.text-slate-300]="seccionActiva() !== 'auditoria'">
           <i class="fa-solid fa-clipboard-list w-5"></i>Auditoría
-        </a>
-        <a href="#perfil-admin" class="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-300 transition hover:bg-primary/20 hover:text-primary">
+        </button>
+        <button type="button" (click)="mostrarSeccion('perfil')" class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition hover:bg-primary/20 hover:text-primary" [class.bg-white\/10]="seccionActiva() === 'perfil'" [class.text-white]="seccionActiva() === 'perfil'" [class.text-slate-300]="seccionActiva() !== 'perfil'">
           <i class="fa-solid fa-user-shield w-5"></i>Perfil administrador
-        </a>
+        </button>
       </nav>
     </aside>
 
     <div class="min-w-0 flex-1">
-      <header class="sticky top-0 z-20 border-b border-white/10 bg-slate-950/90 px-4 py-4 backdrop-blur sm:px-6 lg:px-8">
+      <header class="sticky top-0 z-20 border-b px-4 py-4 shadow-2xl shadow-black/20 backdrop-blur transition-colors duration-300 sm:px-6 lg:px-8" [ngClass]="modoClaro() ? 'border-slate-200 bg-white/90' : 'border-white/10 bg-slate-950/95'">
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <p class="text-xs font-extrabold uppercase tracking-[0.24em] text-primary">Panel administrativo</p>
-            <h2 class="font-heading text-2xl font-extrabold text-white">Dashboard Admin Luka</h2>
-            <p class="mt-1 text-sm text-slate-300">Vista operativa separada del dashboard de usuario.</p>
+            <h2 class="font-heading text-2xl font-extrabold" [ngClass]="modoClaro() ? 'text-slate-950' : 'text-white'">{{ tituloSeccionActual() }}</h2>
+            <p class="mt-1 text-sm" [ngClass]="modoClaro() ? 'text-slate-600' : 'text-slate-300'">{{ descripcionSeccionActual() }}</p>
           </div>
           <div class="flex flex-wrap gap-3">
+            <button type="button" (click)="alternarTema()" class="mode-toggle rounded-2xl px-5 py-3 text-sm font-extrabold shadow-lg transition hover:-translate-y-0.5" [ngClass]="modoClaro() ? 'bg-slate-950 text-white shadow-slate-950/20 hover:bg-slate-800' : 'bg-indigo-100 text-indigo-500 shadow-indigo-950/20 hover:bg-white'">
+              <i class="fa-solid mr-2" [ngClass]="modoClaro() ? 'fa-moon' : 'fa-sun'"></i>{{ modoClaro() ? 'Modo Oscuro' : 'Modo Claro' }}
+            </button>
             <button class="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-primary-dark">
               <i class="fa-solid fa-rotate mr-2"></i>Actualizar
             </button>
@@ -61,7 +67,7 @@
   </div>
 
   <ng-container *ngIf="data() as dashboard">
-    <section id="perfil-admin" class="rounded-xl border border-white/10 bg-slate-900/90 p-5 shadow-sm backdrop-blur">
+    <section *ngIf="seccionActiva() === 'perfil'" id="perfil-admin" class="rounded-xl border border-white/10 bg-slate-900/90 p-5 shadow-sm backdrop-blur">
       <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div class="flex items-center gap-4">
           <div class="grid h-16 w-16 place-items-center rounded-2xl bg-primary text-2xl font-extrabold text-white shadow-lg shadow-primary/30">
@@ -90,43 +96,196 @@
       </div>
     </section>
 
-    <div class="rounded-xl border border-danger/20 bg-danger/10 p-4 text-sm text-text-primary">
-      <div class="flex items-start gap-3">
-        <i class="fa-solid fa-triangle-exclamation mt-1 text-danger"></i>
-        <div class="flex-1">
-          <strong class="text-danger">{{ dashboard.alertas.length }} alertas activas:</strong>
-          <span class="ml-1 text-text-secondary">rutas Gateway admin pendientes, IPs bloqueadas y usuarios bloqueados por OTP.</span>
+    <section *ngIf="seccionActiva() === 'dashboard'" id="dashboard-admin" class="space-y-5">
+      <div class="rounded-[28px] border p-6 shadow-2xl transition-colors duration-300" [ngClass]="modoClaro() ? 'border-indigo-200 bg-gradient-to-br from-white via-indigo-50 to-sky-50 shadow-indigo-200/40' : 'border-white/10 bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950/50 shadow-black/25'">
+        <div>
+          <div>
+            <p class="text-xs font-extrabold uppercase tracking-[0.28em] text-primary">Panel ejecutivo</p>
+            <h2 class="mt-2 font-heading text-3xl font-black" [ngClass]="modoClaro() ? 'text-slate-950' : 'text-white'">Dashboard</h2>
+            <p class="mt-2 text-sm leading-6" [ngClass]="modoClaro() ? 'text-slate-600' : 'text-slate-300'">Resumen operativo general del sistema administrativo con tarjetas oscuras y acentos visuales por categoría.</p>
+          </div>
         </div>
       </div>
-    </div>
 
-    <section id="usuarios-admin" class="space-y-4">
-      <div>
-        <h2 class="font-heading text-xl font-extrabold text-white">Usuarios</h2>
-        <p class="text-sm text-slate-300">Métricas generales de usuarios, altas y actividad administrativa.</p>
+      <div class="rounded-2xl border border-danger/30 bg-gradient-to-br from-slate-900 via-slate-950 to-danger/10 p-4 text-sm text-text-primary shadow-xl shadow-danger/5">
+        <div class="flex items-start gap-3">
+          <i class="fa-solid fa-triangle-exclamation mt-1 text-danger"></i>
+          <div class="flex-1">
+            <strong class="text-danger">{{ dashboard.alertas.length }} alertas activas:</strong>
+            <span class="ml-1 text-text-secondary">rutas Gateway admin pendientes, IPs bloqueadas y usuarios bloqueados por OTP.</span>
+          </div>
+        </div>
       </div>
 
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <app-admin-kpi-card *ngFor="let kpi of dashboard.kpis" [kpi]="kpi"></app-admin-kpi-card>
+        <app-admin-kpi-card *ngFor="let kpi of dashboard.kpis" [kpi]="kpi" [modoClaro]="modoClaro()"></app-admin-kpi-card>
       </div>
     </section>
 
-    <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
-      <div class="space-y-4">
-        <article class="rounded-xl border border-border bg-card p-5 shadow-sm">
+    <section *ngIf="seccionActiva() === 'usuarios'" id="usuarios-admin" class="usuarios-section">
+      <div class="usuarios-header">
+        <h2>Gestión de Usuarios</h2>
+        <p>Administra, filtra y revisa el detalle de cada usuario.</p>
+      </div>
+
+      <div class="usuarios-layout">
+        <div class="usuarios-main">
+          <div class="usuarios-stats">
+            <div class="stat-card">
+              <span class="stat-number">{{ totalUsuarios() }}</span>
+              <span class="stat-label">Total</span>
+            </div>
+
+            <div class="stat-card">
+              <span class="stat-number">{{ usuariosActivos() }}</span>
+              <span class="stat-label">Activos</span>
+            </div>
+
+            <div class="stat-card">
+              <span class="stat-number">{{ usuariosSuspendidos() }}</span>
+              <span class="stat-label">Suspendidos</span>
+            </div>
+          </div>
+
+          <div class="usuarios-filtros">
+            <div class="search-box">
+              <span><i class="fa-solid fa-magnifying-glass"></i></span>
+              <input type="text" placeholder="Buscar usuario o email..." [ngModel]="busquedaUsuarios()" (ngModelChange)="actualizarBusquedaUsuarios($event)" />
+            </div>
+
+            <div class="filtros-estados">
+              <button class="chip" [class.active]="filtroEstadoUsuarios() === 'TODOS'" (click)="cambiarFiltroEstadoUsuarios('TODOS')">Todos los estados</button>
+              <button class="chip" [class.active]="filtroEstadoUsuarios() === 'ACTIVO'" (click)="cambiarFiltroEstadoUsuarios('ACTIVO')">Activo</button>
+              <button class="chip" [class.active]="filtroEstadoUsuarios() === 'INACTIVO'" (click)="cambiarFiltroEstadoUsuarios('INACTIVO')">Inactivo</button>
+              <button class="chip" [class.active]="filtroEstadoUsuarios() === 'SUSPENDIDO'" (click)="cambiarFiltroEstadoUsuarios('SUSPENDIDO')">Suspendido</button>
+            </div>
+          </div>
+
+          <div class="usuarios-table-container">
+            <table class="usuarios-table">
+              <thead>
+                <tr>
+                  <th>Usuario</th>
+                  <th>Plan</th>
+                  <th>Estado</th>
+                  <th>Registro</th>
+                  <th></th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr *ngFor="let usuario of usuariosFiltrados()" [class.selected]="usuarioSeleccionado()?.id === usuario.id" (click)="seleccionarUsuario(usuario)">
+                  <td>
+                    <div class="usuario-info">
+                      <div class="avatar">{{ inicialesUsuario(usuario.nombre) }}</div>
+
+                      <div>
+                        <div class="nombre">{{ usuario.nombre }}</div>
+                        <div class="email">{{ usuario.email }}</div>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td>
+                    <span class="rol" [ngClass]="rolClase(usuario.rol)">{{ usuario.rol }}</span>
+                  </td>
+
+                  <td>
+                    <span class="estado" [ngClass]="estadoClase(usuario.estado)">{{ usuario.estado }}</span>
+                  </td>
+
+                  <td>{{ usuario.fecha }}</td>
+
+                  <td class="row-arrow">›</td>
+                </tr>
+
+                <tr *ngIf="usuariosFiltrados().length === 0">
+                  <td colspan="5" class="empty-users">No se encontraron usuarios con los filtros aplicados.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="usuarios-pagination">
+            <span>{{ usuariosFiltrados().length }} de {{ totalUsuarios() }} usuarios</span>
+
+            <div class="pagination-buttons">
+              <button class="active">1</button>
+              <button>2</button>
+              <button>3</button>
+            </div>
+          </div>
+        </div>
+
+        <aside class="usuario-detail" *ngIf="usuarioSeleccionado() as usuarioDetalle">
+          <div class="detail-header">
+            <button class="close-btn" (click)="cerrarDetalleUsuario()">×</button>
+
+            <div class="avatar">{{ inicialesUsuario(usuarioDetalle.nombre) }}</div>
+
+            <h3>{{ usuarioDetalle.nombre }}</h3>
+
+            <p>{{ usuarioDetalle.email }}</p>
+
+            <span class="estado" [ngClass]="estadoClase(usuarioDetalle.estado)">{{ usuarioDetalle.estado }}</span>
+          </div>
+
+          <div class="detail-body">
+            <div class="detail-row">
+              <span><i class="fa-solid fa-mobile-screen-button"></i> Teléfono</span>
+              <strong>{{ usuarioDetalle.telefono }}</strong>
+            </div>
+
+            <div class="detail-row">
+              <span><i class="fa-solid fa-ticket"></i> Suscripción</span>
+              <strong>{{ usuarioDetalle.suscripcion }}</strong>
+            </div>
+
+            <div class="detail-row">
+              <span><i class="fa-solid fa-bullseye"></i> Metas activas</span>
+              <strong>{{ usuarioDetalle.metas }}</strong>
+            </div>
+
+            <div class="detail-row">
+              <span><i class="fa-solid fa-money-bill-wave"></i> Límite de gasto</span>
+              <strong>{{ formatoLimiteGasto(usuarioDetalle.limiteGasto) }}</strong>
+            </div>
+
+            <div class="detail-row">
+              <span><i class="fa-solid fa-chart-column"></i> Transacciones</span>
+              <strong>{{ usuarioDetalle.transacciones }}</strong>
+            </div>
+
+            <div class="detail-row">
+              <span><i class="fa-solid fa-clock"></i> Último acceso</span>
+              <strong>{{ usuarioDetalle.ultimoAcceso }}</strong>
+            </div>
+          </div>
+
+          <div class="detail-actions">
+            <button class="btn-auditoria">Ver auditoría</button>
+            <button class="btn-suspender">Suspender</button>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <div *ngIf="seccionActiva() === 'dashboard'" class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
+      <div *ngIf="seccionActiva() === 'dashboard'" class="space-y-4">
+        <article class="rounded-2xl border border-info/25 bg-gradient-to-br from-slate-900 via-slate-950 to-info/10 p-5 shadow-xl shadow-info/5">
           <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 class="font-heading text-lg font-extrabold text-text-primary">Ingresos por mes</h2>
-              <p class="text-sm text-text-secondary">Bloque visual preparado para conectar pagos admin.</p>
+              <h2 class="font-heading text-lg font-extrabold text-white">Ingresos por mes</h2>
+              <p class="text-sm text-slate-300">Bloque visual preparado para conectar pagos admin.</p>
             </div>
-            <div class="inline-flex rounded-xl bg-surface-soft p-1 text-xs font-bold text-text-muted">
-              <button class="rounded-lg bg-card px-4 py-2 text-primary shadow-sm">6M</button>
+            <div class="inline-flex rounded-xl bg-white/5 p-1 text-xs font-bold text-slate-400">
+              <button class="rounded-lg bg-info/15 px-4 py-2 text-info shadow-sm">6M</button>
               <button class="px-4 py-2">1A</button>
               <button class="px-4 py-2">Todo</button>
             </div>
           </div>
 
-          <div class="flex h-64 items-end gap-3 rounded-xl border border-border bg-surface-soft/60 p-4">
+          <div class="flex h-64 items-end gap-3 rounded-xl border border-white/10 bg-slate-950/60 p-4">
             <div *ngFor="let item of dashboard.graficoIngresos" class="flex h-full flex-1 flex-col justify-end gap-2 text-center">
               <div class="flex flex-1 items-end justify-center gap-1">
                 <div class="w-4 rounded-t-lg bg-primary/80 transition-all" [style.height]="alturaBarra(item.ingresos)"></div>
@@ -137,18 +296,18 @@
           </div>
         </article>
 
-        <article id="pagos-admin" class="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-          <div class="flex items-center justify-between border-b border-border p-5">
+        <article id="pagos-admin" class="overflow-hidden rounded-2xl border border-success/25 bg-gradient-to-br from-slate-900 via-slate-950 to-success/10 shadow-xl shadow-success/5">
+          <div class="flex items-center justify-between border-b border-white/10 p-5">
             <div>
-              <h2 class="font-heading text-lg font-extrabold text-text-primary">Pagos y suscripciones</h2>
-              <p class="text-sm text-text-secondary">Base real: endpoints de pagos admin.</p>
+              <h2 class="font-heading text-lg font-extrabold text-white">Pagos y suscripciones</h2>
+              <p class="text-sm text-slate-300">Base real: endpoints de pagos admin.</p>
             </div>
             <span class="text-xs font-extrabold uppercase tracking-widest text-primary">Ver historial</span>
           </div>
 
           <div class="overflow-x-auto">
             <table class="w-full min-w-[680px] text-left text-sm">
-              <thead class="bg-surface-soft text-[11px] uppercase tracking-[0.18em] text-text-muted">
+              <thead class="bg-white/5 text-[11px] uppercase tracking-[0.18em] text-slate-400">
                 <tr>
                   <th class="px-5 py-3">ID</th>
                   <th class="px-5 py-3">Usuario</th>
@@ -160,8 +319,8 @@
               <tbody class="divide-y divide-border">
                 <tr *ngFor="let pago of dashboard.pagos" class="transition hover:bg-primary/5">
                   <td class="px-5 py-4 font-mono text-xs text-text-muted">#{{ pago.id }}</td>
-                  <td class="px-5 py-4 font-bold text-text-primary">{{ pago.usuario }}</td>
-                  <td class="px-5 py-4 font-mono text-text-primary">{{ pago.monto }}</td>
+                  <td class="px-5 py-4 font-bold text-white">{{ pago.usuario }}</td>
+                  <td class="px-5 py-4 font-mono text-white">{{ pago.monto }}</td>
                   <td class="px-5 py-4 text-xs font-extrabold text-info">{{ pago.plan }}</td>
                   <td class="px-5 py-4"><app-admin-status-badge [texto]="pago.estado" [tipo]="tipoPago(pago)"></app-admin-status-badge></td>
                 </tr>
@@ -171,18 +330,19 @@
         </article>
       </div>
 
-      <aside id="servicios-admin" class="space-y-4">
-        <article class="rounded-xl border border-border bg-card shadow-sm">
-          <div class="border-b border-border p-5">
-            <h2 class="font-heading text-lg font-extrabold text-text-primary">Microservicios</h2>
-            <p class="text-sm text-text-secondary">Estado operativo esperado 8080-8088.</p>
+      <aside *ngIf="seccionActiva() === 'dashboard'" id="servicios-admin" class="space-y-4">
+        <ng-container *ngIf="seccionActiva() === 'dashboard'">
+        <article class="rounded-2xl border border-primary/25 bg-gradient-to-br from-slate-900 via-slate-950 to-primary/10 shadow-xl shadow-primary/5">
+          <div class="border-b border-white/10 p-5">
+            <h2 class="font-heading text-lg font-extrabold text-white">Microservicios</h2>
+            <p class="text-sm text-slate-300">Estado operativo esperado 8080-8088.</p>
           </div>
           <div class="divide-y divide-border">
             <div *ngFor="let servicio of dashboard.servicios" class="flex items-center gap-3 p-4 transition hover:bg-primary/5">
               <span class="h-2.5 w-2.5 rounded-full" [ngClass]="estadoServicioClases(servicio)"></span>
               <div class="min-w-0 flex-1">
                 <div class="flex items-center justify-between gap-3">
-                  <p class="truncate text-sm font-extrabold text-text-primary">{{ servicio.nombre }}</p>
+                  <p class="truncate text-sm font-extrabold text-white">{{ servicio.nombre }}</p>
                   <span class="font-mono text-xs text-text-muted">:{{ servicio.puerto }}</span>
                 </div>
                 <p class="truncate text-xs text-text-secondary">{{ servicio.descripcion }}</p>
@@ -193,59 +353,109 @@
             </div>
           </div>
         </article>
+        </ng-container>
 
-        <article id="auditoria-admin" class="rounded-xl border border-border bg-card p-5 shadow-sm">
-          <h2 class="font-heading text-lg font-extrabold text-text-primary">Auditoría</h2>
+        <ng-container *ngIf="seccionActiva() === 'dashboard'">
+        <article id="auditoria-admin" class="rounded-2xl border border-warning/25 bg-gradient-to-br from-slate-900 via-slate-950 to-warning/10 p-5 shadow-xl shadow-warning/5">
+          <h2 class="font-heading text-lg font-extrabold text-white">Auditoría</h2>
           <div class="mt-4 space-y-3">
-            <div *ngFor="let alerta of dashboard.alertas" class="rounded-xl border border-border bg-surface-soft p-4">
+            <div *ngFor="let alerta of dashboard.alertas" class="rounded-xl border border-warning/20 bg-warning/5 p-4">
               <div class="flex gap-3">
                 <i [class]="alerta.icono" class="mt-1 text-warning"></i>
                 <div>
-                  <p class="font-bold text-text-primary">{{ alerta.titulo }}</p>
-                  <p class="text-sm text-text-secondary">{{ alerta.descripcion }}</p>
+                  <p class="font-bold text-white">{{ alerta.titulo }}</p>
+                  <p class="text-sm text-slate-300">{{ alerta.descripcion }}</p>
                 </div>
               </div>
             </div>
           </div>
         </article>
+        </ng-container>
       </aside>
     </div>
 
-    <div id="seguridad-admin" class="grid gap-4 xl:grid-cols-2">
-      <article class="rounded-xl border border-border bg-card shadow-sm">
-        <div class="flex items-center justify-between border-b border-border p-5">
-          <h2 class="font-heading text-lg font-extrabold text-text-primary">IPs en lista negra</h2>
-          <button class="text-xs font-extrabold uppercase tracking-widest text-primary">Bloquear IP</button>
+    <section *ngIf="seccionActiva() === 'seguridad'" id="seguridad-admin" class="space-y-7">
+      <div *ngIf="seccionActiva() === 'seguridad'" class="space-y-2">
+        <h2 class="font-heading text-3xl font-black tracking-wide text-[#a78bfa]">Seguridad &amp; IPs</h2>
+        <p class="text-base font-semibold text-slate-400">Gestión de IPs bloqueadas y usuarios suspendidos por OTP.</p>
+      </div>
+
+      <article *ngIf="seccionActiva() === 'seguridad'" class="rounded-[24px] border border-red-500/35 bg-red-950/20 p-6 shadow-2xl shadow-black/25">
+        <div class="mb-5 flex items-center gap-3 text-xl font-black text-red-400">
+          <span class="text-2xl">🔒</span>
+          <h3>Bloquear IP manualmente</h3>
         </div>
-        <div class="divide-y divide-border">
-          <div *ngFor="let ip of dashboard.ipsBloqueadas" class="grid gap-2 p-4 text-sm sm:grid-cols-[1fr_1fr_auto_auto] sm:items-center">
-            <span class="font-mono font-bold text-danger">{{ ip.ip }}</span>
-            <span class="text-text-secondary">{{ ip.motivo }}</span>
-            <span class="font-mono text-xs text-text-muted">{{ ip.tiempo }}</span>
-            <button class="rounded-lg border border-border bg-surface-soft px-3 py-2 text-xs text-text-secondary hover:border-danger/40 hover:text-danger">
-              <i class="fa-solid fa-unlock"></i>
-            </button>
-          </div>
+
+        <div class="grid gap-4 lg:grid-cols-[minmax(220px,1fr)_minmax(280px,1.6fr)_170px]">
+          <input type="text" value="" placeholder="IP a bloquear..." class="h-14 rounded-xl border border-indigo-400/25 bg-slate-950/70 px-5 text-base font-bold text-slate-200 outline-none placeholder:text-slate-400 focus:border-red-400/60" />
+          <input type="text" value="" placeholder="Razón del bloqueo..." class="h-14 rounded-xl border border-indigo-400/25 bg-slate-950/70 px-5 text-base font-bold text-slate-200 outline-none placeholder:text-slate-400 focus:border-red-400/60" />
+          <button class="h-14 rounded-2xl bg-red-400 px-5 text-base font-black text-white shadow-lg shadow-red-500/20 transition hover:bg-red-500">
+            🚫 Bloquear IP
+          </button>
         </div>
       </article>
 
-      <article class="rounded-xl border border-border bg-card shadow-sm">
-        <div class="flex items-center justify-between border-b border-border p-5">
-          <h2 class="font-heading text-lg font-extrabold text-text-primary">Usuarios bloqueados OTP</h2>
-          <button class="text-xs font-extrabold uppercase tracking-widest text-primary">Ver todos</button>
-        </div>
-        <div class="divide-y divide-border">
-          <div *ngFor="let otp of dashboard.otpsBloqueados" class="flex flex-wrap items-center gap-3 p-4 text-sm">
-            <span class="flex-1 font-bold text-text-primary">{{ otp.usuario }}</span>
-            <app-admin-status-badge [texto]="otp.estado" [tipo]="otp.estado === 'Bloqueado' ? 'error' : 'warn'"></app-admin-status-badge>
-            <span class="font-mono text-xs font-bold text-danger">{{ otp.intentos }} intentos</span>
-            <button class="rounded-lg border border-border bg-surface-soft px-3 py-2 text-xs text-text-secondary hover:border-success/40 hover:text-success">
-              <i class="fa-solid fa-check"></i>
-            </button>
-          </div>
+      <div class="flex items-center justify-between gap-4">
+        <h3 class="font-heading text-xl font-black text-slate-400">Lista Negra de IPs</h3>
+        <span class="font-mono text-base font-bold text-slate-400">2 activas</span>
+      </div>
+
+      <article class="overflow-hidden rounded-[24px] border border-indigo-500/25 bg-[#111632] shadow-2xl shadow-black/25">
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[900px] table-fixed text-left">
+            <thead class="border-b border-slate-500/50 bg-[#18203f] text-xs uppercase tracking-[0.16em] text-slate-500">
+              <tr>
+                <th class="w-[190px] px-5 py-4 font-black">IP</th>
+                <th class="w-[90px] px-5 py-4 font-black">País</th>
+                <th class="w-[110px] px-5 py-4 font-black">Intentos</th>
+                <th class="px-5 py-4 font-black">Razón</th>
+                <th class="w-[120px] px-5 py-4 font-black">Fecha</th>
+                <th class="w-[150px] px-5 py-4 font-black">Estado</th>
+                <th class="w-[180px] px-5 py-4 font-black">Acción</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-950/70 text-base">
+              <tr class="transition hover:bg-red-500/5">
+                <td class="border-b border-red-400 px-5 py-5 font-mono text-lg font-black text-red-400">185.45.23.1</td>
+                <td class="px-5 py-5"><span class="rounded-lg bg-slate-950/35 px-3 py-1 font-mono text-sm font-bold text-slate-400">RU</span></td>
+                <td class="px-5 py-5 font-mono text-xl font-black text-yellow-400">14</td>
+                <td class="px-5 py-5 font-semibold leading-7 text-slate-400">Múltiples intentos fallidos</td>
+                <td class="px-5 py-5 font-mono text-sm text-slate-500">2024-06-01</td>
+                <td class="px-5 py-5"><span class="rounded-full border border-emerald-400/40 bg-emerald-400/10 px-5 py-2 text-sm font-black text-emerald-400">ACTIVO</span></td>
+                <td class="px-5 py-5"><button class="rounded-xl border border-emerald-400/35 bg-emerald-400/10 px-4 py-3 text-sm font-black text-emerald-400">✅ Desbloquear</button></td>
+              </tr>
+              <tr class="transition hover:bg-red-500/5">
+                <td class="border-b border-red-400 px-5 py-5 font-mono text-lg font-black text-red-400">91.234.12.8</td>
+                <td class="px-5 py-5"><span class="rounded-lg bg-slate-950/35 px-3 py-1 font-mono text-sm font-bold text-slate-400">CN</span></td>
+                <td class="px-5 py-5 font-mono text-xl font-black text-yellow-400">7</td>
+                <td class="px-5 py-5 font-semibold leading-7 text-slate-400">Actividad sospechosa</td>
+                <td class="px-5 py-5 font-mono text-sm text-slate-500">2024-05-28</td>
+                <td class="px-5 py-5"><span class="rounded-full border border-emerald-400/40 bg-emerald-400/10 px-5 py-2 text-sm font-black text-emerald-400">ACTIVO</span></td>
+                <td class="px-5 py-5"><button class="rounded-xl border border-emerald-400/35 bg-emerald-400/10 px-4 py-3 text-sm font-black text-emerald-400">✅ Desbloquear</button></td>
+              </tr>
+              <tr class="transition hover:bg-red-500/5">
+                <td class="border-b border-red-400 px-5 py-5 font-mono text-lg font-black text-red-400">103.55.78.2</td>
+                <td class="px-5 py-5"><span class="rounded-lg bg-slate-950/35 px-3 py-1 font-mono text-sm font-bold text-slate-400">BR</span></td>
+                <td class="px-5 py-5 font-mono text-xl font-black text-yellow-400">32</td>
+                <td class="px-5 py-5 font-semibold leading-7 text-slate-400">Bot detectado</td>
+                <td class="px-5 py-5 font-mono text-sm text-slate-500">2024-05-25</td>
+                <td class="px-5 py-5"><span class="rounded-full border border-slate-600/50 bg-slate-700/20 px-5 py-2 text-sm font-black text-slate-500">INACTIVO</span></td>
+                <td class="px-5 py-5"></td>
+              </tr>
+              <tr class="transition hover:bg-red-500/5">
+                <td class="border-b border-red-400 px-5 py-5 font-mono text-lg font-black text-red-400">77.88.21.5</td>
+                <td class="px-5 py-5"><span class="rounded-lg bg-slate-950/35 px-3 py-1 font-mono text-sm font-bold text-slate-400">UA</span></td>
+                <td class="px-5 py-5 font-mono text-xl font-black text-yellow-400">51</td>
+                <td class="px-5 py-5 font-semibold leading-7 text-slate-400">Fuerza bruta detectada</td>
+                <td class="px-5 py-5 font-mono text-sm text-slate-500">2024-05-20</td>
+                <td class="px-5 py-5"><span class="rounded-full border border-slate-600/50 bg-slate-700/20 px-5 py-2 text-sm font-black text-slate-500">INACTIVO</span></td>
+                <td class="px-5 py-5"></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </article>
-    </div>
+    </section>
 
   </ng-container>
       </section>

@@ -1,5 +1,5 @@
 // Estilos compartidos de IA
-@import '../../ia-shared';
+@use '../../ia-shared' as *;
 
 .habitos-container {
   display: flex;

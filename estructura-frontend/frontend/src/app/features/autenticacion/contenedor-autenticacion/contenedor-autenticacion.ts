@@ -4,6 +4,10 @@ import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { IniciarSesion } from '../iniciar-sesion/iniciar-sesion';
 import { CrearCuenta } from '../crear-cuenta/crear-cuenta';
 import { VerificarCodigo } from '../../recuperar-contrasena/verificar-codigo/verificar-codigo';
+import { AuthService } from '../../../core/services/auth.service';
+
+// 1. Extendemos el tipo para incluir la vista 'canal' que pide el HTML
+export type VistaAuth = 'login' | 'registro' | 'verificar' | 'exito' | 'canal';
 
 @Component({
   selector: 'app-contenedor-autenticacion',
@@ -13,17 +17,66 @@ import { VerificarCodigo } from '../../recuperar-contrasena/verificar-codigo/ver
   styleUrl: './contenedor-autenticacion.scss',
 })
 export class ContenedorAutenticacion implements OnInit {
-  vistaActual: 'login' | 'registro' | 'verificar' | 'exito' = 'login';
+  vistaActual: 'login' | 'registro' | 'canal' | 'verificar' | 'exito' = 'login';
 
+  cargandoOtp = false;
+  infoOtp = '';
+  errorOtp = '';
+  correoActivacion = '';
+  telefonoActivacion = '';
+  canalSeleccionado: 'EMAIL' | 'SMS' | 'WHATSAPP' = 'EMAIL';
+
+  seleccionarCanal(canal: 'EMAIL' | 'SMS' | 'WHATSAPP'): void {
+    this.canalSeleccionado = canal;
+  }
+
+  enviarCodigoActivacion(): void {
+    this.cargandoOtp = true;
+    this.errorOtp = '';
+    this.infoOtp = '';
+
+    const payload = {
+      email: this.correoActivacion,
+      tipo: this.canalSeleccionado,
+      telefono: this.canalSeleccionado !== 'EMAIL' ? this.telefonoActivacion : undefined
+    };
+
+    this.authService.solicitarOtpActivacion(payload).subscribe({
+      next: (resp) => {
+        this.cargandoOtp = false;
+        if (resp.exito) {
+          this.medioVerificacion = this.canalSeleccionado === 'EMAIL' ? 'correo' : 'celular';
+          this.destinoVerificacion = this.canalSeleccionado === 'EMAIL' ? this.correoActivacion : this.telefonoActivacion;
+          this.vistaActual = 'verificar';
+        } else {
+          this.errorOtp = resp.mensaje || 'Error al enviar el código de verificación';
+        }
+      },
+      error: (err) => {
+        this.cargandoOtp = false;
+        this.errorOtp = err.error?.mensaje || 'Error de conexión con el servidor';
+        console.error('Error al enviar OTP:', err);
+      }
+    });
+  }
   /** Datos del registro para el paso de verificación */
   medioVerificacion: 'correo' | 'celular' = 'correo';
   destinoVerificacion = '';
   usuarioId = '';
 
+  // 3. PROPIEDADES NUEVAS que el HTML necesita urgentemente:
+  canalSeleccionado: 'EMAIL' | 'SMS' | 'WHATSAPP' | null = null;
+  correoActivacion: string = 'ejemplo@correo.com'; 
+  telefonoActivacion: string = '999999990';
+  cargandoOtp: boolean = false;
+  infoOtp: string | null = null;
+  errorOtp: string | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private location: Location
+    private location: Location,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -41,17 +94,37 @@ export class ContenedorAutenticacion implements OnInit {
     this.location.go(ruta);
   }
 
-  /** Maneja el registro exitoso y muestra la verificación de código */
-  onRegistroExitoso(datos: { medio: 'correo' | 'celular'; destino: string; usuarioId: string }): void {
-    this.medioVerificacion = datos.medio;
-    this.destinoVerificacion = datos.destino;
+  /** Maneja el registro exitoso y muestra la selección de canal */
+  onRegistroExitoso(datos: { correo: string; celular?: string; usuarioId: string }): void {
+    this.correoActivacion = datos.correo;
+    this.telefonoActivacion = datos.celular || '';
     this.usuarioId = datos.usuarioId;
-    this.vistaActual = 'verificar';
+    this.vistaActual = 'canal';
   }
 
   /** Maneja la verificación exitosa del código */
   onCodigoVerificado(codigo: string): void {
     console.log('Cuenta verificada con código:', codigo);
     this.vistaActual = 'exito';
+  }
+
+  // 4. MÉTODOS NUEVOS que ejecutan los (click) del HTML:
+  seleccionarCanal(canal: 'EMAIL' | 'SMS' | 'WHATSAPP'): void {
+    this.canalSeleccionado = canal;
+  }
+
+  enviarCodigoActivacion(): void {
+    this.cargandoOtp = true;
+    this.infoOtp = 'Enviando código de verificación...';
+    this.errorOtp = null;
+
+    console.log(`Enviando OTP simulado por: ${this.canalSeleccionado}`);
+
+    // Simulación para que no se quede congelado el botón en tu máquina
+    setTimeout(() => {
+      this.cargandoOtp = false;
+      this.infoOtp = 'Código enviado con éxito.';
+      this.vistaActual = 'verificar'; // Salta al siguiente paso
+    }, 1500);
   }
 }

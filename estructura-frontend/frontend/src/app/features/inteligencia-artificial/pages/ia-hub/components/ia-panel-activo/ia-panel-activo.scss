@@ -1,4 +1,4 @@
-@import '../../../../_ia-shared.scss';
+@use '../../../../_ia-shared.scss' as *;
 
 .panel-activo-horizontal {
   background: rgba(15, 23, 42, 0.45);

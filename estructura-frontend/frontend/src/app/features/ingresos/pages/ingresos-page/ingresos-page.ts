@@ -58,7 +58,7 @@ export class IngresosPage {
     const map = new Map<string, number>();
     let total = 0;
     for (const t of transacciones) {
-      const cat = t.categoriaNombre || 'Otros';
+      const cat = t.categoria || 'Otros';
       const m = t.monto || 0;
       map.set(cat, (map.get(cat) ?? 0) + m);
       total += m;
@@ -107,7 +107,7 @@ export class IngresosPage {
     return transacciones.slice(0, 5).map(t => {
       const fecha = new Date(t.fechaTransaccion);
       return {
-        categoria: t.categoriaNombre || 'Otros',
+        categoria: t.categoria || 'Otros',
         descripcion: t.descripcion || t.notas || 'Ingreso registrado',
         monto: t.monto || 0,
         fecha: fecha.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -123,7 +123,7 @@ export class IngresosPage {
         id: t.id,
         fecha: fecha.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }),
         monto: t.monto || 0,
-        categoria: t.categoriaNombre || 'Otros',
+        categoria: t.categoria || 'Otros',
         metodoPago: t.metodoPago as any || 'DIGITAL',
         etiquetas: t.etiquetas ? t.etiquetas.split(',') : [],
         nota: t.descripcion || t.notas || 'Ingreso registrado'

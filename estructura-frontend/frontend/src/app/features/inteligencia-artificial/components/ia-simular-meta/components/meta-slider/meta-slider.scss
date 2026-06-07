@@ -1,4 +1,4 @@
-@import '../../../../_ia-shared.scss';
+@use '../../../../_ia-shared.scss' as *;
 
 .slider-interactive-panel {
   background: rgba(255, 255, 255, 0.01);

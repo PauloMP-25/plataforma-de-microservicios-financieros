@@ -25,6 +25,7 @@ export class GastosPage {
   private readonly iaService = inject(IaService);
 
   readonly sugerenciasIa = signal<string[]>([]);
+  readonly clasificandoIa = signal(false);
   readonly cargando = computed(() => this.stateService.cargando());
   readonly terminoBusqueda = signal('');
   readonly tabActiva = signal<'todos' | 'pagados' | 'pendientes' | 'recurrentes'>('todos');
@@ -42,6 +43,8 @@ export class GastosPage {
   readonly fecha = signal('');
   readonly metodoPago = signal<MetodoPago>('DIGITAL');
   readonly tipoFrecuencia = signal<'DIARIO' | 'RECURRENTE'>('DIARIO');
+  readonly etiquetas = signal<string[]>([]);
+  readonly nuevaEtiqueta = signal('');
   readonly filtroTendencia = signal<'7d' | '30d' | '90d'>('30d');
   readonly errores = signal<Record<string, string>>({});
   readonly eliminadosIds = signal<string[]>([]);
@@ -288,7 +291,7 @@ export class GastosPage {
 
           return data.map((g) => {
             const fecha = new Date(g.fechaTransaccion);
-            const categoria = g.categoriaNombre || 'Otros';
+            const categoria = g.categoria || 'Otros';
             const { nombre, detalle } = this.parseNotas(g.notas, categoria);
 
             return {
@@ -455,6 +458,22 @@ export class GastosPage {
       return;
     }
 
+    const getLocalIsoString = (dateString: string): string => {
+      let localDate = new Date();
+      if (dateString) {
+        const parts = dateString.split('-');
+        if (parts.length === 3) {
+          localDate = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        } else {
+          localDate = new Date(dateString);
+        }
+      }
+      const now = new Date();
+      localDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+      const tzOffset = localDate.getTimezoneOffset() * 60000;
+      return new Date(localDate.getTime() - tzOffset).toISOString().slice(0, 19);
+    };
+
     const editId = this.gastoEditandoId();
     if (editId) {
       if (editId.startsWith('g') || editId.startsWith('mock-')) {
@@ -486,15 +505,19 @@ export class GastosPage {
         return;
       }
 
+
+
       const requestEdit: TransaccionRequestDTO = {
         usuarioId: usuarioIdEdit,
         nombreCliente: this.authService.usuario()?.nombreUsuario ?? 'Cliente',
         monto: Number(this.monto()),
         tipo: 'GASTO',
         categoriaId: this.categoria() || 'otros',
-        fechaTransaccion: new Date(this.fecha()).toISOString(),
+        fechaTransaccion: getLocalIsoString(this.fecha()),
         metodoPago: this.metodoPago(),
         notas: `${this.nombreGasto().trim()}|${this.descripcion().trim()}|${this.tipoFrecuencia()}`,
+        descripcion: this.descripcion().trim(),
+        etiquetas: this.etiquetas().join(','),
       };
 
       this.transaccionesService.actualizar(editId, requestEdit).subscribe({
@@ -525,9 +548,11 @@ export class GastosPage {
       monto: Number(this.monto()),
       tipo: 'GASTO',
       categoriaId: this.categoria(),
-      fechaTransaccion: new Date(this.fecha()).toISOString(),
+      fechaTransaccion: getLocalIsoString(this.fecha()),
       metodoPago: this.metodoPago(),
       notas: `${this.nombreGasto().trim()}|${this.descripcion().trim()}|${this.tipoFrecuencia()}`,
+      descripcion: this.descripcion().trim(),
+      etiquetas: this.etiquetas().join(','),
     };
 
     this.transaccionesService.registrar(request).subscribe({
@@ -544,30 +569,49 @@ export class GastosPage {
     });
   }
 
-  onDescripcionChange(desc: string): void {
-    const d = desc.trim();
+  clasificarConIa(): void {
+    const d = this.descripcion().trim();
     if (!d || d.length < 4) {
       this.sugerenciasIa.set([]);
       return;
     }
+    if (this.clasificandoIa()) return;
+    this.clasificandoIa.set(true);
 
     this.iaService.getClasificarTransaccion({
       id_temporal: 'nuevo-gasto',
       tipo_movimiento: 'GASTO',
-      descripcion: d
+      descripcion: d,
+      etiquetas: this.etiquetas().join(',')
     }).subscribe({
       next: (res) => {
+        this.clasificandoIa.set(false);
         if (res.datos && res.datos.sugerencias) {
           this.sugerenciasIa.set(res.datos.sugerencias);
         }
       },
       error: () => {
+        this.clasificandoIa.set(false);
         const matched = ['Alimentos', 'Transporte', 'Servicios', 'Hogar', 'Salud', 'Educación', 'Entretenimiento'].filter(c => 
           c.toLowerCase().includes(d.toLowerCase())
         );
         this.sugerenciasIa.set(matched.length > 0 ? matched : ['Otros Gastos']);
       }
     });
+  }
+
+  agregarEtiqueta(): void {
+    const raw = this.nuevaEtiqueta().trim();
+    if (!raw) return;
+    const tag = raw.split(' ')[0];
+    if (!this.etiquetas().includes(tag)) {
+      this.etiquetas.update(tags => [...tags, tag]);
+    }
+    this.nuevaEtiqueta.set('');
+  }
+
+  eliminarEtiqueta(tag: string): void {
+    this.etiquetas.update(tags => tags.filter(t => t !== tag));
   }
 
   confirmarCrearCategoriaGasto(nombre: string): void {
@@ -633,6 +677,8 @@ export class GastosPage {
     this.fecha.set('');
     this.metodoPago.set('DIGITAL');
     this.tipoFrecuencia.set('DIARIO');
+    this.etiquetas.set([]);
+    this.nuevaEtiqueta.set('');
     this.errores.set({});
     this.mensajeFormulario.set('');
     this.sugerenciasIa.set([]);

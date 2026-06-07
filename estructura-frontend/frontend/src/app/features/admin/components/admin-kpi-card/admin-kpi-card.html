@@ -1,17 +1,18 @@
-<article class="group relative overflow-hidden rounded-xl border border-border bg-card p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
-  <div class="absolute -right-6 -top-6 h-24 w-24 rounded-full opacity-20 blur-2xl" [ngClass]="tonoClases"></div>
+<article class="group relative overflow-hidden rounded-2xl border bg-slate-900/90 p-5 shadow-xl shadow-black/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl" [ngClass]="cardClases">
+  <div class="absolute -right-8 -top-8 h-28 w-28 rounded-full opacity-35 blur-3xl" [ngClass]="haloClases"></div>
+  <div class="absolute -bottom-10 left-8 h-24 w-24 rounded-full opacity-20 blur-3xl" [ngClass]="haloClases"></div>
 
   <div class="mb-4 flex items-center justify-between gap-3">
-    <div class="rounded-xl border p-3" [ngClass]="tonoClases">
+    <div class="relative z-10 rounded-xl border p-3 shadow-lg transition-transform duration-300 group-hover:scale-110" [ngClass]="tonoClases">
       <i [class]="kpi.icono"></i>
     </div>
-    <span class="font-heading text-xs font-bold uppercase tracking-[0.22em] text-text-muted">Admin</span>
+    <span class="relative z-10 rounded-full bg-white/5 px-3 py-1 font-heading text-xs font-bold uppercase tracking-[0.22em] text-slate-400">Admin</span>
   </div>
 
-  <p class="text-xs font-bold uppercase tracking-[0.18em] text-text-muted">{{ kpi.etiqueta }}</p>
-  <h3 class="mt-2 font-heading text-3xl font-extrabold text-text-primary">{{ kpi.valor }}</h3>
-  <div class="mt-3 flex flex-wrap items-center gap-2 text-sm">
+  <p class="relative z-10 text-xs font-bold uppercase tracking-[0.18em]" [ngClass]="modoClaro ? 'text-slate-500' : 'text-slate-400'">{{ kpi.etiqueta }}</p>
+  <h3 class="relative z-10 mt-2 font-heading text-3xl font-extrabold" [ngClass]="modoClaro ? 'text-slate-950' : 'text-white'">{{ kpi.valor }}</h3>
+  <div class="relative z-10 mt-3 flex flex-wrap items-center gap-2 text-sm">
     <span class="font-bold" [ngClass]="tendenciaClases">{{ kpi.tendencia }}</span>
-    <span class="text-text-secondary">{{ kpi.detalle }}</span>
+    <span [ngClass]="modoClaro ? 'text-slate-600' : 'text-slate-300'">{{ kpi.detalle }}</span>
   </div>
 </article>

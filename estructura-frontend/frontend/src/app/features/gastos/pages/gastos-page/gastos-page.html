@@ -23,15 +23,6 @@
       <em class="gastos-page__trend is-up">↑ {{ variacionGastado() }}% vs mes anterior</em>
     </article>
 
-    <article class="gastos-page__kpi gastos-page__kpi--saldo">
-      <div class="gastos-page__kpi-head">
-        <span class="gastos-page__icon" aria-hidden="true">💼</span>
-        <p>Saldo actual</p>
-      </div>
-      <strong>S/ {{ saldoActual().toFixed(2) }}</strong>
-      <small>Disponible</small>
-      <em class="gastos-page__trend is-good">↑ {{ variacionSaldo() }}% vs mes anterior</em>
-    </article>
 
     <article class="gastos-page__kpi gastos-page__kpi--pendiente">
       <div class="gastos-page__kpi-head">
@@ -380,9 +371,20 @@
 
           <label class="gastos-page__form-col-full">
             <span><i class="fa-solid fa-note-sticky"></i> Descripción</span>
-            <textarea rows="3" [value]="descripcion()" (input)="descripcion.set($any($event.target).value); onDescripcionChange($any($event.target).value)"></textarea>
+            <textarea rows="3" [value]="descripcion()" (input)="descripcion.set($any($event.target).value)"></textarea>
             @if (errores()['descripcion']) { <small class="gastos-page__error">{{ errores()['descripcion'] }}</small> }
           </label>
+
+          <div class="gastos-page__form-col-full gastos-page__ia-btn-row">
+            <button
+              type="button"
+              class="gastos-page__btn-ia"
+              [disabled]="descripcion().trim().length < 4 || clasificandoIa()"
+              (click)="clasificarConIa()">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              {{ clasificandoIa() ? 'Analizando...' : '✨ Sugerir categoría con IA' }}
+            </button>
+          </div>
 
           <!-- Sugerencias IA en Gastos -->
           @if (sugerenciasIa().length > 0) {
@@ -426,6 +428,30 @@
               <i class="fa-solid fa-repeat"></i> Recurrente
             </button>
           </fieldset>
+
+          <div class="gastos-page__form-col-full gastos-page__tags-section">
+            <span class="gastos-page__tags-label"><i class="fa-solid fa-tags"></i> Etiquetas</span>
+            <div class="gastos-page__tags-chips">
+              @for (tag of etiquetas(); track tag) {
+                <span class="gastos-page__tag-chip">
+                  {{ tag }}
+                  <button type="button" class="gastos-page__tag-remove" (click)="eliminarEtiqueta(tag)">✕</button>
+                </span>
+              }
+            </div>
+            <div class="gastos-page__tag-input-row">
+              <input
+                type="text"
+                maxlength="20"
+                placeholder="Ej: Fijo, Urgente, Necesario"
+                [value]="nuevaEtiqueta()"
+                (input)="nuevaEtiqueta.set($any($event.target).value)"
+                (keydown.enter)="$event.preventDefault(); agregarEtiqueta()"
+              />
+              <button type="button" class="gastos-page__btn-add-tag" (click)="agregarEtiqueta()">Agregar</button>
+            </div>
+            <small class="gastos-page__tags-hint">Solo una palabra por etiqueta.</small>
+          </div>
         </div>
 
         @if (mensajeFormulario()) {

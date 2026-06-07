@@ -112,4 +112,12 @@ public interface IServicioAutenticacion {
      * @param telefono  Número de teléfono verificado.
      */
     void sincronizarTelefono(UUID usuarioId, String telefono);
+
+    /**
+     * Obtiene el usuario actual con sus datos y roles actualizados, generando un nuevo token JWT.
+     *
+     * @param usuarioId ID único del usuario.
+     * @return RespuestaAutenticacion con el token y datos actualizados.
+     */
+    RespuestaAutenticacion obtenerUsuarioActual(UUID usuarioId);
 }

@@ -1,4 +1,4 @@
-@import '../../_ia-shared.scss';
+@use '../../_ia-shared.scss' as *;
 
 .hub-container.cyber-theme {
   position: relative;

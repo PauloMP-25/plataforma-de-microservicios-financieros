@@ -1,0 +1,99 @@
+.exito-page {
+  min-height: calc(100vh - 78px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  background: radial-gradient(circle at top, var(--bg-surface-soft) 0%, var(--bg-surface) 100%);
+
+  &__container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  &__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    text-align: center;
+    color: var(--text-secondary);
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--color-primary, #6d4aff);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    p {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    small {
+      font-size: 0.85rem;
+      opacity: 0.7;
+    }
+  }
+
+  &__error {
+    max-width: 450px;
+    width: 100%;
+    border-radius: 20px;
+    padding: 2.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+
+    .error-icon {
+      font-size: 3rem;
+      color: var(--color-danger, #ef4444);
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin: 0;
+      color: var(--text-primary);
+    }
+
+    p {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 0.85rem;
+      font-weight: 700;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      background: var(--color-primary, #6d4aff);
+      color: white;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background: var(--color-primary-dark, #5b3ce6);
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

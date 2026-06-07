@@ -120,6 +120,12 @@ public class LukaConfiguracion {
 
         @Bean
         @ConditionalOnMissingBean
+        public FiltroLoggingPeticiones filtroLoggingPeticiones() {
+            return new FiltroLoggingPeticiones();
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
         public InterceptorCorrelacion interceptorCorrelacion() {
             return new InterceptorCorrelacion();
         }
