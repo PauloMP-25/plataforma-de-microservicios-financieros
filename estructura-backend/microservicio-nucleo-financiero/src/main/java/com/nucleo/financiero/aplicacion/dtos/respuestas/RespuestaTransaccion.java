@@ -31,6 +31,7 @@ public record RespuestaTransaccion(
         String categoria,
         String categoriaIcono,
         LocalDateTime fechaTransaccion,
+        LocalDateTime fechaRegistro,
         String metodoPago,
         String etiquetas,
         String descripcion,

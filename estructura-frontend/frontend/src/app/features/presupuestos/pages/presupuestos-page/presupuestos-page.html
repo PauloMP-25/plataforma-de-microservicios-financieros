@@ -41,7 +41,7 @@
         <!-- Tarjeta de Consumo Real -->
         <article class="presupuestos-page__kpi-card card">
           <div class="presupuestos-page__kpi-header">
-            <span class="presupuestos-page__kpi-title">Consumo de Presupuesto</span>
+            <span class="presupuestos-page__kpi-title">{{ activo.nombre || 'Consumo de Presupuesto' }}</span>
             <span class="badge" [ngClass]="{
               'badge-success': estadoAlerta() === 'seguro',
               'badge-warning': estadoAlerta() === 'alerta',
@@ -136,6 +136,25 @@
         </div>
 
         <form [formGroup]="formulario" (ngSubmit)="guardarPresupuesto()" class="presupuestos-page__form">
+          <!-- Campo 0: Nombre del Presupuesto -->
+          <div class="presupuestos-page__form-group">
+            <label for="nombre">Nombre del Presupuesto</label>
+            <div class="presupuestos-page__input-wrapper">
+              <i class="fa-solid fa-tag input-icon"></i>
+              <input
+                id="nombre"
+                type="text"
+                formControlName="nombre"
+                placeholder="Ej. Mi Presupuesto Mensual"
+              />
+            </div>
+            @if (formulario.get('nombre')?.invalid && formulario.get('nombre')?.touched) {
+              <small class="presupuestos-page__form-error">
+                El nombre es obligatorio (mínimo 3 caracteres, máximo 150).
+              </small>
+            }
+          </div>
+
           <!-- Campo 1: Monto Límite -->
           <div class="presupuestos-page__form-group">
             <label for="montoLimite">Monto Límite (S/)</label>

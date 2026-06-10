@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal, effect } from '@angular/core';
+import { Component, computed, inject, signal, effect, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Transacciones } from '../../../../core/services/transacciones';
 import { MetodoPago, TransaccionDTO, TransaccionRequestDTO } from '../../../../core/models/financiero/transaccion.model';
@@ -16,7 +16,7 @@ import { IaService } from '../../../../core/services/ia.service';
   templateUrl: './gastos-page.html',
   styleUrl: './gastos-page.scss',
 })
-export class GastosPage {
+export class GastosPage implements OnDestroy {
   private readonly transaccionesService = inject(Transacciones);
   private readonly authService = inject(AuthService);
   private readonly financieroService = inject(FinancieroService);
@@ -339,6 +339,8 @@ export class GastosPage {
     });
   });
 
+  private txSub?: any;
+
   constructor() {
     this.stateService.cargarDatos();
     effect(() => {
@@ -348,6 +350,16 @@ export class GastosPage {
         this.usarMockVisualPagados.set(true);
       }
     });
+
+    this.txSub = this.eventBus.on('TRANSACTION_MODIFIED').subscribe(() => {
+      this.stateService.invalidarCache();
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.txSub) {
+      this.txSub.unsubscribe();
+    }
   }
 
   seleccionarTab(tab: 'todos' | 'pagados' | 'pendientes' | 'recurrentes'): void {

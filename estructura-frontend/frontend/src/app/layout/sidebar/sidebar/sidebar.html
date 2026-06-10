@@ -94,7 +94,7 @@
 
   </div>
 <article class="sidebar-premium"
-         *ngIf="sidebarState.expanded()"
+         *ngIf="sidebarState.expanded() && !auth.esPremium() && !auth.esPro()"
          (click)="abrirModalPlanes()">
 
   <div class="premium-head">

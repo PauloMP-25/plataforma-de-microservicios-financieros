@@ -47,6 +47,7 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
         MetaAhorro meta = MetaAhorro.builder()
                 .usuarioId(usuarioIdToken)
                 .nombre(solicitud.nombre())
+                .proposito(solicitud.proposito())
                 .montoObjetivo(solicitud.montoObjetivo())
                 .montoActual(solicitud.montoActual() != null ? solicitud.montoActual() : BigDecimal.ZERO)
                 .fechaLimite(solicitud.fechaLimite())
@@ -69,7 +70,7 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
     public RespuestaMetaAhorro actualizarMeta(UUID metaId, UUID usuarioIdToken, SolicitudMetaAhorro solicitud, String ipOrigen) {
         MetaAhorro meta = obtenerYValidarPropiedad(metaId, usuarioIdToken);
         
-        meta.setNombre(solicitud.nombre());
+        // El nombre y propósito no se actualizan según las reglas de negocio
         meta.setMontoObjetivo(solicitud.montoObjetivo());
         meta.setFechaLimite(solicitud.fechaLimite());
         
@@ -182,6 +183,7 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
                 m.getMontoObjetivo(), m.getMontoActual(),
                 m.calcularPorcentajeProgreso(),
                 m.getFechaLimite(), m.getCompletada(),
+                m.getProposito(),
                 m.getFechaCreacion(), m.getFechaActualizacion());
     }
 }

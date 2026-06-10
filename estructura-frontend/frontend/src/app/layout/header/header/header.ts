@@ -300,8 +300,9 @@ export class Header implements OnInit, OnDestroy {
     // Extraer fechas en formato YYYY-MM-DD
     const fechasSet = new Set<string>();
     transacciones.forEach(t => {
-      if (t.fechaTransaccion) {
-        const fecha = new Date(t.fechaTransaccion);
+      const fechaStr = t.fechaRegistro || t.fechaTransaccion;
+      if (fechaStr) {
+        const fecha = new Date(fechaStr);
         if (!isNaN(fecha.getTime())) {
           const yyyy = fecha.getFullYear();
           const mm = String(fecha.getMonth() + 1).padStart(2, '0');
