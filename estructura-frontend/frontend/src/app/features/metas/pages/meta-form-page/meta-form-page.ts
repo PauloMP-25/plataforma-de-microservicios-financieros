@@ -188,12 +188,16 @@ export class MetaFormPage implements OnInit {
   completarFormularioConMeta(meta: RespuestaMetaAhorro): void {
     const datosVisuales = this.obtenerCategoriaYNombre(meta.nombre);
     this.formulario.patchValue({
-      nombre: datosVisuales.nombre,
-      categoria: datosVisuales.categoria || 'Otros',
+      nombre: meta.proposito ? meta.nombre : datosVisuales.nombre,
+      categoria: meta.proposito || datosVisuales.categoria || 'Otros',
       montoObjetivo: meta.montoObjetivo,
       montoActual: meta.montoActual,
       fechaLimite: meta.fechaLimite
     });
+    if (this.modoEdicion) {
+      this.formulario.get('nombre')?.disable();
+      this.formulario.get('categoria')?.disable();
+    }
   }
 
   obtenerCategoriaYNombre(metaNombre: string): { categoria: string; nombre: string; icono: string } {
@@ -227,6 +231,7 @@ export class MetaFormPage implements OnInit {
   }
 
   seleccionarCategoriaForm(catId: string): void {
+    if (this.formulario.get('categoria')?.disabled) return;
     this.formulario.get('categoria')?.setValue(catId);
   }
 
@@ -270,14 +275,15 @@ export class MetaFormPage implements OnInit {
     this.errorMensaje.set('');
     this.exitoMensaje.set('');
 
-    const formVal = this.formulario.value;
-    const nombreConPrefijo = `[${formVal.categoria}] ${formVal.nombre}`;
+    const formVal = this.formulario.getRawValue();
+    const nombreConPrefijo = formVal.categoria ? `[${formVal.categoria}] ${formVal.nombre}` : formVal.nombre;
 
     const payload: SolicitudMetaAhorro = {
       nombre: nombreConPrefijo,
       montoObjetivo: formVal.montoObjetivo,
       montoActual: formVal.montoActual ?? 0,
-      fechaLimite: formVal.fechaLimite
+      fechaLimite: formVal.fechaLimite,
+      proposito: formVal.categoria
     };
 
     if (this.modoEdicion && this.metaId) {
@@ -346,6 +352,7 @@ export class MetaFormPage implements OnInit {
       porcentajeProgreso: payload.montoObjetivo > 0 ? ((payload.montoActual || 0) / payload.montoObjetivo) * 100 : 0,
       fechaLimite: payload.fechaLimite,
       completada: false,
+      proposito: payload.proposito,
       fechaCreacion: new Date().toISOString(),
       fechaActualizacion: new Date().toISOString()
     };
@@ -359,7 +366,6 @@ export class MetaFormPage implements OnInit {
       if (i.id === id) {
         return {
           ...i,
-          nombre: payload.nombre,
           montoObjetivo: payload.montoObjetivo,
           montoActual: payload.montoActual ?? 0,
           porcentajeProgreso: payload.montoObjetivo > 0 ? ((payload.montoActual ?? 0) / payload.montoObjetivo) * 100 : 0,
