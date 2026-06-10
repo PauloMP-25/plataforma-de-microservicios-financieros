@@ -62,7 +62,6 @@ public class ControladorLimiteGasto {
      * Actualiza parcialmente el límite global ACTIVO. Se utiliza PATCH porque
      * solo se modifican montos o porcentajes.
      */
-    @org.springframework.security.access.prepost.PreAuthorize("@seguridadService.esElMismoUsuario(#usuarioId, authentication)")
     @PatchMapping
     public ResponseEntity<ResultadoApi<RespuestaLimiteGasto>> actualizar(
             @Valid @RequestBody SolicitudLimiteGasto solicitud,
