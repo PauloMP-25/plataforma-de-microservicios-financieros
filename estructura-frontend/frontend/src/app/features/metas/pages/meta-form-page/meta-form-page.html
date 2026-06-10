@@ -91,7 +91,7 @@
 
             <!-- Campo Ahorro Inicial -->
             <div class="meta-form-page__form-group">
-              <label for="formMontoAct">AHORRO INICIAL (S/)</label>
+              <label for="formMontoAct">MONTO DISPONIBLE (S/)</label>
               <input id="formMontoAct" type="number" formControlName="montoActual" placeholder="Ej. 0" />
               @if (formulario.get('montoActual')?.touched && formulario.get('montoActual')?.errors) {
                 @if (formulario.get('montoActual')?.errors?.['required']) {

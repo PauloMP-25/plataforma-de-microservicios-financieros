@@ -117,6 +117,16 @@ export class MetaFormPage implements OnInit {
 
     this.inicializarFormulario();
 
+    this.financieroService.getResumen().subscribe({
+      next: (resumen) => {
+        if (!this.modoEdicion && resumen) {
+          this.formulario.patchValue({
+            montoActual: resumen.balance
+          });
+        }
+      }
+    });
+
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
@@ -136,7 +146,7 @@ export class MetaFormPage implements OnInit {
       nombre: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(150)]],
       categoria: ['Viaje', Validators.required],
       montoObjetivo: [null, [Validators.required, Validators.min(1.00)]],
-      montoActual: [0.00, [Validators.required, Validators.min(0.00)]],
+      montoActual: [{ value: 0.00, disabled: true }, [Validators.required, Validators.min(0.00)]],
       fechaLimite: [fechaDefecto, [Validators.required, this.validarFechaFutura.bind(this)]]
     });
   }
