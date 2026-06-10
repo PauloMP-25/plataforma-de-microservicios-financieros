@@ -16,7 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.pagos.dominio.repositorios.RepositorioBoleta;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * Procesador de Webhooks de Stripe con manejo de idempotencia y publicación de eventos.
@@ -27,6 +29,7 @@ import java.time.LocalDateTime;
 public class ServicioWebhookImpl implements IServicioWebhook {
 
     private final RepositorioPago repositorioPago;
+    private final RepositorioBoleta repositorioBoleta;
     private final IPublicadorPagos publicadorPagos;
     private final PublicadorAuditoriaPagosImpl publicadorAuditoria;
     private final HttpServletRequest request;
@@ -76,9 +79,6 @@ public class ServicioWebhookImpl implements IServicioWebhook {
         String nombrePlan = pago.getDetalles().isEmpty() ? "N/A" : pago.getDetalles().get(0).getPlanSolicitado().name();
         log.info("[WEBHOOK] Pago COMPLETADO. Usuario: {} | Plan: {} | Pago ID: {}", pago.getUsuarioId(), nombrePlan, pago.getId());
 
-        // Auditar el cambio de estado (Transaccional)
-        publicadorAuditoria.auditarCambioEstadoPago(pago, "PENDIENTE");
-
         // Extraer el email del usuario de la sesión de Stripe (el cual fue ingresado al checkout)
         String emailUsuario = null;
         if (sesion.getCustomerDetails() != null) {
@@ -90,6 +90,29 @@ public class ServicioWebhookImpl implements IServicioWebhook {
         if (emailUsuario == null || emailUsuario.isBlank()) {
             emailUsuario = "usuario@luka.com";
         }
+
+        // Crear y persistir la boleta de pago en base de datos
+        try {
+            java.math.BigDecimal montoTotal = pago.getDetalles().isEmpty() 
+                    ? java.math.BigDecimal.ZERO 
+                    : pago.getDetalles().get(0).getMonto();
+            
+            com.pagos.dominio.entidades.Boleta boleta = com.pagos.dominio.entidades.Boleta.builder()
+                    .pago(pago)
+                    .codigoBoleta("BOL-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
+                    .emailReceptor(emailUsuario)
+                    .montoTotal(montoTotal)
+                    .enviadaCorreo(true)
+                    .build();
+            
+            repositorioBoleta.save(boleta);
+            log.info("[WEBHOOK] Boleta guardada exitosamente en la BD. Código: {}", boleta.getCodigoBoleta());
+        } catch (Exception e) {
+            log.error("[WEBHOOK-ERROR] Error al registrar la boleta en la base de datos: {}", e.getMessage(), e);
+        }
+
+        // Auditar el cambio de estado (Transaccional)
+        publicadorAuditoria.auditarCambioEstadoPago(pago, "PENDIENTE");
 
         // Notificar al ecosistema
         publicadorPagos.publicarPagoExitoso(pago, emailUsuario);

@@ -138,7 +138,7 @@
   </div>
 
   <!-- ── Banner Premium ── -->
-  <div class="pf-page__premium-banner anim-fade-up">
+  <div class="pf-page__premium-banner anim-fade-up" *ngIf="!auth.esPremium() && !auth.esPro()">
     <div class="pf-premium__left">
       <div class="pf-premium__icon">
         <i class="fa-solid fa-crown"></i>

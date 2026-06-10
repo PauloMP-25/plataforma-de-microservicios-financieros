@@ -47,10 +47,11 @@ export interface CategoriaComposicion {
   styleUrl: './perfil-financiero.scss',
 })
 export class PerfilFinanciero implements OnInit {
+  public auth = inject(AuthService);
   private financieroService = inject(FinancieroService);
   private metasService = inject(ClienteMetasLimitesService);
   private perfilService = inject(ClientePerfilService);
-  private authService = inject(AuthService);
+  private authService = this.auth;
   private eventBus = inject(AppEventBus);
   private destroyRef = inject(DestroyRef);
 
