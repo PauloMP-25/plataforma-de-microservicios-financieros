@@ -1,85 +1,107 @@
 # ---------------------------------------------------------------------------------------------------------------------
-#                            SPRING: Configuración general y perfiles
+#                            SPRING: Configuración general, perfiles e importación de .env
 # ---------------------------------------------------------------------------------------------------------------------
 spring:
+  config:
+    import: "optional:file:../.env[.properties]"
   application:
-    name: microservicio-usuario
-
-# ---------------------------------------------------------------------------------------------------------------------
-#                                   DATA: Configuración de base de datos de Redis
-# ---------------------------------------------------------------------------------------------------------------------
-  data:
-    redis:
-      host: ${SPRING_DATA_REDIS_HOST:localhost}
-      port: ${SPRING_DATA_REDIS_PORT:6379}
-      password: ${SPRING_REDIS_PASSWORD:}
-      connect-timeout: 5s
-      timeout: 3s
-      ssl:
-        enabled: ${SPRING_DATA_REDIS_SSL_ENABLED:false}
+    name: microservicio-nucleo-financiero
+  profiles:
+    active: local
 
 # ---------------------------------------------------------------------------------------------------------------------
 #                              DATASOURCE: Conexión y credenciales de PostgreSQL local
 # ---------------------------------------------------------------------------------------------------------------------
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/db_microservicio_usuario}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:}
+    url: jdbc:postgresql://127.0.0.1:5432/db_luka_financiero
+    username: postgres
+    password: adminUTP
     driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 3
-      minimum-idle: 1
-      connection-timeout: 30000
-      idle-timeout: 600000
-      max-lifetime: 1800000
-      pool-name: LukaHikariCP
 
 # ---------------------------------------------------------------------------------------------------------------------
 #                                   JPA: Configuración de persistencia ORM Hibernate
 # ---------------------------------------------------------------------------------------------------------------------
   jpa:
     hibernate:
-      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+      ddl-auto: update
+    show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: false
-        show_sql: false
+        format_sql: true
         jdbc:
-          batch_size: 20
+          batch_size: 50
         order_inserts: true
         order_updates: true
-    open-in-view: false
 
 # ---------------------------------------------------------------------------------------------------------------------
 #                              RABBITMQ: Broker de mensajería asíncrona y topologías
 # ---------------------------------------------------------------------------------------------------------------------
   rabbitmq:
-    host: ${SPRING_RABBITMQ_HOST:rabbitmq}
+    connection-name: ${spring.application.name}
+    host: ${SPRING_RABBITMQ_HOST:localhost}
     port: ${SPRING_RABBITMQ_PORT:5672}
     username: ${SPRING_RABBITMQ_USERNAME:guest}
-    password: ${SPRING_RABBITMQ_PASSWORD}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
     virtual-host: ${SPRING_RABBITMQ_VIRTUAL_HOST:/}
+    connection-timeout: 10000
     listener:
       simple:
-        acknowledge-mode: manual
-        prefetch: 1
-        retry:
-          enabled: true
-          initial-interval: 3000ms
-          max-attempts: 3
-          multiplier: 2.0
-    template:
-      retry:
-        enabled: true
-        initial-interval: 1000ms
-        max-attempts: 3
+        auto-startup: true
 
 # ---------------------------------------------------------------------------------------------------------------------
 #                                   SERVER: Puerto y configuración de red local
 # ---------------------------------------------------------------------------------------------------------------------
 server:
-  port: 8081
+  port: 8085
+
+# ---------------------------------------------------------------------------------------------------------------------
+#                                   LUKA: Credenciales JWT de seguridad local
+# ---------------------------------------------------------------------------------------------------------------------
+luka:
+  jwt:
+    clave-secreta: ${JWT_SECRET_KEY:}
+    expiracion-ms: 86400000
+
+# ---------------------------------------------------------------------------------------------------------------------
+#                               MICROSERVICIO: Direcciones de conexión de servicios externos
+# ---------------------------------------------------------------------------------------------------------------------
+microservicio:
+  ia:
+    url: ${URL_IA:http://localhost:8086}
+
+# ---------------------------------------------------------------------------------------------------------------------
+#                                 SPRINGDOC: Habilitación de la consola Swagger OpenAPI
+# ---------------------------------------------------------------------------------------------------------------------
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+  writer-with-default-pretty-printer: true
+
+# ---------------------------------------------------------------------------------------------------------------------
+#                                  LOGGING: Configuración y patrón de trazas log
+# ---------------------------------------------------------------------------------------------------------------------
+logging:
+  level:
+    root: INFO
+    com:
+      nucleo:
+        financiero: DEBUG
+    org:
+      springframework:
+        security: WARN
+        transaction: INFO
+        amqp: WARN
+        boot:
+          actuate: WARN
+      hibernate:
+        SQL: INFO
+  pattern:
+    console: "%d{HH:mm:ss} %-5p [%X{correlationId:-NoID}] - %msg%n"
+  file:
+    name: logs/microservicio-nucleo-financiero.log
 
 # ---------------------------------------------------------------------------------------------------------------------
 #                                 MANAGEMENT: Redirecciones de Actuator Health
@@ -87,37 +109,5 @@ server:
 management:
   endpoints:
     web:
-      exposure:
-        include: health,info,metrics,env
-      base-path: /actuator
-  endpoint:
-    health:
-      show-details: always
-      probes:
-        enabled: true
-  health:
-    rabbitmq:
-      enabled: true
-    db:
-      enabled: true
-    diskspace:
-      enabled: false
-
-# ---------------------------------------------------------------------------------------------------------------------
-#                                  LOGGING: Configuración y patrón de trazas log
-# ---------------------------------------------------------------------------------------------------------------------
-logging:
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
-  level:
-    root: INFO
-    "org.springframework.web": INFO
-    "org.hibernate.SQL": WARN
-    "org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer": ERROR
-
-# ---------------------------------------------------------------------------------------------------------------------
-#                                   LUKA: Credenciales JWT de seguridad local
-# ---------------------------------------------------------------------------------------------------------------------
-luka:
-  jwt:
-    clave-secreta: ${JWT_SECRET_KEY}
+      path-mapping:
+        health: health-internal

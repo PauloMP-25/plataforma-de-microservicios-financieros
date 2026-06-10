@@ -1,12 +1,21 @@
+# ---------------------------------------------------------------------------------------------------------------------
+#                            SERVER: Puerto y configuración de red local
+# ---------------------------------------------------------------------------------------------------------------------
 server:
   port: 8080
 
+# ---------------------------------------------------------------------------------------------------------------------
+#                            SPRING: Configuración general, perfiles e importación de .env.local
+# ---------------------------------------------------------------------------------------------------------------------
 spring:
   config:
-    import: optional:file:../../.env[.properties]
+    import: "optional:file:../../.env.local[.properties]"
   application:
     name: api-gateway
 
+# ---------------------------------------------------------------------------------------------------------------------
+#                             CLOUD: Configuración de Spring Cloud y rutas de Gateway
+# ---------------------------------------------------------------------------------------------------------------------
   cloud:
     gateway:
       httpclient:
@@ -235,6 +244,9 @@ spring:
           metadata:
             requiere-autenticacion: true
 
+# ---------------------------------------------------------------------------------------------------------------------
+#                        GLOBALCORS: Configuración de CORS global para orígenes cruzados
+# ---------------------------------------------------------------------------------------------------------------------
       globalcors:
         corsConfigurations:
           '[/**]':
@@ -255,16 +267,18 @@ spring:
             allowCredentials: true
             maxAge: 3600
 
-eureka:
-  client:
-    enabled: false
-
+# ---------------------------------------------------------------------------------------------------------------------
+#                               APP: Configuración del token JWT de seguridad
+# ---------------------------------------------------------------------------------------------------------------------
 app:
   security:
     jwt:
       secret-key: ${JWT_SECRET_KEY:}
     rutas-publicas: "/auth/,/api/v1/mensajeria/otp/,/api/v1/pagos/webhook,/v3/api-docs,/swagger-ui,/actuator/,/error/,/interno/,/api/v1/clientes/perfil/inicial"
 
+# ---------------------------------------------------------------------------------------------------------------------
+#                           LOGGING: Configuración y patrón de trazas log
+# ---------------------------------------------------------------------------------------------------------------------
 logging:
   level:
     org.springframework.cloud.gateway: INFO
@@ -273,6 +287,9 @@ logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
+# ---------------------------------------------------------------------------------------------------------------------
+#                        MANAGEMENT: Redirecciones de Actuator Health
+# ---------------------------------------------------------------------------------------------------------------------
 management:
   endpoints:
     web:
@@ -284,6 +301,9 @@ management:
     gateway:
       enabled: true
 
+# ---------------------------------------------------------------------------------------------------------------------
+#                      RESILIENCE4J: Configuración de limitadores y tolerancia a fallos
+# ---------------------------------------------------------------------------------------------------------------------
 resilience4j:
   circuitbreaker:
     configs:
