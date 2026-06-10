@@ -80,6 +80,7 @@ scratch/
 guias/
 pruebas/
 disenos/
+**/comando
 comando/
 comando/**
 memoria.md

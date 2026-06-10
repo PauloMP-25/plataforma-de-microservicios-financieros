@@ -22,11 +22,6 @@ import { IaEstiloVidaComponent } from '../../components/ia-estilo-vida/ia-estilo
 import { IaZonaEntrenamientoComponent } from '../../components/ia-zona-entrenamiento/ia-zona-entrenamiento';
 import { IaComprobadorEvolucionComponent } from '../../components/ia-comprobador-evolucion/ia-comprobador-evolucion';
 
-
-
-
-
-
 export interface IaModulo {
   id: string;
   label: string;

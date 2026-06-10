@@ -21,6 +21,8 @@ services:
     restart: unless-stopped
     networks: *id001
     container_name: luka-ms-usuario
+    env_file:
+      - ../.env.local
     ports:
     - 8081:8081
     build:
@@ -56,6 +58,8 @@ services:
     restart: unless-stopped
     networks: *id001
     container_name: luka-ms-cliente
+    env_file:
+      - ../.env.local
     ports:
     - 8083:8083
     build:
@@ -91,6 +95,8 @@ services:
     restart: unless-stopped
     networks: *id001
     container_name: luka-ms-mensajeria
+    env_file:
+      - ../.env.local
     ports:
     - 8084:8084
     build:
@@ -127,6 +133,8 @@ services:
     - host.docker.internal:host-gateway
   ms-ia:
     container_name: luka-ms-ia
+    env_file:
+      - ../.env.local
     ports:
     - 8086:8086
     build:
@@ -165,6 +173,8 @@ services:
     restart: unless-stopped
     networks: *id001
     container_name: luka-ms-auditoria
+    env_file:
+      - ../.env.local
     ports:
     - 8082:8082
     build:
@@ -196,6 +206,8 @@ services:
     restart: unless-stopped
     networks: *id001
     container_name: luka-ms-nucleo-financiero
+    env_file:
+      - ../.env.local
     ports:
     - 8085:8085
     build:
@@ -233,6 +245,8 @@ services:
     restart: unless-stopped
     networks: *id001
     container_name: luka-ms-pago
+    env_file:
+      - ../.env.local
     ports:
     - 8087:8087
     build:
@@ -269,6 +283,8 @@ services:
     restart: unless-stopped
     networks: *id001
     container_name: luka-gateway
+    env_file:
+      - ../.env.local
     build:
       context: ..
       dockerfile: infraestructura/api-gateway/Dockerfile.local
@@ -307,6 +323,8 @@ services:
     restart: unless-stopped
     networks: *id001
     container_name: luka-ms-suscripciones
+    env_file:
+      - ../.env.local
     ports:
     - 8088:8088
     build:

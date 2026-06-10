@@ -19,12 +19,14 @@ export type VistaAuth = 'login' | 'registro' | 'verificar' | 'exito' | 'canal';
 export class ContenedorAutenticacion implements OnInit {
   vistaActual: 'login' | 'registro' | 'canal' | 'verificar' | 'exito' = 'login';
 
-  cargandoOtp = false;
-  infoOtp = '';
-  errorOtp = '';
-  correoActivacion = '';
-  telefonoActivacion = '';
+
+    // 3. PROPIEDADES NUEVAS que el HTML necesita urgentemente:
   canalSeleccionado: 'EMAIL' | 'SMS' | 'WHATSAPP' = 'EMAIL';
+  correoActivacion: string = 'ejemplo@correo.com'; 
+  telefonoActivacion: string = '999999990';
+  cargandoOtp: boolean = false;
+  infoOtp: string | null = '';
+  errorOtp: string | null = '';
 
   seleccionarCanal(canal: 'EMAIL' | 'SMS' | 'WHATSAPP'): void {
     this.canalSeleccionado = canal;
@@ -38,7 +40,7 @@ export class ContenedorAutenticacion implements OnInit {
     const payload = {
       email: this.correoActivacion,
       tipo: this.canalSeleccionado,
-      telefono: this.canalSeleccionado !== 'EMAIL' ? this.telefonoActivacion : undefined
+      telefono: this.canalSeleccionado !== 'EMAIL' ? this.telefonoActivacion : ''
     };
 
     this.authService.solicitarOtpActivacion(payload).subscribe({
@@ -63,14 +65,6 @@ export class ContenedorAutenticacion implements OnInit {
   medioVerificacion: 'correo' | 'celular' = 'correo';
   destinoVerificacion = '';
   usuarioId = '';
-
-  // 3. PROPIEDADES NUEVAS que el HTML necesita urgentemente:
-  canalSeleccionado: 'EMAIL' | 'SMS' | 'WHATSAPP' | null = null;
-  correoActivacion: string = 'ejemplo@correo.com'; 
-  telefonoActivacion: string = '999999990';
-  cargandoOtp: boolean = false;
-  infoOtp: string | null = null;
-  errorOtp: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -106,25 +100,5 @@ export class ContenedorAutenticacion implements OnInit {
   onCodigoVerificado(codigo: string): void {
     console.log('Cuenta verificada con código:', codigo);
     this.vistaActual = 'exito';
-  }
-
-  // 4. MÉTODOS NUEVOS que ejecutan los (click) del HTML:
-  seleccionarCanal(canal: 'EMAIL' | 'SMS' | 'WHATSAPP'): void {
-    this.canalSeleccionado = canal;
-  }
-
-  enviarCodigoActivacion(): void {
-    this.cargandoOtp = true;
-    this.infoOtp = 'Enviando código de verificación...';
-    this.errorOtp = null;
-
-    console.log(`Enviando OTP simulado por: ${this.canalSeleccionado}`);
-
-    // Simulación para que no se quede congelado el botón en tu máquina
-    setTimeout(() => {
-      this.cargandoOtp = false;
-      this.infoOtp = 'Código enviado con éxito.';
-      this.vistaActual = 'verificar'; // Salta al siguiente paso
-    }, 1500);
   }
 }
