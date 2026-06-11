@@ -201,13 +201,8 @@ class ServicioAnalisis:
 
             prompt = servicio.orquestar_prompt(metricas, contexto)
 
-            # ── 7. NUEVO: Activar Structured Output solo para GASTO_HORMIGA ───
-            # Los 9 módulos restantes reciben esquema_salida=None → sin cambios.
-            esquema_salida = (
-                ConsejoEstructurado
-                if modulo_enum == NombreModulo.GASTO_HORMIGA
-                else (ConsejoEstructuradoEntrenamiento if modulo_enum == NombreModulo.ZONA_ENTRENAMIENTO else None)
-            )
+            # ── 7. NUEVO: Activar Structured Output dinámicamente según el módulo ───
+            esquema_salida = servicio.obtener_esquema_salida()
 
             # ── 8. Ejecución en CoachIA ───────────────────────────────────────
             consejo, estado, fallback = await self._coach.obtener_consejo_ia(
@@ -237,12 +232,10 @@ class ServicioAnalisis:
                 )
 
             # ── 10. Construir respuesta final ─────────────────────────────────
-            # Si Gemini devolvió dict (Structured Output), convertimos a
-            # ConsejoEstructurado para que RespuestaModulo lo valide correctamente.
             consejo_final = consejo
-            if isinstance(consejo, dict) and esquema_salida == ConsejoEstructurado:
+            if isinstance(consejo, dict) and esquema_salida:
                 try:
-                    consejo_final = ConsejoEstructurado(**consejo)
+                    consejo_final = esquema_salida(**consejo)
                 except Exception as e:
                     logger.warning(
                         "[ORQUESTADOR] No se pudo convertir dict a ConsejoEstructurado: %s "
@@ -383,11 +376,7 @@ class ServicioAnalisis:
 
             prompt = servicio.orquestar_prompt(metricas, contexto)
 
-            esquema_comparacion = (
-                ConsejoEstructuradoEvolucion
-                if modulo_enum == NombreModulo.COMPROBADOR_EVOLUCION
-                else None
-            )
+            esquema_comparacion = servicio.obtener_esquema_salida()
 
             consejo, estado, fallback = await self._coach.obtener_consejo_ia(
                 peticion.usuario_id, modulo_enum, prompt, metricas,
