@@ -67,7 +67,7 @@ comprarPlan(plan: 'PRO' | 'PREMIUM'): void {
 
 
 
-  
+
   // TODO: reemplazar con MenuService.getNavItems(usuarioRol)
   //       GET /api/menu?rol=estudiante  →  NavItem[]
   navItems       = NAV_ITEMS;
@@ -80,7 +80,7 @@ comprarPlan(plan: 'PRO' | 'PREMIUM'): void {
   // TODO: obtener desde GamificacionService
 
   rachaActual = 14;   // mock
-  metaRacha   = 30;   // mock 
+  metaRacha   = 30;   // mock
 
 // dentro de la clase, agrega:
 isPerfilSection = false;
@@ -91,7 +91,6 @@ readonly perfilNavItems = [
   { route: '/suscripcion/luka',     label: 'Mi Suscripción',    icon: 'fa-solid fa-crown' },
   { route: '/perfil/configuracion', label: 'Configuración',     icon: 'fa-solid fa-gear' },
   { route: '/perfil/historial',     label: 'Historial',         icon: 'fa-solid fa-clock-rotate-left' },
-  { route: '/perfil/transacciones', label: 'Transacciones',     icon: 'fa-solid fa-arrow-right-arrow-left' },
 ];
 
   constructor(

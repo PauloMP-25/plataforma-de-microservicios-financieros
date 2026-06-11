@@ -84,7 +84,7 @@ Este documento centraliza todos los bugs detectados y mejoras de UX pendientes e
 
 | # | Descripción | Estado | Asignado |
 |---|-------------|--------|----------|
-| F-13 | **Eliminar la sección de "Patrimonio".** La información mostrada no es clara para el usuario y genera confusión. Retirarla de la vista de Perfil Financiero. | Pendiente | — |
+| F-13 | ✅ **Eliminar la sección de "Patrimonio".** La información mostrada no era clara para el usuario y generaba confusión. Se retiró de la vista de Perfil Financiero. | **RESUELTO** | Cristina |
 
 ### Dashboard / Secciones Principales
 
@@ -99,8 +99,8 @@ Este documento centraliza todos los bugs detectados y mejoras de UX pendientes e
 | Capa | Total | Resueltos | Pendientes |
 |------|-------|-----------|------------|
 | Backend | 4 | 4 | 0 |
-| Frontend | 14 | 12 | 2 |
-| **Total** | **18** | **16** | **2** |
+| Frontend | 14 | 13 | 1 |
+| **Total** | **18** | **17** | **1** |
 
 ---
 
