@@ -42,6 +42,13 @@ export interface PeticionSimularMetaDTO {
   aporte_mensual_deseado?: number;
 }
 
+export interface PeticionComparacionDTO {
+  rangoA_inicio: string;
+  rangoA_fin: string;
+  rangoB_inicio: string;
+  rangoB_fin: string;
+}
+
 export interface SolicitudClasificacionDTO {
   id_temporal: string;
   tipo_movimiento: 'INGRESO' | 'GASTO';
@@ -80,7 +87,7 @@ export interface RespuestaModuloDTO {
   usuario_id: string;
   modulo: string;
   fecha_generacion: string;
-  consejo: string | null;
+  consejo: any | string | null;
   estado_coach: 'EXITOSO' | 'CUOTA_AGOTADA' | 'AUTH_ERROR' | 'TIMEOUT' | 'NO_DISPONIBLE';
   usando_fallback: boolean;
   insight: any; // Datos analíticos puros devueltos por Pandas

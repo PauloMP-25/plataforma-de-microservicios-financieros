@@ -18,6 +18,7 @@ from app.libreria_comun.respuesta.resultado_api import ResultadoApi
 from app.modelos.esquemas import (
     PeticionConFiltroFecha,
     PeticionSimularMeta,
+    PeticionComparacionDTO,
     RespuestaModulo,
     NombreModulo,
     SolicitudClasificacionDTO,
@@ -172,6 +173,20 @@ async def clasificar_transaccion(
         mensaje="Sugerencias de categorías generadas",
         ruta=request.url.path,
     )
+
+
+# ── Módulo 9: Comprobador de Evolución (La Sala de Radiología) ───────────────
+
+@router.post("/comprobador-evolucion", response_model=ResultadoApi[RespuestaModulo])
+async def comprobador_evolucion(
+    request: Request,
+    peticion: PeticionComparacionDTO,
+    servicio: ServicioAnalisis = Depends(obtener_servicio_analisis),
+    payload: dict = Security(validar_token),
+):
+    peticion.usuario_id = obtener_usuario_id(payload)
+    resultado = await servicio.procesar_comparacion(NombreModulo.COMPROBADOR_EVOLUCION, peticion, _obtener_ip(request), rol=obtener_rol_usuario(payload))
+    return ResultadoApi.exito_res(datos=resultado, mensaje="Análisis de evolución completado", ruta=request.url.path)
 
 
 # ── Módulo 9: Limpiar Historial de Consultas ──────────────────────────────────

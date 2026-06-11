@@ -242,6 +242,7 @@ const IA_MODULOS: IaModulo[] = [
 export class IaHubComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private iaService = inject(IaService);
 
   modulos = IA_MODULOS;
   moduloSeleccionado = signal<IaModulo | null>(null);
@@ -348,6 +349,28 @@ export class IaHubComponent implements OnInit, OnDestroy {
     this.cargando.set(true);
     this.errorMsg.set(null);
     this.resultado.set(null);
+
+    // Integración REAL con Backend para el Comprobador de Evolución
+    if (mod.id === 'comprobador-evolucion') {
+      this.iaService.getComprobadorEvolucion(payload).subscribe({
+        next: (res) => {
+          if (res.exito && res.datos) {
+            this.resultado.set(res.datos);
+          } else {
+            this.errorMsg.set(res.mensaje || 'Error desconocido al consultar el backend.');
+          }
+          this.cargando.set(false);
+        },
+        error: (err) => {
+          console.warn('Fallback a mockup estático activado debido a un error de conexión', err);
+          this.errorMsg.set('Conexión con la clínica financiera falló (' + err.message + '). Mostrando datos de simulación estática (Mockup).');
+          const mockRes = this._generarRespuestaMock(mod, payload);
+          this.resultado.set(mockRes);
+          this.cargando.set(false);
+        }
+      });
+      return;
+    }
 
     // Retardo simulado para recrear la animación premium de la red neuronal de Gemini Pro
     setTimeout(() => {

@@ -35,7 +35,9 @@ from app.modelos.esquemas import (
     InsightAnalitico,
     NombreModulo,
     PeticionBase,
+    PeticionComparacionDTO,
     RespuestaModulo,
+    ConsejoEstructuradoEvolucion,
 )
 from app.persistencia.cache_redis import CacheRedis
 from app.persistencia.database import SessionLocal
@@ -296,6 +298,156 @@ class ServicioAnalisis:
                     modulo=modulo_enum,
                     hallazgos={"error": str(e)},
                 ),
+            )
+
+    @auditar_operacion("MODULO_COMPARACION")
+    async def procesar_comparacion(
+        self,
+        modulo_enum: NombreModulo,
+        peticion: PeticionComparacionDTO,
+        ip: str,
+        **kwargs,
+    ) -> RespuestaModulo:
+        try:
+            rol_upper = kwargs.get("rol", "FREE").upper()
+            limite = 20 if rol_upper == "PRO" else (50 if rol_upper == "PREMIUM" else 5)
+            
+            fecha_actual = datetime.now()
+            anio_act, semana_act, _ = fecha_actual.isocalendar()
+            clave_cuota = f"ia:cuota:analitica:{peticion.usuario_id}:{anio_act}:W{semana_act}"
+
+            cuota_actual = self._cache_redis.obtener_cuota_actual(clave_cuota)
+            if cuota_actual >= limite:
+                raise LimiteDiarioExcedidoError(
+                    mensaje=(
+                        f"Has agotado tus {limite} consultas semanales de analitica. "
+                        f"Tu plan {rol_upper} se renueva el próximo lunes."
+                    )
+                )
+
+            servicio = FabricaModulosAnalisis.obtener_modulo(modulo_enum)
+
+            tarea_financiera_a = self._cliente_financiero.obtener_historial_transacciones_async(
+                peticion.usuario_id, peticion.token, peticion.tamanio_pagina,
+                desde_exacto=peticion.rango_a_inicio.isoformat(),
+                hasta_exacto=peticion.rango_a_fin.isoformat()
+            )
+            
+            tarea_financiera_b = self._cliente_financiero.obtener_historial_transacciones_async(
+                peticion.usuario_id, peticion.token, peticion.tamanio_pagina,
+                desde_exacto=peticion.rango_b_inicio.isoformat(),
+                hasta_exacto=peticion.rango_b_fin.isoformat()
+            )
+
+            tarea_perfil = self._cliente_perfil.obtener_perfil_usuario_async(
+                peticion.usuario_id, peticion.token
+            )
+
+            resp_financiera_a, resp_financiera_b, dict_perfil = await asyncio.gather(
+                tarea_financiera_a, tarea_financiera_b, tarea_perfil
+            )
+
+            datos_raw_a = resp_financiera_a.get("datos", [])
+            datos_raw_b = resp_financiera_b.get("datos", [])
+            df_a = json_a_dataframe(datos_raw_a)
+            df_b = json_a_dataframe(datos_raw_b)
+            
+            contexto = ContextoEstrategicoIADTO.model_validate(dict_perfil)
+            contexto.rol = kwargs.get("rol", "FREE")
+
+            # Redis cache key (combining both hashes)
+            datos_norm_a = sorted([json.dumps(t, sort_keys=True) for t in datos_raw_a])
+            datos_norm_b = sorted([json.dumps(t, sort_keys=True) for t in datos_raw_b])
+            hash_txs = hashlib.sha256(json.dumps(datos_norm_a + datos_norm_b).encode()).hexdigest()[:16]
+
+            descripcion_rango = (f"{peticion.rango_a_inicio.strftime('%Y-%m-%d')}_vs_"
+                                 f"{peticion.rango_b_fin.strftime('%Y-%m-%d')}")
+            clave_firma = f"ia:firma:{peticion.usuario_id}:{modulo_enum.value}:{descripcion_rango}:{hash_txs}"
+
+            descripcion_previa = self._cache_redis.obtener_firma(clave_firma)
+            if descripcion_previa:
+                return self._respuesta_duplicada(peticion.usuario_id, modulo_enum, df_b, descripcion_rango)
+
+            metricas = servicio.ejecutar_calculos(df_a, df_b, contexto, **kwargs)
+
+            total_txs = len(df_a) + len(df_b)
+            total_ing_a = float(df_a[df_a["tipo"] == "INGRESO"]["monto"].sum()) if not df_a.empty else 0.0
+            total_gas_a = float(df_a[df_a["tipo"] == "GASTO"]["monto"].sum()) if not df_a.empty else 0.0
+            total_ing_b = float(df_b[df_b["tipo"] == "INGRESO"]["monto"].sum()) if not df_b.empty else 0.0
+            total_gas_b = float(df_b[df_b["tipo"] == "GASTO"]["monto"].sum()) if not df_b.empty else 0.0
+            
+            metricas["_total_ingresos"] = total_ing_b
+            metricas["_total_gastos"] = total_gas_b
+            metricas["_historial_previo"] = None
+            metricas["_historial_insight"] = None
+
+            prompt = servicio.orquestar_prompt(metricas, contexto)
+
+            esquema_comparacion = (
+                ConsejoEstructuradoEvolucion
+                if modulo_enum == NombreModulo.COMPROBADOR_EVOLUCION
+                else None
+            )
+
+            consejo, estado, fallback = await self._coach.obtener_consejo_ia(
+                peticion.usuario_id, modulo_enum, prompt, metricas,
+                contexto.rol, contexto.nombres, contexto=contexto,
+                esquema_salida=esquema_comparacion
+            )
+
+            if isinstance(consejo, dict) and esquema_comparacion:
+                try:
+                    consejo = esquema_comparacion(**consejo)
+                except Exception as ex:
+                    logger.warning("[ORQUESTADOR] Error convirtiendo dict a %s: %s", esquema_comparacion.__name__, ex)
+                    consejo = json.dumps(consejo, ensure_ascii=False)
+
+            if not fallback and estado == EstadoCoach.EXITOSO:
+                asyncio.create_task(
+                    asyncio.to_thread(
+                        self._persistir_historial,
+                        usuario_id=peticion.usuario_id,
+                        modulo=modulo_enum.value,
+                        metricas=metricas,
+                        consejo=consejo,
+                        estado_coach=estado.value,
+                    )
+                )
+
+            insight_dto = InsightAnalitico(
+                modulo=modulo_enum,
+                total_transacciones_analizadas=total_txs,
+                total_ingresos=total_ing_b,
+                total_gastos=total_gas_b,
+                balance_neto=round(total_ing_b - total_gas_b, 2),
+                hallazgos=metricas,
+            )
+
+            resultado_final = RespuestaModulo(
+                usuario_id=peticion.usuario_id,
+                modulo=modulo_enum,
+                consejo=consejo,
+                estado_coach=estado,
+                insight=insight_dto,
+                usando_fallback=fallback,
+            )
+
+            self._cache_redis.registrar_consulta(clave_firma, descripcion_rango)
+            return resultado_final
+
+        except HistorialInsuficienteError as e:
+            return RespuestaModulo(
+                usuario_id=peticion.usuario_id, modulo=modulo_enum,
+                consejo=str(e), estado_coach=EstadoCoach.NO_DISPONIBLE,
+                insight=InsightAnalitico(modulo=modulo_enum, hallazgos={"error": "historial_insuficiente"})
+            )
+        except Exception as e:
+            logger.error("Fallo crítico en %s: %s", modulo_enum.value, e, exc_info=True)
+            return RespuestaModulo(
+                usuario_id=peticion.usuario_id, modulo=modulo_enum,
+                consejo="Lo siento, estamos optimizando tu experiencia. Intenta de nuevo en un momento.",
+                estado_coach=EstadoCoach.NO_DISPONIBLE,
+                insight=InsightAnalitico(modulo=modulo_enum, hallazgos={"error": str(e)})
             )
 
     # ── Métodos de soporte privados ───────────────────────────────────────────

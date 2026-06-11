@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Any
 from uuid import uuid4
  
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -62,6 +62,7 @@ class NombreModulo(str, Enum):
     RETO_AHORRO_DINAMICO = "RETO_AHORRO_DINAMICO"
     ANALISIS_ESTILO_VIDA = "ANALISIS_ESTILO_VIDA"
     AUTO_CLASIFICACION = "AUTO_CLASIFICACION"
+    COMPROBADOR_EVOLUCION = "COMPROBADOR_EVOLUCION"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -112,6 +113,18 @@ class ConsejoEstructurado(BaseModel):
         ...,
         description="Cierre motivador que refuerza el progreso o el esfuerzo del usuario.",
     )
+
+
+class RecetaCategoria(BaseModel):
+    categoria: str = Field(..., description="Nombre exacto de la categoría reincidente a tratar.")
+    diagnostico: str = Field(..., description="Descripción del patrón detectado en lenguaje clínico y si es reincidencia o nuevo exceso.")
+    posologia: List[str] = Field(..., min_length=3, max_length=3, description="Exactamente 3 acciones medibles para esta semana.")
+    pronostico: str = Field(..., description="Estimación en términos monetarios de cuánto dinero adicional tendría en 3 meses.")
+
+class ConsejoEstructuradoEvolucion(BaseModel):
+    pensamiento_interno_ia: str = Field(..., description="Razonamiento lógico sobre el diagnóstico del IMF y las recetas.")
+    veredicto_narrativo: str = Field(..., description="Párrafo de máximo 4 oraciones que justifica la clasificación diagnóstica final.")
+    recetas_medicas: List[RecetaCategoria] = Field(..., description="Lista de recetas. Una por cada categoría reincidente (o de mantenimiento si no hay reincidencias).")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -168,6 +181,30 @@ class PeticionConFiltroFecha(PeticionBase, FiltroDeFecha):
         if not valor.strip():
             raise ValueError("El usuario_id no puede estar vacío.")
         return valor.strip()
+
+
+class PeticionComparacionDTO(PeticionBase):
+    token: str = Field(..., min_length=10)
+    tamanio_pagina: int = Field(default=200, ge=10, le=1000)
+    rango_a_inicio: datetime = Field(...)
+    rango_a_fin: datetime = Field(...)
+    rango_b_inicio: datetime = Field(...)
+    rango_b_fin: datetime = Field(...)
+
+    @model_validator(mode="after")
+    def validar_rangos_fechas(self) -> "PeticionComparacionDTO":
+        if self.rango_a_inicio > self.rango_a_fin:
+            raise ValueError("El rango A de inicio debe ser anterior o igual al fin.")
+        if self.rango_b_inicio > self.rango_b_fin:
+            raise ValueError("El rango B de inicio debe ser anterior o igual al fin.")
+        if self.rango_a_fin >= self.rango_b_inicio:
+            raise ValueError("El Periodo A debe ser estrictamente anterior al Periodo B sin solapamiento.")
+        
+        dias_a = (self.rango_a_fin - self.rango_a_inicio).days + 1
+        dias_b = (self.rango_b_fin - self.rango_b_inicio).days + 1
+        if dias_a < 15 or dias_b < 15:
+            raise ValueError("Ambos periodos deben tener una duración mínima de 15 días para el análisis.")
+        return self
 
 
 class TransaccionParaClasificar(BaseModel):
@@ -375,13 +412,11 @@ class RespuestaModulo(BaseModel):
     modulo: NombreModulo
     fecha_generacion: datetime = Field(default_factory=datetime.now)
  
-    # ── CAMBIO v5: Union en lugar de solo str ─────────────────────────────────
-    consejo: Optional[Union[str, ConsejoEstructurado]] = Field(
+    # ── CAMBIO v5/v8: Union en lugar de solo str ─────────────────────────────────
+    consejo: Optional[Union[str, ConsejoEstructurado, ConsejoEstructuradoEvolucion, Any]] = Field(
         default=None,
         description=(
-            "Consejo financiero. "
-            "str para los 9 módulos legacy. "
-            "ConsejoEstructurado para GASTO_HORMIGA (Structured Outputs)."
+            "Consejo financiero estructurado."
         ),
     )
     estado_coach: EstadoCoach = Field(default=EstadoCoach.EXITOSO)
@@ -393,23 +428,12 @@ class RespuestaModulo(BaseModel):
     kpi: Optional[KpiWidget] = Field(default=None)
  
     def a_dict_serializable(self) -> dict:
-        """
-        Serialización segura para JSON/RabbitMQ.
-
-        Normaliza el campo `consejo` según su tipo real:
-          - str              → se mantiene como str (módulos legacy, fallbacks).
-          - ConsejoEstructurado → se convierte a dict via model_dump().
-          - None             → permanece None.
-
-        Las fechas se convierten a ISO-8601.
-        """
         datos = self.model_dump()
 
-        # Normalizar consejo: Pydantic model_dump() ya convierte BaseModel a dict,
-        # pero lo hacemos explícito para mayor claridad y control de errores.
-        if isinstance(self.consejo, ConsejoEstructurado):
+        if isinstance(self.consejo, BaseModel):
             datos["consejo"] = self.consejo.model_dump()
-        # Si es str o None, model_dump() ya lo maneja correctamente.
+        elif isinstance(self.consejo, dict):
+            datos["consejo"] = self.consejo
 
         datos["fecha_generacion"] = self.fecha_generacion.isoformat()
         return datos

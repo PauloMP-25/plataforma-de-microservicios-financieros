@@ -8,6 +8,7 @@ import { AuthService } from './auth.service';
 import {
   PeticionConFiltroFechaDTO,
   PeticionSimularMetaDTO,
+  PeticionComparacionDTO,
   SolicitudClasificacionDTO,
   RespuestaModuloDTO,
   RespuestaClasificacionDTO,
@@ -153,6 +154,12 @@ export class IaService {
 
   getReporteCompleto(payload: PeticionConFiltroFechaDTO): Observable<ResultadoApi<RespuestaModuloDTO>> {
     return this.http.post<ResultadoApi<RespuestaModuloDTO>>(`${this.base}/reporte-completo`, payload).pipe(
+      tap(() => this.descontarConsulta())
+    );
+  }
+
+  getComprobadorEvolucion(payload: PeticionComparacionDTO): Observable<ResultadoApi<RespuestaModuloDTO>> {
+    return this.http.post<ResultadoApi<RespuestaModuloDTO>>(`${this.base}/comprobador-evolucion`, payload).pipe(
       tap(() => this.descontarConsulta())
     );
   }
