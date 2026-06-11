@@ -26,6 +26,11 @@ export class GastosPage implements OnDestroy {
 
   readonly sugerenciasIa = signal<string[]>([]);
   readonly clasificandoIa = signal(false);
+  readonly intentosIaRestantes = computed(() => this.iaService.clasificacionesRestantes());
+  readonly intentosIaMaximos = computed(() => this.iaService.clasificacionesMaximas());
+  readonly puedeSugerirCategoriaIa = computed(() =>
+    this.descripcion().trim().length >= 4 && !this.clasificandoIa() && this.intentosIaRestantes() > 0
+  );
   readonly cargando = computed(() => this.stateService.cargando());
   readonly terminoBusqueda = signal('');
   readonly tabActiva = signal<'todos' | 'pagados' | 'pendientes' | 'recurrentes'>('todos');
@@ -42,7 +47,6 @@ export class GastosPage implements OnDestroy {
   readonly descripcion = signal('');
   readonly fecha = signal('');
   readonly metodoPago = signal<MetodoPago>('DIGITAL');
-  readonly tipoFrecuencia = signal<'DIARIO' | 'RECURRENTE'>('DIARIO');
   readonly etiquetas = signal<string[]>([]);
   readonly nuevaEtiqueta = signal('');
   readonly filtroTendencia = signal<'7d' | '30d' | '90d'>('30d');
@@ -411,7 +415,7 @@ export class GastosPage implements OnDestroy {
     this.monto.set(String(gasto.monto));
     this.fecha.set(this.fechaIsoDesdeTexto(gasto.fecha));
     this.metodoPago.set(this.normalizarMetodoPago(gasto.metodo));
-    
+
     // Encontrar ID de categoría a partir de filas o por nombre como fallback
     let catId = (gasto as any).categoriaId || '';
     if (!catId) {
@@ -421,7 +425,7 @@ export class GastosPage implements OnDestroy {
       catId = match ? match.id : '';
     }
     this.categoria.set(catId);
-    
+
     this.modalAbierto.set(true);
   }
 
@@ -527,7 +531,7 @@ export class GastosPage implements OnDestroy {
         categoriaId: this.categoria() || 'otros',
         fechaTransaccion: getLocalIsoString(this.fecha()),
         metodoPago: this.metodoPago(),
-        notas: `${this.nombreGasto().trim()}|${this.descripcion().trim()}|${this.tipoFrecuencia()}`,
+        notas: `${this.nombreGasto().trim()}|${this.descripcion().trim()}`,
         descripcion: this.descripcion().trim(),
         etiquetas: this.etiquetas().join(','),
       };
@@ -562,7 +566,7 @@ export class GastosPage implements OnDestroy {
       categoriaId: this.categoria(),
       fechaTransaccion: getLocalIsoString(this.fecha()),
       metodoPago: this.metodoPago(),
-      notas: `${this.nombreGasto().trim()}|${this.descripcion().trim()}|${this.tipoFrecuencia()}`,
+      notas: `${this.nombreGasto().trim()}|${this.descripcion().trim()}`,
       descripcion: this.descripcion().trim(),
       etiquetas: this.etiquetas().join(','),
     };
@@ -587,7 +591,7 @@ export class GastosPage implements OnDestroy {
       this.sugerenciasIa.set([]);
       return;
     }
-    if (this.clasificandoIa()) return;
+    if (this.clasificandoIa() || this.intentosIaRestantes() <= 0) return;
     this.clasificandoIa.set(true);
 
     this.iaService.getClasificarTransaccion({
@@ -604,7 +608,7 @@ export class GastosPage implements OnDestroy {
       },
       error: () => {
         this.clasificandoIa.set(false);
-        const matched = ['Alimentos', 'Transporte', 'Servicios', 'Hogar', 'Salud', 'Educación', 'Entretenimiento'].filter(c => 
+        const matched = ['Alimentos', 'Transporte', 'Servicios', 'Hogar', 'Salud', 'Educación', 'Entretenimiento'].filter(c =>
           c.toLowerCase().includes(d.toLowerCase())
         );
         this.sugerenciasIa.set(matched.length > 0 ? matched : ['Otros Gastos']);
@@ -688,7 +692,6 @@ export class GastosPage implements OnDestroy {
     this.descripcion.set('');
     this.fecha.set('');
     this.metodoPago.set('DIGITAL');
-    this.tipoFrecuencia.set('DIARIO');
     this.etiquetas.set([]);
     this.nuevaEtiqueta.set('');
     this.errores.set({});
