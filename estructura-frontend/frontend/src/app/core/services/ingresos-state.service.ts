@@ -7,17 +7,23 @@ import { TransaccionDTO } from '../models/financiero/transaccion.model';
 import { ResumenFinancieroDTO } from '../models/financiero/resumen.model';
 import { CategoriaDTO } from '../models/financiero/categoria.model';
 
+export interface IngresosFiltrosVista {
+  mes?: number;
+  anio?: number;
+  categoriaId?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class IngresosStateService {
-  // ── Angular Signals for State ──
+  // â”€â”€ Angular Signals for State â”€â”€
   readonly ingresos = signal<TransaccionDTO[]>([]);
   readonly resumenActual = signal<ResumenFinancieroDTO | null>(null);
   readonly resumenAnterior = signal<ResumenFinancieroDTO | null>(null);
   readonly categorias = signal<CategoriaDTO[]>([]);
 
-  // ── Loading state ──
+  // â”€â”€ Loading state â”€â”€
   readonly cargando = signal<boolean>(false);
   readonly error = signal<string | null>(null);
 
@@ -34,9 +40,10 @@ export class IngresosStateService {
    * Loads all required data for the Ingresos section.
    * Leverages caching for static datasets (previous month and categories) and time-based TTL for volatile data.
    */
-  cargarDatos(forzar: boolean = false): void {
+  cargarDatos(forzar: boolean = false, filtros: IngresosFiltrosVista = {}): void {
     const ahora = Date.now();
-    const necesitaRefrescoVolatil = forzar || !this.ultimoRefrescoTransacciones || (ahora - this.ultimoRefrescoTransacciones > this.CACHE_TTL_MS);
+    const hayFiltrosVista = filtros.mes != null || filtros.anio != null || !!filtros.categoriaId;
+    const necesitaRefrescoVolatil = hayFiltrosVista || forzar || !this.ultimoRefrescoTransacciones || (ahora - this.ultimoRefrescoTransacciones > this.CACHE_TTL_MS);
 
     const necesitaCategorias = this.categorias().length === 0;
     const necesitaResumenAnterior = this.resumenAnterior() === null;
@@ -50,8 +57,8 @@ export class IngresosStateService {
     this.error.set(null);
 
     const hoy = new Date();
-    const mesActual = hoy.getMonth() + 1;
-    const anioActual = hoy.getFullYear();
+    const mesActual = filtros.mes ?? hoy.getMonth() + 1;
+    const anioActual = filtros.anio ?? hoy.getFullYear();
     const anterior = new Date(anioActual, hoy.getMonth() - 1, 1);
     const mesAnterior = anterior.getMonth() + 1;
     const anioAnterior = anterior.getFullYear();
@@ -60,7 +67,14 @@ export class IngresosStateService {
     const llamadas: Record<string, any> = {};
 
     if (necesitaRefrescoVolatil) {
-      llamadas['historial'] = this.transaccionesService.listarHistorial({ tipo: 'INGRESO', pagina: 0, tamanio: 50 }).pipe(
+      llamadas['historial'] = this.transaccionesService.listarHistorial({
+        tipo: 'INGRESO',
+        categoriaId: filtros.categoriaId,
+        mes: mesActual,
+        anio: anioActual,
+        pagina: 0,
+        tamanio: 50
+      }).pipe(
         catchError(() => of({ content: [] }))
       );
       llamadas['resumenActual'] = this.financieroService.getResumen(mesActual, anioActual).pipe(
@@ -91,7 +105,9 @@ export class IngresosStateService {
       next: (res: any) => {
         if (res.historial !== null) {
           this.ingresos.set(res.historial.content || []);
-          this.ultimoRefrescoTransacciones = Date.now();
+          if (!hayFiltrosVista) {
+            this.ultimoRefrescoTransacciones = Date.now();
+          }
         }
         if (res.resumenActual !== null) {
           this.resumenActual.set(res.resumenActual);

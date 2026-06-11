@@ -42,12 +42,12 @@ Este documento centraliza todos los bugs detectados y mejoras de UX pendientes e
 
 | # | Descripción | Estado | Asignado |
 |---|-------------|--------|----------|
-| F-01 | **Eliminar la columna de "Etiquetado" de la tabla de listado de ingresos.** Actualmente se muestra una columna que no aporta valor al usuario en esa vista. | Pendiente | — |
-| F-02 | **Simplificar el filtro de ingresos.** Quitar el selector de rango de fechas y el botón "Filtrar". El filtrado debe ejecutarse de forma **automática** al seleccionar un mes o un tipo de ingreso (sin necesidad de confirmar). | Pendiente | — |
+| F-01 | ✅ **Eliminar la columna de "Etiquetado" de la tabla de listado de ingresos.** Actualmente se muestra una columna que no aporta valor al usuario en esa vista. | **RESUELTO** | Cristina |
+| F-02 | ✅ **Simplificar el filtro de ingresos.** Quitar el selector de rango de fechas y el botón "Filtrar". El filtrado debe ejecutarse de forma **automática** al seleccionar un mes o un tipo de ingreso (sin necesidad de confirmar). | **RESUELTO** | Cristina |
 | F-03 | **Quitar la opción "Diario / Recurrente" del formulario de gastos.** Esta distinción no se utiliza actualmente y genera confusión. | Pendiente | — |
-| F-04 | **La tarjeta de vista previa de un ingreso muestra el UID de la categoría en lugar de su nombre.** Debe resolverse el nombre legible a partir del UID antes de renderizarlo. | Pendiente | — |
+| F-04 | ✅ **La tarjeta de vista previa de un ingreso muestra el UID de la categoría en lugar de su nombre.** Debe resolverse el nombre legible a partir del UID antes de renderizarlo. | **RESUELTO** | Cristina |
 | F-05 | **Mejorar UX del botón "Sugerir Categoría" en el formulario de gastos.** Actualmente queda aislado sin contexto. Debe informar al usuario que dispone de **2 intentos** de sugerencia por IA, que el contador es visible en el header, y que al agotarse quedará deshabilitado. | Pendiente | — |
-| F-06 | **Eliminar el card de "Racha" e "Ingresos Totales" de la sección de ingresos.** Estos indicadores no corresponden a esa vista. | Pendiente | — |
+| F-06 | ✅ **Eliminar el card de "Racha" e "Ingresos Totales" de la sección de ingresos.** Estos indicadores no corresponden a esa vista. | **RESUELTO** | Cristina |
 
 ### Sidebar / Navegación
 
@@ -99,8 +99,8 @@ Este documento centraliza todos los bugs detectados y mejoras de UX pendientes e
 | Capa | Total | Resueltos | Pendientes |
 |------|-------|-----------|------------|
 | Backend | 4 | 4 | 0 |
-| Frontend | 14 | 4 | 10 |
-| **Total** | **18** | **8** | **10** |
+| Frontend | 14 | 8 | 6 |
+| **Total** | **18** | **12** | **6** |
 
 ---
 
