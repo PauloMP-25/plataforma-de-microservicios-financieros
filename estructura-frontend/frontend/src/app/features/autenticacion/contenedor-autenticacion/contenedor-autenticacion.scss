@@ -4,8 +4,8 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 900px;
-  min-height: 600px;
+  max-width: 1020px;
+  min-height: 660px;
   border-radius: 24px;
   overflow: hidden;
   border: 1px solid $borde-sutil;
@@ -46,7 +46,7 @@
 .auth__formulario-interior {
   position: absolute;
   inset: 0;
-  padding: 48px 40px;
+  padding: 56px 44px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -201,6 +201,39 @@
   font-weight: 600;
 }
 
+.auth__campo--otp-telefono {
+  margin-bottom: 18px;
+}
+
+.auth__ayuda-canal {
+  margin-top: 8px;
+  color: $texto-secundario;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+:host ::ng-deep .auth__formulario {
+  gap: 16px;
+}
+
+:host ::ng-deep .auth__encabezado {
+  margin-bottom: 22px;
+}
+
+:host ::ng-deep .auth__label span {
+  color: $primario-claro;
+  font-size: 0.68rem;
+  letter-spacing: 0.2px;
+  text-transform: none;
+}
+
+:host ::ng-deep .auth__ayuda-registro {
+  margin: 2px 0 0;
+  color: $texto-secundario;
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
 // ── Responsive ──
 @media (max-width: 768px) {
   .auth__contenedor-maestro {
@@ -231,7 +264,7 @@
     position: relative;
     padding: 32px 24px;
     display: none; // En móvil no usamos absolute, usamos display none
-    
+
     &.activo {
       display: flex;
     }

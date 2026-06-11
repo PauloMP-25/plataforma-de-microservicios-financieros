@@ -78,7 +78,7 @@ Este documento centraliza todos los bugs detectados y mejoras de UX pendientes e
 
 | # | Descripción | Estado | Asignado |
 |---|-------------|--------|----------|
-| F-12 | **Simplificar el flujo de registro.** Eliminar la opción de "Registrarse con celular" del formulario inicial. El número de teléfono (WhatsApp o SMS) debe solicitarse **únicamente en el paso de verificación de identidad**, donde se envía el código OTP. | Pendiente | — |
+| F-12 | ✅ **Simplificar el flujo de registro.** Se eliminó la opción de "Registrarse con celular" del formulario inicial. El número de teléfono (WhatsApp o SMS) ahora se solicita **únicamente en el paso de verificación de identidad**, donde se envía el código OTP. | **RESUELTO** | Cristina |
 
 ### Perfil Financiero
 
@@ -99,8 +99,8 @@ Este documento centraliza todos los bugs detectados y mejoras de UX pendientes e
 | Capa | Total | Resueltos | Pendientes |
 |------|-------|-----------|------------|
 | Backend | 4 | 4 | 0 |
-| Frontend | 14 | 11 | 3 |
-| **Total** | **18** | **15** | **3** |
+| Frontend | 14 | 12 | 2 |
+| **Total** | **18** | **16** | **2** |
 
 ---
 
