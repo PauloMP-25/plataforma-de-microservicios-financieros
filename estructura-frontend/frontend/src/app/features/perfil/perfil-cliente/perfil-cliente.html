@@ -57,7 +57,7 @@
               </div>
               @if (errores().nombres) { <small class="perfil-cliente__error">{{ errores().nombres }}</small> }
             </div>
- 
+
             <div class="perfil-cliente__field-group">
               <label class="perfil-cliente__label" for="apellidos">Apellidos</label>
               <div class="perfil-cliente__field" [class.perfil-cliente__field--error]="errores().apellidos">
@@ -66,7 +66,7 @@
               </div>
               @if (errores().apellidos) { <small class="perfil-cliente__error">{{ errores().apellidos }}</small> }
             </div>
- 
+
             <div class="perfil-cliente__field-group">
               <label class="perfil-cliente__label" for="dni">DNI</label>
               <div class="perfil-cliente__field" [class.perfil-cliente__field--error]="errores().dni">
@@ -81,7 +81,7 @@
               <div class="perfil-cliente__birth-row">
                 <select class="perfil-cliente__input" [ngModel]="fechaPartes().dia" (change)="actualizarFechaNacimientoParte('dia', $any($event.target).value)">
                   <option value="">Día</option>
-                  @for (d of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]; track d) {
+                  @for (d of diasNacimiento(); track d) {
                     <option [value]="d">{{ d }}</option>
                   }
                 </select>

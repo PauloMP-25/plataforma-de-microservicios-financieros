@@ -72,7 +72,7 @@ Este documento centraliza todos los bugs detectados y mejoras de UX pendientes e
 
 | # | Descripción | Estado | Asignado |
 |---|-------------|--------|----------|
-| F-11 | **El selector de fecha del perfil no ajusta los días según el mes.** Al seleccionar febrero, el selector sigue mostrando 31 días en lugar de 28/29. Debe validarse dinámicamente según el mes y año seleccionado. | Pendiente | — |
+| F-11 | ✅ **El selector de fecha del perfil no ajusta los días según el mes.** Al seleccionar febrero, el selector sigue mostrando 31 días en lugar de 28/29. Debe validarse dinámicamente según el mes y año seleccionado. | **RESUELTO** | Cristina |
 
 ### Login / Registro
 
@@ -99,8 +99,8 @@ Este documento centraliza todos los bugs detectados y mejoras de UX pendientes e
 | Capa | Total | Resueltos | Pendientes |
 |------|-------|-----------|------------|
 | Backend | 4 | 4 | 0 |
-| Frontend | 14 | 10 | 4 |
-| **Total** | **18** | **14** | **4** |
+| Frontend | 14 | 11 | 3 |
+| **Total** | **18** | **15** | **3** |
 
 ---
 
