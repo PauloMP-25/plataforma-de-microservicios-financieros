@@ -37,6 +37,9 @@ class FabricaModulosAnalisis:
             elif modulo == NombreModulo.COMPROBADOR_EVOLUCION:
                 from app.servicios.modulos.comprobador_evolucion import ComprobadorEvolucion
                 cls._instancias[modulo] = ComprobadorEvolucion()
+            elif modulo == NombreModulo.ZONA_ENTRENAMIENTO:
+                from app.servicios.modulos.zona_entrenamiento import ZonaEntrenamiento
+                cls._instancias[modulo] = ZonaEntrenamiento()
             elif modulo == NombreModulo.AUTO_CLASIFICACION:
                 # Si existe en un futuro
                 raise NotImplementedError(f"Módulo {modulo} aún no implementado en Fabrica")

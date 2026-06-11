@@ -189,7 +189,21 @@ async def comprobador_evolucion(
     return ResultadoApi.exito_res(datos=resultado, mensaje="Análisis de evolución completado", ruta=request.url.path)
 
 
-# ── Módulo 9: Limpiar Historial de Consultas ──────────────────────────────────
+# ── Módulo 10: Zona de Entrenamiento (Luka Gym) ──────────────────────────────
+
+@router.post("/zona-entrenamiento", response_model=ResultadoApi[RespuestaModulo])
+async def zona_entrenamiento(
+    request: Request,
+    peticion: PeticionConFiltroFecha,
+    servicio: ServicioAnalisis = Depends(obtener_servicio_analisis),
+    payload: dict = Security(validar_token),
+):
+    peticion.usuario_id = obtener_usuario_id(payload)
+    resultado = await servicio.procesar_modulo(NombreModulo.ZONA_ENTRENAMIENTO, peticion, _obtener_ip(request), rol=obtener_rol_usuario(payload))
+    return ResultadoApi.exito_res(datos=resultado, mensaje="Rutina de entrenamiento generada", ruta=request.url.path)
+
+
+# ── Mantenimiento: Limpiar Historial de Consultas ──────────────────────────────
 
 @router.delete("/mis-consultas/historial", response_model=ResultadoApi[dict])
 async def limpiar_historial_consultas(

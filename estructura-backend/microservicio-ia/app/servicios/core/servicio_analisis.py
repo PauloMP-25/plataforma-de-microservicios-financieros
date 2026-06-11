@@ -206,7 +206,7 @@ class ServicioAnalisis:
             esquema_salida = (
                 ConsejoEstructurado
                 if modulo_enum == NombreModulo.GASTO_HORMIGA
-                else None
+                else (ConsejoEstructuradoEntrenamiento if modulo_enum == NombreModulo.ZONA_ENTRENAMIENTO else None)
             )
 
             # ── 8. Ejecución en CoachIA ───────────────────────────────────────
@@ -478,7 +478,7 @@ class ServicioAnalisis:
         estado_coach: str,
     ) -> None:
         """
-        Guarda la interacción de coaching en DB.
+        Guarda la interacción de coaching en DB y la rutina mensual si aplica.
         Tolerante a fallos: errores solo se loguean, no se propagan.
         """
         try:
@@ -491,6 +491,26 @@ class ServicioAnalisis:
                     consejo=consejo,
                     estado_coach=estado_coach,
                 )
+                
+                from app.modelos.esquemas import NombreModulo
+                if modulo == NombreModulo.ZONA_ENTRENAMIENTO.value and estado_coach == "EXITOSO":
+                    from app.persistencia.repositorio_rutinas import RepositorioRutinas
+                    repo_rutinas = RepositorioRutinas(db)
+                    
+                    if hasattr(consejo, "model_dump"):
+                        dict_consejo = consejo.model_dump()
+                    elif isinstance(consejo, dict):
+                        dict_consejo = consejo
+                    else:
+                        dict_consejo = json.loads(consejo) if isinstance(consejo, str) else {}
+                        
+                    estado_fisico = dict_consejo.get("estado_fisico", "Desconocido")
+                    ejercicios = dict_consejo.get("rutina", [])
+                    repo_rutinas.guardar_rutina(
+                        usuario_id=usuario_id,
+                        estado_fisico=estado_fisico,
+                        ejercicios_json=json.dumps(ejercicios, ensure_ascii=False)
+                    )
         except Exception as e:
             logger.error(
                 "[ORQUESTADOR] Fallo al persistir historial para usuario=%s modulo=%s: %s",

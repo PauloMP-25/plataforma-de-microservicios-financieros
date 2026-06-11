@@ -63,6 +63,7 @@ class NombreModulo(str, Enum):
     ANALISIS_ESTILO_VIDA = "ANALISIS_ESTILO_VIDA"
     AUTO_CLASIFICACION = "AUTO_CLASIFICACION"
     COMPROBADOR_EVOLUCION = "COMPROBADOR_EVOLUCION"
+    ZONA_ENTRENAMIENTO = "ZONA_ENTRENAMIENTO"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -125,6 +126,19 @@ class ConsejoEstructuradoEvolucion(BaseModel):
     pensamiento_interno_ia: str = Field(..., description="Razonamiento lógico sobre el diagnóstico del IMF y las recetas.")
     veredicto_narrativo: str = Field(..., description="Párrafo de máximo 4 oraciones que justifica la clasificación diagnóstica final.")
     recetas_medicas: List[RecetaCategoria] = Field(..., description="Lista de recetas. Una por cada categoría reincidente (o de mantenimiento si no hay reincidencias).")
+
+class EjercicioEntrenamiento(BaseModel):
+    nombre: str = Field(..., description="Nombre motivacional del ejercicio de entrenamiento.")
+    descripcion: str = Field(..., description="Descripción detallada de la acción a realizar.")
+    duracion_dias: int = Field(..., description="Duración total del ejercicio en días (ej: 30).")
+    frecuencia: str = Field(..., description="Frecuencia (ej: 'Diario', '1 vez a la semana', '3 veces por semana').")
+    metrica_exito: str = Field(..., description="Condición medible y verificable para considerar el ejercicio cumplido.")
+
+class ConsejoEstructuradoEntrenamiento(BaseModel):
+    pensamiento_interno_ia: str = Field(..., description="Razonamiento lógico sobre el estado físico del usuario basado en sus signos vitales.")
+    estado_fisico: str = Field(..., description="Uno de los 5 estados: 'Atleta de Élite', 'En Forma', 'Sedentario', 'Lesionado' o 'UCI Financiera'.")
+    evaluacion_previa: Optional[str] = Field(..., description="Breve evaluación del cumplimiento de la rutina del mes anterior. Vacío si es la primera vez.")
+    rutina: List[EjercicioEntrenamiento] = Field(..., min_length=3, max_length=3, description="Exactamente 3 ejercicios para el mes.")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -413,7 +427,7 @@ class RespuestaModulo(BaseModel):
     fecha_generacion: datetime = Field(default_factory=datetime.now)
  
     # ── CAMBIO v5/v8: Union en lugar de solo str ─────────────────────────────────
-    consejo: Optional[Union[str, ConsejoEstructurado, ConsejoEstructuradoEvolucion, Any]] = Field(
+    consejo: Optional[Union[str, ConsejoEstructurado, ConsejoEstructuradoEvolucion, ConsejoEstructuradoEntrenamiento, Any]] = Field(
         default=None,
         description=(
             "Consejo financiero estructurado."

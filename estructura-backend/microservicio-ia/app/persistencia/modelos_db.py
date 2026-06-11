@@ -41,6 +41,21 @@ class IaRetoAhorro(Base):
         return f"<IaRetoAhorro(id={self.id}, usuario={self.usuario_id}, estado={self.estado})>"
 
 
+class IaRutinaMensual(Base):
+    """Persistencia de las rutinas de entrenamiento mensuales (Luka Gym)."""
+    __tablename__ = "ia_rutinas_mensuales"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    usuario_id = Column(String(50), nullable=False, index=True)
+    fecha_generacion = Column(DateTime, default=datetime.now, nullable=False)
+    estado_fisico = Column(String(50), nullable=False)
+    ejercicios_json = Column(Text, nullable=False)
+    estado = Column(String(30), default="ACTIVA", index=True)
+
+    def __repr__(self):
+        return f"<IaRutinaMensual(id={self.id}, usuario={self.usuario_id}, estado={self.estado})>"
+
+
 # ── 2. Patrón Transactional Outbox ────────────────────────────────────────────
 
 class EstadoOutbox(str, enum.Enum):
