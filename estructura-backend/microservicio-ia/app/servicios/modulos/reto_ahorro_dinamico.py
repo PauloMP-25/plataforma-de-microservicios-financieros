@@ -11,8 +11,8 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 from app.servicios.core.base_analisis import BaseAnalisisService
 from app.libreria_comun.modelos.contexto import ContextoEstrategicoIADTO
-from app.persistencia.database import SessionLocal
-from app.persistencia.modelos_db import IaRetoAhorro
+from app.persistencia.postgres.database import SessionLocal
+from app.persistencia.postgres.modelos_db import IaRetoAhorro
 from app.servicios.ia.prompts.prompt_reto_ahorro import generar_prompt_reto_ahorro
 
 class RetoAhorroDinamicoService(BaseAnalisisService):

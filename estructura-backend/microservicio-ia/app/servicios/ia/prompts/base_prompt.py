@@ -70,33 +70,9 @@ def construir_seccion_historial(
 
 def construir_instrucciones_esquema_estandar() -> str:
     """
-    Retorna las instrucciones explícitas para que Gemini respete
-    el esquema JSON ConsejoEstructurado estándar.
+    Retorna instrucciones breves para complementar el Structured Output de Gemini.
     """
     return """
-════════════════════════════════════════
-FORMATO DE RESPUESTA OBLIGATORIO
-════════════════════════════════════════
-Debes generar la respuesta cumpliendo ESTRICTAMENTE con el esquema JSON proporcionado.
-NO incluyas texto libre fuera del JSON. NO uses bloques de código markdown.
-
-Distribuye el análisis así en cada campo:
-
-- introduccion        : Saludo personalizado con el nombre del usuario y una frase
-                        que resuma el hallazgo principal. (1-2 oraciones)
-
-- analisis_ia         : Análisis detallado del módulo. Incluye números,
-                        variación respecto al mes anterior (si aplica)
-                        y qué está causando la situación. (2-4 oraciones)
-
-- conexion_emocional  : Una sola frase que conecte directamente el análisis
-                        con el impacto en su meta de ahorro activa. Hazla personal.
-
-- plan_accion_titulo  : Título corto y motivador para el plan de acción.
-
-- plan_accion_pasos   : Lista de 2 a 4 pasos CONCRETOS. Cada paso debe ser accionable
-                        esta semana, no una recomendación genérica.
-
-- comentario_positivo : Cierre motivador de 1 oración. Si el usuario mejoró respecto
-                        a la sesión anterior, reconócelo explícitamente.
+Analiza los datos y responde directamente rellenando el esquema JSON requerido.
+Sé conciso, usa un tono motivador y da pasos de acción muy concretos para esta semana.
 """

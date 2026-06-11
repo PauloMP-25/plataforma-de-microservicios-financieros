@@ -39,10 +39,10 @@ from app.modelos.esquemas import (
     RespuestaModulo,
     ConsejoEstructuradoEvolucion,
 )
-from app.persistencia.cache_redis import CacheRedis
-from app.persistencia.database import SessionLocal
-from app.persistencia.repositorio_historial import RepositorioHistorialCoaching
-from app.servicios.fabrica_modulos import FabricaModulosAnalisis
+from app.persistencia.redis.cache_redis import CacheRedis
+from app.persistencia.postgres.database import SessionLocal
+from app.persistencia.postgres.repositorio_historial import RepositorioHistorialCoaching
+from app.servicios.core.fabrica_modulos import FabricaModulosAnalisis
 from app.servicios.ia.coach_ia import CoachIA
 from app.clientes.luka_clients import obtener_cliente_financiero, obtener_cliente_perfil
 from app.utilidades.excepciones import HistorialInsuficienteError, LimiteDiarioExcedidoError
@@ -483,7 +483,7 @@ class ServicioAnalisis:
                 
                 from app.modelos.esquemas import NombreModulo
                 if modulo == NombreModulo.ZONA_ENTRENAMIENTO.value and estado_coach == "EXITOSO":
-                    from app.persistencia.repositorio_rutinas import RepositorioRutinas
+                    from app.persistencia.postgres.repositorio_rutinas import RepositorioRutinas
                     repo_rutinas = RepositorioRutinas(db)
                     
                     if hasattr(consejo, "model_dump"):

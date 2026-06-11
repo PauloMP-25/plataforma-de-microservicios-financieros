@@ -38,7 +38,7 @@ from pydantic import BaseModel
 
 from app.configuracion import Configuracion, obtener_configuracion
 from app.modelos.esquemas import EstadoCoach, NombreModulo
-from app.persistencia.cache_redis import CacheRedis
+from app.persistencia.redis.cache_redis import CacheRedis
 from app.utilidades.excepciones import LimiteDiarioExcedidoError
 from app.libreria_comun.modelos.contexto import ContextoEstrategicoIADTO
 from app.libreria_comun.modelos.eventos import EventoTransaccionalDTO

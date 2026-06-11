@@ -1,6 +1,6 @@
 import json
 from sqlalchemy.orm import Session
-from app.persistencia.modelos_db import IaRutinaMensual
+from app.persistencia.postgres.modelos_db import IaRutinaMensual
 from typing import Optional
 
 class RepositorioRutinas:

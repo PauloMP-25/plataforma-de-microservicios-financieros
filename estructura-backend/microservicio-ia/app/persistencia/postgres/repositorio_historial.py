@@ -20,7 +20,7 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from app.persistencia.modelos_db import IaHistorialCoaching
+from app.persistencia.postgres.modelos_db import IaHistorialCoaching
 
 logger = logging.getLogger(__name__)
 

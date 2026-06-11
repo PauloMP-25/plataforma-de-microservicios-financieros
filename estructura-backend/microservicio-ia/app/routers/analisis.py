@@ -215,7 +215,7 @@ async def limpiar_historial_consultas(
     para poder forzar una nueva llamada a Gemini en rangos consultados anteriormente.
     """
     usuario_id = obtener_usuario_id(payload)
-    from app.persistencia.cache_redis import CacheRedis
+    from app.persistencia.redis.cache_redis import CacheRedis
     cache = CacheRedis()
     eliminadas = cache.flush_firmas_usuario(usuario_id)
     
@@ -243,7 +243,7 @@ async def flush_cache_ia(
     Por defecto elimina ia:* (consejos + cuotas). Requiere JWT válido.
     Útil para forzar que Gemini regenere consejos después de correcciones de código.
     """
-    from app.persistencia.cache_redis import CacheRedis
+    from app.persistencia.redis.cache_redis import CacheRedis
     cache = CacheRedis()
     eliminadas = cache.flush_ia_cache(patron=patron)
     logger.warning(
