@@ -40,6 +40,9 @@ class FabricaModulosAnalisis:
             elif modulo == NombreModulo.ZONA_ENTRENAMIENTO:
                 from app.servicios.modulos.zona_entrenamiento import ZonaEntrenamiento
                 cls._instancias[modulo] = ZonaEntrenamiento()
+            elif modulo == NombreModulo.ESPEJO_TEMPORAL:
+                from app.servicios.modulos.espejo_tiempo import EspejoTiempoService
+                cls._instancias[modulo] = EspejoTiempoService()
             elif modulo == NombreModulo.AUTO_CLASIFICACION:
                 # Si existe en un futuro
                 raise NotImplementedError(f"Módulo {modulo} aún no implementado en Fabrica")

@@ -12,6 +12,7 @@ from app.servicios.ia.fallbacks.fallback_comprobador_evolucion import generar_fa
 from app.servicios.ia.fallbacks.fallback_zona_entrenamiento import generar_fallback_zona_entrenamiento
 from app.servicios.ia.fallbacks.fallback_simular_meta import generar_fallback_simular_meta
 from app.servicios.ia.fallbacks.fallback_habitos_financieros import generar_fallback_habitos_financieros
+from app.servicios.ia.fallbacks.fallback_espejo_tiempo import generar_fallback_espejo_tiempo
 from app.servicios.ia.fallbacks.fallback_generico import generar_fallback_generico
 
 class GestorFallbacks:
@@ -30,6 +31,8 @@ class GestorFallbacks:
             return generar_fallback_comprobador_evolucion(datos, nombres, contexto)
         elif modulo == NombreModulo.ZONA_ENTRENAMIENTO:
             return generar_fallback_zona_entrenamiento(datos, nombres, contexto)
+        elif modulo == NombreModulo.ESPEJO_TEMPORAL:
+            return generar_fallback_espejo_tiempo(datos, nombres, contexto)
             
         # Módulos Texto Plano (Devuelven String)
         elif modulo == NombreModulo.SIMULAR_META:

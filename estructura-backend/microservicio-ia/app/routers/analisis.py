@@ -203,6 +203,71 @@ async def zona_entrenamiento(
     return ResultadoApi.exito_res(datos=resultado, mensaje="Rutina de entrenamiento generada", ruta=request.url.path)
 
 
+# ── Módulo 11: Espejo del Tiempo ──────────────────────────────────────────────
+
+@router.post("/espejo-tiempo", response_model=ResultadoApi[RespuestaModulo])
+async def espejo_tiempo(
+    request: Request,
+    peticion: PeticionConFiltroFecha,
+    servicio: ServicioAnalisis = Depends(obtener_servicio_analisis),
+    payload: dict = Security(validar_token),
+):
+    """
+    Proyecta el futuro financiero del usuario a 3, 6 y 12 meses.
+
+    Genera dos líneas de proyección paralelas:
+      - Continuidad    : Si el usuario mantiene sus hábitos actuales.
+      - Transformación : Si reduce un 25 % sus gastos no esenciales.
+
+    Para cada horizonte calcula el score proyectado, el ahorro acumulado
+    y clasifica las metas activas como cumplidas o fracasadas.
+
+    Gemini recibe solo los KPIs resumidos (FASE 3) y narra dos «cartas
+    al futuro» personalizadas usando el nombre y tono del usuario.
+
+    Requiere mínimo 30 transacciones históricas.
+    """
+    peticion.usuario_id = obtener_usuario_id(payload)
+
+    # Extraer metas activas y score del perfil del usuario vía kwargs.
+    # ServicioAnalisis las pasa a ejecutar_calculos(**kwargs) del módulo.
+    from app.clientes.luka_clients import obtener_cliente_perfil
+    cliente_perfil = obtener_cliente_perfil()
+    try:
+        dict_perfil = await cliente_perfil.obtener_perfil_usuario_async(
+            peticion.usuario_id, peticion.token
+        )
+        metas_raw = dict_perfil.get("metas", dict_perfil.get("metasAhorro", []))
+        # Normalizar lista de metas al formato esperado por el módulo
+        metas = [
+            {
+                "nombre": m.get("nombre", m.get("nombreMeta", "Meta sin nombre")),
+                "monto_objetivo": float(m.get("montoObjetivo", m.get("monto_objetivo", 0.0))),
+                "monto_actual": float(m.get("montoActual", m.get("monto_actual", 0.0))),
+            }
+            for m in (metas_raw if isinstance(metas_raw, list) else [])
+        ]
+        score_actual = int(dict_perfil.get("scoreFinanciero", dict_perfil.get("score_financiero", 50)))
+    except Exception:
+        logger.warning("[ESPEJO-TIEMPO] No se pudo obtener metas del perfil; usando defaults.")
+        metas = []
+        score_actual = 50
+
+    resultado = await servicio.procesar_modulo(
+        NombreModulo.ESPEJO_TEMPORAL,
+        peticion,
+        _obtener_ip(request),
+        rol=obtener_rol_usuario(payload),
+        metas=metas,
+        score_actual=score_actual,
+    )
+    return ResultadoApi.exito_res(
+        datos=resultado,
+        mensaje="Proyección temporal generada",
+        ruta=request.url.path,
+    )
+
+
 # ── Mantenimiento: Limpiar Historial de Consultas ──────────────────────────────
 
 @router.delete("/mis-consultas/historial", response_model=ResultadoApi[dict])

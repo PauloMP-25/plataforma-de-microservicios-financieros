@@ -64,6 +64,7 @@ class NombreModulo(str, Enum):
     AUTO_CLASIFICACION = "AUTO_CLASIFICACION"
     COMPROBADOR_EVOLUCION = "COMPROBADOR_EVOLUCION"
     ZONA_ENTRENAMIENTO = "ZONA_ENTRENAMIENTO"
+    ESPEJO_TEMPORAL = "ESPEJO_TEMPORAL"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -139,6 +140,35 @@ class ConsejoEstructuradoEntrenamiento(BaseModel):
     estado_fisico: str = Field(..., description="Uno de los 5 estados: 'Atleta de Élite', 'En Forma', 'Sedentario', 'Lesionado' o 'UCI Financiera'.")
     evaluacion_previa: Optional[str] = Field(..., description="Breve evaluación del cumplimiento de la rutina del mes anterior. Vacío si es la primera vez.")
     rutina: List[EjercicioEntrenamiento] = Field(..., min_length=3, max_length=3, description="Exactamente 3 ejercicios para el mes.")
+
+
+class ConsejoEstructuradoEspejo(BaseModel):
+    """
+    Esquema de salida estructurada para el módulo ESPEJO_TEMPORAL.
+
+    Gemini recibe los KPIs resumidos (FASE 3) y escribe exclusivamente
+    estas dos cartas narrativas al futuro. Todos los números ya vienen
+    calculados por Pandas en FASE 2; Gemini solo narra.
+
+    cartaContinuidad    — Carta al usuario si continúa con sus hábitos actuales.
+    cartaTransformacion — Carta al usuario si optimiza sus gastos no esenciales.
+    """
+    cartaContinuidad: str = Field(
+        ...,
+        description=(
+            "Carta breve (máx 5 oraciones, 120 palabras) en segunda persona y tiempo presente "
+            "que describe el futuro financiero del usuario sin cambios en sus hábitos. "
+            "Debe citar el score proyectado y el ahorro mensual actual."
+        ),
+    )
+    cartaTransformacion: str = Field(
+        ...,
+        description=(
+            "Carta breve (máx 5 oraciones, 120 palabras) en segunda persona y tiempo presente "
+            "que describe el futuro financiero del usuario si reduce sus gastos no esenciales. "
+            "Debe citar el ahorro mensual optimizado y la diferencia neta acumulada en 12 meses."
+        ),
+    )
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -426,8 +456,8 @@ class RespuestaModulo(BaseModel):
     modulo: NombreModulo
     fecha_generacion: datetime = Field(default_factory=datetime.now)
  
-    # ── CAMBIO v5/v8: Union en lugar de solo str ─────────────────────────────────
-    consejo: Optional[Union[str, ConsejoEstructurado, ConsejoEstructuradoEvolucion, ConsejoEstructuradoEntrenamiento, Any]] = Field(
+    # ── CAMBIO v5/v9: Union ampliado con ConsejoEstructuradoEspejo ──────────────
+    consejo: Optional[Union[str, ConsejoEstructurado, ConsejoEstructuradoEvolucion, ConsejoEstructuradoEntrenamiento, ConsejoEstructuradoEspejo, Any]] = Field(
         default=None,
         description=(
             "Consejo financiero estructurado."
