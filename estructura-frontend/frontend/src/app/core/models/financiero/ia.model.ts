@@ -15,7 +15,8 @@ export type ModuloIa =
   | 'HABITOS_FINANCIEROS'
   | 'RETO_AHORRO_DINAMICO'
   | 'ANALISIS_ESTILO_VIDA'
-  | 'ESPEJO_TEMPORAL';
+  | 'ESPEJO_TEMPORAL'
+  | 'ZONA_ENTRENAMIENTO';
 
 export interface SolicitudIaDTO {
   idUsuario: string;
@@ -111,6 +112,23 @@ export interface RespuestaIaDTO {
   metadataGrafico?: MetadataGraficoIaDTO;
   kpiPrincipal?: number;
   kpiLabel?: string;
+}
+
+// ── Modelos Específicos para Módulo: Zona de Entrenamiento ──
+
+export interface EjercicioEntrenamientoDTO {
+  nombre: string;
+  descripcion: string;
+  duracion_dias: number;
+  frecuencia: string;
+  metrica_exito: string;
+}
+
+export interface ConsejoEntrenamientoDTO {
+  pensamiento_interno_ia: string;
+  estado_fisico: string;
+  evaluacion_previa?: string;
+  rutina: EjercicioEntrenamientoDTO[];
 }
 
 // ── Modelos Específicos para Módulo 5: Espejo Temporal ──

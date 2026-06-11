@@ -350,9 +350,13 @@ export class IaHubComponent implements OnInit, OnDestroy {
     this.errorMsg.set(null);
     this.resultado.set(null);
 
-    // Integración REAL con Backend para el Comprobador de Evolución
-    if (mod.id === 'comprobador-evolucion') {
-      this.iaService.getComprobadorEvolucion(payload).subscribe({
+    // Integración REAL con Backend para el Comprobador de Evolución y Zona de Entrenamiento
+    if (mod.id === 'comprobador-evolucion' || mod.id === 'zona-entrenamiento') {
+      const apiCall = mod.id === 'comprobador-evolucion' 
+        ? this.iaService.getComprobadorEvolucion(payload)
+        : this.iaService.getZonaEntrenamiento(payload);
+
+      apiCall.subscribe({
         next: (res) => {
           if (res.exito && res.datos) {
             this.resultado.set(res.datos);
@@ -643,10 +647,18 @@ export class IaHubComponent implements OnInit, OnDestroy {
           { categoria: 'Delivery', confianza: 82 },
           { categoria: 'Ocio', confianza: 34 }
         ]
+      },
+      'zona-entrenamiento': {
+        hallazgos: {
+          frecuencia_cardiaca: 2.5,
+          presion_arterial: 1.5,
+          temperatura_ahorro: 5,
+          saturacion_pct: 45
+        }
       }
     };
 
-    const consejos: Record<string, string> = {
+    const consejos: Record<string, any> = {
       'gasto-hormiga': 'Paulo, **vamos al grano**. Tus gastos en **\'Cafetería\'** han subido un **20%** este mes. Lo que ves como S/ 12.00 diarios hoy, se traduce en una fuga de **S/ 4,320.00 al año**. Con ese dinero podrías comprarte la **\'Laptop Gamer\'** que tanto quieres y aún te sobraría para los periféricos. Estás descuidando tu meta por una comodidad momentánea. Para empezar con fuerza, esta semana ponte el reto de llevar tu propio café en un termo al campus al menos tres días. Verás que ese pequeño cambio acelerará tu camino hacia esa nueva computadora y te dará la tranquilidad que necesitas para programar. ¡Deja de financiar el marketing de las grandes cadenas y empieza a financiar tu herramienta de trabajo!',
       'predecir-gastos': 'Estimado Paulo Moron, tras realizar el **análisis econométrico** de su historial transaccional, proyectamos que sus egresos para el próximo periodo ascenderán a **S/ 1,850.00**. Dado que sus ingresos mensuales se sitúan en S/ 2,000.00, su margen de maniobra es del **7.5%**, lo cual se considera un nivel de riesgo moderado ante contingencias. Le recomendamos formalmente priorizar la constitución de un fondo de reserva equivalente a tres meses de gastos. Evite comprometerse con nuevas obligaciones financieras durante el próximo trimestre para asegurar la viabilidad de su meta principal de la **\'Laptop Gamer\'** sin comprometer sus necesidades básicas.',
       'habitos-financieros': '¡Hola Paulo! He notado que tus **Sábados a las 6 PM** son el momento donde tu billetera más sufre, especialmente en **\'Restaurantes\'**. Parece que el fin de semana te invita a celebrar, ¡y eso está bien!, pero esos pequeños impulsos están frenando tu meta de la **Laptop Gamer**. <br/><br/>**Hábito Atómico:** Prueba la **\'Regla de las 48 horas\'**: si ves algo que quieres comprar un sábado, espérate al lunes. Si aún lo quieres, cómpralo. Verás cómo el 80% de esos antojos desaparecen solos. ¡Tú tienes el control!',
@@ -656,7 +668,34 @@ export class IaHubComponent implements OnInit, OnDestroy {
       'reto-ahorro': '¡Misión: Operación Cocina en Casa! 🏆 Paulo, he detectado que tu \'Enemigo Final\' de esta semana son los Restaurantes. Tu misión, si decides aceptarla, es evitar comer fuera por los próximos 7 días. Si lo logras, habrás salvado **S/ 85.00** para tu fondo de la \'Laptop Gamer\'. ¿Aceptas el reto, Jugador 1?',
       'espejo-temporal': '¡Hola Paulo! Soy tu coach financiero Luka. Tras proyectar tus finanzas a 12 meses, la diferencia neta de ahorro acumulado proyectado entre tus dos futuros es de **S/ 1,450.00**. Si continúas con tus hábitos del pasado (gastando en mototaxi para distancias cortas y micro-compras compulsivas de antojos de fin de semana), tus metas de realizar tu **Viaje a Cusco**, adquirir tu **Laptop Gamer** y fundar tu cuenta de **Ahorro para Departamento** se postergarán de forma indefinida, manteniéndote en un ciclo de estancamiento. Sin embargo, al activar tu plan de transformación —reemplazando trayectos cortos por caminatas y optimizando tus antojos de fin de semana— no solo liberarás liquidez mensual inmediata, sino que lograrás capitalizar tus ahorros a **S/ 1,550.00**. Con esto lograrás concretar tu viaje, comprar la laptop y sembrar la cuota inicial de tu departamento. La clave para tu éxito está en la micro-disciplina diaria: cada decisión de hoy construye tu mañana.',
       'comprobador-evolucion': 'Paulo, el diagnóstico revela que estás ganando estabilidad en tus bases (servicios fijos y alimentación protegida), pero tus extremidades (gastos de ocio y compras ocasionales) están fracturando gravemente tu flujo de caja neto. El Índice de Volatilidad de Gastos es del 78% (Caótico), lo que indica una alta inestabilidad semanal. Si logras aplicar la posología y sanar estas fracturas reduciendo la comida fuera de casa los fines de semana, consolidarás la base ideal para tu Laptop Gamer.',
-      'clasificar-transaccion': `🏷️ **Clasificación sugerida:** Para "${payload?.descripcion || 'Rappi Alimentos'}" de S/. ${payload?.monto || 45.00}, Luka recomienda la categoría **"Alimentación"** con 95% de confianza.`
+      'clasificar-transaccion': `🏷️ **Clasificación sugerida:** Para "${payload?.descripcion || 'Rappi Alimentos'}" de S/. ${payload?.monto || 45.00}, Luka recomienda la categoría **"Alimentación"** con 95% de confianza.`,
+      'zona-entrenamiento': {
+        pensamiento_interno_ia: 'Generando rutina de contingencia desde el front-end.',
+        estado_fisico: 'Lesionado',
+        rutina: [
+          {
+            nombre: 'Sprint de Ahorro',
+            descripcion: 'No gastar en la categoría Entretenimiento/Antojos por 3 días seguidos.',
+            duracion_dias: 3,
+            frecuencia: 'Entretenimiento',
+            metrica_exito: 'S/ 30.00 retenidos'
+          },
+          {
+            nombre: 'Levantamiento de Presupuesto',
+            descripcion: 'Registrar cada sol gastado en Pichangas antes de que termine el día.',
+            duracion_dias: 7,
+            frecuencia: 'Deportes',
+            metrica_exito: '100% visibilidad'
+          },
+          {
+            nombre: 'Flexibilidad de Cuota',
+            descripcion: 'Separar S/ 6 fijos al inicio de la semana exclusivamente para salidas.',
+            duracion_dias: 30,
+            frecuencia: 'Planificación',
+            metrica_exito: 'Presupuesto blindado'
+          }
+        ]
+      }
     };
 
     // Estructuras de gráficos para visualizar en IaResultadoComponent

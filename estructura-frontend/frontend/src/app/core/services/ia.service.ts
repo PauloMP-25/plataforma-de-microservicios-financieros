@@ -164,6 +164,12 @@ export class IaService {
     );
   }
 
+  getZonaEntrenamiento(payload: PeticionConFiltroFechaDTO): Observable<ResultadoApi<RespuestaModuloDTO>> {
+    return this.http.post<ResultadoApi<RespuestaModuloDTO>>(`${this.base}/zona-entrenamiento`, payload).pipe(
+      tap(() => this.descontarConsulta())
+    );
+  }
+
   // ── Módulo de Coach ──
 
   getSimularMeta(payload: PeticionSimularMetaDTO): Observable<ResultadoApi<RespuestaModuloDTO>> {
