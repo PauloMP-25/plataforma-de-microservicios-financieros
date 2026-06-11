@@ -5,10 +5,7 @@ Generador del prompt para el módulo GASTO_HORMIGA.
 
 from typing import Dict, Any
 from app.libreria_comun.modelos.contexto import ContextoEstrategicoIADTO
-from app.servicios.ia.prompts.base_prompt import (
-    construir_seccion_historial,
-    construir_instrucciones_esquema_estandar
-)
+from app.servicios.ia.prompts.base_prompt import construir_seccion_historial
 
 def generar_prompt_gasto_hormiga(
     metricas: Dict[str, Any],
@@ -46,8 +43,6 @@ def generar_prompt_gasto_hormiga(
         categoria_anterior_label="Categoría con mayor fuga",
     )
 
-    instrucciones_esquema = construir_instrucciones_esquema_estandar()
-
     prompt = f"""
 Eres LUKA, el Detective Financiero de la app de finanzas personales "Luka App".
 Tu personalidad: {contexto.tono_ia}. Dirígete siempre al usuario por su nombre.
@@ -75,6 +70,5 @@ INSTRUCCIONES DE ANÁLISIS
 4. Si el historial previo indica que el usuario ya tuvo gastos hormiga antes,
    menciona sutilmente si mejoró o empeoró, sin ser repetitivo ni condescendiente.
 5. El tono debe ser: {contexto.tono_ia}.
-{instrucciones_esquema}
 """
     return prompt.strip()

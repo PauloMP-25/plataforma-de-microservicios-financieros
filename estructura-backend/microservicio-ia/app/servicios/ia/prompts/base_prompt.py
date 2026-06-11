@@ -68,11 +68,4 @@ def construir_seccion_historial(
     return "\n".join(lineas)
 
 
-def construir_instrucciones_esquema_estandar() -> str:
-    """
-    Retorna instrucciones breves para complementar el Structured Output de Gemini.
-    """
-    return """
-Analiza los datos y responde directamente rellenando el esquema JSON requerido.
-Sé conciso, usa un tono motivador y da pasos de acción muy concretos para esta semana.
-"""
+
