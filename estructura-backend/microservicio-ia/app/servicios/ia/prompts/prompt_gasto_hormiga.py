@@ -5,7 +5,7 @@ Generador del prompt para el módulo GASTO_HORMIGA.
 
 from typing import Dict, Any
 from app.libreria_comun.modelos.contexto import ContextoEstrategicoIADTO
-from app.servicios.ia.prompts.base_prompt import construir_seccion_historial
+from app.servicios.ia.prompts.constructor_historial import construir_seccion_historial
 
 def generar_prompt_gasto_hormiga(
     metricas: Dict[str, Any],
