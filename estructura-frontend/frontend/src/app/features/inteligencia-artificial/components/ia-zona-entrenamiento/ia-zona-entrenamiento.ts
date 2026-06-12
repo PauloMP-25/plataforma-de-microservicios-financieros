@@ -1,6 +1,7 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RespuestaModuloDTO } from '../../../../core/models/financiero/ia.model';
 
 import { IaZonaAvatarComponent } from './components/ia-zona-avatar/ia-zona-avatar';
 import { IaZonaScoreBarComponent } from './components/ia-zona-score-bar/ia-zona-score-bar';
@@ -46,9 +47,11 @@ export interface EstadoAtleta {
   templateUrl: './ia-zona-entrenamiento.html',
   styleUrl: './ia-zona-entrenamiento.scss'
 })
-export class IaZonaEntrenamientoComponent implements OnInit {
+export class IaZonaEntrenamientoComponent implements OnInit, OnChanges {
   
-  cargando = signal<boolean>(false);
+  @Input() resultado!: RespuestaModuloDTO | null;
+  @Input() cargando: boolean = false;
+
   entrenamientoCargado = signal<boolean>(false);
 
   // Datos Mockup base
@@ -69,16 +72,44 @@ export class IaZonaEntrenamientoComponent implements OnInit {
   ngOnInit() {
   }
 
-  consultarEntrenamiento(fechaInicio: string, fechaFin: string) {
-    this.cargando.set(true);
-    this.entrenamientoCargado.set(false);
-
-    // Simular carga de 1.5s
-    setTimeout(() => {
-      this.cargarDatosMock();
-      this.cargando.set(false);
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['cargando'] && !this.cargando) {
+      // terminó de cargar
+    }
+    if (changes['resultado'] && this.resultado) {
       this.entrenamientoCargado.set(true);
-    }, 1500);
+      
+      const consejo = this.resultado.consejo || {};
+      const insight = this.resultado.insight || {};
+
+      this.estado.set({
+        perfil: (consejo.estado_fisico as PerfilAtleta) || 'Sedentario',
+        scoreLuka: 50 // Por ahora estático o si viene del backend
+      });
+
+      this.metricas.set({
+        frecuenciaCardiaca: { valor: insight.frecuencia_cardiaca || 0, estado: ((insight.frecuencia_cardiaca || 0) > 2 ? 'alerta' : 'normal') },
+        presionArterial: { valor: insight.presion_arterial || 0, estado: ((insight.presion_arterial || 0) > 1.2 ? 'critico' : 'normal') },
+        temperaturaAhorro: { valor: insight.temperatura_ahorro || 0, estado: ((insight.temperatura_ahorro || 0) < 10 ? 'critico' : 'normal') },
+        saturacionCategorias: { valor: insight.saturacion_pct || 0, estado: ((insight.saturacion_pct || 0) > 40 ? 'alerta' : 'normal') }
+      });
+
+      const rut = (consejo.rutina || []) as any[];
+      const mappedRutinas = rut.map((r: any, index: number) => ({
+        id: `ej-${index}`,
+        nombre: r.nombre,
+        descripcion: r.descripcion,
+        series: r.duracion_dias || 30,
+        repeticiones: 1,
+        musculoTrabajado: r.frecuencia || 'Diario',
+        metricaExito: r.metrica_exito || 'Completar',
+        completado: false
+      }));
+
+      this.rutinas.set(mappedRutinas);
+    } else if (!this.resultado && !this.cargando) {
+      this.entrenamientoCargado.set(false);
+    }
   }
 
   private cargarDatosMock() {

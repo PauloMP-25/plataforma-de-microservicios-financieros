@@ -88,6 +88,7 @@ export class ContenedorAutenticacion implements OnInit {
       }
     });
   }
+
   /** Datos del registro para el paso de verificación */
   medioVerificacion: 'correo' | 'celular' = 'correo';
   destinoVerificacion = '';

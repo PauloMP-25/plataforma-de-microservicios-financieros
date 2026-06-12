@@ -1,6 +1,6 @@
 # 🐛 Registro de Bugs y Correcciones Pendientes — LUKA APP
 
-> **Última actualización:** 10 de junio de 2026
+> **Última actualización:** 12 de junio de 2026
 > **Responsable del documento:** Paulo Moron (Cloud Architect)
 > **Estado:** En progreso — los ítems marcados con ✅ ya fueron corregidos.
 
@@ -12,27 +12,33 @@ Este documento centraliza todos los bugs detectados y mejoras de UX pendientes e
 
 ### Presupuesto
 
-| # | Descripción | Estado |
-|---|-------------|--------|
-| B-01 | ✅ **No existía un endpoint para actualizar presupuestos.** El microservicio-cliente no exponía una ruta PUT que permitiera modificar el monto o la fecha de un presupuesto existente. Se creó el endpoint correspondiente y se integró con el frontend. | **RESUELTO** |
+| # | Descripción | Estado | Asignado |
+|---|-------------|--------|----------|
+| B-01 | ✅ **No existía un endpoint para actualizar presupuestos.** El microservicio-cliente no exponía una ruta PUT que permitiera modificar el monto o la fecha de un presupuesto existente. Se creó el endpoint correspondiente y se integró con el frontend. | **RESUELTO** | Paulo |
 
 ### Metas
 
-| # | Descripción | Estado |
-|---|-------------|--------|
-| B-02 | ✅ **La entidad `Meta` no almacenaba el propósito/icono.** El frontend envía un icono al crear una meta, pero el backend no tenía un campo para persistirlo. Se añadió el campo `proposito` a la entidad para que el icono se guarde y se mapee correctamente al consultarlo. | **RESUELTO** |
+| # | Descripción | Estado | Asignado |
+|---|-------------|--------|----------|
+| B-02 | ✅ **La entidad `Meta` no almacenaba el propósito/icono.** El frontend envía un icono al crear una meta, pero el backend no tenía un campo para persistirlo. Se añadió el campo `proposito` a la entidad para que el icono se guarde y se mapee correctamente al consultarlo. | **RESUELTO** | Paulo |
 
 ### Transacciones (Racha)
 
-| # | Descripción | Estado |
-|---|-------------|--------|
-| B-03 | ✅ **La racha se incrementaba con transacciones de fechas pasadas.** Al registrar un gasto con fecha anterior, el sistema contabilizaba ese día como actividad del usuario, inflando la racha. Se corrigió para que la racha solo se actualice con base en la **fecha de registro** (hoy), no la fecha de la transacción. | **RESUELTO** |
+| # | Descripción | Estado | Asignado |
+|---|-------------|--------|----------|
+| B-03 | ✅ **La racha se incrementaba con transacciones de fechas pasadas.** Al registrar un gasto con fecha anterior, el sistema contabilizaba ese día como actividad del usuario, inflando la racha. Se corrigió para que la racha solo se actualice con base en la **fecha de registro** (hoy), no la fecha de la transacción. | **RESUELTO** | Paulo |
 
 ### Premium / Pagos
 
-| # | Descripción | Estado |
-|---|-------------|--------|
-| B-04 | ✅ **La boleta del microservicio-pago no se persistía en la BD.** Tras la confirmación del webhook de Stripe, la boleta quedaba sin guardar. Se implementó la creación y persistencia de `Boleta` en `ServicioWebhookImpl` con `RepositorioBoleta`. | **RESUELTO** |
+| # | Descripción | Estado | Asignado |
+|---|-------------|--------|----------|
+| B-04 | ✅ **La boleta del microservicio-pago no se persistía en la BD.** Tras la confirmación del webhook de Stripe, la boleta quedaba sin guardar. Se implementó la creación y persistencia de `Boleta` en `ServicioWebhookImpl` con `RepositorioBoleta`. | **RESUELTO** | Paulo |
+
+### Suscripciones
+
+| # | Descripción | Estado | Asignado |
+|---|-------------|--------|----------|
+| B-05 | **Gastos de Suscripción:** El backend no conecta los gastos pagados y pendientes que vienen de la sección suscripción. | Pendiente | Paulo |
 
 ---
 
@@ -53,20 +59,20 @@ Este documento centraliza todos los bugs detectados y mejoras de UX pendientes e
 
 | # | Descripción | Estado | Asignado |
 |---|-------------|--------|----------|
-| F-07 | **El sidebar se reinicia al navegar a "Suscripción".** Al entrar a la pantalla de suscripción, el sidebar cambia a las secciones principales (Dashboard, Gastos, etc.) en lugar de mantenerse en la subsección de usuario (Perfil, Perfil Financiero, Configuración). | Pendiente | — |
-| F-08 | ✅ **Los banners de "LUKA Premium" no desaparecían tras suscribirse.** Al cambiar de rol a Premium o Pro, los banners promocionales del sidebar y de Perfil Financiero seguían visibles. Se añadieron condiciones `*ngIf` con `auth.esPremium()` y `auth.esPro()`. | **RESUELTO** |
+| F-07 | **El sidebar se reinicia al navegar a "Suscripción".** Al entrar a la pantalla de suscripción, el sidebar cambia a las secciones principales (Dashboard, Gastos, etc.) en lugar de mantenerse en la subsección de usuario (Perfil, Perfil Financiero, Configuración). | Pendiente | Paulo |
+| F-08 | ✅ **Los banners de "LUKA Premium" no desaparecían tras suscribirse.** Al cambiar de rol a Premium o Pro, los banners promocionales del sidebar y de Perfil Financiero seguían visibles. Se añadieron condiciones `*ngIf` con `auth.esPremium()` y `auth.esPro()`. | **RESUELTO** | Paulo |
 
 ### Metas (Modal)
 
 | # | Descripción | Estado | Asignado |
 |---|-------------|--------|----------|
-| F-09 | ✅ **El campo "Ingreso Inicial" en el modal de metas debía ser "Monto Disponible".** El campo ahora muestra el saldo actual del usuario (sincronizado), es de solo lectura y su etiqueta fue actualizada. | **RESUELTO** |
+| F-09 | ✅ **El campo "Ingreso Inicial" en el modal de metas debía ser "Monto Disponible".** El campo ahora muestra el saldo actual del usuario (sincronizado), es de solo lectura y su etiqueta fue actualizada. | **RESUELTO** | Paulo |
 
 ### Premium / Dashboard
 
 | # | Descripción | Estado | Asignado |
 |---|-------------|--------|----------|
-| F-10 | ✅ **Tras pasar a Premium, el header no reflejaba el nuevo gasto ni se actualizaban las secciones.** Las KPI cards, el dashboard y la sección de gastos no se sincronizaban después del evento de pago. Se implementó la escucha del evento `TRANSACTION_MODIFIED` para invalidar cachés y refrescar datos. | **RESUELTO** |
+| F-10 | ✅ **Tras pasar a Premium, el header no reflejaba el nuevo gasto ni se actualizaban las secciones.** Las KPI cards, el dashboard y la sección de gastos no se sincronizaban después del evento de pago. Se implementó la escucha del evento `TRANSACTION_MODIFIED` para invalidar cachés y refrescar datos. | **RESUELTO** | Paulo |
 
 ### Perfil
 
@@ -86,7 +92,7 @@ Este documento centraliza todos los bugs detectados y mejoras de UX pendientes e
 |---|-------------|--------|----------|
 | F-13 | ✅ **Eliminar la sección de "Patrimonio".** La información mostrada no era clara para el usuario y generaba confusión. Se retiró de la vista de Perfil Financiero. | **RESUELTO** | Cristina |
 
-### Dashboard / Secciones Principales
+### Dashboard / Secciones Principales (Anteriores)
 
 | # | Descripción | Estado | Asignado |
 |---|-------------|--------|----------|
@@ -98,15 +104,66 @@ Este documento centraliza todos los bugs detectados y mejoras de UX pendientes e
 | F-19 | ✅ **Mejorar tarjetas KPI de Gastos.** Se retiraron emojis, se reemplazaron por iconos FontAwesome y se agregaron fondos coloridos para hacer los indicadores más llamativos. | **RESUELTO** | Cristina |
 | F-20 | ✅ **Corregir formato de templates y estilos con saltos de línea literales.** Se limpiaron caracteres `\n` en HTML/SCSS/TS afectados para evitar errores NG5002 y fallos de compilación. | **RESUELTO** | Cristina |
 
+### Dashboard e Historial (Nuevos)
+
+| # | Descripción | Estado | Asignado |
+|---|-------------|--------|----------|
+| F-21 | **Dashboard - Filtro de Fechas:** Filtro "Entre fechas" debe permitir desde la fecha que se elige hasta el día de hoy. | Pendiente | Paulo |
+| F-22 | **Dashboard - Historial:** Eliminar el historial de transacciones del Dashboard. | Pendiente | Paulo |
+| F-23 | **Texto de Sugerencia IA:** Cambiar el texto a: "Tienes 2 intentos de sugerencia por IA. El contador también es visible en el header como 'Autoclasificar'." | Pendiente | Paulo |
+| F-24 | **Unificar Tablas en Historial:** Unificar las tablas de ingreso y gastos en la sección historial principal y quitar las tablas de las sub-secciones. | Pendiente | Paulo |
+| F-25 | **Tema Oscuro - Header y Dashboard:** En modo oscuro las etiquetas del header no se notan claro; definir un color visible para las letras sin afectar el tema claro. En el dashboard (ej. periodo) las letras deben ser blancas con hover más blanco, sin afectar el color principal. | Pendiente | Paulo |
+| F-26 | **Reubicación de Historial:** Cambiar la sección historial a la sección principal. | Pendiente | Paulo |
+
+### Gastos
+
+| # | Descripción | Estado | Asignado |
+|---|-------------|--------|----------|
+| F-27 | **Reorganización de Modal y Pendientes:** El modal de gastos debería aparecer en la sección principal, y la sección de pendientes ir al lado derecho. | Pendiente | Paulo |
+| F-28 | **Límite en Descripción:** En el formulario de gastos, agregar un límite de 200 caracteres en la descripción. | Pendiente | Paulo |
+
+### Login y Extras
+
+| # | Descripción | Estado | Asignado |
+|---|-------------|--------|----------|
+| F-29 | **Usuario Mock para Pruebas:** Agregar un usuario mock con correo `prueba@gmail.com` y contraseña `12345` para probar el flujo de ingreso, omitiendo la restricción de contraseña solo por esta vez. | Pendiente | Paulo |
+
+### Modularización
+
+| # | Descripción | Estado | Asignado |
+|---|-------------|--------|----------|
+| F-30 | **Modularizar Metas:** Refactorizar y modularizar la sección Metas. | Pendiente | Paulo |
+| F-31 | **Modularizar Perfil:** Refactorizar y modularizar la sección Perfil. | Pendiente | Paulo |
+
+### Metas (Nuevos)
+
+| # | Descripción | Estado | Asignado |
+|---|-------------|--------|----------|
+| F-32 | **Cards Adicionales:** Agregar 3 cards (ej. DIVERSIÓN) en la sección de Metas. | Pendiente | Paulo |
+
+### Perfil y Perfil Financiero (Nuevos)
+
+| # | Descripción | Estado | Asignado |
+|---|-------------|--------|----------|
+| F-33 | **Perfil - Validación de Teléfono:** Validar la sección de teléfono con el número establecido en base al código de país. | Pendiente | Paulo |
+| F-34 | **Perfil - Etiqueta Sin Verificar:** Cambiar el color de letra de la etiqueta "Sin verificar". | Pendiente | Paulo |
+| F-35 | **Perfil Financiero - Filtros:** La parte de filtro de fechas debería separarse entre mes y año. | Pendiente | Paulo |
+
+### Configuración
+
+| # | Descripción | Estado | Asignado |
+|---|-------------|--------|----------|
+| F-36 | **Tema Oscuro:** La parte de selección de tema en Configuración debería notarse claramente en color oscuro. | Pendiente | Paulo |
+
 ---
 
 ## 📊 Resumen
 
 | Capa | Total | Resueltos | Pendientes |
 |------|-------|-----------|------------|
-| Backend | 4 | 4 | 0 |
-| Frontend | 20 | 20 | 0 |
-| **Total** | **24** | **24** | **0** |
+| Backend | 5 | 4 | 1 |
+| Frontend | 36 | 20 | 16 |
+| **Total** | **41** | **24** | **17** |
 
 ---
 

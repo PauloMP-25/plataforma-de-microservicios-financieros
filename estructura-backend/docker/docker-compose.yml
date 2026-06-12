@@ -669,7 +669,7 @@ services:
     hostname: api-gateway
     build:
       context: ..
-      dockerfile: infraestructura/api-gateway/Dockerfile
+      dockerfile: api-gateway/Dockerfile
       args:
         APP_PORT: 8080
     image: luka/api-gateway:latest

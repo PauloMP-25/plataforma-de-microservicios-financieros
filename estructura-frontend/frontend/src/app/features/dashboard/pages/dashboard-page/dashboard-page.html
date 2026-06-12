@@ -68,17 +68,6 @@
         <i class="fa-solid fa-spinner fa-spin"></i> Cargando gráficos analíticos y cálculos SVG...
       </div>
     }
-
-    <!-- ── TABLA DE TRANSACCIONES RECIENTES ── -->
-    @defer (on viewport) {
-      <app-transacciones 
-        [transacciones]="transaccionesFiltradas">
-      </app-transacciones>
-    } @placeholder {
-      <div class="card glass-panel flex items-center justify-center p-8 text-center" style="min-height: 200px; color: var(--text-muted);">
-        <i class="fa-solid fa-spinner fa-spin"></i> Cargando transacciones recientes...
-      </div>
-    }
   }
 
 </div>

@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from app.libreria_comun.seguridad.validador_jwt import validar_token, obtener_usuario_id
 from app.libreria_comun.respuesta.resultado_api import ResultadoApi
 from app.clientes.luka_clients import obtener_cliente_financiero
-from app.persistencia.cache_redis import CacheRedis
+from app.persistencia.redis.cache_redis import CacheRedis
 from app.utilidades.preparador_datos import json_a_dataframe
 
 logger = logging.getLogger(__name__)

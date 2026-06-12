@@ -11,8 +11,9 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 from app.servicios.core.base_analisis import BaseAnalisisService
 from app.libreria_comun.modelos.contexto import ContextoEstrategicoIADTO
-from app.persistencia.database import SessionLocal
-from app.persistencia.modelos_db import IaRetoAhorro
+from app.persistencia.postgres.database import SessionLocal
+from app.persistencia.postgres.modelos_db import IaRetoAhorro
+from app.servicios.ia.prompts.prompt_reto_ahorro import generar_prompt_reto_ahorro
 
 class RetoAhorroDinamicoService(BaseAnalisisService):
     
@@ -56,28 +57,7 @@ class RetoAhorroDinamicoService(BaseAnalisisService):
             return self._proponer_nuevo_reto(df, usuario_id, frecuencia_solicitada, db, contexto)
 
     def orquestar_prompt(self, metricas: Dict[str, Any], contexto: ContextoEstrategicoIADTO) -> str:
-        estado = metricas.get("estado_reto")
-        
-        if estado == "ACTIVO":
-            return f"[SKIP_IA] {metricas['mensaje']}"
-
-        if estado == "VEREDICTO":
-            resultado = "LOGRADO" if metricas['exito'] else "FALLIDO"
-            return f"""
-            Eres LUKA. El usuario terminó su reto de '{metricas['categoria']}'.
-            RESULTADO: {resultado}. AHORRO LOGRADO: S/ {metricas['ahorro_real']}.
-            GASTO REAL: S/ {metricas['gasto_real']} vs LÍMITE: S/ {metricas['monto_limite']}.
-            Tono: {contexto.tono_ia}.
-            """
-
-        if estado == "NUEVO":
-            return f"""
-            Eres LUKA. Propón una nueva MISIÓN DE AHORRO.
-            CATEGORÍA: {metricas['categoria_objetivo']}. DURACIÓN: {metricas['frecuencia']}.
-            Tono: {contexto.tono_ia}.
-            """
-        
-        return "[SKIP_IA] Sigue registrando tus movimientos."
+        return generar_prompt_reto_ahorro(metricas, contexto)
 
     def _proponer_nuevo_reto(self, df, usuario_id, frecuencia, db, contexto):
         df['fecha'] = pd.to_datetime(df['fecha'])
