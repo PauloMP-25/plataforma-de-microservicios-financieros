@@ -123,7 +123,7 @@ export class IaComprobadorEvolucionComponent implements OnChanges {
     const conquistasList = hallazgos.categorias_conquistadas || [];
     const reincidentesList = hallazgos.categorias_reincidentes || [];
 
-    const aplicarCategoria = (item: any, estadoAsignar: 'sanando' | 'fracturado') => {
+    const aplicarCategoria = (item: any, estadoAsignar: 'sano' | 'fracturado') => {
       const catName = item.categoria.toLowerCase();
       let huesoId = 'compras';
       if (catName.includes('fijo') || catName.includes('servicio') || catName.includes('vivienda') || catName.includes('transporte')) huesoId = 'macro';
@@ -145,7 +145,7 @@ export class IaComprobadorEvolucionComponent implements OnChanges {
       }
     };
 
-    conquistasList.forEach((c: any) => aplicarCategoria(c, 'sanando'));
+    conquistasList.forEach((c: any) => aplicarCategoria(c, 'sano'));
     reincidentesList.forEach((c: any) => aplicarCategoria(c, 'fracturado'));
 
     const conquistas = conquistasList.map((c: any) => `${c.categoria} (-${c.reduccion_pct}%)`);
@@ -157,7 +157,7 @@ export class IaComprobadorEvolucionComponent implements OnChanges {
       narrativaGemini: narrativa,
       kpis: {
         deltaAhorro: { valor: hallazgos.delta_tasa_ahorro || 0, variacionRelativa: hallazgos.delta_tasa_ahorro || 0 },
-        ivg: { valor: hallazgos.ivg_b || 0, clasificacion: (hallazgos.ivg_b > 40) ? 'Caótico' : ((hallazgos.ivg_b > 20) ? 'Inestable' : 'Estable') },
+        ivg: { valor: hallazgos.ivg_b || 0, clasificacion: (hallazgos.ivg_b > 40) ? 'Caótico' : ((hallazgos.ivg_b > 20) ? 'Moderado' : 'Controlado') as 'Controlado' | 'Moderado' | 'Caótico' | 'Crítico' },
         conquistas: conquistas.length ? conquistas : ['Sin conquistas notables'],
         alertas: alertas.length ? alertas : ['Ninguna alerta crítica']
       }
