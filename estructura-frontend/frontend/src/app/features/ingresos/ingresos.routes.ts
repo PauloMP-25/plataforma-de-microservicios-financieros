@@ -1,1 +1,41 @@
-import { Routes } from "@angular/router";\nimport { IngresosPage } from "./pages/ingresos-page/ingresos-page";\nimport { NuevoIngresoPage } from "./pages/nuevo-ingreso-page/nuevo-ingreso-page";\nimport { HistorialIngresosPage } from "./pages/historial-ingresos-page/historial-ingresos-page";\nexport const INGRESOS_ROUTES: Routes = [\n\n{\n    path: '',\n    component: IngresosPage,\n    data: {\n        title: 'Ingresos',\n        breadcrumbs: [\n            {label: 'Ingresos', route: '/ingresos'},\n            {label: 'Sección'}\n        ]\n    }\n},\n{\n    path: 'historial',\n    component: HistorialIngresosPage,\n    data: {\n        title: 'Historial de ingresos',\n        breadcrumbs: [\n            {label: 'Ingresos', route: '/ingresos'},\n            {label: 'Historial'}\n        ]\n    }\n},\n{\n    path: 'nuevo',\n    component: NuevoIngresoPage,\n    data: {\n        title: 'Nuevo ingreso',\n        breadcrumbs: [\n            {label: 'Ingresos', route: '/ingresos'},\n            {label: 'Nuevo ingreso'}\n        ]\n    }\n}\n\n]\n
+import { Routes } from "@angular/router";
+import { IngresosPage } from "./pages/ingresos-page/ingresos-page";
+import { NuevoIngresoPage } from "./pages/nuevo-ingreso-page/nuevo-ingreso-page";
+import { HistorialIngresosPage } from "./pages/historial-ingresos-page/historial-ingresos-page";
+export const INGRESOS_ROUTES: Routes = [
+
+{
+    path: '',
+    component: IngresosPage,
+    data: {
+        title: 'Ingresos',
+        breadcrumbs: [
+            {label: 'Ingresos', route: '/ingresos'},
+            {label: 'Sección'}
+        ]
+    }
+},
+{
+    path: 'historial',
+    component: HistorialIngresosPage,
+    data: {
+        title: 'Historial de ingresos',
+        breadcrumbs: [
+            {label: 'Ingresos', route: '/ingresos'},
+            {label: 'Historial'}
+        ]
+    }
+},
+{
+    path: 'nuevo',
+    component: NuevoIngresoPage,
+    data: {
+        title: 'Nuevo ingreso',
+        breadcrumbs: [
+            {label: 'Ingresos', route: '/ingresos'},
+            {label: 'Nuevo ingreso'}
+        ]
+    }
+}
+
+]

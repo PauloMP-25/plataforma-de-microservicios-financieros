@@ -1,1 +1,51 @@
-import { Component } from '@angular/core';\nimport { CommonModule } from '@angular/common';\n\n@Component({\n  selector: 'app-suscripcion-luka',\n  standalone: true,\n  imports: [CommonModule],\n  template: `\n    <div class="suscripcion-luka-placeholder">\n      <i class="fa-solid fa-crown icon-placeholder"></i>\n      <h2>Membresía Luka</h2>\n      <p>Esta sección aún está en proceso. Pronto podrás gestionar tus planes, revisar tu membresía activa y administrar los beneficios de tu cuenta Luka desde aquí.</p>\n    </div>\n  `,\n  styles: [`\n    .suscripcion-luka-placeholder {\n      padding: 4rem 2rem;\n      text-align: center;\n      border: 2px dashed color-mix(in srgb, var(--border-color) 60%, transparent);\n      border-radius: 16px;\n      margin: 3rem auto;\n      max-width: 650px;\n      background: linear-gradient(135deg, var(--bg-card) 0%, color-mix(in srgb, var(--bg-card) 92%, #000) 100%);\n      color: var(--text-secondary);\n      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);\n      display: flex;\n      flex-direction: column;\n      align-items: center;\n      justify-content: center;\n      gap: 1rem;\n    }\n    .icon-placeholder {\n      font-size: 3rem;\n      color: var(--color-primary);\n      opacity: 0.6;\n      margin-bottom: 0.5rem;\n    }\n    h2 {\n      color: var(--text-primary);\n      font-weight: 800;\n      margin: 0;\n      font-size: 1.5rem;\n    }\n    p {\n      line-height: 1.6;\n      margin: 0;\n      font-size: 0.95rem;\n    }\n  `]\n})\nexport class SuscripcionLuka {}\n
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-suscripcion-luka',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <div class="suscripcion-luka-placeholder">
+      <i class="fa-solid fa-crown icon-placeholder"></i>
+      <h2>Membresía Luka</h2>
+      <p>Esta sección aún está en proceso. Pronto podrás gestionar tus planes, revisar tu membresía activa y administrar los beneficios de tu cuenta Luka desde aquí.</p>
+    </div>
+  `,
+  styles: [`
+    .suscripcion-luka-placeholder {
+      padding: 4rem 2rem;
+      text-align: center;
+      border: 2px dashed color-mix(in srgb, var(--border-color) 60%, transparent);
+      border-radius: 16px;
+      margin: 3rem auto;
+      max-width: 650px;
+      background: linear-gradient(135deg, var(--bg-card) 0%, color-mix(in srgb, var(--bg-card) 92%, #000) 100%);
+      color: var(--text-secondary);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+    .icon-placeholder {
+      font-size: 3rem;
+      color: var(--color-primary);
+      opacity: 0.6;
+      margin-bottom: 0.5rem;
+    }
+    h2 {
+      color: var(--text-primary);
+      font-weight: 800;
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    p {
+      line-height: 1.6;
+      margin: 0;
+      font-size: 0.95rem;
+    }
+  `]
+})
+export class SuscripcionLuka {}

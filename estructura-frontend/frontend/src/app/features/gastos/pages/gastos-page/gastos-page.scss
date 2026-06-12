@@ -1,1 +1,1975 @@
-.gastos-page {\n  display: grid;\n  gap: 20px;\n  color: var(--text-primary);\n  background:\n    radial-gradient(circle at 15% -10%, color-mix(in srgb, var(--accent-primary) 11%, transparent), transparent 30%),\n    radial-gradient(circle at 85% -20%, color-mix(in srgb, var(--status-success) 9%, transparent), transparent 35%),\n    var(--bg-surface-soft);\n  max-width: 1400px;\n  margin: 0 auto;\n  width: 100%;\n  padding: 20px;\n}\n\n.gastos-page__hero {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 16px;\n\n  .gastos-page__hero-copy {\n    display: grid;\n    gap: 8px;\n  }\n\n  h1 {\n    margin: 0;\n    font-size: clamp(1.6rem, 1.2rem + 1.1vw, 2.2rem);\n    font-weight: 800;\n    letter-spacing: -0.02em;\n  }\n\n  p {\n    margin: 0;\n    color: var(--text-muted);\n    max-width: 680px;\n  }\n}\n\n.gastos-page__btn-main {\n  min-height: 44px;\n  border: 1px solid var(--accent-primary);\n  border-radius: 14px;\n  background: var(--accent-primary);\n  color: #fff;\n  padding: 0 18px;\n  font-weight: 700;\n  cursor: pointer;\n  transition: transform 0.2s ease, box-shadow 0.2s ease;\n\n  &:hover {\n    transform: translateY(-1px);\n    box-shadow: 0 12px 22px color-mix(in srgb, var(--accent-primary) 38%, transparent);\n  }\n}\n\n.gastos-page__hero-actions {\n  display: flex;\n  flex-wrap: wrap;\n  justify-content: flex-end;\n  gap: 10px;\n}\n\n.gastos-page__btn-secondary {\n  min-height: 44px;\n  border: 1px solid color-mix(in srgb, var(--accent-primary) 35%, var(--border-color));\n  border-radius: 14px;\n  background: var(--bg-card);\n  color: var(--accent-primary);\n  padding: 0 18px;\n  font-weight: 800;\n  cursor: pointer;\n  transition: transform 0.2s ease, box-shadow 0.2s ease;\n\n  &:hover {\n    transform: translateY(-1px);\n    box-shadow: 0 12px 22px color-mix(in srgb, var(--accent-primary) 18%, transparent);\n  }\n}\n\n.gastos-page__eyebrow {\n  margin: 0;\n  color: var(--accent-primary);\n  font-size: .78rem;\n  font-weight: 900;\n  letter-spacing: .16em;\n  text-transform: uppercase;\n}\n\n.gastos-page__kpis {\n  display: grid;\n  grid-template-columns: repeat(3, minmax(0, 1fr));\n  gap: 14px;\n}\n\n.gastos-page__kpi {\n  position: relative;\n  overflow: hidden;\n  isolation: isolate;\n  background: var(--bg-card);\n  border: 1px solid var(--border-color);\n  border-radius: 18px;\n  padding: 18px;\n  box-shadow: 0 14px 34px rgba(17, 24, 39, 0.1);\n  transition: transform 0.18s ease, box-shadow 0.18s ease;\n\n  &::before,\n  &::after {\n    content: '';\n    position: absolute;\n    border-radius: 999px;\n    pointer-events: none;\n    z-index: -1;\n  }\n\n  &::before {\n    inset: auto -32px -58px auto;\n    width: 150px;\n    height: 150px;\n    background: rgba(255, 255, 255, 0.18);\n  }\n\n  &::after {\n    top: -46px;\n    right: 34px;\n    width: 96px;\n    height: 96px;\n    background: rgba(255, 255, 255, 0.12);\n  }\n\n  &:hover {\n    transform: translateY(-3px);\n    box-shadow: 0 20px 42px rgba(17, 24, 39, 0.16);\n  }\n\n  .gastos-page__kpi-head {\n    display: flex;\n    align-items: center;\n    gap: 10px;\n    margin-bottom: 8px;\n\n    p {\n      margin: 0;\n      color: rgba(255, 255, 255, 0.84);\n      font-size: 0.88rem;\n      font-weight: 700;\n      text-transform: uppercase;\n      letter-spacing: .02em;\n    }\n  }\n\n  .gastos-page__icon {\n    width: 34px;\n    height: 34px;\n    display: inline-grid;\n    place-items: center;\n    border-radius: 12px;\n    background: rgba(255, 255, 255, 0.22);\n    color: #fff;\n    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24), 0 10px 20px rgba(15, 23, 42, 0.16);\n    font-size: 1rem;\n  }\n\n  strong {\n    display: block;\n    margin-top: 2px;\n    font-size: clamp(1.1rem, 0.95rem + .7vw, 1.6rem);\n    line-height: 1;\n    letter-spacing: -0.02em;\n    color: #fff;\n    text-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);\n  }\n\n  small {\n    display: block;\n    margin-top: 8px;\n    color: rgba(255, 255, 255, 0.82);\n  }\n}\n\n.gastos-page__kpi--salida {\n  border-color: rgba(248, 113, 113, 0.38);\n  background:\n    radial-gradient(circle at 12% 12%, rgba(255, 255, 255, 0.22), transparent 30%),\n    linear-gradient(135deg, #fb7185 0%, #ef4444 48%, #b91c1c 100%);\n}\n\n.gastos-page__kpi--saldo {\n  border-color: rgba(52, 211, 153, 0.38);\n  background:\n    radial-gradient(circle at 12% 12%, rgba(255, 255, 255, 0.22), transparent 30%),\n    linear-gradient(135deg, #34d399 0%, #10b981 48%, #047857 100%);\n}\n\n.gastos-page__kpi--pendiente {\n  border-color: rgba(251, 191, 36, 0.44);\n  background:\n    radial-gradient(circle at 12% 12%, rgba(255, 255, 255, 0.25), transparent 30%),\n    linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #b45309 100%);\n}\n\n.gastos-page__kpi--vencimiento {\n  border-color: rgba(96, 165, 250, 0.42);\n  background:\n    radial-gradient(circle at 12% 12%, rgba(255, 255, 255, 0.24), transparent 30%),\n    linear-gradient(135deg, #60a5fa 0%, #3b82f6 48%, #1d4ed8 100%);\n}\n\n.gastos-page__kpi .gastos-page__trend {\n  color: rgba(255, 255, 255, 0.88);\n}\n\n.gastos-page__tabs {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n}\n\n.gastos-page__tab,\n.gastos-page__btn-tool {\n  min-height: 40px;\n  border-radius: 12px;\n  border: 1px solid var(--border-color);\n  background: var(--bg-card);\n  color: var(--text-primary);\n  padding: 0 14px;\n  font-weight: 700;\n}\n\n.gastos-page__tab {\n  cursor: pointer;\n}\n\n.gastos-page__tab.is-active {\n  border-color: var(--accent-primary);\n  color: var(--accent-primary);\n  background: color-mix(in srgb, var(--accent-primary) 8%, var(--bg-card));\n}\n\n.gastos-page__integration-note {\n  border: 1px dashed color-mix(in srgb, var(--status-warning) 55%, transparent);\n  border-radius: 12px;\n  padding: 10px 12px;\n  color: color-mix(in srgb, var(--status-warning) 60%, var(--text-primary));\n  background: color-mix(in srgb, var(--status-warning) 8%, var(--bg-card));\n}\n\n.gastos-page__toolbar {\n  display: grid;\n  grid-template-columns: 1fr;\n  gap: 10px;\n  align-items: center;\n  background: var(--bg-card);\n  border: 1px solid var(--border-color);\n  border-radius: 16px;\n  padding: 12px;\n\n  input {\n    min-height: 44px;\n    border: 1px solid var(--border-color);\n    border-radius: 12px;\n    background: var(--bg-card);\n    color: var(--text-primary);\n    padding: 0 12px;\n    outline: none;\n\n    &:focus {\n      border-color: var(--accent-primary);\n      box-shadow: none;\n    }\n  }\n}\n\n.gastos-page__toolbar-actions {\n  display: flex;\n  justify-content: flex-end;\n  gap: 8px;\n}\n\n.gastos-page__btn-tool {\n  background: var(--bg-card);\n  cursor: pointer;\n  transition: transform .16s ease;\n\n  &:hover {\n    transform: translateY(-1px);\n  }\n\n  &:disabled {\n    opacity: .55;\n    cursor: not-allowed;\n    transform: none;\n  }\n}\n\n.gastos-page__content-grid {\n  display: grid;\n  grid-template-columns: minmax(0, 1.28fr) minmax(380px, 0.95fr);\n  gap: 20px;\n}\n\n.gastos-page__panel {\n  background: var(--bg-card);\n  border: 1px solid var(--border-color);\n  border-radius: 18px;\n  overflow: hidden;\n  box-shadow: 0 8px 28px rgba(17, 24, 39, 0.06);\n  backdrop-filter: blur(6px);\n}\n\n.gastos-page__panel--pending {\n  background:\n    linear-gradient(160deg,\n      color-mix(in srgb, var(--accent-primary) 8%, var(--bg-card)) 0%,\n      color-mix(in srgb, var(--status-warning) 10%, var(--bg-card)) 100%);\n  box-shadow:\n    0 12px 26px rgba(17, 24, 39, 0.08),\n    inset 0 0 0 1px color-mix(in srgb, var(--accent-primary) 10%, transparent);\n}\n\n.gastos-page__content-grid > .gastos-page__panel--pending {\n  max-height: none;\n}\n\n.gastos-page__content-grid > .gastos-page__panel--summary-note {\n  align-self: stretch;\n}\n\n.gastos-page__panel--history,\n.gastos-page__panel--summary-note {\n  min-height: 100%;\n}\n\n.gastos-page__panel--summary-note {\n  position: relative;\n  overflow: hidden;\n}\n\n.gastos-page__history-cta {\n  display: grid;\n  grid-template-columns: auto minmax(0, 1fr);\n  gap: 16px;\n  align-items: center;\n  padding: 24px;\n  position: relative;\n  z-index: 2;\n\n  > i {\n    width: 58px;\n    height: 58px;\n    display: inline-grid;\n    place-items: center;\n    border-radius: 18px;\n    background: color-mix(in srgb, var(--accent-primary) 13%, transparent);\n    color: var(--accent-primary);\n    font-size: 1.35rem;\n  }\n\n  strong {\n    display: block;\n    font-size: 1.05rem;\n  }\n\n  p {\n    margin: 4px 0 0;\n    color: var(--text-muted);\n  }\n\n  .gastos-page__btn-main {\n    grid-column: 1 / -1;\n    justify-self: start;\n    margin-top: 2px;\n  }\n}\n\n.gastos-page__history-bear {\n  position: absolute;\n  right: 18px;\n  bottom: 12px;\n  width: 168px;\n  height: 168px;\n  object-fit: contain;\n  opacity: 0.22;\n  filter: drop-shadow(0 16px 24px rgba(17, 24, 39, 0.18));\n  pointer-events: none;\n}\n\n.gastos-page__history-summary {\n  display: grid;\n  grid-template-columns: minmax(0, 1fr);\n}\n\n.gastos-page__history-card {\n  border: 1px solid color-mix(in srgb, var(--accent-primary) 22%, var(--border-color));\n  border-radius: 22px;\n  padding: 22px;\n  background:\n    linear-gradient(135deg,\n      color-mix(in srgb, var(--accent-primary) 14%, var(--bg-card)) 0%,\n      color-mix(in srgb, var(--status-danger) 10%, var(--bg-card)) 100%);\n  box-shadow: 0 14px 30px rgba(17, 24, 39, 0.08);\n\n  span,\n  small {\n    color: var(--text-muted);\n    font-weight: 700;\n  }\n\n  strong {\n    display: block;\n    margin: 8px 0 6px;\n    color: var(--status-danger);\n    font-size: clamp(2rem, 1.2rem + 2vw, 3.4rem);\n    line-height: 1;\n  }\n}\n\n.gastos-page__history-card--expenses {\n  border-color: color-mix(in srgb, var(--status-warning) 36%, var(--border-color));\n  background:\n    linear-gradient(135deg,\n      #f59e0b 0%,\n      #d97706 52%,\n      #b45309 100%);\n  box-shadow: 0 18px 38px rgba(245, 158, 11, 0.22);\n\n  span,\n  small,\n  strong {\n    color: #fff;\n  }\n}\n\n.gastos-page__history-card--expenses strong {\n  text-shadow: 0 8px 20px rgba(120, 53, 15, 0.22);\n}\n\n.gastos-page__filters-card {\n  border: 1px solid var(--border-color);\n  border-radius: 18px;\n  padding: 16px;\n  background: var(--bg-card);\n  box-shadow: 0 8px 28px rgba(17, 24, 39, 0.06);\n\n  h3 {\n    margin: 0 0 14px;\n    font-size: 1.05rem;\n  }\n}\n\n.gastos-page__filters-grid {\n  display: grid;\n  grid-template-columns: repeat(3, minmax(0, 1fr));\n  gap: 12px;\n\n  label {\n    display: grid;\n    gap: 6px;\n  }\n\n  span {\n    color: var(--text-muted);\n    font-size: .78rem;\n    font-weight: 800;\n  }\n\n  input,\n  select {\n    min-height: 44px;\n    border: 1px solid var(--border-color);\n    border-radius: 12px;\n    background: var(--bg-card);\n    color: var(--text-primary);\n    padding: 0 12px;\n    outline: none;\n\n    &:focus {\n      border-color: var(--status-warning);\n      box-shadow: 0 0 0 3px color-mix(in srgb, var(--status-warning) 14%, transparent);\n    }\n  }\n\n  select:disabled {\n    opacity: .7;\n  }\n}\n\n.gastos-page__filters-actions {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 12px;\n  margin-top: 12px;\n\n  p {\n    margin: 0;\n    color: var(--text-muted);\n    font-size: .82rem;\n  }\n}\n\n.gastos-page__panel-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 10px;\n  padding: 14px 16px;\n  border-bottom: 1px solid var(--border-color);\n\n  h3 {\n    margin: 0;\n    font-size: 1rem;\n  }\n\n  p {\n    margin: 4px 0 0;\n    color: var(--text-muted);\n    font-size: .88rem;\n  }\n}\n\n.gastos-page__chip {\n  border-radius: 999px;\n  padding: 4px 10px;\n  font-size: .78rem;\n  font-weight: 700;\n\n  &.is-success {\n    background: color-mix(in srgb, var(--status-success) 18%, transparent);\n    color: var(--status-success);\n  }\n\n  &.is-warning {\n    background: color-mix(in srgb, var(--status-warning) 18%, transparent);\n    color: var(--status-warning);\n  }\n}\n\n.gastos-page__skeleton-list {\n  display: grid;\n  gap: 10px;\n  padding: 14px;\n\n  div {\n    height: 70px;\n    border-radius: 14px;\n    background: linear-gradient(90deg, rgba(148,163,184,.25), rgba(148,163,184,.12), rgba(148,163,184,.25));\n    background-size: 200% 100%;\n    animation: pulse 1.4s infinite linear;\n  }\n}\n\n.gastos-page__empty {\n  padding: 28px 18px;\n  text-align: center;\n\n  h4 {\n    margin: 0 0 6px;\n  }\n\n  p {\n    margin: 0;\n    color: var(--text-muted);\n  }\n\n  &.gastos-page__empty--compact {\n    padding: 20px 14px;\n  }\n}\n\n.gastos-page__paid-list {\n  list-style: none;\n  margin: 0;\n  padding: 10px;\n  display: grid;\n  gap: 10px;\n}\n\n.gastos-page__paid-item {\n  border: 1px solid var(--border-color);\n  border-radius: 14px;\n  padding: 12px;\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 12px;\n  background: var(--bg-card);\n  transition: transform .18s ease, box-shadow .18s ease;\n\n  &:hover {\n    transform: translateY(-2px);\n    box-shadow: 0 10px 20px rgba(17, 24, 39, .08);\n  }\n}\n\n.gastos-page__paid-main {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n\n  strong {\n    display: block;\n  }\n\n  small {\n    color: var(--text-muted);\n  }\n}\n\n.gastos-page__icon-chip {\n  width: 36px;\n  height: 36px;\n  border-radius: 10px;\n  display: inline-grid;\n  place-items: center;\n  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);\n}\n\n.gastos-page__paid-meta {\n  display: grid;\n  gap: 5px;\n  justify-items: end;\n}\n\n.gastos-page__amount {\n  font-weight: 800;\n  color: #dc2626 !important;\n  text-shadow: 0 0 0 transparent;\n  letter-spacing: .01em;\n}\n\n.gastos-page__table tbody td:nth-child(4),\n.gastos-page__table tbody td:nth-child(4) * {\n  color: #dc2626 !important;\n}\n\n.gastos-page__table tbody tr:hover td:nth-child(4),\n.gastos-page__table tbody tr:hover td:nth-child(4) * {\n  color: #dc2626 !important;\n}\n\n.gastos-page__badge {\n  border-radius: 999px;\n  font-size: .74rem;\n  font-weight: 700;\n  padding: 4px 9px;\n\n  i {\n    margin-right: 5px;\n  }\n\n  &.is-paid {\n    background: color-mix(in srgb, var(--status-success) 24%, #ffffff);\n    color: color-mix(in srgb, var(--status-success) 88%, #0f172a);\n    border: 1px solid color-mix(in srgb, var(--status-success) 38%, transparent);\n  }\n\n  &.is-warning {\n    background: color-mix(in srgb, var(--status-warning) 18%, transparent);\n    color: var(--status-warning);\n  }\n\n  &.is-soft {\n    background: color-mix(in srgb, var(--accent-primary) 12%, transparent);\n    color: var(--accent-primary);\n  }\n}\n\n.gastos-page__trend {\n  display: inline-flex;\n  margin-top: 10px;\n  font-size: .82rem;\n  font-style: normal;\n  font-weight: 700;\n\n  &.is-up {\n    color: var(--status-danger);\n  }\n\n  &.is-good {\n    color: var(--status-success);\n  }\n}\n\n.gastos-page__table-wrap {\n  padding: 10px;\n  overflow-x: auto;\n}\n\n.gastos-page__table-wrap--compact {\n  max-height: 320px;\n  overflow: auto;\n  padding: 8px;\n\n  .gastos-page__table thead th,\n  .gastos-page__table tbody td {\n    padding: 8px 6px;\n    font-size: 0.8rem;\n  }\n\n  .gastos-page__btn-mark {\n    min-height: 32px;\n    font-size: 0.75rem;\n    padding: 0 8px;\n  }\n}\n\n.gastos-page__table-wrap--wide {\n  padding: 14px;\n}\n\n.gastos-page__table {\n  width: 100%;\n  border-collapse: separate;\n  border-spacing: 0;\n\n  thead th {\n    text-align: left;\n    font-size: .78rem;\n    text-transform: uppercase;\n    letter-spacing: .03em;\n    color: var(--text-muted);\n    padding: 12px 10px;\n    border-bottom: 1px solid var(--border-color);\n    white-space: nowrap;\n\n    i {\n      margin-right: 6px;\n      color: color-mix(in srgb, var(--accent-primary) 70%, var(--text-muted));\n    }\n  }\n\n  tbody tr {\n    transition: all 0.25s ease;\n\n    &:hover {\n      transform: translateY(-2px);\n      box-shadow: 0 8px 14px rgba(17, 24, 39, .06);\n      background: color-mix(in srgb, var(--accent-primary) 4%, var(--bg-card));\n    }\n  }\n\n  tbody td {\n    padding: 14px 10px;\n    border-bottom: 1px solid var(--border-color);\n    vertical-align: middle;\n  }\n}\n\n.gastos-page__pay-method {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n\n  i {\n    color: var(--accent-primary);\n  }\n}\n\n.gastos-page__row-actions {\n  display: inline-flex;\n  gap: 6px;\n}\n\n.gastos-page__icon-btn {\n  width: 30px;\n  height: 30px;\n  border-radius: 8px;\n  border: 1px solid var(--border-color);\n  background: var(--bg-card);\n  color: var(--text-muted);\n  display: inline-grid;\n  place-items: center;\n  cursor: pointer;\n  transition: all .2s ease;\n\n  &.is-edit:hover {\n    color: #2563eb;\n    border-color: color-mix(in srgb, #2563eb 60%, var(--border-color));\n    background: color-mix(in srgb, #2563eb 10%, var(--bg-card));\n  }\n\n  &.is-delete:hover {\n    color: #dc2626;\n    border-color: color-mix(in srgb, #dc2626 60%, var(--border-color));\n    background: color-mix(in srgb, #dc2626 10%, var(--bg-card));\n  }\n}\n\n.gastos-page__confirm-float {\n  position: fixed;\n  right: 22px;\n  bottom: 22px;\n  z-index: 1300;\n  width: min(360px, calc(100vw - 24px));\n  border-radius: 14px;\n  border: 1px solid color-mix(in srgb, #ef4444 35%, var(--border-color));\n  background: var(--bg-card);\n  box-shadow: 0 18px 36px rgba(15, 23, 42, .22);\n  padding: 12px;\n\n  p {\n    margin: 0;\n    color: var(--text-primary);\n    font-size: .9rem;\n  }\n}\n\n.gastos-page__confirm-actions {\n  margin-top: 10px;\n  display: flex;\n  justify-content: flex-end;\n  gap: 8px;\n}\n\n.gastos-page__confirm-cancel,\n.gastos-page__confirm-delete {\n  min-height: 34px;\n  border-radius: 8px;\n  border: 1px solid transparent;\n  padding: 0 12px;\n  font-weight: 700;\n  cursor: pointer;\n}\n\n.gastos-page__confirm-cancel {\n  background: var(--bg-surface-soft);\n  color: var(--text-primary);\n  border-color: var(--border-color);\n}\n\n.gastos-page__confirm-delete {\n  background: #dc2626;\n  color: #fff;\n  border-color: #b91c1c;\n}\n\n.gastos-page__cell-main {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n\n  strong {\n    display: block;\n  }\n\n  small {\n    color: var(--text-muted);\n  }\n}\n\n.gastos-page__icon-wrap {\n  width: 42px;\n  height: 42px;\n  border-radius: 50%;\n  display: inline-grid;\n  place-items: center;\n  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);\n\n  i {\n    color: var(--accent-primary);\n    font-size: 1rem;\n  }\n}\n\n.gastos-page__cat {\n  display: inline-block;\n  border-radius: 999px;\n  padding: 5px 10px;\n  font-size: .76rem;\n  font-weight: 700;\n\n  &.is-comida {\n    color: #d97706;\n    background: color-mix(in srgb, #f59e0b 20%, transparent);\n  }\n\n  &.is-hogar {\n    color: #059669;\n    background: color-mix(in srgb, #10b981 20%, transparent);\n  }\n\n  &.is-transporte {\n    color: #4f46e5;\n    background: color-mix(in srgb, #6366f1 20%, transparent);\n  }\n\n  &.is-servicios {\n    color: #db2777;\n    background: color-mix(in srgb, #ec4899 20%, transparent);\n  }\n\n  &.is-entretenimiento {\n    color: #2563eb;\n    background: color-mix(in srgb, #3b82f6 20%, transparent);\n  }\n\n  &.is-salud {\n    color: #d97706;\n    background: color-mix(in srgb, #f59e0b 20%, transparent);\n  }\n}\n\n.gastos-page__cell-date {\n  display: grid;\n  gap: 2px;\n\n  small {\n    color: var(--text-muted);\n  }\n}\n\n.gastos-page__table--pending {\n  td:last-child,\n  th:last-child {\n    width: 140px;\n    text-align: right;\n  }\n}\n\n.gastos-page__pending-cards {\n  display: grid;\n  gap: 10px;\n  padding: 10px;\n}\n\n.gastos-page__pending-list {\n  display: grid;\n  gap: 10px;\n  padding: 10px;\n  max-height: 420px;\n  overflow-y: auto;\n  overflow-x: hidden;\n\n  scrollbar-width: thin;\n  scrollbar-color: color-mix(in srgb, var(--accent-primary) 45%, #ffffff) transparent;\n\n  &::-webkit-scrollbar {\n    width: 10px;\n  }\n\n  &::-webkit-scrollbar-track {\n    background: color-mix(in srgb, var(--bg-surface-soft) 75%, transparent);\n    border-radius: 999px;\n  }\n\n  &::-webkit-scrollbar-thumb {\n    background: color-mix(in srgb, var(--accent-primary) 55%, #ffffff);\n    border-radius: 999px;\n    border: 2px solid color-mix(in srgb, var(--bg-card) 85%, transparent);\n  }\n\n  &::-webkit-scrollbar-thumb:hover {\n    background: color-mix(in srgb, var(--accent-primary) 75%, #ffffff);\n  }\n}\n\n.gastos-page__pending-item {\n  border: 1px solid var(--border-color);\n  border-radius: 14px;\n  background: color-mix(in srgb, var(--accent-primary) 4%, var(--bg-card));\n  padding: 10px;\n  display: grid;\n  gap: 8px;\n  transition: all .25s ease;\n\n  &:hover {\n    transform: translateY(-2px);\n    box-shadow: 0 10px 18px rgba(17, 24, 39, .1);\n  }\n}\n\n.gastos-page__pending-title-wrap {\n  display: grid;\n  grid-template-columns: 34px 1fr;\n  align-items: center;\n  gap: 8px;\n}\n\n.gastos-page__icon-wrap--pending {\n  width: 34px;\n  height: 34px;\n  border-radius: 10px;\n  background: color-mix(in srgb, var(--accent-primary) 16%, #ffffff);\n\n  i {\n    color: var(--accent-primary);\n    font-size: 0.9rem;\n  }\n}\n\n.gastos-page__pending-top {\n  display: flex;\n  align-items: start;\n  justify-content: space-between;\n  gap: 8px;\n\n  h4 {\n    margin: 0;\n    font-size: .92rem;\n  }\n\n  p {\n    margin: 3px 0 0;\n    color: var(--text-muted);\n    font-size: .78rem;\n  }\n}\n\n.gastos-page__pending-amount {\n  font-weight: 800;\n  color: var(--status-danger);\n  white-space: nowrap;\n}\n\n.gastos-page__pending-bottom {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 8px;\n}\n\n.gastos-page__pending-date {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  font-size: .78rem;\n  color: var(--text-muted);\n}\n\n.gastos-page__pending-card {\n  border: 1px solid var(--border-color);\n  border-radius: 14px;\n  padding: 12px;\n  background: var(--bg-card);\n  transition: transform .18s ease, box-shadow .18s ease;\n\n  &:hover {\n    transform: translateY(-2px);\n    box-shadow: 0 10px 18px rgba(17, 24, 39, .08);\n  }\n\n  .gastos-page__pending-head {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    gap: 8px;\n    margin-bottom: 10px;\n\n    strong {\n      font-size: .96rem;\n    }\n  }\n\n  ul {\n    list-style: none;\n    margin: 0 0 12px;\n    padding: 0;\n    display: grid;\n    gap: 6px;\n  }\n\n  li {\n    display: flex;\n    justify-content: space-between;\n    gap: 10px;\n    color: var(--text-muted);\n\n    b {\n      color: var(--text-primary);\n      font-weight: 700;\n    }\n  }\n}\n\n.gastos-page__btn-mark {\n  width: 100%;\n  min-height: 40px;\n  border: 1px solid var(--border-color);\n  background: color-mix(in srgb, var(--bg-card) 88%, #ffffff);\n  color: var(--text-primary);\n  border-radius: 10px;\n  font-weight: 800;\n  cursor: pointer;\n  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;\n\n  &:hover {\n    transform: translateY(-2px) scale(1.015);\n    box-shadow: 0 12px 22px color-mix(in srgb, var(--status-success) 50%, transparent);\n    filter: saturate(1.22) brightness(1.05);\n    background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%) !important;\n    color: #ffffff !important;\n    border-color: #15803d !important;\n  }\n\n  &:focus-visible,\n  &:active {\n    background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%) !important;\n    color: #ffffff !important;\n    border-color: #15803d !important;\n  }\n\n  &:active {\n    transform: translateY(0);\n  }\n\n  i {\n    margin-right: 6px;\n  }\n}\n\n.gastos-page__analytics {\n  display: grid;\n  grid-template-columns: repeat(4, minmax(0, 1fr));\n  gap: 12px;\n}\n\n.gastos-page__widget {\n  background: var(--bg-card);\n  border: 1px solid var(--border-color);\n  border-radius: 16px;\n  padding: 14px;\n  min-height: 120px;\n\n  header {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    margin-bottom: 10px;\n  }\n\n  h4 {\n    margin: 0;\n    font-size: .95rem;\n  }\n\n  span {\n    color: var(--text-muted);\n    font-size: .82rem;\n  }\n\n  p {\n    margin: 0;\n    color: var(--text-muted);\n  }\n}\n\n.gastos-page__chart-list {\n  display: grid;\n  gap: 10px;\n}\n\n.gastos-page__chart-item {\n  display: grid;\n  gap: 6px;\n}\n\n.gastos-page__chart-top {\n  display: flex;\n  justify-content: space-between;\n  gap: 8px;\n\n  strong {\n    font-size: .86rem;\n  }\n\n  span {\n    font-size: .78rem;\n    color: var(--text-muted);\n  }\n}\n\n.gastos-page__chart-bar {\n  height: 8px;\n  background: color-mix(in srgb, var(--accent-primary) 10%, var(--bg-surface-soft));\n  border-radius: 999px;\n  overflow: hidden;\n\n  span {\n    display: block;\n    height: 100%;\n    border-radius: inherit;\n    background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);\n  }\n}\n\n.gastos-page__trend-bars {\n  min-height: 116px;\n  display: grid;\n  grid-auto-flow: column;\n  grid-auto-columns: minmax(28px, 1fr);\n  align-items: end;\n  gap: 10px;\n}\n\n.gastos-page__trend-col {\n  height: 100%;\n  display: grid;\n  grid-template-rows: 1fr auto;\n  align-items: end;\n  justify-items: center;\n  gap: 6px;\n\n  small {\n    color: var(--text-muted);\n    text-transform: capitalize;\n  }\n}\n\n.gastos-page__trend-fill {\n  width: 100%;\n  min-height: 8px;\n  border-radius: 10px 10px 4px 4px;\n  background: linear-gradient(180deg, #f97316 0%, #dc2626 100%);\n}\n\n.gastos-page__donut-layout {\n  display: grid;\n  grid-template-columns: 150px 1fr;\n  gap: 12px;\n  align-items: center;\n}\n\n.gastos-page__donut-wrap {\n  width: 140px;\n  height: 140px;\n  margin: 0 auto;\n}\n\n.gastos-page__donut-svg {\n  width: 100%;\n  height: 100%;\n}\n\n.gastos-page__donut-track {\n  fill: none;\n  stroke: color-mix(in srgb, var(--text-muted) 20%, transparent);\n  stroke-width: 3;\n}\n\n.gastos-page__donut-segment {\n  fill: none;\n  stroke-width: 3.2;\n  transform: rotate(-90deg);\n  transform-origin: 50% 50%;\n}\n\n.gastos-page__donut-text text {\n  text-anchor: middle;\n  fill: var(--text-primary);\n  font-size: 3.2px;\n  font-weight: 600;\n}\n\n.gastos-page__donut-text text:last-child {\n  font-size: 3.8px;\n  font-weight: 800;\n}\n\n.gastos-page__donut-legend {\n  display: grid;\n  gap: 8px;\n}\n\n.gastos-page__legend-row {\n  display: grid;\n  grid-template-columns: 10px 1fr auto;\n  align-items: center;\n  gap: 8px;\n\n  strong { font-size: .82rem; }\n  small { color: var(--text-muted); }\n}\n\n.gastos-page__legend-dot {\n  width: 8px;\n  height: 8px;\n  border-radius: 50%;\n}\n\n.gastos-page__line-card {\n  display: grid;\n  gap: 8px;\n}\n\n.gastos-page__line-svg {\n  width: 100%;\n  height: 120px;\n}\n\n.gastos-page__line-grid {\n  fill: none;\n  stroke: color-mix(in srgb, var(--text-muted) 20%, transparent);\n  stroke-width: .6;\n}\n\n.gastos-page__line-path {\n  fill: none;\n  stroke: #6366f1;\n  stroke-width: 2.2;\n  stroke-linecap: round;\n  stroke-linejoin: round;\n}\n\n.gastos-page__line-point {\n  fill: #6366f1;\n  stroke: #ffffff;\n  stroke-width: .8;\n}\n\n.gastos-page__line-labels {\n  display: grid;\n  grid-auto-flow: column;\n  grid-auto-columns: 1fr;\n  gap: 6px;\n\n  small {\n    text-align: center;\n    color: var(--text-muted);\n    text-transform: capitalize;\n  }\n}\n\n.gastos-page__trend-filter {\n  min-height: 30px;\n  border-radius: 8px;\n  border: 1px solid var(--border-color);\n  background: var(--bg-surface-soft);\n  color: var(--text-primary);\n  padding: 0 8px;\n  font-size: .78rem;\n  font-weight: 600;\n}\n\n.gastos-page__rank-chart {\n  display: grid;\n  gap: 10px;\n  margin-top: 8px;\n}\n\n.gastos-page__rank-row {\n  display: grid;\n  gap: 6px;\n}\n\n.gastos-page__rank-meta {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n\n  strong { font-size: .8rem; }\n  small { font-size: .78rem; color: var(--text-muted); }\n}\n\n.gastos-page__rank-bar {\n  height: 9px;\n  border-radius: 999px;\n  background: color-mix(in srgb, var(--accent-primary) 10%, var(--bg-surface-soft));\n  overflow: hidden;\n\n  span {\n    display: block;\n    height: 100%;\n    border-radius: inherit;\n    background: linear-gradient(90deg, #6366f1 0%, #a78bfa 100%);\n  }\n}\n\n.gastos-page__avg-card {\n  display: grid;\n  grid-template-columns: 1fr auto;\n  align-items: center;\n  gap: 10px;\n}\n\n.gastos-page__avg-main {\n  display: inline-flex;\n  align-items: center;\n  gap: 10px;\n\n  strong {\n    display: block;\n    font-size: 1.8rem;\n    line-height: 1.1;\n    color: var(--text-primary);\n  }\n\n  small {\n    display: block;\n    margin-top: 4px;\n    font-weight: 700;\n    color: var(--text-muted);\n\n    &.is-up { color: var(--status-success); }\n    &.is-down { color: var(--status-danger); }\n  }\n}\n\n.gastos-page__avg-icon {\n  width: 30px;\n  height: 30px;\n  border-radius: 8px;\n  display: inline-grid;\n  place-items: center;\n  color: #2563eb;\n  background: color-mix(in srgb, #2563eb 16%, #ffffff);\n}\n\n.gastos-page__sparkline {\n  width: 120px;\n  height: 42px;\n}\n\n.gastos-page__sparkline-path {\n  fill: none;\n  stroke: #3b82f6;\n  stroke-width: 2.2;\n  stroke-linecap: round;\n  stroke-linejoin: round;\n}\n\n.gastos-page__next-payments {\n  margin-top: 10px;\n  display: grid;\n  gap: 8px;\n}\n\n.gastos-page__next-payment-item {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 10px;\n  border: 1px solid var(--border-color);\n  border-radius: 10px;\n  padding: 8px 10px;\n  background: color-mix(in srgb, var(--accent-primary) 4%, var(--bg-card));\n\n  strong {\n    display: block;\n    font-size: .84rem;\n  }\n\n  small {\n    color: var(--text-muted);\n    font-size: .74rem;\n  }\n}\n\n.gastos-page__next-payment-right {\n  display: grid;\n  justify-items: end;\n  gap: 4px;\n}\n\n.gastos-page__next-payment-amount {\n  font-weight: 800;\n  color: #dc2626;\n  font-size: .84rem;\n}\n\n.gastos-page__widget--avg-kpi {\n  min-height: 210px;\n  display: flex;\n  flex-direction: column;\n  justify-content: flex-start;\n  gap: 10px;\n}\n\n.gastos-page__kpi-icon-container {\n  width: 48px;\n  height: 48px;\n  border-radius: 14px;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 1.2rem;\n}\n\n.gastos-page__kpi-icon-container--danger {\n  background: rgba(171, 71, 188, 0.14);\n  color: #ab47bc;\n}\n\n.gastos-page__kpi-label {\n  margin-top: 8px;\n  font-size: 1.8rem;\n  font-weight: 800;\n  color: var(--text-secondary);\n  text-transform: uppercase;\n  letter-spacing: .03em;\n}\n\n.gastos-page__kpi-value {\n  font-size: 2.8rem;\n  line-height: 1.1;\n  letter-spacing: -0.03em;\n}\n\n.text-danger {\n  color: #ef4444;\n}\n\n.gastos-page__kpi-progress-wrapper {\n  margin-top: 2px;\n  display: grid;\n  gap: 7px;\n}\n\n.gastos-page__kpi-progress-bar {\n  height: 8px;\n  border-radius: 999px;\n  overflow: hidden;\n  background: rgba(171, 71, 188, 0.18);\n}\n\n.gastos-page__kpi-progress-fill {\n  display: block;\n  height: 100%;\n  width: 62%;\n  border-radius: inherit;\n  background: linear-gradient(90deg, #ab47bc, #ddb7ff);\n}\n\n.gastos-page__kpi-progress-text {\n  color: var(--text-muted);\n  font-size: .95rem;\n  font-weight: 700;\n}\n\n.gastos-page__fab {\n  position: fixed;\n  right: 24px;\n  bottom: 24px;\n  width: 64px;\n  height: 64px;\n  border-radius: 50%;\n  border: none;\n  background: var(--accent-primary);\n  color: #fff;\n  font-size: 2rem;\n  line-height: 1;\n  cursor: pointer;\n  box-shadow: 0 12px 24px color-mix(in srgb, var(--accent-primary) 40%, transparent);\n}\n\n.gastos-page__overlay {\n  position: fixed;\n  inset: 0;\n  background: rgba(15, 23, 42, 0.62);\n  display: grid;\n  place-items: center;\n  z-index: 1200;\n  padding: 16px;\n}\n\n.gastos-page__modal {\n  width: min(760px, 100%);\n  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 94%, #ffffff) 0%, var(--bg-card) 100%);\n  border: 1px solid color-mix(in srgb, var(--accent-primary) 20%, var(--border-color));\n  border-radius: 26px;\n  padding: 28px;\n  color: var(--text-primary);\n  box-shadow: 0 20px 48px rgba(15, 23, 42, .28);\n  max-height: calc(100vh - 48px);\n  overflow-y: auto;\n}\n\n.gastos-page__modal-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  margin-bottom: 16px;\n  padding-bottom: 12px;\n  border-bottom: 1px dashed color-mix(in srgb, var(--accent-primary) 28%, var(--border-color));\n\n  h2 {\n    margin: 0;\n    font-size: clamp(1.55rem, 1.2rem + .8vw, 2rem);\n    font-weight: 900;\n    letter-spacing: -0.03em;\n  }\n}\n\n.gastos-page__close {\n  border: 1px solid color-mix(in srgb, var(--accent-primary) 14%, var(--border-color));\n  background: color-mix(in srgb, var(--accent-primary) 8%, var(--bg-surface-soft));\n  color: color-mix(in srgb, var(--text-muted) 80%, var(--accent-primary));\n  width: 44px;\n  height: 44px;\n  border-radius: 14px;\n  font-size: 1.45rem;\n  line-height: 1;\n  cursor: pointer;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  transition: all .2s ease;\n\n  &:hover {\n    color: var(--text-primary);\n    background: color-mix(in srgb, var(--accent-primary) 10%, var(--bg-card));\n    border-color: color-mix(in srgb, var(--accent-primary) 45%, var(--border-color));\n  }\n}\n\n.gastos-page__form-grid {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 18px;\n\n  label,\n  legend {\n    font-size: 1.03rem;\n    color: var(--text-primary);\n    font-weight: 850;\n    letter-spacing: -0.01em;\n\n    > i,\n    > .fa-solid {\n      width: 22px;\n      min-width: 22px;\n      display: inline-flex;\n      justify-content: center;\n      margin-right: 6px;\n      color: color-mix(in srgb, var(--accent-primary) 82%, var(--text-primary));\n      font-size: 1.02rem;\n    }\n  }\n\n  input,\n  select,\n  textarea {\n    width: 100%;\n    margin-top: 10px;\n    min-height: 52px;\n    border: 1px solid color-mix(in srgb, var(--border-color) 88%, var(--accent-primary));\n    border-radius: 13px;\n    background: color-mix(in srgb, var(--bg-elevated) 94%, #ffffff);\n    color: var(--text-primary);\n    padding: 12px 14px;\n    font-size: 1.02rem;\n    font-weight: 600;\n    transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;\n\n    &::placeholder {\n      color: color-mix(in srgb, var(--text-muted) 75%, transparent);\n      font-weight: 650;\n    }\n\n    &:focus {\n      outline: none;\n      border-color: color-mix(in srgb, var(--accent-primary) 75%, var(--border-color));\n      box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-primary) 13%, transparent);\n      background: var(--bg-card);\n    }\n  }\n\n  textarea {\n    min-height: 112px;\n    resize: vertical;\n  }\n\n  fieldset {\n    border: 1px solid var(--border-color);\n    border-radius: 10px;\n    padding: 10px 12px;\n    min-height: 44px;\n\n    label {\n      display: inline-flex;\n      align-items: center;\n      gap: 8px;\n      margin-right: 16px;\n      font-weight: 500;\n    }\n  }\n}\n\n.gastos-page__form-col-full {\n  grid-column: 1 / -1;\n}\n\n.gastos-page__error {\n  display: block;\n  margin-top: 4px;\n  color: #b91c1c;\n  font-size: 13px;\n}\n\n.gastos-page__error--global {\n  margin: 12px 0 0;\n}\n\n.gastos-page__modal-actions {\n  margin-top: 24px;\n  display: flex;\n  justify-content: flex-end;\n  gap: 10px;\n}\n\n.gastos-page__btn-cancel,\n.gastos-page__btn-save {\n  min-height: 48px;\n  border-radius: 14px;\n  padding: 0 20px;\n  border: 1px solid transparent;\n  font-weight: 850;\n  font-size: .98rem;\n  cursor: pointer;\n  color: #fff !important;\n  transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;\n}\n\n.gastos-page__btn-cancel {\n  background: #dc2626 !important;\n  border-color: #b91c1c !important;\n\n  &:hover {\n    transform: translateY(-1px);\n    box-shadow: 0 10px 18px rgba(220, 38, 38, .28);\n    filter: brightness(1.05);\n  }\n}\n\n.gastos-page__btn-save {\n  background: #16a34a !important;\n  border-color: #15803d !important;\n\n  &:hover {\n    transform: translateY(-1px);\n    box-shadow: 0 10px 18px rgba(22, 163, 74, .3);\n    filter: brightness(1.05);\n  }\n\n  &:disabled {\n    opacity: .7;\n    cursor: not-allowed;\n    filter: grayscale(.12);\n  }\n}\n\n@media (max-width: 900px) {\n  .gastos-page__kpis {\n    grid-template-columns: repeat(2, minmax(0, 1fr));\n  }\n\n  .gastos-page__content-grid {\n    grid-template-columns: 1fr;\n  }\n\n  .gastos-page__analytics {\n    grid-template-columns: repeat(2, minmax(0, 1fr));\n  }\n\n  .gastos-page__form-grid {\n    grid-template-columns: 1fr;\n  }\n\n  .gastos-page__donut-layout {\n    grid-template-columns: 1fr;\n  }\n}\n\n@media (max-width: 560px) {\n  .gastos-page__hero {\n    flex-direction: column;\n    align-items: stretch;\n  }\n\n  .gastos-page__kpis,\n  .gastos-page__analytics {\n    grid-template-columns: 1fr;\n  }\n\n  .gastos-page__tab,\n  .gastos-page__btn-tool {\n    width: 100%;\n  }\n}\n\n@keyframes pulse {\n  0% {\n    background-position: 0 0;\n  }\n  100% {\n    background-position: -200% 0;\n  }\n}\n\n.gastos-page__tags-section {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n}\n\n.gastos-page__tags-label {\n  font-size: 0.88rem;\n  font-weight: 600;\n  color: var(--text-primary);\n  display: flex;\n  align-items: center;\n  gap: 6px;\n\n  i {\n    color: var(--accent-primary);\n  }\n}\n\n.gastos-page__tags-chips {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n}\n\n.gastos-page__tag-chip {\n  display: inline-flex;\n  align-items: center;\n  gap: 4px;\n  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);\n  color: var(--accent-primary);\n  padding: 4px 10px;\n  border-radius: 999px;\n  font-size: 0.78rem;\n  font-weight: 700;\n  border: 1px solid color-mix(in srgb, var(--accent-primary) 25%, transparent);\n\n  .gastos-page__tag-remove {\n    background: transparent;\n    border: none;\n    color: currentColor;\n    font-size: 0.65rem;\n    cursor: pointer;\n    opacity: 0.6;\n    padding: 2px;\n    border-radius: 50%;\n    display: inline-grid;\n    place-items: center;\n    transition: opacity 0.15s ease;\n\n    &:hover {\n      opacity: 1;\n      background: color-mix(in srgb, currentColor 15%, transparent);\n    }\n  }\n}\n\n.gastos-page__tag-input-row {\n  display: flex;\n  gap: 8px;\n\n  input {\n    flex: 1;\n    min-height: 38px;\n    border: 1px solid var(--border-color);\n    border-radius: 10px;\n    background: var(--bg-card);\n    color: var(--text-primary);\n    padding: 0 12px;\n    outline: none;\n\n    &:focus {\n      border-color: var(--accent-primary);\n    }\n  }\n}\n\n.gastos-page__btn-add-tag {\n  min-height: 38px;\n  border: 1px solid color-mix(in srgb, var(--accent-primary) 35%, transparent);\n  border-radius: 10px;\n  background: color-mix(in srgb, var(--accent-primary) 8%, var(--bg-card));\n  color: var(--accent-primary);\n  padding: 0 14px;\n  font-weight: 700;\n  font-size: 0.85rem;\n  cursor: pointer;\n  transition: all 0.2s ease;\n\n  &:hover {\n    background: color-mix(in srgb, var(--accent-primary) 15%, var(--bg-card));\n  }\n}\n\n.gastos-page__tags-hint {\n  font-size: 0.75rem;\n  color: var(--text-muted);\n}\n\n.gastos-page__ia-btn-row {\n  display: block;\n  margin-top: 4px;\n}\n\n.gastos-page__ia-helper {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 14px;\n  border: 1px solid color-mix(in srgb, #8b5cf6 24%, var(--border-color));\n  border-radius: 14px;\n  background: linear-gradient(135deg, color-mix(in srgb, #8b5cf6 10%, var(--bg-card)), var(--bg-card));\n  padding: 12px;\n}\n\n.gastos-page__ia-helper-title {\n  display: inline-flex;\n  align-items: center;\n  gap: 8px;\n  margin: 0 0 4px;\n  color: var(--text-primary);\n  font-weight: 800;\n  font-size: .92rem;\n\n  i {\n    color: #7c3aed;\n  }\n}\n\n.gastos-page__ia-helper-copy {\n  margin: 0;\n  color: var(--text-muted);\n  font-size: .78rem;\n  line-height: 1.45;\n}\n\n.gastos-page__btn-ia {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  gap: 8px;\n  min-height: 42px;\n  border: 1px solid color-mix(in srgb, #8b5cf6 35%, transparent);\n  border-radius: 12px;\n  background: linear-gradient(135deg, #7c3aed, #06b6d4);\n  color: #fff;\n  padding: 0 16px;\n  font-weight: 800;\n  font-size: 0.86rem;\n  cursor: pointer;\n  box-shadow: 0 12px 24px rgba(124, 58, 237, .22);\n  transition: all 0.18s ease;\n  white-space: nowrap;\n\n  span {\n    border-radius: 999px;\n    background: rgba(255, 255, 255, .18);\n    padding: 2px 8px;\n    font-size: .72rem;\n  }\n\n  &:hover:not(:disabled) {\n    transform: translateY(-1px);\n    box-shadow: 0 16px 28px rgba(124, 58, 237, .28);\n  }\n\n  &:disabled {\n    background: color-mix(in srgb, var(--text-muted) 22%, var(--bg-card));\n    color: var(--text-muted);\n    border-color: var(--border-color);\n    box-shadow: none;\n    opacity: 0.72;\n    cursor: not-allowed;\n  }\n}\n\n@media (max-width: 720px) {\n  .gastos-page__ia-helper {\n    align-items: stretch;\n    flex-direction: column;\n  }\n\n  .gastos-page__btn-ia {\n    width: 100%;\n  }\n}\n
+.gastos-page {
+  display: grid;
+  gap: 20px;
+  color: var(--text-primary);
+  background:
+    radial-gradient(circle at 15% -10%, color-mix(in srgb, var(--accent-primary) 11%, transparent), transparent 30%),
+    radial-gradient(circle at 85% -20%, color-mix(in srgb, var(--status-success) 9%, transparent), transparent 35%),
+    var(--bg-surface-soft);
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 20px;
+}
+
+.gastos-page__hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+
+  .gastos-page__hero-copy {
+    display: grid;
+    gap: 8px;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(1.6rem, 1.2rem + 1.1vw, 2.2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin: 0;
+    color: var(--text-muted);
+    max-width: 680px;
+  }
+}
+
+.gastos-page__btn-main {
+  min-height: 44px;
+  border: 1px solid var(--accent-primary);
+  border-radius: 14px;
+  background: var(--accent-primary);
+  color: #fff;
+  padding: 0 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 22px color-mix(in srgb, var(--accent-primary) 38%, transparent);
+  }
+}
+
+.gastos-page__hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.gastos-page__btn-secondary {
+  min-height: 44px;
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 35%, var(--border-color));
+  border-radius: 14px;
+  background: var(--bg-card);
+  color: var(--accent-primary);
+  padding: 0 18px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 22px color-mix(in srgb, var(--accent-primary) 18%, transparent);
+  }
+}
+
+.gastos-page__eyebrow {
+  margin: 0;
+  color: var(--accent-primary);
+  font-size: .78rem;
+  font-weight: 900;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.gastos-page__kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.gastos-page__kpi {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 14px 34px rgba(17, 24, 39, 0.1);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    border-radius: 999px;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  &::before {
+    inset: auto -32px -58px auto;
+    width: 150px;
+    height: 150px;
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  &::after {
+    top: -46px;
+    right: 34px;
+    width: 96px;
+    height: 96px;
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 42px rgba(17, 24, 39, 0.16);
+  }
+
+  .gastos-page__kpi-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+
+    p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.84);
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+    }
+  }
+
+  .gastos-page__icon {
+    width: 34px;
+    height: 34px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.22);
+    color: #fff;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24), 0 10px 20px rgba(15, 23, 42, 0.16);
+    font-size: 1rem;
+  }
+
+  strong {
+    display: block;
+    margin-top: 2px;
+    font-size: clamp(1.1rem, 0.95rem + .7vw, 1.6rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: #fff;
+    text-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+  }
+
+  small {
+    display: block;
+    margin-top: 8px;
+    color: rgba(255, 255, 255, 0.82);
+  }
+}
+
+.gastos-page__kpi--salida {
+  border-color: rgba(248, 113, 113, 0.38);
+  background:
+    radial-gradient(circle at 12% 12%, rgba(255, 255, 255, 0.22), transparent 30%),
+    linear-gradient(135deg, #fb7185 0%, #ef4444 48%, #b91c1c 100%);
+}
+
+.gastos-page__kpi--saldo {
+  border-color: rgba(52, 211, 153, 0.38);
+  background:
+    radial-gradient(circle at 12% 12%, rgba(255, 255, 255, 0.22), transparent 30%),
+    linear-gradient(135deg, #34d399 0%, #10b981 48%, #047857 100%);
+}
+
+.gastos-page__kpi--pendiente {
+  border-color: rgba(251, 191, 36, 0.44);
+  background:
+    radial-gradient(circle at 12% 12%, rgba(255, 255, 255, 0.25), transparent 30%),
+    linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #b45309 100%);
+}
+
+.gastos-page__kpi--vencimiento {
+  border-color: rgba(96, 165, 250, 0.42);
+  background:
+    radial-gradient(circle at 12% 12%, rgba(255, 255, 255, 0.24), transparent 30%),
+    linear-gradient(135deg, #60a5fa 0%, #3b82f6 48%, #1d4ed8 100%);
+}
+
+.gastos-page__kpi .gastos-page__trend {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.gastos-page__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gastos-page__tab,
+.gastos-page__btn-tool {
+  min-height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  padding: 0 14px;
+  font-weight: 700;
+}
+
+.gastos-page__tab {
+  cursor: pointer;
+}
+
+.gastos-page__tab.is-active {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 8%, var(--bg-card));
+}
+
+.gastos-page__integration-note {
+  border: 1px dashed color-mix(in srgb, var(--status-warning) 55%, transparent);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: color-mix(in srgb, var(--status-warning) 60%, var(--text-primary));
+  background: color-mix(in srgb, var(--status-warning) 8%, var(--bg-card));
+}
+
+.gastos-page__toolbar {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  align-items: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 12px;
+
+  input {
+    min-height: 44px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    padding: 0 12px;
+    outline: none;
+
+    &:focus {
+      border-color: var(--accent-primary);
+      box-shadow: none;
+    }
+  }
+}
+
+.gastos-page__toolbar-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.gastos-page__btn-tool {
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: transform .16s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.gastos-page__content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.28fr) minmax(380px, 0.95fr);
+  gap: 20px;
+}
+
+.gastos-page__panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(17, 24, 39, 0.06);
+  backdrop-filter: blur(6px);
+}
+
+.gastos-page__panel--pending {
+  background:
+    linear-gradient(160deg,
+      color-mix(in srgb, var(--accent-primary) 8%, var(--bg-card)) 0%,
+      color-mix(in srgb, var(--status-warning) 10%, var(--bg-card)) 100%);
+  box-shadow:
+    0 12px 26px rgba(17, 24, 39, 0.08),
+    inset 0 0 0 1px color-mix(in srgb, var(--accent-primary) 10%, transparent);
+}
+
+.gastos-page__content-grid > .gastos-page__panel--pending {
+  max-height: none;
+}
+
+.gastos-page__content-grid > .gastos-page__panel--summary-note {
+  align-self: stretch;
+}
+
+.gastos-page__panel--history,
+.gastos-page__panel--summary-note {
+  min-height: 100%;
+}
+
+.gastos-page__panel--summary-note {
+  position: relative;
+  overflow: hidden;
+}
+
+.gastos-page__history-cta {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  padding: 24px;
+  position: relative;
+  z-index: 2;
+
+  > i {
+    width: 58px;
+    height: 58px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--accent-primary) 13%, transparent);
+    color: var(--accent-primary);
+    font-size: 1.35rem;
+  }
+
+  strong {
+    display: block;
+    font-size: 1.05rem;
+  }
+
+  p {
+    margin: 4px 0 0;
+    color: var(--text-muted);
+  }
+
+  .gastos-page__btn-main {
+    grid-column: 1 / -1;
+    justify-self: start;
+    margin-top: 2px;
+  }
+}
+
+.gastos-page__history-bear {
+  position: absolute;
+  right: 18px;
+  bottom: 12px;
+  width: 168px;
+  height: 168px;
+  object-fit: contain;
+  opacity: 0.22;
+  filter: drop-shadow(0 16px 24px rgba(17, 24, 39, 0.18));
+  pointer-events: none;
+}
+
+.gastos-page__history-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.gastos-page__history-card {
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 22%, var(--border-color));
+  border-radius: 22px;
+  padding: 22px;
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--accent-primary) 14%, var(--bg-card)) 0%,
+      color-mix(in srgb, var(--status-danger) 10%, var(--bg-card)) 100%);
+  box-shadow: 0 14px 30px rgba(17, 24, 39, 0.08);
+
+  span,
+  small {
+    color: var(--text-muted);
+    font-weight: 700;
+  }
+
+  strong {
+    display: block;
+    margin: 8px 0 6px;
+    color: var(--status-danger);
+    font-size: clamp(2rem, 1.2rem + 2vw, 3.4rem);
+    line-height: 1;
+  }
+}
+
+.gastos-page__history-card--expenses {
+  border-color: color-mix(in srgb, var(--status-warning) 36%, var(--border-color));
+  background:
+    linear-gradient(135deg,
+      #f59e0b 0%,
+      #d97706 52%,
+      #b45309 100%);
+  box-shadow: 0 18px 38px rgba(245, 158, 11, 0.22);
+
+  span,
+  small,
+  strong {
+    color: #fff;
+  }
+}
+
+.gastos-page__history-card--expenses strong {
+  text-shadow: 0 8px 20px rgba(120, 53, 15, 0.22);
+}
+
+.gastos-page__filters-card {
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  padding: 16px;
+  background: var(--bg-card);
+  box-shadow: 0 8px 28px rgba(17, 24, 39, 0.06);
+
+  h3 {
+    margin: 0 0 14px;
+    font-size: 1.05rem;
+  }
+}
+
+.gastos-page__filters-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+
+  label {
+    display: grid;
+    gap: 6px;
+  }
+
+  span {
+    color: var(--text-muted);
+    font-size: .78rem;
+    font-weight: 800;
+  }
+
+  input,
+  select {
+    min-height: 44px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    padding: 0 12px;
+    outline: none;
+
+    &:focus {
+      border-color: var(--status-warning);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--status-warning) 14%, transparent);
+    }
+  }
+
+  select:disabled {
+    opacity: .7;
+  }
+}
+
+.gastos-page__filters-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+
+  p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: .82rem;
+  }
+}
+
+.gastos-page__panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-color);
+
+  h3 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  p {
+    margin: 4px 0 0;
+    color: var(--text-muted);
+    font-size: .88rem;
+  }
+}
+
+.gastos-page__chip {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: .78rem;
+  font-weight: 700;
+
+  &.is-success {
+    background: color-mix(in srgb, var(--status-success) 18%, transparent);
+    color: var(--status-success);
+  }
+
+  &.is-warning {
+    background: color-mix(in srgb, var(--status-warning) 18%, transparent);
+    color: var(--status-warning);
+  }
+}
+
+.gastos-page__skeleton-list {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+
+  div {
+    height: 70px;
+    border-radius: 14px;
+    background: linear-gradient(90deg, rgba(148,163,184,.25), rgba(148,163,184,.12), rgba(148,163,184,.25));
+    background-size: 200% 100%;
+    animation: pulse 1.4s infinite linear;
+  }
+}
+
+.gastos-page__empty {
+  padding: 28px 18px;
+  text-align: center;
+
+  h4 {
+    margin: 0 0 6px;
+  }
+
+  p {
+    margin: 0;
+    color: var(--text-muted);
+  }
+
+  &.gastos-page__empty--compact {
+    padding: 20px 14px;
+  }
+}
+
+.gastos-page__paid-list {
+  list-style: none;
+  margin: 0;
+  padding: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.gastos-page__paid-item {
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-card);
+  transition: transform .18s ease, box-shadow .18s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(17, 24, 39, .08);
+  }
+}
+
+.gastos-page__paid-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  strong {
+    display: block;
+  }
+
+  small {
+    color: var(--text-muted);
+  }
+}
+
+.gastos-page__icon-chip {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: inline-grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+}
+
+.gastos-page__paid-meta {
+  display: grid;
+  gap: 5px;
+  justify-items: end;
+}
+
+.gastos-page__amount {
+  font-weight: 800;
+  color: #dc2626 !important;
+  text-shadow: 0 0 0 transparent;
+  letter-spacing: .01em;
+}
+
+.gastos-page__table tbody td:nth-child(4),
+.gastos-page__table tbody td:nth-child(4) * {
+  color: #dc2626 !important;
+}
+
+.gastos-page__table tbody tr:hover td:nth-child(4),
+.gastos-page__table tbody tr:hover td:nth-child(4) * {
+  color: #dc2626 !important;
+}
+
+.gastos-page__badge {
+  border-radius: 999px;
+  font-size: .74rem;
+  font-weight: 700;
+  padding: 4px 9px;
+
+  i {
+    margin-right: 5px;
+  }
+
+  &.is-paid {
+    background: color-mix(in srgb, var(--status-success) 24%, #ffffff);
+    color: color-mix(in srgb, var(--status-success) 88%, #0f172a);
+    border: 1px solid color-mix(in srgb, var(--status-success) 38%, transparent);
+  }
+
+  &.is-warning {
+    background: color-mix(in srgb, var(--status-warning) 18%, transparent);
+    color: var(--status-warning);
+  }
+
+  &.is-soft {
+    background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+    color: var(--accent-primary);
+  }
+}
+
+.gastos-page__trend {
+  display: inline-flex;
+  margin-top: 10px;
+  font-size: .82rem;
+  font-style: normal;
+  font-weight: 700;
+
+  &.is-up {
+    color: var(--status-danger);
+  }
+
+  &.is-good {
+    color: var(--status-success);
+  }
+}
+
+.gastos-page__table-wrap {
+  padding: 10px;
+  overflow-x: auto;
+}
+
+.gastos-page__table-wrap--compact {
+  max-height: 320px;
+  overflow: auto;
+  padding: 8px;
+
+  .gastos-page__table thead th,
+  .gastos-page__table tbody td {
+    padding: 8px 6px;
+    font-size: 0.8rem;
+  }
+
+  .gastos-page__btn-mark {
+    min-height: 32px;
+    font-size: 0.75rem;
+    padding: 0 8px;
+  }
+}
+
+.gastos-page__table-wrap--wide {
+  padding: 14px;
+}
+
+.gastos-page__table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  thead th {
+    text-align: left;
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    color: var(--text-muted);
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+
+    i {
+      margin-right: 6px;
+      color: color-mix(in srgb, var(--accent-primary) 70%, var(--text-muted));
+    }
+  }
+
+  tbody tr {
+    transition: all 0.25s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 14px rgba(17, 24, 39, .06);
+      background: color-mix(in srgb, var(--accent-primary) 4%, var(--bg-card));
+    }
+  }
+
+  tbody td {
+    padding: 14px 10px;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+  }
+}
+
+.gastos-page__pay-method {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  i {
+    color: var(--accent-primary);
+  }
+}
+
+.gastos-page__row-actions {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.gastos-page__icon-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all .2s ease;
+
+  &.is-edit:hover {
+    color: #2563eb;
+    border-color: color-mix(in srgb, #2563eb 60%, var(--border-color));
+    background: color-mix(in srgb, #2563eb 10%, var(--bg-card));
+  }
+
+  &.is-delete:hover {
+    color: #dc2626;
+    border-color: color-mix(in srgb, #dc2626 60%, var(--border-color));
+    background: color-mix(in srgb, #dc2626 10%, var(--bg-card));
+  }
+}
+
+.gastos-page__confirm-float {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 1300;
+  width: min(360px, calc(100vw - 24px));
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, #ef4444 35%, var(--border-color));
+  background: var(--bg-card);
+  box-shadow: 0 18px 36px rgba(15, 23, 42, .22);
+  padding: 12px;
+
+  p {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: .9rem;
+  }
+}
+
+.gastos-page__confirm-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.gastos-page__confirm-cancel,
+.gastos-page__confirm-delete {
+  min-height: 34px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.gastos-page__confirm-cancel {
+  background: var(--bg-surface-soft);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.gastos-page__confirm-delete {
+  background: #dc2626;
+  color: #fff;
+  border-color: #b91c1c;
+}
+
+.gastos-page__cell-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  strong {
+    display: block;
+  }
+
+  small {
+    color: var(--text-muted);
+  }
+}
+
+.gastos-page__icon-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+
+  i {
+    color: var(--accent-primary);
+    font-size: 1rem;
+  }
+}
+
+.gastos-page__cat {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: .76rem;
+  font-weight: 700;
+
+  &.is-comida {
+    color: #d97706;
+    background: color-mix(in srgb, #f59e0b 20%, transparent);
+  }
+
+  &.is-hogar {
+    color: #059669;
+    background: color-mix(in srgb, #10b981 20%, transparent);
+  }
+
+  &.is-transporte {
+    color: #4f46e5;
+    background: color-mix(in srgb, #6366f1 20%, transparent);
+  }
+
+  &.is-servicios {
+    color: #db2777;
+    background: color-mix(in srgb, #ec4899 20%, transparent);
+  }
+
+  &.is-entretenimiento {
+    color: #2563eb;
+    background: color-mix(in srgb, #3b82f6 20%, transparent);
+  }
+
+  &.is-salud {
+    color: #d97706;
+    background: color-mix(in srgb, #f59e0b 20%, transparent);
+  }
+}
+
+.gastos-page__cell-date {
+  display: grid;
+  gap: 2px;
+
+  small {
+    color: var(--text-muted);
+  }
+}
+
+.gastos-page__table--pending {
+  td:last-child,
+  th:last-child {
+    width: 140px;
+    text-align: right;
+  }
+}
+
+.gastos-page__pending-cards {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+}
+
+.gastos-page__pending-list {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  max-height: 420px;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--accent-primary) 45%, #ffffff) transparent;
+
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: color-mix(in srgb, var(--bg-surface-soft) 75%, transparent);
+    border-radius: 999px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--accent-primary) 55%, #ffffff);
+    border-radius: 999px;
+    border: 2px solid color-mix(in srgb, var(--bg-card) 85%, transparent);
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--accent-primary) 75%, #ffffff);
+  }
+}
+
+.gastos-page__pending-item {
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--accent-primary) 4%, var(--bg-card));
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+  transition: all .25s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 18px rgba(17, 24, 39, .1);
+  }
+}
+
+.gastos-page__pending-title-wrap {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.gastos-page__icon-wrap--pending {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent-primary) 16%, #ffffff);
+
+  i {
+    color: var(--accent-primary);
+    font-size: 0.9rem;
+  }
+}
+
+.gastos-page__pending-top {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 8px;
+
+  h4 {
+    margin: 0;
+    font-size: .92rem;
+  }
+
+  p {
+    margin: 3px 0 0;
+    color: var(--text-muted);
+    font-size: .78rem;
+  }
+}
+
+.gastos-page__pending-amount {
+  font-weight: 800;
+  color: var(--status-danger);
+  white-space: nowrap;
+}
+
+.gastos-page__pending-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.gastos-page__pending-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .78rem;
+  color: var(--text-muted);
+}
+
+.gastos-page__pending-card {
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 12px;
+  background: var(--bg-card);
+  transition: transform .18s ease, box-shadow .18s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 18px rgba(17, 24, 39, .08);
+  }
+
+  .gastos-page__pending-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+
+    strong {
+      font-size: .96rem;
+    }
+  }
+
+  ul {
+    list-style: none;
+    margin: 0 0 12px;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+  }
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    color: var(--text-muted);
+
+    b {
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+  }
+}
+
+.gastos-page__btn-mark {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid var(--border-color);
+  background: color-mix(in srgb, var(--bg-card) 88%, #ffffff);
+  color: var(--text-primary);
+  border-radius: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px) scale(1.015);
+    box-shadow: 0 12px 22px color-mix(in srgb, var(--status-success) 50%, transparent);
+    filter: saturate(1.22) brightness(1.05);
+    background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%) !important;
+    color: #ffffff !important;
+    border-color: #15803d !important;
+  }
+
+  &:focus-visible,
+  &:active {
+    background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%) !important;
+    color: #ffffff !important;
+    border-color: #15803d !important;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  i {
+    margin-right: 6px;
+  }
+}
+
+.gastos-page__analytics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.gastos-page__widget {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 14px;
+  min-height: 120px;
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  h4 {
+    margin: 0;
+    font-size: .95rem;
+  }
+
+  span {
+    color: var(--text-muted);
+    font-size: .82rem;
+  }
+
+  p {
+    margin: 0;
+    color: var(--text-muted);
+  }
+}
+
+.gastos-page__chart-list {
+  display: grid;
+  gap: 10px;
+}
+
+.gastos-page__chart-item {
+  display: grid;
+  gap: 6px;
+}
+
+.gastos-page__chart-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+
+  strong {
+    font-size: .86rem;
+  }
+
+  span {
+    font-size: .78rem;
+    color: var(--text-muted);
+  }
+}
+
+.gastos-page__chart-bar {
+  height: 8px;
+  background: color-mix(in srgb, var(--accent-primary) 10%, var(--bg-surface-soft));
+  border-radius: 999px;
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+  }
+}
+
+.gastos-page__trend-bars {
+  min-height: 116px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(28px, 1fr);
+  align-items: end;
+  gap: 10px;
+}
+
+.gastos-page__trend-col {
+  height: 100%;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  align-items: end;
+  justify-items: center;
+  gap: 6px;
+
+  small {
+    color: var(--text-muted);
+    text-transform: capitalize;
+  }
+}
+
+.gastos-page__trend-fill {
+  width: 100%;
+  min-height: 8px;
+  border-radius: 10px 10px 4px 4px;
+  background: linear-gradient(180deg, #f97316 0%, #dc2626 100%);
+}
+
+.gastos-page__donut-layout {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.gastos-page__donut-wrap {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto;
+}
+
+.gastos-page__donut-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.gastos-page__donut-track {
+  fill: none;
+  stroke: color-mix(in srgb, var(--text-muted) 20%, transparent);
+  stroke-width: 3;
+}
+
+.gastos-page__donut-segment {
+  fill: none;
+  stroke-width: 3.2;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+.gastos-page__donut-text text {
+  text-anchor: middle;
+  fill: var(--text-primary);
+  font-size: 3.2px;
+  font-weight: 600;
+}
+
+.gastos-page__donut-text text:last-child {
+  font-size: 3.8px;
+  font-weight: 800;
+}
+
+.gastos-page__donut-legend {
+  display: grid;
+  gap: 8px;
+}
+
+.gastos-page__legend-row {
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  align-items: center;
+  gap: 8px;
+
+  strong { font-size: .82rem; }
+  small { color: var(--text-muted); }
+}
+
+.gastos-page__legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.gastos-page__line-card {
+  display: grid;
+  gap: 8px;
+}
+
+.gastos-page__line-svg {
+  width: 100%;
+  height: 120px;
+}
+
+.gastos-page__line-grid {
+  fill: none;
+  stroke: color-mix(in srgb, var(--text-muted) 20%, transparent);
+  stroke-width: .6;
+}
+
+.gastos-page__line-path {
+  fill: none;
+  stroke: #6366f1;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.gastos-page__line-point {
+  fill: #6366f1;
+  stroke: #ffffff;
+  stroke-width: .8;
+}
+
+.gastos-page__line-labels {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 6px;
+
+  small {
+    text-align: center;
+    color: var(--text-muted);
+    text-transform: capitalize;
+  }
+}
+
+.gastos-page__trend-filter {
+  min-height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface-soft);
+  color: var(--text-primary);
+  padding: 0 8px;
+  font-size: .78rem;
+  font-weight: 600;
+}
+
+.gastos-page__rank-chart {
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.gastos-page__rank-row {
+  display: grid;
+  gap: 6px;
+}
+
+.gastos-page__rank-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  strong { font-size: .8rem; }
+  small { font-size: .78rem; color: var(--text-muted); }
+}
+
+.gastos-page__rank-bar {
+  height: 9px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-primary) 10%, var(--bg-surface-soft));
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #6366f1 0%, #a78bfa 100%);
+  }
+}
+
+.gastos-page__avg-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.gastos-page__avg-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  strong {
+    display: block;
+    font-size: 1.8rem;
+    line-height: 1.1;
+    color: var(--text-primary);
+  }
+
+  small {
+    display: block;
+    margin-top: 4px;
+    font-weight: 700;
+    color: var(--text-muted);
+
+    &.is-up { color: var(--status-success); }
+    &.is-down { color: var(--status-danger); }
+  }
+}
+
+.gastos-page__avg-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: inline-grid;
+  place-items: center;
+  color: #2563eb;
+  background: color-mix(in srgb, #2563eb 16%, #ffffff);
+}
+
+.gastos-page__sparkline {
+  width: 120px;
+  height: 42px;
+}
+
+.gastos-page__sparkline-path {
+  fill: none;
+  stroke: #3b82f6;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.gastos-page__next-payments {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.gastos-page__next-payment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: color-mix(in srgb, var(--accent-primary) 4%, var(--bg-card));
+
+  strong {
+    display: block;
+    font-size: .84rem;
+  }
+
+  small {
+    color: var(--text-muted);
+    font-size: .74rem;
+  }
+}
+
+.gastos-page__next-payment-right {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+
+.gastos-page__next-payment-amount {
+  font-weight: 800;
+  color: #dc2626;
+  font-size: .84rem;
+}
+
+.gastos-page__widget--avg-kpi {
+  min-height: 210px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.gastos-page__kpi-icon-container {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.gastos-page__kpi-icon-container--danger {
+  background: rgba(171, 71, 188, 0.14);
+  color: #ab47bc;
+}
+
+.gastos-page__kpi-label {
+  margin-top: 8px;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+
+.gastos-page__kpi-value {
+  font-size: 2.8rem;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.text-danger {
+  color: #ef4444;
+}
+
+.gastos-page__kpi-progress-wrapper {
+  margin-top: 2px;
+  display: grid;
+  gap: 7px;
+}
+
+.gastos-page__kpi-progress-bar {
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(171, 71, 188, 0.18);
+}
+
+.gastos-page__kpi-progress-fill {
+  display: block;
+  height: 100%;
+  width: 62%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ab47bc, #ddb7ff);
+}
+
+.gastos-page__kpi-progress-text {
+  color: var(--text-muted);
+  font-size: .95rem;
+  font-weight: 700;
+}
+
+.gastos-page__fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent-primary);
+  color: #fff;
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--accent-primary) 40%, transparent);
+}
+
+.gastos-page__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.62);
+  display: grid;
+  place-items: center;
+  z-index: 1200;
+  padding: 16px;
+}
+
+.gastos-page__modal {
+  width: min(760px, 100%);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 94%, #ffffff) 0%, var(--bg-card) 100%);
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 20%, var(--border-color));
+  border-radius: 26px;
+  padding: 28px;
+  color: var(--text-primary);
+  box-shadow: 0 20px 48px rgba(15, 23, 42, .28);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}
+
+.gastos-page__modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed color-mix(in srgb, var(--accent-primary) 28%, var(--border-color));
+
+  h2 {
+    margin: 0;
+    font-size: clamp(1.55rem, 1.2rem + .8vw, 2rem);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+  }
+}
+
+.gastos-page__close {
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 14%, var(--border-color));
+  background: color-mix(in srgb, var(--accent-primary) 8%, var(--bg-surface-soft));
+  color: color-mix(in srgb, var(--text-muted) 80%, var(--accent-primary));
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  font-size: 1.45rem;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .2s ease;
+
+  &:hover {
+    color: var(--text-primary);
+    background: color-mix(in srgb, var(--accent-primary) 10%, var(--bg-card));
+    border-color: color-mix(in srgb, var(--accent-primary) 45%, var(--border-color));
+  }
+}
+
+.gastos-page__form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+
+  label,
+  legend {
+    font-size: 1.03rem;
+    color: var(--text-primary);
+    font-weight: 850;
+    letter-spacing: -0.01em;
+
+    > i,
+    > .fa-solid {
+      width: 22px;
+      min-width: 22px;
+      display: inline-flex;
+      justify-content: center;
+      margin-right: 6px;
+      color: color-mix(in srgb, var(--accent-primary) 82%, var(--text-primary));
+      font-size: 1.02rem;
+    }
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    margin-top: 10px;
+    min-height: 52px;
+    border: 1px solid color-mix(in srgb, var(--border-color) 88%, var(--accent-primary));
+    border-radius: 13px;
+    background: color-mix(in srgb, var(--bg-elevated) 94%, #ffffff);
+    color: var(--text-primary);
+    padding: 12px 14px;
+    font-size: 1.02rem;
+    font-weight: 600;
+    transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+
+    &::placeholder {
+      color: color-mix(in srgb, var(--text-muted) 75%, transparent);
+      font-weight: 650;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: color-mix(in srgb, var(--accent-primary) 75%, var(--border-color));
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-primary) 13%, transparent);
+      background: var(--bg-card);
+    }
+  }
+
+  textarea {
+    min-height: 112px;
+    resize: vertical;
+  }
+
+  fieldset {
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 10px 12px;
+    min-height: 44px;
+
+    label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-right: 16px;
+      font-weight: 500;
+    }
+  }
+}
+
+.gastos-page__form-col-full {
+  grid-column: 1 / -1;
+}
+
+.gastos-page__error {
+  display: block;
+  margin-top: 4px;
+  color: #b91c1c;
+  font-size: 13px;
+}
+
+.gastos-page__error--global {
+  margin: 12px 0 0;
+}
+
+.gastos-page__modal-actions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.gastos-page__btn-cancel,
+.gastos-page__btn-save {
+  min-height: 48px;
+  border-radius: 14px;
+  padding: 0 20px;
+  border: 1px solid transparent;
+  font-weight: 850;
+  font-size: .98rem;
+  cursor: pointer;
+  color: #fff !important;
+  transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+}
+
+.gastos-page__btn-cancel {
+  background: #dc2626 !important;
+  border-color: #b91c1c !important;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 18px rgba(220, 38, 38, .28);
+    filter: brightness(1.05);
+  }
+}
+
+.gastos-page__btn-save {
+  background: #16a34a !important;
+  border-color: #15803d !important;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 18px rgba(22, 163, 74, .3);
+    filter: brightness(1.05);
+  }
+
+  &:disabled {
+    opacity: .7;
+    cursor: not-allowed;
+    filter: grayscale(.12);
+  }
+}
+
+@media (max-width: 900px) {
+  .gastos-page__kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gastos-page__content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gastos-page__analytics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gastos-page__form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gastos-page__donut-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .gastos-page__hero {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .gastos-page__kpis,
+  .gastos-page__analytics {
+    grid-template-columns: 1fr;
+  }
+
+  .gastos-page__tab,
+  .gastos-page__btn-tool {
+    width: 100%;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.gastos-page__tags-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gastos-page__tags-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  i {
+    color: var(--accent-primary);
+  }
+}
+
+.gastos-page__tags-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.gastos-page__tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+  color: var(--accent-primary);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 25%, transparent);
+
+  .gastos-page__tag-remove {
+    background: transparent;
+    border: none;
+    color: currentColor;
+    font-size: 0.65rem;
+    cursor: pointer;
+    opacity: 0.6;
+    padding: 2px;
+    border-radius: 50%;
+    display: inline-grid;
+    place-items: center;
+    transition: opacity 0.15s ease;
+
+    &:hover {
+      opacity: 1;
+      background: color-mix(in srgb, currentColor 15%, transparent);
+    }
+  }
+}
+
+.gastos-page__tag-input-row {
+  display: flex;
+  gap: 8px;
+
+  input {
+    flex: 1;
+    min-height: 38px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    padding: 0 12px;
+    outline: none;
+
+    &:focus {
+      border-color: var(--accent-primary);
+    }
+  }
+}
+
+.gastos-page__btn-add-tag {
+  min-height: 38px;
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 35%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent-primary) 8%, var(--bg-card));
+  color: var(--accent-primary);
+  padding: 0 14px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: color-mix(in srgb, var(--accent-primary) 15%, var(--bg-card));
+  }
+}
+
+.gastos-page__tags-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.gastos-page__ia-btn-row {
+  display: block;
+  margin-top: 4px;
+}
+
+.gastos-page__ia-helper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid color-mix(in srgb, #8b5cf6 24%, var(--border-color));
+  border-radius: 14px;
+  background: linear-gradient(135deg, color-mix(in srgb, #8b5cf6 10%, var(--bg-card)), var(--bg-card));
+  padding: 12px;
+}
+
+.gastos-page__ia-helper-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+  color: var(--text-primary);
+  font-weight: 800;
+  font-size: .92rem;
+
+  i {
+    color: #7c3aed;
+  }
+}
+
+.gastos-page__ia-helper-copy {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: .78rem;
+  line-height: 1.45;
+}
+
+.gastos-page__btn-ia {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  border: 1px solid color-mix(in srgb, #8b5cf6 35%, transparent);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #7c3aed, #06b6d4);
+  color: #fff;
+  padding: 0 16px;
+  font-weight: 800;
+  font-size: 0.86rem;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(124, 58, 237, .22);
+  transition: all 0.18s ease;
+  white-space: nowrap;
+
+  span {
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .18);
+    padding: 2px 8px;
+    font-size: .72rem;
+  }
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 28px rgba(124, 58, 237, .28);
+  }
+
+  &:disabled {
+    background: color-mix(in srgb, var(--text-muted) 22%, var(--bg-card));
+    color: var(--text-muted);
+    border-color: var(--border-color);
+    box-shadow: none;
+    opacity: 0.72;
+    cursor: not-allowed;
+  }
+}
+
+@media (max-width: 720px) {
+  .gastos-page__ia-helper {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .gastos-page__btn-ia {
+    width: 100%;
+  }
+}

@@ -1,1 +1,105 @@
-import { Routes } from '@angular/router';\nimport { PerfilLayout } from './perfil-layout/perfil-layout';\n\nexport const PERFIL_ROUTES: Routes = [\n  {\n    path: '',\n    component: PerfilLayout,\n    children: [\n      { path: '', redirectTo: 'cliente', pathMatch: 'full' },\n      {\n        path: 'cliente',\n        data: {\n          title: 'Mi perfil',\n          breadcrumbs: [\n            { label: 'Perfil', route: '/perfil' },\n            { label: 'Mi perfil' }\n          ]\n        },\n        loadComponent: () =>\n          import('./perfil-cliente/perfil-cliente')\n            .then(m => m.PerfilCliente)\n      },\n      {\n        path: 'financiero',\n        data: {\n          title: 'Perfil financiero',\n          breadcrumbs: [\n            { label: 'Perfil', route: '/perfil' },\n            { label: 'Perfil financiero' }\n          ]\n        },\n        loadComponent: () =>\n          import('./perfil-financiero/perfil-financiero')\n            .then(m => m.PerfilFinanciero)\n      },\n      {\n        path: 'configuracion',\n        data: {\n          title: 'Configuración',\n          breadcrumbs: [\n            { label: 'Perfil', route: '/perfil' },\n            { label: 'Configuración' }\n          ]\n        },\n        loadComponent: () =>\n          import('./configuracion/configuracion')\n            .then(m => m.Configuracion)\n      },\n      {\n        path: 'configuracion/privacidad',\n        data: {\n          title: 'Política de privacidad',\n          breadcrumbs: [\n            { label: 'Perfil', route: '/perfil' },\n            { label: 'Configuración', route: '/perfil/configuracion' },\n            { label: 'Política de privacidad' }\n          ]\n        },\n        loadComponent: () =>\n          import('./configuracion/politica-privacidad')\n            .then(m => m.PoliticaPrivacidad)\n      },\n      {\n        path: 'configuracion/terminos',\n        data: {\n          title: 'Términos y condiciones',\n          breadcrumbs: [\n            { label: 'Perfil', route: '/perfil' },\n            { label: 'Configuración', route: '/perfil/configuracion' },\n            { label: 'Términos y condiciones' }\n          ]\n        },\n        loadComponent: () =>\n          import('./configuracion/terminos-condiciones')\n            .then(m => m.TerminosCondiciones)\n      },\n      {\n        path: 'historial',\n        data: {\n          title: 'Historial',\n          breadcrumbs: [\n            { label: 'Perfil', route: '/perfil' },\n            { label: 'Historial' }\n          ]\n        },\n        loadComponent: () =>\n          import('./historial/historial')\n            .then(m => m.Historial)\n      },\n      {\n        path: 'transacciones',\n        data: {\n          title: 'Transacciones',\n          breadcrumbs: [\n            { label: 'Perfil', route: '/perfil' },\n            { label: 'Transacciones' }\n          ]\n        },\n        loadComponent: () =>\n          import('./transacciones/transacciones')\n            .then(m => m.Transacciones)\n      },\n    ]\n  }\n];\n
+import { Routes } from '@angular/router';
+import { PerfilLayout } from './perfil-layout/perfil-layout';
+
+export const PERFIL_ROUTES: Routes = [
+  {
+    path: '',
+    component: PerfilLayout,
+    children: [
+      { path: '', redirectTo: 'cliente', pathMatch: 'full' },
+      {
+        path: 'cliente',
+        data: {
+          title: 'Mi perfil',
+          breadcrumbs: [
+            { label: 'Perfil', route: '/perfil' },
+            { label: 'Mi perfil' }
+          ]
+        },
+        loadComponent: () =>
+          import('./perfil-cliente/perfil-cliente')
+            .then(m => m.PerfilCliente)
+      },
+      {
+        path: 'financiero',
+        data: {
+          title: 'Perfil financiero',
+          breadcrumbs: [
+            { label: 'Perfil', route: '/perfil' },
+            { label: 'Perfil financiero' }
+          ]
+        },
+        loadComponent: () =>
+          import('./perfil-financiero/perfil-financiero')
+            .then(m => m.PerfilFinanciero)
+      },
+      {
+        path: 'configuracion',
+        data: {
+          title: 'Configuración',
+          breadcrumbs: [
+            { label: 'Perfil', route: '/perfil' },
+            { label: 'Configuración' }
+          ]
+        },
+        loadComponent: () =>
+          import('./configuracion/configuracion')
+            .then(m => m.Configuracion)
+      },
+      {
+        path: 'configuracion/privacidad',
+        data: {
+          title: 'Política de privacidad',
+          breadcrumbs: [
+            { label: 'Perfil', route: '/perfil' },
+            { label: 'Configuración', route: '/perfil/configuracion' },
+            { label: 'Política de privacidad' }
+          ]
+        },
+        loadComponent: () =>
+          import('./configuracion/politica-privacidad')
+            .then(m => m.PoliticaPrivacidad)
+      },
+      {
+        path: 'configuracion/terminos',
+        data: {
+          title: 'Términos y condiciones',
+          breadcrumbs: [
+            { label: 'Perfil', route: '/perfil' },
+            { label: 'Configuración', route: '/perfil/configuracion' },
+            { label: 'Términos y condiciones' }
+          ]
+        },
+        loadComponent: () =>
+          import('./configuracion/terminos-condiciones')
+            .then(m => m.TerminosCondiciones)
+      },
+      {
+        path: 'historial',
+        data: {
+          title: 'Historial',
+          breadcrumbs: [
+            { label: 'Perfil', route: '/perfil' },
+            { label: 'Historial' }
+          ]
+        },
+        loadComponent: () =>
+          import('./historial/historial')
+            .then(m => m.Historial)
+      },
+      {
+        path: 'transacciones',
+        data: {
+          title: 'Transacciones',
+          breadcrumbs: [
+            { label: 'Perfil', route: '/perfil' },
+            { label: 'Transacciones' }
+          ]
+        },
+        loadComponent: () =>
+          import('./transacciones/transacciones')
+            .then(m => m.Transacciones)
+      },
+    ]
+  }
+];

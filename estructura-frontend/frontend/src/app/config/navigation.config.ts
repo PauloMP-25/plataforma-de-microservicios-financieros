@@ -1,1 +1,68 @@
-\n\nexport interface NavItem {\n  label: string;\n  route: string;\n  icon:  string;\n  badge?: number | string;\n  exact?: boolean;\n}\n\n\nexport const NAV_ITEMS: NavItem[] = [\n  {\n    label: 'Resumen',\n    route: '/dashboard',\n    icon:  'fa-solid fa-chart-pie',\n    exact: true\n  },\n  {\n    label: 'Gastos',\n    route: '/gastos',\n    icon:  'fa-solid fa-credit-card',\n  },\n  {\n    label: 'Ingresos',\n    route: '/ingresos',\n    icon:  'fa-solid fa-money-bill-trend-up'\n  },\n  {\n    label: 'Metas',\n    route: '/metas',\n    icon:  'fa-solid fa-piggy-bank'\n  },\n  {\n    label: 'Presupuestos',\n    route: '/presupuestos',\n    icon:  'fa-solid fa-wallet'\n  },\n  {\n    label: 'Suscripciones',\n    route: '/suscripcion/pagos',\n    icon:  'fa-solid fa-receipt'\n  },\n  {\n    label: 'Inteligencia Artificial',\n    route: '/inteligencia-artificial',\n    icon:  'fa-solid fa-robot'\n  },\n];\n\n// ── Navegación de cuenta  ──\nexport const BOTTOM_NAV_ITEMS: NavItem[] = [\n  {\n    label: 'Mi Perfil',\n    route: '/perfil',\n    icon:  'fa-solid fa-circle-user'\n  },\n  {\n    label: 'Configuración',\n    route: '/perfil/configuracion',\n    icon:  'fa-solid fa-gear'\n  },\n  {\n    label: 'Ayuda',\n    route: '/ayuda',\n    icon:  'fa-solid fa-circle-question'\n  }\n];\n
+
+
+export interface NavItem {
+  label: string;
+  route: string;
+  icon:  string;
+  badge?: number | string;
+  exact?: boolean;
+}
+
+
+export const NAV_ITEMS: NavItem[] = [
+  {
+    label: 'Resumen',
+    route: '/dashboard',
+    icon:  'fa-solid fa-chart-pie',
+    exact: true
+  },
+  {
+    label: 'Gastos',
+    route: '/gastos',
+    icon:  'fa-solid fa-credit-card',
+  },
+  {
+    label: 'Ingresos',
+    route: '/ingresos',
+    icon:  'fa-solid fa-money-bill-trend-up'
+  },
+  {
+    label: 'Metas',
+    route: '/metas',
+    icon:  'fa-solid fa-piggy-bank'
+  },
+  {
+    label: 'Presupuestos',
+    route: '/presupuestos',
+    icon:  'fa-solid fa-wallet'
+  },
+  {
+    label: 'Suscripciones',
+    route: '/suscripcion/pagos',
+    icon:  'fa-solid fa-receipt'
+  },
+  {
+    label: 'Inteligencia Artificial',
+    route: '/inteligencia-artificial',
+    icon:  'fa-solid fa-robot'
+  },
+];
+
+// ── Navegación de cuenta  ──
+export const BOTTOM_NAV_ITEMS: NavItem[] = [
+  {
+    label: 'Mi Perfil',
+    route: '/perfil',
+    icon:  'fa-solid fa-circle-user'
+  },
+  {
+    label: 'Configuración',
+    route: '/perfil/configuracion',
+    icon:  'fa-solid fa-gear'
+  },
+  {
+    label: 'Ayuda',
+    route: '/ayuda',
+    icon:  'fa-solid fa-circle-question'
+  }
+];
