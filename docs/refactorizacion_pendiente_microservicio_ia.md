@@ -67,7 +67,7 @@ Esto garantiza:
 | Módulo | Fase 1 ✅ | Fase 2 (Pandas) ✅ | Fase 3 (Solo KPIs a Gemini) | Structured Output | Fallback Propio | Persistencia BD |
 |---|---|---|---|---|---|---|
 | `GASTO_HORMIGA` | ✅ | ✅ | ⚠️ Pendiente revisar prompt | ✅ `ConsejoEstructurado` | ✅ | ✅ |
-| `PREDECIR_GASTOS` | ✅ | ✅ | ⚠️ Pendiente revisar prompt | ❌ String plano | ❌ | ✅ |
+| `PREDECIR_GASTOS` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoPredecir` | ✅ | ✅ |
 | `HABITOS_FINANCIEROS` | ✅ | ✅ | ⚠️ Pendiente revisar prompt | ❌ String plano | ⚠️ Genérico | ✅ |
 | `SIMULAR_META` | ✅ | ✅ | ⚠️ Pendiente revisar prompt | ❌ String plano | ⚠️ Genérico | ✅ |
 | `RETO_AHORRO_DINAMICO` | ✅ | ✅ | ⚠️ Pendiente revisar prompt | ❌ String plano | ⚠️ Genérico | ✅ Tabla propia |
@@ -85,8 +85,8 @@ Esto garantiza:
 ## Tareas de Refactorización Pendientes (Backlog)
 
 ### Alta Prioridad (Impacto en Costos)
-- **Auditar todos los prompts** (`prompt_predecir_gastos.py`, `prompt_habitos_financieros.py`, `prompt_simular_meta.py`, `prompt_reto_ahorro.py`, `prompt_reporte_completo.py`, `prompt_estilo_vida.py`) para verificar que **solo inyectan KPIs resumidos** y no datos crudos ni instrucciones de formato redundantes.
-- **Migrar módulos a Structured Output** (los 5 que aún devuelven `String plano`): `PREDECIR_GASTOS`, `HABITOS_FINANCIEROS`, `SIMULAR_META`, `RETO_AHORRO_DINAMICO`, `REPORTE_COMPLETO`, `ANALISIS_ESTILO_VIDA`. Cada uno necesita:
+- **Auditar todos los prompts** (`prompt_habitos_financieros.py`, `prompt_simular_meta.py`, `prompt_reto_ahorro.py`, `prompt_reporte_completo.py`, `prompt_estilo_vida.py`) para verificar que **solo inyectan KPIs resumidos** y no datos crudos ni instrucciones de formato redundantes.
+- **Migrar módulos a Structured Output** (los 4 que aún devuelven `String plano`): `HABITOS_FINANCIEROS`, `SIMULAR_META`, `RETO_AHORRO_DINAMICO`, `REPORTE_COMPLETO`, `ANALISIS_ESTILO_VIDA`. Cada uno necesita:
   1. Su propio `ConsejoEstructurado[NombreModulo]` en `esquemas.py`.
   2. Su propia clase que implemente `obtener_esquema_salida()`.
   3. Su propio `fallback_[modulo].py` que devuelva el mismo dict estructurado.

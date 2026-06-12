@@ -30,9 +30,7 @@ Hablas en tono {contexto.tono_ia.lower()}, directo y muy analítico pero empáti
 - Déficit proyectado: S/ {metricas['deficit_estimado']:,.2f}
 
 ## Tarea
-Genera una advertencia financiera para {contexto.nombres}:
-1. (Si hay riesgo) Explícale de forma cruda pero motivadora que si sigue este ritmo, su meta '{contexto.nombre_meta_principal}' peligra porque se quedará sin saldo antes de fin de mes.
-2. (Si no hay riesgo) Felicítalo por su estabilidad y dile cuánto margen extra tendrá para su meta.
-3. Da UNA recomendación matemática basada en la tendencia (ej: 'necesitas bajar un 10% tus gastos para no entrar en déficit').
-
-Máximo 150 palabras. Sin markdown pesado."""
+Genera una advertencia financiera o felicitación.
+Debes rellenar el esquema estructurado con la siguiente lógica:
+1. Explica de forma cruda pero motivadora cómo la tendencia de gastos afecta su meta principal (si tiene) o un objetivo financiero general.
+2. Da UNA recomendación matemática exacta basada en los números proporcionados."""

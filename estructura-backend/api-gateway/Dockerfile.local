@@ -12,10 +12,10 @@ COPY libreria-comun ./libreria-comun
 RUN cd libreria-comun && mvn install -DskipTests -B
 
 # 2. Compilar el api-gateway
-WORKDIR /build/infraestructura/api-gateway
-COPY infraestructura/api-gateway/pom.xml .
+WORKDIR /build/api-gateway
+COPY api-gateway/pom.xml .
 RUN mvn dependency:go-offline -B
-COPY infraestructura/api-gateway/src ./src
+COPY api-gateway/src ./src
 RUN mvn package -DskipTests -B
 RUN java -Djarmode=layertools -jar target/*.jar extract --destination /build/extracted
 

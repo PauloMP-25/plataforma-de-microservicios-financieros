@@ -97,6 +97,10 @@ class PrediccionGastosService(BaseAnalisisService):
             "tiene_tendencia_alcista": pendiente > 0
         }
 
+    def obtener_esquema_salida(self) -> Any:
+        from app.modelos.esquemas import ConsejoEstructuradoPredecir
+        return ConsejoEstructuradoPredecir
+
     def orquestar_prompt(
         self,
         metricas: Dict[str, Any],

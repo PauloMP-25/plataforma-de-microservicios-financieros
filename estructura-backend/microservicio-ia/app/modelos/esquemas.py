@@ -170,6 +170,15 @@ class ConsejoEstructuradoEspejo(BaseModel):
         ),
     )
 
+class ConsejoEstructuradoPredecir(BaseModel):
+    pensamiento_interno_ia: str = Field(..., description="Razonamiento lógico sobre el riesgo de insolvencia y la tendencia de gastos.")
+    introduccion: str = Field(..., description="Saludo personalizado indicando el estado de alerta o estabilidad.")
+    analisis_tendencia: str = Field(..., description="Análisis de la proyección para el próximo mes y la variación porcentual.")
+    impacto_meta: str = Field(..., description="Explicación de cómo esta tendencia afecta su meta de ahorro principal. Si no tiene metas, inventa un objetivo financiero.")
+    recomendacion_matematica: str = Field(..., description="Recomendación exacta basada en los números (ej. 'necesitas reducir tus gastos en un 10%').")
+    mensaje_motivacional: str = Field(..., description="Frase de cierre empática y motivacional.")
+
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # DTOs DE ENTRADA — Peticiones a los endpoints
@@ -457,7 +466,7 @@ class RespuestaModulo(BaseModel):
     fecha_generacion: datetime = Field(default_factory=datetime.now)
  
     # ── CAMBIO v5/v9: Union ampliado con ConsejoEstructuradoEspejo ──────────────
-    consejo: Optional[Union[str, ConsejoEstructurado, ConsejoEstructuradoEvolucion, ConsejoEstructuradoEntrenamiento, ConsejoEstructuradoEspejo, Any]] = Field(
+    consejo: Optional[Union[str, ConsejoEstructurado, ConsejoEstructuradoEvolucion, ConsejoEstructuradoEntrenamiento, ConsejoEstructuradoEspejo, ConsejoEstructuradoPredecir, Any]] = Field(
         default=None,
         description=(
             "Consejo financiero estructurado."

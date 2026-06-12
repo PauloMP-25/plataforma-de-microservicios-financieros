@@ -44,7 +44,7 @@ export class IngresosPage {
 
     return [
       { titulo: 'Ingresos registrados', valor: String(cantidad), subtitulo: 'Este mes', color: 'violet' },
-      { titulo: 'CategorÃ­a principal', valor: primaryCatName, subtitulo: primaryCatPorc, color: 'amber' },
+      { titulo: 'Categoria principal', valor: primaryCatName, subtitulo: primaryCatPorc, color: 'amber' },
     ];
   });
 

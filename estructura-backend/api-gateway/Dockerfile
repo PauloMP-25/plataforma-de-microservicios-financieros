@@ -14,14 +14,14 @@ COPY libreria-comun ./libreria-comun
 RUN cd libreria-comun && mvn install -DskipTests -B
 
 # 2. Ahora preparamos el api-gateway
-WORKDIR /build/infraestructura/api-gateway
-COPY infraestructura/api-gateway/pom.xml .
+WORKDIR /build/api-gateway
+COPY api-gateway/pom.xml .
 
 # Descargamos dependencias (esta capa se cachea)
 RUN mvn dependency:go-offline -B
 
 # Copiamos el código fuente y compilamos
-COPY infraestructura/api-gateway/src ./src
+COPY api-gateway/src ./src
 RUN mvn package -DskipTests -B
 
 # Extraemos las capas (esta parte sigue igual)
