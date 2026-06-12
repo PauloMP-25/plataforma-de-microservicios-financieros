@@ -1,18 +1,1 @@
-import { Routes } from "@angular/router";
-import { GastosPage } from "./pages/gastos-page/gastos-page";
-
-export const GASTOS_ROUTES:Routes = [
-{
-    path: '',
-    component: GastosPage,
-    data: {
-        title: 'Gastos',
-        breadcrumbs: [
-            {label: 'Gastos', routes:'/gastos'},
-            {label: 'Sección'}
-
-        ]
-    }
-}
-    
-]
+import { Routes } from "@angular/router";\nimport { GastosPage } from "./pages/gastos-page/gastos-page";\nimport { HistorialGastosPage } from "./pages/historial-gastos-page/historial-gastos-page";\n\nexport const GASTOS_ROUTES:Routes = [\n{\n    path: '',\n    component: GastosPage,\n    data: {\n        title: 'Gastos',\n        breadcrumbs: [\n            {label: 'Gastos', routes:'/gastos'},\n            {label: 'Sección'}\n\n        ]\n    }\n},\n{\n    path: 'historial',\n    component: HistorialGastosPage,\n    data: {\n        title: 'Historial de gastos',\n        breadcrumbs: [\n            {label: 'Gastos', routes:'/gastos'},\n            {label: 'Historial'}\n\n        ]\n    }\n}\n\n]\n
