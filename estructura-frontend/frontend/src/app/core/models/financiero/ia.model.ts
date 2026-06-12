@@ -131,6 +131,26 @@ export interface ConsejoEntrenamientoDTO {
   rutina: EjercicioEntrenamientoDTO[];
 }
 
+// ── Modelos Específicos para Módulo: Predicción de Gastos ──
+export interface ConsejoPredecirGastosDTO {
+  pensamiento_interno_ia: string;
+  introduccion: string;
+  analisis_tendencia: string;
+  impacto_meta: string;
+  recomendacion_matematica: string;
+  mensaje_motivacional: string;
+}
+
+// ── Modelos Específicos para Módulo: Simular Meta ──
+export interface ConsejoSimularMetaDTO {
+  pensamiento_interno_ia: string;
+  introduccion: string;
+  diagnostico_viabilidad: string;
+  plan_accion: string;
+  tecnica_sugerida?: string;
+  mensaje_motivacional: string;
+}
+
 // ── Modelos Específicos para Módulo 5: Espejo Temporal ──
 
 export interface DatosPresenteDTO {

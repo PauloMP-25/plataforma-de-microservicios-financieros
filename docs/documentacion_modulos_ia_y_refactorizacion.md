@@ -111,7 +111,54 @@ La interfaz en Angular adopta una temática de **"Sala de Espejos Temporales"**:
 
 ---
 
-## 4. Reorganización Arquitectónica del Microservicio IA
+## 4. Predicción de Gastos (El Oráculo Financiero)
+
+### Concepto y Visión General
+**"El Oráculo Financiero"** es la herramienta de prevención de crisis de LUKA. Calcula matemáticamente el requerimiento de gasto para el próximo mes basado en el historial transaccional y el patrón de consumo, detectando posibles déficits antes de que ocurran. En lugar de decir "gasta menos", LUKA proyecta el impacto exacto si se mantiene la tendencia.
+
+### Beneficios para el Usuario
+1. **Alerta Temprana de Insolvencia**: Previene llegar a fin de mes en cero o con deuda.
+2. **Recomendaciones Matemáticas**: Da cifras exactas (ej. "reduce tus pedidos en S/ 200") en lugar de consejos vagos.
+3. **Claridad sobre el Impacto en Metas**: Relaciona directamente cómo un déficit proyectado aleja al usuario de sus metas activas.
+
+### Arquitectura y KPIs Principales
+Utiliza Pandas para calcular a partir de los datos históricos:
+- `promedio_historico`: Promedio de gastos por categoría.
+- `proyeccion_proximo_mes`: Gasto estimado usando modelos simples de tendencia.
+- `porcentaje_variacion_mensual`: Nivel de aumento o disminución del gasto.
+- `deficit_estimado`: Diferencia negativa si el ingreso esperado no cubre la proyección.
+
+### Cambios y Refactorización Realizada
+- **Migración a FASE 3**: Se utiliza `ConsejoEstructuradoPredecir` para segmentar el análisis en `analisis_tendencia`, `impacto_meta` y `recomendacion_matematica`.
+- **Fallback Determinista**: `fallback_predecir_gastos.py` responde en formato JSON sin depender de Gemini si hay fallos.
+- **Frontend**: El componente `IaPrediccionConsejoComponent` ahora consume JSON, manteniendo el efecto visual de "Máquina de escribir" dinámicamente.
+
+---
+
+## 5. Simular Meta (El Navegador Financiero)
+
+### Concepto y Visión General
+**"El Navegador Financiero"** aterriza las expectativas de los usuarios universitarios. Muchos usuarios establecen metas ambiciosas (como comprar una Laptop Gamer) sin comprender la matemática que hay detrás. Este módulo evalúa si una meta es viable en el tiempo deseado basándose en la capacidad real de ahorro del usuario.
+
+### Beneficios para el Usuario
+1. **Choque de Realidad Positivo**: Desmitifica el ahorro y previene la frustración al dar plazos reales.
+2. **Planes de Acción Claros**: Si no es viable, le dice exactamente cuánto debe aumentar sus ingresos o reducir gastos fijos.
+3. **Validación de Esfuerzo**: Celebra matemáticamente si el usuario va por un buen camino.
+
+### Arquitectura y KPIs Principales
+La lógica está condicionada a tener un mínimo de 30 transacciones de historial para evitar falsas esperanzas. Calcula usando Pandas:
+- `meses_para_lograrlo`: Basado en `(monto_objetivo - ahorro_previo) / capacidad_ahorro`.
+- `capacidad_ahorro_mensual`: `promedio_ingresos - promedio_gastos`.
+- `viabilidad_fecha_objetivo`: Booleano calculado contra la fecha límite deseada.
+
+### Cambios y Refactorización Realizada
+- **Migración a FASE 3**: Adopta el esquema `ConsejoEstructuradoSimularMeta` con campos clave como `diagnostico_viabilidad`, `plan_accion` y `tecnica_sugerida`.
+- **Fallback Determinista**: Se reescribió el texto plano por un retorno estricto de JSON.
+- **Frontend**: `MetaRespuestaCoachComponent` renderiza dinámicamente el JSON conservando el diseño premium.
+
+---
+
+## 6. Reorganización Arquitectónica del Microservicio IA
 
 Complementando la filosofía "Divide y Vencerás", se realizó una reorganización profunda de la estructura de carpetas:
 
@@ -133,7 +180,7 @@ Todos los imports del sistema fueron actualizados automáticamente.
 
 ---
 
-## 5. Refactorización General del Microservicio IA: Filosofía "Divide y Vencerás"
+## 7. Refactorización General del Microservicio IA: Filosofía "Divide y Vencerás"
 
 Se ha llevado a cabo una reestructuración masiva del motor central `microservicio-ia` para garantizar su escalabilidad y limpieza:
 
