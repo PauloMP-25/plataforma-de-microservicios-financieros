@@ -36,10 +36,10 @@ class GestorFallbacks:
             return generar_fallback_espejo_tiempo(datos, nombres, contexto)
         elif modulo == NombreModulo.PREDECIR_GASTOS:
             return generar_fallback_predecir_gastos(datos, nombres, contexto)
+        elif modulo == NombreModulo.SIMULAR_META:
+            return generar_fallback_simular_meta(datos, nombres, contexto)
             
         # Módulos Texto Plano (Devuelven String)
-        elif modulo == NombreModulo.SIMULAR_META:
-            return generar_fallback_simular_meta(modulo, datos, nombres, contexto)
         elif modulo == NombreModulo.HABITOS_FINANCIEROS:
             return generar_fallback_habitos_financieros(modulo, datos, nombres, contexto)
         

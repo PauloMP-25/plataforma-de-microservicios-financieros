@@ -23,9 +23,9 @@ def generar_prompt_simular_meta(
     - Tiempo estimado: {metricas['meses_para_lograrlo']} meses.
     - ¿Viable en fecha deseada?: {metricas['viabilidad_fecha_objetivo']}.
     
-    INSTRUCCIONES:
-    1. Responde si es viable o no basándote en los números.
-    2. Si es viable, enseña una técnica de ahorro (ej: 50/30/20) para acelerar.
-    3. Si NO es viable, explica que necesita aumentar ingresos o reducir gastos fijos, y propón un plan de ajuste.
+    INSTRUCCIONES PARA EL ESQUEMA ESTRUCTURADO:
+    1. Diagnóstico: Responde si es viable o no basándote en los números.
+    2. Técnica: Si es viable, sugiere una técnica de ahorro.
+    3. Plan: Si NO es viable, explica que necesita aumentar ingresos o reducir gastos fijos, y propón un plan de ajuste.
     """
     return prompt.strip()

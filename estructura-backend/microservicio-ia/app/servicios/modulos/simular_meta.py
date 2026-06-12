@@ -60,5 +60,9 @@ class SimularMetaService(BaseAnalisisService):
             "ahorro_faltante": round(faltante, 2)
         }
 
+    def obtener_esquema_salida(self) -> Any:
+        from app.modelos.esquemas import ConsejoEstructuradoSimularMeta
+        return ConsejoEstructuradoSimularMeta
+
     def orquestar_prompt(self, metricas: Dict[str, Any], contexto: ContextoEstrategicoIADTO) -> str:
         return generar_prompt_simular_meta(metricas, contexto)
