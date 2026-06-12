@@ -62,10 +62,11 @@ public class ServicioLimiteGastoImpl implements ServicioLimiteGasto {
 
         LimiteGasto nuevo = LimiteGasto.builder()
                 .usuarioId(usuarioIdToken)
+                .nombre(solicitud.nombre() != null ? solicitud.nombre() : "Presupuesto Mensual")
                 .montoLimite(solicitud.montoLimite())
                 .porcentajeAlerta(solicitud.porcentajeAlerta() != null ? solicitud.porcentajeAlerta() : 80)
-                .fechaInicio(LocalDate.now())
-                .fechaFin(LocalDate.now().plusMonths(1))
+                .fechaInicio(solicitud.fechaInicio() != null ? solicitud.fechaInicio() : LocalDate.now())
+                .fechaFin(solicitud.fechaFin() != null ? solicitud.fechaFin() : LocalDate.now().plusMonths(1))
                 .activo(true)
                 .build();
 
@@ -97,6 +98,17 @@ public class ServicioLimiteGastoImpl implements ServicioLimiteGasto {
         }
         if (solicitud.porcentajeAlerta() != null) {
             limite.setPorcentajeAlerta(solicitud.porcentajeAlerta());
+        }
+        if (solicitud.fechaInicio() != null) {
+            limite.setFechaInicio(solicitud.fechaInicio());
+        }
+        if (solicitud.fechaFin() != null) {
+            limite.setFechaFin(solicitud.fechaFin());
+        }
+
+        // Validar rango de fechas si ambas están definidas
+        if (limite.getFechaInicio() != null && limite.getFechaFin() != null && limite.getFechaInicio().isAfter(limite.getFechaFin())) {
+            throw new LimiteGastoException("La fecha de inicio debe ser anterior o igual a la fecha de fin.");
         }
 
         LimiteGasto actualizado = repositorio.save(limite);
@@ -185,6 +197,7 @@ public class ServicioLimiteGastoImpl implements ServicioLimiteGasto {
         return new RespuestaLimiteGasto(
                 limite.getId(),
                 limite.getUsuarioId(),
+                limite.getNombre(),
                 limite.getMontoLimite(),
                 limite.getPorcentajeAlerta(),
                 limite.getFechaInicio(),

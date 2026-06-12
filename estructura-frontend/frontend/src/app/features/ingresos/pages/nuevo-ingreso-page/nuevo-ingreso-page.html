@@ -20,6 +20,8 @@
           [model]="form"
           [sugerencias]="sugerencias"
           [clasificandoIa]="clasificandoIa()"
+          [intentosIaRestantes]="intentosIaRestantes"
+          [intentosIaMaximos]="intentosIaMaximos"
           (modelChange)="form = $event"
           (clasificarIa)="clasificarConIa()"
           (seleccionarSugerencia)="seleccionarSugerencia($event)"

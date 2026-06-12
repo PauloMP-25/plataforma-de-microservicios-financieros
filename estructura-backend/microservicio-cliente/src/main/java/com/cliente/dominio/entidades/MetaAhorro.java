@@ -40,6 +40,12 @@ public class MetaAhorro {
     private String nombre;
 
     /**
+     * Propósito / Categoría de la meta de ahorro (ej. Viaje, Auto, etc.)
+     */
+    @Column(name = "proposito", length = 100)
+    private String proposito;
+
+    /**
      * Monto total a alcanzar (en soles PEN).
      */
     @Column(name = "monto_objetivo", nullable = false, precision = 12, scale = 2)
