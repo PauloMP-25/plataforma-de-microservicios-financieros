@@ -17,14 +17,27 @@ export const SUSCRIPCION_ROUTES: Routes = [
   {
     path: 'luka',
     data: {
-      title: 'Mi Suscripción',
+      title: 'Membresía',
+      breadcrumbs: [
+        { label: 'Inicio', route: '/dashboard' },
+        { label: 'Membresía' }
+      ]
+    },
+    loadComponent: () =>
+      import('./pages/suscripcion-luka/suscripcion-luka')
+        .then(m => m.SuscripcionLuka)
+  },
+  {
+    path: 'pagos',
+    data: {
+      title: 'Suscripciones',
       breadcrumbs: [
         { label: 'Inicio', route: '/dashboard' },
         { label: 'Suscripciones' }
       ]
     },
     loadComponent: () =>
-      import('./pages/suscripcion-luka/suscripcion-luka')
-        .then(m => m.SuscripcionLuka)
+      import('./pages/suscripciones-pagos/suscripciones-pagos')
+        .then(m => m.SuscripcionesPagos)
   }
 ];

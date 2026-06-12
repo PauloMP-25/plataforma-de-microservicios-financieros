@@ -42,12 +42,12 @@ Este documento centraliza todos los bugs detectados y mejoras de UX pendientes e
 
 | # | Descripción | Estado | Asignado |
 |---|-------------|--------|----------|
-| F-01 | **Eliminar la columna de "Etiquetado" de la tabla de listado de ingresos.** Actualmente se muestra una columna que no aporta valor al usuario en esa vista. | Pendiente | — |
-| F-02 | **Simplificar el filtro de ingresos.** Quitar el selector de rango de fechas y el botón "Filtrar". El filtrado debe ejecutarse de forma **automática** al seleccionar un mes o un tipo de ingreso (sin necesidad de confirmar). | Pendiente | — |
-| F-03 | **Quitar la opción "Diario / Recurrente" del formulario de gastos.** Esta distinción no se utiliza actualmente y genera confusión. | Pendiente | — |
-| F-04 | **La tarjeta de vista previa de un ingreso muestra el UID de la categoría en lugar de su nombre.** Debe resolverse el nombre legible a partir del UID antes de renderizarlo. | Pendiente | — |
-| F-05 | **Mejorar UX del botón "Sugerir Categoría" en el formulario de gastos.** Actualmente queda aislado sin contexto. Debe informar al usuario que dispone de **2 intentos** de sugerencia por IA, que el contador es visible en el header, y que al agotarse quedará deshabilitado. | Pendiente | — |
-| F-06 | **Eliminar el card de "Racha" e "Ingresos Totales" de la sección de ingresos.** Estos indicadores no corresponden a esa vista. | Pendiente | — |
+| F-01 | ✅ **Eliminar la columna de "Etiquetado" de la tabla de listado de ingresos.** Actualmente se muestra una columna que no aporta valor al usuario en esa vista. | **RESUELTO** | Cristina |
+| F-02 | ✅ **Simplificar el filtro de ingresos.** Quitar el selector de rango de fechas y el botón "Filtrar". El filtrado debe ejecutarse de forma **automática** al seleccionar un mes o un tipo de ingreso (sin necesidad de confirmar). | **RESUELTO** | Cristina |
+| F-03 | ✅ **Quitar la opción "Diario / Recurrente" del formulario de gastos.** Esta distinción no se utiliza actualmente y genera confusión. | **RESUELTO** | Cristina |
+| F-04 | ✅ **La tarjeta de vista previa de un ingreso muestra el UID de la categoría en lugar de su nombre.** Debe resolverse el nombre legible a partir del UID antes de renderizarlo. | **RESUELTO** | Cristina |
+| F-05 | ✅ **Mejorar UX del botón "Sugerir Categoría" en el formulario de gastos.** Actualmente queda aislado sin contexto. Debe informar al usuario que dispone de **2 intentos** de sugerencia por IA, que el contador es visible en el header, y que al agotarse quedará deshabilitado. | **RESUELTO** | Cristina |
+| F-06 | ✅ **Eliminar el card de "Racha" e "Ingresos Totales" de la sección de ingresos.** Estos indicadores no corresponden a esa vista. | **RESUELTO** | Cristina |
 
 ### Sidebar / Navegación
 
@@ -72,25 +72,31 @@ Este documento centraliza todos los bugs detectados y mejoras de UX pendientes e
 
 | # | Descripción | Estado | Asignado |
 |---|-------------|--------|----------|
-| F-11 | **El selector de fecha del perfil no ajusta los días según el mes.** Al seleccionar febrero, el selector sigue mostrando 31 días en lugar de 28/29. Debe validarse dinámicamente según el mes y año seleccionado. | Pendiente | — |
+| F-11 | ✅ **El selector de fecha del perfil no ajusta los días según el mes.** Al seleccionar febrero, el selector sigue mostrando 31 días en lugar de 28/29. Debe validarse dinámicamente según el mes y año seleccionado. | **RESUELTO** | Cristina |
 
 ### Login / Registro
 
 | # | Descripción | Estado | Asignado |
 |---|-------------|--------|----------|
-| F-12 | **Simplificar el flujo de registro.** Eliminar la opción de "Registrarse con celular" del formulario inicial. El número de teléfono (WhatsApp o SMS) debe solicitarse **únicamente en el paso de verificación de identidad**, donde se envía el código OTP. | Pendiente | — |
+| F-12 | ✅ **Simplificar el flujo de registro.** Se eliminó la opción de "Registrarse con celular" del formulario inicial. El número de teléfono (WhatsApp o SMS) ahora se solicita **únicamente en el paso de verificación de identidad**, donde se envía el código OTP. | **RESUELTO** | Cristina |
 
 ### Perfil Financiero
 
 | # | Descripción | Estado | Asignado |
 |---|-------------|--------|----------|
-| F-13 | **Eliminar la sección de "Patrimonio".** La información mostrada no es clara para el usuario y genera confusión. Retirarla de la vista de Perfil Financiero. | Pendiente | — |
+| F-13 | ✅ **Eliminar la sección de "Patrimonio".** La información mostrada no era clara para el usuario y generaba confusión. Se retiró de la vista de Perfil Financiero. | **RESUELTO** | Cristina |
 
 ### Dashboard / Secciones Principales
 
 | # | Descripción | Estado | Asignado |
 |---|-------------|--------|----------|
-| F-14 | **Reubicar las tablas de ingresos y gastos fuera de la sección principal del dashboard.** Generan sobrecarga visual y no son suficientemente visibles. Deben moverse a subsecciones dedicadas dentro de Ingresos y Gastos respectivamente, donde dispongan de más espacio para una mejor visualización. | Pendiente | — |
+| F-14 | ✅ **Reubicar las tablas de ingresos y gastos fuera de la sección principal del dashboard.** Se movieron a subsecciones dedicadas dentro de Ingresos y Gastos respectivamente, con más espacio para una mejor visualización. | **RESUELTO** | Cristina |
+| F-15 | ✅ **Separar Membresía Luka de Suscripciones de pagos mensuales.** Se añadió la sección principal Suscripciones con icono de recibo para pagos recurrentes de plataformas, y se mantuvo Membresía en el sidebar del usuario con icono de corona y mensaje propio. | **RESUELTO** | Cristina |
+| F-16 | ✅ **Evitar que Soporte abra el modal de planes.** El botón de soporte del sidebar premium ahora solo navega a Ayuda; el modal de planes queda limitado al botón Ver planes. | **RESUELTO** | Cristina |
+| F-17 | ✅ **Agregar confirmación segura para eliminar cuenta.** El botón Eliminar cuenta abre un modal de advertencia y exige escribir la frase de confirmación antes de procesar la solicitud. | **RESUELTO** | Cristina |
+| F-18 | ✅ **Crear páginas legales de Política de Privacidad y Términos y Condiciones.** Se añadieron páginas standalone enlazadas desde Configuración, con contenido legal y estilos SCSS coherentes con Luka App. | **RESUELTO** | Cristina |
+| F-19 | ✅ **Mejorar tarjetas KPI de Gastos.** Se retiraron emojis, se reemplazaron por iconos FontAwesome y se agregaron fondos coloridos para hacer los indicadores más llamativos. | **RESUELTO** | Cristina |
+| F-20 | ✅ **Corregir formato de templates y estilos con saltos de línea literales.** Se limpiaron caracteres `\n` en HTML/SCSS/TS afectados para evitar errores NG5002 y fallos de compilación. | **RESUELTO** | Cristina |
 
 ---
 
@@ -99,8 +105,8 @@ Este documento centraliza todos los bugs detectados y mejoras de UX pendientes e
 | Capa | Total | Resueltos | Pendientes |
 |------|-------|-----------|------------|
 | Backend | 4 | 4 | 0 |
-| Frontend | 14 | 4 | 10 |
-| **Total** | **18** | **8** | **10** |
+| Frontend | 20 | 20 | 0 |
+| **Total** | **24** | **24** | **0** |
 
 ---
 

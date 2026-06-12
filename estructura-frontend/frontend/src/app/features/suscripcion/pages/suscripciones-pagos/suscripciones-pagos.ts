@@ -2,18 +2,19 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-suscripcion-luka',
+  selector: 'app-suscripciones-pagos',
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="suscripcion-luka-placeholder">
-      <i class="fa-solid fa-crown icon-placeholder"></i>
-      <h2>Membresía Luka</h2>
-      <p>Esta sección aún está en proceso. Pronto podrás gestionar tus planes, revisar tu membresía activa y administrar los beneficios de tu cuenta Luka desde aquí.</p>
+    <div class="suscripciones-pagos-placeholder">
+      <i class="fa-solid fa-receipt icon-placeholder"></i>
+      <h2>Suscripciones y pagos mensuales</h2>
+      <p>Esta sección aún está en proceso. Aquí podrás organizar los pagos recurrentes de servicios y plataformas como streaming, internet, gimnasio u otros cobros mensuales.</p>
+      <small>Muy pronto podrás registrar vencimientos, montos y recordatorios para mantener tus suscripciones al día.</small>
     </div>
   `,
   styles: [`
-    .suscripcion-luka-placeholder {
+    .suscripciones-pagos-placeholder {
       padding: 4rem 2rem;
       text-align: center;
       border: 2px dashed color-mix(in srgb, var(--border-color) 60%, transparent);
@@ -32,7 +33,7 @@ import { CommonModule } from '@angular/common';
     .icon-placeholder {
       font-size: 3rem;
       color: var(--color-primary);
-      opacity: 0.6;
+      opacity: 0.7;
       margin-bottom: 0.5rem;
     }
     h2 {
@@ -46,6 +47,11 @@ import { CommonModule } from '@angular/common';
       margin: 0;
       font-size: 0.95rem;
     }
+    small {
+      color: var(--text-muted);
+      line-height: 1.5;
+      font-size: 0.85rem;
+    }
   `]
 })
-export class SuscripcionLuka {}
+export class SuscripcionesPagos {}

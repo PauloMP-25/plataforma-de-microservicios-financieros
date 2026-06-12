@@ -49,6 +49,8 @@ export class NuevoIngresoPage {
   readonly guardando = signal<boolean>(false);
   readonly clasificandoIa = signal<boolean>(false);
   get sugerencias(): string[] { return this.sugerenciasSignal(); }
+  get intentosIaRestantes(): number { return this.iaService.clasificacionesRestantes(); }
+  get intentosIaMaximos(): number { return this.iaService.clasificacionesMaximas(); }
 
   // ── Signals computados para enlazar al estado real ──
   readonly categoriasSignal = computed<OptionItem[]>(() => {
@@ -120,7 +122,7 @@ export class NuevoIngresoPage {
       this.sugerenciasSignal.set([]);
       return;
     }
-    if (this.clasificandoIa()) return;
+    if (this.clasificandoIa() || this.intentosIaRestantes <= 0) return;
     this.clasificandoIa.set(true);
 
     this.iaService.getClasificarTransaccion({
@@ -138,7 +140,7 @@ export class NuevoIngresoPage {
       error: () => {
         this.clasificandoIa.set(false);
         // Fallback local
-        const matched = ['Salario', 'Freelance', 'Inversiones', 'Ventas', 'Otros Ingresos'].filter(c => 
+        const matched = ['Salario', 'Freelance', 'Inversiones', 'Ventas', 'Otros Ingresos'].filter(c =>
           c.toLowerCase().includes(desc.toLowerCase())
         );
         this.sugerenciasSignal.set(matched.length > 0 ? matched : ['Salario', 'Otros Ingresos']);

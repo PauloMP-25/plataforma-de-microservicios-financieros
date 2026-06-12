@@ -187,6 +187,14 @@ export class PerfilCliente {
     return Array.from({ length: 100 }, (_, i) => String(current - i));
   });
 
+  readonly diasNacimiento = computed(() => {
+    const mes = Number(this.fechaMes());
+    const anio = Number(this.fechaAnio()) || new Date().getFullYear();
+    const mesValido = Number.isInteger(mes) && mes >= 0 && mes <= 11;
+    const diasDelMes = mesValido ? new Date(anio, mes + 1, 0).getDate() : 31;
+    return Array.from({ length: diasDelMes }, (_, i) => i + 1);
+  });
+
   constructor() {
     this.cargarDatosPerfil();
   }
@@ -280,6 +288,8 @@ export class PerfilCliente {
     if (parte === 'mes') this.fechaMes.set(valor);
     if (parte === 'anio') this.fechaAnio.set(valor);
 
+    this.ajustarDiaNacimientoAlMes();
+
     const dia = this.fechaDia();
     const mes = this.fechaMes();
     const anio = this.fechaAnio();
@@ -290,7 +300,12 @@ export class PerfilCliente {
     const m = Number(mes);
     const y = Number(anio);
     const fecha = new Date(y, m, d);
-    if (Number.isNaN(fecha.getTime())) return;
+    if (
+      Number.isNaN(fecha.getTime()) ||
+      fecha.getFullYear() !== y ||
+      fecha.getMonth() !== m ||
+      fecha.getDate() !== d
+    ) return;
 
     const edad = this.calcularEdadDesdeFecha(fecha);
     const iso = `${String(y).padStart(4, '0')}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
@@ -306,11 +321,11 @@ export class PerfilCliente {
     this.mensajeError.set('');
 
     if (original.fechaNacimiento) {
-      const parsed = new Date(original.fechaNacimiento);
-      if (!Number.isNaN(parsed.getTime())) {
-        this.fechaDia.set(String(parsed.getDate()));
-        this.fechaMes.set(String(parsed.getMonth()));
-        this.fechaAnio.set(String(parsed.getFullYear()));
+      const parsed = this.parseFechaNacimiento(original.fechaNacimiento);
+      if (parsed) {
+        this.fechaDia.set(String(parsed.dia));
+        this.fechaMes.set(String(parsed.mes));
+        this.fechaAnio.set(String(parsed.anio));
         return;
       }
     }
@@ -503,6 +518,37 @@ export class PerfilCliente {
   private numeroSinPrefijo(telefono: string | undefined, prefijo: string): string {
     if (!telefono) return '';
     return telefono.startsWith(prefijo) ? telefono.slice(prefijo.length).trim() : telefono;
+  }
+
+  private ajustarDiaNacimientoAlMes(): void {
+    const dia = Number(this.fechaDia());
+    if (!dia) return;
+
+    const maxDia = this.diasNacimiento().length;
+    if (dia > maxDia) {
+      this.fechaDia.set(String(maxDia));
+    }
+  }
+
+  private parseFechaNacimiento(fecha: string): { dia: number; mes: number; anio: number } | null {
+    const matchIso = fecha.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (matchIso) {
+      const anio = Number(matchIso[1]);
+      const mes = Number(matchIso[2]) - 1;
+      const dia = Number(matchIso[3]);
+      const parsed = new Date(anio, mes, dia);
+      if (parsed.getFullYear() === anio && parsed.getMonth() === mes && parsed.getDate() === dia) {
+        return { dia, mes, anio };
+      }
+    }
+
+    const parsed = new Date(fecha);
+    if (Number.isNaN(parsed.getTime())) return null;
+    return {
+      dia: parsed.getDate(),
+      mes: parsed.getMonth(),
+      anio: parsed.getFullYear()
+    };
   }
 
   private calcularEdadDesdeFecha(fecha: Date): number {
