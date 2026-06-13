@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ConsejoEstructuradoPredecir } from '../../../../../../../core/models/ia_coach/ia-base.model';
 
 @Component({
   selector: 'app-ia-prediccion-consejo',
@@ -9,10 +10,11 @@ import { CommonModule } from '@angular/common';
   styleUrl: './ia-prediccion-consejo.scss'
 })
 export class IaPrediccionConsejoComponent implements OnChanges, OnDestroy {
-  @Input() textoCompleto: any = null;
+  @Input() textoCompleto: ConsejoEstructuradoPredecir | string | null = null;
   @Output() hablandoCambio = new EventEmitter<boolean>();
 
-  consejoTexto = signal<string>('');
+  consejoObj = signal<ConsejoEstructuradoPredecir | null>(null);
+  consejoTextoFallback = signal<string>('');
   consejoVisible = signal<boolean>(false);
   estaHablando = signal<boolean>(false);
 
@@ -20,19 +22,23 @@ export class IaPrediccionConsejoComponent implements OnChanges, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['textoCompleto'] && this.textoCompleto) {
-      let textoConstruido = '';
       if (typeof this.textoCompleto === 'object') {
-        textoConstruido = `
-          <p>${this.textoCompleto.introduccion}</p>
-          <p>${this.textoCompleto.analisis_tendencia}</p>
-          <p><strong>Impacto:</strong> ${this.textoCompleto.impacto_meta}</p>
-          <p class="highlight-math"><strong>Matemática:</strong> ${this.textoCompleto.recomendacion_matematica}</p>
-          <p><em>${this.textoCompleto.mensaje_motivacional}</em></p>
-        `;
+        this.consejoObj.set(this.textoCompleto as ConsejoEstructuradoPredecir);
+        this.consejoTextoFallback.set('');
+        
+        // Simular que habla para la animación visual
+        this.estaHablando.set(true);
+        this.hablandoCambio.emit(true);
+        this.consejoVisible.set(true);
+        
+        this.typewriterTimeout = setTimeout(() => {
+          this.estaHablando.set(false);
+          this.hablandoCambio.emit(false);
+        }, 2000);
       } else {
-        textoConstruido = this.textoCompleto;
+        this.consejoObj.set(null);
+        this.iniciarTypewriter(this.textoCompleto);
       }
-      this.iniciarTypewriter(textoConstruido);
     }
   }
 
@@ -41,10 +47,9 @@ export class IaPrediccionConsejoComponent implements OnChanges, OnDestroy {
   }
 
   private iniciarTypewriter(textoBruto: string): void {
-    // Parse markdown bold (**text**) to <strong>text</strong>
     const texto = textoBruto.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
-    this.consejoTexto.set('');
+    this.consejoTextoFallback.set('');
     this.consejoVisible.set(true);
     this.estaHablando.set(true);
     this.hablandoCambio.emit(true);
@@ -61,13 +66,13 @@ export class IaPrediccionConsejoComponent implements OnChanges, OnDestroy {
           }
           tag += '>';
           currentHTML += tag;
-          i++; // Skip the '>'
+          i++; 
         } else {
           currentHTML += texto[i];
           i++;
         }
         
-        this.consejoTexto.set(currentHTML);
+        this.consejoTextoFallback.set(currentHTML);
         this.typewriterTimeout = setTimeout(escribir, 15);
       } else {
         this.estaHablando.set(false);

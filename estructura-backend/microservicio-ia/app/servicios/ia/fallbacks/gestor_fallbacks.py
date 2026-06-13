@@ -44,6 +44,9 @@ class GestorFallbacks:
         elif modulo == NombreModulo.RETO_AHORRO_DINAMICO:
             from app.servicios.ia.fallbacks.fallback_reto_ahorro import generar_fallback_reto_ahorro
             return generar_fallback_reto_ahorro(datos, nombres, contexto)
+        elif modulo == NombreModulo.REPORTE_COMPLETO:
+            from app.servicios.ia.fallbacks.fallback_reporte import generar_fallback_reporte
+            return generar_fallback_reporte(datos, nombres, contexto)
             
         # Módulos Texto Plano (Devuelven String)
         

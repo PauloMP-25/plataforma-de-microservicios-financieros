@@ -71,7 +71,7 @@ Esto garantiza:
 | `HABITOS_FINANCIEROS` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoHabitos` | ✅ | ✅ | ✅ | Paulo |
 | `SIMULAR_META` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoSimularMeta` | ✅ | ✅ | ✅ | Paulo |
 | `RETO_AHORRO_DINAMICO` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoReto` | ✅ | ✅ | ✅ | Paulo |
-| `REPORTE_COMPLETO` | ✅ | ✅ | ⚠️ Pendiente revisar | ❌ String plano | ⚠️ Genérico | ✅ | ❌ | — |
+| `REPORTE_COMPLETO` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoReporte` | ✅ Fallback Propio | ✅ Tabla propia | ✅ Aplicadas | Paulo |
 | `ANALISIS_ESTILO_VIDA` | ✅ | ✅ | ⚠️ Pendiente revisar | ❌ String plano | ⚠️ Genérico | ✅ | ❌ | — |
 | `AUTO_CLASIFICACION` | ✅ | N/A | ⚠️ Pendiente revisar | N/A | ❌ | ✅ | ❌ | — |
 | `COMPROBADOR_EVOLUCION` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEvolucion` | ✅ | ✅ | ❌ | — |

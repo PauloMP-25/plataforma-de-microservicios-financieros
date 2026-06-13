@@ -1336,3 +1336,102 @@ $pin-color: #dc2626;
     }
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   NUEVO ESTILO ESTRUCTURADO (FASE 3)
+   ══════════════════════════════════════════════════════════════════════════════ */
+.consejo-estructurado {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 12px;
+  animation: fadeIn 0.8s ease-out;
+
+  .consejo-intro {
+    font-size: 1.1rem;
+    color: var(--text-color, #e2e8f0);
+    font-weight: 500;
+  }
+
+  .consejo-analisis, .consejo-conexion {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 12px;
+    border-radius: 8px;
+    border-left: 3px solid var(--primary-color, #3b82f6);
+    
+    i {
+      color: var(--primary-color, #3b82f6);
+      font-size: 1.2rem;
+      margin-top: 2px;
+    }
+    
+    p {
+      margin: 0;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      color: var(--text-muted, #94a3b8);
+    }
+  }
+
+  .consejo-conexion {
+    border-left-color: #ec4899;
+    i { color: #ec4899; }
+  }
+
+  .consejo-plan {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 8px;
+
+    h4 {
+      color: #10b981;
+      margin: 0 0 12px 0;
+      font-size: 1.05rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+
+      li {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        font-size: 0.9rem;
+        color: var(--text-color, #e2e8f0);
+
+        i {
+          color: #10b981;
+          margin-top: 3px;
+        }
+      }
+    }
+  }
+
+  .consejo-cierre {
+    text-align: center;
+    margin-top: 8px;
+    padding: 12px;
+    background: linear-gradient(90deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
+    border-radius: 8px;
+    color: #f59e0b;
+    font-size: 1.05rem;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

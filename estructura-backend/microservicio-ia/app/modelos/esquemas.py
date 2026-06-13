@@ -468,6 +468,16 @@ class KpiWidget(BaseModel):
     tendencia: Optional[str] = Field(default=None)
  
  
+class ConsejoEstructuradoReporte(BaseModel):
+    """
+    Esquema de salida estructurada para el módulo REPORTE_COMPLETO.
+    """
+    pensamiento_interno_ia: str = Field(description="Análisis paso a paso del reporte.")
+    analisis_score: str = Field(description="Explicación del Score de Salud (Riesgo, Estable, Excelente).")
+    impacto_meta: str = Field(description="Análisis del balance y su efecto en la meta actual.")
+    veredicto_final: str = Field(description="Cierre ejecutivo de lo que va del año.")
+    mensaje_motivacional: str = Field(description="Frase motivadora respecto a lo que va del año.")
+
 class EstadoCoach(str, Enum):
     EXITOSO = "EXITOSO"
     CUOTA_AGOTADA = "CUOTA_AGOTADA"
@@ -490,7 +500,7 @@ class RespuestaModulo(BaseModel):
     modulo: NombreModulo
     fecha_generacion: datetime = Field(default_factory=datetime.now)
  
-    consejo: Optional[Union[str, ConsejoEstructuradoHormiga, ConsejoEstructuradoEvolucion, ConsejoEstructuradoEntrenamiento, ConsejoEstructuradoEspejo, ConsejoEstructuradoPredecir, ConsejoEstructuradoSimularMeta, ConsejoEstructuradoHabitos, ConsejoEstructuradoReto, Any]] = Field(
+    consejo: Optional[Union[str, ConsejoEstructuradoHormiga, ConsejoEstructuradoEvolucion, ConsejoEstructuradoEntrenamiento, ConsejoEstructuradoEspejo, ConsejoEstructuradoPredecir, ConsejoEstructuradoSimularMeta, ConsejoEstructuradoHabitos, ConsejoEstructuradoReto, ConsejoEstructuradoReporte, Any]] = Field(
         default=None,
         description=(
             "Consejo financiero estructurado."

@@ -6,33 +6,34 @@
     </div>
     <div class="coach-title-info">
       <h4 class="coach-name">Nutricionista LUKA</h4>
-      <span class="coach-specialty">Salud Financiera</span>
+      <span class="coach-specialty">Evaluación de Salud Financiera</span>
     </div>
   </div>
   
   <div class="coach-message-box">
-    <div class="coach-message">
-      <div *ngIf="consejo.pensamiento_interno_ia" style="display: none;">
-        <!-- El pensamiento interno se usa en logs o debug, opcionalmente mostrarlo -->
-        <small class="text-slate-400">[{{ consejo.pensamiento_interno_ia }}]</small>
+    <div class="structured-advice">
+      <div class="advice-intro">
+        <i class="fa-solid fa-stethoscope text-emerald-400"></i>
+        <p>{{ consejo.introduccion }}</p>
       </div>
 
-      <div class="analysis-text">
-        <p><strong>{{ consejo.introduccion }}</strong></p>
+      <div class="advice-analysis">
+        <h4>Análisis de Patrones</h4>
         <p>{{ consejo.analisis_patron }}</p>
       </div>
-    </div>
-    
-    <div class="habit-highlight mt-3">
-      <div class="habit-icon"><i class="fa-solid fa-bolt text-amber-400"></i></div>
-      <div class="habit-content">
-        <strong>Hábito Sugerido:</strong><br>
-        {{ consejo.habito_atomico_sugerido }}
+      
+      <div class="habit-highlight">
+        <div class="habit-icon"><i class="fa-solid fa-bolt text-amber-400"></i></div>
+        <div class="habit-content">
+          <strong>Hábito Atómico Sugerido:</strong>
+          <p>{{ consejo.habito_atomico_sugerido }}</p>
+        </div>
       </div>
-    </div>
 
-    <div class="coach-message mt-3">
-      <p class="text-emerald-400 italic">{{ consejo.mensaje_motivacional }}</p>
+      <div class="advice-motivation">
+        <i class="fa-solid fa-fire-flame-curved"></i>
+        <span>{{ consejo.mensaje_motivacional }}</span>
+      </div>
     </div>
   </div>
 </div>

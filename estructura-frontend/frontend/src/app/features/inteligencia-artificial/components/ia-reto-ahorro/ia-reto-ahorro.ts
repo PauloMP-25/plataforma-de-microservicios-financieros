@@ -97,13 +97,24 @@ export class IaRetoAhorroComponent implements OnInit, OnChanges {
   private iniciarBriefingMaquinaEscribir() {
     let textoCompleto = '';
     
-    if (this.consejoDTO) {
-       textoCompleto = this.consejoDTO.mensaje_motivacional || this.consejoDTO.diagnostico || '';
-    } else if (typeof this.resultado?.consejo === 'string') {
-       textoCompleto = this.resultado.consejo;
-    } else {
-       textoCompleto = '¡Misión: Operación Cocina en Casa! 🏆 Paulo, he detectado que tu "Enemigo Final" de esta semana son los Restaurantes. Tu misión, si decides aceptarla, es evitar comer fuera por los próximos 7 días. Si lo logras, habrás salvado S/ 85.00 para tu fondo de la "Laptop Gamer". ¿Aceptas el reto, Jugador 1?';
+    // Si no hay DTO, inyectamos un mockup tipado estructurado de prueba.
+    let consejoActual = this.consejoDTO;
+    if (!consejoActual) {
+       consejoActual = {
+         pensamiento_interno_ia: 'El usuario suele gastar en restaurantes los fines de semana. Reducir este gasto aceleraría su meta.',
+         titulo_mision: 'Operación Cocina en Casa 🏆',
+         diagnostico: 'Paulo, he detectado que tu "Enemigo Final" de esta semana son los Restaurantes. Ese es tu principal punto de fuga actual.',
+         estrategia: 'Tu misión, si decides aceptarla, es evitar comer fuera por los próximos 7 días. Prepara tus comidas el domingo.',
+         mensaje_motivacional: 'Si lo logras, habrás salvado S/ 85.00 para tu fondo de la "Laptop Gamer". ¿Aceptas el reto, Jugador 1?'
+       };
+       // Sobrescribimos en el resultado para que el template también lo renderice estructurado
+       if (!this.resultado) {
+         this.resultado = { insight: {} } as any;
+       }
+       this.resultado!.consejo = consejoActual;
     }
+    
+    textoCompleto = consejoActual.mensaje_motivacional || '';
     
     this.briefingEscrito.set('');
     if (this.typewriterInterval) clearInterval(this.typewriterInterval);

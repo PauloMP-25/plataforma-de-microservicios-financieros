@@ -102,6 +102,50 @@ export interface RespuestaClasificacionDTO {
   usando_fallback: boolean;
 }
 
+export interface ConsejoEstructuradoHormiga {
+  pensamiento_interno_ia: string;
+  introduccion: string;
+  analisis_ia: string;
+  conexion_emocional: string;
+  plan_accion_titulo: string;
+  plan_accion_pasos: string[];
+  comentario_positivo: string;
+}
+
+export interface ConsejoEstructuradoHabitos {
+  pensamiento_interno_ia: string;
+  introduccion: string;
+  analisis_patron: string;
+  habito_atomico_sugerido: string;
+  mensaje_motivacional: string;
+}
+
+export interface ConsejoEstructuradoPredecir {
+  pensamiento_interno_ia: string;
+  introduccion: string;
+  analisis_tendencia: string;
+  impacto_meta: string;
+  recomendacion_matematica: string;
+  mensaje_motivacional: string;
+}
+
+export interface ConsejoEstructuradoSimularMeta {
+  pensamiento_interno_ia: string;
+  introduccion: string;
+  diagnostico_viabilidad: string;
+  plan_accion: string;
+  tecnica_sugerida?: string;
+  mensaje_motivacional: string;
+}
+
+export interface ConsejoEstructuradoReto {
+  pensamiento_interno_ia: string;
+  titulo_mision: string;
+  diagnostico: string;
+  estrategia: string;
+  mensaje_motivacional: string;
+}
+
 // Compatibilidad heredada
 export interface RespuestaIaDTO {
   id: string;

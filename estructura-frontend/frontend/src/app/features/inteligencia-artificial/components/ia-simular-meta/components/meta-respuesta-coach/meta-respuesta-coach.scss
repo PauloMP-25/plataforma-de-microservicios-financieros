@@ -1,41 +1,121 @@
-@use '../../../../_ia-shared.scss' as *;
+.respuesta-coach {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-top: 24px;
+}
 
-.prompt-gemini-box {
-  margin-bottom: 24px;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  border-radius: 12px;
-  overflow: hidden;
-
-  .prompt-header {
-    background: rgba(16, 185, 129, 0.1);
-    padding: 10px 16px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #10b981;
-    letter-spacing: 0.05em;
+.avatar-col {
+  .avatar-icon {
+    width: 48px;
+    height: 48px;
+    background: #3b82f6;
+    border-radius: 50%;
     display: flex;
     align-items: center;
-    gap: 8px;
-    border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
   }
+}
 
-  .prompt-content {
-    padding: 16px;
+.content-col {
+  flex: 1;
+
+  .coach-bubble {
+    background: var(--surface-card, #1e293b);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border-top-left-radius: 0;
+    padding: 20px;
+    color: var(--text-color, #f8fafc);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     
-    p {
-      margin: 0;
-      font-size: 0.85rem;
-      line-height: 1.6;
-      color: rgba(248, 250, 252, 0.85);
-      font-family: 'Fira Code', 'Courier New', Courier, monospace;
+    &.structured-bubble {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
-  }
 
-  :host-context(body.tema-claro) & {
-    background: #f8fafc;
-    border-color: rgba(16, 185, 129, 0.3);
-    
-    .prompt-content p { color: rgba(15, 23, 42, 0.85); }
+    .sim-intro {
+      font-size: 1.05rem;
+      margin: 0;
+      color: #e2e8f0;
+      font-weight: 500;
+    }
+
+    .sim-diagnostico, .sim-plan {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 12px;
+      border-radius: 8px;
+      border-left: 3px solid #3b82f6;
+
+      i {
+        color: #3b82f6;
+        font-size: 1.2rem;
+        margin-top: 2px;
+      }
+
+      strong {
+        display: block;
+        color: #60a5fa;
+        margin-bottom: 4px;
+        font-size: 0.95rem;
+      }
+
+      p {
+        margin: 0;
+        color: #cbd5e1;
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+    }
+
+    .sim-plan {
+      border-left-color: #10b981;
+      i { color: #10b981; }
+      strong { color: #34d399; }
+    }
+
+    .sim-tecnica {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.05) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 12px;
+      border-radius: 8px;
+
+      .tecnica-icon {
+        color: #f59e0b;
+        font-size: 1.2rem;
+        margin-top: 2px;
+      }
+
+      .tecnica-text {
+        strong {
+          display: block;
+          color: #f59e0b;
+          margin-bottom: 4px;
+        }
+        p {
+          margin: 0;
+          color: #f8fafc;
+          font-size: 0.95rem;
+          line-height: 1.5;
+        }
+      }
+    }
+
+    .sim-motivacion {
+      text-align: center;
+      margin-top: 8px;
+      color: #94a3b8;
+      font-size: 1rem;
+    }
   }
 }

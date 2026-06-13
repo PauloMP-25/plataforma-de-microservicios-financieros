@@ -8,5 +8,29 @@
       </div>
     </div>
   </div>
-  <p class="wisdom-text" [innerHTML]="consejoTexto()"></p>
+  
+  <div class="wisdom-structured" *ngIf="consejoObj()">
+    <p class="wisdom-intro">{{ consejoObj()!.introduccion }}</p>
+    
+    <div class="wisdom-card">
+      <i class="fa-solid fa-chart-line"></i>
+      <p>{{ consejoObj()!.analisis_tendencia }}</p>
+    </div>
+    
+    <div class="wisdom-card danger-card">
+      <i class="fa-solid fa-bullseye"></i>
+      <p><strong>Impacto:</strong> {{ consejoObj()!.impacto_meta }}</p>
+    </div>
+    
+    <div class="wisdom-card math-card">
+      <i class="fa-solid fa-calculator"></i>
+      <p><strong>Matemática:</strong> {{ consejoObj()!.recomendacion_matematica }}</p>
+    </div>
+    
+    <div class="wisdom-footer">
+      <em>{{ consejoObj()!.mensaje_motivacional }}</em>
+    </div>
+  </div>
+
+  <p class="wisdom-text" *ngIf="!consejoObj()" [innerHTML]="consejoTextoFallback()"></p>
 </div>
