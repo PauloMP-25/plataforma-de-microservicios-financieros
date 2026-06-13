@@ -74,8 +74,8 @@ Esto garantiza:
 | `REPORTE_COMPLETO` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoReporte` | ✅ Fallback Propio | ✅ Tabla propia | ✅ Aplicadas | ✅ | Paulo |
 | `ANALISIS_ESTILO_VIDA` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEstilo` | ✅ Fallback Propio | ✅ Tabla propia | ✅ Aplicadas | ✅ | Paulo |
 | `AUTO_CLASIFICACION` | ✅ | N/A | ✅ Zero History | ✅ `ConsejoEstructuradoAutoClasificacion` | ✅ Fallback Propio | ✅ | ✅ Aplicadas | ✅ | Paulo |
-| `COMPROBADOR_EVOLUCION` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEvolucion` | ✅ | ✅ | ❌ | ❌ | — |
-| `ZONA_ENTRENAMIENTO` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEntrenamiento` | ✅ | ✅ | ❌ | ❌ | — |
+| `COMPROBADOR_EVOLUCION` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEvolucion` | ✅ | ✅ | ✅ Aplicadas | ✅ | Paulo |
+| `ZONA_ENTRENAMIENTO` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEntrenamiento` | ✅ | ✅ | ✅ Aplicadas | ✅ | Paulo |
 | `ESPEJO_TEMPORAL` | 🔄 En progreso | 🔄 En progreso | 🔄 En progreso | 🔄 `ConsejoEstructuradoEspejo` | 🔄 | 🔄 | ❌ | ❌ | — |
 
 **Leyenda:** ✅ Implementado | ⚠️ Pendiente | ❌ No implementado | 🔄 En progreso | N/A No aplica

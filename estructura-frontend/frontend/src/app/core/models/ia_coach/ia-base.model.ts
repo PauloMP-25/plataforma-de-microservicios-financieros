@@ -153,6 +153,34 @@ export interface ConsejoEstructuradoAutoClasificacionDTO {
   categorias_sugeridas: string[];
 }
 
+export interface RecetaMedicaFinanciera {
+  categoria: string;
+  diagnostico: string;
+  posologia: string;
+  pronostico: string;
+}
+
+export interface ConsejoEstructuradoEvolucion {
+  pensamiento_interno_ia?: string;
+  veredicto_narrativo: string;
+  recetas_medicas: RecetaMedicaFinanciera[];
+}
+
+export interface EjercicioEntrenamiento {
+  nombre: string;
+  descripcion: string;
+  duracion_dias: number;
+  frecuencia: string;
+  metrica_exito: string;
+}
+
+export interface ConsejoEstructuradoEntrenamiento {
+  pensamiento_interno_ia?: string;
+  estado_fisico: string;
+  evaluacion_previa?: string;
+  rutina: EjercicioEntrenamiento[];
+}
+
 // Compatibilidad heredada
 export interface RespuestaIaDTO {
   id: string;
