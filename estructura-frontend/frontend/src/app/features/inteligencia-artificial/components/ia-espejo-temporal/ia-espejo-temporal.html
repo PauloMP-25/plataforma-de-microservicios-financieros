@@ -1,155 +1,128 @@
-<div class="espejo-container" [class.loading-active]="cargando">
-
-  <!-- Escáner de luz diagonal para animación de carga en el panel principal -->
+<div class="espejo-container" [class.loading-active]="cargando" (mousemove)="onMouseMove($event)">
+  <!-- Loader -->
   <div class="loading-overlay-scanner" *ngIf="cargando">
     <div class="scan-glow-line"></div>
+    <h3 class="animate-pulse text-amber-500">ESCANEANDO LÍNEAS TEMPORALES...</h3>
   </div>
 
-  <!-- VISTA CENTRAL DE INVOCACIÓN (Inicial o Cargando) -->
-  <div class="espejo-prompt-content" *ngIf="!resultado || cargando">
-    <div class="prompt-orb" [class.pulse-glow]="cargando">
-      <i class="fa-solid fa-clock-rotate-left"></i>
-    </div>
-    
-    <h3 *ngIf="!cargando">EL ESPEJO DEL TIEMPO</h3>
-    <h3 *ngIf="cargando" class="animate-pulse text-amber-500">ESCANEANDO LÍNEAS TEMPORALES...</h3>
-    
-    <p class="prompt-desc">
-      Una mirada profunda al impacto a largo plazo de tus decisiones diarias en tus metas y patrimonio.
-    </p>
-
-    <p class="prompt-sub" *ngIf="!cargando">
-      Define el rango de fechas en la barra superior y presiona el botón <strong>"EJECUTAR ANÁLISIS"</strong>.
-    </p>
-    <p class="prompt-sub animate-pulse text-slate-400" *ngIf="cargando">
-      Luka está analizando tus registros con Gemini Pro. Proyectando destinos a 3, 6 y 12 meses...
-    </p>
+  <div class="espejo-prompt-content" *ngIf="!resultado && !cargando">
+    <div class="prompt-orb"><i class="fa-solid fa-clock-rotate-left"></i></div>
+    <h3>EL ESPEJO DEL TIEMPO</h3>
+    <p class="prompt-desc">Una mirada profunda al impacto a largo plazo de tus decisiones diarias.</p>
   </div>
 
-  <!-- VISTA DE RESULTADOS (Cuando ya cargó y resultado != null) -->
   <div class="resultado-espejo-layout" *ngIf="resultado && !cargando">
     
-    <!-- 1. SECCIÓN SUPERIOR: EL PRESENTE (Consejo de Luka - Fila de Ancho Completo) -->
-    <div class="mirror-presente-banner mirror-frame-glass">
-      <div class="mirror-glass-sheen"></div>
-      
-      <!-- Espejo circular animado a la izquierda -->
-      <div class="presente-mirror-aside">
-        <div class="mystic-mirror-circle-mini">
-          <div class="mirror-glow-effect"></div>
-          <div class="avatar-luka-outer">
-            <i class="fa-solid fa-robot"></i>
-            <div class="pulse-ring"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Texto del consejo a la derecha -->
-      <div class="presente-content-body">
-        <h4 class="presente-title">CONSEJO DE LUKA</h4>
-        <div class="luka-advice-text" [innerHTML]="consejoLuka()"></div>
-      </div>
+    <!-- CONTADOR DINÁMICO CENTRAL -->
+    <div class="contador-dinamico-central">
+      <div class="contador-label">Diferencia Monetaria a {{hitoSeleccionado()}} meses</div>
+      <div class="contador-valor">S/ {{ animatedDiferenciaNeta | number:'1.2-2' }}</div>
     </div>
 
-    <!-- 2. SECCIÓN CENTRAL: Dos Columnas (Pasado vs Futuro) -->
-    <div class="mirror-dual-columns-grid">
-
-      <!-- COLUMNA 1: EL PASADO -->
-      <div class="mirror-column">
-        <div class="column-header-clean">
-          <i class="fa-solid fa-hourglass-start past-color-icon"></i>
-          <span>EL PASADO</span>
+    <!-- DÍPTICO PARALLAX -->
+    <div class="diptico-parallax-container">
+      
+      <!-- Panel Izquierdo: Continuidad (Frío/Oscuro/Oxidado) -->
+      <div class="panel-diptico panel-continuidad" [style.transform]="parallaxTransformContinuidad">
+        <div class="panel-header">
+          <i class="fa-solid fa-hourglass-start"></i> EL PASADO / CONTINUIDAD
         </div>
         
-        <div class="past-cards-vertical-stack">
-          <!-- Tarjeta: Score Inicial -->
-          <div class="past-card card-glass glow-past">
-            <div class="past-metric-header">
-              <i class="fa-solid fa-gauge-simple-high text-slate-400"></i>
-              <span class="past-metric-label">SCORE INICIAL</span>
-            </div>
-            <div class="past-metric-value text-slate-300">
-              {{ espejoData().datosPresente.scoreActual }}/100
-            </div>
-            <p class="past-metric-desc">Salud financiera al iniciar el periodo analizado.</p>
+        <div class="carta-manuscrita carta-envejecida">
+          <div class="carta-content">
+            {{ espejoData().narrativasGemini.cartaContinuidad }}
           </div>
+        </div>
 
-          <!-- Tarjeta: Ahorro Base -->
-          <div class="past-card card-glass glow-past">
-            <div class="past-metric-header">
-              <i class="fa-solid fa-wallet text-slate-400"></i>
-              <span class="past-metric-label">SALDO INICIAL</span>
-            </div>
-            <div class="past-metric-value text-slate-300">
-              S/ {{ espejoData().datosPresente.saldoActual | number:'1.2-2' }}
-            </div>
-            <p class="past-metric-desc">Capital base disponible en tus cuentas de ahorro.</p>
+        <div class="metricas-panel">
+          <div class="metrica">
+            <span>Score:</span> {{ getHitoData('continuidad').scoreProyectado }}/100
           </div>
-
-          <!-- Tarjeta: Metas Activas -->
-          <div class="past-card card-glass glow-past">
-            <div class="past-metric-header">
-              <i class="fa-solid fa-bullseye text-slate-400"></i>
-              <span class="past-metric-label">METAS ACTIVAS</span>
-            </div>
-            <div class="past-metric-value text-slate-300">
-              {{ espejoData().datosPresente.metasActivas }} {{ espejoData().datosPresente.metasActivas === 1 ? 'Meta' : 'Metas' }}
-            </div>
-            <p class="past-metric-desc">Objetivos de ahorro que tenías vigentes.</p>
-          </div>
-
-          <!-- Tarjeta: Fugas Críticas -->
-          <div class="past-card card-glass habit-warning-card">
-            <div class="past-metric-header">
-              <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
-              <span class="past-metric-label text-amber-500">FUGAS CRÍTICAS DETECTADAS</span>
-            </div>
-            <p class="past-metric-desc text-slate-300">
-              Micro-consumos recurrentes en transporte y antojos de fin de semana limitan tu capacidad de inyectar capital directo a tus ahorros.
-            </p>
+          <div class="metrica">
+            <span>Ahorro:</span> S/ {{ getHitoData('continuidad').ahorroAcumulado | number:'1.2-2' }}
           </div>
         </div>
       </div>
 
-      <!-- COLUMNA 2: EL FUTURO (Dividida en 2 filas) -->
-      <div class="mirror-column">
-        <div class="column-header-clean">
-          <i class="fa-solid fa-wand-magic-sparkles future-color-icon"></i>
-          <span>EL FUTURO (PROYECCIONES A {{ hitoSeleccionado() }} MESES)</span>
+      <!-- Panel Derecho: Transformación (Cálido/Dorado) -->
+      <div class="panel-diptico panel-transformacion" [style.transform]="parallaxTransformTransformacion">
+        <div class="panel-header">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> EL FUTURO / TRANSFORMACIÓN
         </div>
 
-        <div class="future-cards-vertical-rows">
-          <!-- Fila 1: Futuro de Continuidad -->
-          <app-ia-espejo-card
-            tipo="continuidad"
-            [hitoData]="getHitoData('continuidad')">
-          </app-ia-espejo-card>
+        <div class="carta-manuscrita carta-premium">
+          <div class="carta-content">
+            {{ espejoData().narrativasGemini.cartaTransformacion }}
+          </div>
+        </div>
 
-          <!-- Fila 2: Futuro de Transformación -->
-          <app-ia-espejo-card
-            tipo="transformacion"
-            [hitoData]="getHitoData('transformacion')">
-          </app-ia-espejo-card>
+        <div class="metricas-panel">
+          <div class="metrica">
+            <span>Score:</span> {{ getHitoData('transformacion').scoreProyectado }}/100
+          </div>
+          <div class="metrica">
+            <span>Ahorro:</span> S/ {{ getHitoData('transformacion').ahorroAcumulado | number:'1.2-2' }}
+          </div>
         </div>
       </div>
-
+      
     </div>
 
-    <!-- 3. SECCIÓN INFERIOR: PIE DE PÁGINA (Diferencia Neta - Fila de Ancho Completo) -->
-    <div class="mirror-footer-layout mirror-frame-glass">
-      <div class="mirror-glass-sheen"></div>
-      <div class="net-difference-horizontal">
-        <div class="diff-icon-glow">
-          <i class="fa-solid fa-scale-unbalanced"></i>
+    <!-- LÍNEA DE TIEMPO RAMIFICADA -->
+    <div class="linea-tiempo-ramificada">
+      <div class="eje-central"></div>
+      
+      <div class="nodo-tiempo nodo-mes-3" [class.activo]="hitoSeleccionado() === 3" (click)="setHito(3)">
+        <div class="ramificacion rama-continuidad"></div>
+        <div class="ramificacion rama-transformacion"></div>
+        <div class="marcador-mes">Mes 3</div>
+      </div>
+      
+      <div class="nodo-tiempo nodo-mes-6" [class.activo]="hitoSeleccionado() === 6" (click)="setHito(6)">
+        <div class="ramificacion rama-continuidad"></div>
+        <div class="ramificacion rama-transformacion"></div>
+        <div class="marcador-mes">Mes 6</div>
+      </div>
+      
+      <div class="nodo-tiempo nodo-mes-12" [class.activo]="hitoSeleccionado() === 12" (click)="setHito(12)">
+        <div class="ramificacion rama-continuidad"></div>
+        <div class="ramificacion rama-transformacion"></div>
+        <div class="marcador-mes">Mes 12</div>
+      </div>
+    </div>
+
+    <!-- SLIDER ANTES / DESPUÉS (Metas) -->
+    <div class="slider-metas-container">
+      <h3>Comparación de Metas a {{hitoSeleccionado()}} meses</h3>
+      <div class="slider-wrapper" (mousemove)="onSliderMove($event)" #sliderWrapper>
+        <!-- Estado "Después" (Transformación) -->
+        <div class="slider-panel slider-despues">
+          <div class="metas-lista">
+            <h4 class="text-amber-400">Metas Cumplidas (Transformación)</h4>
+            <div *ngIf="getHitoData('transformacion').metasCumplidas.length === 0" class="text-slate-400">Ninguna meta cumplida aún.</div>
+            <div *ngFor="let meta of getHitoData('transformacion').metasCumplidas" class="meta-item exito">
+              <i class="fa-solid fa-check"></i> {{ meta }}
+            </div>
+          </div>
         </div>
-        <div class="diff-info">
-          <span class="diff-label">DIFERENCIA NETA ESTIMADA</span>
-          <h2 class="diff-value">S/ {{ diferenciaNeta() | number:'1.2-2' }}</h2>
-          <p class="diff-desc">Impacto financiero neto acumulado proyectado entre continuar con tus hábitos del pasado frente a tu futuro de transformación a {{ hitoSeleccionado() }} meses.</p>
+
+        <!-- Estado "Antes" (Continuidad) (Superpuesto y enmascarado por el slider) -->
+        <div class="slider-panel slider-antes" [style.clip-path]="'inset(0 0 0 ' + sliderPosition + '%)'">
+          <div class="metas-lista">
+            <h4 class="text-slate-400">Metas Fracasadas (Continuidad)</h4>
+            <div *ngIf="getHitoData('continuidad').metasFracasadas.length === 0" class="text-slate-400">Ninguna meta fracasada.</div>
+            <div *ngFor="let meta of getHitoData('continuidad').metasFracasadas" class="meta-item fracaso">
+              <i class="fa-solid fa-xmark"></i> {{ meta }}
+            </div>
+          </div>
+        </div>
+
+        <!-- El control del slider -->
+        <div class="slider-handle" [style.left.%]="sliderPosition">
+          <div class="slider-handle-icon"><i class="fa-solid fa-arrows-left-right"></i></div>
         </div>
       </div>
     </div>
 
   </div>
-
 </div>
