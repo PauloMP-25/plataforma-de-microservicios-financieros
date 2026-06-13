@@ -48,9 +48,9 @@ from app.modelos.esquemas import (
 from app.servicios.core.servicio_analisis import ServicioAnalisis
 from app.servicios.ia.coach_ia import CoachIA
 from app.utilidades.excepciones import BrokerComunicacionError, ContratoDatosError
-from app.persistencia.cache_redis import CacheRedis
-from app.persistencia.database import SessionLocal
-from app.persistencia.modelos_db import OutboxEvento, EstadoOutbox
+from app.persistencia.redis.cache_redis import CacheRedis
+from app.persistencia.postgres.database import SessionLocal
+from app.persistencia.postgres.modelos_db import OutboxEvento, EstadoOutbox
 
 logger = logging.getLogger(__name__)
 

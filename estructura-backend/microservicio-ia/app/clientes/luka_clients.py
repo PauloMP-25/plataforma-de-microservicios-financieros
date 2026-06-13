@@ -25,7 +25,9 @@ class ClienteFinanciero(BaseLukaClient):
         anio_inicio: Optional[int] = None,
         dia_fin: Optional[int] = None,
         mes_fin: Optional[int] = None,
-        anio_fin: Optional[int] = None
+        anio_fin: Optional[int] = None,
+        desde_exacto: Optional[str] = None,
+        hasta_exacto: Optional[str] = None
     ) -> Dict[str, Any]:
         """Recupera el historial de transacciones (concurrente)."""
         endpoint = f"/api/v1/financiero/transacciones/historial"
@@ -33,7 +35,10 @@ class ClienteFinanciero(BaseLukaClient):
         desde_str = None
         hasta_str = None
         
-        if anio_inicio and mes_inicio:
+        if desde_exacto and hasta_exacto:
+            desde_str = desde_exacto
+            hasta_str = hasta_exacto
+        elif anio_inicio and mes_inicio:
             dia_i = dia_inicio or 1
             desde_dt = datetime(anio_inicio, mes_inicio, dia_i, 0, 0, 0)
             desde_str = desde_dt.isoformat()

@@ -35,7 +35,7 @@ export class IngresoKpisComponent {
     if (t.includes('total')) return 'fa-solid fa-sack-dollar';
     if (t.includes('registrados')) return 'fa-regular fa-folder-open';
     if (t.includes('racha')) return 'fa-solid fa-fire-flame-curved';
-    if (t.includes('categor')) return 'fa-solid fa-wallet';
+    if (t.includes('categoria')) return 'fa-solid fa-wallet';
     return 'fa-solid fa-chart-line';
   }
 

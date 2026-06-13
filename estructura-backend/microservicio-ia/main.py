@@ -36,7 +36,7 @@ from app.mensajeria.outbox_scheduler import OutboxScheduler
 from app.mensajeria.escuchador_sincronizacion_ia import EscuchadorSincronizacionIA
 from app.mensajeria.escuchador_cambio_datos_ia import EscuchadorCambioDatosIA
 from app.routers import analisis, dashboard
-from app.persistencia.database import inicializar_db
+from app.persistencia.postgres.database import inicializar_db
 
 
 # ══════════════════════════════════════════════════════════════════════════

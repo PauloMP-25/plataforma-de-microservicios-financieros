@@ -35,6 +35,7 @@ public class TransaccionMapper {
                 .categoria(entidad.getCategoria().getNombre())
                 .categoriaIcono(entidad.getCategoria().getIcono())
                 .fechaTransaccion(entidad.getFechaTransaccion())
+                .fechaRegistro(entidad.getFechaRegistro())
                 .metodoPago(entidad.getMetodoPago().name())
                 .etiquetas(entidad.getEtiquetas())
                 .descripcion(entidad.getDescripcion())

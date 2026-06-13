@@ -83,7 +83,7 @@
 
 <button type="button" class="configuracion__premium-cta-main" (click)="abrirModalPlanes()">
   ✨ Ver planes
-</button>  
+</button>
 
 </aside>
         </div>
@@ -102,8 +102,8 @@
       </div>
       <section class="configuracion__panel">
         <ul class="configuracion__links-lista">
-          <li><a href="#" (click)="$event.preventDefault()">Política de privacidad</a></li>
-          <li><a href="#" (click)="$event.preventDefault()">Términos y condiciones</a></li>
+          <li><a routerLink="/perfil/configuracion/privacidad">Política de privacidad</a></li>
+          <li><a routerLink="/perfil/configuracion/terminos">Términos y condiciones</a></li>
         </ul>
       </section>
     </article>
@@ -138,8 +138,8 @@
           </div>
         </div>
 
-        <button type="button" class="configuracion__danger-btn" [disabled]="eliminandoCuenta()" (click)="eliminarCuenta()">
-          {{ eliminandoCuenta() ? 'Procesando...' : 'Eliminar cuenta' }}
+        <button type="button" class="configuracion__danger-btn" [disabled]="eliminandoCuenta()" (click)="abrirModalEliminarCuenta()">
+          Eliminar cuenta
         </button>
 
         @if (mensajeCuenta()) {
@@ -147,6 +147,60 @@
         }
       </section>
     </article>
+
+    @if (modalEliminarCuentaAbierto()) {
+      <div class="configuracion__modal-backdrop configuracion__modal-backdrop--danger" (click)="cerrarModalEliminarCuenta()">
+        <section class="configuracion__modal configuracion__delete-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="titulo-eliminar-cuenta">
+          <header class="configuracion__modal-header configuracion__delete-modal-header">
+            <span class="configuracion__delete-icon" aria-hidden="true">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </span>
+            <div>
+              <p class="configuracion__delete-eyebrow">Acción irreversible</p>
+              <h3 id="titulo-eliminar-cuenta">Confirmar eliminación de cuenta</h3>
+            </div>
+            <button type="button" class="configuracion__close" [disabled]="eliminandoCuenta()" (click)="cerrarModalEliminarCuenta()" aria-label="Cerrar modal">
+              ×
+            </button>
+          </header>
+
+          <div class="configuracion__delete-warning">
+            <p>
+              Si continúas, se iniciará la eliminación de tu cuenta y se perderán tus datos asociados a LUKA,
+              incluyendo perfil, configuraciones, registros financieros, historial y preferencias guardadas.
+            </p>
+            <p>
+              Para confirmar que entiendes las consecuencias, escribe exactamente esta frase:
+            </p>
+            <strong>{{ fraseConfirmacionEliminarCuenta }}</strong>
+          </div>
+
+          <label class="configuracion__delete-confirm">
+            <span>Frase de confirmación</span>
+            <textarea
+              rows="3"
+              [ngModel]="confirmacionEliminarCuenta()"
+              (ngModelChange)="confirmacionEliminarCuenta.set($event)"
+              [disabled]="eliminandoCuenta()"
+              placeholder="Estoy de acuerdo con la eliminación de la cuenta"
+            ></textarea>
+          </label>
+
+          @if (mensajeCuenta()) {
+            <p class="configuracion__mensaje configuracion__mensaje--danger">{{ mensajeCuenta() }}</p>
+          }
+
+          <footer class="configuracion__delete-actions">
+            <button type="button" class="configuracion__delete-cancel" [disabled]="eliminandoCuenta()" (click)="cerrarModalEliminarCuenta()">
+              Cancelar
+            </button>
+            <button type="button" class="configuracion__danger-btn" [disabled]="eliminandoCuenta() || !confirmacionEliminarCuentaValida()" (click)="eliminarCuenta()">
+              {{ eliminandoCuenta() ? 'Procesando...' : 'Sí, eliminar mi cuenta' }}
+            </button>
+          </footer>
+        </section>
+      </div>
+    }
     @if (modalPlanesAbierto()) {
   <div class="planes-modal-backdrop" (click)="cerrarModalPlanes()">
     <section class="planes-modal" (click)="$event.stopPropagation()">
