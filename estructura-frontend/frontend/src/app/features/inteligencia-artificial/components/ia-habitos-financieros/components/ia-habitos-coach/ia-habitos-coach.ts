@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ConsejoHabitosFinancierosDTO } from '../../../../../../../core/models/ia_coach/ia-habitos.model';
+import { ConsejoHabitosFinancierosDTO } from '../../../../../../core/models/ia_coach/ia-habitos.model';
 
 @Component({
   selector: 'app-ia-habitos-coach',

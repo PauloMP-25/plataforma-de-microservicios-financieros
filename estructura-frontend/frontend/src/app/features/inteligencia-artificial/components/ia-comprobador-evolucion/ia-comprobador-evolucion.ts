@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RespuestaModuloDTO } from '../../../../../core/models/ia_coach/ia-base.model';
+import { RespuestaModuloDTO } from '../../../../core/models/ia_coach/ia-base.model';
 import { IaHubComponent } from '../../pages/ia-hub/ia-hub';
 
 import { LukaEscanerCargaComponent } from './components/luka-escaner-carga/luka-escaner-carga';

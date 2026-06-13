@@ -64,18 +64,18 @@ Esto garantiza:
 
 ## Estado de Cumplimiento por Módulo
 
-| Módulo | Fase 1 ✅ | Fase 2 (Pandas) ✅ | Fase 3 (Solo KPIs a Gemini) | Structured Output | Fallback Propio | Persistencia BD | Técnicas Prompt | Responsable |
+| Módulo | Fase 1 ✅ | Fase 2 (Pandas) ✅ | Fase 3 (Solo KPIs a Gemini) | Structured Output | Fallback Propio | Persistencia| Técnicas Prompt | Responsable |
 |---|---|---|---|---|---|---|---|---|
-| `GASTO_HORMIGA` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoHormiga` | ✅ | ✅ | ✅ Aplicadas | Paulo |
-| `PREDECIR_GASTOS` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoPredecir` | ✅ | ✅ | ✅ Aplicadas | Paulo |
-| `HABITOS_FINANCIEROS` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoHabitos` | ✅ Fallback Propio | ✅ | ✅ Aplicadas | Paulo |
-| `SIMULAR_META` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoSimularMeta` | ✅ | ✅ | ❌ | — |
-| `RETO_AHORRO_DINAMICO` | ✅ | ✅ | ⚠️ Pendiente revisar | ❌ String plano | ⚠️ Genérico | ✅ Tabla propia | ❌ | — |
+| `GASTO_HORMIGA` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoHormiga` | ✅ | ✅ | ✅ | Paulo |
+| `PREDECIR_GASTOS` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoPredecir` | ✅ | ✅ | ✅ | Paulo |
+| `HABITOS_FINANCIEROS` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoHabitos` | ✅ | ✅ | ✅ | Paulo |
+| `SIMULAR_META` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoSimularMeta` | ✅ | ✅ | ✅ | Paulo |
+| `RETO_AHORRO_DINAMICO` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoReto` | ✅ | ✅ | ✅ | Paulo |
 | `REPORTE_COMPLETO` | ✅ | ✅ | ⚠️ Pendiente revisar | ❌ String plano | ⚠️ Genérico | ✅ | ❌ | — |
 | `ANALISIS_ESTILO_VIDA` | ✅ | ✅ | ⚠️ Pendiente revisar | ❌ String plano | ⚠️ Genérico | ✅ | ❌ | — |
 | `AUTO_CLASIFICACION` | ✅ | N/A | ⚠️ Pendiente revisar | N/A | ❌ | ✅ | ❌ | — |
 | `COMPROBADOR_EVOLUCION` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEvolucion` | ✅ | ✅ | ❌ | — |
-| `ZONA_ENTRENAMIENTO` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEntrenamiento` | ✅ | ✅ Tabla propia | ❌ | — |
+| `ZONA_ENTRENAMIENTO` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEntrenamiento` | ✅ | ✅ | ❌ | — |
 | `ESPEJO_TEMPORAL` | 🔄 En progreso | 🔄 En progreso | 🔄 En progreso | 🔄 `ConsejoEstructuradoEspejo` | 🔄 | 🔄 | ❌ | — |
 
 **Leyenda:** ✅ Implementado | ⚠️ Pendiente | ❌ No implementado | 🔄 En progreso | N/A No aplica

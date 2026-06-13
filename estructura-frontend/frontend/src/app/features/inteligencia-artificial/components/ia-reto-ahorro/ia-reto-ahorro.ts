@@ -1,6 +1,7 @@
 import { Component, Input, OnInit, OnChanges, SimpleChanges, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RespuestaModuloDTO } from '../../../../core/models/ia_coach/ia-base.model';
+import { ConsejoRetoAhorroDTO } from '../../../../core/models/ia_coach/ia-reto-ahorro.model';
 
 interface Baldosa {
   dia: number;
@@ -28,6 +29,14 @@ export class IaRetoAhorroComponent implements OnInit, OnChanges {
   // Animación del briefing de máquina de escribir
   briefingEscrito = signal('');
   private typewriterInterval: any;
+
+  // Propiedad estructurada
+  get consejoDTO(): ConsejoRetoAhorroDTO | null {
+    if (this.resultado?.consejo && typeof this.resultado.consejo === 'object') {
+      return this.resultado.consejo as ConsejoRetoAhorroDTO;
+    }
+    return null;
+  }
 
   ngOnInit() {
     this.detectarEstadoInicial();
@@ -86,8 +95,15 @@ export class IaRetoAhorroComponent implements OnInit, OnChanges {
 
   // Animación de máquina de escribir para briefing del cuartel general
   private iniciarBriefingMaquinaEscribir() {
-    const textoCompleto = this.resultado?.consejo || 
-      '¡Misión: Operación Cocina en Casa! 🏆 Paulo, he detectado que tu "Enemigo Final" de esta semana son los Restaurantes. Tu misión, si decides aceptarla, es evitar comer fuera por los próximos 7 días. Si lo logras, habrás salvado S/ 85.00 para tu fondo de la "Laptop Gamer". ¿Aceptas el reto, Jugador 1?';
+    let textoCompleto = '';
+    
+    if (this.consejoDTO) {
+       textoCompleto = this.consejoDTO.mensaje_motivacional || this.consejoDTO.diagnostico || '';
+    } else if (typeof this.resultado?.consejo === 'string') {
+       textoCompleto = this.resultado.consejo;
+    } else {
+       textoCompleto = '¡Misión: Operación Cocina en Casa! 🏆 Paulo, he detectado que tu "Enemigo Final" de esta semana son los Restaurantes. Tu misión, si decides aceptarla, es evitar comer fuera por los próximos 7 días. Si lo logras, habrás salvado S/ 85.00 para tu fondo de la "Laptop Gamer". ¿Aceptas el reto, Jugador 1?';
+    }
     
     this.briefingEscrito.set('');
     if (this.typewriterInterval) clearInterval(this.typewriterInterval);

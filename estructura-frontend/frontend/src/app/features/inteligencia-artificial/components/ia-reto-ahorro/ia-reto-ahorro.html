@@ -20,7 +20,15 @@
         <span class="terminal-status animate-pulse">RECIBIENDO MISIÓN...</span>
       </div>
       <div class="briefing-body">
-        <p class="typewriter-text">{{ briefingEscrito() }}<span class="cursor-blink">_</span></p>
+        <div *ngIf="consejoDTO" class="structured-briefing mb-4 space-y-2">
+          <h4 class="text-emerald-400 font-bold tracking-wider text-sm"><i class="fa-solid fa-crosshairs"></i> {{ consejoDTO.titulo_mision }}</h4>
+          <p class="text-slate-300 text-sm"><i class="fa-solid fa-magnifying-glass-chart text-blue-400"></i> {{ consejoDTO.diagnostico }}</p>
+          <p class="text-slate-300 text-sm"><i class="fa-solid fa-chess-knight text-purple-400"></i> {{ consejoDTO.estrategia }}</p>
+        </div>
+        <p class="typewriter-text text-emerald-300">
+          <span *ngIf="consejoDTO"><i class="fa-solid fa-comment-dots"></i> </span>
+          {{ briefingEscrito() }}<span class="cursor-blink">_</span>
+        </p>
       </div>
       <div class="briefing-actions">
         <button class="btn-play-game" (click)="setEstado('ACTIVO')">
@@ -101,7 +109,7 @@
           <i class="fa-solid fa-fire-flame-curved"></i>
           <span>{{ resultado?.insight?.dificultad || 'MEDIA' | uppercase }}</span>
         </div>
-        <h3 class="mision-titulo">Operación: Cocina en Casa</h3>
+        <h3 class="mision-titulo">{{ consejoDTO?.titulo_mision || 'Operación: Cocina en Casa' }}</h3>
         <p class="mision-categoria">Objetivo: <i class="fa-solid fa-utensils"></i> {{ resultado?.insight?.categoria_objetivo || 'Restaurantes' }}</p>
       </div>
 
@@ -137,11 +145,12 @@
       
       <!-- Consejos del Coach en la parte inferior de la tarjeta -->
       <div class="consejo-box-game">
-        <div class="coach-avatar-small">
+        <div class="coach-avatar-small" [title]="consejoDTO?.pensamiento_interno_ia || 'Coach Luka'">
           <i class="fa-solid fa-robot"></i>
         </div>
         <p class="consejo-body">
-          "Paulo, he detectado que los Sábados a las 6 PM gastas en Rappi/Restaurantes. Si evitas comer fuera, salvas <strong>S/ 85.00</strong> para la laptop."
+          <span *ngIf="consejoDTO?.diagnostico" class="block mb-1 text-xs opacity-80">{{ consejoDTO?.diagnostico }}</span>
+          "{{ consejoDTO?.estrategia || 'Paulo, he detectado que los Sábados a las 6 PM gastas en Rappi/Restaurantes. Si evitas comer fuera, salvas S/ 85.00 para la laptop.' }}"
         </p>
       </div>
     </div>
@@ -198,7 +207,7 @@
       </div>
 
       <p class="mensaje-empatia">
-        Has completado con éxito la misión. Este ahorro ya fue destinado automáticamente a tu meta: <strong>Laptop Gamer</strong>.
+        {{ consejoDTO?.mensaje_motivacional || 'Has completado con éxito la misión. Este ahorro ya fue destinado automáticamente a tu meta: Laptop Gamer.' }}
       </p>
 
       <button class="btn-play-game" (click)="setEstado('NUEVO')">
@@ -240,7 +249,7 @@
       </div>
 
       <p class="mensaje-empatia">
-        Esta vez no se pudo, Paulo, pero el siguiente reto empieza mañana. El Coach Luka sugiere que un límite muy ajustado fue la causa.
+        {{ consejoDTO?.mensaje_motivacional || 'Esta vez no se pudo, Paulo, pero el siguiente reto empieza mañana. El Coach Luka sugiere que un límite muy ajustado fue la causa.' }}
       </p>
 
       <button class="btn-play-game btn-reintentar" (click)="setEstado('ACTIVO')">

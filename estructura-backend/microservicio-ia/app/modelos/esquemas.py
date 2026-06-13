@@ -71,6 +71,27 @@ class NombreModulo(str, Enum):
 # NUEVO v5: CONSEJO ESTRUCTURADO — Esquema para Gemini Structured Outputs
 # ══════════════════════════════════════════════════════════════════════════════
 
+class ConsejoEstructuradoHabitos(BaseModel):
+    """
+    Esquema de salida estructurada para el módulo HABITOS_FINANCIEROS.
+    """
+    pensamiento_interno_ia: str = Field(description="Análisis paso a paso del LLM.")
+    introduccion: str = Field(description="Saludo directo y evaluación rápida.")
+    analisis_patron: str = Field(description="Comentario sobre los patrones detectados.")
+    habito_atomico_sugerido: str = Field(description="Hábito accionable pequeño propuesto.")
+    mensaje_motivacional: str = Field(description="Cierre motivador.")
+
+class ConsejoEstructuradoReto(BaseModel):
+    """
+    Esquema de salida estructurada para el módulo RETO_AHORRO_DINAMICO.
+    Se adapta tanto a la fase de proposición (NUEVO) como evaluación (VEREDICTO).
+    """
+    pensamiento_interno_ia: str = Field(description="Análisis paso a paso de la meta de ahorro.")
+    titulo_mision: str = Field(description="Nombre creativo de la misión.")
+    diagnostico: str = Field(description="Explicación concisa del estado del reto o área de mejora.")
+    estrategia: str = Field(description="Acciones específicas para alcanzar o mantener el ahorro.")
+    mensaje_motivacional: str = Field(description="Mensaje enérgico para el usuario.")
+
 class ConsejoEstructuradoHormiga(BaseModel):
     """
     Esquema de salida estructurada para el módulo GASTO_HORMIGA.
@@ -462,20 +483,14 @@ class RespuestaModulo(BaseModel):
     v5 — Cambio en campo `consejo`:
       - Antes: Optional[str]
       - Ahora:  Optional[Union[str, ConsejoEstructuradoHormiga]]
-
-    Retrocompatibilidad garantizada:
-      - Los 9 módulos que devuelven str siguen funcionando sin cambios.
-      - GASTO_HORMIGA devuelve ConsejoEstructuradoHormiga cuando Gemini responde con éxito.
-      - El fallback de MotorReglasLocal sigue devolviendo str para todos los módulos.
-      - a_dict_serializable() normaliza ambos tipos para RabbitMQ/Outbox.
+    Contrato universal de salida para todos los módulos.
     """
     id_respuesta: str = Field(default_factory=lambda: str(uuid4()))
     usuario_id: str
     modulo: NombreModulo
     fecha_generacion: datetime = Field(default_factory=datetime.now)
  
-    # ── CAMBIO v5/v9: Union ampliado con ConsejoEstructuradoEspejo ──────────────
-    consejo: Optional[Union[str, ConsejoEstructuradoHormiga, ConsejoEstructuradoEvolucion, ConsejoEstructuradoEntrenamiento, ConsejoEstructuradoEspejo, ConsejoEstructuradoPredecir, ConsejoEstructuradoSimularMeta, Any]] = Field(
+    consejo: Optional[Union[str, ConsejoEstructuradoHormiga, ConsejoEstructuradoEvolucion, ConsejoEstructuradoEntrenamiento, ConsejoEstructuradoEspejo, ConsejoEstructuradoPredecir, ConsejoEstructuradoSimularMeta, ConsejoEstructuradoHabitos, ConsejoEstructuradoReto, Any]] = Field(
         default=None,
         description=(
             "Consejo financiero estructurado."
