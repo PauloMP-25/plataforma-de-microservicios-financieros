@@ -6,8 +6,8 @@ import { CrearCuenta } from '../crear-cuenta/crear-cuenta';
 import { VerificarCodigo } from '../../recuperar-contrasena/verificar-codigo/verificar-codigo';
 import { AuthService } from '../../../core/services/auth.service';
 
-// 1. Extendemos el tipo para incluir la vista 'canal' que pide el HTML
 export type VistaAuth = 'login' | 'registro' | 'verificar' | 'exito' | 'canal';
+export type CanalComunicacion = 'EMAIL' | 'SMS' | 'WHATSAPP';
 
 @Component({
   selector: 'app-contenedor-autenticacion',
@@ -17,23 +17,53 @@ export type VistaAuth = 'login' | 'registro' | 'verificar' | 'exito' | 'canal';
   styleUrl: './contenedor-autenticacion.scss',
 })
 export class ContenedorAutenticacion implements OnInit {
-  vistaActual: 'login' | 'registro' | 'canal' | 'verificar' | 'exito' = 'login';
-
+  
+  // Estado de la UI
+  vistaActual: VistaAuth = 'login';
   cargandoOtp = false;
-  infoOtp = '';
-  errorOtp = '';
+  infoOtp: string | null = null;
+  errorOtp: string | null = null;
+
+  // Datos de la sesión y activación
+  usuarioId = '';
   correoActivacion = '';
   telefonoActivacion = '';
-  canalSeleccionado: 'EMAIL' | 'SMS' | 'WHATSAPP' = 'EMAIL';
+  canalSeleccionado: CanalComunicacion = 'EMAIL';
+  
+  // Datos que se transfieren al componente de verificación externa
+  medioVerificacion: 'correo' | 'celular' = 'correo';
+  destinoVerificacion = '';
 
-  seleccionarCanal(canal: 'EMAIL' | 'SMS' | 'WHATSAPP'): void {
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private location: Location,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit(): void {
+    // Leer el estado inicial desde los datos de la ruta configurada
+    this.route.data.subscribe(data => {
+      if (data['vista']) {
+        this.vistaActual = data['vista'] as VistaAuth;
+      }
+    });
+  }
+
+  cambiarVista(vista: 'login' | 'registro'): void {
+    this.vistaActual = vista;
+    const ruta = vista === 'login' ? '/autenticacion/iniciar-sesion' : '/autenticacion/crear-cuenta';
+    this.location.go(ruta);
+  }
+
+  seleccionarCanal(canal: CanalComunicacion): void {
     this.canalSeleccionado = canal;
   }
 
   enviarCodigoActivacion(): void {
     this.cargandoOtp = true;
-    this.errorOtp = '';
-    this.infoOtp = '';
+    this.errorOtp = null;
+    this.infoOtp = 'Enviando código de verificación...';
 
     const payload = {
       email: this.correoActivacion,
@@ -45,56 +75,25 @@ export class ContenedorAutenticacion implements OnInit {
       next: (resp) => {
         this.cargandoOtp = false;
         if (resp.exito) {
+          this.infoOtp = 'Código enviado con éxito.';
           this.medioVerificacion = this.canalSeleccionado === 'EMAIL' ? 'correo' : 'celular';
           this.destinoVerificacion = this.canalSeleccionado === 'EMAIL' ? this.correoActivacion : this.telefonoActivacion;
           this.vistaActual = 'verificar';
         } else {
+          this.infoOtp = null;
           this.errorOtp = resp.mensaje || 'Error al enviar el código de verificación';
         }
       },
       error: (err) => {
         this.cargandoOtp = false;
+        this.infoOtp = null;
         this.errorOtp = err.error?.mensaje || 'Error de conexión con el servidor';
         console.error('Error al enviar OTP:', err);
       }
     });
   }
-  /** Datos del registro para el paso de verificación */
-  medioVerificacion: 'correo' | 'celular' = 'correo';
-  destinoVerificacion = '';
-  usuarioId = '';
 
-  // 3. PROPIEDADES NUEVAS que el HTML necesita urgentemente:
-  canalSeleccionado: 'EMAIL' | 'SMS' | 'WHATSAPP' | null = null;
-  correoActivacion: string = 'ejemplo@correo.com'; 
-  telefonoActivacion: string = '999999990';
-  cargandoOtp: boolean = false;
-  infoOtp: string | null = null;
-  errorOtp: string | null = null;
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private location: Location,
-    private authService: AuthService
-  ) {}
-
-  ngOnInit(): void {
-    // Leer el estado inicial desde los datos de la ruta
-    this.route.data.subscribe(data => {
-      if (data['vista']) {
-        this.vistaActual = data['vista'];
-      }
-    });
-  }
-
-  cambiarVista(vista: 'login' | 'registro'): void {
-    this.vistaActual = vista;
-    const ruta = vista === 'login' ? '/autenticacion/iniciar-sesion' : '/autenticacion/crear-cuenta';
-    this.location.go(ruta);
-  }
-
-  /** Maneja el registro exitoso y muestra la selección de canal */
+  /** Maneja el registro exitoso y redirecciona a la selección de canal */
   onRegistroExitoso(datos: { correo: string; celular?: string; usuarioId: string }): void {
     this.correoActivacion = datos.correo;
     this.telefonoActivacion = datos.celular || '';
@@ -102,29 +101,9 @@ export class ContenedorAutenticacion implements OnInit {
     this.vistaActual = 'canal';
   }
 
-  /** Maneja la verificación exitosa del código */
+  /** Maneja la verificación exitosa del código OTP */
   onCodigoVerificado(codigo: string): void {
-    console.log('Cuenta verificada con código:', codigo);
+    console.log('Cuenta verificada exitosamente con código:', codigo);
     this.vistaActual = 'exito';
-  }
-
-  // 4. MÉTODOS NUEVOS que ejecutan los (click) del HTML:
-  seleccionarCanal(canal: 'EMAIL' | 'SMS' | 'WHATSAPP'): void {
-    this.canalSeleccionado = canal;
-  }
-
-  enviarCodigoActivacion(): void {
-    this.cargandoOtp = true;
-    this.infoOtp = 'Enviando código de verificación...';
-    this.errorOtp = null;
-
-    console.log(`Enviando OTP simulado por: ${this.canalSeleccionado}`);
-
-    // Simulación para que no se quede congelado el botón en tu máquina
-    setTimeout(() => {
-      this.cargandoOtp = false;
-      this.infoOtp = 'Código enviado con éxito.';
-      this.vistaActual = 'verificar'; // Salta al siguiente paso
-    }, 1500);
   }
 }
