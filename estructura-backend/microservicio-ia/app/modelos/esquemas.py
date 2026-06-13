@@ -490,6 +490,16 @@ class ConsejoEstructuradoEstilo(BaseModel):
     alineacion_meta: str = Field(description="Cómo su estilo de vida impacta en su meta principal.")
     mensaje_estilo_vida: str = Field(description="Frase motivadora alineada al arquetipo descubierto.")
 
+class ConsejoEstructuradoAutoClasificacion(BaseModel):
+    """
+    Esquema ultra estricto para el módulo AUTO_CLASIFICACION.
+    """
+    categorias_sugeridas: List[str] = Field(
+        description="Lista de exactamente 4 palabras únicas que mejor categorizan la descripción del gasto/ingreso.",
+        min_items=4,
+        max_items=4
+    )
+
 class EstadoCoach(str, Enum):
     EXITOSO = "EXITOSO"
     CUOTA_AGOTADA = "CUOTA_AGOTADA"
@@ -512,7 +522,7 @@ class RespuestaModulo(BaseModel):
     modulo: NombreModulo
     fecha_generacion: datetime = Field(default_factory=datetime.now)
  
-    consejo: Optional[Union[str, ConsejoEstructuradoHormiga, ConsejoEstructuradoEvolucion, ConsejoEstructuradoEntrenamiento, ConsejoEstructuradoEspejo, ConsejoEstructuradoPredecir, ConsejoEstructuradoSimularMeta, ConsejoEstructuradoHabitos, ConsejoEstructuradoReto, ConsejoEstructuradoReporte, ConsejoEstructuradoEstilo, Any]] = Field(
+    consejo: Optional[Union[str, ConsejoEstructuradoHormiga, ConsejoEstructuradoEvolucion, ConsejoEstructuradoEntrenamiento, ConsejoEstructuradoEspejo, ConsejoEstructuradoPredecir, ConsejoEstructuradoSimularMeta, ConsejoEstructuradoHabitos, ConsejoEstructuradoReto, ConsejoEstructuradoReporte, ConsejoEstructuradoEstilo, ConsejoEstructuradoAutoClasificacion, Any]] = Field(
         default=None,
         description=(
             "Consejo financiero estructurado."

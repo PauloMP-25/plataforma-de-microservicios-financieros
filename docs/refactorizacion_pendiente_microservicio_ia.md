@@ -73,7 +73,7 @@ Esto garantiza:
 | `RETO_AHORRO_DINAMICO` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoReto` | ✅ | ✅ | ✅ | Paulo |
 | `REPORTE_COMPLETO` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoReporte` | ✅ Fallback Propio | ✅ Tabla propia | ✅ Aplicadas | Paulo |
 | `ANALISIS_ESTILO_VIDA` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEstilo` | ✅ Fallback Propio | ✅ Tabla propia | ✅ Aplicadas | Paulo |
-| `AUTO_CLASIFICACION` | ✅ | N/A | ⚠️ Pendiente revisar | N/A | ❌ | ✅ | ❌ | — |
+| `AUTO_CLASIFICACION` | ✅ | N/A | ✅ Zero History | ✅ `ConsejoEstructuradoAutoClasificacion` | ✅ Fallback Propio | ✅ | ✅ Aplicadas | Paulo |
 | `COMPROBADOR_EVOLUCION` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEvolucion` | ✅ | ✅ | ❌ | — |
 | `ZONA_ENTRENAMIENTO` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEntrenamiento` | ✅ | ✅ | ❌ | — |
 | `ESPEJO_TEMPORAL` | 🔄 En progreso | 🔄 En progreso | 🔄 En progreso | 🔄 `ConsejoEstructuradoEspejo` | 🔄 | 🔄 | ❌ | — |

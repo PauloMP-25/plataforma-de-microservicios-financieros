@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ConsejoEstructuradoPredecir } from '../../../../../../../core/models/ia_coach/ia-base.model';
+import { ConsejoEstructuradoPredecir } from '../../../../../../core/models/ia_coach/ia-base.model';
 
 @Component({
   selector: 'app-ia-prediccion-consejo',

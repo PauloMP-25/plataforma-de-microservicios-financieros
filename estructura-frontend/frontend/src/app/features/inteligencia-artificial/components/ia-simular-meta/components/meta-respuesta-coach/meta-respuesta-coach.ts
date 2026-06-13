@@ -1,6 +1,6 @@
 import { Component, Input, signal, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ConsejoEstructuradoSimularMeta } from '../../../../../../../core/models/ia_coach/ia-base.model';
+import { ConsejoEstructuradoSimularMeta } from '../../../../../../core/models/ia_coach/ia-base.model';
 
 @Component({
   selector: 'app-meta-respuesta-coach',
