@@ -98,7 +98,9 @@ export interface RespuestaModuloDTO {
 
 export interface RespuestaClasificacionDTO {
   id_temporal: string;
-  sugerencias: string[];
+  sugerencias?: string[];
+  categorias_sugeridas?: string[];
+  consejo?: ConsejoEstructuradoAutoClasificacionDTO;
   usando_fallback: boolean;
 }
 
@@ -144,6 +146,11 @@ export interface ConsejoEstructuradoReto {
   diagnostico: string;
   estrategia: string;
   mensaje_motivacional: string;
+}
+
+export interface ConsejoEstructuradoAutoClasificacionDTO {
+  pensamiento_interno_ia?: string;
+  categorias_sugeridas: string[];
 }
 
 // Compatibilidad heredada

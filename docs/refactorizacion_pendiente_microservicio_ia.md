@@ -64,19 +64,19 @@ Esto garantiza:
 
 ## Estado de Cumplimiento por Módulo
 
-| Módulo | Fase 1 ✅ | Fase 2 (Pandas) ✅ | Fase 3 (Solo KPIs a Gemini) | Structured Output | Fallback Propio | Persistencia| Técnicas Prompt | Responsable |
-|---|---|---|---|---|---|---|---|---|
-| `GASTO_HORMIGA` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoHormiga` | ✅ | ✅ | ✅ | Paulo |
-| `PREDECIR_GASTOS` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoPredecir` | ✅ | ✅ | ✅ | Paulo |
-| `HABITOS_FINANCIEROS` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoHabitos` | ✅ | ✅ | ✅ | Paulo |
-| `SIMULAR_META` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoSimularMeta` | ✅ | ✅ | ✅ | Paulo |
-| `RETO_AHORRO_DINAMICO` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoReto` | ✅ | ✅ | ✅ | Paulo |
-| `REPORTE_COMPLETO` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoReporte` | ✅ Fallback Propio | ✅ Tabla propia | ✅ Aplicadas | Paulo |
-| `ANALISIS_ESTILO_VIDA` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEstilo` | ✅ Fallback Propio | ✅ Tabla propia | ✅ Aplicadas | Paulo |
-| `AUTO_CLASIFICACION` | ✅ | N/A | ✅ Zero History | ✅ `ConsejoEstructuradoAutoClasificacion` | ✅ Fallback Propio | ✅ | ✅ Aplicadas | Paulo |
-| `COMPROBADOR_EVOLUCION` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEvolucion` | ✅ | ✅ | ❌ | — |
-| `ZONA_ENTRENAMIENTO` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEntrenamiento` | ✅ | ✅ | ❌ | — |
-| `ESPEJO_TEMPORAL` | 🔄 En progreso | 🔄 En progreso | 🔄 En progreso | 🔄 `ConsejoEstructuradoEspejo` | 🔄 | 🔄 | ❌ | — |
+| Módulo | Fase 1 ✅ | Fase 2 (Pandas) ✅ | Fase 3 (Solo KPIs a Gemini) | Structured Output | Fallback Propio | Persistencia| Técnicas Prompt | Integración Frontend | Responsable |
+|---|---|---|---|---|---|---|---|---|---|
+| `GASTO_HORMIGA` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoHormiga` | ✅ | ✅ | ✅ | ✅ | Paulo |
+| `PREDECIR_GASTOS` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoPredecir` | ✅ | ✅ | ✅ | ✅ | Paulo |
+| `HABITOS_FINANCIEROS` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoHabitos` | ✅ | ✅ | ✅ | ✅ | Paulo |
+| `SIMULAR_META` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoSimularMeta` | ✅ | ✅ | ✅ | ✅ | Paulo |
+| `RETO_AHORRO_DINAMICO` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoReto` | ✅ | ✅ | ✅ | ✅ | Paulo |
+| `REPORTE_COMPLETO` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoReporte` | ✅ Fallback Propio | ✅ Tabla propia | ✅ Aplicadas | ✅ | Paulo |
+| `ANALISIS_ESTILO_VIDA` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEstilo` | ✅ Fallback Propio | ✅ Tabla propia | ✅ Aplicadas | ✅ | Paulo |
+| `AUTO_CLASIFICACION` | ✅ | N/A | ✅ Zero History | ✅ `ConsejoEstructuradoAutoClasificacion` | ✅ Fallback Propio | ✅ | ✅ Aplicadas | ✅ | Paulo |
+| `COMPROBADOR_EVOLUCION` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEvolucion` | ✅ | ✅ | ❌ | ❌ | — |
+| `ZONA_ENTRENAMIENTO` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEntrenamiento` | ✅ | ✅ | ❌ | ❌ | — |
+| `ESPEJO_TEMPORAL` | 🔄 En progreso | 🔄 En progreso | 🔄 En progreso | 🔄 `ConsejoEstructuradoEspejo` | 🔄 | 🔄 | ❌ | ❌ | — |
 
 **Leyenda:** ✅ Implementado | ⚠️ Pendiente | ❌ No implementado | 🔄 En progreso | N/A No aplica
 
