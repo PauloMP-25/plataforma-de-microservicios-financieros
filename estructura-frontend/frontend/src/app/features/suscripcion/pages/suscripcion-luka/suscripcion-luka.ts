@@ -7,9 +7,9 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   template: `
     <div class="suscripcion-luka-placeholder">
-      <i class="fa-solid fa-credit-card icon-placeholder"></i>
-      <h2>Gestión de Suscripciones</h2>
-      <p>Esta sección está siendo desarrollada por el equipo de integraciones. Aquí podrás visualizar tu historial de pagos, planes contratados y facturación.</p>
+      <i class="fa-solid fa-crown icon-placeholder"></i>
+      <h2>Membresía Luka</h2>
+      <p>Esta sección aún está en proceso. Pronto podrás gestionar tus planes, revisar tu membresía activa y administrar los beneficios de tu cuenta Luka desde aquí.</p>
     </div>
   `,
   styles: [`

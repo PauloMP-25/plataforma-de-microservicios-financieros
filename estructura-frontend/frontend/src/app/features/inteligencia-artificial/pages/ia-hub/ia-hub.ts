@@ -22,11 +22,6 @@ import { IaEstiloVidaComponent } from '../../components/ia-estilo-vida/ia-estilo
 import { IaZonaEntrenamientoComponent } from '../../components/ia-zona-entrenamiento/ia-zona-entrenamiento';
 import { IaComprobadorEvolucionComponent } from '../../components/ia-comprobador-evolucion/ia-comprobador-evolucion';
 
-
-
-
-
-
 export interface IaModulo {
   id: string;
   label: string;
@@ -247,6 +242,7 @@ const IA_MODULOS: IaModulo[] = [
 export class IaHubComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private iaService = inject(IaService);
 
   modulos = IA_MODULOS;
   moduloSeleccionado = signal<IaModulo | null>(null);
@@ -353,6 +349,32 @@ export class IaHubComponent implements OnInit, OnDestroy {
     this.cargando.set(true);
     this.errorMsg.set(null);
     this.resultado.set(null);
+
+    // Integración REAL con Backend para el Comprobador de Evolución y Zona de Entrenamiento
+    if (mod.id === 'comprobador-evolucion' || mod.id === 'zona-entrenamiento') {
+      const apiCall = mod.id === 'comprobador-evolucion' 
+        ? this.iaService.getComprobadorEvolucion(payload)
+        : this.iaService.getZonaEntrenamiento(payload);
+
+      apiCall.subscribe({
+        next: (res) => {
+          if (res.exito && res.datos) {
+            this.resultado.set(res.datos);
+          } else {
+            this.errorMsg.set(res.mensaje || 'Error desconocido al consultar el backend.');
+          }
+          this.cargando.set(false);
+        },
+        error: (err) => {
+          console.warn('Fallback a mockup estático activado debido a un error de conexión', err);
+          this.errorMsg.set('Conexión con la clínica financiera falló (' + err.message + '). Mostrando datos de simulación estática (Mockup).');
+          const mockRes = this._generarRespuestaMock(mod, payload);
+          this.resultado.set(mockRes);
+          this.cargando.set(false);
+        }
+      });
+      return;
+    }
 
     // Retardo simulado para recrear la animación premium de la red neuronal de Gemini Pro
     setTimeout(() => {
@@ -625,20 +647,69 @@ export class IaHubComponent implements OnInit, OnDestroy {
           { categoria: 'Delivery', confianza: 82 },
           { categoria: 'Ocio', confianza: 34 }
         ]
+      },
+      'zona-entrenamiento': {
+        hallazgos: {
+          frecuencia_cardiaca: 2.5,
+          presion_arterial: 1.5,
+          temperatura_ahorro: 5,
+          saturacion_pct: 45
+        }
       }
     };
 
-    const consejos: Record<string, string> = {
+    const consejos: Record<string, any> = {
       'gasto-hormiga': 'Paulo, **vamos al grano**. Tus gastos en **\'Cafetería\'** han subido un **20%** este mes. Lo que ves como S/ 12.00 diarios hoy, se traduce en una fuga de **S/ 4,320.00 al año**. Con ese dinero podrías comprarte la **\'Laptop Gamer\'** que tanto quieres y aún te sobraría para los periféricos. Estás descuidando tu meta por una comodidad momentánea. Para empezar con fuerza, esta semana ponte el reto de llevar tu propio café en un termo al campus al menos tres días. Verás que ese pequeño cambio acelerará tu camino hacia esa nueva computadora y te dará la tranquilidad que necesitas para programar. ¡Deja de financiar el marketing de las grandes cadenas y empieza a financiar tu herramienta de trabajo!',
-      'predecir-gastos': 'Estimado Paulo Moron, tras realizar el **análisis econométrico** de su historial transaccional, proyectamos que sus egresos para el próximo periodo ascenderán a **S/ 1,850.00**. Dado que sus ingresos mensuales se sitúan en S/ 2,000.00, su margen de maniobra es del **7.5%**, lo cual se considera un nivel de riesgo moderado ante contingencias. Le recomendamos formalmente priorizar la constitución de un fondo de reserva equivalente a tres meses de gastos. Evite comprometerse con nuevas obligaciones financieras durante el próximo trimestre para asegurar la viabilidad de su meta principal de la **\'Laptop Gamer\'** sin comprometer sus necesidades básicas.',
+      'predecir-gastos': {
+        pensamiento_interno_ia: 'Evaluando proyecciones de gasto vs ingreso esperado. Existe riesgo si no se ajustan los fijos.',
+        introduccion: 'Hola Paulo, las matemáticas no mienten.',
+        analisis_tendencia: 'Basado en tus 3 últimos meses, proyectamos que tu próximo mes requerirá S/. 1,850.00 debido al alza sostenida en "Alimentación" (Deliverys).',
+        impacto_meta: 'Si tus ingresos esperados se mantienen en S/. 2,000.00, tu margen libre será de apenas S/. 150.00, lo cual retrasa tu meta de Laptop Gamer.',
+        recomendacion_matematica: 'Si reduces tus pedidos de Rappi a 2 veces por semana, tu proyección de gasto bajará en S/. 280.00, salvando el mes.',
+        mensaje_motivacional: '¡Estás a tiempo de cambiar la tendencia de este mes!'
+      },
       'habitos-financieros': '¡Hola Paulo! He notado que tus **Sábados a las 6 PM** son el momento donde tu billetera más sufre, especialmente en **\'Restaurantes\'**. Parece que el fin de semana te invita a celebrar, ¡y eso está bien!, pero esos pequeños impulsos están frenando tu meta de la **Laptop Gamer**. <br/><br/>**Hábito Atómico:** Prueba la **\'Regla de las 48 horas\'**: si ves algo que quieres comprar un sábado, espérate al lunes. Si aún lo quieres, cómpralo. Verás cómo el 80% de esos antojos desaparecen solos. ¡Tú tienes el control!',
       'estilo-vida': `Paulo, tras analizar tus movimientos, te he bautizado como **'El Foodie Explorador'**. Tienes un paladar exigente: el 65% de tus gastos no fijos se van en descubrir nuevos sabores en restaurantes y barras de café. <br/><br/>**Valor de Salud:** Como tu perfil es gastronómico, podrías ahorrar un **15%** mensual si aprovechas los días de promociones bancarias en tus locales favoritos o si te pones un presupuesto semanal de 'salidas' fijo. Ese ahorro extra de S/ 120.00 aceleraría tu meta de la **Laptop Gamer** en casi un mes. ¡Sigue explorando, pero con estrategia!`,
       'reporte-completo': `Paulo, tu **Score LUKA es 78/100**. Has mantenido un crecimiento constante en tus ahorros desde el 1 de enero. Tu balance anual positivo de S/ 2,450.00 indica una gestión responsable, aunque detectamos un punto crítico en Marzo. Eres un 'Ahorrador Estratégico'. Tu gestión es superior al 80% de los usuarios de tu perfil. Mantén este ritmo y cerrarás el año con la solvencia necesaria para todas tus metas y estarás estrenando esa nueva laptop antes de lo previsto.`,
-      'simular-meta': `¡Paulo, tu meta de la **'Laptop Gamer'** es **TOTALMENTE VIABLE** y estás más cerca de lo que crees! Con tu capacidad de ahorro actual de S/ 450.00 al mes y tu ahorro previo de S/ 500.00, en aproximadamente **6.5 meses** estarás estrenando equipo. Pero espera, he analizado tus finanzas y si logras optimizar solo un poco tus gastos de ocio, podrías subir ese aporte a S/ 550.00 y tenerla en solo 5 meses. ¡Imagina la potencia de ese procesador trabajando para ti medio año antes! Mantén el enfoque, cada sol ahorrado hoy es un frame más por segundo en tu nueva computadora. ¡Tú puedes!`,
+      'simular-meta': {
+        pensamiento_interno_ia: 'Meta de ahorro con un plazo exigente pero alcanzable ajustando gastos no esenciales.',
+        introduccion: '¡Paulo, tu meta de la "Laptop Gamer" es TOTALMENTE VIABLE y estás más cerca de lo que crees!',
+        diagnostico_viabilidad: 'Con tu capacidad de ahorro actual de S/ 450.00 al mes y tu ahorro previo de S/ 500.00, en aproximadamente 6.5 meses estarás estrenando equipo.',
+        plan_accion: 'He analizado tus finanzas y si logras optimizar solo un poco tus gastos de ocio, podrías subir ese aporte a S/ 550.00 y tenerla en solo 5 meses.',
+        tecnica_sugerida: 'Microahorro de Ocio: Guarda el dinero de las salidas que canceles.',
+        mensaje_motivacional: '¡Mantén el enfoque, cada sol ahorrado hoy es un frame más por segundo en tu nueva computadora!'
+      },
       'reto-ahorro': '¡Misión: Operación Cocina en Casa! 🏆 Paulo, he detectado que tu \'Enemigo Final\' de esta semana son los Restaurantes. Tu misión, si decides aceptarla, es evitar comer fuera por los próximos 7 días. Si lo logras, habrás salvado **S/ 85.00** para tu fondo de la \'Laptop Gamer\'. ¿Aceptas el reto, Jugador 1?',
       'espejo-temporal': '¡Hola Paulo! Soy tu coach financiero Luka. Tras proyectar tus finanzas a 12 meses, la diferencia neta de ahorro acumulado proyectado entre tus dos futuros es de **S/ 1,450.00**. Si continúas con tus hábitos del pasado (gastando en mototaxi para distancias cortas y micro-compras compulsivas de antojos de fin de semana), tus metas de realizar tu **Viaje a Cusco**, adquirir tu **Laptop Gamer** y fundar tu cuenta de **Ahorro para Departamento** se postergarán de forma indefinida, manteniéndote en un ciclo de estancamiento. Sin embargo, al activar tu plan de transformación —reemplazando trayectos cortos por caminatas y optimizando tus antojos de fin de semana— no solo liberarás liquidez mensual inmediata, sino que lograrás capitalizar tus ahorros a **S/ 1,550.00**. Con esto lograrás concretar tu viaje, comprar la laptop y sembrar la cuota inicial de tu departamento. La clave para tu éxito está en la micro-disciplina diaria: cada decisión de hoy construye tu mañana.',
       'comprobador-evolucion': 'Paulo, el diagnóstico revela que estás ganando estabilidad en tus bases (servicios fijos y alimentación protegida), pero tus extremidades (gastos de ocio y compras ocasionales) están fracturando gravemente tu flujo de caja neto. El Índice de Volatilidad de Gastos es del 78% (Caótico), lo que indica una alta inestabilidad semanal. Si logras aplicar la posología y sanar estas fracturas reduciendo la comida fuera de casa los fines de semana, consolidarás la base ideal para tu Laptop Gamer.',
-      'clasificar-transaccion': `🏷️ **Clasificación sugerida:** Para "${payload?.descripcion || 'Rappi Alimentos'}" de S/. ${payload?.monto || 45.00}, Luka recomienda la categoría **"Alimentación"** con 95% de confianza.`
+      'clasificar-transaccion': `🏷️ **Clasificación sugerida:** Para "${payload?.descripcion || 'Rappi Alimentos'}" de S/. ${payload?.monto || 45.00}, Luka recomienda la categoría **"Alimentación"** con 95% de confianza.`,
+      'zona-entrenamiento': {
+        pensamiento_interno_ia: 'Generando rutina de contingencia desde el front-end.',
+        estado_fisico: 'Lesionado',
+        rutina: [
+          {
+            nombre: 'Sprint de Ahorro',
+            descripcion: 'No gastar en la categoría Entretenimiento/Antojos por 3 días seguidos.',
+            duracion_dias: 3,
+            frecuencia: 'Entretenimiento',
+            metrica_exito: 'S/ 30.00 retenidos'
+          },
+          {
+            nombre: 'Levantamiento de Presupuesto',
+            descripcion: 'Registrar cada sol gastado en Pichangas antes de que termine el día.',
+            duracion_dias: 7,
+            frecuencia: 'Deportes',
+            metrica_exito: '100% visibilidad'
+          },
+          {
+            nombre: 'Flexibilidad de Cuota',
+            descripcion: 'Separar S/ 6 fijos al inicio de la semana exclusivamente para salidas.',
+            duracion_dias: 30,
+            frecuencia: 'Planificación',
+            metrica_exito: 'Presupuesto blindado'
+          }
+        ]
+      }
     };
 
     // Estructuras de gráficos para visualizar en IaResultadoComponent

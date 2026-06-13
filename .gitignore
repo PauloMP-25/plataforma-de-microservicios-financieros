@@ -80,6 +80,7 @@ scratch/
 guias/
 pruebas/
 disenos/
+**/comando
 comando/
 comando/**
 memoria.md
@@ -103,3 +104,5 @@ configurar-terminator.sh
 payload.json
 estructura-backend/ESTANDAR_ARQUITECTURA_MICROSERVICIOS.md
 
+# --- TEMPORALES ---
+estructura-backend/microservicio-ia/tests/solucion_temporal/

@@ -15,7 +15,8 @@ export type ModuloIa =
   | 'HABITOS_FINANCIEROS'
   | 'RETO_AHORRO_DINAMICO'
   | 'ANALISIS_ESTILO_VIDA'
-  | 'ESPEJO_TEMPORAL';
+  | 'ESPEJO_TEMPORAL'
+  | 'ZONA_ENTRENAMIENTO';
 
 export interface SolicitudIaDTO {
   idUsuario: string;
@@ -40,6 +41,13 @@ export interface PeticionSimularMetaDTO {
   monto_objetivo: number;
   monto_actual_ahorrado?: number;
   aporte_mensual_deseado?: number;
+}
+
+export interface PeticionComparacionDTO {
+  rangoA_inicio: string;
+  rangoA_fin: string;
+  rangoB_inicio: string;
+  rangoB_fin: string;
 }
 
 export interface SolicitudClasificacionDTO {
@@ -80,7 +88,7 @@ export interface RespuestaModuloDTO {
   usuario_id: string;
   modulo: string;
   fecha_generacion: string;
-  consejo: string | null;
+  consejo: any | string | null;
   estado_coach: 'EXITOSO' | 'CUOTA_AGOTADA' | 'AUTH_ERROR' | 'TIMEOUT' | 'NO_DISPONIBLE';
   usando_fallback: boolean;
   insight: any; // Datos analíticos puros devueltos por Pandas
@@ -104,6 +112,43 @@ export interface RespuestaIaDTO {
   metadataGrafico?: MetadataGraficoIaDTO;
   kpiPrincipal?: number;
   kpiLabel?: string;
+}
+
+// ── Modelos Específicos para Módulo: Zona de Entrenamiento ──
+
+export interface EjercicioEntrenamientoDTO {
+  nombre: string;
+  descripcion: string;
+  duracion_dias: number;
+  frecuencia: string;
+  metrica_exito: string;
+}
+
+export interface ConsejoEntrenamientoDTO {
+  pensamiento_interno_ia: string;
+  estado_fisico: string;
+  evaluacion_previa?: string;
+  rutina: EjercicioEntrenamientoDTO[];
+}
+
+// ── Modelos Específicos para Módulo: Predicción de Gastos ──
+export interface ConsejoPredecirGastosDTO {
+  pensamiento_interno_ia: string;
+  introduccion: string;
+  analisis_tendencia: string;
+  impacto_meta: string;
+  recomendacion_matematica: string;
+  mensaje_motivacional: string;
+}
+
+// ── Modelos Específicos para Módulo: Simular Meta ──
+export interface ConsejoSimularMetaDTO {
+  pensamiento_interno_ia: string;
+  introduccion: string;
+  diagnostico_viabilidad: string;
+  plan_accion: string;
+  tecnica_sugerida?: string;
+  mensaje_motivacional: string;
 }
 
 // ── Modelos Específicos para Módulo 5: Espejo Temporal ──

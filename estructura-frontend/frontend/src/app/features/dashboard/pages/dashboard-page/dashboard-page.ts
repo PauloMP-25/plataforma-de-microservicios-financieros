@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BalancesCard } from '../../components/balances-card/balances-card';
 import { Chart } from '../../components/chart/chart';
-import { Transacciones } from '../../components/transacciones/transacciones';
 import { DashboardStateService } from '../../../../core/services/dashboard-state.service';
 import { AppEventBus } from '../../../../core/services/app-event-bus.service';
 import { Subscription } from 'rxjs';
@@ -22,7 +21,7 @@ interface Transaccion {
 @Component({
   selector: 'app-dashboard-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, BalancesCard, Chart, Transacciones],
+  imports: [CommonModule, FormsModule, BalancesCard, Chart],
   templateUrl: './dashboard-page.html',
   styleUrls: ['./dashboard-page.scss']
 })

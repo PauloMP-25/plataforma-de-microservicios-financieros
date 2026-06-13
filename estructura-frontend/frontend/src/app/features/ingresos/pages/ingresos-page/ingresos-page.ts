@@ -1,17 +1,16 @@
 import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { IngresoKpisComponent } from '../../components/ingreso-kpis/ingreso-kpis';
 import { IngresoChartComponent } from '../../components/ingreso-chart/ingreso-chart';
 import { IngresoRecentListComponent } from '../../components/ingreso-recent-list/ingreso-recent-list';
-import { IngresosTableComponent } from '../../components/ingresos-table/ingresos-table';
 import { IngresosStateService } from '../../../../core/services/ingresos-state.service';
 import { AppEventBus } from '../../../../core/services/app-event-bus.service';
 import {
   DistribucionCategoria,
   IngresoKpi,
   IngresoReciente,
-  IngresoRegistro,
   IngresoTendenciaPunto,
 } from '../../types/ingresos.interfaces';
 
@@ -20,11 +19,11 @@ import {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     RouterLink,
     IngresoKpisComponent,
     IngresoChartComponent,
-    IngresoRecentListComponent,
-    IngresosTableComponent
+    IngresoRecentListComponent
   ],
   templateUrl: './ingresos-page.html',
   styleUrl: './ingresos-page.scss',
@@ -33,10 +32,10 @@ export class IngresosPage {
   private readonly stateService = inject(IngresosStateService);
   private readonly eventBus = inject(AppEventBus);
 
-  // ── Signals computados para transformar el estado a la interfaz de Ingresos ──
+  // â”€â”€ Signals computados para transformar el estado a la interfaz de Ingresos â”€â”€
   readonly kpisSignal = computed<IngresoKpi[]>(() => {
     const resumen = this.stateService.resumenActual();
-    
+
     const total = resumen?.totalIngresos ?? 0;
     const cantidad = resumen?.cantidadIngresos ?? 0;
     const cats = this.distribucionSignal();
@@ -44,10 +43,8 @@ export class IngresosPage {
     const primaryCatPorc = cats[0]?.porcentaje ? `${cats[0].porcentaje.toFixed(0)}% del total` : '0% del total';
 
     return [
-      { titulo: 'Total ingresos', valor: `S/ ${total.toFixed(2)}`, subtitulo: 'Este mes', color: 'emerald' },
       { titulo: 'Ingresos registrados', valor: String(cantidad), subtitulo: 'Este mes', color: 'violet' },
-      { titulo: 'Racha de registros', valor: 'Activa', subtitulo: 'Sigue así', color: 'sky' },
-      { titulo: 'Categoría principal', valor: primaryCatName, subtitulo: primaryCatPorc, color: 'amber' },
+      { titulo: 'Categoria principal', valor: primaryCatName, subtitulo: primaryCatPorc, color: 'amber' },
     ];
   });
 
@@ -58,7 +55,7 @@ export class IngresosPage {
     const map = new Map<string, number>();
     let total = 0;
     for (const t of transacciones) {
-      const cat = t.categoria || 'Otros';
+      const cat = this.nombreCategoria(t.categoria, t.categoriaId);
       const m = t.monto || 0;
       map.set(cat, (map.get(cat) ?? 0) + m);
       total += m;
@@ -107,7 +104,7 @@ export class IngresosPage {
     return transacciones.slice(0, 5).map(t => {
       const fecha = new Date(t.fechaTransaccion);
       return {
-        categoria: t.categoria || 'Otros',
+        categoria: this.nombreCategoria(t.categoria, t.categoriaId),
         descripcion: t.descripcion || t.notas || 'Ingreso registrado',
         monto: t.monto || 0,
         fecha: fecha.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -115,28 +112,11 @@ export class IngresosPage {
     });
   });
 
-  readonly tablaSignal = computed<IngresoRegistro[]>(() => {
-    const transacciones = this.stateService.ingresos();
-    return transacciones.map(t => {
-      const fecha = new Date(t.fechaTransaccion);
-      return {
-        id: t.id,
-        fecha: fecha.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }),
-        monto: t.monto || 0,
-        categoria: t.categoria || 'Otros',
-        metodoPago: t.metodoPago as any || 'DIGITAL',
-        etiquetas: t.etiquetas ? t.etiquetas.split(',') : [],
-        nota: t.descripcion || t.notas || 'Ingreso registrado'
-      };
-    });
-  });
-
-  // Getters para compatibilidad de enlace directo en plantilla HTML sin alterar bindings básicos
+  // Getters para compatibilidad de enlace directo en plantilla HTML sin alterar bindings bÃ¡sicos
   get kpis(): IngresoKpi[] { return this.kpisSignal(); }
   get distribucion(): DistribucionCategoria[] { return this.distribucionSignal(); }
   get tendencia(): IngresoTendenciaPunto[] { return this.tendenciaSignal(); }
   get recientes(): IngresoReciente[] { return this.recientesSignal(); }
-  get tabla(): IngresoRegistro[] { return this.tablaSignal(); }
 
   // Resumen del panel superior
   get nombreMesActual(): string {
@@ -171,5 +151,18 @@ export class IngresosPage {
 
   constructor() {
     this.stateService.cargarDatos();
+  }
+
+  private nombreCategoria(categoria?: string | null, categoriaId?: string | null): string {
+    const nombre = categoria?.trim();
+    if (nombre && !this.esUid(nombre)) return nombre;
+
+    const id = categoriaId || nombre;
+    const match = this.stateService.categorias().find(cat => cat.id === id);
+    return match?.nombre ?? 'Otros';
+  }
+
+  private esUid(valor: string): boolean {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(valor);
   }
 }

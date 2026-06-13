@@ -704,7 +704,7 @@
     display: none;
   }
 
-  
+
 }
 
 
@@ -733,20 +733,32 @@
 
 .planes-modal__close {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  border: 1px solid #dbe3ef;
-  background: #ffffff;
+  top: 14px;
+  right: 14px;
+  z-index: 5;
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  min-height: 42px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.96);
   color: #0f172a;
-  font-size: 18px;
+  font-size: 20px;
+  line-height: 1;
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
+
+  i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1em;
+    height: 1em;
+  }
 }
 
 .planes-modal__grid {

@@ -1,4 +1,5 @@
 export interface SolicitudPresupuesto {
+  nombre?: string;
   montoLimite: number;
   porcentajeAlerta: number;
   fechaInicio: string;
@@ -8,6 +9,7 @@ export interface SolicitudPresupuesto {
 export interface PresupuestoDTO {
   id: string;
   usuarioId: string;
+  nombre: string;
   montoLimite: number;
   porcentajeAlerta: number;
   fechaInicio: string;

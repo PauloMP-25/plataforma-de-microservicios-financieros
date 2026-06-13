@@ -1,0 +1,128 @@
+<section class="gastos-page">
+  <header class="gastos-page__hero">
+    <div class="gastos-page__hero-copy">
+      <p class="gastos-page__eyebrow">Subsección dedicada</p>
+      <h1>Historial de gastos</h1>
+      <p>Revisa todos tus gastos en una vista amplia, clara y fácil de buscar.</p>
+    </div>
+    <button type="button" class="gastos-page__btn-main" routerLink="/gastos">
+      Volver al resumen
+    </button>
+  </header>
+
+  <section class="gastos-page__history-summary">
+    <article class="gastos-page__history-card gastos-page__history-card--expenses">
+      <span>Total filtrado</span>
+      <strong>S/ {{ totalFiltrado().toFixed(2) }}</strong>
+      <small>{{ gastosFiltradosPagados().length }} registros visibles</small>
+    </article>
+  </section>
+
+  <section class="gastos-page__filters-card">
+    <h3>Filtros de historial</h3>
+    <div class="gastos-page__filters-grid">
+      <label>
+        <span>Buscar gasto</span>
+        <input
+          type="search"
+          [value]="terminoBusqueda()"
+          (input)="actualizarBusqueda($any($event.target).value)"
+          placeholder="Nombre, categoría o método..."
+        />
+      </label>
+
+      <label>
+        <span>Estado</span>
+        <select [value]="filtroEstado()" (change)="actualizarEstado($any($event.target).value)">
+          <option value="TODOS">Todos los estados</option>
+          <option value="Pagado">Pagado</option>
+          <option value="Pendiente">Pendiente</option>
+        </select>
+      </label>
+
+      <label>
+        <span>Periodo</span>
+        <select [value]="filtroMes()" (change)="actualizarMes($any($event.target).value)">
+          <option *ngFor="let mes of meses" [value]="mes.value">{{ mes.label }}</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="gastos-page__filters-actions">
+      <p>Los resultados se actualizan automáticamente al escribir en la búsqueda.</p>
+      <button type="button" class="gastos-page__btn-tool" (click)="actualizarBusqueda('')">Limpiar búsqueda</button>
+    </div>
+  </section>
+
+  <section class="gastos-page__panel gastos-page__panel--history">
+    <header class="gastos-page__panel-header">
+      <div>
+        <h3>Tabla de gastos registrados</h3>
+        <p>Administra tus movimientos con mayor comodidad y detalle.</p>
+      </div>
+      <span class="gastos-page__chip is-warning">Historial</span>
+    </header>
+
+    @if (gastosFiltradosPagados().length === 0) {
+      <div class="gastos-page__empty">
+        <h4>No hay gastos para mostrar</h4>
+        <p>Registra gastos o ajusta tu búsqueda para ver resultados.</p>
+      </div>
+    } @else {
+      <div class="gastos-page__table-wrap gastos-page__table-wrap--wide">
+        <table class="gastos-page__table">
+          <thead>
+            <tr>
+              <th><i class="fa-solid fa-receipt"></i> Gasto</th>
+              <th><i class="fa-solid fa-tags"></i> Categoría</th>
+              <th><i class="fa-solid fa-calendar-days"></i> Fecha</th>
+              <th><i class="fa-solid fa-money-bill-wave"></i> Monto</th>
+              <th><i class="fa-solid fa-circle-check"></i> Estado</th>
+              <th><i class="fa-solid fa-credit-card"></i> Método de pago</th>
+              <th><i class="fa-solid fa-gear"></i> Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (gasto of gastosFiltradosPagados(); track gasto.id) {
+              <tr>
+                <td>
+                  <div class="gastos-page__cell-main">
+                    <span class="gastos-page__icon-wrap" aria-hidden="true">
+                      <i class="fa-solid" [ngClass]="'fa-' + gasto.icono"></i>
+                    </span>
+                    <div>
+                      <strong>{{ gasto.nombre }}</strong>
+                      <small>{{ gasto.detalle }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="gastos-page__cat" [class]="'gastos-page__cat is-' + gasto.colorCategoria">{{ gasto.categoria }}</span></td>
+                <td>
+                  <div class="gastos-page__cell-date">
+                    <span>{{ gasto.fecha }}</span>
+                    <small>{{ gasto.hora }}</small>
+                  </div>
+                </td>
+                <td><span class="gastos-page__amount">-S/ {{ gasto.monto.toFixed(2) }}</span></td>
+                <td>
+                  <span class="gastos-page__badge" [class.is-paid]="gasto.estado === 'Pagado'" [class.is-warning]="gasto.estado === 'Pendiente'">
+                    <i class="fa-solid" [ngClass]="gasto.estado === 'Pagado' ? 'fa-circle-check' : 'fa-clock'"></i>{{ gasto.estado }}
+                  </span>
+                </td>
+                <td>
+                  <span class="gastos-page__pay-method"><i class="fa-solid fa-wallet"></i>{{ gasto.metodo }}</span>
+                </td>
+                <td>
+                  <div class="gastos-page__row-actions">
+                    <button type="button" class="gastos-page__icon-btn is-edit" (click)="editarGasto(gasto.id)"><i class="fa-solid fa-pen"></i></button>
+                    <button type="button" class="gastos-page__icon-btn is-delete" (click)="eliminarGasto(gasto.id)"><i class="fa-solid fa-trash"></i></button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</section>
