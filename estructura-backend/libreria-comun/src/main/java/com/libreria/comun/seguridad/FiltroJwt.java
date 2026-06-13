@@ -112,7 +112,7 @@ public class FiltroJwt extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(@SuppressWarnings("null") HttpServletRequest request) {
         String path = request.getServletPath();
-        return path.startsWith("/api/v1/auth/")
+        return (path.startsWith("/api/v1/auth/") && !path.equals("/api/v1/auth/me") && !path.equals("/api/v1/auth/cambiar-password") && !path.equals("/api/v1/auth/mi-cuenta"))
                 || path.startsWith("/v3/api-docs")
                 || path.startsWith("/swagger-ui/")
                 || path.startsWith("/actuator/");

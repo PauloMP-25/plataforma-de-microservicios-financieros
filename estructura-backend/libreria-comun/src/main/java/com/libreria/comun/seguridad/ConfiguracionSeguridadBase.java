@@ -31,6 +31,9 @@ public abstract class ConfiguracionSeguridadBase {
     protected final FiltroJwt filtroJwt;
     protected final PuntoEntradaJwt puntoEntradaJwt;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    protected FiltroAutenticacionInterna filtroAutenticacionInterna;
+
     /**
      * Define la configuración común de la cadena de filtros. Los microservicios
      * deben llamar a este método y añadir sus rutas específicas.
@@ -45,7 +48,8 @@ public abstract class ConfiguracionSeguridadBase {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(puntoEntradaJwt))
-                .addFilterBefore(filtroJwt, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(filtroJwt, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(filtroAutenticacionInterna, FiltroJwt.class);
     }
 
     /**

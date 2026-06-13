@@ -248,4 +248,20 @@ public class ControladorAutenticacion {
 
         return ResponseEntity.ok(ResultadoApi.exito("CUENTA_ELIMINADA", "Su cuenta ha sido desactivada exitosamente."));
     }
+
+    /**
+     * Obtiene los datos del usuario actual y refresca su token JWT con los roles actualizados de la base de datos.
+     */
+    @GetMapping("/me")
+    @Operation(summary = "Obtener Usuario y Sesión Actual", description = "Recupera la información en tiempo real del usuario autenticado (roles, plan, etc.) y genera un nuevo token JWT para actualizar la sesión en el cliente.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Sesión recuperada y token regenerado exitosamente."),
+            @ApiResponse(responseCode = "401", description = "Token ausente o inválido.")
+    })
+    public ResponseEntity<ResultadoApi<RespuestaAutenticacion>> obtenerUsuarioActual() {
+        UUID usuarioId = com.libreria.comun.utilidades.UtilidadSeguridad.obtenerUsuarioId();
+        log.info("[API] Refrescando sesión para usuario ID: {}", usuarioId);
+        RespuestaAutenticacion respuesta = servicioAuth.obtenerUsuarioActual(usuarioId);
+        return ResponseEntity.ok(ResultadoApi.exito(respuesta, "Sesión de usuario recuperada correctamente"));
+    }
 }

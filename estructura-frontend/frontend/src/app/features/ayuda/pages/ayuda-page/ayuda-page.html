@@ -1,1 +1,117 @@
-<p>ayuda-page works!</p>
+<div class="ayuda-container anim-fade-up">
+  <main class="ayuda-card">
+
+    <section class="ayuda-header">
+      <div class="ayuda-title-row">
+        <i class="fa-solid fa-circle-question ayuda-title-icon"></i>
+        <h2>Centro de Ayuda</h2>
+      </div>
+      <p class="ayuda-subtitle">
+        ¿Tienes dudas o necesitas asistencia? Estamos aquí para ayudarte.
+        Elige el canal de contacto o revisa las preguntas frecuentes.
+      </p>
+    </section>
+
+    <section class="ayuda-section">
+      <p class="section-title">Contáctanos</p>
+      <div class="contacto-grid">
+        <a 
+          *ngFor="let canal of canalesContacto"
+          class="contacto-card"
+          [ngClass]="canal.cardClass"
+          [href]="canal.href"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="availability-badge" [ngClass]="canal.badgeClass">
+            {{ canal.badge }}
+          </span>
+          <div class="contacto-icon-wrap" [ngClass]="canal.iconWrapClass">
+            <i [class]="canal.iconoClass"></i>
+          </div>
+          <div class="contacto-card-info">
+            <span class="contacto-card-label">{{ canal.tipo }}</span>
+            <span class="contacto-card-value">{{ canal.valor }}</span>
+            <span class="contacto-card-horario">
+              <i class="fa-regular fa-clock"></i> {{ canal.horario }}
+            </span>
+            <span class="contacto-card-cta" [ngClass]="canal.ctaClass">
+              {{ canal.textoBoton }}
+              <i class="fa-solid fa-arrow-right" style="font-size:0.7rem"></i>
+            </span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <section class="ayuda-section">
+
+      <div class="faq-section-header">
+        <p class="section-title" style="margin:0">Preguntas Frecuentes</p>
+        <div class="faq-search-wrapper">
+          <i class="fa-solid fa-magnifying-glass faq-search-icon"></i>
+          <input
+            type="text"
+            class="faq-search-input"
+            placeholder="Buscar pregunta..."
+            [(ngModel)]="busqueda"
+          >
+        </div>
+      </div>
+
+      <div class="faq-tabs">
+        <button
+          *ngFor="let cat of categorias"
+          class="faq-tab"
+          [class.active]="categoriaActiva === cat.id"
+          (click)="seleccionarCategoria(cat.id)"
+        >
+          <i [class]="cat.icono"></i> {{ cat.label }}
+        </button>
+      </div>
+
+      <div class="faq-list">
+        <div
+          *ngFor="let faq of preguntasFiltradas"
+          class="faq-item"
+          [class.open]="faq.abierta"
+          (click)="conmutarFaq(faq.id)"
+        >
+          <div class="faq-question-row">
+            <div class="faq-q-icon"><i [class]="faq.iconoClass"></i></div>
+            <span class="faq-question">{{ faq.pregunta }}</span>
+            <div class="faq-toggle-icon">
+              <i class="fa-solid fa-plus"></i>
+            </div>
+          </div>
+          <div class="faq-answer">
+            <p>{{ faq.respuesta }}</p>
+            <span class="faq-answer-tag">
+              <i [class]="faq.iconoClass"></i> {{ faq.categoria | titlecase }}
+            </span>
+          </div>
+        </div>
+
+        <div class="faq-no-results" *ngIf="preguntasFiltradas.length === 0">
+          <i class="fa-solid fa-face-meh no-results-icon"></i>
+          <strong>No encontramos resultados</strong>
+          <span>Intenta con otro término o contáctanos directamente.</span>
+        </div>
+      </div>
+
+    </section>
+
+    <div class="ayuda-cta-banner">
+      <div class="cta-banner-text">
+        <span class="cta-banner-title">¿No encontraste lo que buscabas?</span>
+        <span class="cta-banner-desc">
+          Nuestro equipo está disponible para resolver cualquier consulta personalizada.
+        </span>
+      </div>
+      <a href="mailto:soporte@luka.pe" class="btn btn-primary">
+        <i class="fa-solid fa-paper-plane"></i> Enviar consulta
+      </a>
+    </div>
+
+  </main>
+</div>

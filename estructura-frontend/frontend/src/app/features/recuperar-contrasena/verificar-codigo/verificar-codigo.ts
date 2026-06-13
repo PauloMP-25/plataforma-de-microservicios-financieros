@@ -14,6 +14,11 @@ import { AuthService } from '../../../core/services/auth.service';
 export class VerificarCodigo {
   @ViewChildren('digitoInput') digitoInputs!: QueryList<ElementRef>;
 
+  // ==========================================
+  // SOLUCIÓN: Agregamos el Input que pide el HTML
+  // ==========================================
+  @Input() correoActivacion = '';
+
   /** ID del usuario para activación (opcional si es para recuperación) */
   @Input() usuarioId = '';
   /** Medio de verificación: 'correo' o 'celular' */
@@ -44,9 +49,9 @@ export class VerificarCodigo {
     this.correoRecuperacion = sessionStorage.getItem('correo-recuperacion') || '';
   }
 
-  /** Destino que se muestra (prioriza el input, luego sessionStorage) */
+  /** Destino que se muestra (prioriza el input del HTML, luego el alias nuevo, luego sessionStorage) */
   get destinoMostrado(): string {
-    return this.destinoVerificacion || this.correoRecuperacion;
+    return this.destinoVerificacion || this.correoActivacion || this.correoRecuperacion;
   }
 
   /** Texto descriptivo según el medio de verificación */

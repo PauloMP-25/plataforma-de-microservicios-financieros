@@ -54,6 +54,31 @@
           <strong class="metric-value">{{ formatSoles(balanceActual) }}</strong>
         </div>
       </article>
+
+      <article class="metric-pill metric-pill--streak" title="Racha de transacciones: días consecutivos registrando movimientos">
+        <span class="metric-icon"><i class="fa-solid fa-fire"></i></span>
+        <div class="metric-copy">
+          <span class="metric-label">Racha</span>
+          <strong class="metric-value">{{ rachaDias() }} {{ rachaDias() === 1 ? 'día' : 'días' }}</strong>
+        </div>
+      </article>
+
+      <!-- PILLS DE CUOTAS DE IA -->
+      <article class="metric-pill metric-pill--ia-analitica" title="Consultas de analítica de IA restantes">
+        <span class="metric-icon"><i class="fa-solid fa-brain"></i></span>
+        <div class="metric-copy">
+          <span class="metric-label">Consultas IA</span>
+          <strong class="metric-value">{{ iaService.consultasRestantes() }}/{{ iaService.consultasMaximas() }}</strong>
+        </div>
+      </article>
+
+      <article class="metric-pill metric-pill--ia-clasificar" title="Autoclasificaciones de IA restantes">
+        <span class="metric-icon"><i class="fa-solid fa-tags"></i></span>
+        <div class="metric-copy">
+          <span class="metric-label">Autoclasificar</span>
+          <strong class="metric-value">{{ iaService.clasificacionesRestantes() }}/{{ iaService.clasificacionesMaximas() }}</strong>
+        </div>
+      </article>
     </div>
 
     <!-- ═════ PERFIL ═════ -->
@@ -72,7 +97,7 @@
 
           <span class="avatar-plan">
             <i class="fa-solid fa-leaf"></i>
-            {{ auth.esPremium() ? 'Premium' : 'Estudiante' }}
+            {{ auth.esPremium() ? 'Premium' : (auth.esPro() ? 'Pro' : 'Free') }}
           </span>
         </div>
 
@@ -99,7 +124,7 @@
 
             <span class="plan-badge">
               <i class="fa-solid fa-leaf"></i>
-              {{ auth.esPremium() ? 'Premium' : 'Estudiante' }}
+              {{ auth.esPremium() ? 'Premium' : (auth.esPro() ? 'Pro' : 'Free') }}
             </span>
 
           </div>
@@ -116,6 +141,16 @@
               <div>
                 <p>Mi Perfil</p>
                 <small>Editar datos personales</small>
+              </div>
+            </a>
+          </li>
+
+          <li>
+            <a routerLink="/suscripcion/luka" class="menu-item">
+              <i class="fa-solid fa-crown menu-item-icon" style="color: #f59e0b;"></i>
+              <div>
+                <p>Mi Suscripción</p>
+                <small>Gestionar plan y facturación</small>
               </div>
             </a>
           </li>

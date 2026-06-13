@@ -55,8 +55,8 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
         // general)
         http.authorizeHttpRequests(auth -> auth
                 // Endpoints internos y creación inicial de perfil (comunicación inter-microservicio)
-                .requestMatchers("/api/v1/clientes/interno/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/v1/clientes/perfil/inicial").permitAll()
+                .requestMatchers("/api/v1/clientes/interno/**").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/v1/clientes/perfil/inicial").authenticated()
 
                 // Perfil de datos personales
                 .requestMatchers(HttpMethod.PUT, "/api/v1/clientes/perfil/**").authenticated()

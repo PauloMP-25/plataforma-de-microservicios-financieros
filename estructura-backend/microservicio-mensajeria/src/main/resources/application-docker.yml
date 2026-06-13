@@ -123,7 +123,7 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss} %-5p [%X{correlationId:-NoID}] - %msg%n"
   level:
     root: INFO
-    "org.springframework.web.servlet.DispatcherServlet": DEBUG
+    "org.springframework.web.servlet.DispatcherServlet": INFO
     "org.hibernate.SQL": WARN
 
 # ── Configuración Luka (JWT) ─────────────────────────────────────────
