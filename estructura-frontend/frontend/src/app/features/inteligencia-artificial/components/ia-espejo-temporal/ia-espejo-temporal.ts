@@ -151,9 +151,9 @@ export class IaEspejoTemporalComponent implements OnInit, OnChanges {
     const y = (event.clientY / window.innerHeight) - 0.5;
     
     // El panel de continuidad se mueve opuesto al cursor
-    this.parallaxTransformContinuidad = \`translate(\${-x * 20}px, \${-y * 20}px)\`;
+    this.parallaxTransformContinuidad = `translate(${-x * 20}px, ${-y * 20}px)`;
     // El panel de transformación se mueve con el cursor
-    this.parallaxTransformTransformacion = \`translate(\${x * 30}px, \${y * 30}px)\`;
+    this.parallaxTransformTransformacion = `translate(${x * 30}px, ${y * 30}px)`;
   }
 
   onSliderMove(event: MouseEvent) {

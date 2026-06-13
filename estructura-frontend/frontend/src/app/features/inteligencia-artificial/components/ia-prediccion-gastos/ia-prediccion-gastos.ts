@@ -12,6 +12,7 @@ import { IaPrediccionIndicadoresComponent } from './components/ia-prediccion-ind
 import { IaPrediccionOraculoComponent } from './components/ia-prediccion-oraculo/ia-prediccion-oraculo';
 import { IaPrediccionConsejoComponent } from './components/ia-prediccion-consejo/ia-prediccion-consejo';
 import { IaPrediccionMetricasComponent } from './components/ia-prediccion-metricas/ia-prediccion-metricas';
+import { ConsejoEstructuradoPredecir } from '../../../../core/models/ia_coach/ia-base.model';
 
 @Component({
   selector: 'app-ia-prediccion-gastos',
@@ -37,7 +38,7 @@ export class IaPrediccionGastosComponent implements OnChanges {
   deficitEstimado = signal<number>(0);
   historialMeses = signal<number[]>([]);
   ingresoEsperado = signal<number>(2000.00);
-  consejo = signal<any>(null);
+  consejo = signal<ConsejoEstructuradoPredecir | null>(null);
   oraculoHablando = signal<boolean>(false);
 
   setHablando(estado: boolean) {
