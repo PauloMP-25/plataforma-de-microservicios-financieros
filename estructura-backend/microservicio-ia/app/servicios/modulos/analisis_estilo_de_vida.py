@@ -9,6 +9,7 @@ import pandas as pd
 from typing import Dict, Any, List
 from app.servicios.core.base_analisis import BaseAnalisisService
 from app.libreria_comun.modelos.contexto import ContextoEstrategicoIADTO
+from app.modelos.esquemas import ConsejoEstructuradoEstilo
 from app.servicios.ia.prompts.prompt_estilo_vida import generar_prompt_estilo_vida
 
 class AnalisisEstiloVidaService(BaseAnalisisService):
@@ -55,3 +56,6 @@ class AnalisisEstiloVidaService(BaseAnalisisService):
 
     def orquestar_prompt(self, metricas: Dict[str, Any], contexto: ContextoEstrategicoIADTO) -> str:
         return generar_prompt_estilo_vida(metricas, contexto)
+
+    def obtener_esquema_salida(self):
+        return ConsejoEstructuradoEstilo

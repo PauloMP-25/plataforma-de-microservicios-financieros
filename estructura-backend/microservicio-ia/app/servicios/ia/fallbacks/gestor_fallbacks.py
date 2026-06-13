@@ -47,6 +47,9 @@ class GestorFallbacks:
         elif modulo == NombreModulo.REPORTE_COMPLETO:
             from app.servicios.ia.fallbacks.fallback_reporte import generar_fallback_reporte
             return generar_fallback_reporte(datos, nombres, contexto)
+        elif modulo == NombreModulo.ANALISIS_ESTILO_VIDA:
+            from app.servicios.ia.fallbacks.fallback_estilo_vida import generar_fallback_estilo_vida
+            return generar_fallback_estilo_vida(datos, nombres, contexto)
             
         # Módulos Texto Plano (Devuelven String)
         

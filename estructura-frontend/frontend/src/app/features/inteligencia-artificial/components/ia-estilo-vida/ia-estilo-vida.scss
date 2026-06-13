@@ -1,117 +1,203 @@
-.modulo-estilo-vida-contenedor {
-  --cluster-color: #f59e0b; // default, will be overridden by style binding
-  background: #11131a;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 24px;
+.bento-container {
+  --cluster-color: #f59e0b;
+  --bg-color: #0d0f14;
+  --surface-color: rgba(22, 28, 45, 0.7);
+  --surface-hover: rgba(30, 38, 60, 0.9);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+
+  background: var(--bg-color);
+  border-radius: 24px;
+  border: 1px solid var(--border-color);
+  padding: 32px;
   display: flex;
   flex-direction: column;
   gap: 24px;
-  overflow: hidden;
   min-height: calc(100vh - 120px);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
 }
 
-.top-row {
+.bento-header {
+  text-align: center;
+  margin-bottom: 16px;
+
+  h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    background: linear-gradient(90deg, #fff, var(--cluster-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  p {
+    color: var(--text-secondary);
+    font-size: 1rem;
+  }
+}
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: minmax(180px, auto);
+  gap: 20px;
   width: 100%;
 }
 
-.bottom-row-grid {
-  display: grid;
-  grid-template-columns: 0.75fr 1.5fr 0.75fr;
-  gap: 20px;
-  flex-grow: 1;
-
-  @media (max-width: 1200px) {
-    grid-template-columns: 1fr 1fr;
-
-    .col-coach {
-      grid-column: 1 / -1;
-      order: -1; // Move coach to top
-    }
-  }
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-
-    .col-coach {
-      order: 0;
-    }
-  }
-}
-
-.grid-column {
+.bento-item {
+  background: var(--surface-color);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 250px;
-  gap: 15px; // Espacio entre el consejo y la mini tarjeta
-}
-
-.mini-dominance-card {
-  background: rgba(22, 28, 45, 0.8);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
   overflow: hidden;
+  position: relative;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+    background: var(--surface-hover);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
 
   &::before {
     content: '';
     position: absolute;
-    left: 0;
     top: 0;
-    height: 100%;
-    width: 3px;
-    background: var(--cluster-color);
-    box-shadow: 0 0 8px var(--cluster-color);
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, var(--cluster-color), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
   }
 
-  .mini-dominance-header {
+  &:hover::before {
+    opacity: 1;
+  }
+
+  .bento-item-header {
     display: flex;
     align-items: center;
     gap: 10px;
+    margin-bottom: 16px;
+    color: var(--cluster-color);
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 
-    .mini-emoji {
+    i {
       font-size: 1.2rem;
     }
-
-    .mini-name {
-      font-size: 0.8rem;
-      font-weight: 800;
-      color: #f1f5f9;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
   }
 
-  .mini-dominance-bar {
-    width: 100%;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 2px;
-    overflow: hidden;
-
-    .mini-dominance-fill {
-      height: 100%;
-      background: var(--cluster-color);
-      box-shadow: 0 0 5px var(--cluster-color);
-      transition: width 1s cubic-bezier(0.25, 0.8, 0.25, 1);
-    }
-  }
-
-  .mini-dominance-text {
-    font-size: 0.65rem;
-    color: #94a3b8;
-    font-weight: 600;
-    text-align: right;
+  p {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    flex-grow: 1;
   }
 }
 
+/* Specific Grid Placements */
+.arquetipo-card {
+  grid-column: span 2;
+  grid-row: span 2;
+  background: linear-gradient(135deg, rgba(22, 28, 45, 0.9), rgba(10, 12, 20, 0.95));
+  border: 1px solid var(--cluster-color);
+  box-shadow: 0 8px 32px rgba(var(--cluster-color), 0.15);
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+
+  .emoji-container {
+    font-size: 5rem;
+    margin-bottom: 16px;
+    filter: drop-shadow(0 0 20px var(--cluster-color));
+  }
+
+  .arquetipo-label {
+    font-size: 0.85rem;
+    color: var(--cluster-color);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+
+  .arquetipo-title {
+    font-size: 2.2rem;
+    font-weight: 900;
+    margin: 8px 0;
+    color: #fff;
+  }
+
+  .arquetipo-desc {
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+    max-width: 80%;
+    margin: 0 auto;
+  }
+}
+
+.pensamiento-card {
+  grid-column: span 2;
+  grid-row: span 1;
+  
+  .typing-container p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    color: #a78bfa;
+  }
+
+  .typing p {
+    overflow: hidden;
+    white-space: nowrap;
+    border-right: 2px solid #a78bfa;
+    width: 0;
+    animation: typing 3s steps(40, end) forwards, blink 0.75s step-end infinite;
+  }
+}
+
+.perfil-card {
+  grid-column: span 2;
+  grid-row: span 1;
+}
+
+.tactico-card {
+  grid-column: span 2;
+  grid-row: span 1;
+}
+
+.meta-card {
+  grid-column: span 2;
+  grid-row: span 1;
+}
+
+.mensaje-card {
+  grid-column: span 4;
+  grid-row: span 1;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.03);
+  
+  .bento-item-header {
+    justify-content: center;
+  }
+
+  .mensaje-text {
+    font-size: 1.4rem;
+    font-style: italic;
+    color: #fff;
+    font-weight: 300;
+  }
+}
+
+/* Loaders and Empty States */
 .empty-state-ia {
   display: flex;
   flex-direction: column;
@@ -119,28 +205,28 @@
   justify-content: center;
   flex-grow: 1;
   text-align: center;
-  color: #94a3b8;
-  padding: 40px;
+  color: var(--text-secondary);
+  padding: 60px;
   background: rgba(255, 255, 255, 0.02);
-  border-radius: 16px;
+  border-radius: 20px;
   border: 1px dashed rgba(255, 255, 255, 0.1);
 
   .empty-icon {
-    font-size: 3rem;
+    font-size: 4rem;
     color: #475569;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
   }
 
   h3 {
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     color: #cbd5e1;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
 
   p {
-    font-size: 0.9rem;
-    max-width: 400px;
-    line-height: 1.5;
+    font-size: 1rem;
+    max-width: 450px;
+    line-height: 1.6;
   }
 }
 
@@ -150,19 +236,17 @@
   align-items: center;
   justify-content: center;
   flex-grow: 1;
-  width: 100%;
-  padding: 50px;
 
   .fingerprint-scanner {
     position: relative;
-    width: 100px;
-    height: 100px;
-    margin-bottom: 20px;
+    width: 120px;
+    height: 120px;
+    margin-bottom: 24px;
     overflow: hidden;
 
     .scan-icon {
-      font-size: 5rem;
-      color: rgba(255, 255, 255, 0.1);
+      font-size: 6rem;
+      color: rgba(255, 255, 255, 0.05);
     }
 
     .scan-line {
@@ -171,20 +255,21 @@
       left: 0;
       width: 100%;
       height: 4px;
-      background: var(--cluster-color, #0ea5e9);
-      box-shadow: 0 0 10px var(--cluster-color, #0ea5e9);
+      background: var(--cluster-color);
+      box-shadow: 0 0 15px var(--cluster-color);
       animation: scan 2s infinite ease-in-out alternate;
     }
   }
 
   .scan-text {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     color: #cbd5e1;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
     animation: pulse 1.5s infinite;
   }
 }
 
+/* Animations */
 @keyframes scan {
   0% { top: 0; }
   100% { top: 100%; }
@@ -193,4 +278,51 @@
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes blink {
+  from, to { border-color: transparent; }
+  50% { border-color: #a78bfa; }
+}
+
+/* Responsiveness */
+@media (max-width: 1024px) {
+  .bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .arquetipo-card,
+  .pensamiento-card,
+  .perfil-card,
+  .tactico-card,
+  .meta-card,
+  .mensaje-card {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 640px) {
+  .bento-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .arquetipo-card,
+  .pensamiento-card,
+  .perfil-card,
+  .tactico-card,
+  .meta-card,
+  .mensaje-card {
+    grid-column: span 1;
+  }
+
+  .mensaje-card {
+    .mensaje-text {
+      font-size: 1.1rem;
+    }
+  }
 }

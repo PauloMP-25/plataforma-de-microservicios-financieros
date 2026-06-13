@@ -1,24 +1,13 @@
 import { Component, Input, OnInit, OnChanges, SimpleChanges, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RespuestaModuloDTO } from '../../../../core/models/ia_coach/ia-base.model';
+import { ConsejoEstiloVidaDTO } from '../../../../core/models/ia_coach/ia-estilo-vida.model';
 import { ClusterType, CLUSTERS_LIST, CLUSTERS_INFO } from './ia-estilo-vida.constants';
-
-// Subcomponents
-import { IaEstiloPolaroidsComponent } from './components/ia-estilo-polaroids/ia-estilo-polaroids';
-import { IaEstiloCarnetComponent } from './components/ia-estilo-carnet/ia-estilo-carnet';
-import { IaEstiloConsejoComponent } from './components/ia-estilo-consejo/ia-estilo-consejo';
-import { IaEstiloDetallesComponent } from './components/ia-estilo-detalles/ia-estilo-detalles';
 
 @Component({
   selector: 'app-ia-estilo-vida',
   standalone: true,
-  imports: [
-    CommonModule, 
-    IaEstiloPolaroidsComponent, 
-    IaEstiloCarnetComponent, 
-    IaEstiloConsejoComponent, 
-    IaEstiloDetallesComponent
-  ],
+  imports: [CommonModule],
   templateUrl: './ia-estilo-vida.html',
   styleUrl: './ia-estilo-vida.scss'
 })
@@ -40,8 +29,18 @@ export class IaEstiloVidaComponent implements OnInit, OnChanges {
     return this.resultado?.insight?.total_analizado || '1250.00';
   });
 
-  consejoBackend = computed(() => {
-    return this.resultado?.consejo || null;
+  consejoBackend = computed((): ConsejoEstiloVidaDTO | null => {
+    if (this.resultado?.consejo) {
+      if (typeof this.resultado.consejo === 'string') {
+         try {
+           return JSON.parse(this.resultado.consejo) as ConsejoEstiloVidaDTO;
+         } catch {
+           return null;
+         }
+      }
+      return this.resultado.consejo as ConsejoEstiloVidaDTO;
+    }
+    return null;
   });
 
   ngOnInit() {
@@ -71,10 +70,8 @@ export class IaEstiloVidaComponent implements OnInit, OnChanges {
 
   private simularCoachHablando() {
     this.oraculoHablando.set(true);
-    // Simula que deja de hablar después de que el typewriter termine (aprox basado en texto largo)
-    // El texto promedio tiene ~150 chars. A 30ms por char = 4500ms
     setTimeout(() => {
       this.oraculoHablando.set(false);
-    }, 5000);
+    }, 4500);
   }
 }

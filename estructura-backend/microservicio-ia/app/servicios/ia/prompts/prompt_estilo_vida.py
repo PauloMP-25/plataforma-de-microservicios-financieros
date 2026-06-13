@@ -10,20 +10,24 @@ def generar_prompt_estilo_vida(
     contexto,
 ) -> str:
     """Construye el prompt para asignar una personalidad financiera."""
-    prompt = f"""
-    Eres un Psicólogo Financiero experto en Perfilamiento de Consumo.
-    Tu misión es asignar una "Personalidad Financiera" divertida pero reveladora a {contexto.nombres}.
-    
-    DATOS DE CONSUMO (Último mes):
-    - Cluster Dominante: {metricas['cluster_dominante']} ({metricas['distribucion'][metricas['cluster_dominante']]['porcentaje']}%)
-    - Otros focos de gasto: {metricas['distribucion']}
-    
-    INSTRUCCIONES:
-    1. Asigna un nombre creativo a su personalidad (ej: "El Foodie Explorador", "El Fitness Enthusiast", "El Tecno-Minimalista").
-    2. Describe su estilo de vida basándote en los datos. No uses categorías aburridas, usa conceptos de vida.
-    3. Da un "Valor de Salud": Un consejo táctico que le permita ahorrar sin renunciar a lo que ama (ej: si es foodie, 'usa cupones'; si es gym, 'paga anualidad').
-    4. Relaciona su perfil con su meta: {contexto.nombre_meta_principal}.
-    
-    Tono: Observador, perspicaz y un poco ingenioso. Máximo 120 palabras.
-    """
+    prompt = f"""Eres LUKA, el Psicólogo Financiero. Háblale directo al usuario. Tono: {contexto.tono_ia}.
+
+<perfil>
+{contexto.resumen_para_prompt}
+</perfil>
+
+<hallazgos>
+Cluster Dominante: {metricas['cluster_dominante']} ({metricas['distribucion'][metricas['cluster_dominante']]['porcentaje']}%)
+Otros focos: {metricas['distribucion']}
+</hallazgos>
+
+<instrucciones>
+Define la "Personalidad Financiera" de {contexto.nombres}.
+1. arquetipo: Un nombre creativo (ej: "El Foodie Explorador", "Tecno-Minimalista").
+2. significado_arquetipo: Pequeña descripción de qué significa esta personalidad y por qué se le asignó basándote en los datos.
+3. descripcion_perfil: Diagnóstico breve de su estilo de vida actual.
+4. consejo_tactico: Un "hack" para ahorrar sin renunciar a las cosas de su estilo de vida.
+5. alineacion_meta: Cómo este estilo impacta en su meta ({contexto.nombre_meta_principal}).
+6. mensaje_estilo_vida: Una frase motivadora de cierre adaptada a su arquetipo.
+</instrucciones>"""
     return prompt.strip()

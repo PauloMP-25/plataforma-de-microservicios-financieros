@@ -478,6 +478,18 @@ class ConsejoEstructuradoReporte(BaseModel):
     veredicto_final: str = Field(description="Cierre ejecutivo de lo que va del año.")
     mensaje_motivacional: str = Field(description="Frase motivadora respecto a lo que va del año.")
 
+class ConsejoEstructuradoEstilo(BaseModel):
+    """
+    Esquema de salida estructurada para el módulo ANALISIS_ESTILO_VIDA.
+    """
+    pensamiento_interno_ia: str = Field(description="Análisis sobre los clusters de gasto detectados.")
+    arquetipo: str = Field(description="Nombre creativo de la personalidad (ej: 'El Foodie Explorador').")
+    significado_arquetipo: str = Field(description="Breve descripción de qué significa esta personalidad y por qué se le asignó.")
+    descripcion_perfil: str = Field(description="Breve diagnóstico de su estilo de vida basado en los datos.")
+    consejo_tactico: str = Field(description="Hack para ahorrar sin renunciar a sus gustos de ese estilo de vida.")
+    alineacion_meta: str = Field(description="Cómo su estilo de vida impacta en su meta principal.")
+    mensaje_estilo_vida: str = Field(description="Frase motivadora alineada al arquetipo descubierto.")
+
 class EstadoCoach(str, Enum):
     EXITOSO = "EXITOSO"
     CUOTA_AGOTADA = "CUOTA_AGOTADA"
@@ -500,7 +512,7 @@ class RespuestaModulo(BaseModel):
     modulo: NombreModulo
     fecha_generacion: datetime = Field(default_factory=datetime.now)
  
-    consejo: Optional[Union[str, ConsejoEstructuradoHormiga, ConsejoEstructuradoEvolucion, ConsejoEstructuradoEntrenamiento, ConsejoEstructuradoEspejo, ConsejoEstructuradoPredecir, ConsejoEstructuradoSimularMeta, ConsejoEstructuradoHabitos, ConsejoEstructuradoReto, ConsejoEstructuradoReporte, Any]] = Field(
+    consejo: Optional[Union[str, ConsejoEstructuradoHormiga, ConsejoEstructuradoEvolucion, ConsejoEstructuradoEntrenamiento, ConsejoEstructuradoEspejo, ConsejoEstructuradoPredecir, ConsejoEstructuradoSimularMeta, ConsejoEstructuradoHabitos, ConsejoEstructuradoReto, ConsejoEstructuradoReporte, ConsejoEstructuradoEstilo, Any]] = Field(
         default=None,
         description=(
             "Consejo financiero estructurado."

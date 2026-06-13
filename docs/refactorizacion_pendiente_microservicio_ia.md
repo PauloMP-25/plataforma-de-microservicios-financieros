@@ -72,7 +72,7 @@ Esto garantiza:
 | `SIMULAR_META` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoSimularMeta` | ✅ | ✅ | ✅ | Paulo |
 | `RETO_AHORRO_DINAMICO` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoReto` | ✅ | ✅ | ✅ | Paulo |
 | `REPORTE_COMPLETO` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoReporte` | ✅ Fallback Propio | ✅ Tabla propia | ✅ Aplicadas | Paulo |
-| `ANALISIS_ESTILO_VIDA` | ✅ | ✅ | ⚠️ Pendiente revisar | ❌ String plano | ⚠️ Genérico | ✅ | ❌ | — |
+| `ANALISIS_ESTILO_VIDA` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEstilo` | ✅ Fallback Propio | ✅ Tabla propia | ✅ Aplicadas | Paulo |
 | `AUTO_CLASIFICACION` | ✅ | N/A | ⚠️ Pendiente revisar | N/A | ❌ | ✅ | ❌ | — |
 | `COMPROBADOR_EVOLUCION` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEvolucion` | ✅ | ✅ | ❌ | — |
 | `ZONA_ENTRENAMIENTO` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEntrenamiento` | ✅ | ✅ | ❌ | — |
