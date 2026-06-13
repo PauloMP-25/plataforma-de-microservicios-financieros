@@ -11,10 +11,11 @@ from app.servicios.ia.fallbacks.fallback_gasto_hormiga import generar_fallback_g
 from app.servicios.ia.fallbacks.fallback_comprobador_evolucion import generar_fallback_comprobador_evolucion
 from app.servicios.ia.fallbacks.fallback_zona_entrenamiento import generar_fallback_zona_entrenamiento
 from app.servicios.ia.fallbacks.fallback_simular_meta import generar_fallback_simular_meta
-from app.servicios.ia.fallbacks.fallback_habitos_financieros import generar_fallback_habitos_financieros
+
 from app.servicios.ia.fallbacks.fallback_espejo_tiempo import generar_fallback_espejo_tiempo
 from app.servicios.ia.fallbacks.fallback_generico import generar_fallback_generico
 from app.servicios.ia.fallbacks.fallback_predecir_gastos import generar_fallback_predecir_gastos
+from app.servicios.ia.fallbacks.fallback_habitos import generar_fallback_habitos
 
 class GestorFallbacks:
     @staticmethod
@@ -38,10 +39,10 @@ class GestorFallbacks:
             return generar_fallback_predecir_gastos(datos, nombres, contexto)
         elif modulo == NombreModulo.SIMULAR_META:
             return generar_fallback_simular_meta(datos, nombres, contexto)
+        elif modulo == NombreModulo.HABITOS_FINANCIEROS:
+            return generar_fallback_habitos(datos, nombres, contexto)
             
         # Módulos Texto Plano (Devuelven String)
-        elif modulo == NombreModulo.HABITOS_FINANCIEROS:
-            return generar_fallback_habitos_financieros(modulo, datos, nombres, contexto)
         
         # Módulos Texto Plano sin fallback específico
         return generar_fallback_generico(modulo, datos, nombres, contexto)

@@ -6,7 +6,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RespuestaModuloDTO } from '../../../../core/models/financiero/ia.model';
+import { RespuestaModuloDTO } from '../../../../core/models/ia_coach/ia-base.model';
 
 import { IaPrediccionIndicadoresComponent } from './components/ia-prediccion-indicadores/ia-prediccion-indicadores';
 import { IaPrediccionOraculoComponent } from './components/ia-prediccion-oraculo/ia-prediccion-oraculo';

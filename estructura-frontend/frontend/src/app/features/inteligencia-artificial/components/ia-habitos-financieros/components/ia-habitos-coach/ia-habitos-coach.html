@@ -1,4 +1,4 @@
-<div class="coach-advice-panel card-premium" *ngIf="consejoVisible()">
+<div class="coach-advice-panel card-premium" *ngIf="consejo">
   <div class="coach-avatar-container">
     <div class="neural-avatar nutritionist-avatar">
       <i class="fa-solid fa-apple-whole"></i>
@@ -11,10 +11,28 @@
   </div>
   
   <div class="coach-message-box">
-    <!-- El texto con formato de máquina de escribir y Markdown de Luka -->
-    <p class="coach-message" [innerHTML]="consejoHtml()"></p>
+    <div class="coach-message">
+      <div *ngIf="consejo.pensamiento_interno_ia" style="display: none;">
+        <!-- El pensamiento interno se usa en logs o debug, opcionalmente mostrarlo -->
+        <small class="text-slate-400">[{{ consejo.pensamiento_interno_ia }}]</small>
+      </div>
+
+      <div class="analysis-text">
+        <p><strong>{{ consejo.introduccion }}</strong></p>
+        <p>{{ consejo.analisis_patron }}</p>
+      </div>
+    </div>
     
-    <!-- Carga de respuesta parpadeante -->
-    <div class="typewriter-cursor" *ngIf="isWriting()"></div>
+    <div class="habit-highlight mt-3">
+      <div class="habit-icon"><i class="fa-solid fa-bolt text-amber-400"></i></div>
+      <div class="habit-content">
+        <strong>Hábito Sugerido:</strong><br>
+        {{ consejo.habito_atomico_sugerido }}
+      </div>
+    </div>
+
+    <div class="coach-message mt-3">
+      <p class="text-emerald-400 italic">{{ consejo.mensaje_motivacional }}</p>
+    </div>
   </div>
 </div>

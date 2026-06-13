@@ -7,7 +7,7 @@ análisis del Microservicio IA de LUKA.
 Cambios v5 (FASE 1 - Migración Incremental):
   - Nuevo: ConsejoEstructurado — esquema de salida JSON para Gemini Structured Outputs.
     Usado exclusivamente por GASTO_HORMIGA en esta fase.
-  - RespuestaModulo.consejo: Optional[str] → Optional[Union[str, ConsejoEstructurado]]
+  - RespuestaModulo.consejo: Optional[str] → Optional[Union[str, ConsejoEstructuradoHormiga]]
     para retrocompatibilidad con los 9 módulos que siguen devolviendo str plano.
   - a_dict_serializable(): blindado para serializar correctamente ambos tipos.
 ══════════════════════════════════════════════════════════════════════════════
@@ -71,7 +71,7 @@ class NombreModulo(str, Enum):
 # NUEVO v5: CONSEJO ESTRUCTURADO — Esquema para Gemini Structured Outputs
 # ══════════════════════════════════════════════════════════════════════════════
 
-class ConsejoEstructurado(BaseModel):
+class ConsejoEstructuradoHormiga(BaseModel):
     """
     Esquema de salida estructurada para el módulo GASTO_HORMIGA.
 
@@ -82,7 +82,7 @@ class ConsejoEstructurado(BaseModel):
 
     Compatibilidad:
       - Los 9 módulos restantes siguen devolviendo str plano.
-      - RespuestaModulo.consejo es Union[str, ConsejoEstructurado] para soportar ambos.
+      - RespuestaModulo.consejo es Union[str, ConsejoEstructuradoHormiga] para soportar ambos.
       - a_dict_serializable() normaliza ambos tipos a dict antes de serializar.
     """
     pensamiento_interno_ia: str = Field(
@@ -461,11 +461,11 @@ class RespuestaModulo(BaseModel):
 
     v5 — Cambio en campo `consejo`:
       - Antes: Optional[str]
-      - Ahora:  Optional[Union[str, ConsejoEstructurado]]
+      - Ahora:  Optional[Union[str, ConsejoEstructuradoHormiga]]
 
     Retrocompatibilidad garantizada:
       - Los 9 módulos que devuelven str siguen funcionando sin cambios.
-      - GASTO_HORMIGA devuelve ConsejoEstructurado cuando Gemini responde con éxito.
+      - GASTO_HORMIGA devuelve ConsejoEstructuradoHormiga cuando Gemini responde con éxito.
       - El fallback de MotorReglasLocal sigue devolviendo str para todos los módulos.
       - a_dict_serializable() normaliza ambos tipos para RabbitMQ/Outbox.
     """
@@ -475,7 +475,7 @@ class RespuestaModulo(BaseModel):
     fecha_generacion: datetime = Field(default_factory=datetime.now)
  
     # ── CAMBIO v5/v9: Union ampliado con ConsejoEstructuradoEspejo ──────────────
-    consejo: Optional[Union[str, ConsejoEstructurado, ConsejoEstructuradoEvolucion, ConsejoEstructuradoEntrenamiento, ConsejoEstructuradoEspejo, ConsejoEstructuradoPredecir, ConsejoEstructuradoSimularMeta, Any]] = Field(
+    consejo: Optional[Union[str, ConsejoEstructuradoHormiga, ConsejoEstructuradoEvolucion, ConsejoEstructuradoEntrenamiento, ConsejoEstructuradoEspejo, ConsejoEstructuradoPredecir, ConsejoEstructuradoSimularMeta, Any]] = Field(
         default=None,
         description=(
             "Consejo financiero estructurado."

@@ -4,7 +4,7 @@ import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 import { IaService } from '../../../../core/services/ia.service';
-import { RespuestaModuloDTO } from '../../../../core/models/financiero/ia.model';
+import { RespuestaModuloDTO } from '../../../../core/models/ia_coach/ia-base.model';
 
 import { IaModuloCardComponent } from './components/ia-modulo-card/ia-modulo-card';
 import { IaPanelActivoComponent } from './components/ia-panel-activo/ia-panel-activo';

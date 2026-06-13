@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ProyeccionHitoDTO } from '../../../../../../core/models/financiero/ia.model';
+import { ProyeccionHitoDTO } from '../../../../../../core/models/ia_coach/ia-espejo.model';
 
 @Component({
   selector: 'app-ia-espejo-card',

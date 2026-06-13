@@ -7,7 +7,7 @@ Cambios v8 (FASE 4):
   - Consulta IaHistorialCoaching ANTES de ejecutar los cálculos Pandas.
     Si existe historial previo, se inyecta en metricas["_historial_previo"]
     para que el módulo lo incluya en su prompt.
-  - GASTO_HORMIGA recibe esquema_salida=ConsejoEstructurado en la llamada
+  - GASTO_HORMIGA recibe esquema_salida=ConsejoEstructuradoHormiga en la llamada
     a obtener_consejo_ia → activa Structured Output en Gemini.
     Los otros 9 módulos reciben esquema_salida=None → sin cambios.
   - Después de una respuesta exitosa, persiste la interacción en
@@ -30,7 +30,7 @@ from typing import Any, Optional
 from app.libreria_comun.modelos.contexto import ContextoEstrategicoIADTO
 from app.configuracion import obtener_configuracion
 from app.modelos.esquemas import (
-    ConsejoEstructurado,
+    ConsejoEstructuradoHormiga,
     EstadoCoach,
     InsightAnalitico,
     NombreModulo,
@@ -238,8 +238,9 @@ class ServicioAnalisis:
                     consejo_final = esquema_salida(**consejo)
                 except Exception as e:
                     logger.warning(
-                        "[ORQUESTADOR] No se pudo convertir dict a ConsejoEstructurado: %s "
+                        "[ORQUESTADOR] No se pudo convertir dict a %s: %s "
                         "— usando dict raw como fallback de conversión.",
+                        esquema_salida.__name__,
                         e,
                     )
                     # Si la conversión falla, almacenar como str serializado

@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RespuestaModuloDTO } from '../../../../core/models/financiero/ia.model';
+import { RespuestaModuloDTO } from '../../../../core/models/ia_coach/ia-base.model';
 
 import { IaZonaAvatarComponent } from './components/ia-zona-avatar/ia-zona-avatar';
 import { IaZonaScoreBarComponent } from './components/ia-zona-score-bar/ia-zona-score-bar';

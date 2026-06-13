@@ -64,19 +64,19 @@ Esto garantiza:
 
 ## Estado de Cumplimiento por Módulo
 
-| Módulo | Fase 1 ✅ | Fase 2 (Pandas) ✅ | Fase 3 (Solo KPIs a Gemini) | Structured Output | Fallback Propio | Persistencia BD |
-|---|---|---|---|---|---|---|
-| `GASTO_HORMIGA` | ✅ | ✅ | ⚠️ Pendiente revisar prompt | ✅ `ConsejoEstructurado` | ✅ | ✅ |
-| `PREDECIR_GASTOS` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoPredecir` | ✅ | ✅ |
-| `HABITOS_FINANCIEROS` | ✅ | ✅ | ⚠️ Pendiente revisar prompt | ❌ String plano | ⚠️ Genérico | ✅ |
-| `SIMULAR_META` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoSimularMeta` | ✅ | ✅ |
-| `RETO_AHORRO_DINAMICO` | ✅ | ✅ | ⚠️ Pendiente revisar prompt | ❌ String plano | ⚠️ Genérico | ✅ Tabla propia |
-| `REPORTE_COMPLETO` | ✅ | ✅ | ⚠️ Pendiente revisar prompt | ❌ String plano | ⚠️ Genérico | ✅ |
-| `ANALISIS_ESTILO_VIDA` | ✅ | ✅ | ⚠️ Pendiente revisar prompt | ❌ String plano | ⚠️ Genérico | ✅ |
-| `AUTO_CLASIFICACION` | ✅ | N/A | ⚠️ Pendiente revisar | N/A | ❌ | ✅ |
-| `COMPROBADOR_EVOLUCION` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEvolucion` | ✅ | ✅ |
-| `ZONA_ENTRENAMIENTO` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEntrenamiento` | ✅ | ✅ Tabla propia |
-| `ESPEJO_TEMPORAL` | 🔄 En progreso | 🔄 En progreso | 🔄 En progreso | 🔄 `ConsejoEstructuradoEspejo` | 🔄 | 🔄 |
+| Módulo | Fase 1 ✅ | Fase 2 (Pandas) ✅ | Fase 3 (Solo KPIs a Gemini) | Structured Output | Fallback Propio | Persistencia BD | Técnicas Prompt | Responsable |
+|---|---|---|---|---|---|---|---|---|
+| `GASTO_HORMIGA` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoHormiga` | ✅ | ✅ | ✅ Aplicadas | Paulo |
+| `PREDECIR_GASTOS` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoPredecir` | ✅ | ✅ | ✅ Aplicadas | Paulo |
+| `HABITOS_FINANCIEROS` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoHabitos` | ✅ Fallback Propio | ✅ | ✅ Aplicadas | Paulo |
+| `SIMULAR_META` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoSimularMeta` | ✅ | ✅ | ❌ | — |
+| `RETO_AHORRO_DINAMICO` | ✅ | ✅ | ⚠️ Pendiente revisar | ❌ String plano | ⚠️ Genérico | ✅ Tabla propia | ❌ | — |
+| `REPORTE_COMPLETO` | ✅ | ✅ | ⚠️ Pendiente revisar | ❌ String plano | ⚠️ Genérico | ✅ | ❌ | — |
+| `ANALISIS_ESTILO_VIDA` | ✅ | ✅ | ⚠️ Pendiente revisar | ❌ String plano | ⚠️ Genérico | ✅ | ❌ | — |
+| `AUTO_CLASIFICACION` | ✅ | N/A | ⚠️ Pendiente revisar | N/A | ❌ | ✅ | ❌ | — |
+| `COMPROBADOR_EVOLUCION` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEvolucion` | ✅ | ✅ | ❌ | — |
+| `ZONA_ENTRENAMIENTO` | ✅ | ✅ | ✅ Solo KPIs | ✅ `ConsejoEstructuradoEntrenamiento` | ✅ | ✅ Tabla propia | ❌ | — |
+| `ESPEJO_TEMPORAL` | 🔄 En progreso | 🔄 En progreso | 🔄 En progreso | 🔄 `ConsejoEstructuradoEspejo` | 🔄 | 🔄 | ❌ | — |
 
 **Leyenda:** ✅ Implementado | ⚠️ Pendiente | ❌ No implementado | 🔄 En progreso | N/A No aplica
 

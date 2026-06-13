@@ -1,6 +1,7 @@
 import { Component, Input, OnInit, OnChanges, SimpleChanges, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RespuestaModuloDTO, InsightEspejoTemporalDTO } from '../../../../core/models/financiero/ia.model';
+import { RespuestaModuloDTO } from '../../../../core/models/ia_coach/ia-base.model';
+import { InsightEspejoTemporalDTO } from '../../../../core/models/ia_coach/ia-espejo.model';
 import { IaEspejoCardComponent } from './components/ia-espejo-card/ia-espejo-card';
 
 @Component({

@@ -14,7 +14,7 @@ import {
   RespuestaClasificacionDTO,
   RespuestaIaDTO,
   SolicitudIaDTO
-} from '../models/financiero/ia.model';
+} from '../models/ia_coach/ia-base.model';
 
 @Injectable({ providedIn: 'root' })
 export class IaService {
