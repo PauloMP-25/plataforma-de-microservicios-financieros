@@ -1,5 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ClientePerfilService } from '../../../core/services/cliente-perfil.service';
 import { RespuestaDatosPersonales, SolicitudDatosPersonales } from '../../../core/models/cliente/perfil-cliente.model';
@@ -11,7 +13,7 @@ import { finalize } from 'rxjs';
 @Component({
   selector: 'app-configuracion',
   standalone:true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './configuracion.html',
   styleUrls: ['./configuracion.scss'],
 })
@@ -64,6 +66,9 @@ export class Configuracion {
   readonly eliminandoCuenta = signal(false);
   readonly mensajeCuenta = signal('');
   readonly modalProAbierto = signal(false);
+  readonly modalEliminarCuentaAbierto = signal(false);
+  readonly confirmacionEliminarCuenta = signal('');
+  readonly fraseConfirmacionEliminarCuenta = 'Estoy de acuerdo con la eliminación de la cuenta';
 
   readonly formNombres = signal('');
   readonly formApellidos = signal('');
@@ -99,6 +104,22 @@ export class Configuracion {
 
   cerrarModalPro(): void {
     this.modalProAbierto.set(false);
+  }
+
+  abrirModalEliminarCuenta(): void {
+    this.mensajeCuenta.set('');
+    this.confirmacionEliminarCuenta.set('');
+    this.modalEliminarCuentaAbierto.set(true);
+  }
+
+  cerrarModalEliminarCuenta(): void {
+    if (this.eliminandoCuenta()) return;
+    this.modalEliminarCuentaAbierto.set(false);
+    this.confirmacionEliminarCuenta.set('');
+  }
+
+  confirmacionEliminarCuentaValida(): boolean {
+    return this.confirmacionEliminarCuenta().trim() === this.fraseConfirmacionEliminarCuenta;
   }
 
   abrirModalEditarPerfil(): void {
@@ -157,6 +178,11 @@ export class Configuracion {
   }
 
   eliminarCuenta(): void {
+    if (!this.confirmacionEliminarCuentaValida()) {
+      this.mensajeCuenta.set('Para continuar, escribe exactamente la frase de confirmación.');
+      return;
+    }
+
     const usuarioId = this.authService.usuario()?.id;
     if (!usuarioId) {
       this.mensajeCuenta.set('No se encontró sesión activa para eliminar la cuenta.');
@@ -171,6 +197,8 @@ export class Configuracion {
       .pipe(finalize(() => this.eliminandoCuenta.set(false)))
       .subscribe({
         next: () => {
+          this.modalEliminarCuentaAbierto.set(false);
+          this.confirmacionEliminarCuenta.set('');
           this.mensajeCuenta.set('Solicitud de eliminación registrada. Nuestro equipo validará el proceso.');
         },
         error: () => {

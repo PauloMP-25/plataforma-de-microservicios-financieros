@@ -1,91 +1,42 @@
+# ---------------------------------------------------------------------------------------------------------------------
+#    SPRING: Configuración general, perfiles e importación de .env.local
+# ---------------------------------------------------------------------------------------------------------------------
 spring:
   config:
-    import: optional:file:../.env[.properties]
-  sql:
-    init:
-      mode: always
-  application:
-    name: microservicio-suscripciones
+    import: "optional:file:../.env.local[.properties]"
+
+# ---------------------------------------------------------------------------------------------------------------------
+#                              DATASOURCE: Conexión y credenciales de PostgreSQL local
+# ---------------------------------------------------------------------------------------------------------------------
   datasource:
-    url: jdbc:postgresql://localhost:5432/db_luka_suscripciones
-    username: postgres
-    password: adminUTP
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: false
-    properties:
-      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_SUSCRIPCIONES_NAME:db_luka_suscripciones}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:adminUTP}
+
+# ---------------------------------------------------------------------------------------------------------------------
+#                              RABBITMQ: Broker de mensajería asíncrona y topologías
+# ---------------------------------------------------------------------------------------------------------------------
   rabbitmq:
     host: ${SPRING_RABBITMQ_HOST:localhost}
     port: ${SPRING_RABBITMQ_PORT:5672}
     username: ${SPRING_RABBITMQ_USERNAME:guest}
     password: ${SPRING_RABBITMQ_PASSWORD:guest}
     virtual-host: ${SPRING_RABBITMQ_VIRTUAL_HOST:/}
-    connection-name: ${spring.application.name}
-    connection-timeout: 10000
-    listener:
-      simple:
-        auto-startup: true
+
+# ---------------------------------------------------------------------------------------------------------------------
+#                                   DATA: Configuración de base de datos de Redis
+# ---------------------------------------------------------------------------------------------------------------------
   data:
     redis:
-      repositories:
-        enabled: false
-  cache:
-    type: none
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      password: ${SPRING_REDIS_PASSWORD:}
+      ssl:
+        enabled: ${SPRING_DATA_REDIS_SSL_ENABLED:false}
 
+# ---------------------------------------------------------------------------------------------------------------------
+#                               MICROSERVICIO: Direcciones de conexión de servicios externos
+# ---------------------------------------------------------------------------------------------------------------------
 url:
   prod:
-    financiero: http://localhost:8085
-
-server:
-  port: 8088
-
-luka:
-  jwt:
-    clave-secreta: ${JWT_SECRET_KEY:}
-    expiracion-ms: 86400000
-
-logging:
-  level:
-    root: INFO
-    com.suscripciones: DEBUG
-    org.springframework.security: WARN
-    org.springframework.transaction: INFO
-    org.springframework.web: INFO
-    org.springframework.amqp: WARN
-    org.springframework.boot.actuate: WARN
-    org.hibernate.SQL: INFO
-  pattern:
-    console: "%d{HH:mm:ss} %-5p - %msg%n"
-
-management:
-  endpoints:
-    web:
-      path-mapping:
-        health: health-internal
-
----
-# Este nuevo documento YAML se procesa DESPUÉS del import de spring.config.import,
-# lo que permite sobrescribir los valores importados de .env localmente.
-URL_PROD_FINANCIERO: http://localhost:8085
-
-spring:
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
-    virtual-host: /
-  data:
-    redis:
-      host: localhost
-      port: 6379
-      password: ""
-      ssl:
-        enabled: false
-
-eureka:
-  client:
-    enabled: false
+    financiero: ${URL_PROD_FINANCIERO:http://localhost:8085}

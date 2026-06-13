@@ -87,6 +87,10 @@ export class MetasPage implements OnInit {
 
     const activasCalculadas = activasOrdenadas.map(meta => {
       const datosVisuales = this.obtenerCategoriaYNombre(meta.nombre);
+      const nombreVisual = meta.proposito ? meta.nombre : datosVisuales.nombre;
+      const categoriaVisual = meta.proposito || datosVisuales.categoria || 'Otros';
+      const iconoVisual = this.obtenerIconoCategoria(categoriaVisual);
+
       const faltante = meta.montoObjetivo;
       const adicionalAplicado = Math.min(faltante, saldoRestante);
 
@@ -99,9 +103,9 @@ export class MetasPage implements OnInit {
 
       return {
         ...meta,
-        nombreVisual: datosVisuales.nombre,
-        categoriaVisual: datosVisuales.categoria,
-        iconoVisual: datosVisuales.icono,
+        nombreVisual,
+        categoriaVisual,
+        iconoVisual,
         montoAplicado: montoAplicado,
         porcentajeProgreso: Math.min(100, porcentaje),
         puedeCompletar: porcentaje >= 100
@@ -110,11 +114,15 @@ export class MetasPage implements OnInit {
 
     const completadasMapeadas = completadas.map(meta => {
       const datosVisuales = this.obtenerCategoriaYNombre(meta.nombre);
+      const nombreVisual = meta.proposito ? meta.nombre : datosVisuales.nombre;
+      const categoriaVisual = meta.proposito || datosVisuales.categoria || 'Otros';
+      const iconoVisual = this.obtenerIconoCategoria(categoriaVisual);
+
       return {
         ...meta,
-        nombreVisual: datosVisuales.nombre,
-        categoriaVisual: datosVisuales.categoria,
-        iconoVisual: datosVisuales.icono,
+        nombreVisual,
+        categoriaVisual,
+        iconoVisual,
         montoAplicado: meta.montoObjetivo,
         porcentajeProgreso: 100,
         puedeCompletar: false

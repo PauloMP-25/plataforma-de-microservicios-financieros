@@ -3,6 +3,7 @@ export interface SolicitudMetaAhorro {
   montoObjetivo: number;
   montoActual?: number;
   fechaLimite: string;
+  proposito?: string;
 }
 
 export interface Pagina<T> {
@@ -21,6 +22,7 @@ export interface RespuestaMetaAhorro {
   porcentajeProgreso: number;
   fechaLimite: string;
   completada: boolean;
+  proposito?: string;
   fechaCreacion: string;
   fechaActualizacion: string;
 }

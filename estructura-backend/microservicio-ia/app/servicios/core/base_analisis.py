@@ -39,3 +39,15 @@ class BaseAnalisisService(ABC):
     def orquestar_prompt(self, metricas: Dict[str, Any], contexto: ContextoEstrategicoIADTO) -> str:
         """Construcción del prompt para Gemini."""
         pass
+
+    def obtener_esquema_salida(self):
+        """
+        Retorna la clase Pydantic del esquema estructurado, o None si usa legacy.
+        """
+        return None
+
+    def post_procesar_consejo(self, usuario_id: str, consejo: Any, estado_coach: str, session: Any) -> None:
+        """
+        Hook opcional para persistencia dedicada de cada módulo.
+        """
+        pass

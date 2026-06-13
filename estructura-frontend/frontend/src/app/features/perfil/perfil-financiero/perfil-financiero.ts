@@ -6,6 +6,7 @@ import { FinancieroService } from '../../../core/services/Financiero.service';
 import { ClienteMetasLimitesService } from '../../../core/services/cliente-metas-limites.service';
 import { ClientePerfilService } from '../../../core/services/cliente-perfil.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { SuscripcionService } from '../../../core/services/suscripcion.service';
 import { AppEventBus } from '../../../core/services/app-event-bus.service';
 import { ResumenFinancieroDTO } from '../../../core/models/financiero/resumen.model';
 import { SolicitudPerfilFinanciero } from '../../../core/models/cliente/perfil-cliente.model';
@@ -47,10 +48,12 @@ export interface CategoriaComposicion {
   styleUrl: './perfil-financiero.scss',
 })
 export class PerfilFinanciero implements OnInit {
+  public auth = inject(AuthService);
   private financieroService = inject(FinancieroService);
   private metasService = inject(ClienteMetasLimitesService);
   private perfilService = inject(ClientePerfilService);
-  private authService = inject(AuthService);
+  private authService = this.auth;
+  private suscripcionService = inject(SuscripcionService);
   private eventBus = inject(AppEventBus);
   private destroyRef = inject(DestroyRef);
 
@@ -63,21 +66,23 @@ export class PerfilFinanciero implements OnInit {
   filtroTendencia = signal<3 | 6 | 12>(6);
   tendencia = signal<PuntoTendencia[]>([]);
   mostrarTodosLogros = signal<boolean>(false);
-  
+  modalPlanesAbierto = signal<boolean>(false);
+  comprandoPlan = signal<boolean>(false);
+
   periodosDisponibles: { key: string; label: string; mes: number; anio: number }[] = [];
   periodoSeleccionadoKey = signal<string>('');
 
   // ── Modal Configuración ──────────────────────────────────────
   modalConfigAbierto = signal<boolean>(false);
   configurando = signal<boolean>(false);
-  
+
   formConfig = signal<SolicitudPerfilFinanciero>({
     ocupacion: '',
     ingresoMensual: 0,
     estiloVida: 'Equilibrado',
     tonoIA: 'Amigable'
   });
-  
+
   erroresConfig = signal<{ [key: string]: string }>({});
   mensajeConfig = signal<{ texto: string, tipo: 'success' | 'error' } | null>(null);
 
@@ -85,7 +90,7 @@ export class PerfilFinanciero implements OnInit {
   abrirModalConfig(): void {
     const usuario = this.authService.usuario();
     if (!usuario) return;
-    
+
     // Cargar perfil real del backend para el modal
     this.perfilService.consultarPerfilFinanciero(usuario.id).subscribe({
       next: (perfil) => {
@@ -108,6 +113,31 @@ export class PerfilFinanciero implements OnInit {
     this.modalConfigAbierto.set(false);
     this.erroresConfig.set({});
     this.mensajeConfig.set(null);
+  }
+
+  abrirModalPlanes(): void {
+    this.modalPlanesAbierto.set(true);
+  }
+
+  cerrarModalPlanes(): void {
+    this.modalPlanesAbierto.set(false);
+  }
+
+  comprarPlan(plan: 'PRO' | 'PREMIUM'): void {
+    if (this.comprandoPlan()) return;
+    this.comprandoPlan.set(true);
+
+    this.suscripcionService.crearSesionCheckout(plan).subscribe({
+      next: (sesion) => {
+        this.comprandoPlan.set(false);
+        if (sesion?.urlCheckout) {
+          window.location.href = sesion.urlCheckout;
+        }
+      },
+      error: () => {
+        this.comprandoPlan.set(false);
+      }
+    });
   }
 
   actualizarCampoConfig(campo: keyof SolicitudPerfilFinanciero, valor: string | number): void {
@@ -162,12 +192,6 @@ export class PerfilFinanciero implements OnInit {
   }
 
   // ── KPIs Computados ─────────────────────────────────────────
-  balanceNeto = computed(() => {
-    const r = this.resumenActual();
-    if (!r) return null;
-    return r.totalIngresos - r.totalGastos;
-  });
-
   indicesSalud = computed(() => {
     const r = this.resumenActual();
     if (!r || r.totalIngresos === 0) return null;
@@ -190,15 +214,6 @@ export class PerfilFinanciero implements OnInit {
     const total = this.logrosFinancieros().length;
     const desbloqueados = this.logrosFinancieros().filter(l => l.desbloqueado).length;
     return { desbloqueados, total };
-  });
-
-  variacionBalance = computed(() => {
-    const actual = this.balanceNeto();
-    const ant = this.resumenAnterior();
-    if (actual === null || !ant) return null;
-    const balanceAnt = ant.totalIngresos - ant.totalGastos;
-    if (balanceAnt === 0) return null;
-    return ((actual - balanceAnt) / Math.abs(balanceAnt)) * 100;
   });
 
   variacionAhorro = computed(() => {
@@ -564,6 +579,24 @@ export class PerfilFinanciero implements OnInit {
     this.generarTendencia(meses);
   }
 
+  exportarPdf(): void {
+    const resumen = this.resumenActual();
+    const periodo = this.periodosDisponibles.find(p => p.key === this.periodoSeleccionadoKey());
+    const salud = this.indicesSalud();
+    const ahorro = this.capacidadAhorro();
+    const logros = this.progresoLogros();
+    const fechaGeneracion = new Date().toLocaleString('es-PE', { dateStyle: 'long', timeStyle: 'short' });
+    const html = this.construirReportePdf(resumen, periodo?.label ?? 'Periodo actual', salud, ahorro, logros, fechaGeneracion);
+    const ventana = window.open('', '_blank', 'width=980,height=720');
+    if (!ventana) return;
+
+    ventana.document.open();
+    ventana.document.write(html);
+    ventana.document.close();
+    ventana.focus();
+    setTimeout(() => ventana.print(), 350);
+  }
+
   toggleLogros(): void {
     this.mostrarTodosLogros.update(v => !v);
   }
@@ -583,6 +616,78 @@ export class PerfilFinanciero implements OnInit {
 
   formatMonedaSinDecimales(valor: number): string {
     return valor.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  }
+
+  private construirReportePdf(
+    resumen: ResumenFinancieroDTO | null,
+    periodo: string,
+    salud: { score: number; etiqueta: string } | null,
+    ahorro: number | null,
+    logros: { desbloqueados: number; total: number },
+    fechaGeneracion: string
+  ): string {
+    const ingresos = resumen?.totalIngresos ?? 0;
+    const gastos = resumen?.totalGastos ?? 0;
+    const saldo = ingresos - gastos;
+    const rowsIngresos = this.composicionIngresos().map(cat => `
+      <tr><td>${cat.nombre}</td><td>${cat.porcentaje}%</td><td>S/ ${this.formatMoneda(cat.monto)}</td></tr>
+    `).join('');
+    const rowsGastos = this.composicionGastos().map(cat => `
+      <tr><td>${cat.nombre}</td><td>${cat.porcentaje}%</td><td>S/ ${this.formatMoneda(cat.monto)}</td></tr>
+    `).join('');
+    const rowsTendencia = this.tendencia().map(punto => `
+      <tr><td>${punto.mes} ${punto.anio}</td><td>S/ ${this.formatMoneda(punto.ingresos)}</td><td>S/ ${this.formatMoneda(punto.gastos)}</td><td>S/ ${this.formatMoneda(punto.ahorro)}</td></tr>
+    `).join('');
+
+    return `<!doctype html>
+      <html lang="es">
+      <head>
+        <meta charset="utf-8">
+        <title>Perfil financiero - ${periodo}</title>
+        <style>
+          @page { size: A4; margin: 16mm; }
+          body { margin: 0; font-family: Arial, sans-serif; color: #0f172a; background: #fff; }
+          .hero { padding: 22px; border-radius: 18px; color: #fff; background: linear-gradient(135deg, #4f46e5, #7c3aed); }
+          h1 { margin: 0 0 6px; font-size: 26px; }
+          h2 { margin: 22px 0 10px; font-size: 17px; color: #312e81; }
+          p { margin: 0; color: inherit; }
+          .muted { color: #64748b; font-size: 12px; }
+          .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 18px 0; }
+          .card { border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; background: #f8fafc; }
+          .label { display: block; color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: 700; }
+          .value { display: block; margin-top: 6px; font-size: 21px; font-weight: 800; }
+          table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12px; }
+          th, td { border-bottom: 1px solid #e2e8f0; padding: 8px; text-align: left; }
+          th { background: #eef2ff; color: #312e81; }
+          .split { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+          .footer { margin-top: 24px; color: #64748b; font-size: 11px; }
+        </style>
+      </head>
+      <body>
+        <section class="hero">
+          <h1>Reporte de Perfil Financiero</h1>
+          <p>Periodo: ${periodo}</p>
+          <p>Generado: ${fechaGeneracion}</p>
+        </section>
+        <section class="grid">
+          <article class="card"><span class="label">Ingresos</span><span class="value">S/ ${this.formatMoneda(ingresos)}</span></article>
+          <article class="card"><span class="label">Gastos</span><span class="value">S/ ${this.formatMoneda(gastos)}</span></article>
+          <article class="card"><span class="label">Saldo operativo</span><span class="value">S/ ${this.formatMoneda(saldo)}</span></article>
+          <article class="card"><span class="label">Salud financiera</span><span class="value">${salud ? `${salud.score}/100` : 'Sin datos'}</span><span class="muted">${salud?.etiqueta ?? ''}</span></article>
+          <article class="card"><span class="label">Tasa de ahorro</span><span class="value">${ahorro !== null ? `${ahorro.toFixed(1)}%` : 'Sin datos'}</span></article>
+          <article class="card"><span class="label">Logros</span><span class="value">${logros.desbloqueados}/${logros.total}</span></article>
+        </section>
+        <section>
+          <h2>Tendencia financiera</h2>
+          <table><thead><tr><th>Mes</th><th>Ingresos</th><th>Gastos</th><th>Ahorro</th></tr></thead><tbody>${rowsTendencia}</tbody></table>
+        </section>
+        <section class="split">
+          <div><h2>Composición de ingresos</h2><table><thead><tr><th>Categoría</th><th>%</th><th>Monto</th></tr></thead><tbody>${rowsIngresos}</tbody></table></div>
+          <div><h2>Composición de gastos</h2><table><thead><tr><th>Categoría</th><th>%</th><th>Monto</th></tr></thead><tbody>${rowsGastos}</tbody></table></div>
+        </section>
+        <p class="footer">Reporte generado desde Luka App. Para guardar como PDF, selecciona “Guardar como PDF” en el diálogo de impresión.</p>
+      </body>
+      </html>`;
   }
 
   private logrosMock(): LogroFinanciero[] {
