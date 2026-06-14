@@ -3,7 +3,7 @@ import logging
 from typing import Optional
 import pika
 from app.configuracion import obtener_configuracion
-from app.persistencia.cache_redis import CacheRedis
+from app.persistencia.redis.cache_redis import CacheRedis
 
 logger = logging.getLogger(__name__)
 

@@ -152,7 +152,7 @@
           </div>
         </div>
 
-        <div class="form-error" *ngIf="formulario.invalid && formulario.touched" style="display: flex;">
+        <div class="form-error" *ngIf="formulario.invalid && formulario.touched" style="displhttps://github.com/PauloMP-25/plataforma-de-microservicios-financieros/pull/144/conflict?name=estructura-frontend%252Ffrontend%252Fsrc%252Fapp%252Ffeatures%252Fpresupuestos%252Fpages%252Fpresupuestos-page%252Fpresupuestos-page.ts&ancestor_oid=718e911649bc23c8663e24573e829b76a7b5fd24&base_oid=e0c3d4688f1fb8127bf66d5a5c7ff0a8d8803ef6&head_oid=8a5018c1aacd7c389af60921c6241d9db6c24654ay: flex;">
           <span *ngIf="formulario.errors?.['fechasInvalidas']">La fecha fin no puede ser anterior a la de inicio.</span>
           <span *ngIf="campoInvalido('montoLimite')">El monto límite debe ser mayor a 0.</span>
         </div>
@@ -162,13 +162,45 @@
           <span>Solo puedes tener un límite activo a la vez. Al definir uno, se registrarán tus cambios en tiempo real.</span>
         </div>
 
-        <div class="form-actions">
-          <button class="btn btn-primary btn-block" (click)="guardarPresupuesto()" [disabled]="cargando()">
-            <i class="fa-solid fa-floppy-disk"></i>
-            <span>{{ labelBotonGuardar() }}</span>
-          </button>
-          <button class="btn btn-ghost btn-block" (click)="limpiarFormulario()">Limpiar</button>
-        </div>
+        <form [formGroup]="formulario" (ngSubmit)="guardarPresupuesto()" class="presupuestos-page__form">
+          <!-- Campo 0: Nombre del Presupuesto -->
+          <div class="presupuestos-page__form-group">
+            <label for="nombre">Nombre del Presupuesto</label>
+            <div class="presupuestos-page__input-wrapper">
+              <i class="fa-solid fa-tag input-icon"></i>
+              <input
+                id="nombre"
+                type="text"
+                formControlName="nombre"
+                placeholder="Ej. Mi Presupuesto Mensual"
+              />
+            </div>
+            @if (formulario.get('nombre')?.invalid && formulario.get('nombre')?.touched) {
+              <small class="presupuestos-page__form-error">
+                El nombre es obligatorio (mínimo 3 caracteres, máximo 150).
+              </small>
+            }
+          </div>
+
+          <!-- Campo 1: Monto Límite -->
+          <div class="presupuestos-page__form-group">
+            <label for="montoLimite">Monto Límite (S/)</label>
+            <div class="presupuestos-page__input-wrapper">
+              <i class="fa-solid fa-coins input-icon"></i>
+              <input
+                id="montoLimite"
+                type="number"
+                formControlName="montoLimite"
+                placeholder="Ej. 1500"
+                min="1"
+              />
+            </div>
+            @if (formulario.get('montoLimite')?.invalid && formulario.get('montoLimite')?.touched) {
+              <small class="presupuestos-page__form-error">
+                El monto límite es obligatorio y debe ser mayor que 0.
+              </small>
+            }
+          </div>
 
       </div>
     </aside>

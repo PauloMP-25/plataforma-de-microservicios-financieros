@@ -22,6 +22,8 @@ export class IngresoFormComponent {
   };
   @Input() sugerencias: string[] = [];
   @Input() clasificandoIa = false;
+  @Input() intentosIaRestantes = 0;
+  @Input() intentosIaMaximos = 2;
 
   @Output() modelChange = new EventEmitter<IngresoFormData>();
   @Output() guardar = new EventEmitter<void>();
@@ -42,14 +44,14 @@ export class IngresoFormComponent {
     ];
   }
 
-  onModelChange(): void { 
-    this.modelChange.emit(this.model); 
+  onModelChange(): void {
+    this.modelChange.emit(this.model);
   }
 
   confirmarCrearCategoria(): void {
     const nombre = (this.nuevaCategoriaNombre || '').trim();
     if (!nombre) return;
-    
+
     this.crearCategoriaManualmente.emit(nombre);
     this.nuevaCategoriaNombre = '';
   }
@@ -68,5 +70,9 @@ export class IngresoFormComponent {
   eliminarEtiqueta(tag: string): void {
     this.model.etiquetas = this.model.etiquetas.filter(t => t !== tag);
     this.onModelChange();
+  }
+
+  get puedeSugerirCategoriaIa(): boolean {
+    return (this.model.descripcion?.trim()?.length || 0) >= 4 && !this.clasificandoIa && this.intentosIaRestantes > 0;
   }
 }

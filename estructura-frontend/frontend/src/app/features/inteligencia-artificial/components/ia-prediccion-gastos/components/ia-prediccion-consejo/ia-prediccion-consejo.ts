@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
   styleUrl: './ia-prediccion-consejo.scss'
 })
 export class IaPrediccionConsejoComponent implements OnChanges, OnDestroy {
-  @Input() textoCompleto: string = '';
+  @Input() textoCompleto: any = null;
   @Output() hablandoCambio = new EventEmitter<boolean>();
 
   consejoTexto = signal<string>('');
@@ -20,7 +20,19 @@ export class IaPrediccionConsejoComponent implements OnChanges, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['textoCompleto'] && this.textoCompleto) {
-      this.iniciarTypewriter(this.textoCompleto);
+      let textoConstruido = '';
+      if (typeof this.textoCompleto === 'object') {
+        textoConstruido = `
+          <p>${this.textoCompleto.introduccion}</p>
+          <p>${this.textoCompleto.analisis_tendencia}</p>
+          <p><strong>Impacto:</strong> ${this.textoCompleto.impacto_meta}</p>
+          <p class="highlight-math"><strong>Matemática:</strong> ${this.textoCompleto.recomendacion_matematica}</p>
+          <p><em>${this.textoCompleto.mensaje_motivacional}</em></p>
+        `;
+      } else {
+        textoConstruido = this.textoCompleto;
+      }
+      this.iniciarTypewriter(textoConstruido);
     }
   }
 

@@ -13,12 +13,11 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class CrearCuenta {
   /** Emite cuando el registro es exitoso para pasar al paso de selección de canal */
-  @Output() registroExitoso = new EventEmitter<{ correo: string; celular?: string; usuarioId: string }>();
+  @Output() registroExitoso = new EventEmitter<{ correo: string; usuarioId: string }>();
 
   formulario: FormGroup;
   mostrarPassword = false;
   mostrarConfirmar = false;
-  usarCelular = false;
   cargando = false;
   errorMensaje = '';
 
@@ -30,7 +29,6 @@ export class CrearCuenta {
     this.formulario = this.fb.group({
       nombreUsuario: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(100)]],
       correo: ['', [Validators.required, Validators.email]],
-      celular: [''],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmarPassword: ['', [Validators.required]]
     }, { validators: this.validarCoincidencia });
@@ -48,19 +46,6 @@ export class CrearCuenta {
 
   alternarPassword(): void { this.mostrarPassword = !this.mostrarPassword; }
   alternarConfirmar(): void { this.mostrarConfirmar = !this.mostrarConfirmar; }
-
-  /** Activa o desactiva el campo de celular con sus validadores */
-  alternarCelular(): void {
-    this.usarCelular = !this.usarCelular;
-    const controlCelular = this.formulario.get('celular');
-    if (this.usarCelular) {
-      controlCelular?.setValidators([Validators.required, Validators.pattern(/^\+?[0-9]{7,15}$/)]);
-    } else {
-      controlCelular?.clearValidators();
-      controlCelular?.setValue('');
-    }
-    controlCelular?.updateValueAndValidity();
-  }
 
   registrar(): void {
     if (this.formulario.invalid) {
@@ -84,7 +69,6 @@ export class CrearCuenta {
           // Emitir evento para mostrar verificación de código, pasando el usuarioId recibido
           this.registroExitoso.emit({
             correo: this.formulario.value.correo,
-            celular: this.usarCelular ? this.formulario.value.celular : undefined,
             usuarioId: resp.datos // El UUID del usuario creado
           });
         } else {

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { IniciarSesion } from '../iniciar-sesion/iniciar-sesion';
 import { CrearCuenta } from '../crear-cuenta/crear-cuenta';
 import { VerificarCodigo } from '../../recuperar-contrasena/verificar-codigo/verificar-codigo';
@@ -12,7 +13,7 @@ export type VistaAuth = 'login' | 'registro' | 'verificar' | 'exito' | 'canal';
 @Component({
   selector: 'app-contenedor-autenticacion',
   standalone: true,
-  imports: [CommonModule, RouterLink, IniciarSesion, CrearCuenta, VerificarCodigo],
+  imports: [CommonModule, FormsModule, RouterLink, IniciarSesion, CrearCuenta, VerificarCodigo],
   templateUrl: './contenedor-autenticacion.html',
   styleUrl: './contenedor-autenticacion.scss',
 })
@@ -25,12 +26,40 @@ export class ContenedorAutenticacion implements OnInit {
   correoActivacion = '';
   telefonoActivacion = '';
   canalSeleccionado: 'EMAIL' | 'SMS' | 'WHATSAPP' = 'EMAIL';
+  telefonoTocado = false;
+
+  get requiereTelefono(): boolean {
+    return this.canalSeleccionado !== 'EMAIL';
+  }
+
+  get telefonoNormalizado(): string {
+    return this.telefonoActivacion.trim();
+  }
+
+  get telefonoValido(): boolean {
+    return /^\+?[0-9]{7,15}$/.test(this.telefonoNormalizado.replace(/\s+/g, ''));
+  }
+
+  get puedeEnviarCodigo(): boolean {
+    return !this.cargandoOtp && (!this.requiereTelefono || this.telefonoValido);
+  }
 
   seleccionarCanal(canal: 'EMAIL' | 'SMS' | 'WHATSAPP'): void {
     this.canalSeleccionado = canal;
+    this.errorOtp = '';
+    this.infoOtp = '';
+    if (canal === 'EMAIL') {
+      this.telefonoTocado = false;
+    }
   }
 
   enviarCodigoActivacion(): void {
+    if (this.requiereTelefono && !this.telefonoValido) {
+      this.telefonoTocado = true;
+      this.errorOtp = 'Ingresa un número válido para recibir el código por celular.';
+      return;
+    }
+
     this.cargandoOtp = true;
     this.errorOtp = '';
     this.infoOtp = '';
@@ -38,7 +67,7 @@ export class ContenedorAutenticacion implements OnInit {
     const payload = {
       email: this.correoActivacion,
       tipo: this.canalSeleccionado,
-      telefono: this.canalSeleccionado !== 'EMAIL' ? this.telefonoActivacion : undefined
+      telefono: this.requiereTelefono ? this.telefonoNormalizado.replace(/\s+/g, '') : undefined
     };
 
     this.authService.solicitarOtpActivacion(payload).subscribe({
@@ -46,7 +75,7 @@ export class ContenedorAutenticacion implements OnInit {
         this.cargandoOtp = false;
         if (resp.exito) {
           this.medioVerificacion = this.canalSeleccionado === 'EMAIL' ? 'correo' : 'celular';
-          this.destinoVerificacion = this.canalSeleccionado === 'EMAIL' ? this.correoActivacion : this.telefonoActivacion;
+          this.destinoVerificacion = this.canalSeleccionado === 'EMAIL' ? this.correoActivacion : this.telefonoNormalizado;
           this.vistaActual = 'verificar';
         } else {
           this.errorOtp = resp.mensaje || 'Error al enviar el código de verificación';
@@ -59,18 +88,11 @@ export class ContenedorAutenticacion implements OnInit {
       }
     });
   }
+
   /** Datos del registro para el paso de verificación */
   medioVerificacion: 'correo' | 'celular' = 'correo';
   destinoVerificacion = '';
   usuarioId = '';
-
-  // 3. PROPIEDADES NUEVAS que el HTML necesita urgentemente:
-  canalSeleccionado: 'EMAIL' | 'SMS' | 'WHATSAPP' | null = null;
-  correoActivacion: string = 'ejemplo@correo.com'; 
-  telefonoActivacion: string = '999999990';
-  cargandoOtp: boolean = false;
-  infoOtp: string | null = null;
-  errorOtp: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -90,14 +112,18 @@ export class ContenedorAutenticacion implements OnInit {
 
   cambiarVista(vista: 'login' | 'registro'): void {
     this.vistaActual = vista;
+    this.errorOtp = '';
+    this.infoOtp = '';
     const ruta = vista === 'login' ? '/autenticacion/iniciar-sesion' : '/autenticacion/crear-cuenta';
     this.location.go(ruta);
   }
 
   /** Maneja el registro exitoso y muestra la selección de canal */
-  onRegistroExitoso(datos: { correo: string; celular?: string; usuarioId: string }): void {
+  onRegistroExitoso(datos: { correo: string; usuarioId: string }): void {
     this.correoActivacion = datos.correo;
-    this.telefonoActivacion = datos.celular || '';
+    this.telefonoActivacion = '';
+    this.telefonoTocado = false;
+    this.canalSeleccionado = 'EMAIL';
     this.usuarioId = datos.usuarioId;
     this.vistaActual = 'canal';
   }
@@ -106,25 +132,5 @@ export class ContenedorAutenticacion implements OnInit {
   onCodigoVerificado(codigo: string): void {
     console.log('Cuenta verificada con código:', codigo);
     this.vistaActual = 'exito';
-  }
-
-  // 4. MÉTODOS NUEVOS que ejecutan los (click) del HTML:
-  seleccionarCanal(canal: 'EMAIL' | 'SMS' | 'WHATSAPP'): void {
-    this.canalSeleccionado = canal;
-  }
-
-  enviarCodigoActivacion(): void {
-    this.cargandoOtp = true;
-    this.infoOtp = 'Enviando código de verificación...';
-    this.errorOtp = null;
-
-    console.log(`Enviando OTP simulado por: ${this.canalSeleccionado}`);
-
-    // Simulación para que no se quede congelado el botón en tu máquina
-    setTimeout(() => {
-      this.cargandoOtp = false;
-      this.infoOtp = 'Código enviado con éxito.';
-      this.vistaActual = 'verificar'; // Salta al siguiente paso
-    }, 1500);
   }
 }

@@ -111,10 +111,11 @@ export class PresupuestosPage implements OnInit {
     const finStr = finMes.toISOString().substring(0, 10);
 
     this.formulario = this.fb.group({
-      montoLimite: [1000, [Validators.required, Validators.min(1)]],
-      porcentajeAlerta: [80, [Validators.required, Validators.min(50), Validators.max(100)]],
-      fechaInicio: [hoyStr, [Validators.required]],
-      fechaFin: [finStr, [Validators.required]]
+      nombre: ['Presupuesto Mensual', [Validators.required, Validators.minLength(3), Validators.maxLength(150)]],
+      montoLimite: [null, [Validators.required, Validators.min(1)]],
+      porcentajeAlerta: [80, [Validators.required, Validators.min(1), Validators.max(100)]],
+      fechaInicio: [primerDia, [Validators.required]],
+      fechaFin: [ultimoDia, [Validators.required]]
     }, { validators: this.validarFechas });
   }
 
@@ -136,24 +137,32 @@ export class PresupuestosPage implements OnInit {
     this.cargando.set(true);
     
     this.financieroService.getResumen().subscribe({
-      next: (resumen) => this.gastoTotalMes.set(resumen.totalGastos || 0),
-      error: () => this.mostrarToast('Error al recuperar balance de gastos.', 'danger')
-    });
+      next: (resumen) => {
+        this.gastoTotalMes.set(resumen.totalGastos);
 
-    this.presupuestoService.obtenerActivo().subscribe({
-      next: (presupuesto) => {
-        if (presupuesto) {
-          this.presupuestoActivo.set(presupuesto);
-          this.formulario.patchValue({
-            montoLimite: presupuesto.montoLimite,
-            porcentajeAlerta: presupuesto.porcentajeAlerta,
-            fechaInicio: this.formatearFechaInput(presupuesto.fechaInicio),
-            fechaFin: this.formatearFechaInput(presupuesto.fechaFin)
-          });
-        } else {
-          this.presupuestoActivo.set(null);
-        }
-        this.cargando.set(false);
+        this.presupuestoService.obtenerActivo().subscribe({
+          next: (presupuesto) => {
+            if (presupuesto && presupuesto.activo) {
+              this.presupuestoActivo.set(presupuesto);
+              this.formulario.patchValue({
+                nombre: presupuesto.nombre || 'Presupuesto Mensual',
+                montoLimite: presupuesto.montoLimite,
+                porcentajeAlerta: presupuesto.porcentajeAlerta,
+                fechaInicio: presupuesto.fechaInicio.split('T')[0],
+                fechaFin: presupuesto.fechaFin.split('T')[0]
+              });
+              this.formulario.get('nombre')?.disable();
+            } else {
+              this.presupuestoActivo.set(null);
+              this.formulario.get('nombre')?.enable();
+            }
+            this.cargando.set(false);
+          },
+          error: () => {
+            this.presupuestoActivo.set(null);
+            this.cargando.set(false);
+          }
+        });
       },
       error: () => {
         this.mostrarToast('Error al cargar la configuración de presupuestos.', 'danger');
@@ -209,8 +218,16 @@ export class PresupuestosPage implements OnInit {
       next: () => {
         this.mostrarToast('Límite desactivado del período actual.', 'success');
         this.presupuestoActivo.set(null);
-        this.limpiarFormulario();
-        this.cargarDatosDashboard();
+        this.formulario.reset({
+          nombre: 'Presupuesto Mensual',
+          montoLimite: null,
+          porcentajeAlerta: 80,
+          fechaInicio: new Date().toISOString().split('T')[0],
+          fechaFin: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0]
+        });
+        this.formulario.get('nombre')?.enable();
+        this.cargarDatos();
+        setTimeout(() => this.exitoMensaje.set(''), 3000);
       },
       error: () => {
         this.mostrarToast('No se pudo desactivar el límite.', 'danger');

@@ -37,7 +37,7 @@ export class IaPrediccionGastosComponent implements OnChanges {
   deficitEstimado = signal<number>(0);
   historialMeses = signal<number[]>([]);
   ingresoEsperado = signal<number>(2000.00);
-  consejo = signal<string>('');
+  consejo = signal<any>(null);
   oraculoHablando = signal<boolean>(false);
 
   setHablando(estado: boolean) {
@@ -61,6 +61,6 @@ export class IaPrediccionGastosComponent implements OnChanges {
     this.deficitEstimado.set(insight.deficit_estimado ?? 0);
     this.historialMeses.set(insight.historial_meses ?? []);
     this.ingresoEsperado.set(insight.ingreso_esperado ?? 2000.00);
-    this.consejo.set(this.resultado?.consejo ?? '');
+    this.consejo.set(this.resultado?.consejo ?? null);
   }
 }
