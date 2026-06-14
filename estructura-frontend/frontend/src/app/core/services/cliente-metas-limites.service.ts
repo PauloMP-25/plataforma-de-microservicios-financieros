@@ -128,6 +128,17 @@ export class ClienteMetasLimitesService {
               completada: false,
               fechaCreacion: '2024-12-01',
               fechaActualizacion: '2024-12-01'
+            },
+            {
+              id: 'mock-meta-7',
+              nombre: '[Emergencia] Fondo de Emergencia',
+              montoObjetivo: 1000,
+              montoActual: 300,
+              porcentajeProgreso: 30,
+              fechaLimite: '2026-12-31',
+              completada: false,
+              fechaCreacion: '2025-04-10',
+              fechaActualizacion: '2025-04-10'
             }
           ];
           localStorage.setItem('luka_mock_metas', JSON.stringify(list));
