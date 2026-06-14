@@ -171,7 +171,7 @@
         <!-- Grid de Metas -->
         @defer (on viewport) {
           <div class="metas-page__grid">
-            @for (meta of metasFiltradas(); track meta.id) {
+            @for (meta of metasPaginadas(); track meta.id) {
               <article class="metas-page__card card" 
                        [class.metas-page__card--selected]="metaSeleccionada()?.id === meta.id"
                        [class.metas-page__card--success]="meta.completada"
@@ -258,16 +258,34 @@
             }
           </div>
 
-          <!-- Paginación -->
+          <!-- Controles de Paginación Premium -->
           @if (totalPaginas() > 1) {
-            <div class="metas-page__pagination anim-fade-up" style="display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 2rem;">
-              <button type="button" class="btn-pagination" (click)="paginaAnterior()" [disabled]="paginaActual() === 0" style="padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); cursor: pointer; display: flex; align-items: center; gap: 0.5rem; color: var(--text-color);">
+            <div class="metas-page__pagination anim-fade-up">
+              <button 
+                type="button" 
+                class="pagination-btn" 
+                [disabled]="paginaActual() === 1" 
+                (click)="anteriorPagina()">
                 <i class="fa-solid fa-chevron-left"></i> Anterior
               </button>
-              <span class="pagination-info" style="font-weight: 500; color: var(--text-color);">
-                Página {{ paginaActual() + 1 }} de {{ totalPaginas() }}
-              </span>
-              <button type="button" class="btn-pagination" (click)="paginaSiguiente()" [disabled]="paginaActual() === totalPaginas() - 1" style="padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); cursor: pointer; display: flex; align-items: center; gap: 0.5rem; color: var(--text-color);">
+              
+              <div class="pagination-pages">
+                @for (p of paginasArray(); track p) {
+                  <button 
+                    type="button" 
+                    class="pagination-page-btn" 
+                    [class.active]="paginaActual() === p" 
+                    (click)="cambiarPagina(p)">
+                    {{ p }}
+                  </button>
+                }
+              </div>
+              
+              <button 
+                type="button" 
+                class="pagination-btn" 
+                [disabled]="paginaActual() === totalPaginas()" 
+                (click)="siguientePagina()">
                 Siguiente <i class="fa-solid fa-chevron-right"></i>
               </button>
             </div>
