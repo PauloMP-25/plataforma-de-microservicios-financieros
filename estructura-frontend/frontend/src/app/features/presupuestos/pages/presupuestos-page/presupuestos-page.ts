@@ -114,8 +114,8 @@ export class PresupuestosPage implements OnInit {
       nombre: ['Presupuesto Mensual', [Validators.required, Validators.minLength(3), Validators.maxLength(150)]],
       montoLimite: [null, [Validators.required, Validators.min(1)]],
       porcentajeAlerta: [80, [Validators.required, Validators.min(1), Validators.max(100)]],
-      fechaInicio: [primerDia, [Validators.required]],
-      fechaFin: [ultimoDia, [Validators.required]]
+      fechaInicio: [hoyStr, [Validators.required]],
+      fechaFin: [finStr, [Validators.required]]
     }, { validators: this.validarFechas });
   }
 
@@ -226,7 +226,7 @@ export class PresupuestosPage implements OnInit {
           fechaFin: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0]
         });
         this.formulario.get('nombre')?.enable();
-        this.cargarDatos();
+        this.cargarDatosDashboard();
         setTimeout(() => this.exitoMensaje.set(''), 3000);
       },
       error: () => {

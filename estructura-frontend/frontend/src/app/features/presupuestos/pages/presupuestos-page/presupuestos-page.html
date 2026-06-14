@@ -85,7 +85,7 @@
   <div class="lk-grid">
 
     <aside class="lk-sidebar">
-      <div class="lk-card" [formGroup]="formulario">
+      <div class="lk-card">
 
         <div class="lk-status-banner" [ngClass]="presupuestoActivo() ? 'active' : 'inactive'">
           <div class="status-left">
@@ -102,68 +102,9 @@
           </button>
         </div>
 
-        <div class="form-group">
-          <div class="form-label-row">
-            <label class="form-label">Monto límite mensual (S/) *</label>
-            <div class="monto-display" [ngClass]="{ 'is-invalid': campoInvalido('montoLimite') }">
-              <span class="monto-currency">S/</span>
-              <input type="number" formControlName="montoLimite" class="monto-input" min="1" placeholder="0.00">
-            </div>
-          </div>
-          <input type="range" formControlName="montoLimite" class="lk-slider" min="0" max="5000" step="50"
-                 [style.--fill]="((formulario.get('montoLimite')?.value ?? 0) / 5000) * 100 + '%'">
-          <div class="slider-bounds">
-            <span>S/ 0</span><span>S/ 5,000</span>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <div class="form-label-row">
-            <label class="form-label">Porcentaje de alerta</label>
-            <span class="badge-alert" [ngClass]="formulario.get('porcentajeAlerta')?.value >= 90 ? 'danger' : formulario.get('porcentajeAlerta')?.value >= 70 ? 'warning' : 'ok'">
-              {{ formulario.get('porcentajeAlerta')?.value ?? 80 }}%
-            </span>
-          </div>
-          <input type="range" formControlName="porcentajeAlerta" class="lk-slider slider-warning" min="50" max="100" step="1"
-                 [style.--fill]="(((formulario.get('porcentajeAlerta')?.value ?? 80) - 50) / 50) * 100 + '%'">
-          <div class="slider-bounds">
-            <span>50%</span><span>100%</span>
-          </div>
-          <div class="alert-hint">
-            <i class="fa-solid fa-bell"></i>
-            <span>Recibirás una alerta al gastar {{ formatearMonto(montoAlertaCalculado()) }} ({{ formulario.get('porcentajeAlerta')?.value ?? 80 }}% de tu límite)</span>
-          </div>
-        </div>
-
-        <div class="form-dates" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; box-sizing: border-box;">
-          <div class="form-group form-group-sm" style="min-width: 0;">
-            <label class="form-label">Fecha de inicio</label>
-            <div class="input-date-wrapper" [ngClass]="{ 'is-invalid': campoInvalido('fechaInicio') }" style="position: relative; width: 100%;">
-              <input type="date" formControlName="fechaInicio" class="lk-input" style="width: 100%; padding-right: 32px; box-sizing: border-box;">
-              <i class="fa-solid fa-calendar input-date-icon" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i>
-            </div>
-          </div>
-          <div class="form-group form-group-sm" style="min-width: 0;">
-            <label class="form-label">Fecha de fin</label>
-            <div class="input-date-wrapper" [ngClass]="{ 'is-invalid': campoInvalido('fechaFin') || formulario.errors?.['fechasInvalidas'] }" style="position: relative; width: 100%;">
-              <input type="date" formControlName="fechaFin" class="lk-input" style="width: 100%; padding-right: 32px; box-sizing: border-box;">
-              <i class="fa-solid fa-calendar input-date-icon" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-error" *ngIf="formulario.invalid && formulario.touched" style="displhttps://github.com/PauloMP-25/plataforma-de-microservicios-financieros/pull/144/conflict?name=estructura-frontend%252Ffrontend%252Fsrc%252Fapp%252Ffeatures%252Fpresupuestos%252Fpages%252Fpresupuestos-page%252Fpresupuestos-page.ts&ancestor_oid=718e911649bc23c8663e24573e829b76a7b5fd24&base_oid=e0c3d4688f1fb8127bf66d5a5c7ff0a8d8803ef6&head_oid=8a5018c1aacd7c389af60921c6241d9db6c24654ay: flex;">
-          <span *ngIf="formulario.errors?.['fechasInvalidas']">La fecha fin no puede ser anterior a la de inicio.</span>
-          <span *ngIf="campoInvalido('montoLimite')">El monto límite debe ser mayor a 0.</span>
-        </div>
-
-        <div class="form-note">
-          <i class="fa-solid fa-circle-info"></i>
-          <span>Solo puedes tener un límite activo a la vez. Al definir uno, se registrarán tus cambios en tiempo real.</span>
-        </div>
-
         <form [formGroup]="formulario" (ngSubmit)="guardarPresupuesto()" class="presupuestos-page__form">
-          <!-- Campo 0: Nombre del Presupuesto -->
+
+          <!-- Campo: Nombre del Presupuesto -->
           <div class="presupuestos-page__form-group">
             <label for="nombre">Nombre del Presupuesto</label>
             <div class="presupuestos-page__input-wrapper">
@@ -182,18 +123,19 @@
             }
           </div>
 
-          <!-- Campo 1: Monto Límite -->
-          <div class="presupuestos-page__form-group">
-            <label for="montoLimite">Monto Límite (S/)</label>
-            <div class="presupuestos-page__input-wrapper">
-              <i class="fa-solid fa-coins input-icon"></i>
-              <input
-                id="montoLimite"
-                type="number"
-                formControlName="montoLimite"
-                placeholder="Ej. 1500"
-                min="1"
-              />
+          <!-- Campo: Monto Límite -->
+          <div class="form-group">
+            <div class="form-label-row">
+              <label class="form-label">Monto límite mensual (S/) *</label>
+              <div class="monto-display" [ngClass]="{ 'is-invalid': campoInvalido('montoLimite') }">
+                <span class="monto-currency">S/</span>
+                <input type="number" formControlName="montoLimite" class="monto-input" min="1" placeholder="0.00">
+              </div>
+            </div>
+            <input type="range" formControlName="montoLimite" class="lk-slider" min="0" max="5000" step="50"
+                   [style.--fill]="((formulario.get('montoLimite')?.value ?? 0) / 5000) * 100 + '%'">
+            <div class="slider-bounds">
+              <span>S/ 0</span><span>S/ 5,000</span>
             </div>
             @if (formulario.get('montoLimite')?.invalid && formulario.get('montoLimite')?.touched) {
               <small class="presupuestos-page__form-error">
@@ -202,8 +144,61 @@
             }
           </div>
 
+          <!-- Campo: Porcentaje de alerta -->
+          <div class="form-group">
+            <div class="form-label-row">
+              <label class="form-label">Porcentaje de alerta</label>
+              <span class="badge-alert" [ngClass]="formulario.get('porcentajeAlerta')?.value >= 90 ? 'danger' : formulario.get('porcentajeAlerta')?.value >= 70 ? 'warning' : 'ok'">
+                {{ formulario.get('porcentajeAlerta')?.value ?? 80 }}%
+              </span>
+            </div>
+            <input type="range" formControlName="porcentajeAlerta" class="lk-slider slider-warning" min="50" max="100" step="1"
+                   [style.--fill]="(((formulario.get('porcentajeAlerta')?.value ?? 80) - 50) / 50) * 100 + '%'">
+            <div class="slider-bounds">
+              <span>50%</span><span>100%</span>
+            </div>
+            <div class="alert-hint">
+              <i class="fa-solid fa-bell"></i>
+              <span>Recibirás una alerta al gastar {{ formatearMonto(montoAlertaCalculado()) }} ({{ formulario.get('porcentajeAlerta')?.value ?? 80 }}% de tu límite)</span>
+            </div>
+          </div>
+
+          <!-- Campos: Fechas -->
+          <div class="form-dates" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; box-sizing: border-box;">
+            <div class="form-group form-group-sm" style="min-width: 0;">
+              <label class="form-label">Fecha de inicio</label>
+              <div class="input-date-wrapper" [ngClass]="{ 'is-invalid': campoInvalido('fechaInicio') }" style="position: relative; width: 100%;">
+                <input type="date" formControlName="fechaInicio" class="lk-input" style="width: 100%; padding-right: 32px; box-sizing: border-box;">
+                <i class="fa-solid fa-calendar input-date-icon" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i>
+              </div>
+            </div>
+            <div class="form-group form-group-sm" style="min-width: 0;">
+              <label class="form-label">Fecha de fin</label>
+              <div class="input-date-wrapper" [ngClass]="{ 'is-invalid': campoInvalido('fechaFin') || formulario.errors?.['fechasInvalidas'] }" style="position: relative; width: 100%;">
+                <input type="date" formControlName="fechaFin" class="lk-input" style="width: 100%; padding-right: 32px; box-sizing: border-box;">
+                <i class="fa-solid fa-calendar input-date-icon" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-error" *ngIf="formulario.invalid && formulario.touched" style="display: flex;">
+            <span *ngIf="formulario.errors?.['fechasInvalidas']">La fecha fin no puede ser anterior a la de inicio.</span>
+            <span *ngIf="campoInvalido('montoLimite')">El monto límite debe ser mayor a 0.</span>
+          </div>
+
+          <div class="form-note">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>Solo puedes tener un límite activo a la vez. Al definir uno, se registrarán tus cambios en tiempo real.</span>
+          </div>
+
+          <button type="submit" class="btn btn-primary" [disabled]="formulario.invalid || cargando()">
+            {{ cargando() ? 'Guardando...' : labelBotonGuardar() }}
+          </button>
+
+        </form>
       </div>
     </aside>
+
 
     <div class="lk-content">
 
