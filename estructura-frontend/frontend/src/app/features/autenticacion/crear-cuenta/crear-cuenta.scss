@@ -1,0 +1,35 @@
+@use '../autenticacion-compartido' as *;
+
+// ── Toggle Celular ──
+.auth__toggle-celular {
+  padding: 4px 0;
+}
+
+.auth__checkbox-texto {
+  font-size: 0.84rem;
+  color: $texto-secundario;
+  transition: color 0.2s;
+}
+
+.auth__checkbox:hover .auth__checkbox-texto {
+  color: $texto-principal;
+}
+
+// ── Campo celular animado ──
+.auth__campo--celular {
+  animation: deslizar-campo 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+@keyframes deslizar-campo {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    max-height: 120px;
+    transform: translateY(0);
+  }
+}

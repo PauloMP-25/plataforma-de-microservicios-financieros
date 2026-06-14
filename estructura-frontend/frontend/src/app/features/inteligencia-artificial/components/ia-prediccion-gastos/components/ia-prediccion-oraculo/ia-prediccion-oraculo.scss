@@ -1,0 +1,162 @@
+.mystic-scene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 1rem 0;
+  height: 100%;
+}
+
+// La Bola de Cristal (Efecto Vidrio 3D)
+.crystal-ball {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.15) 0%, rgba(15, 23, 42, 0.8) 70%, rgba(34, 211, 238, 0.1) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    inset 0 20px 30px rgba(255, 255, 255, 0.15),
+    inset 10px 0 30px rgba(34, 211, 238, 0.2),
+    inset -10px 0 30px rgba(168, 85, 247, 0.2),
+    inset 0 -20px 30px rgba(15, 23, 42, 0.9),
+    0 15px 45px rgba(0, 0, 0, 0.6),
+    0 0 60px rgba(34, 211, 238, 0.15);
+  z-index: 2;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: floatBall 6s ease-in-out infinite;
+
+  // OLA DE LUZ (Sweeping light animation)
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -150%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.6), rgba(34, 211, 238, 0.8), transparent);
+    transform: skewX(-25deg);
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  &.magic-pulse::before {
+    animation: lightSweep 3s ease-in-out infinite;
+  }
+}
+
+// Brillos e Iluminación de la Bola
+.ball-glow {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.1) 0%, transparent 70%);
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+.ball-highlight {
+  position: absolute;
+  top: 15px;
+  left: 50px;
+  width: 60px;
+  height: 25px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  transform: rotate(-15deg);
+  filter: blur(1px);
+  pointer-events: none;
+}
+
+.ball-mist {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(circle at 70% 80%, rgba(34, 211, 238, 0.08) 0%, transparent 60%);
+  animation: mistMovement 8s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+// Pedestal de la Bola
+.pedestal-top {
+  position: absolute;
+  bottom: 0.1rem;
+  width: 120px;
+  height: 18px;
+  background: linear-gradient(90deg, #1e293b, #0f172a, #1e293b);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  z-index: 1;
+}
+
+.pedestal-base {
+  position: absolute;
+  bottom: -1.5rem;
+  width: 160px;
+  height: 28px;
+  background: linear-gradient(90deg, #334155, #1e293b, #334155);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px 4px 8px 8px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+// Gráfico SVG Interno
+.chart-wrapper {
+  width: 90%;
+  height: 60%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 3;
+  margin-top: 10px;
+}
+
+.oraculo-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.ball-legend {
+  position: absolute;
+  bottom: -5px;
+  display: flex;
+  gap: 6px;
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+
+  .legend-hist { color: #22d3ee; }
+  .legend-spacer { color: #94a3b8; }
+  .legend-pred {
+    color: #a855f7;
+    text-shadow: 0 0 4px rgba(168, 85, 247, 0.6);
+  }
+}
+
+@keyframes floatBall {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes mistMovement {
+  0% { opacity: 0.4; transform: scale(1) translate(0, 0); }
+  100% { opacity: 0.8; transform: scale(1.1) translate(-10px, -10px); }
+}
+
+@keyframes lightSweep {
+  0% { left: -100%; opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { left: 200%; opacity: 0; }
+}

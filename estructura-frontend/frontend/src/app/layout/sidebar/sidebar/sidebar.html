@@ -1,44 +1,23 @@
-<nav class="sidebar" [class.collapsed]="sidebarState.collapsed()">
+<div class="sidebar-backdrop" *ngIf="sidebarState.mobileOpen()" (click)="closeMobile()"></div>
+
+<nav class="sidebar" [class.collapsed]="sidebarState.collapsed()" [class.mobile-open]="sidebarState.mobileOpen()" [class.modal-open]="modalPlanesAbierto()">
 
   <!-- ── LOGO  ── -->
   <div class="sidebar-header">
 
     <div class="logo-wrap">
-      <img src="assets/assets/panda.png" alt="Luka" class="logo-img" />
-    </div>
+<img src="assets/avatares/figuras/panda.png" alt="Luka" class="logo-img" />    </div>
 
     <div class="brand" *ngIf="sidebarState.expanded()">
       <span class="brand-name">LUKA</span>
       <span class="brand-sub">Finanzas personales</span>
     </div>
 
-    <button
-      class="toggle-btn"
-      (click)="toggle()"
-      [title]="sidebarState.collapsed() ? 'Expandir' : 'Colapsar'"
-    >
-      <i class="fa-solid"
-        [class.fa-chevron-left]="sidebarState.expanded()"
-        [class.fa-chevron-right]="sidebarState.collapsed()">
-      </i>
-    </button>
-
   </div>
 
+  <div class="brand-divider" *ngIf="sidebarState.expanded()"></div>
 
-  <!-- ── PERFIL RÁPIDO ── -->
-  <div class="sidebar-profile" *ngIf="sidebarState.expanded()">
-    <div class="avatar">
-      {{ auth.usuario()?.nombreUsuario?.charAt(0)?.toUpperCase() ?? 'U' }}
-    </div>
-    <div class="profile-info">
-      <p class="profile-name">{{ auth.usuario()?.nombreUsuario ?? 'Usuario' }}</p>
-      <p class="profile-plan">
-        <i class="fa-solid fa-leaf"></i>
-        {{ auth.esPremium() ? 'Premium' : 'Estudiante' }}
-      </p>
-    </div>
-  </div>
+
 <!-- ══ NAVEGACIÓN PRINCIPAL ══ -->
 <ng-container *ngIf="!isPerfilSection">
 
@@ -53,6 +32,7 @@
         [title]="sidebarState.collapsed() ? item.label : ''"
         [title]="sidebarState.collapsed() ? item.label : ''"
         class="nav-link"
+        (click)="onNavClick()"
       >
         <i [className]="item.icon" class="nav-icon"></i>
         <span class="nav-text" *ngIf="sidebarState.expanded()">{{ item.label }}</span>
@@ -72,6 +52,7 @@
 
     routerLink="/dashboard"
     class="nav-link back-link"
+    (click)="onNavClick()"
   >
     <i class="fa-solid fa-arrow-left nav-icon"></i>
     <span class="nav-text" *ngIf="sidebarState.expanded()">Volver</span>
@@ -86,6 +67,7 @@
         routerLinkActive="active"
         [title]="sidebarState.collapsed() ? item.label : ''"
         class="nav-link"
+        (click)="onNavClick()"
       >
         <i [className]="item.icon" class="nav-icon"></i>
         <span class="nav-text" *ngIf="sidebarState.expanded()">{{ item.label }}</span>
@@ -94,6 +76,8 @@
   </ul>
 
 </ng-container>
+
+
 
   <!-- ── MASCOTA LUKA ── -->
   <div class="sidebar-spacer"></div>
@@ -104,11 +88,216 @@
       <p>{{ mascotMsg() }}</p>
     </div>
 
-    <div class="mascot-row">
-      <img src="assets/assets/panda.png" alt="Luka" class="mascot-img" />
-      <span class="mascot-hint" *ngIf="!showMascotMsg()">¡Toca a Luka!</span>
+        <div class="mascot-row">
+<img src="assets/avatares/figuras/panda.png" alt="Luka" class="logo-img" />      <span class="mascot-hint" *ngIf="!showMascotMsg()">¡Toca a Luka!</span>
     </div>
 
   </div>
+<article class="sidebar-premium"
+         *ngIf="sidebarState.expanded() && !auth.esPremium() && !auth.esPro()"
+         >
+
+  <div class="premium-head">
+    <i class="fa-solid fa-crown"></i>
+    <span>LUKA Premium</span>
+  </div>
+
+  <p>Mejora tu experiencia con reportes avanzados y alertas inteligentes.</p>
+
+  <div class="premium-actions">
+    <button type="button" class="btn-premium" (click)="abrirModalPlanes()">
+      Ver planes
+    </button>
+
+    <button type="button" class="btn-support" routerLink="/ayuda" (click)="$event.stopPropagation(); onNavClick()">
+      Soporte
+    </button>
+  </div>
+
+</article>
+
+@if (modalPlanesAbierto()) {
+  <div class="planes-modal-backdrop" (click)="cerrarModalPlanes()">
+    <section class="planes-modal" (click)="$event.stopPropagation()">
+
+      <button type="button" class="planes-modal__close" (click)="cerrarModalPlanes()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="planes-modal__grid">
+
+        <!-- PLAN PRO -->
+        <article class="plan-card plan-card--pro">
+          <div class="plan-card__tag">PLAN</div>
+
+          <div class="plan-card__header">
+            <div>
+              <h2>Pro <i class="fa-solid fa-star"></i></h2>
+              <p>Todo lo esencial para organizar tus finanzas con IA.</p>
+            </div>
+
+            <div class="plan-card__illustration plan-card__illustration--pro">
+              <i class="fa-solid fa-chart-line"></i>
+            </div>
+          </div>
+
+          <div class="plan-card__price">
+            <span>S/</span>
+            <strong>14.90</strong>
+            <small>/mes</small>
+          </div>
+
+          <p class="plan-card__cancel">Cancela cuando quieras.</p>
+
+          <hr />
+
+          <h3>Incluye:</h3>
+
+          <ul class="plan-card__features">
+            <li>
+              <i class="fa-solid fa-brain"></i>
+              <span>
+                <strong>Asistente IA Financiero</strong>
+                <small>Resuelve dudas y recibe orientación financiera.</small>
+              </span>
+            </li>
+
+            <li>
+              <i class="fa-solid fa-bullseye"></i>
+              <span>
+                <strong>Recomendaciones personalizadas</strong>
+                <small>Sugerencias según tus hábitos y objetivos.</small>
+              </span>
+            </li>
+
+            <li>
+              <i class="fa-solid fa-chart-pie"></i>
+              <span>
+                <strong>Reportes y análisis inteligentes</strong>
+                <small>Visualiza tus finanzas de forma clara.</small>
+              </span>
+            </li>
+          </ul>
+
+          <div class="plan-card__queries">
+            <h4>Uso mensual de IA</h4>
+
+            <div>
+              <span>Módulos de Analítica</span>
+              <strong>20 consultas</strong>
+            </div>
+
+            <div>
+              <span>Auto Clasificar</span>
+              <strong>10 consultas</strong>
+            </div>
+          </div>
+
+          <button type="button" class="plan-card__button plan-card__button--pro" (click)="comprarPlan('PRO')" [disabled]="comprandoPlan()">
+            {{ comprandoPlan() ? 'Redirigiendo...' : '✨ Elegir Plan Pro' }}
+          </button>
+
+          <p class="plan-card__secure">
+            <i class="fa-solid fa-lock"></i>
+            Pago seguro y protegido
+          </p>
+        </article>
+
+        <!-- PLAN PREMIUM -->
+        <article class="plan-card plan-card--premium">
+          <div class="plan-card__popular">
+            <i class="fa-solid fa-star"></i>
+            MÁS POPULAR
+          </div>
+
+          <div class="plan-card__tag plan-card__tag--premium">PLAN</div>
+
+          <div class="plan-card__header">
+            <div>
+              <h2>Premium <i class="fa-solid fa-crown"></i></h2>
+              <p>Todo lo que necesitas para tomar mejores decisiones y crecer tu dinero.</p>
+            </div>
+
+            <div class="plan-card__illustration plan-card__illustration--premium">
+              <i class="fa-solid fa-chart-simple"></i>
+            </div>
+          </div>
+
+          <div class="plan-card__price plan-card__price--premium">
+            <span>S/</span>
+            <strong>25.90</strong>
+            <small>/mes</small>
+          </div>
+
+          <p class="plan-card__cancel">Cancela cuando quieras.</p>
+
+          <hr />
+
+          <h3>Incluye todo lo del plan Pro, más:</h3>
+
+          <ul class="plan-card__features">
+            <li>
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <span>
+                <strong>Análisis avanzado con IA</strong>
+                <small>Insights más profundos para tomar mejores decisiones.</small>
+              </span>
+            </li>
+
+            <li>
+              <i class="fa-solid fa-star"></i>
+              <span>
+                <strong>Recomendaciones inteligentes avanzadas</strong>
+                <small>Sugerencias contextuales y más precisas.</small>
+              </span>
+            </li>
+
+            <li>
+              <i class="fa-solid fa-chart-pie"></i>
+              <span>
+                <strong>Reportes avanzados limitados</strong>
+                <small>Más detalle, más control, mejores resultados.</small>
+              </span>
+            </li>
+
+            <li>
+              <i class="fa-solid fa-shield-halved"></i>
+              <span>
+                <strong>Prioridad y nuevas funciones</strong>
+                <small>Acceso anticipado a nuevas herramientas.</small>
+              </span>
+            </li>
+          </ul>
+
+          <div class="plan-card__queries plan-card__queries--premium">
+            <h4>Uso mensual de IA</h4>
+
+            <div>
+              <span>Módulos de Analítica</span>
+              <strong>50 consultas</strong>
+            </div>
+
+            <div>
+              <span>Auto Clasificar</span>
+              <strong>20 consultas</strong>
+            </div>
+          </div>
+
+          <button type="button" class="plan-card__button plan-card__button--premium" (click)="comprarPlan('PREMIUM')" [disabled]="comprandoPlan()">
+            {{ comprandoPlan() ? 'Redirigiendo...' : '✨ Elegir Plan Premium' }}
+          </button>
+
+          <p class="plan-card__secure">
+            <i class="fa-solid fa-lock"></i>
+            Pago seguro y protegido
+          </p>
+        </article>
+
+      </div>
+    </section>
+  </div>
+}
+
+
 
 </nav>

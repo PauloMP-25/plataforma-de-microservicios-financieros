@@ -1,0 +1,152 @@
+<section class="auth" id="pagina-auth">
+  <!-- Fondo global animado -->
+  <div class="auth__fondo">
+    <div class="auth__orbe auth__orbe--1"></div>
+    <div class="auth__orbe auth__orbe--2"></div>
+    <div class="auth__rejilla"></div>
+  </div>
+
+  <a routerLink="/" class="auth__volver" id="btn-volver-inicio">
+    <i class="fas fa-arrow-left"></i> Volver al inicio
+  </a>
+
+  <!-- Contenedor Maestro -->
+  <div class="auth__contenedor-maestro"
+       [class.mostrar-registro]="vistaActual === 'registro'"
+       [class.mostrar-canal]="vistaActual === 'canal'"
+       [class.mostrar-verificar]="vistaActual === 'verificar'"
+       [class.mostrar-exito]="vistaActual === 'exito'">
+
+    <!-- Panel de Formularios (Deslizante) -->
+    <div class="auth__formulario-contenedor">
+      <!-- Login -->
+      <div class="auth__formulario-interior" [class.activo]="vistaActual === 'login'">
+        <app-iniciar-sesion></app-iniciar-sesion>
+      </div>
+      <!-- Registro -->
+      <div class="auth__formulario-interior" [class.activo]="vistaActual === 'registro'">
+        <app-crear-cuenta (registroExitoso)="onRegistroExitoso($event)"></app-crear-cuenta>
+      </div>
+      <!-- Seleccionar Canal OTP -->
+      <div class="auth__formulario-interior" [class.activo]="vistaActual === 'canal'">
+          <div class="auth__encabezado">
+            <div class="auth__icono-titulo">
+              <i class="fas fa-paper-plane"></i>
+            </div>
+          <h1>Verificar identidad</h1>
+          <p>Selecciona cómo quieres recibir el código OTP. El celular se solicita solo en este paso.</p>
+        </div>
+
+        <div class="auth__canales" role="radiogroup" aria-label="Canales de verificación">
+          <button type="button" class="auth__canal" [class.auth__canal--activo]="canalSeleccionado === 'EMAIL'" (click)="seleccionarCanal('EMAIL')">
+            <i class="fas fa-envelope"></i>
+            <span>
+              <strong>Correo</strong>
+              <small>{{ correoActivacion }}</small>
+            </span>
+          </button>
+
+          <button type="button" class="auth__canal" [class.auth__canal--activo]="canalSeleccionado === 'SMS'" (click)="seleccionarCanal('SMS')">
+            <i class="fas fa-sms"></i>
+            <span>
+              <strong>SMS</strong>
+              <small>{{ telefonoActivacion || 'Solicita celular aquí' }}</small>
+            </span>
+          </button>
+
+          <button type="button" class="auth__canal" [class.auth__canal--activo]="canalSeleccionado === 'WHATSAPP'" (click)="seleccionarCanal('WHATSAPP')">
+            <i class="fab fa-whatsapp"></i>
+            <span>
+              <strong>WhatsApp</strong>
+              <small>{{ telefonoActivacion || 'Solicita celular aquí' }}</small>
+            </span>
+          </button>
+        </div>
+
+        <div class="auth__campo auth__campo--otp-telefono" *ngIf="requiereTelefono">
+          <label class="auth__label">NÚMERO DE CELULAR PARA OTP</label>
+          <div class="auth__input-grupo" [class.auth__input-grupo--error]="telefonoTocado && !telefonoValido">
+            <i class="fas fa-mobile-alt auth__input-icono"></i>
+            <input
+              type="tel"
+              [(ngModel)]="telefonoActivacion"
+              (blur)="telefonoTocado = true"
+              placeholder="+51 999 999 999"
+              class="auth__input"
+              id="input-celular-otp-activacion">
+          </div>
+          <span class="auth__error" *ngIf="telefonoTocado && !telefonoValido">
+            Ingresa un número válido de 7 a 15 dígitos.
+          </span>
+          <p class="auth__ayuda-canal">
+            Este número se usará únicamente para enviar y validar tu código de identidad por {{ canalSeleccionado === 'WHATSAPP' ? 'WhatsApp' : 'SMS' }}.
+          </p>
+        </div>
+
+        <button type="button" class="auth__btn-submit" [disabled]="!puedeEnviarCodigo" (click)="enviarCodigoActivacion()" id="btn-enviar-otp-activacion">
+          <span *ngIf="!cargandoOtp">Enviar código <i class="fas fa-arrow-right"></i></span>
+          <span *ngIf="cargandoOtp" class="auth__spinner"></span>
+        </button>
+
+        <div class="auth__info-general" *ngIf="infoOtp">
+          <i class="fas fa-info-circle"></i> {{ infoOtp }}
+        </div>
+        <div class="auth__error-general" *ngIf="errorOtp">
+          <i class="fas fa-exclamation-circle"></i> {{ errorOtp }}
+        </div>
+      </div>
+      <!-- Verificar Código (post-registro) -->
+      <div class="auth__formulario-interior" [class.activo]="vistaActual === 'verificar'">
+        <app-verificar-codigo
+          [embebido]="true"
+          [medioVerificacion]="medioVerificacion"
+          [destinoVerificacion]="destinoVerificacion"
+          [usuarioId]="usuarioId"
+          (codigoVerificado)="onCodigoVerificado($event)">
+        </app-verificar-codigo>
+      </div>
+      <!-- Éxito -->
+      <div class="auth__formulario-interior" [class.activo]="vistaActual === 'exito'" style="text-align: center;">
+        <div class="auth__icono-titulo" style="font-size: 3rem; color: #22C55E; margin: 0 auto 16px;">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h1 style="font-family: 'Poppins', sans-serif; font-size: 1.8rem; font-weight: 800; margin-bottom: 10px;">¡Cuenta Creada Exitosamente!</h1>
+        <p style="color: #8B8FA3; font-size: 0.95rem; margin-bottom: 32px;">Tu cuenta ha sido verificada. Ya puedes iniciar sesión y comenzar a dominar tus finanzas.</p>
+        <button class="auth__btn-submit" (click)="cambiarVista('login')" id="btn-ir-login-exito">
+          Ir a Iniciar Sesión <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Panel Lateral Informativo (Deslizante) -->
+    <div class="auth__lateral-contenedor">
+      <!-- Lateral para Login -->
+      <div class="auth__lateral-interior" [class.activo]="vistaActual === 'login'">
+        <h2>¿Listo para el control?</h2>
+        <p>Únete a miles de usuarios que ya dominan sus finanzas con IA. Tu libertad financiera comienza aquí.</p>
+        <button class="auth__btn-lateral" (click)="cambiarVista('registro')" id="btn-ir-registro">
+          Crear Cuenta
+        </button>
+      </div>
+
+      <!-- Lateral para Registro -->
+      <div class="auth__lateral-interior" [class.activo]="vistaActual === 'registro'">
+        <h2>¡Hola de nuevo!</h2>
+        <p>Tus finanzas te esperan. Retoma el control de tu dinero y alcanza tus metas financieras.</p>
+        <button class="auth__btn-lateral" (click)="cambiarVista('login')" id="btn-ir-login">
+          Iniciar Sesión
+        </button>
+      </div>
+
+      <!-- Lateral para Verificación y Éxito -->
+      <div class="auth__lateral-interior" [class.activo]="vistaActual === 'canal' || vistaActual === 'verificar' || vistaActual === 'exito'">
+        <h2>{{ vistaActual === 'exito' ? '¡Todo listo!' : (vistaActual === 'canal' ? 'Verificación segura' : '¡Casi listo!') }}</h2>
+        <p>{{ vistaActual === 'exito' ? 'Bienvenido a la plataforma. Tu viaje hacia la libertad financiera comienza ahora.' : (vistaActual === 'canal' ? 'Primero enviaremos tu código por correo, SMS o WhatsApp. Si eliges celular, lo pediremos solo aquí para validar tu identidad.' : 'Solo falta verificar tu cuenta para empezar a dominar tus finanzas con inteligencia artificial.') }}</p>
+        <button class="auth__btn-lateral" (click)="cambiarVista('login')" id="btn-ir-login-desde-lateral" *ngIf="vistaActual !== 'exito'">
+          Ya tengo cuenta
+        </button>
+      </div>
+    </div>
+
+  </div>
+</section>

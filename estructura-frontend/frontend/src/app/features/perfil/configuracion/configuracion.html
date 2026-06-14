@@ -1,1 +1,386 @@
-<p>configuracion-page works!</p>
+<section class="configuracion">
+  <header class="configuracion__header">
+    <h1>Configuración</h1>
+    <p>Personaliza tu experiencia y asegura tu cuenta.</p>
+  </header>
+
+  <div class="configuracion__grid">
+    <article class="configuracion__card">
+      <div class="configuracion__card-header">
+        <h2>Apariencia</h2>
+        <p>Personaliza el estilo de la app.</p>
+      </div>
+
+      <div class="configuracion__apariencia-grid">
+        <section class="configuracion__panel" [style.--accent-color]="colorPrincipal()">
+          <h3>Tema</h3>
+          <div class="configuracion__segmentado">
+            <button
+              type="button"
+              [class.is-active]="tema() === 'oscuro'"
+              (click)="seleccionarTema('oscuro')"
+            >
+              <i class="fa-solid fa-moon"></i>
+              Oscuro
+            </button>
+            <button
+              type="button"
+              [class.is-active]="tema() === 'claro'"
+              (click)="seleccionarTema('claro')"
+            >
+              <i class="fa-solid fa-sun"></i>
+              Claro
+            </button>
+          </div>
+        </section>
+
+        <section class="configuracion__panel">
+          <h3>Color principal</h3>
+          <div class="configuracion__colores">
+            @for (color of coloresDisponibles; track color) {
+              <button
+                type="button"
+                [style.background]="color"
+                [class.is-active]="colorPrincipal() === color"
+                (click)="seleccionarColor(color)"
+                aria-label="Seleccionar color"
+              ></button>
+            }
+          </div>
+
+          <h3>Vista previa</h3>
+          <div class="configuracion__preview" [style.--previewColor]="colorPrincipal()">
+            <p class="configuracion__preview-title">Saldo total</p>
+            <p class="configuracion__preview-value">S/ 2,450.00</p>
+            <p class="configuracion__preview-caption">Tus finanzas, tu futuro.</p>
+          </div>
+        </section>
+      </div>
+    </article>
+
+    <article class="configuracion__card">
+      <section class="configuracion__panel configuracion__panel--premium" [style.--accent-color]="colorPrincipal()">
+        <div class="configuracion__premium-top">
+          <span class="configuracion__premium-pill"><i class="fa-solid fa-star"></i> PREMIUM</span>
+          <span class="configuracion__premium-pill configuracion__premium-pill--right"><i class="fa-solid fa-star"></i> POPULAR</span>
+        </div>
+
+        <div class="configuracion__premium-title-wrap">
+          <div class="configuracion__premium-badge" aria-hidden="true">
+            <i class="fa-solid fa-crown"></i>
+          </div>
+          <div>
+            <h3 class="configuracion__premium-title">Luka <span>Premium</span></h3>
+            <p class="configuracion__premium-subtitle">Desbloquea experiencias avanzadas con IA para que tomes mejores decisiones financieras.</p>
+          </div>
+        </div>
+
+        <div class="configuracion__premium-body">
+          <aside class="configuracion__premium-aside">
+            <p class="configuracion__premium-price-label">Desde solo</p>
+            <p class="configuracion__premium-price"><span>S/</span> 9.90</p>
+            <p class="configuracion__premium-periodo">/ mes</p>
+
+<button type="button" class="configuracion__premium-cta-main" (click)="abrirModalPlanes()">
+  ✨ Ver planes
+</button>
+
+</aside>
+        </div>
+
+        <div class="configuracion__premium-footer">
+          <div><i class="fa-solid fa-lock"></i><span><strong>Pago seguro</strong><small>Tus datos siempre protegidos</small></span></div>
+          <div><i class="fa-solid fa-bolt"></i><span><strong>Acceso inmediato</strong><small>Empieza a disfrutar al instante</small></span></div>
+        </div>
+      </section>
+    </article>
+
+
+    <article class="configuracion__card">
+      <div class="configuracion__card-header">
+        <h2>Privacidad y legal</h2>
+      </div>
+      <section class="configuracion__panel">
+        <ul class="configuracion__links-lista">
+          <li><a routerLink="/perfil/configuracion/privacidad">Política de privacidad</a></li>
+          <li><a routerLink="/perfil/configuracion/terminos">Términos y condiciones</a></li>
+        </ul>
+      </section>
+    </article>
+
+    <article class="configuracion__card">
+      <div class="configuracion__card-header">
+        <h2>Soporte</h2>
+      </div>
+      <section class="configuracion__panel">
+        <ul class="configuracion__links-lista">
+          <li><a href="#" (click)="$event.preventDefault()">Centro de ayuda</a></li>
+          <li><a href="#" (click)="$event.preventDefault()">Contactar soporte</a></li>
+          <li><a href="#" (click)="$event.preventDefault()">Reportar un problema</a></li>
+        </ul>
+      </section>
+    </article>
+
+    <article class="configuracion__card configuracion__card--danger">
+      <div class="configuracion__card-header">
+        <h2>Zona de cuenta</h2>
+        <p>Acciones sensibles para tu cuenta.</p>
+      </div>
+
+      <section class="configuracion__panel configuracion__panel--danger">
+        <div class="configuracion__danger-head">
+          <span class="configuracion__danger-icon" aria-hidden="true">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </span>
+          <div>
+            <h3>Eliminar cuenta</h3>
+            <p>Esta acción es permanente y eliminará tu acceso y datos asociados.</p>
+          </div>
+        </div>
+
+        <button type="button" class="configuracion__danger-btn" [disabled]="eliminandoCuenta()" (click)="abrirModalEliminarCuenta()">
+          Eliminar cuenta
+        </button>
+
+        @if (mensajeCuenta()) {
+          <p class="configuracion__mensaje configuracion__mensaje--danger">{{ mensajeCuenta() }}</p>
+        }
+      </section>
+    </article>
+
+    @if (modalEliminarCuentaAbierto()) {
+      <div class="configuracion__modal-backdrop configuracion__modal-backdrop--danger" (click)="cerrarModalEliminarCuenta()">
+        <section class="configuracion__modal configuracion__delete-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="titulo-eliminar-cuenta">
+          <header class="configuracion__modal-header configuracion__delete-modal-header">
+            <span class="configuracion__delete-icon" aria-hidden="true">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </span>
+            <div>
+              <p class="configuracion__delete-eyebrow">Acción irreversible</p>
+              <h3 id="titulo-eliminar-cuenta">Confirmar eliminación de cuenta</h3>
+            </div>
+            <button type="button" class="configuracion__close" [disabled]="eliminandoCuenta()" (click)="cerrarModalEliminarCuenta()" aria-label="Cerrar modal">
+              ×
+            </button>
+          </header>
+
+          <div class="configuracion__delete-warning">
+            <p>
+              Si continúas, se iniciará la eliminación de tu cuenta y se perderán tus datos asociados a LUKA,
+              incluyendo perfil, configuraciones, registros financieros, historial y preferencias guardadas.
+            </p>
+            <p>
+              Para confirmar que entiendes las consecuencias, escribe exactamente esta frase:
+            </p>
+            <strong>{{ fraseConfirmacionEliminarCuenta }}</strong>
+          </div>
+
+          <label class="configuracion__delete-confirm">
+            <span>Frase de confirmación</span>
+            <textarea
+              rows="3"
+              [ngModel]="confirmacionEliminarCuenta()"
+              (ngModelChange)="confirmacionEliminarCuenta.set($event)"
+              [disabled]="eliminandoCuenta()"
+              placeholder="Estoy de acuerdo con la eliminación de la cuenta"
+            ></textarea>
+          </label>
+
+          @if (mensajeCuenta()) {
+            <p class="configuracion__mensaje configuracion__mensaje--danger">{{ mensajeCuenta() }}</p>
+          }
+
+          <footer class="configuracion__delete-actions">
+            <button type="button" class="configuracion__delete-cancel" [disabled]="eliminandoCuenta()" (click)="cerrarModalEliminarCuenta()">
+              Cancelar
+            </button>
+            <button type="button" class="configuracion__danger-btn" [disabled]="eliminandoCuenta() || !confirmacionEliminarCuentaValida()" (click)="eliminarCuenta()">
+              {{ eliminandoCuenta() ? 'Procesando...' : 'Sí, eliminar mi cuenta' }}
+            </button>
+          </footer>
+        </section>
+      </div>
+    }
+    @if (modalPlanesAbierto()) {
+  <div class="planes-modal-backdrop" (click)="cerrarModalPlanes()">
+    <section class="planes-modal" (click)="$event.stopPropagation()">
+
+      <button type="button" class="planes-modal__close" (click)="cerrarModalPlanes()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="planes-modal__grid">
+
+        <!-- PLAN PRO -->
+        <article class="plan-card plan-card--pro">
+          <div class="plan-card__tag">PLAN</div>
+
+          <div class="plan-card__header">
+            <div>
+              <h2>Pro <i class="fa-solid fa-star"></i></h2>
+              <p>Todo lo esencial para organizar tus finanzas con IA.</p>
+            </div>
+
+            <div class="plan-card__illustration plan-card__illustration--pro">
+              <i class="fa-solid fa-chart-line"></i>
+            </div>
+          </div>
+
+          <div class="plan-card__price">
+            <span>S/</span>
+            <strong>14.90</strong>
+            <small>/mes</small>
+          </div>
+
+          <p class="plan-card__cancel">Cancela cuando quieras.</p>
+
+          <hr />
+
+          <h3>Incluye:</h3>
+
+          <ul class="plan-card__features">
+            <li>
+              <i class="fa-solid fa-brain"></i>
+              <span>
+                <strong>Asistente IA Financiero</strong>
+                <small>Resuelve dudas y recibe orientación financiera.</small>
+              </span>
+            </li>
+
+            <li>
+              <i class="fa-solid fa-bullseye"></i>
+              <span>
+                <strong>Recomendaciones personalizadas</strong>
+                <small>Sugerencias según tus hábitos y objetivos.</small>
+              </span>
+            </li>
+
+            <li>
+              <i class="fa-solid fa-chart-pie"></i>
+              <span>
+                <strong>Reportes y análisis inteligentes</strong>
+                <small>Visualiza tus finanzas de forma clara.</small>
+              </span>
+            </li>
+          </ul>
+
+          <div class="plan-card__queries">
+            <h4>Uso mensual de IA</h4>
+
+            <div>
+              <span>Módulos de Analítica</span>
+              <strong>20 consultas</strong>
+            </div>
+
+            <div>
+              <span>Auto Clasificar</span>
+              <strong>10 consultas</strong>
+            </div>
+          </div>
+
+          <button type="button" class="plan-card__button plan-card__button--pro" (click)="comprarPlan('PRO')" [disabled]="comprandoPlan()">
+            {{ comprandoPlan() ? 'Redirigiendo...' : '✨ Elegir Plan Pro' }}
+          </button>
+
+          <p class="plan-card__secure">
+            <i class="fa-solid fa-lock"></i>
+            Pago seguro y protegido
+          </p>
+        </article>
+
+        <!-- PLAN PREMIUM -->
+        <article class="plan-card plan-card--premium">
+          <div class="plan-card__popular">
+            <i class="fa-solid fa-star"></i>
+            MÁS POPULAR
+          </div>
+
+          <div class="plan-card__tag plan-card__tag--premium">PLAN</div>
+
+          <div class="plan-card__header">
+            <div>
+              <h2>Premium <i class="fa-solid fa-crown"></i></h2>
+              <p>Todo lo que necesitas para tomar mejores decisiones y crecer tu dinero.</p>
+            </div>
+
+            <div class="plan-card__illustration plan-card__illustration--premium">
+              <i class="fa-solid fa-chart-simple"></i>
+            </div>
+          </div>
+
+          <div class="plan-card__price plan-card__price--premium">
+            <span>S/</span>
+            <strong>25.90</strong>
+            <small>/mes</small>
+          </div>
+
+          <p class="plan-card__cancel">Cancela cuando quieras.</p>
+
+          <hr />
+
+          <h3>Incluye todo lo del plan Pro, más:</h3>
+
+          <ul class="plan-card__features">
+            <li>
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <span>
+                <strong>Análisis avanzado con IA</strong>
+                <small>Insights más profundos para tomar mejores decisiones.</small>
+              </span>
+            </li>
+
+            <li>
+              <i class="fa-solid fa-star"></i>
+              <span>
+                <strong>Recomendaciones inteligentes avanzadas</strong>
+                <small>Sugerencias contextuales y más precisas.</small>
+              </span>
+            </li>
+
+            <li>
+              <i class="fa-solid fa-chart-pie"></i>
+              <span>
+                <strong>Reportes avanzados limitados</strong>
+                <small>Más detalle, más control, mejores resultados.</small>
+              </span>
+            </li>
+
+            <li>
+              <i class="fa-solid fa-shield-halved"></i>
+              <span>
+                <strong>Prioridad y nuevas funciones</strong>
+                <small>Acceso anticipado a nuevas herramientas.</small>
+              </span>
+            </li>
+          </ul>
+
+          <div class="plan-card__queries plan-card__queries--premium">
+            <h4>Uso mensual de IA</h4>
+
+            <div>
+              <span>Módulos de Analítica</span>
+              <strong>50 consultas</strong>
+            </div>
+
+            <div>
+              <span>Auto Clasificar</span>
+              <strong>20 consultas</strong>
+            </div>
+          </div>
+
+          <button type="button" class="plan-card__button plan-card__button--premium" (click)="comprarPlan('PREMIUM')" [disabled]="comprandoPlan()">
+            {{ comprandoPlan() ? 'Redirigiendo...' : '✨ Elegir Plan Premium' }}
+          </button>
+
+          <p class="plan-card__secure">
+            <i class="fa-solid fa-lock"></i>
+            Pago seguro y protegido
+          </p>
+        </article>
+
+      </div>
+    </section>
+  </div>
+}
+  </div>
+</section>

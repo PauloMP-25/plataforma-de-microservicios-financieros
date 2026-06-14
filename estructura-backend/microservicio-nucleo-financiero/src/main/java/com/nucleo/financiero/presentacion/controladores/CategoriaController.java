@@ -1,9 +1,9 @@
 package com.nucleo.financiero.presentacion.controladores;
 
 import com.libreria.comun.respuesta.ResultadoApi;
-import com.nucleo.financiero.aplicacion.dtos.transacciones.CategoriaDTO;
-import com.nucleo.financiero.aplicacion.dtos.transacciones.CategoriaRequestDTO;
-import com.nucleo.financiero.aplicacion.servicios.ICategoriaService;
+import com.nucleo.financiero.aplicacion.dtos.respuestas.CategoriaDTO;
+import com.nucleo.financiero.aplicacion.dtos.solicitudes.CategoriaRequestDTO;
+import com.nucleo.financiero.aplicacion.puertos.ICategoriaService;
 import com.nucleo.financiero.dominio.entidades.Categoria.TipoMovimiento;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

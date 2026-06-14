@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
  * 
  * @author Luka-Dev-Backend
  */
-@FeignClient(name = "microservicio-ia", url = "${microservicio.ia.url:http://localhost:8086}")
+@FeignClient(name = "microservicio-ia", url = "${URL_PROD_IA:http://localhost:8086}")
 public interface ClienteIa {
 
     /**

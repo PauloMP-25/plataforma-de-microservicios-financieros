@@ -1,0 +1,60 @@
+<div class="auth__encabezado">
+  <div class="auth__icono-titulo">
+    <i class="fas fa-bolt"></i>
+  </div>
+  <h1>Iniciar Sesión</h1>
+  <p>Accede a tu panel de control moderno.</p>
+</div>
+
+<form [formGroup]="formulario" (ngSubmit)="iniciarSesion()" class="auth__formulario" id="form-login">
+  <!-- Correo -->
+  <div class="auth__campo">
+    <label class="auth__label">CORREO ELECTRÓNICO</label>
+    <div class="auth__input-grupo" [class.auth__input-grupo--error]="formulario.get('correo')?.touched && formulario.get('correo')?.invalid">
+      <i class="fas fa-envelope auth__input-icono"></i>
+      <input type="email" formControlName="correo" placeholder="nombre@ejemplo.com" class="auth__input" id="input-correo-login">
+    </div>
+    <span class="auth__error" *ngIf="formulario.get('correo')?.touched && formulario.get('correo')?.hasError('required')">
+      El correo es obligatorio
+    </span>
+    <span class="auth__error" *ngIf="formulario.get('correo')?.touched && formulario.get('correo')?.hasError('email')">
+      Ingresa un correo válido
+    </span>
+  </div>
+
+  <!-- Contraseña -->
+  <div class="auth__campo">
+    <label class="auth__label">CONTRASEÑA</label>
+    <div class="auth__input-grupo" [class.auth__input-grupo--error]="formulario.get('password')?.touched && formulario.get('password')?.invalid">
+      <i class="fas fa-lock auth__input-icono"></i>
+      <input [type]="mostrarPassword ? 'text' : 'password'" formControlName="password" placeholder="••••••••" class="auth__input" id="input-password-login">
+      <button type="button" class="auth__btn-ojo" (click)="alternarPassword()">
+        <i [class]="mostrarPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+      </button>
+    </div>
+    <span class="auth__error" *ngIf="formulario.get('password')?.touched && formulario.get('password')?.hasError('required')">
+      La contraseña es obligatoria
+    </span>
+  </div>
+
+  <!-- Opciones -->
+  <div class="auth__opciones">
+    <label class="auth__checkbox">
+      <input type="checkbox" id="check-recordarme">
+      <span class="auth__checkbox-marca"></span>
+      Recordarme
+    </label>
+    <a routerLink="/recuperar-contrasena" class="auth__enlace-olvide" id="enlace-olvide-password">¿Olvidaste tu contraseña?</a>
+  </div>
+
+  <!-- Botón Submit -->
+  <button type="submit" class="auth__btn-submit" [disabled]="cargando" id="btn-submit-login">
+    <span *ngIf="!cargando">Ingresar <i class="fas fa-arrow-right"></i></span>
+    <span *ngIf="cargando" class="auth__spinner"></span>
+  </button>
+
+  <!-- Error general -->
+  <div class="auth__error-general" *ngIf="errorMensaje">
+    <i class="fas fa-exclamation-circle"></i> {{ errorMensaje }}
+  </div>
+</form>

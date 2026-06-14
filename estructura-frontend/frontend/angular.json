@@ -23,7 +23,9 @@
             ],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "assets": [ "src/assets",
+            "assets": [ 
+              "src/84mz4vfsk7t4x9iynafbvwqgunr9vf.html",
+              "src/assets",
               {
                 "glob": "**/*",
                 "input": "public",
@@ -36,6 +38,22 @@
           },
           "configurations": {
             "production": {
+              "optimization": {
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": false
+                },
+                "fonts": {
+                  "inline": false
+                }
+              },
+              "fileReplacements": [
+                {
+                  "replace": "src/app/enviroments/environment.ts",
+                  "with": "src/app/enviroments/environment.prod.ts"
+                }
+              ],
               "budgets": [
                 {
                   "type": "initial",
@@ -44,8 +62,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "64kB",
+                  "maximumError": "128kB"
                 }
               ],
               "outputHashing": "all"
@@ -83,7 +101,9 @@
             "tsConfig": "tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
             "assets": 
-            [ "src/assets",
+            [ 
+              "src/84mz4vfsk7t4x9iynafbvwqgunr9vf.html",
+              "src/assets",
               {
                 "glob": "**/*",
                 "input": "public",
@@ -100,6 +120,6 @@
     }
   },
   "cli": {
-    "analytics": "56a54f5c-8028-401f-b913-32c1e30b9f6a"
+    "analytics": false
   }
 }

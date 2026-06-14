@@ -1,0 +1,165 @@
+$neon-emerald: #10b981;
+$neon-red: #ef4444;
+$neon-amber: #f59e0b;
+$neon-cyan: #06b6d4;
+$glass-bg: rgba(15, 23, 42, 0.6);
+$glass-border: rgba(255, 255, 255, 0.05);
+
+.glass-panel {
+  background: $glass-bg;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid $glass-border;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.btn-cyberpunk {
+  position: relative;
+  background: transparent;
+  color: #f8fafc;
+  padding: 0.75rem 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  border: 1px solid $neon-cyan;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, transparent, rgba($neon-cyan, 0.2), transparent);
+    transform: translateX(-100%);
+    transition: 0.5s;
+  }
+  
+  &:hover {
+    box-shadow: 0 0 15px rgba($neon-cyan, 0.4);
+    text-shadow: 0 0 5px rgba($neon-cyan, 0.8);
+    background: rgba($neon-cyan, 0.1);
+    
+    &::before {
+      transform: translateX(100%);
+    }
+  }
+}
+
+.ekg-line {
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+  animation: ekg-draw 3s linear infinite;
+  
+  &.fast-pulse {
+    animation: ekg-draw 1.5s linear infinite;
+  }
+}
+
+@keyframes ekg-draw {
+  0% { stroke-dashoffset: 200; }
+  50% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -200; }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.plate {
+  border-radius: 4px;
+  height: 60px;
+  width: 15px;
+  
+  &-large {
+    height: 80px;
+    width: 20px;
+  }
+  
+  &-medium {
+    height: 60px;
+    width: 15px;
+  }
+}
+
+.cyber-checkbox {
+  display: block;
+  position: relative;
+  padding-left: 30px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  font-size: 22px;
+  user-select: none;
+  
+  input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+    
+    &:checked ~ .checkmark {
+      background-color: transparent;
+      border-color: $neon-emerald;
+      box-shadow: 0 0 10px rgba($neon-emerald, 0.5);
+      
+      &:after {
+        display: block;
+      }
+    }
+  }
+  
+  .checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 24px;
+    width: 24px;
+    background-color: rgba(15, 23, 42, 0.8);
+    border: 2px solid #475569;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    
+    &:after {
+      content: "";
+      position: absolute;
+      display: none;
+      left: 7px;
+      top: 3px;
+      width: 6px;
+      height: 12px;
+      border: solid $neon-emerald;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+  }
+}
+
+.stamp-logrado {
+  font-size: 3rem;
+  font-weight: 900;
+  color: rgba($neon-emerald, 0.1);
+  border: 4px solid rgba($neon-emerald, 0.1);
+  padding: 0.5rem 2rem;
+  border-radius: 12px;
+  letter-spacing: 0.2em;
+  animation: stampIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes stampIn {
+  0% { transform: translate(-50%, -50%) rotate(12deg) scale(3); opacity: 0; }
+  100% { transform: translate(-50%, -50%) rotate(12deg) scale(1); opacity: 1; }
+}

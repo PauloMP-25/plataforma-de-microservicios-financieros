@@ -1,4 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* =============================================
    LUKA - Estilos Globales
    Sistema de Gastos Personales
@@ -7,17 +11,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800&display=swap');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
 
+/* Directivas base de Tailwind CSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* ── Variables ── */
 :root {
   /* Colores principales */
   --color-primary:        #5B6AF0;
+  --accent-primary:       #5B6AF0;
   --color-primary-light:  #7B89F5;
   --color-primary-dark:   #3D4EC8;
   --color-primary-soft:   #EEF0FE;
+  /* Alias de compatibilidad (evita hardcodes viejos) */
+  --c-primary:            var(--color-primary);
+  --c-accent:             var(--color-primary-light);
+  --c-primary-soft:       var(--color-primary-soft);
 
-  --color-accent:         #F0A500;
-  --color-accent-light:   #FFD166;
-  --color-accent-soft:    #FFF8E7;
+
 
   --color-success:        #22C55E;
   --color-success-soft:   #DCFCE7;
@@ -44,15 +56,21 @@
 
   /* Grises / Neutros */
   --bg-body:              #F5F6FF;
+  --bg-main:              #F5F6FF;
   --bg-card:              #FFFFFF;
   --bg-sidebar:           #FFFFFF;
   --text-primary:         #1E2340;
+  --text-main:            #1E2340;
   --text-secondary:       #6B7280;
   --text-muted:           #9CA3AF;
   --border-color:         #E8EAFF;
   --shadow-sm:            0 2px 8px rgba(91,106,240,0.08);
   --shadow-md:            0 4px 20px rgba(91,106,240,0.12);
   --shadow-lg:            0 8px 40px rgba(91,106,240,0.18);
+
+  /* Extras de tema global */
+  --bg-surface-soft:      #F0F4FF;
+  --color-accent-soft-2:  #E8FFF7;
 
   /* Tipografías */
   --font-main:            'Nunito', sans-serif;
@@ -69,9 +87,34 @@
   --transition:           all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-bounce:    all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  /* Sidebar */
+  /* Sidebar / Header layout */
   --sidebar-width:        260px;
+  --sidebar-w:            260px;
+  --sidebar-w-col:        80px;
   --header-height:        72px;
+}
+
+/* Tema oscuro global */
+body.theme-dark {
+  --bg-body:              #0B1220;
+  --bg-main:              #0B1220;
+  --bg-card:              #121B2E;
+  --bg-sidebar:           #0E172A;
+  --text-primary:         #E5ECFF;
+  --text-main:            #E5ECFF;
+  --text-secondary:       #A9B6D3;
+  --text-muted:           #8290AF;
+  --border-color:         #253652;
+  --shadow-sm:            0 2px 10px rgba(5, 10, 20, 0.35);
+  --shadow-md:            0 8px 24px rgba(5, 10, 20, 0.45);
+  --shadow-lg:            0 16px 38px rgba(5, 10, 20, 0.5);
+  --bg-surface-soft:      #16243E;
+  --color-accent-soft-2:  #133F39;
+
+  /* Mantener consistencia con variables antiguas */
+  --c-primary:            var(--color-primary);
+  --c-accent:             var(--color-primary-light);
+  --c-primary-soft:       var(--color-primary-soft);
 }
 
 /* ── Reset & Base ── */
@@ -145,6 +188,7 @@ body {
   border: 1.5px solid var(--border-color);
   box-shadow: var(--shadow-sm);
   transition: var(--transition);
+  will-change: transform, box-shadow;
 
   &:hover {
     box-shadow: var(--shadow-md);
@@ -155,7 +199,7 @@ body {
 /* ── Animaciones globales ── */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0);    }
+  to   { opacity: 1; transform: none;             }
 }
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -179,6 +223,29 @@ body {
   100% { background-position:  200% 0; }
 }
 
-.anim-fade-up   { animation: fadeInUp 0.5s ease both; }
+.anim-fade-up   { 
+  animation: fadeInUp 0.5s ease both;
+  will-change: transform, opacity;
+}
 .anim-float     { animation: float 3s ease-in-out infinite; }
 .anim-pulse     { animation: pulse-soft 2s ease-in-out infinite; }
+
+/* ═══════════════════════════════════════════
+   TEMA CLARO - Variables alternativas
+   Se activa cuando body tiene la clase .tema-claro
+   ═══════════════════════════════════════════ */
+body.tema-claro {
+  --bg-body:              #F5F6FF;
+  --bg-card:              #FFFFFF;
+  --bg-sidebar:           #FFFFFF;
+  --text-primary:         #1E2340;
+  --text-secondary:       #6B7280;
+  --text-muted:           #9CA3AF;
+  --border-color:         #E2E5F1;
+  --shadow-sm:            0 2px 8px rgba(91,106,240,0.06);
+  --shadow-md:            0 4px 20px rgba(91,106,240,0.1);
+  --shadow-lg:            0 8px 40px rgba(91,106,240,0.14);
+
+  /* Scrollbar claro */
+  &::-webkit-scrollbar-thumb { background: #D1D5E8; }
+}

@@ -18,20 +18,22 @@ import org.springframework.web.bind.annotation.RequestParam;
  */
 @FeignClient(
         name = "microservicio-usuario",
-        url = "${microservicio.usuario.url:http://localhost:8081}"
+        contextId = "clienteUsuario",
+        url = "${URL_PROD_USUARIO:http://localhost:8081}",
+        fallback = ClienteUsuarioFallback.class
 )
 public interface ClienteUsuario {
 
     /**
      * Activa la cuenta del usuario por su ID. Mapea al nuevo endpoint PUT en
      * MS-Usuario.
+     * 
      * @param usuarioId
      * @param telefono
-     * @return 
+     * @return
      */
     @PutMapping("/api/v1/auth/activar/{usuarioId}")
-    String activarCuenta(
-        @PathVariable("usuarioId") UUID usuarioId, 
-        @RequestParam("telefono") String telefono
-    );
+    com.libreria.comun.respuesta.ResultadoApi<String> activarCuenta(
+            @PathVariable("usuarioId") UUID usuarioId,
+            @RequestParam("telefono") String telefono);
 }

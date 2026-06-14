@@ -48,6 +48,13 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- DOTENV: Carga automáticamente archivos .env locales para desarrollo local sin quemar credenciales -->
+        <dependency>
+            <groupId>me.paulschwarz</groupId>
+            <artifactId>springboot3-dotenv</artifactId>
+            <version>5.1.0</version>
+        </dependency>
+
         <!-- PERSISTENCIA -->
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -64,10 +71,6 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-        </dependency>
 
         <!-- DOCUMENTACION -->
         <dependency>
@@ -76,31 +79,22 @@
             <version>2.8.5</version>
         </dependency>
 
-        <!-- TESTING -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>postgresql</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>rabbitmq</artifactId>
-            <scope>test</scope>
-        </dependency>
+
         <!-- REDIS: Para Blacklist de JWT (Logout) y caché -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <!-- OPENFEIGN: Para comunicación síncrona entre microservicios -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+        <!-- ACTUATOR: Render consultara el endpoint de salud del microservicio -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
     </dependencies>
     <dependencyManagement>

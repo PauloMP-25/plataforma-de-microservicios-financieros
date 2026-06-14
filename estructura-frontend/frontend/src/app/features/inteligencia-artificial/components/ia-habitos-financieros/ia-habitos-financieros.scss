@@ -1,0 +1,893 @@
+// Estilos compartidos de IA
+@use '../../ia-shared' as *;
+
+.habitos-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+// ── KPI Bar ──
+.habitos-kpi-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  width: 100%;
+}
+
+.kpi-card {
+  background: rgba(13, 27, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  backdrop-filter: blur(8px);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: rgba(168, 85, 247, 0.2);
+  }
+
+  .kpi-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: rgba(168, 85, 247, 0.1);
+    color: #a855f7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+  }
+
+  .kpi-info {
+    display: flex;
+    flex-direction: column;
+
+    .kpi-label {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .kpi-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+  }
+}
+
+// ── Split Layout ──
+.split-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+
+  @media (max-width: 992px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card-premium {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 0.75rem;
+
+    .panel-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  }
+}
+
+// ── Radar Panel (Izquierda) ──
+.radar-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .btn-toggle-semana {
+    background: rgba(168, 85, 247, 0.1);
+    color: #c084fc;
+    border: 1px solid rgba(168, 85, 247, 0.2);
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(168, 85, 247, 0.2);
+      border-color: rgba(168, 85, 247, 0.4);
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  .radar-canvas-container {
+    width: 280px;
+    height: 280px;
+    margin: 1rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+}
+
+// ── Estilos SVG Radar ──
+.radar-svg {
+  overflow: visible;
+
+  // Animación del trazo spiderweb al entrar
+  .radar-grid-line {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.08);
+    stroke-width: 1;
+  }
+
+  .radar-axis-line {
+    stroke: rgba(255, 255, 255, 0.08);
+    stroke-width: 1;
+    stroke-dasharray: 4, 4;
+  }
+
+  .radar-ref-circle {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.03);
+    stroke-width: 0.8;
+  }
+
+  // Ideal Luka (Cyan punteado)
+  .radar-ideal-polygon {
+    fill: rgba(34, 211, 238, 0.06);
+    stroke: rgba(34, 211, 238, 0.5);
+    stroke-width: 1.5;
+    stroke-dasharray: 3, 3;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  // Actual Usuario (Gradiente Violeta)
+  .radar-actual-polygon {
+    fill: url(#radarGrad);
+    stroke: #a855f7;
+    stroke-width: 2.5;
+    transition: points 0.6s cubic-bezier(0.4, 0, 0.2, 1), fill 0.6s ease, stroke 0.6s ease;
+    animation: spiderweb-fade-in 1.2s ease-out;
+  }
+
+  .radar-vertex-group {
+    cursor: pointer;
+
+    .radar-vertex-outer {
+      fill: none;
+      stroke: rgba(168, 85, 247, 0.4);
+      stroke-width: 2;
+      transition: r 0.2s ease;
+    }
+
+    .radar-vertex-inner {
+      fill: #e9d5ff;
+      stroke: #a855f7;
+      stroke-width: 1.5;
+      transition: transform 0.2s ease;
+    }
+
+    &:hover {
+      .radar-vertex-outer {
+        r: 8.5;
+        stroke: rgba(168, 85, 247, 0.8);
+      }
+
+      .radar-vertex-inner {
+        transform: scale(1.2);
+      }
+    }
+  }
+
+  .radar-label {
+    fill: rgba(255, 255, 255, 0.6);
+    font-size: 10px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    transition: fill 0.2s ease, font-weight 0.2s ease;
+
+    &:hover,
+    &--active {
+      fill: #c084fc;
+      font-weight: 700;
+    }
+  }
+}
+
+// Leyenda Radar
+.radar-legend {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+
+      &--ideal {
+        border: 1.5px dashed rgba(34, 211, 238, 0.8);
+        background: rgba(34, 211, 238, 0.1);
+      }
+
+      &--actual {
+        border: 1.5px solid #a855f7;
+        background: rgba(168, 85, 247, 0.3);
+      }
+    }
+
+    .legend-text {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+  }
+}
+
+// Detalle del Vértice
+.dimension-detail-card {
+  width: 100%;
+  margin-top: 1.25rem;
+  background: rgba(168, 85, 247, 0.05);
+  border: 1px solid rgba(168, 85, 247, 0.15);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  animation: slide-up-fade 0.3s ease-out;
+
+  .detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.35rem;
+
+    .detail-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #e9d5ff;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .detail-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+
+      &--low {
+        background: rgba(239, 68, 68, 0.2);
+        color: #f87171;
+      }
+    }
+  }
+
+  .detail-desc {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.75);
+    line-height: 1.4;
+  }
+}
+
+// ── Heatmap Panel (Derecha) ──
+.heatmap-panel {
+  display: flex;
+  flex-direction: column;
+
+  .heatmap-subtitle {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: -0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .badge-container {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+.heatmap-grid-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  position: relative;
+  padding: 1.5rem 0.5rem 0.5rem 0.5rem;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.heatmap-days-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+
+  .day-col-header {
+    text-align: center;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 600;
+    position: relative;
+    height: 20px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+}
+
+// Corona animada en la columna de mayor gasto (Sábado)
+.crown-wrapper {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: float-crown 2s ease-in-out infinite;
+
+  .crown-icon {
+    font-size: 0.85rem;
+    color: #fbbf24;
+    filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.6));
+  }
+}
+
+.heatmap-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.heatmap-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+}
+
+.heatmap-cell {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+
+  // Stagger animado al crearse
+  animation: cell-reveal 0.4s ease-out both;
+
+  @for $i from 1 through 4 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 20}ms;
+    }
+  }
+
+  .cell-day-num {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.25);
+    font-weight: 500;
+    pointer-events: none;
+    transition: color 0.2s ease;
+  }
+
+  // Estilo fin de semana
+  &.cell-weekend {
+    border: 1px solid rgba(245, 158, 11, 0.15);
+  }
+
+  &:hover {
+    transform: scale(1.15) translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    z-index: 10;
+
+    .cell-day-num {
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 700;
+    }
+  }
+
+  // Gradiente de 5 niveles: frío (azul) a caliente (rojo)
+  // #1e3a5f (mínimo) → #2563eb → #f59e0b → #ef4444 → #7f1d1d (máximo)
+  &.color-level-1 {
+    background: #1e3a5f;
+    border: 1px solid rgba(37, 99, 235, 0.1);
+  }
+
+  &.color-level-2 {
+    background: #2563eb;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  &.color-level-3 {
+    background: #f59e0b;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  &.color-level-4 {
+    background: #ef4444;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  &.color-level-5 {
+    background: #7f1d1d;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    box-shadow: inset 0 0 8px rgba(239, 68, 68, 0.3);
+  }
+}
+
+// Tooltip flotante interactivo del heatmap
+.heatmap-tooltip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  background: #0b1329;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  width: 220px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+  z-index: 100;
+  pointer-events: none;
+  animation: tooltip-fade-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+
+  .tooltip-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 0.35rem;
+    margin-bottom: 0.35rem;
+
+    .tooltip-total {
+      color: #f43f5e;
+    }
+  }
+
+  .tooltip-tx-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .tooltip-tx-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.7rem;
+
+    .tx-details {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      color: rgba(255, 255, 255, 0.8);
+
+      .tx-icon {
+        font-size: 0.65rem;
+        color: #a855f7;
+        width: 14px;
+        text-align: center;
+      }
+
+      .tx-desc {
+        max-width: 100px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
+    .tx-amount {
+      color: #94a3b8;
+      font-weight: 600;
+    }
+  }
+
+  .tooltip-empty {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0;
+  }
+
+  .tooltip-arrow {
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 10px;
+    height: 10px;
+    background: #0b1329;
+    border-right: 1px solid rgba(168, 85, 247, 0.3);
+    border-bottom: 1px solid rgba(168, 85, 247, 0.3);
+  }
+}
+
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+
+  .legend-label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  .legend-scale {
+    display: flex;
+    gap: 0.25rem;
+
+    .scale-box {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+
+      &.level-1 {
+        background: #1e3a5f;
+      }
+
+      &.level-2 {
+        background: #2563eb;
+      }
+
+      &.level-3 {
+        background: #f59e0b;
+      }
+
+      &.level-4 {
+        background: #ef4444;
+      }
+
+      &.level-5 {
+        background: #7f1d1d;
+      }
+    }
+  }
+}
+
+// ── Panel del Coach ──
+.coach-advice-panel {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.7) 0%, rgba(88, 28, 135, 0.15) 100%);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  @media (max-width: 576px) {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .coach-avatar-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .neural-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #a855f7 0%, #06b6d4 100%);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      position: relative;
+      box-shadow: 0 0 16px rgba(168, 85, 247, 0.4);
+
+      .avatar-glow {
+        position: absolute;
+        inset: -3px;
+        border-radius: 50%;
+        background: inherit;
+        filter: blur(8px);
+        opacity: 0.5;
+        z-index: -1;
+      }
+    }
+
+    .coach-title-info {
+      display: flex;
+      flex-direction: column;
+
+      .coach-name {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #f8fafc;
+        margin: 0;
+      }
+
+      .coach-specialty {
+        font-size: 0.7rem;
+        color: #cbd5e1;
+        background: rgba(255, 255, 255, 0.08);
+        padding: 0.1rem 0.35rem;
+        border-radius: 4px;
+        margin-top: 0.15rem;
+      }
+    }
+  }
+
+  .coach-message-box {
+    flex: 1;
+    position: relative;
+    padding-left: 0.5rem;
+
+    .coach-message {
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: #e2e8f0;
+      margin: 0;
+
+      ::ng-deep strong {
+        color: #c084fc;
+        font-weight: 700;
+      }
+    }
+  }
+}
+
+// ── Animaciones CSS ──
+@keyframes float-crown {
+  0% {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  50% {
+    transform: translateX(-50%) translateY(-3px);
+  }
+
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes spiderweb-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes cell-reveal {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes tooltip-fade-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -95%) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1);
+  }
+}
+
+@keyframes slide-up-fade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Estado Vacío (Empty State) ── */
+  .empty-state-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+    min-height: 400px;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.2) 100%);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+  }
+
+  .empty-icon-wrapper {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, 0.1);
+    /* Verde esmeralda suave */
+    color: #10b981;
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+
+    .empty-glow {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: #10b981;
+      filter: blur(20px);
+      opacity: 0.2;
+      border-radius: 50%;
+      animation: pulse 3s infinite alternate;
+    }
+  }
+
+  .empty-title {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #f8fafc;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .empty-desc {
+    font-size: 0.95rem;
+    color: #94a3b8;
+    max-width: 400px;
+    line-height: 1.5;
+    margin: 0;
+
+    strong {
+      color: #e2e8f0;
+    }
+  }
+
+  @keyframes pulse {
+    from {
+      transform: scale(0.9);
+      opacity: 0.15;
+    }
+
+    to {
+      transform: scale(1.1);
+      opacity: 0.3;
+    }
+  }
+
+/* ── Estado de Carga (Salud Financiera) ── */
+.loading-state-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  min-height: 400px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.2) 100%);
+  border: 1px dashed rgba(244, 63, 94, 0.2);
+}
+
+.loading-icon-wrapper {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(244, 63, 94, 0.1);
+  color: #f43f5e;
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+
+  .heartbeat-icon {
+    animation: heartbeat 1.2s infinite;
+  }
+
+  .loading-glow {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #f43f5e;
+    filter: blur(20px);
+    opacity: 0.2;
+    border-radius: 50%;
+    animation: pulse 1.2s infinite alternate;
+  }
+}
+
+.loading-title {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #f8fafc;
+  margin: 0 0 0.5rem 0;
+  animation: shimmerText 2s infinite linear;
+  background: linear-gradient(90deg, #f8fafc 0%, #cbd5e1 50%, #f8fafc 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.loading-desc {
+  font-size: 0.95rem;
+  color: #94a3b8;
+  max-width: 400px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+@keyframes heartbeat {
+  0% { transform: scale(1); }
+  14% { transform: scale(1.3); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.3); }
+  70% { transform: scale(1); }
+}
+
+@keyframes shimmerText {
+  to { background-position: 200% center; }
+}

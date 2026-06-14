@@ -4,10 +4,13 @@ import com.libreria.comun.seguridad.ConfiguracionSeguridadBase;
 import com.libreria.comun.seguridad.FiltroJwt;
 import com.libreria.comun.seguridad.PuntoEntradaJwt;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 
 /**
  * Configuración de seguridad específica para el microservicio de auditoría.
@@ -17,37 +20,50 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
  * </p>
  * 
  * @author Paulo Moron
+ * @version 1.2.0
  */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
 
     public ConfiguracionSeguridad(FiltroJwt filtroJwt, PuntoEntradaJwt puntoEntradaJwt) {
         super(filtroJwt, puntoEntradaJwt);
-        // TODO Auto-generated constructor stub
     }
 
     /**
-     * Define la configuración común de la cadena de filtros.
-     * Los microservicios deben llamar a este método y añadir sus rutas específicas.
-     *
-     * @param http Configuración de seguridad de Spring.
-     * @return {@link HttpSecurity} configurado.
+     * Configura la cadena de filtros de seguridad específica para el microservicio
+     * de auditoría.
+     * 
+     * @param http Configuración HttpSecurity.
+     * @return SecurityFilterChain configurado.
      * @throws Exception Si ocurre un error en la configuración.
      */
-    @Override
-    protected HttpSecurity configurarAutorizacion(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+        // 1. Configuramos la base (JWT, Stateless, Exception handling)
+        super.configurarAutorizacion(http);
+
+        // 2. Definimos las reglas de este microservicio (De lo más específico a lo
+        // general)
         http.authorizeHttpRequests(auth -> auth
-                // El endpoint de verificación de IP para el Gateway debe ser público o interno
-                .requestMatchers("/api/v1/auditoria/seguridad/verificar-ip/**").permitAll()
+                // Endpoints públicos o de infraestructura (Gateway)
+                .requestMatchers("/api/v1/seguridad/verificar-ip/**").permitAll()
 
-                // Las consultas detalladas solo para administradores
-                .requestMatchers(HttpMethod.GET,"/api/auditoria/accesos/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.GET,"/api/v1/auditoria/registros/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.GET,"/api/v1/auditoria/accesos/**").hasRole("ADMIN")
+                // Las consultas detalladas de auditoría y bloqueos de IP solo para administradores
+                .requestMatchers("/api/v1/seguridad/lista-negra", "/api/v1/seguridad/lista-negra/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/v1/auditoria/accesos", "/api/v1/auditoria/accesos/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/v1/auditoria/registros", "/api/v1/auditoria/registros/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/v1/auditoria/transacciones", "/api/v1/auditoria/transacciones/**").hasRole("ADMIN")
 
-                // El resto requiere autenticación
+                // Monitoreo y Documentación (Público)
+                .requestMatchers("/actuator/**", "/error/**").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
+                // 3. BLOQUEO TOTAL AL FINAL
                 .anyRequest().authenticated());
-        return super.configurarAutorizacion(http);
+
+        return http.build();
     }
 }

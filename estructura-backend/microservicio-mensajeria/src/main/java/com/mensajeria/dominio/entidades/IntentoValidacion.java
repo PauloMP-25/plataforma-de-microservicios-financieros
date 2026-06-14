@@ -12,6 +12,8 @@ import java.util.UUID;
  *
  * Persiste en BD para sobrevivir reinicios del servicio.
  */
+import java.io.Serializable;
+
 @Entity
 @Table(
         name = "intentos_validacion_otp",
@@ -24,11 +26,14 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class IntentoValidacion {
+public class IntentoValidacion implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
 
     @Column(name = "usuario_id", nullable = false, unique = true, updatable = false)
     private UUID usuarioId;

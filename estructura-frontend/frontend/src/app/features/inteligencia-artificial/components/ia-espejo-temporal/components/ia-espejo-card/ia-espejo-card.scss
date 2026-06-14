@@ -1,0 +1,302 @@
+@use '../../../../../../../styles.scss' as *;
+
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.mirror-card {
+  position: relative;
+  border-radius: 24px;
+  padding: 1.5rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(8px);
+  width: 100%;
+  min-width: 0;
+
+  .mirror-glass-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+}
+
+/* Espejo Izquierdo: Continuidad (Fresco/Frío) */
+.mirror-continuity {
+  background: rgba(30, 41, 59, 0.3);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.4);
+
+  &:hover {
+    border-color: rgba(148, 163, 184, 0.2);
+    transform: translateY(-2px);
+  }
+
+  .mirror-icon {
+    color: #94a3b8;
+    background: rgba(148, 163, 184, 0.08);
+  }
+
+  .mirror-title {
+    color: #e2e8f0;
+  }
+
+  .mirror-subtitle {
+    color: #64748b;
+  }
+
+  .kpi-box {
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+  }
+}
+
+/* Espejo Derecho: Transformación (Warm/Neon Glow) */
+.mirror-transformation {
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(245, 158, 11, 0.15);
+  box-shadow: 0 8px 32px rgba(245, 158, 11, 0.03), inset 0 0 30px rgba(245, 158, 11, 0.02);
+
+  &:hover {
+    border-color: rgba(245, 158, 11, 0.3);
+    box-shadow: 0 12px 40px rgba(245, 158, 11, 0.08), inset 0 0 30px rgba(245, 158, 11, 0.04);
+    transform: translateY(-4px);
+  }
+
+  .mirror-icon {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.1);
+  }
+
+  .mirror-title {
+    color: #fbbf24;
+    text-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+  }
+
+  .mirror-subtitle {
+    color: #a16207;
+  }
+
+  .kpi-box.box-premium {
+    background: rgba(16, 185, 129, 0.03);
+    border: 1px solid rgba(16, 185, 129, 0.1);
+  }
+
+  .transformation-shine {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.02) 0%, transparent 60%);
+    pointer-events: none;
+    animation: slowRotate 20s linear infinite;
+  }
+}
+
+/* ── Elementos Comunes ── */
+.mirror-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  z-index: 2;
+  min-width: 0;
+
+  .mirror-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+  }
+
+  .mirror-title-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+
+  .mirror-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .mirror-subtitle {
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: normal;
+    word-break: break-word;
+  }
+}
+
+.mirror-kpi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  z-index: 2;
+
+  .kpi-box {
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+
+    .kpi-title {
+      font-size: 0.68rem;
+      color: #64748b;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    .kpi-value {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #f1f5f9;
+      white-space: normal;
+      word-break: break-word;
+
+      &.score-bad {
+        color: #ef4444;
+      }
+
+      &.score-good {
+        color: #10b981;
+      }
+    }
+  }
+}
+
+.mirror-goals-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  z-index: 2;
+
+  .section-title {
+    font-size: 0.78rem;
+    color: #64748b;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    padding-bottom: 0.35rem;
+  }
+
+  .goals-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+
+    .list-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #64748b;
+    }
+  }
+
+  .goals-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+
+    .goal-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.25rem 0.55rem;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.03);
+      color: #cbd5e1;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+
+      i {
+        font-size: 0.75rem;
+      }
+
+      &.tag-success {
+        background: rgba(16, 185, 129, 0.08);
+        color: #6ee7b7;
+        border-color: rgba(16, 185, 129, 0.15);
+      }
+
+      &.tag-failed {
+        background: rgba(244, 63, 94, 0.08);
+        color: #fda4af;
+        border-color: rgba(244, 63, 94, 0.15);
+      }
+    }
+
+    .goal-tag-empty {
+      font-size: 0.72rem;
+      color: #64748b;
+      font-style: italic;
+    }
+  }
+}
+
+.mirror-letter-panel {
+  padding: 1rem;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 2;
+
+  &.panel-premium {
+    background: rgba(245, 158, 11, 0.02);
+    border-color: rgba(245, 158, 11, 0.08);
+  }
+
+  .letter-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .letter-text {
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: #94a3b8;
+    margin: 0;
+    font-style: italic;
+  }
+}
+
+@keyframes slowRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

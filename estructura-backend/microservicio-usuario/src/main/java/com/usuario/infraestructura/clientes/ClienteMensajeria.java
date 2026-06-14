@@ -1,12 +1,11 @@
 package com.usuario.infraestructura.clientes;
 
-import com.usuario.aplicacion.dtos.SolicitudGenerarOtp;
+import com.usuario.aplicacion.dtos.solicitudes.SolicitudGenerarOtp;
+import com.usuario.aplicacion.dtos.solicitudes.SolicitudValidarRecuperacion;
 import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * Feign Client que invoca el endpoint de activación de cuenta en el
@@ -20,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  */
 @FeignClient(
         name = "microservicio-mensajeria",
-        url = "${microservicio.mensajeria.url:http://localhost:8084}",
+        url = "${URL_PROD_MENSAJERIA:http://localhost:8084}",
         fallback = ClienteMensajeriaFallback.class
 )
 public interface ClienteMensajeria {
@@ -35,17 +34,20 @@ public interface ClienteMensajeria {
     
     /**
      * Valida un código de recuperación y devuelve el UUID del usuario.
-     * Mapea al GET que creamos en el Controlador de Mensajería.
-     * @param codigo
-     * @param usuarioId
+     * Mapea al POST que creamos en el Controlador de Mensajería.
+     * @param solicitud
      * @return 
      */
-    @GetMapping("/api/v1/mensajeria/validar-recuperacion")
-    UUID validarCodigoYObtenerUsuario(
-        @RequestParam("registroId") UUID registroId, 
-        @RequestParam("codigo") String codigo
+    @PostMapping("/api/v1/mensajeria/otp/validar-recuperacion")
+    com.libreria.comun.respuesta.ResultadoApi<UUID> validarCodigoYObtenerUsuario(
+        @RequestBody SolicitudValidarRecuperacion solicitud
+    );
+    
+    @PostMapping("/api/v1/mensajeria/otp/validar-activacion")
+    com.libreria.comun.respuesta.ResultadoApi<com.usuario.aplicacion.dtos.respuestas.RespuestaValidacion> validarActivacion(
+        @RequestBody com.usuario.aplicacion.dtos.solicitudes.SolicitudValidarCodigo solicitud
     );
     
     @PostMapping("/api/v1/mensajeria/otp/validar-limite")
-    void validarLimite(@RequestBody SolicitudGenerarOtp solicitud);
+    void validarLimite(@RequestBody com.usuario.aplicacion.dtos.solicitudes.SolicitudVerificarLimite solicitud);
 }

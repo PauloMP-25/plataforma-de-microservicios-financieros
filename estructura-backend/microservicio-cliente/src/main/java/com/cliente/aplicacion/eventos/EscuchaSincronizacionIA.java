@@ -1,6 +1,6 @@
 package com.cliente.aplicacion.eventos;
 
-import com.cliente.aplicacion.servicios.ServicioContexto;
+import com.cliente.aplicacion.puertos.ServicioContexto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -48,9 +48,8 @@ public class EscuchaSincronizacionIA {
      * Reacciona al evento de contexto actualizado después del commit.
      * <p>
      * Dispara el refresco de la caché Redis y la publicación del
-     * mensaje de sincronización a RabbitMQ. Ambas operaciones son
-     * asíncronas ({@code @Async} en {@code ServicioContextoImpl}),
-     * por lo que no bloquean la respuesta al usuario.
+     * mensaje de sincronización a RabbitMQ de forma secuencial y
+     * segura después del commit de la transacción.
      * </p>
      *
      * @param evento Evento con el ID del usuario y el origen del cambio.

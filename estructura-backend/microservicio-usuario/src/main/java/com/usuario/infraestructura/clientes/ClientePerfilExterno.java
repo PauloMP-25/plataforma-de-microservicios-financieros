@@ -16,19 +16,19 @@ import java.util.UUID;
  */
 @FeignClient(
     name = "microservicio-cliente", 
-    url = "${microservicio.cliente.url:http://localhost:8083}",
+    url = "${URL_PROD_CLIENTE:http://localhost:8083}",
     fallback = ClientePerfilExternoFallback.class
 )
 public interface ClientePerfilExterno {
 
-    @PostMapping("/api/v1/clientes/inicial")
+    @PostMapping("/api/v1/clientes/perfil/inicial")
     void crearPerfilInicial(@RequestParam("usuarioId") UUID usuarioId);
     
     // Nuevo: Para guardar el teléfono cuando el usuario lo elige en la activación
-    @PatchMapping("/api/perfiles/{usuarioId}/telefono")
-    void actualizarTelefono(@PathVariable UUID usuarioId, @RequestParam String telefono);
+    @PatchMapping("/api/v1/clientes/interno/perfiles/{usuarioId}/telefono")
+    void actualizarTelefono(@PathVariable("usuarioId") UUID usuarioId, @RequestParam("telefono") String telefono);
 
     // Nuevo: Para recuperar el teléfono en el flujo de "olvidé mi contraseña"
-    @GetMapping("/api/perfiles/{usuarioId}/telefono")
-    String obtenerTelefono(@PathVariable UUID usuarioId);
+    @GetMapping("/api/v1/clientes/interno/perfiles/{usuarioId}/telefono")
+    String obtenerTelefono(@PathVariable("usuarioId") UUID usuarioId);
 }

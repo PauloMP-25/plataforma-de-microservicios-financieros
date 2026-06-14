@@ -1,0 +1,196 @@
+/* =============================================
+   LUKA - PREMIUM DASHBOARD STYLES (Vanilla CSS)
+   ============================================= */
+
+:root {
+  --cyan-accent: #22d3ee;
+  --purple-accent: #ab47bc;
+  --green-accent: #10b981;
+  --indigo-accent: #5b6af0;
+  
+  --bg-glass: rgba(19, 29, 51, 0.65);
+  --border-glass: rgba(255, 255, 255, 0.08);
+}
+
+body.theme-dark {
+  --bg-glass: rgba(19, 29, 51, 0.65);
+  --border-glass: rgba(255, 255, 255, 0.07);
+}
+
+body.tema-claro {
+  --bg-glass: rgba(255, 255, 255, 0.75);
+  --border-glass: rgba(91, 106, 240, 0.12);
+}
+
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+/* ── Estilos de Glassmorphism Genéricos ── */
+.glass-panel {
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* ── CABECERA / PANEL DE FILTROS ── */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+
+  .dashboard-title {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+
+  .dashboard-subtitle {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+  }
+}
+
+.header-filters {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* Buscador Ghost Style */
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .search-icon {
+    position: absolute;
+    left: 14px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    pointer-events: none;
+  }
+
+  .search-input {
+    width: 280px;
+    height: 42px;
+    padding: 0 40px;
+    font-family: var(--font-main);
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    background: var(--bg-body);
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(91, 106, 240, 0.15);
+      background: var(--bg-card);
+    }
+  }
+
+  .clear-search {
+    position: absolute;
+    right: 12px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+
+    &:hover {
+      background: rgba(0,0,0,0.05);
+      color: var(--text-primary);
+    }
+  }
+}
+
+/* Selector de Periodo */
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  .filter-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+  }
+}
+
+.period-selector {
+  display: flex;
+  background: var(--bg-body);
+  border: 1px solid var(--border-color);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  gap: 4px;
+
+  button {
+    font-family: var(--font-main);
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 6px 14px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+
+    &:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    &.active {
+      background: var(--bg-card);
+      color: var(--color-primary);
+      box-shadow: var(--shadow-sm);
+    }
+  }
+}
+
+/* Ajustes Responsive Adicionales */
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: stretch;
+
+    .header-filters {
+      flex-direction: column;
+      align-items: stretch;
+      
+      .search-box .search-input {
+        width: 100%;
+      }
+    }
+  }
+}

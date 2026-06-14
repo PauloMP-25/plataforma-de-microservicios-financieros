@@ -31,13 +31,14 @@ def validar_token(
     token = credenciales.credentials
 
     try:
-        # Decodificar la clave HEX a bytes
-        secret_key = binascii.unhexlify(settings.jwt_secret_key)
+        import base64
+        # Decodificar la clave Base64 a bytes (el backend Java usa Base64)
+        secret_key = base64.b64decode(settings.jwt_secret_key)
         
         payload = jwt.decode(
             token,
             secret_key,
-            algorithms=[settings.jwt_algorithm],
+            algorithms=[settings.jwt_algorithm, "HS384", "HS512"],
             options={"verify_exp": True}
         )
         
@@ -77,3 +78,32 @@ def obtener_usuario_id(payload: Dict[str, Any]) -> str:
     if not user_id:
         raise ValueError("No se pudo extraer el usuarioId del payload del token")
     return str(user_id)
+
+def obtener_rol_usuario(payload: Dict[str, Any]) -> str:
+    """
+    Extrae el rol del usuario del payload decodificado del JWT.
+    Soporta:
+      - 'role': string (ej. "PREMIUM")
+      - 'roles': list (ej. ["ROLE_PREMIUM"]) -> mapea a "PREMIUM", "PRO", "FREE"
+    Por defecto retorna "FREE".
+    """
+    # 1. Intentar con 'role' directo (ej. "PREMIUM")
+    rol = payload.get("role")
+    if rol:
+        rol_str = str(rol).upper()
+        if rol_str.startswith("ROLE_"):
+            rol_str = rol_str[5:]
+        return rol_str
+
+    # 2. Intentar con la lista 'roles' (ej. ["ROLE_PREMIUM"])
+    roles_list = payload.get("roles")
+    if isinstance(roles_list, list):
+        for r in roles_list:
+            r_str = str(r).upper()
+            if r_str.startswith("ROLE_"):
+                r_str = r_str[5:]
+            if r_str in ["PREMIUM", "PRO", "FREE", "BASIC"]:
+                return "FREE" if r_str == "BASIC" else r_str
+
+    return "FREE"
+

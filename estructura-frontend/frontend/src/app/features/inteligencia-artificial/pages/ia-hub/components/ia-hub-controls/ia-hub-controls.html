@@ -1,0 +1,41 @@
+<div class="controls-row sleek-controls">
+  <!-- Filtros Holográficos -->
+  <div class="hub-tabs cyber-tabs">
+    <button
+      *ngFor="let tab of tabs"
+      class="hub-tab cyber-tab"
+      [class.active]="tabActiva === tab"
+      (click)="tabChange.emit(tab)"
+    >
+      <div class="cyber-tab-content">
+        <i [className]="tabIcons[tab]"></i>
+        <span>{{ tab }}</span>
+      </div>
+    </button>
+  </div>
+
+  <!-- Barra de Progreso de Cuota (Estilo Metas Financieras) -->
+  <div class="quota-progress-bar-container">
+    <div class="quota-header">
+      <span class="quota-label"><i class="fa-solid fa-bolt"></i> Consultas Disponibles</span>
+      <span class="quota-value">{{ consultasRestantes }}</span>
+    </div>
+    <div class="quota-track">
+      <div class="quota-fill" style="width: 100%;"></div>
+    </div>
+  </div>
+
+  <!-- Luka Sync Terminal -->
+  <div class="luka-sync-terminal">
+    <div class="terminal-header">
+      <span class="dot blink"></span>
+      <span class="sys-text">SYS.LUKA.AI</span>
+    </div>
+    <div class="terminal-body">
+      <span class="terminal-line">Monitoreando flujos...</span>
+      <div class="pulse-wave">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+</div>

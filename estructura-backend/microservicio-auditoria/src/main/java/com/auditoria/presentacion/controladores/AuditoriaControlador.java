@@ -1,7 +1,7 @@
 package com.auditoria.presentacion.controladores;
 
 import com.auditoria.aplicacion.dtos.RespuestaAuditoriaDetalladoDTO;
-import com.auditoria.aplicacion.servicios.ServicioRegistroAuditoria;
+import com.auditoria.aplicacion.puertos.ServicioRegistroAuditoria;
 import com.libreria.comun.respuesta.Paginacion;
 import com.libreria.comun.respuesta.ResultadoApi;
 import lombok.RequiredArgsConstructor;

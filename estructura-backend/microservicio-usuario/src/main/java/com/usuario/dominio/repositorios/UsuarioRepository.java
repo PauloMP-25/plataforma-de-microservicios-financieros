@@ -3,6 +3,7 @@ package com.usuario.dominio.repositorios;
 import com.usuario.dominio.entidades.Usuario;
 import java.time.LocalDateTime;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
@@ -12,10 +13,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- *
- * @author user
+ * Repositorio para la gestión de usuarios.
+ * Extiende JpaSpecificationExecutor para soportar el Specification Pattern.
+ * 
+ * @author Paulo
  */
-public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
+public interface UsuarioRepository extends JpaRepository<Usuario, UUID>, JpaSpecificationExecutor<Usuario> {
     
     Optional<Usuario> findByCorreo(String correo);
     

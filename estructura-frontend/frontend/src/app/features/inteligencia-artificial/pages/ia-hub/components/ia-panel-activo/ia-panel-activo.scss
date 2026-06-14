@@ -1,0 +1,288 @@
+@use '../../../../_ia-shared.scss' as *;
+
+.panel-activo-horizontal {
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  color: #f8fafc;
+  width: 100%;
+
+  :host-context(body.tema-claro) & {
+    background: #ffffff;
+    border-color: rgba(226, 232, 240, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+  }
+}
+
+.form-horizontal {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 20px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 150px;
+
+  &.full-width {
+    flex: 2;
+  }
+
+  label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+
+    :host-context(body.tema-claro) & {
+      color: #64748b;
+    }
+  }
+}
+
+.ayudadita-box {
+  flex-basis: 100%;
+  display: flex;
+  gap: 12px;
+  background: rgba(34, 211, 238, 0.1);
+  border: 1px dashed rgba(34, 211, 238, 0.3);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 4px;
+  
+  .icon-ayuda {
+    color: #22d3ee;
+    font-size: 20px;
+    margin-top: 2px;
+  }
+  
+  .ayudadita-content {
+    h4 {
+      margin: 0 0 4px 0;
+      color: #22d3ee;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    p {
+      margin: 0;
+      font-size: 0.75rem;
+      color: rgba(248, 250, 252, 0.8);
+      line-height: 1.4;
+    }
+    .ayudadita-lista {
+      margin: 8px 0 0 0;
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      list-style-type: disc;
+
+      li {
+        font-size: 0.82rem;
+        color: rgba(248, 250, 252, 0.85);
+        line-height: 1.4;
+        
+        strong {
+          color: #22d3ee;
+        }
+      }
+    }
+  }
+
+  :host-context(body.tema-claro) & {
+    background: rgba(34, 211, 238, 0.05);
+    .ayudadita-content p { color: rgba(30, 41, 59, 0.8); }
+    .ayudadita-content .ayudadita-lista li { color: rgba(30, 41, 59, 0.85); }
+  }
+}
+
+.app-input {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #f1f5f9;
+  font-size: 0.85rem;
+  outline: none;
+  transition: all 0.3s ease;
+  width: 100%;
+
+  :host-context(body.tema-claro) & {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #0f172a;
+  }
+
+  &:focus {
+    border-color: #22d3ee;
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.15);
+    background: rgba(15, 23, 42, 0.85);
+
+    :host-context(body.tema-claro) & {
+      background: #ffffff;
+    }
+  }
+
+  &::placeholder {
+    color: #64748b;
+  }
+
+  &.select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 14px;
+    padding-right: 32px;
+
+    option {
+      background: #0f172a;
+      color: #f1f5f9;
+    }
+  }
+}
+
+/* Chrome, Safari, Edge, Opera / Firefox date input icon invert on dark mode */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.6;
+  cursor: pointer;
+
+  :host-context(body.tema-claro) & {
+    filter: none;
+  }
+}
+
+.btn-container {
+  display: flex;
+  align-items: center;
+}
+
+.btn-execute-horizontal {
+  border: none;
+  border-radius: 8px;
+  padding: 9px 24px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 140px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    transition: all 0.6s ease;
+  }
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+
+    &::before {
+      left: 100%;
+    }
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: rgba(30, 41, 59, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+
+    :host-context(body.tema-claro) & {
+      background: #e2e8f0 !important;
+      border-color: #cbd5e1;
+      color: #94a3b8;
+    }
+  }
+}
+
+.btn-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.temporal-selector-bar-inline {
+  display: flex;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 3px;
+  width: 100%;
+  height: 38px;
+  gap: 2px;
+
+  :host-context(body.tema-claro) & {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+  }
+}
+
+.btn-temp-inline {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+
+  :host-context(body.tema-claro) & {
+    color: #64748b;
+  }
+
+  &:hover {
+    color: #f1f5f9;
+    background: rgba(255, 255, 255, 0.05);
+
+    :host-context(body.tema-claro) & {
+      color: #0f172a;
+      background: rgba(0, 0, 0, 0.02);
+    }
+  }
+
+  &.active {
+    background: #f97316; // Orange profile for temporal mirror
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+
+    &:hover {
+      background: #ea580c;
+    }
+  }
+}

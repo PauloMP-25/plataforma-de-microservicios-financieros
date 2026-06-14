@@ -1,0 +1,45 @@
+@use '../../../../_ia-shared.scss' as *;
+
+.consejos-ia-panel {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  padding: 16px;
+  
+  .coach-avatar {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, var(--sim-primary, #38bdf8) 0%, var(--sim-secondary, #0ea5e9) 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.2rem;
+    box-shadow: var(--sim-glow, 0 0 15px rgba(56, 189, 248, 0.25));
+    flex-shrink: 0;
+  }
+  
+  .consejo-content {
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: #cbd5e1;
+    margin: 0;
+    
+    p {
+      margin: 0;
+    }
+  }
+}
+
+.animate-bounce-slow {
+  animation: float-coach 3s infinite ease-in-out;
+}
+
+@keyframes float-coach {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}

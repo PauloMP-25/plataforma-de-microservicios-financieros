@@ -1,19 +1,18 @@
 package com.cliente.infraestructura.mensajeria;
 
-import com.libreria.comun.mensajeria.ConfiguracionRabbitBase;
 import com.libreria.comun.mensajeria.NombresCola;
 import com.libreria.comun.mensajeria.NombresExchange;
 import com.libreria.comun.mensajeria.RoutingKeys;
 import org.springframework.amqp.core.*;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
  * Configuración de la topología de RabbitMQ para el Microservicio de Cliente.
  * <p>
- * Esta clase extiende de {@link ConfiguracionRabbitBase} para heredar la
- * infraestructura base (conexión, serialización JSON) y define la estructura
- * de Exchanges, Colas y Bindings utilizando las constantes de la librería común.
+ * Define la estructura de Exchanges, Colas y Bindings utilizando las constantes
+ * de la librería común.
  * </p>
  * 
  * @author Paulo Moron
@@ -21,7 +20,7 @@ import org.springframework.context.annotation.Configuration;
  * @since 2026-09
  */
 @Configuration
-public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
+public class ConfiguracionRabbitMQ {
 
     // =========================================================================
     // EXCHANGES
@@ -69,7 +68,6 @@ public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
                 .durable(NombresCola.AUDITORIA_EVENTOS)
                 .withArgument("x-dead-letter-exchange", NombresExchange.AUDITORIA_DLX)
                 .withArgument("x-dead-letter-routing-key", RoutingKeys.DLQ_AUDITORIA_EVENTO)
-                .withArgument("x-message-ttl", 600000)
                 .build();
     }
 
@@ -102,11 +100,30 @@ public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
      * @return {@link Binding} que establece la ruta de mensajes de acceso.
      */
     @Bean
-    public Binding bindingEventos(Queue colaEventos, TopicExchange exchangeAuditoria) {
+    public Binding bindingEventos(
+            @Qualifier("colaAuditoria") Queue colaEventos,
+            @Qualifier("exchangeAuditoria") TopicExchange exchangeAuditoria) {
         return BindingBuilder
                 .bind(colaEventos)
                 .to(exchangeAuditoria)
                 .with(RoutingKeys.AUDITORIA_EVENTO_ALL);
+    }
+
+    /**
+     * Vincula la cola de error de auditoría (DLQ) al Dead Letter Exchange (DLX).
+     * 
+     * @param colaEventosDlq      Bean de la cola DLQ de auditoría.
+     * @param exchangeAuditoriaDlq Bean del exchange DLX de auditoría.
+     * @return {@link Binding} que establece la ruta de reintento.
+     */
+    @Bean
+    public Binding bindingAuditoriaDlq(
+            @Qualifier("colaEventosDlq") Queue colaEventosDlq,
+            @Qualifier("exchangeAuditoriaDlq") DirectExchange exchangeAuditoriaDlq) {
+        return BindingBuilder
+                .bind(colaEventosDlq)
+                .to(exchangeAuditoriaDlq)
+                .with(RoutingKeys.DLQ_AUDITORIA_EVENTO);
     }
 
     // =========================================================================
@@ -180,8 +197,9 @@ public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
      * @return {@link Binding} con routing key {@code cliente.perfil.actualizado}.
      */
     @Bean
-    public Binding bindingSincronizacionIA(Queue colaSincronizacionContexto,
-            TopicExchange exchangeClienteActualizaciones) {
+    public Binding bindingSincronizacionIA(
+            @Qualifier("colaSincronizacionContexto") Queue colaSincronizacionContexto,
+            @Qualifier("exchangeClienteActualizaciones") TopicExchange exchangeClienteActualizaciones) {
         return BindingBuilder
                 .bind(colaSincronizacionContexto)
                 .to(exchangeClienteActualizaciones)
@@ -191,13 +209,14 @@ public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
     /**
      * Vincula la cola de error al DLX de sincronización.
      *
-     * @param colaSincronizacionError          Bean de la cola de error.
+     * @param colaSincronizacionError           Bean de la cola de error.
      * @param exchangeClienteActualizacionesDlx Bean del DLX.
      * @return {@link Binding} directo a la cola de error.
      */
     @Bean
-    public Binding bindingSincronizacionDlq(Queue colaSincronizacionError,
-            DirectExchange exchangeClienteActualizacionesDlx) {
+    public Binding bindingSincronizacionDlq(
+            @Qualifier("colaSincronizacionError") Queue colaSincronizacionError,
+            @Qualifier("exchangeClienteActualizacionesDlx") DirectExchange exchangeClienteActualizacionesDlx) {
         return BindingBuilder
                 .bind(colaSincronizacionError)
                 .to(exchangeClienteActualizacionesDlx)

@@ -12,9 +12,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface IntentoValidacionRepository extends JpaRepository<IntentoValidacion, Long> {
+public interface IntentoValidacionRepository extends JpaRepository<IntentoValidacion, UUID> {
 
+    @org.springframework.cache.annotation.Cacheable(value="bloqueos-otp", key="#usuarioId", unless="#result == null")
     Optional<IntentoValidacion> findByUsuarioId(UUID usuarioId);
+    
+    java.util.List<IntentoValidacion> findByBloqueadoTrue();
+
 
     /**
      * Desbloquea masivamente a los usuarios cuyo tiempo de castigo terminó. Es

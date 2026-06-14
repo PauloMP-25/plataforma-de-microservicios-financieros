@@ -2,6 +2,9 @@
 
   <!-- TITULO + BREADCRUMB -->
   <div class="header-left">
+    <button class="mobile-menu-btn" (click)="toggleSidebarMobile()" title="Menú">
+      <i class="fa-solid fa-bars"></i>
+    </button>
 
     <h1 class="page-title">{{ pageTitle }}</h1>
 
@@ -24,87 +27,59 @@
   </div>
 
 
-  <!-- DERECHA — ACCIONES (GRUPOS)-->
+  <!-- DERECHA — RESUMEN + PERFIL -->
   <div class="header-right" (click)="$event.stopPropagation()">
 
-
-    <!-- ═════ TEMA ═════ -->
-    <div class="header-action">
-
-      <button class="icon-btn" (click)="toggleThemePicker()" title="Tema">
-        <i class="fa-solid fa-palette"></i>
-      </button>
-
-      <div class="dropdown-panel theme-panel" *ngIf="showThemePicker">
-
-        <p class="dropdown-title">Tema</p>
-
-        <div class="theme-swatches">
-          <button
-            *ngFor="let t of temas"
-            class="swatch"
-            [class.active]="temaActual === t.id"
-            [style.background]="t.color"
-            (click)="setTema(t)">
-          </button>
+    <div class="header-pills" aria-label="Resumen mensual">
+      <article class="metric-pill metric-pill--income">
+        <span class="metric-icon"><i class="fa-solid fa-arrow-trend-up"></i></span>
+        <div class="metric-copy">
+          <span class="metric-label">Ingresos</span>
+          <strong class="metric-value">{{ formatSoles(totalIngresosMes) }}</strong>
         </div>
+      </article>
 
-      </div>
-
-    </div>
-
-
-    <!-- ═════ NOTIFICACIONES CAMBIAR EN BASE AL USUARIO ═════ -->
-    <div class="header-action">
-
-      <button class="icon-btn" (click)="toggleNotifications()" title="Notificaciones">
-
-        <i class="fa-solid fa-bell"></i>
-
-        <span class="badge-dot" *ngIf="notifCount > 0">
-          {{ notifCount }}
-        </span>
-
-      </button>
-
-      <div class="dropdown-panel notif-panel" *ngIf="showNotifications">
-
-        <div class="dropdown-header">
-          <span class="dropdown-title">Notificaciones</span>
-
-          <button class="btn-link" (click)="markAllRead()">
-            <i class="fa-solid fa-check-double"></i>
-            Leer todo
-          </button>
+      <article class="metric-pill metric-pill--expense">
+        <span class="metric-icon"><i class="fa-solid fa-arrow-trend-down"></i></span>
+        <div class="metric-copy">
+          <span class="metric-label">Gastos</span>
+          <strong class="metric-value">{{ formatSoles(totalGastosMes) }}</strong>
         </div>
+      </article>
 
-        <ul class="notif-list">
+      <article class="metric-pill metric-pill--balance metric-pill--desktop-only">
+        <span class="metric-icon"><i class="fa-solid fa-scale-balanced"></i></span>
+        <div class="metric-copy">
+          <span class="metric-label">Balance</span>
+          <strong class="metric-value">{{ formatSoles(balanceActual) }}</strong>
+        </div>
+      </article>
 
-          <li *ngFor="let n of notificaciones"
-              class="notif-item"
-              [class.unread]="!n.read">
+      <article class="metric-pill metric-pill--streak" title="Racha de transacciones: días consecutivos registrando movimientos">
+        <span class="metric-icon"><i class="fa-solid fa-fire"></i></span>
+        <div class="metric-copy">
+          <span class="metric-label">Racha</span>
+          <strong class="metric-value">{{ rachaDias() }} {{ rachaDias() === 1 ? 'día' : 'días' }}</strong>
+        </div>
+      </article>
 
-            <span class="notif-icon" [style.background]="n.color">
-              <i [className]="n.icon"></i>
-            </span>
+      <!-- PILLS DE CUOTAS DE IA -->
+      <article class="metric-pill metric-pill--ia-analitica" title="Consultas de analítica de IA restantes">
+        <span class="metric-icon"><i class="fa-solid fa-brain"></i></span>
+        <div class="metric-copy">
+          <span class="metric-label">Consultas IA</span>
+          <strong class="metric-value">{{ iaService.consultasRestantes() }}/{{ iaService.consultasMaximas() }}</strong>
+        </div>
+      </article>
 
-            <div class="notif-body">
-              <p>{{ n.text }}</p>
-              <small>{{ n.time }}</small>
-            </div>
-
-          </li>
-
-          <li *ngIf="notificaciones.length === 0" class="notif-empty">
-            Sin notificaciones nuevas
-          </li>
-
-        </ul>
-
-      </div>
-
+      <article class="metric-pill metric-pill--ia-clasificar" title="Autoclasificaciones de IA restantes">
+        <span class="metric-icon"><i class="fa-solid fa-tags"></i></span>
+        <div class="metric-copy">
+          <span class="metric-label">Autoclasificar</span>
+          <strong class="metric-value">{{ iaService.clasificacionesRestantes() }}/{{ iaService.clasificacionesMaximas() }}</strong>
+        </div>
+      </article>
     </div>
-
 
     <!-- ═════ PERFIL ═════ -->
     <div class="header-action">
@@ -122,7 +97,7 @@
 
           <span class="avatar-plan">
             <i class="fa-solid fa-leaf"></i>
-            {{ auth.esPremium() ? 'Premium' : 'Estudiante' }}
+            {{ auth.esPremium() ? 'Premium' : (auth.esPro() ? 'Pro' : 'Free') }}
           </span>
         </div>
 
@@ -149,7 +124,7 @@
 
             <span class="plan-badge">
               <i class="fa-solid fa-leaf"></i>
-              {{ auth.esPremium() ? 'Premium' : 'Estudiante' }}
+              {{ auth.esPremium() ? 'Premium' : (auth.esPro() ? 'Pro' : 'Free') }}
             </span>
 
           </div>
@@ -171,7 +146,17 @@
           </li>
 
           <li>
-            <a routerLink="/configuracion" class="menu-item">
+            <a routerLink="/suscripcion/luka" class="menu-item">
+              <i class="fa-solid fa-crown menu-item-icon" style="color: #f59e0b;"></i>
+              <div>
+                <p>Membresía</p>
+                <small>Gestionar plan Luka</small>
+              </div>
+            </a>
+          </li>
+
+          <li>
+            <a routerLink="/perfil/configuracion" class="menu-item">
               <i class="fa-solid fa-gear menu-item-icon"></i>
               <div>
                 <p>Configuración</p>

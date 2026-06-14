@@ -1,0 +1,64 @@
+@use '../../../../_ia-shared.scss' as *;
+
+.slider-interactive-panel {
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  padding: 20px;
+  
+  .slider-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    
+    .info-group {
+      display: flex;
+      flex-direction: column;
+      
+      .info-label {
+        font-size: 0.7rem;
+        color: #64748b;
+      }
+      .info-valor {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #f1f5f9;
+        margin-top: 2px;
+      }
+    }
+  }
+}
+
+.interactive-range-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  outline: none;
+  margin: 10px 0;
+  
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--sim-primary, #38bdf8);
+    box-shadow: var(--sim-glow, 0 0 15px rgba(56, 189, 248, 0.25));
+    cursor: pointer;
+    border: 2px solid #fff;
+    transition: transform 0.1s ease;
+    
+    &:hover {
+      transform: scale(1.15);
+    }
+  }
+}
+
+.slider-ticks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  color: #475569;
+  padding: 0 4px;
+}

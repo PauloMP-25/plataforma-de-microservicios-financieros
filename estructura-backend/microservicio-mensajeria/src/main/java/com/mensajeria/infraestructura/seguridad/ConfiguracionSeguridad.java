@@ -31,10 +31,10 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
      * Construye la configuración inyectando el filtro JWT y el punto de entrada
      * de la librería común mediante inyección por constructor.
      *
-     * @param filtroJwt        Filtro centralizado que valida el token JWT en cada
-     *                         petición autenticada.
-     * @param puntoEntradaJwt  Manejador que devuelve HTTP 401 en JSON cuando no
-     *                         hay token o es inválido.
+     * @param filtroJwt       Filtro centralizado que valida el token JWT en cada
+     *                        petición autenticada.
+     * @param puntoEntradaJwt Manejador que devuelve HTTP 401 en JSON cuando no
+     *                        hay token o es inválido.
      */
     public ConfiguracionSeguridad(FiltroJwt filtroJwt, PuntoEntradaJwt puntoEntradaJwt) {
         super(filtroJwt, puntoEntradaJwt);
@@ -48,18 +48,37 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
      * que son públicos por diseño (el usuario aún no está autenticado cuando
      * solicita o valida su OTP).
      * </p>
-     *
+     * 
      * @param http Objeto de configuración de Spring Security.
      * @return {@link SecurityFilterChain} con las reglas de este microservicio.
      * @throws Exception si la configuración de Spring Security falla.
      */
     @Bean
-    public SecurityFilterChain cadenaFiltrosSeguridad(HttpSecurity http) throws Exception {
-        return configurarAutorizacion(http)
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/mensajeria/otp/**").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .build();
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+        // 1. Configuramos la base (JWT, Stateless, Exception handling)
+        super.configurarAutorizacion(http);
+
+        // 2. Definimos las reglas de este microservicio (De lo más específico a lo
+        // general)
+        http.authorizeHttpRequests(auth -> auth
+                // Rutas públicas comunicacion interna
+                .requestMatchers("/api/v1/auth/**").permitAll()
+                .requestMatchers("/api/v1/datos-personales/**").permitAll()
+
+                // Endpoints de OTP son públicos (se validan internamente por UUID/Código)
+                .requestMatchers("/api/v1/mensajeria/otp/**").permitAll()
+
+                // Endpoints de administración requerirán ADMIN
+                .requestMatchers("/api/v1/mensajeria/admin/**").hasRole("ADMIN")
+
+                // Monitoreo y Documentación (Público)
+                .requestMatchers("/actuator/**", "/error/**").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
+                // 3. BLOQUEO TOTAL AL FINAL
+                .anyRequest().authenticated());
+
+        return http.build();
     }
 }

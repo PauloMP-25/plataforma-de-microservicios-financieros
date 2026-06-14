@@ -4,9 +4,7 @@ import com.auditoria.dominio.entidades.AuditoriaTransaccional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import java.time.LocalDateTime;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import java.util.UUID;
 
 /**
@@ -15,10 +13,9 @@ import java.util.UUID;
  * sistema.
  * 
  * @author Paulo Moron
- * @version 1.1.0
- * @since 2026-05-10
+ * @version 1.2.0
  */
-public interface AuditoriaTransaccionalRepository extends JpaRepository<AuditoriaTransaccional, UUID> {
+public interface AuditoriaTransaccionalRepository extends JpaRepository<AuditoriaTransaccional, UUID>, JpaSpecificationExecutor<AuditoriaTransaccional> {
 
     /**
      * Recupera el historial de cambios realizados por un usuario específico.
@@ -39,29 +36,18 @@ public interface AuditoriaTransaccionalRepository extends JpaRepository<Auditori
      */
     Page<AuditoriaTransaccional> findByEntidadAfectadaAndEntidadIdOrderByFechaDesc(
             String entidadAfectada,
-            String entidadId,
+            UUID entidadId,
             Pageable paginacion);
 
     /**
-     * Búsqueda avanzada con filtros opcionales por servicio de origen y rango de
-     * fechas.
+     * Recupera el registro transaccional más reciente de un usuario y entidad afectada.
+     * Utilizado para resolver dinámicamente el valor anterior de un plan financiero.
      * 
-     * @param servicioOrigen Nombre del microservicio (opcional).
-     * @param desde          Fecha inicial del rango (opcional).
-     * @param hasta          Fecha final del rango (opcional).
-     * @param paginacion     Configuración de página y orden.
-     * @return Resultados filtrados de la actividad transaccional.
+     * @param usuarioId        Identificador del usuario.
+     * @param entidadAfectada  Nombre de la entidad afectada.
+     * @return El registro transaccional opcional más reciente.
      */
-    @Query("""
-            SELECT a FROM AuditoriaTransaccional a
-            WHERE (:servicioOrigen IS NULL OR a.servicioOrigen = :servicioOrigen)
-              AND (:desde IS NULL OR a.fecha >= :desde)
-              AND (:hasta IS NULL OR a.fecha <= :hasta)
-            ORDER BY a.fecha DESC
-            """)
-    Page<AuditoriaTransaccional> buscarConFiltros(
-            @Param("servicioOrigen") String servicioOrigen,
-            @Param("desde") LocalDateTime desde,
-            @Param("hasta") LocalDateTime hasta,
-            Pageable paginacion);
+    java.util.Optional<AuditoriaTransaccional> findFirstByUsuarioIdAndEntidadAfectadaOrderByFechaDesc(
+            UUID usuarioId,
+            String entidadAfectada);
 }

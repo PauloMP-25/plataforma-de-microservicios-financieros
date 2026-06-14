@@ -75,7 +75,7 @@ class ContextoEstrategicoIADTO(BaseModel):
         ...,
         alias="tonoIA",
         description="Tono conversacional configurado por el usuario. "
-                    "Valores: FORMAL, AMIGABLE, MOTIVADOR, DIRECTO.",
+                    "Valores: FORMAL, AMIGABLE, MOTIVADOR, DIRECTO, CRITICO, SERIO, INTELIGENTE, MEJOR AMIGO.",
         examples=["MOTIVADOR"],
     )
 
@@ -89,8 +89,8 @@ class ContextoEstrategicoIADTO(BaseModel):
     )
 
     nombre_meta_principal: str = Field(
-        ...,
-        min_length=1,
+        default="Ninguna",
+        min_length=0,
         max_length=200,
         description="Nombre de la meta de ahorro principal activa.",
         examples=["Laptop para estudios"],
@@ -103,6 +103,12 @@ class ContextoEstrategicoIADTO(BaseModel):
         le=100,
         description="Umbral porcentual del límite de gasto para emitir advertencias.",
         examples=[80],
+    )
+
+    # ── Campo Auxiliar / Interno ──────────────────────────────────────────────
+    rol: str = Field(
+        default="FREE",
+        description="Plan o rol del usuario (FREE, PRO, PREMIUM)."
     )
 
     # ── Validadores ───────────────────────────────────────────────────────────

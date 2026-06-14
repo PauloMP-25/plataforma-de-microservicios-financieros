@@ -79,6 +79,12 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Actuator para monitoreo -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
         <!-- Utilidades -->
         <!--LOMBOK: Biblioteca para reducir código repetitivo (Boilerplate) como Getters y Setters.-->
         <dependency>
@@ -87,6 +93,13 @@
             <optional>true</optional>
         </dependency>
         
+        <!-- SPRINGDOC OPENAPI: Auto-generación de documentación interactiva Swagger/OpenAPI en toda la plataforma LUKA -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.8.5</version>
+        </dependency>
+
         <!--STARTER-VALIDATION: Soporte para validaciones de datos mediante anotaciones (JSR-303).-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -96,6 +109,10 @@
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-commons</artifactId>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
         </dependency>
     </dependencies>
     <dependencyManagement>

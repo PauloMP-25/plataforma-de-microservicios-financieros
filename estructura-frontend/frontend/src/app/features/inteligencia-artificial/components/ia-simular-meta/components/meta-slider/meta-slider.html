@@ -1,0 +1,25 @@
+<div class="slider-interactive-panel">
+  <div class="slider-info">
+    <div class="info-group">
+      <span class="info-label">Ahorro Mensual Base:</span>
+      <span class="info-valor">S/. {{ aporteMensualBase }} / mes</span>
+    </div>
+    <div class="info-group highlight">
+      <span class="info-label">Aporte Mensual Extra:</span>
+      <span class="info-valor text-cyan-400">+S/. {{ ahorroAdicional }} / mes</span>
+    </div>
+  </div>
+
+  <div class="slider-input-container">
+    <input type="range" min="0" max="500" step="50" [value]="ahorroAdicional" (input)="onSliderChange($event)"
+      class="interactive-range-slider" />
+    <div class="slider-ticks">
+      <span>S/. 0</span>
+      <span>S/. 100</span>
+      <span>S/. 200</span>
+      <span>S/. 300</span>
+      <span>S/. 400</span>
+      <span>S/. 500</span>
+    </div>
+  </div>
+</div>
