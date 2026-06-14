@@ -31,10 +31,9 @@ export class MetasPage implements OnInit {
   errorMensaje = signal<string>('');
   exitoMensaje = signal<string>('');
 
-  // Paginación
-  paginaActual = signal<number>(0);
-  totalPaginas = signal<number>(1);
-  tamanioPagina = 10;
+  // Paginación reactiva (client-side)
+  paginaActual = signal<number>(1);
+  readonly pageSize = 6;
 
   // Modales y Paneles
   metaSeleccionada = signal<any | null>(null);
@@ -184,6 +183,29 @@ export class MetasPage implements OnInit {
     return listado;
   });
 
+  // Metas paginadas para mostrar 6 por página
+  totalPaginas = computed(() => {
+    return Math.ceil(this.metasFiltradas().length / this.pageSize) || 1;
+  });
+
+  paginasArray = computed(() => {
+    const total = this.totalPaginas();
+    const arr = [];
+    for (let i = 1; i <= total; i++) {
+      arr.push(i);
+    }
+    return arr;
+  });
+
+  metasPaginadas = computed(() => {
+    const listado = this.metasFiltradas();
+    const page = this.paginaActual();
+    const total = this.totalPaginas();
+    const cappedPage = page > total ? total : page;
+    const inicio = (cappedPage - 1) * this.pageSize;
+    const fin = inicio + this.pageSize;
+    return listado.slice(inicio, fin);
+  });
 
   // KPIs
   metasActivasCount = computed(() => this.metasCalculadas().filter(m => !m.completada).length);
@@ -208,14 +230,12 @@ export class MetasPage implements OnInit {
     this.cargando.set(true);
     this.errorMensaje.set('');
 
-    this.metasService.listarMetas(this.paginaActual(), this.tamanioPagina).subscribe({
+    this.metasService.listarMetas(0, 100).subscribe({
       next: (pagina) => {
         if (pagina && pagina.content) {
           this.metas.set(pagina.content);
-          this.totalPaginas.set(pagina.totalPages || 1);
         } else {
           this.metas.set([]);
-          this.totalPaginas.set(1);
         }
         this.cargando.set(false);
 
@@ -230,23 +250,26 @@ export class MetasPage implements OnInit {
         console.error('Error al recuperar metas de la API:', err);
         this.errorMensaje.set('Hubo un error al cargar tus metas. Por favor, intenta de nuevo.');
         this.metas.set([]);
-        this.totalPaginas.set(1);
         this.cargando.set(false);
       }
     });
   }
 
-  paginaAnterior(): void {
-    if (this.paginaActual() > 0) {
-      this.paginaActual.update(p => p - 1);
-      this.cargarMetas();
+  cambiarPagina(pagina: number): void {
+    if (pagina >= 1 && pagina <= this.totalPaginas()) {
+      this.paginaActual.set(pagina);
     }
   }
 
-  paginaSiguiente(): void {
-    if (this.paginaActual() < this.totalPaginas() - 1) {
+  siguientePagina(): void {
+    if (this.paginaActual() < this.totalPaginas()) {
       this.paginaActual.update(p => p + 1);
-      this.cargarMetas();
+    }
+  }
+
+  anteriorPagina(): void {
+    if (this.paginaActual() > 1) {
+      this.paginaActual.update(p => p - 1);
     }
   }
 
@@ -501,7 +524,7 @@ export class MetasPage implements OnInit {
     this.filtroAnio.set('Todos');
     this.filtroMontoMin.set(null);
     this.filtroMontoMax.set(null);
-    this.paginaActual.set(0);
+    this.paginaActual.set(1);
   }
 
   mostrarDashboard(): boolean {
