@@ -59,26 +59,23 @@ COPY --from=builder --chown=lukaapp:lukaapp /build/extracted/application/ ./
 
 USER lukaapp
 
-# Puerto expuesto (cada servicio puede sobreescribirlo con --build-arg)
-ARG APP_PORT=8081
-ENV APP_PORT=${APP_PORT}
-EXPOSE ${APP_PORT}
+# Render inyecta dinámicamente la variable $PORT. Por defecto usamos 8083.
+ENV PORT=8083
+EXPOSE ${PORT}
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:${APP_PORT}/actuator/health || exit 1
+    CMD curl -f http://localhost:${PORT}/actuator/health || exit 1
 
 # dumb-init maneja señales del SO correctamente (SIGTERM para graceful shutdown)
 ENTRYPOINT ["dumb-init", "--"]
 
 # JVM optimizada para contenedores:
-#   -XX:+UseContainerSupport       → detecta límites de CPU/RAM del contenedor
-#   -XX:MaxRAMPercentage=75.0      → usa máx. 75% de la RAM asignada al contenedor
-#   -XX:+UseG1GC                   → recolector G1 equilibrado para microservicios
-#   -Djava.security.egd            → inicio más rápido evitando bloqueos de /dev/random
-CMD ["java", \
-    "-XX:+UseContainerSupport", \
-    "-XX:MaxRAMPercentage=75.0", \
-    "-XX:+UseG1GC", \
-    "-Djava.security.egd=file:/dev/./urandom", \
-    "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:docker}", \
-    "org.springframework.boot.loader.launch.JarLauncher"]
+# Usamos 'sh -c' y 'exec java' para que la shell expanda $PORT pero java reciba las señales
+CMD ["sh", "-c", "exec java \
+    -XX:+UseContainerSupport \
+    -XX:MaxRAMPercentage=75.0 \
+    -XX:+UseG1GC \
+    -Djava.security.egd=file:/dev/./urandom \
+    -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:docker} \
+    -Dserver.port=${PORT} \
+    org.springframework.boot.loader.launch.JarLauncher"]

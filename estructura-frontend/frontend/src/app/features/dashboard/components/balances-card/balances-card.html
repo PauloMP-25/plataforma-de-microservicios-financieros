@@ -1,1 +1,79 @@
-<p>balances-card works!</p>
+<section class="kpi-grid">
+  
+  <!-- Balance Total -->
+  <div class="kpi-card card glass-card glow-cyan">
+    <div class="kpi-icon-container bg-cyan-soft text-cyan">
+      <i class="fa-solid fa-wallet"></i>
+    </div>
+    <div class="kpi-details">
+      <span class="kpi-label">Balance Total</span>
+      <h2 class="kpi-value text-mono">{{ formatCurrency(totalBalance) }}</h2>
+      <div class="kpi-trend trend-up">
+        <i class="fa-solid fa-arrow-trend-up"></i>
+        <span>+12.4% vs mes anterior</span>
+      </div>
+    </div>
+    <!-- Mini Sparkline SVG -->
+    <div class="kpi-sparkline">
+      <svg viewBox="0 0 100 30" width="100%" height="30" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="sparklineGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.4"/>
+            <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="M 0 25 Q 20 15 40 22 T 80 8 T 100 5 L 100 30 L 0 30 Z" fill="url(#sparklineGrad)"/>
+        <path d="M 0 25 Q 20 15 40 22 T 80 8 T 100 5" fill="none" stroke="#22d3ee" stroke-width="1.5"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Ingresos Mensuales -->
+  <div class="kpi-card card glass-card glow-green">
+    <div class="kpi-icon-container bg-green-soft text-green">
+      <i class="fa-solid fa-circle-arrow-up"></i>
+    </div>
+    <div class="kpi-details">
+      <span class="kpi-label">Ingresos Mensuales</span>
+      <h2 class="kpi-value text-mono text-green">{{ formatCurrency(totalIngresos) }}</h2>
+      <div class="kpi-trend trend-up">
+        <i class="fa-solid fa-circle-check"></i>
+        <span>Todos los depósitos activos</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gastos Mensuales -->
+  <div class="kpi-card card glass-card glow-purple">
+    <div class="kpi-icon-container bg-purple-soft text-purple">
+      <i class="fa-solid fa-circle-arrow-down"></i>
+    </div>
+    <div class="kpi-details">
+      <span class="kpi-label">Gastos Mensuales</span>
+      <h2 class="kpi-value text-mono text-danger">{{ formatCurrency(totalGastos) }}</h2>
+      <div class="kpi-progress-wrapper">
+        <div class="kpi-progress-bar">
+          <div class="kpi-progress-fill bg-purple" [style.width.%]="porcentajeUso"></div>
+        </div>
+        <span class="kpi-progress-text" *ngIf="presupuestoActivo > 0">{{ porcentajeUso }}% del presupuesto utilizado</span>
+        <span class="kpi-progress-text" *ngIf="presupuestoActivo === 0">Sin presupuesto mensual activo</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tasa de Ahorro -->
+  <div class="kpi-card card glass-card glow-indigo">
+    <div class="kpi-icon-container bg-indigo-soft text-indigo">
+      <i class="fa-solid fa-percentage"></i>
+    </div>
+    <div class="kpi-details">
+      <span class="kpi-label">Tasa de Ahorro</span>
+      <h2 class="kpi-value text-mono">{{ tasaAhorro | number:'1.1-1' }}%</h2>
+      <div class="kpi-trend trend-up">
+        <i class="fa-solid fa-bullseye"></i>
+        <span>Meta: 50%</span>
+      </div>
+    </div>
+  </div>
+
+</section>

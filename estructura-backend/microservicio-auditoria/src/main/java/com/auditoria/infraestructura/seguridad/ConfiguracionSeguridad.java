@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -23,6 +24,7 @@ import org.springframework.security.web.SecurityFilterChain;
  */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
 
     public ConfiguracionSeguridad(FiltroJwt filtroJwt, PuntoEntradaJwt puntoEntradaJwt) {
@@ -46,13 +48,14 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
         // 2. Definimos las reglas de este microservicio (De lo más específico a lo
         // general)
         http.authorizeHttpRequests(auth -> auth
-                // Endpoints públicos o de infraestructura
-                .requestMatchers("/api/v1/auditoria/seguridad/verificar-ip/**").permitAll()
+                // Endpoints públicos o de infraestructura (Gateway)
+                .requestMatchers("/api/v1/seguridad/verificar-ip/**").permitAll()
 
-                // Las consultas detalladas de auditoría solo para administradores
-                .requestMatchers(HttpMethod.GET, "/api/v1/auditoria/accesos/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.GET, "/api/v1/auditoria/registros/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.GET, "/api/v1/auditoria/transacciones/**").hasRole("ADMIN")
+                // Las consultas detalladas de auditoría y bloqueos de IP solo para administradores
+                .requestMatchers("/api/v1/seguridad/lista-negra", "/api/v1/seguridad/lista-negra/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/v1/auditoria/accesos", "/api/v1/auditoria/accesos/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/v1/auditoria/registros", "/api/v1/auditoria/registros/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/v1/auditoria/transacciones", "/api/v1/auditoria/transacciones/**").hasRole("ADMIN")
 
                 // Monitoreo y Documentación (Público)
                 .requestMatchers("/actuator/**", "/error/**").permitAll()

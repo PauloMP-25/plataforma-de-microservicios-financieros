@@ -26,8 +26,8 @@ class BaseAnalisisService(ABC):
         if total_txs < requisito:
             raise HistorialInsuficienteError(
                 modulo=self.nombre_modulo,
-                mes_actual=total_txs,
-                minimo_requerido=requisito
+                actuales=total_txs,
+                requeridos=requisito
             )
 
     @abstractmethod
@@ -38,4 +38,16 @@ class BaseAnalisisService(ABC):
     @abstractmethod
     def orquestar_prompt(self, metricas: Dict[str, Any], contexto: ContextoEstrategicoIADTO) -> str:
         """Construcción del prompt para Gemini."""
+        pass
+
+    def obtener_esquema_salida(self):
+        """
+        Retorna la clase Pydantic del esquema estructurado, o None si usa legacy.
+        """
+        return None
+
+    def post_procesar_consejo(self, usuario_id: str, consejo: Any, estado_coach: str, session: Any) -> None:
+        """
+        Hook opcional para persistencia dedicada de cada módulo.
+        """
         pass

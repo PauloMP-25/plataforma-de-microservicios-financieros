@@ -27,11 +27,11 @@ public class AuditoriaSpecs {
     }
 
     /**
-     * Filtra por nivel de severidad o tipo de evento.
+     * Filtra por nivel de severidad o tipo de evento (acción).
      */
     public static Specification<RegistroAuditoria> registroPorTipo(String tipo) {
         return (root, query, cb) -> 
-            (tipo == null || tipo.isEmpty()) ? null : cb.equal(root.get("tipoEvento"), tipo);
+            (tipo == null || tipo.isEmpty()) ? null : cb.equal(root.get("accion"), tipo);
     }
 
     // --- Especificaciones para AuditoriaTransaccional ---
@@ -49,18 +49,21 @@ public class AuditoriaSpecs {
      */
     public static Specification<AuditoriaTransaccional> transaccionEntreFechas(LocalDateTime desde, LocalDateTime hasta) {
         return (root, query, cb) -> {
-            if (desde == null && hasta == null) return null;
-            if (desde != null && hasta != null) return cb.between(root.get("fecha"), desde, hasta);
-            if (desde != null) return cb.greaterThanOrEqualTo(root.get("fecha"), desde);
-            return cb.lessThanOrEqualTo(root.get("fecha"), hasta);
+            java.time.LocalDate desdeDate = desde != null ? desde.toLocalDate() : null;
+            java.time.LocalDate hastaDate = hasta != null ? hasta.toLocalDate() : null;
+            if (desdeDate == null && hastaDate == null) return null;
+            if (desdeDate != null && hastaDate != null) return cb.between(root.get("fecha"), desdeDate, hastaDate);
+            if (desdeDate != null) return cb.greaterThanOrEqualTo(root.get("fecha"), desdeDate);
+            return cb.lessThanOrEqualTo(root.get("fecha"), hastaDate);
         };
     }
 
     /**
-     * Filtra por el tipo de operación (CREATE, UPDATE, DELETE).
+     * Filtra por el tipo de operación (CREATE, UPDATE, DELETE) buscando coincidencia en la descripción.
      */
     public static Specification<AuditoriaTransaccional> transaccionPorOperacion(String operacion) {
         return (root, query, cb) -> 
-            (operacion == null || operacion.isEmpty()) ? null : cb.equal(root.get("operacion"), operacion);
+            (operacion == null || operacion.isEmpty()) ? null : 
+            cb.like(cb.lower(root.get("descripcion")), "%" + operacion.toLowerCase() + "%");
     }
 }

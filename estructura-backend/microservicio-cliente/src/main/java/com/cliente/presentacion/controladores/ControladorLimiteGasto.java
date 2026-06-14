@@ -1,8 +1,8 @@
 package com.cliente.presentacion.controladores;
 
-import com.cliente.aplicacion.dtos.RespuestaLimiteGasto;
-import com.cliente.aplicacion.dtos.SolicitudLimiteGasto;
-import com.cliente.aplicacion.servicios.ServicioLimiteGasto;
+import com.cliente.aplicacion.dtos.respuestas.RespuestaLimiteGasto;
+import com.cliente.aplicacion.dtos.solicitudes.SolicitudLimiteGasto;
+import com.cliente.aplicacion.puertos.ServicioLimiteGasto;
 import com.libreria.comun.utilidades.UtilidadIp;
 import com.libreria.comun.utilidades.UtilidadSeguridad;
 
@@ -36,10 +36,6 @@ public class ControladorLimiteGasto {
     /**
      * Crea un nuevo límite global. Si hay uno vigente, falla. Si el actual está
      * vencido, lo desactiva automáticamente.
-     *
-     * @param solicitud DTO con los detalles del límite a crear
-     * @param request Petición HTTP para extraer la IP
-     * @return ResultadoApi con el límite creado
      */
     @PostMapping
     public ResponseEntity<ResultadoApi<RespuestaLimiteGasto>> crear(
@@ -54,9 +50,6 @@ public class ControladorLimiteGasto {
 
     /**
      * Obtiene únicamente el límite que se encuentra activo y vigente.
-     *
-     * @param request Petición HTTP para extraer la IP
-     * @return ResultadoApi con el límite de gasto activo
      */
     @GetMapping("/activo")
     public ResponseEntity<ResultadoApi<RespuestaLimiteGasto>> obtenerActivo(HttpServletRequest request) {
@@ -68,10 +61,6 @@ public class ControladorLimiteGasto {
     /**
      * Actualiza parcialmente el límite global ACTIVO. Se utiliza PATCH porque
      * solo se modifican montos o porcentajes.
-     *
-     * @param solicitud DTO con los datos del límite a actualizar
-     * @param request Petición HTTP para extraer la IP
-     * @return ResultadoApi con el límite de gasto actualizado
      */
     @PatchMapping
     public ResponseEntity<ResultadoApi<RespuestaLimiteGasto>> actualizar(
@@ -86,9 +75,6 @@ public class ControladorLimiteGasto {
 
     /**
      * Lista todo el historial de límites (activos e inactivos).
-     * 
-     * @param request Petición HTTP para extraer la IP
-     * @return ResultadoApi con la lista de todos los límites creados
      */
     @GetMapping
     public ResponseEntity<ResultadoApi<List<RespuestaLimiteGasto>>> listarHistorial(HttpServletRequest request) {
@@ -100,9 +86,6 @@ public class ControladorLimiteGasto {
     /**
      * Realiza una eliminación lógica desactivando el límite activo. Esto
      * permite al usuario crear uno nuevo inmediatamente después.
-     * 
-     * @param request Petición HTTP para extraer la IP
-     * @return ResultadoApi sin contenido confirmando la eliminación
      */
     @DeleteMapping
     public ResponseEntity<ResultadoApi<Void>> desactivarLimiteActivo(HttpServletRequest request) {

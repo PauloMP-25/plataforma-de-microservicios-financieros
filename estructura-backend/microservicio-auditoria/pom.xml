@@ -41,11 +41,17 @@
             <artifactId>libreria-comun</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
-        <!--STARTER-NETFLIX-EUREKA-CLIENT:
-        Cliente para el registro y descubrimiento de servicios con Eureka.-->
+        <!--SPRING-BOOT-STARTER-WEB:
+        Para el servidor web embebido y API REST.-->
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <!--SPRING-BOOT-STARTER-AMQP:
+        Para la mensajería asíncrona con RabbitMQ.-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
         </dependency>
         <!--STARTER-DATA-JPA:
         Abstracción para el acceso a datos y persistencia con Hibernate.-->

@@ -9,6 +9,9 @@ FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
 
 WORKDIR /build
 
+# Limitar memoria de Maven para evitar OOM en Render (512MB límite)
+ENV MAVEN_OPTS="-Xmx256m"
+
 # 1. Primero instalamos la librería común localmente en el contenedor
 COPY estructura-backend/libreria-comun ./libreria-comun
 RUN cd libreria-comun && mvn install -DskipTests -B
@@ -59,26 +62,26 @@ COPY --from=builder --chown=lukaapp:lukaapp /build/extracted/application/ ./
 
 USER lukaapp
 
-# Puerto expuesto (cada servicio puede sobreescribirlo con --build-arg)
-ARG APP_PORT=8084
-EXPOSE ${APP_PORT}
+# Render inyecta dinámicamente la variable $PORT. Por defecto usamos 8084.
+ENV PORT=8084
+EXPOSE ${PORT}
 
 # Health check interno del contenedor
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:${APP_PORT}/actuator/health || exit 1
+    CMD curl -f http://localhost:${PORT}/actuator/health || exit 1
 
 # dumb-init maneja señales del SO correctamente (SIGTERM para graceful shutdown)
 ENTRYPOINT ["dumb-init", "--"]
 
 # JVM optimizada para contenedores:
-#   -XX:+UseContainerSupport       → detecta límites de CPU/RAM del contenedor
-#   -XX:MaxRAMPercentage=75.0      → usa máx. 75% de la RAM asignada al contenedor
-#   -XX:+UseG1GC                   → recolector G1 equilibrado para microservicios
-#   -Djava.security.egd            → inicio más rápido evitando bloqueos de /dev/random
-CMD ["java", \
-     "-XX:+UseContainerSupport", \
-     "-XX:MaxRAMPercentage=75.0", \
-     "-XX:+UseG1GC", \
-     "-Djava.security.egd=file:/dev/./urandom", \
-     "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:docker}", \
-     "org.springframework.boot.loader.launch.JarLauncher"]
+# Usamos 'sh -c' y 'exec java' para que la shell expanda $PORT pero java reciba las señales
+CMD ["sh", "-c", "exec java \
+    -XX:+UseContainerSupport \
+    -XX:MaxRAMPercentage=50.0 \
+    -XX:MaxMetaspaceSize=128m \
+    -Xss512k \
+    -XX:+UseG1GC \
+    -Djava.security.egd=file:/dev/./urandom \
+    -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:docker} \
+    -Dserver.port=${PORT} \
+    org.springframework.boot.loader.launch.JarLauncher"]

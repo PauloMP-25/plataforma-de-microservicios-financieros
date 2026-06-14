@@ -25,7 +25,7 @@ class ClasificadorIAService:
         Analiza el contexto de una transacción y devuelve 3 categorías sugeridas.
         """
         # VALIDACIÓN DE SEGURIDAD: Evitar contexto vacío
-        contexto = f"{solicitud.notas or ''} {solicitud.etiquetas or ''}".strip()
+        contexto = f"{solicitud.descripcion or ''} {solicitud.etiquetas or ''}".strip()
         if not contexto:
             logger.warning(f"[CLASIFICADOR] Intento de clasificación sin contexto para ID: {solicitud.id_temporal}")
             return RespuestaClasificacionDTO(
@@ -38,7 +38,7 @@ class ClasificadorIAService:
         Actúa como un clasificador contable preciso para la app financiera Luka.
         El usuario ha registrado un movimiento de tipo {solicitud.tipo_movimiento}.
         Detalles proporcionados: 
-        - Notas: "{solicitud.notas}"
+        - Descripción: "{solicitud.descripcion}"
         - Etiquetas: "{solicitud.etiquetas}"
 
         Tu tarea:

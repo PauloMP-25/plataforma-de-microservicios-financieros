@@ -1,9 +1,45 @@
-# ⚡ Dockerfile.local — LUKA APP (Optimized for Local JARs)
-FROM eclipse-temurin:21-jre-alpine
-RUN apk add --no-cache curl tzdata && \
+# ═══════════════════════════════════════════════════════════════════
+#  LUKA APP — Dockerfile.local (Modo Híbrido - Autocompilable)
+#  Compila el código dentro de Docker usando Maven.
+# ═══════════════════════════════════════════════════════════════════
+
+# ── ETAPA 1: BUILD ───────────────────────────────────────────────────────────
+FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
+WORKDIR /build
+
+# 1. Instalar librería común
+COPY libreria-comun ./libreria-comun
+RUN cd libreria-comun && mvn install -DskipTests -B
+
+# 2. Compilar el microservicio-nucleo-financiero
+WORKDIR /build/microservicio-nucleo-financiero
+COPY microservicio-nucleo-financiero/pom.xml .
+RUN mvn dependency:go-offline -B
+COPY microservicio-nucleo-financiero/src ./src
+RUN mvn package -DskipTests -B
+RUN java -Djarmode=layertools -jar target/*.jar extract --destination /build/extracted
+
+# ── ETAPA 2: RUNTIME ─────────────────────────────────────────────────────────
+FROM eclipse-temurin:21-jre-alpine AS runtime
+
+RUN apk add --no-cache curl dumb-init tzdata && \
     cp /usr/share/zoneinfo/America/Lima /etc/localtime && \
     echo "America/Lima" > /etc/timezone && \
     apk del tzdata
+
+RUN addgroup -S lukaapp && adduser -S lukaapp -G lukaapp
 WORKDIR /app
-COPY target/*.jar app.jar
-ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-XX:+UseG1GC", "-jar", "app.jar"]
+
+COPY --from=builder --chown=lukaapp:lukaapp /build/extracted/dependencies/ ./
+COPY --from=builder --chown=lukaapp:lukaapp /build/extracted/spring-boot-loader/ ./
+COPY --from=builder --chown=lukaapp:lukaapp /build/extracted/snapshot-dependencies/ ./
+COPY --from=builder --chown=lukaapp:lukaapp /build/extracted/application/ ./
+
+USER lukaapp
+ENV PORT=8085
+EXPOSE 8085
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8085/actuator/health || exit 1
+
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["sh", "-c", "exec java ${JAVA_OPTS} -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:local} -Dserver.port=${PORT} org.springframework.boot.loader.launch.JarLauncher"]

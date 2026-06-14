@@ -22,10 +22,9 @@ import java.util.UUID;
         name = "limites_gasto",
         indexes = {
             @Index(name = "idx_limite_gasto_usuario_id", columnList = "usuario_id"),
-        },
-        uniqueConstraints = {
-            // Un usuario solo puede tener un límite marcado como activo físicamente
-            @UniqueConstraint(name = "uq_limite_global_usuario", columnNames = {"usuario_id", "activo"})
+            // El índice parcial de unicidad correcto debe ser creado manualmente en base de datos como:
+            // CREATE UNIQUE INDEX uq_limite_global_usuario ON limites_gasto (usuario_id) WHERE activo = true;
+            @Index(name = "idx_limite_gasto_usuario_activo", columnList = "usuario_id, activo")
         }
 )
 @Getter
@@ -45,6 +44,13 @@ public class LimiteGasto {
      */
     @Column(name = "usuario_id", nullable = false)
     private UUID usuarioId;
+
+    /**
+     * Nombre descriptivo del presupuesto
+     */
+    @Column(name = "nombre", nullable = false, length = 150)
+    @Builder.Default
+    private String nombre = "Presupuesto Mensual";
 
     /**
      * Monto máximo permitido para esta categoría en el mes (en soles PEN).
@@ -68,7 +74,8 @@ public class LimiteGasto {
     private LocalDate fechaFin;
 
     @Column(nullable = false)
-    private boolean activo; // Para eliminación lógica o desactivación manual
+    @Builder.Default
+    private boolean activo = true; // Para eliminación lógica o desactivación manual
 
     @Column(name = "fecha_creacion", nullable = false, updatable = false)
     private LocalDateTime fechaCreacion;
@@ -81,6 +88,9 @@ public class LimiteGasto {
         fechaCreacion = LocalDateTime.now();
         fechaActualizacion = LocalDateTime.now();
         this.activo = true;
+        if (this.nombre == null) {
+            this.nombre = "Presupuesto Mensual";
+        }
     }
 
     @PreUpdate

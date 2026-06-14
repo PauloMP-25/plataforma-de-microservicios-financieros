@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.List;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
@@ -18,5 +19,5 @@ public interface LimiteGastoRepositorio extends JpaRepository<LimiteGasto, UUID>
     @Query("UPDATE LimiteGasto l SET l.activo = false WHERE l.usuarioId = :usuarioId")
     void desactivarLimitesAnteriores(UUID usuarioId);
 
-    Optional<LimiteGasto> findByUsuarioIdOrderByFechaCreacionDesc(UUID usuarioId);
+    List<LimiteGasto> findByUsuarioIdOrderByFechaCreacionDesc(UUID usuarioId);
 }

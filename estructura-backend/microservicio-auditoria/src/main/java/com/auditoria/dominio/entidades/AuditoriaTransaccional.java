@@ -75,7 +75,7 @@ public class AuditoriaTransaccional {
     /**
      * Descripción textual de la acción ejecutada sobre la entidad.
      */
-    @Column(name = "descripcion", nullable = false, length = 50)
+    @Column(name = "descripcion", nullable = false, length = 255)
     private String descripcion;
 
     /**

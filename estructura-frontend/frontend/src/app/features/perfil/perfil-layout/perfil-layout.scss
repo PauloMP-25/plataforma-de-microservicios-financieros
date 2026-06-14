@@ -47,4 +47,11 @@
   flex: 1;
   padding: 1.5rem 2rem;
   overflow-y: auto;
+
+  @media (max-width: 1400px) {
+    padding: 1rem 1.25rem;
+  }
+  @media (max-width: 1024px) {
+    padding: 0.75rem 0.75rem;
+  }
 }

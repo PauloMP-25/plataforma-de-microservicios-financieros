@@ -1,0 +1,89 @@
+<div class="timeline-description">
+  <p>
+    <i class="fa-solid fa-chart-line text-cyan-400"></i>
+    <strong>Línea de Tiempo Interactiva:</strong> Este gráfico muestra tu camino proyectado hacia la meta. La barra se
+    desplaza reflejando el progreso de ahorro. Si tu plan actual no es viable, la barra y los hitos se atenuarán y el
+    objeto final de tu meta se verá desenfocado. <strong>¡Usa el control deslizante de abajo para simular aportes
+      mensuales adicionales y ver cómo se acelera tu progreso en tiempo real!</strong>
+  </p>
+</div>
+
+<div class="timeline-scroll-wrapper">
+  <div class="timeline-container">
+
+    <div class="timeline-base-line"></div>
+    <div class="timeline-progress-line" [style.width.%]="porcentajeLograble"></div>
+
+    <!-- Nodo 0: HOY -->
+    <div class="timeline-node node-hoy active" style="left: 0%;">
+      <div class="node-bullet bullet-pulsing">
+        <i class="fa-solid fa-location-crosshairs"></i>
+      </div>
+      <div class="node-card">
+        <span class="node-title">HOY</span>
+        <span class="node-subtitle">S/. {{ ahorroPrevio }} ahorrados</span>
+      </div>
+    </div>
+
+    <!-- Hito 1: 25% -->
+    <div class="timeline-node" style="left: 25%;" [class.active]="esViableSimulado">
+      <div class="node-bullet">
+        <i class="fa-solid fa-percent"></i>
+      </div>
+      <div class="node-card">
+        <span class="node-title">25% (Hito 1)</span>
+        <span class="node-subtitle">S/. {{ (montoObjetivo * 0.25) | number:'1.0-0' }}</span>
+      </div>
+    </div>
+
+    <!-- Hito 2: 50% -->
+    <div class="timeline-node" style="left: 50%;" [class.active]="esViableSimulado">
+      <div class="node-bullet">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <div class="node-card">
+        <span class="node-title">Mitad de Camino</span>
+        <span class="node-subtitle">S/. {{ (montoObjetivo * 0.50) | number:'1.0-0' }}</span>
+      </div>
+    </div>
+
+    <!-- Hito 3: 75% -->
+    <div class="timeline-node" style="left: 75%;" [class.active]="esViableSimulado">
+      <div class="node-bullet">
+        <i class="fa-solid fa-flag"></i>
+      </div>
+      <div class="node-card">
+        <span class="node-title">Casi Listo</span>
+        <span class="node-subtitle">S/. {{ (montoObjetivo * 0.75) | number:'1.0-0' }}</span>
+      </div>
+    </div>
+
+    <!-- Nodo Final -->
+    <div class="timeline-node node-meta" style="left: 95%;" [class.active]="esViableSimulado">
+
+      <div class="target-image-wrapper" [style.filter]="'blur(' + blurAmount + 'px)'">
+        <svg class="target-svg" viewBox="0 0 100 100">
+          <rect x="15" y="15" width="70" height="45" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="2" />
+          <rect x="18" y="18" width="64" height="39" rx="2" fill="#0f172a" />
+          <polygon points="25,25 75,35 75,50 25,50" fill="url(#neon-grad)" opacity="0.4" />
+          <polygon points="5,75 15,60 85,60 95,75" fill="#334155" stroke="#38bdf8" stroke-width="1.5" />
+          <rect x="42" y="68" width="16" height="5" rx="1" fill="#1e293b" />
+          <rect x="10" y="75" width="80" height="4" rx="2" fill="#38bdf8" opacity="0.8" />
+
+          <defs>
+            <linearGradient id="neon-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#a855f7" />
+              <stop offset="100%" stop-color="#ec4899" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+
+      <div class="node-card">
+        <span class="node-title text-cyan-400">OBJETIVO METIDO</span>
+        <span class="node-subtitle">S/. {{ montoObjetivo }}</span>
+      </div>
+    </div>
+
+  </div>
+</div>

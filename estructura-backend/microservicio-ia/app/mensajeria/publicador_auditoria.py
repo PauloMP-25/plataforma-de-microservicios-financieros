@@ -27,8 +27,15 @@ class PublicadorAuditoria:
     async def conectar(self):
         """Establece la conexión persistente con RabbitMQ."""
         if self._conexion is None or self._conexion.is_closed:
-            # Usamos la configuración de settings de la librería común
-            url = settings.rabbit_url
+            from app.configuracion import obtener_configuracion
+            import urllib.parse
+            
+            config = obtener_configuracion()
+            user_escaped = urllib.parse.quote_plus(config.rabbitmq_usuario)
+            pass_escaped = urllib.parse.quote_plus(config.rabbitmq_password)
+            vhost_escaped = urllib.parse.quote(config.rabbitmq_vhost, safe='')
+            
+            url = f"amqp://{user_escaped}:{pass_escaped}@{config.rabbitmq_host}:{config.rabbitmq_puerto}/{vhost_escaped}"
             self._conexion = await aio_pika.connect_robust(url)
             self._canal = await self._conexion.channel()
             logger.info("[AMQP] Conexión establecida con RabbitMQ para auditoría.")

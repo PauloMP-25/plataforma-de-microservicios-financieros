@@ -29,7 +29,7 @@ import java.util.UUID;
 @Table(name = "registros_auditoria", indexes = {
         @Index(name = "idx_auditoria_modulo", columnList = "modulo"),
         @Index(name = "idx_auditoria_fecha", columnList = "fecha_hora"),
-        @Index(name = "idx_auditoria_usuario", columnList = "nombre_usuario")
+        @Index(name = "idx_auditoria_modulo_fecha", columnList = "modulo, fecha_hora")
 })
 @Getter
 @Setter
@@ -71,6 +71,12 @@ public class RegistroAuditoria {
      */
     @Column(name = "ip_origen", length = 45)
     private String ipOrigen;
+
+    /**
+     * Identificador de correlación único para el seguimiento de la petición de extremo a extremo.
+     */
+    @Column(name = "correlation_id", length = 100)
+    private String correlationId;
 
     /**
      * Información adicional detallada sobre el evento en formato de texto libre o

@@ -47,6 +47,9 @@ package-lock.json
 # Ignorar archivos de secretos y configuración local
 docker/.env
 docker/docker-compose.override.yml
+estructura-backend/.env.local
+**/env.local
+**/.env.local
 
 # Ignorar datos persistentes si decidieras mapear carpetas (ej: ./data/postgres)
 **/data/
@@ -68,7 +71,38 @@ GEMINI.md
 graphify-out/
 .graphify_cache/
 .continue/
+.agents/
+.skills/
+.cursorrules
 
 # --- CARPETAS ---
 scratch/
 guias/
+pruebas/
+disenos/
+**/comando
+comando/
+comando/**
+memoria.md
+guia_instalacion_linux.md
+dev-backend.sh
+comando/Makefile
+comando/README.md
+comando/luka-utils.sh
+comando/start-grupo-1.sh
+comando/start-grupo-2.sh
+comando/start-grupo-3.sh
+
+
+# --- ANGULAR ENVIRONMENTS ---
+**/src/app/enviroments/environment.prod.ts
+
+# --- LOCAL UTILITIES & CONFIGS ---
+Makefile
+configurar-espacio-docker.sh
+configurar-terminator.sh
+payload.json
+estructura-backend/ESTANDAR_ARQUITECTURA_MICROSERVICIOS.md
+
+# --- TEMPORALES ---
+estructura-backend/microservicio-ia/tests/solucion_temporal/

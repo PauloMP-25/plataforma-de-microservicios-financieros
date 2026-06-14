@@ -29,8 +29,6 @@ import java.util.UUID;
         @Index(name = "idx_transaccion_cliente",   columnList = "nombre_cliente")
     }
 )
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -69,8 +67,8 @@ public class Transaccion {
     @Column(name = "etiquetas", length = 300)
     private String etiquetas;
 
-    @Column(name = "notas", columnDefinition = "TEXT")
-    private String notas;
+    @Column(name = "descripcion", columnDefinition = "TEXT")
+    private String descripcion;
 
     @Column(name = "fecha_registro", nullable = false, updatable = false)
     private LocalDateTime fechaRegistro;

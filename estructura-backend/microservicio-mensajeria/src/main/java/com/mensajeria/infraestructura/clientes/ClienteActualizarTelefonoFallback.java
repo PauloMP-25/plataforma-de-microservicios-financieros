@@ -3,6 +3,7 @@ package com.mensajeria.infraestructura.clientes;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import com.libreria.comun.respuesta.ResultadoApi;
 
 /**
  * Fallback de Resilience4j para {@link ClienteActualizarTelefono}.
@@ -30,11 +31,10 @@ public class ClienteActualizarTelefonoFallback implements ClienteActualizarTelef
      * @return Mensaje estático indicando que la sincronización quedó pendiente.
      */
     @Override
-    public String sincronizarTelefono(UUID usuarioId, String telefono) {
+    public ResultadoApi<String> sincronizarTelefono(UUID usuarioId, String telefono) {
         log.error(
-            "[FEIGN-FALLBACK] ms-cliente no disponible. Sincronización de teléfono PENDIENTE para usuario: {}",
-            usuarioId
-        );
-        return "SINCRONIZACION_PENDIENTE";
+                "[FEIGN-FALLBACK] ms-cliente no disponible. Sincronización de teléfono PENDIENTE para usuario: {}",
+                usuarioId);
+        return ResultadoApi.exito("SINCRONIZACION_PENDIENTE", "Sincronización diferida");
     }
 }

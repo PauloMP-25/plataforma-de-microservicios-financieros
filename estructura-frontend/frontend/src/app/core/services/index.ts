@@ -1,4 +1,5 @@
 export * from './auditoria.service';
+export * from './avatar.service';
 export * from './auth.service';
 export * from './categorias';
 export * from './cliente-metas-limites.service';

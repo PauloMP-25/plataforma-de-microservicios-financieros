@@ -24,7 +24,7 @@ help:
 	@echo ""
 	@echo "$(GREEN)MODO LOCAL (Híbrido - Laptop Friendly)$(NC)"
 	@echo "  make local-up      → Levanta el stack optimizado completo"
-	@echo "  make local-infra   → Etapa 1: Eureka y Gateway"
+	@echo "  make local-infra   → Etapa 1: Gateway"
 	@echo "  make local-ms      → Etapa 2: Microservicios Core (Usuario, Cliente, Mensajería, Auditoría)"
 	@echo "  make local-ia      → Etapa 3: Módulos Analíticos (IA, Núcleo Financiero)"
 	@echo "  make local-down    → Detiene el stack local"
@@ -46,13 +46,13 @@ local-up:
 	@echo "$(GREEN)✔ Stack local listo.$(NC)"
 
 local-infra:
-	@echo "$(CYAN)▶ Iniciando Etapa 1: Infraestructura (Eureka + Gateway)...$(NC)"
-	$(COMPOSE_LOCAL) up -d eureka-server api-gateway
+	@echo "$(CYAN)▶ Iniciando Etapa 1: Infraestructura (Gateway)...$(NC)"
+	$(COMPOSE_LOCAL) up -d api-gateway
 	@echo "$(GREEN)✔ Infraestructura lista.$(NC)"
 
 local-ms:
 	@echo "$(CYAN)▶ Iniciando Etapa 2: Microservicios Core...$(NC)"
-	$(COMPOSE_LOCAL) up -d ms-usuario ms-cliente ms-mensajeria ms-auditoria
+	$(COMPOSE_LOCAL) up -d ms-usuario ms-cliente ms-mensajeria ms-auditoria ms-pagos
 	@echo "$(GREEN)✔ Microservicios Core iniciados.$(NC)"
 
 local-ia:

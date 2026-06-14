@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copiamos solo requirements.txt para aprovechar la caché de Docker.
 # Si el archivo no cambia, pip no reinstala nada en rebuilds.
-COPY requirements.txt .
+COPY estructura-backend/microservicio-ia/requirements.txt .
 
 # Instalamos en un directorio aislado para copiarlo limpiamente al runtime
 RUN pip install --upgrade pip --no-cache-dir && \
@@ -56,7 +56,7 @@ WORKDIR /app
 COPY --from=builder /install /usr/local
 
 # Copiamos el código fuente de la aplicación
-COPY --chown=lukaapp:lukaapp . .
+COPY --chown=lukaapp:lukaapp estructura-backend/microservicio-ia .
 
 # Variables de entorno de Python para producción:
 #   PYTHONUNBUFFERED=1  → logs en tiempo real sin buffering

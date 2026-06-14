@@ -43,12 +43,13 @@ MAPA_COLUMNAS: Dict[str, str] = {
     "fechaTransaccion":  "fecha_transaccion",
     "metodoPago":        "metodo_pago",
     "etiquetas":         "etiquetas",
-    "notas":             "notas",
+    "descripcion":       "descripcion",
     "fechaRegistro":     "fecha_registro",
+    "categoria":         "categoria",
 }
 
 # Columnas garantizadas en el DataFrame de salida (sin las derivadas)
-COLUMNAS_BASE: List[str] = list(MAPA_COLUMNAS.values())
+COLUMNAS_BASE: List[str] = list(MAPA_COLUMNAS.values()) + ["fecha"]
 
 # Columnas derivadas que se añaden después de parsear fechas
 COLUMNAS_DERIVADAS: List[str] = [
@@ -83,7 +84,12 @@ def json_a_dataframe(respuesta_json: Dict) -> pd.DataFrame:
     -------
     pd.DataFrame con columnas normalizadas. Vacío con esquema completo si no hay datos.
     """
-    contenido: List[Dict] = respuesta_json.get("content", [])
+    if isinstance(respuesta_json, list):
+        contenido = respuesta_json
+    elif isinstance(respuesta_json, dict):
+        contenido = respuesta_json.get("content", [])
+    else:
+        contenido = []
 
     if not contenido:
         logger.warning(
@@ -97,6 +103,20 @@ def json_a_dataframe(respuesta_json: Dict) -> pd.DataFrame:
     df = df.rename(
         columns={java: esp for java, esp in MAPA_COLUMNAS.items() if java in df.columns}
     )
+
+    # Copiar/crear alias de fecha para compatibilidad con módulos
+    if "fecha_transaccion" in df.columns:
+        df["fecha"] = df["fecha_transaccion"]
+    else:
+        df["fecha"] = np.nan
+
+    # Alinear/sincronizar categoria y categoria_nombre
+    if "categoria" in df.columns:
+        if "categoria_nombre" not in df.columns or df["categoria_nombre"].isna().all():
+            df["categoria_nombre"] = df["categoria"]
+    elif "categoria_nombre" in df.columns:
+        if "categoria" not in df.columns or df["categoria"].isna().all():
+            df["categoria"] = df["categoria_nombre"]
 
     # ── 2. Agregar columnas que falten con valor nulo ─────────────────────────
     for columna in COLUMNAS_BASE:

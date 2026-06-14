@@ -1,0 +1,49 @@
+<div class="habitos-kpi-bar">
+  <!-- Tarjeta: Puntuación Hábitos -->
+  <div class="kpi-card card-purple">
+    <div class="kpi-icon-wrapper">
+      <div class="kpi-icon"><i class="fa-solid fa-brain"></i></div>
+      <div class="kpi-glow"></div>
+    </div>
+    <div class="kpi-info">
+      <span class="kpi-label">Puntuación Hábitos</span>
+      <span class="kpi-value" [class.text-danger]="!esSaludable">{{ puntuacionHabito }}/100</span>
+    </div>
+  </div>
+
+  <!-- Tarjeta: Pico de Gasto -->
+  <div class="kpi-card card-amber">
+    <div class="kpi-icon-wrapper">
+      <div class="kpi-icon"><i class="fa-solid fa-crown"></i></div>
+      <div class="kpi-glow"></div>
+    </div>
+    <div class="kpi-info">
+      <span class="kpi-label">Pico de Gasto</span>
+      <span class="kpi-value">{{ diaMayorGasto }}</span>
+    </div>
+  </div>
+
+  <!-- Tarjeta: Frecuencia Alta -->
+  <div class="kpi-card card-cyan">
+    <div class="kpi-icon-wrapper">
+      <div class="kpi-icon"><i class="fa-solid fa-utensils"></i></div>
+      <div class="kpi-glow"></div>
+    </div>
+    <div class="kpi-info">
+      <span class="kpi-label">Frecuencia Alta</span>
+      <span class="kpi-value">{{ categoriaMasFrecuente }}</span>
+    </div>
+  </div>
+
+  <!-- Tarjeta: Transacciones -->
+  <div class="kpi-card card-emerald">
+    <div class="kpi-icon-wrapper">
+      <div class="kpi-icon"><i class="fa-solid fa-receipt"></i></div>
+      <div class="kpi-glow"></div>
+    </div>
+    <div class="kpi-info">
+      <span class="kpi-label">Transacciones (sem)</span>
+      <span class="kpi-value">{{ totalTransacciones }} movs</span>
+    </div>
+  </div>
+</div>

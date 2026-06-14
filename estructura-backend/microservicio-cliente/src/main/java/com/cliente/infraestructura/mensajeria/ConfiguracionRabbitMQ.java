@@ -1,6 +1,5 @@
 package com.cliente.infraestructura.mensajeria;
 
-import com.libreria.comun.mensajeria.ConfiguracionRabbitBase;
 import com.libreria.comun.mensajeria.NombresCola;
 import com.libreria.comun.mensajeria.NombresExchange;
 import com.libreria.comun.mensajeria.RoutingKeys;
@@ -12,10 +11,8 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Configuración de la topología de RabbitMQ para el Microservicio de Cliente.
  * <p>
- * Esta clase extiende de {@link ConfiguracionRabbitBase} para heredar la
- * infraestructura base (conexión, serialización JSON) y define la estructura
- * de Exchanges, Colas y Bindings utilizando las constantes de la librería
- * común.
+ * Define la estructura de Exchanges, Colas y Bindings utilizando las constantes
+ * de la librería común.
  * </p>
  * 
  * @author Paulo Moron
@@ -23,7 +20,7 @@ import org.springframework.context.annotation.Configuration;
  * @since 2026-09
  */
 @Configuration
-public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
+public class ConfiguracionRabbitMQ {
 
     // =========================================================================
     // EXCHANGES
@@ -71,7 +68,6 @@ public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
                 .durable(NombresCola.AUDITORIA_EVENTOS)
                 .withArgument("x-dead-letter-exchange", NombresExchange.AUDITORIA_DLX)
                 .withArgument("x-dead-letter-routing-key", RoutingKeys.DLQ_AUDITORIA_EVENTO)
-                .withArgument("x-message-ttl", 600000)
                 .build();
     }
 
@@ -103,6 +99,7 @@ public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
      * @param exchangeAuditoria Bean del exchange de auditoría.
      * @return {@link Binding} que establece la ruta de mensajes de acceso.
      */
+    @Bean
     public Binding bindingEventos(
             @Qualifier("colaAuditoria") Queue colaEventos,
             @Qualifier("exchangeAuditoria") TopicExchange exchangeAuditoria) {
@@ -110,6 +107,23 @@ public class ConfiguracionRabbitMQ extends ConfiguracionRabbitBase {
                 .bind(colaEventos)
                 .to(exchangeAuditoria)
                 .with(RoutingKeys.AUDITORIA_EVENTO_ALL);
+    }
+
+    /**
+     * Vincula la cola de error de auditoría (DLQ) al Dead Letter Exchange (DLX).
+     * 
+     * @param colaEventosDlq      Bean de la cola DLQ de auditoría.
+     * @param exchangeAuditoriaDlq Bean del exchange DLX de auditoría.
+     * @return {@link Binding} que establece la ruta de reintento.
+     */
+    @Bean
+    public Binding bindingAuditoriaDlq(
+            @Qualifier("colaEventosDlq") Queue colaEventosDlq,
+            @Qualifier("exchangeAuditoriaDlq") DirectExchange exchangeAuditoriaDlq) {
+        return BindingBuilder
+                .bind(colaEventosDlq)
+                .to(exchangeAuditoriaDlq)
+                .with(RoutingKeys.DLQ_AUDITORIA_EVENTO);
     }
 
     // =========================================================================

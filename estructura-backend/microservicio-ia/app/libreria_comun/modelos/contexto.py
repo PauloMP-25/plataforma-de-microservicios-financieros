@@ -105,6 +105,12 @@ class ContextoEstrategicoIADTO(BaseModel):
         examples=[80],
     )
 
+    # ── Campo Auxiliar / Interno ──────────────────────────────────────────────
+    rol: str = Field(
+        default="FREE",
+        description="Plan o rol del usuario (FREE, PRO, PREMIUM)."
+    )
+
     # ── Validadores ───────────────────────────────────────────────────────────
 
     @field_validator("tono_ia")

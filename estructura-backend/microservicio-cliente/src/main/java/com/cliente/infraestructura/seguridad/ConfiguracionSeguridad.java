@@ -7,6 +7,7 @@ import com.libreria.comun.seguridad.PuntoEntradaJwt;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -23,6 +24,7 @@ import org.springframework.security.web.SecurityFilterChain;
  */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
 
     /**
@@ -52,8 +54,9 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
         // 2. Definimos las reglas de este microservicio (De lo más específico a lo
         // general)
         http.authorizeHttpRequests(auth -> auth
-                // Endpoints internos (comunicación inter-microservicio)
-                .requestMatchers("/api/v1/clientes/interno/**").permitAll()
+                // Endpoints internos y creación inicial de perfil (comunicación inter-microservicio)
+                .requestMatchers("/api/v1/clientes/interno/**").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/v1/clientes/perfil/inicial").authenticated()
 
                 // Perfil de datos personales
                 .requestMatchers(HttpMethod.PUT, "/api/v1/clientes/perfil/**").authenticated()

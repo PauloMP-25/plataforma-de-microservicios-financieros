@@ -1,0 +1,724 @@
+// Paletas de color premium por categoría de misión
+.modulo-mision-contenedor {
+  --theme-glow: 0 0 15px rgba(245, 158, 11, 0.35);
+  --theme-primary: #f59e0b;
+  --theme-secondary: #d97706;
+  --theme-border: rgba(245, 158, 11, 0.25);
+  
+  &.tema-restaurantes, &.tema-delivery {
+    --theme-glow: 0 0 15px rgba(245, 158, 11, 0.35);
+    --theme-primary: #f59e0b;
+    --theme-secondary: #d97706;
+    --theme-border: rgba(245, 158, 11, 0.3);
+  }
+  
+  &.tema-ahorro {
+    --theme-glow: 0 0 15px rgba(16, 185, 129, 0.35);
+    --theme-primary: #10b981;
+    --theme-secondary: #059669;
+    --theme-border: rgba(16, 185, 129, 0.3);
+  }
+  
+  &.tema-suscripciones {
+    --theme-glow: 0 0 15px rgba(139, 92, 246, 0.35);
+    --theme-primary: #8b5cf6;
+    --theme-secondary: #7c3aed;
+    --theme-border: rgba(139, 92, 246, 0.3);
+  }
+
+  position: relative;
+  background: #11131a;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  min-height: 520px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+// 🎛️ Debugger Glassmorphism
+.mockup-debugger {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 100;
+  background: rgba(26, 29, 41, 0.75);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px 12px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  .debugger-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .debugger-buttons {
+    display: flex;
+    gap: 4px;
+    
+    button {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid transparent;
+      color: #cbd5e1;
+      padding: 3px 8px;
+      font-size: 0.7rem;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      
+      &.active {
+        background: #3b82f6;
+        color: #fff;
+        border-color: rgba(59, 130, 246, 0.5);
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+// ── 1. ESTADO NUEVO (Briefing Estilo Retro Terminal) ──
+.pantalla-nuevo-briefing {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: radial-gradient(circle, #1a1c24 0%, #0d0e12 100%);
+  
+  .scanline {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      rgba(18, 16, 16, 0) 50%, 
+      rgba(0, 0, 0, 0.25) 50%
+    );
+    background-size: 100% 4px;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .briefing-box {
+    width: 100%;
+    max-width: 480px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid #10b981;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+    border-radius: 8px;
+    padding: 20px;
+    font-family: 'Courier New', Courier, monospace;
+    z-index: 3;
+  }
+
+  .briefing-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: #10b981;
+    border-bottom: 1px solid rgba(16, 185, 129, 0.3);
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+  }
+
+  .briefing-body {
+    min-height: 140px;
+    color: #a7f3d0;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    
+    .cursor-blink {
+      animation: blink 1s step-end infinite;
+    }
+  }
+
+  .briefing-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 15px;
+  }
+}
+
+// ── 2. ESTADO ACTIVO (Misión Activa) ──
+.pantalla-mision-activa {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  flex: 1;
+  padding: 60px 24px 24px 24px;
+  gap: 24px;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    padding-top: 70px;
+  }
+}
+
+// Capa HUD
+.hud-stats-container {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 90;
+  
+  .hud-stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(22, 28, 45, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  .hp-stat {
+    color: #f43f5e;
+    i {
+      font-size: 0.8rem;
+    }
+  }
+  
+  .streak-stat i {
+    text-shadow: 0 0 8px rgba(249, 115, 22, 0.6);
+  }
+}
+
+// Capa 1: Mapa Isométrico 3D (Rendimiento Ligero)
+.mapa-isometrico-viewport {
+  position: relative;
+  height: 380px;
+  background: radial-gradient(circle, rgba(30, 41, 59, 0.2) 0%, rgba(15, 23, 42, 0.4) 100%);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.mapa-isometrico-grid {
+  display: flex;
+  gap: 16px;
+  // Rotación isométrica 3D acelerada por hardware
+  transform: rotateX(60deg) rotateZ(-45deg) translate3d(0,0,0);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.baldosa {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: -4px 4px 0 rgba(0, 0, 0, 0.3);
+
+  .tile-number {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.3);
+    // Compensa la rotación isométrica para que el texto sea legible
+    transform: rotateZ(45deg) rotateX(-20deg);
+  }
+
+  &.baldosa-completada {
+    background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: -4px 4px 0 rgba(0, 0, 0, 0.4), var(--theme-glow);
+    
+    .tile-number {
+      color: rgba(255, 255, 255, 0.8);
+    }
+  }
+
+  &.baldosa-actual {
+    background: #f8fafc;
+    border-color: var(--theme-primary);
+    box-shadow: -6px 6px 12px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 255, 255, 0.3);
+    transform: translate3d(0, 0, 6px);
+    
+    .tile-number {
+      color: #0f172a;
+    }
+  }
+
+  &.baldosa-futura {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed rgba(255, 255, 255, 0.08);
+  }
+}
+
+// Avatar Pixel Art
+.avatar-pixel-art {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) rotateZ(45deg) rotateX(-30deg);
+  transform-origin: bottom center;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  // Bobbing vertical ligero
+  animation: avatar-idle 1.2s ease-in-out infinite alternate;
+  will-change: transform;
+
+  .sprite-hero {
+    width: 32px;
+    height: 32px;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+  }
+
+  .avatar-shadow {
+    width: 20px;
+    height: 6px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
+    margin-top: -2px;
+  }
+}
+
+// Animación de moneda saltando
+.coin-bounce-particle {
+  position: absolute;
+  color: #fbbf24;
+  font-size: 0.9rem;
+  top: -16px;
+  left: 8px;
+  animation: coin-bounce 2s infinite ease-out;
+  text-shadow: 0 0 6px rgba(251, 191, 36, 0.8);
+}
+
+// Capa 2: Tarjeta de Misión Neon
+.tarjeta-mision-flotante {
+  background: rgba(26, 29, 41, 0.85);
+  border: 1px solid var(--theme-border);
+  box-shadow: var(--theme-glow);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  
+  .mision-header {
+    .badge-dificultad {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      
+      &.fácil { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+      &.media { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+      &.difícil { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+    }
+
+    .mision-titulo {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #f8fafc;
+      margin: 0;
+    }
+
+    .mision-categoria {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+  }
+
+  .mision-meta {
+    .meta-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      
+      .label {
+        font-size: 0.75rem;
+        color: #94a3b8;
+      }
+      .valor {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--theme-primary);
+      }
+    }
+  }
+}
+
+// Barra de XP Fluida de Alto Rendimiento
+.xp-wave-bar-container {
+  .xp-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: #94a3b8;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  .wave-track {
+    position: relative;
+    height: 38px;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .wave-liquid {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(180deg, var(--theme-primary) 0%, var(--theme-secondary) 100%);
+    transition: height 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  // Wave shapes usando rotación CSS 2D (GPU Acelerado)
+  .wave-shape {
+    position: absolute;
+    width: 200%;
+    height: 200px;
+    top: -188px;
+    left: -50%;
+    border-radius: 38% 42% 40% 45%;
+    background: rgba(26, 29, 41, 0.95);
+    animation: wave-rotate 8s infinite linear;
+  }
+  
+  .wave-shape-2 {
+    border-radius: 45% 38% 42% 40%;
+    background: rgba(26, 29, 41, 0.7);
+    animation: wave-rotate 12s infinite linear;
+  }
+}
+
+// Caja de Consejos
+.consejo-box-game {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.04);
+  padding: 10px;
+  border-radius: 8px;
+  
+  .coach-avatar-small {
+    width: 32px;
+    height: 32px;
+    background: var(--theme-primary);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+  
+  .consejo-body {
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: #cbd5e1;
+    margin: 0;
+  }
+}
+
+// ── 3 y 4. PANTALLAS DE VEREDICTO ──
+.pantalla-veredicto {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  position: relative;
+  
+  &.veredicto-victoria {
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, rgba(17, 19, 26, 1) 100%);
+  }
+  
+  &.veredicto-derrota {
+    background: radial-gradient(circle, rgba(239, 68, 68, 0.15) 0%, rgba(17, 19, 26, 1) 100%);
+  }
+
+  .veredicto-box {
+    width: 100%;
+    max-width: 440px;
+    background: rgba(20, 22, 31, 0.9);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .titulo-pantalla-veredicto {
+    font-size: 1.6rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin: 0;
+  }
+
+  .mensaje-empatia {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    line-height: 1.5;
+    margin: 0;
+  }
+}
+
+// Victoria Especialidades
+.victory-dance {
+  animation: victory-jump 0.8s ease-in-out infinite alternate;
+}
+
+.resumen-victoria {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: 12px;
+  padding: 12px 24px;
+  
+  .resumen-label {
+    font-size: 0.7rem;
+    color: #6ee7b7;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .resumen-ahorro {
+    font-size: 1.8rem;
+    color: #10b981;
+    margin: 4px 0 0 0;
+    font-weight: 800;
+  }
+}
+
+// Medalla 3D Rotación Física Ligera
+.medalla-3d-wrapper {
+  perspective: 400px;
+  width: 70px;
+  height: 70px;
+}
+.medalla-3d {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.medalla-cara {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  backface-visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+.medalla-frontal {
+  background: radial-gradient(circle, #fcd34d 0%, #d97706 100%);
+  border: 3px solid #fbbf24;
+  color: #78350f;
+  font-size: 2rem;
+}
+.medalla-reverso {
+  background: #1e293b;
+  border: 3px solid #cbd5e1;
+  color: #cbd5e1;
+  transform: rotateY(180deg);
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 4px;
+  text-align: center;
+}
+
+// Derrota Especialidades
+.defeat-pose {
+  animation: head-nod 1.5s ease-in-out infinite alternate;
+}
+
+.stats-comparativos {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: rgba(255,255,255,0.02);
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.04);
+  
+  .stat-comparacion {
+    display: flex;
+    flex-direction: column;
+    
+    .label {
+      font-size: 0.65rem;
+      color: #64748b;
+    }
+    .valor {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+  }
+  .vs-divider {
+    font-size: 0.7rem;
+    font-weight: 900;
+    color: #475569;
+  }
+}
+
+// Botones Generales de Videojuego
+.btn-play-game {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #fff;
+  border: none;
+  font-weight: 700;
+  padding: 10px 20px;
+  font-size: 0.8rem;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+  }
+  
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+.btn-reintentar {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+  
+  &:hover {
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+  }
+}
+
+// Confetti Animado (Liviano)
+.confetti-emitter {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+.particula-confetti {
+  position: absolute;
+  width: 6px;
+  height: 12px;
+  background: #10b981;
+  top: -20px;
+  opacity: 0.8;
+  animation: fall 3s infinite linear;
+  
+  &:nth-child(2n) { background: #3b82f6; width: 8px; }
+  &:nth-child(3n) { background: #fbbf24; }
+  &:nth-child(4n) { background: #ec4899; }
+}
+
+// ── KEYFRAMES ANIMACIONES (GPU OPTIMIZADO) ──
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+@keyframes avatar-idle {
+  0% { transform: translateX(-50%) rotateZ(45deg) rotateX(-30deg) translate3d(0, 0, 0); }
+  100% { transform: translateX(-50%) rotateZ(45deg) rotateX(-30deg) translate3d(0, 0, 4px); }
+}
+
+@keyframes coin-bounce {
+  0%, 100% { transform: translate3d(0,0,0) scale(1); opacity: 0.6; }
+  50% { transform: translate3d(0, -6px, 0) scale(1.1); opacity: 1; }
+}
+
+@keyframes wave-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes victory-jump {
+  0% { transform: scale(1) translate3d(0, 0, 0); }
+  100% { transform: scale(1.05) translate3d(0, -8px, 0); }
+}
+
+@keyframes head-nod {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(3px); }
+}
+
+@keyframes fall {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  100% { transform: translate3d(15px, 500px, 0) rotate(360deg); opacity: 0; }
+}
+
+@keyframes wave-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: wave-rotate 12s linear infinite;
+}
+
+.animate-rotate-y {
+  animation: rotate-y 4s linear infinite;
+}
+
+@keyframes rotate-y {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(360deg); }
+}
+
+.animate-bounce-slow {
+  animation: coin-bounce 2s infinite ease-in-out;
+}

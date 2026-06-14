@@ -1,0 +1,74 @@
+/* ==========================================================================
+   LUKA APP - Sistema de Diseño Aislado (Coach Financiero IA)
+   ========================================================================== */
+
+// 1. Tokens de Color del Coach IA
+$ia-color-success: #10b981; // emerald
+$ia-color-success-glow: rgba(16, 185, 129, 0.2);
+
+$ia-color-warning: #f59e0b; // amber
+$ia-color-warning-glow: rgba(245, 158, 11, 0.2);
+
+$ia-color-danger: #ef4444; // red
+$ia-color-danger-glow: rgba(239, 68, 68, 0.2);
+
+$ia-color-cyan: #22d3ee;
+$ia-color-purple: #a855f7;
+
+// 2. Glassmorphism
+$ia-blur-card-glass: 16px;
+
+// 3. Clases de Utilidad Scoped
+.card-glass {
+  backdrop-filter: blur($ia-blur-card-glass) !important;
+  -webkit-backdrop-filter: blur($ia-blur-card-glass) !important;
+  border-radius: var(--radius-lg, 14px) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: var(--transition, all 0.25s cubic-bezier(0.4, 0, 0.2, 1)) !important;
+  
+  // Por defecto (Tema Oscuro / Normal)
+  background: rgba(15, 23, 42, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #f8fafc !important;
+  
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    box-shadow: var(--shadow-md) !important;
+  }
+
+  // Adaptación automática al Tema Claro de Luka
+  :host-context(body.tema-claro) & {
+    background: rgba(255, 255, 255, 0.45) !important;
+    border: 1px solid rgba(91, 106, 240, 0.12) !important;
+    color: var(--text-primary) !important;
+
+    &:hover {
+      border-color: rgba(91, 106, 240, 0.25) !important;
+    }
+  }
+}
+
+// 4. Gradientes Premium de IA
+.bg-gradiente-ia {
+  background: linear-gradient(135deg, $ia-color-cyan 0%, $ia-color-purple 100%) !important;
+}
+
+.text-gradiente-ia {
+  background: linear-gradient(135deg, $ia-color-cyan 0%, $ia-color-purple 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+// 5. Efectos de Resplandor (Glows)
+.glow-success {
+  box-shadow: 0 0 20px $ia-color-success-glow !important;
+}
+.glow-warning {
+  box-shadow: 0 0 20px $ia-color-warning-glow !important;
+}
+.glow-danger {
+  box-shadow: 0 0 20px $ia-color-danger-glow !important;
+}
+.glow-ia {
+  box-shadow: 0 0 25px rgba(34, 211, 238, 0.25) !important;
+}

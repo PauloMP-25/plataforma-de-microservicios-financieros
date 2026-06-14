@@ -1,0 +1,108 @@
+.id-card-side {
+  width: 100%;
+  height: 100%;
+  background: rgba(22, 28, 45, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  position: relative;
+  
+  .card-glow-border {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--cluster-color);
+    box-shadow: 0 0 10px var(--cluster-color);
+  }
+
+  .card-badge-top {
+    font-size: 0.6rem;
+    font-weight: 800;
+    color: #64748b;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    position: absolute;
+    top: 15px;
+    left: 20px;
+  }
+}
+
+.id-card-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.id-avatar-container {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+
+  .id-avatar-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    filter: blur(12px);
+    opacity: 0.55;
+  }
+
+  .id-avatar-svg {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+  }
+}
+
+.id-details {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
+  .id-cluster-sub {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  .id-cluster-name {
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: #f8fafc;
+    margin: 4px 0 10px 0;
+    text-shadow: 0 0 8px rgba(255,255,255,0.1);
+  }
+
+  .id-badges-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    .rasgo-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--cluster-color);
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255, 255, 255, 0.02);
+      padding: 4px 10px;
+      border-radius: 12px;
+    }
+  }
+}

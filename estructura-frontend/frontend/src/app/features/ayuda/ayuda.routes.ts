@@ -1,18 +1,16 @@
 import { Routes } from "@angular/router";
-import { AyudaPage } from "./pages/ayuda-page/ayuda-page";
+import { AyudaPageComponent } from "./pages/ayuda-page/ayuda-page";
 
 export const AYUDA_ROUTES: Routes = [
-
-{
+  {
     path: '',
-    component: AyudaPage,
+    component: AyudaPageComponent,
     data: {
-        title: 'Ayuda',
-        breadcrumbs: [
-            {label: 'Inicio', route: '/ayuda'},
-            {label: 'Sección'}
-        ]
+      title: 'Ayuda',
+      breadcrumbs: [
+        { label: 'Inicio', route: '/ayuda' },
+        { label: 'Sección' }
+      ]
     }
-}
-
-]
+  }
+];

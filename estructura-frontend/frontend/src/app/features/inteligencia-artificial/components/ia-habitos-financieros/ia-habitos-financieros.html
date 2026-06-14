@@ -1,0 +1,50 @@
+<div class="habitos-container">
+
+  <!-- Estado Vacío -->
+  <div class="empty-state-panel card-premium" *ngIf="!resultado && !cargando">
+    <div class="empty-icon-wrapper">
+      <i class="fa-solid fa-seedling"></i>
+      <div class="empty-glow"></div>
+    </div>
+    <h3 class="empty-title">Tus Hábitos Financieros</h3>
+    <p class="empty-desc">Haz clic en <strong>Consultar</strong> para analizar tus patrones de consumo y recibir recomendaciones de tu nutricionista financiero.</p>
+  </div>
+
+  <!-- Estado de Carga (Salud Financiera) -->
+  <div class="loading-state-panel card-premium" *ngIf="cargando">
+    <div class="loading-icon-wrapper">
+      <i class="fa-solid fa-heart-pulse heartbeat-icon"></i>
+      <div class="loading-glow"></div>
+    </div>
+    <h3 class="loading-title">Analizando Salud Financiera...</h3>
+    <p class="loading-desc">Diagnosticando tus hábitos de consumo, picos de gasto y patrones multidimensionales.</p>
+  </div>
+
+  <!-- Contenedor principal con datos -->
+  <ng-container *ngIf="resultado && !cargando">
+    
+    <!-- SECCIÓN SUPERIOR: Consejo del Coach -->
+    <app-ia-habitos-coach
+      [consejo]="consejo()"
+    ></app-ia-habitos-coach>
+
+    <app-ia-habitos-kpi
+      [puntuacionHabito]="puntuacionHabito()"
+      [esSaludable]="esSaludable()"
+      [diaMayorGasto]="diaMayorGasto()"
+      [categoriaMasFrecuente]="categoriaMasFrecuente()"
+      [totalTransacciones]="totalTransacciones()"
+    ></app-ia-habitos-kpi>
+
+    <div class="split-layout">
+      <app-ia-habitos-radar
+        [dimensiones]="dimensiones()"
+      ></app-ia-habitos-radar>
+
+      <app-ia-habitos-heatmap
+        [datosRaw]="heatmapDatos()"
+      ></app-ia-habitos-heatmap>
+    </div>
+  </ng-container>
+
+</div>

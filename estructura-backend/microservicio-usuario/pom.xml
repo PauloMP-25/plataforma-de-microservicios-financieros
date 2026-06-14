@@ -48,6 +48,13 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- DOTENV: Carga automáticamente archivos .env locales para desarrollo local sin quemar credenciales -->
+        <dependency>
+            <groupId>me.paulschwarz</groupId>
+            <artifactId>springboot3-dotenv</artifactId>
+            <version>5.1.0</version>
+        </dependency>
+
         <!-- PERSISTENCIA -->
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -63,10 +70,6 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
 
         <!-- DOCUMENTACION -->

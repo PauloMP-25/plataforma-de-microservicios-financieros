@@ -63,8 +63,8 @@ class ClienteNucleoFinanciero:
         # ── 2. Preparar Query Params ─────────────────────────────────────────
         params: Dict[str, Any] = {
             "usuarioId": usuario_id,
-            "size": tamanio,
-            "page": pagina,
+            "tamanio": tamanio,
+            "pagina": pagina,
         }
         
         if desde_str: params["desde"] = desde_str
@@ -76,7 +76,7 @@ class ClienteNucleoFinanciero:
             "Authorization": f"Bearer {token}"
         }
         
-        url = f"{self.url_base}/api/v1/transacciones/historial"
+        url = f"{self.url_base}/api/v1/financiero/transacciones/historial"
 
         try:
             with httpx.Client(timeout=self.timeout) as cliente:

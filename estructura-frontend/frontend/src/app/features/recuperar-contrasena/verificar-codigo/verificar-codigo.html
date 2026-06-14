@@ -62,6 +62,10 @@
     <i class="fas fa-exclamation-circle"></i> {{ errorMensaje }}
   </div>
 
+  <div class="recuperar__info-general" *ngIf="infoMensaje" style="color: #10B981; margin-top: 1rem; font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem; justify-content: center;">
+    <i class="fas fa-check-circle"></i> {{ infoMensaje }}
+  </div>
+
   <p class="recuperar__reenviar">
     ¿No recibiste el código?
     <button type="button" class="recuperar__enlace-reenviar" (click)="reenviarCodigo()" id="btn-reenviar-codigo">Reenviar código</button>

@@ -204,6 +204,17 @@ $max-ancho: 1200px;
     font-family: 'Nunito', sans-serif;
     font-size: 0.9rem;
     font-weight: 700;
+
+    i {
+      transition: transform 0.25s ease;
+    }
+
+    &:hover {
+      transform: none;
+      i {
+        transform: rotate(20deg);
+      }
+    }
   }
 }
 
@@ -725,6 +736,35 @@ $max-ancho: 1200px;
   }
 }
 
+.inicio__btn-saber-mas {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  color: $primario-claro;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: $radio-sm;
+  transition: $transicion;
+  margin: -10px auto 15px 0;
+  align-self: flex-start;
+
+  i {
+    font-size: 0.75rem;
+    transition: transform 0.2s ease;
+  }
+
+  &:hover {
+    color: $texto-principal;
+    background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+
 // ── Tarjetas de características ──
 .inicio__tarjetas {
   display: grid;
@@ -794,6 +834,7 @@ $max-ancho: 1200px;
   font-weight: 800;
   background: $gradiente-primario;
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 16px;
 }
@@ -945,10 +986,28 @@ $max-ancho: 1200px;
   .inicio__subtitulo { margin: 0 auto 36px; }
   .inicio__heroe-acciones { justify-content: center; }
   .inicio__heroe-estadisticas { justify-content: center; }
-  .inicio__heroe-visual { max-width: 400px; }
+  .inicio__heroe-visual {
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+  }
+  .inicio__mockup,
+  .inicio__mockup-pantalla {
+    width: 100%;
+    box-sizing: border-box;
+  }
   .inicio__tarjetas { grid-template-columns: repeat(2, 1fr); }
   .inicio__pasos { flex-direction: column; gap: 20px; }
   .inicio__paso-linea { width: 2px; height: 40px; }
+  .inicio__precios {
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
+  .inicio__precio-tarjeta {
+    width: 100%;
+    max-width: 500px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -969,6 +1028,28 @@ $max-ancho: 1200px;
   .inicio__seccion-titulo { font-size: 1.8rem; }
   .inicio__precios { flex-direction: column; }
 }
+
+@media (max-width: 480px) {
+  .inicio__titulo { font-size: 2.2rem; }
+  .inicio__subtitulo { font-size: 1rem; }
+  .inicio__heroe-acciones {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    .inicio__btn {
+      justify-content: center;
+      width: 100%;
+    }
+  }
+  .inicio__heroe-estadisticas {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .inicio__estadistica-separador {
+    display: none;
+  }
+}
+
 
 // ═══════════════════════════════════════════
 // TEMA CLARO - Sobreescrituras de la landing
@@ -1118,4 +1199,13 @@ $max-ancho: 1200px;
     color: #1E2340;
     &.inactivo { color: #9CA3AF; }
   }
+
+  .inicio__btn-saber-mas {
+    color: $primario;
+    &:hover {
+      color: #1E2340;
+      background: rgba(91, 106, 240, 0.05);
+    }
+  }
 }
+

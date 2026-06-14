@@ -100,13 +100,17 @@ class ClienteContexto:
             f"{self.url_base}/api/v1/clientes/interno/"
             f"contexto-financiero/{usuario_id}"
         )
-        headers = {"Authorization": f"Bearer {token}"}
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "X-Gateway-Source": "api-gateway"
+        }
 
         try:
             with httpx.Client(timeout=self.timeout) as cliente:
                 respuesta = cliente.get(url, headers=headers)
                 respuesta.raise_for_status()
-                contexto = respuesta.json()
+                json_respuesta = respuesta.json()
+                contexto = json_respuesta.get("datos", {})
 
                 logger.info(
                     "[CONTEXTO-PULL] Contexto obtenido vía HTTP para "

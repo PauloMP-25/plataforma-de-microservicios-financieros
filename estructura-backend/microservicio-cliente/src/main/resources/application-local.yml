@@ -1,0 +1,45 @@
+# ---------------------------------------------------------------------------------------------------------------------
+#    SERVER: Puerto y configuración de red local
+# ---------------------------------------------------------------------------------------------------------------------
+server:
+  port: 8083
+
+# ---------------------------------------------------------------------------------------------------------------------
+#    SPRING: Configuración general, perfiles e importación de .env.local
+# ---------------------------------------------------------------------------------------------------------------------
+spring:
+  config:
+    import: "optional:file:../.env.local[.properties]"
+
+# ---------------------------------------------------------------------------------------------------------------------
+#    DATASOURCE: Conexión y credenciales de PostgreSQL local
+# ---------------------------------------------------------------------------------------------------------------------
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_CLIENTE_NAME:db_luka_cliente}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:adminUTP}
+
+# ---------------------------------------------------------------------------------------------------------------------
+#    RABBITMQ: Broker de mensajería asíncrona y topologías
+# ---------------------------------------------------------------------------------------------------------------------
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
+    virtual-host: ${SPRING_RABBITMQ_VIRTUAL_HOST:/}
+
+# ---------------------------------------------------------------------------------------------------------------------
+#    DATA: Configuración de base de datos de Redis
+# ---------------------------------------------------------------------------------------------------------------------
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      password: ${SPRING_REDIS_PASSWORD:}
+      ssl:
+        enabled: ${SPRING_DATA_REDIS_SSL_ENABLED:false}
+      repositories:
+        enabled: false
+  cache:
+    type: none

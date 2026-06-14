@@ -45,13 +45,12 @@ export interface SolicitudCambioPassword {
   confirmarPassword: string;
 }
 
-export interface SolicitudRestablecerPassword {
-  nuevoPassword: string;
-  confirmarPassword: string;
+export interface ResultadoApi<T> {
+  exito:   boolean;
+  estado:  number;
+  error?:  string;
+  mensaje: string;
+  datos:   T;
+  pagina?: any;
 }
 
-export interface SolicitudResetPassword {
-  registroId: string;
-  codigoOtp: string;
-  payload: SolicitudRestablecerPassword;
-}

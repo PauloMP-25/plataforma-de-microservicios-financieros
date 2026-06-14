@@ -26,16 +26,17 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
  
-from app.clientes.cliente_eureka import desregistrar_de_eureka, registrar_en_eureka
 from app.configuracion import obtener_configuracion
 from app.libreria_comun.excepciones.base import LukaException
-from app.libreria_comun.excepciones.handler import luka_exception_handler
+from app.libreria_comun.excepciones.handler import luka_exception_handler, http_exception_handler
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.libreria_comun.seguridad.middleware import TraceabilityMiddleware
 from app.mensajeria.consumidor_ia import ConsumidorIA
+from app.mensajeria.outbox_scheduler import OutboxScheduler
 from app.mensajeria.escuchador_sincronizacion_ia import EscuchadorSincronizacionIA
 from app.mensajeria.escuchador_cambio_datos_ia import EscuchadorCambioDatosIA
-from app.routers import analisis
-from app.persistencia.database import inicializar_db
+from app.routers import analisis, dashboard
+from app.persistencia.postgres.database import inicializar_db
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -48,6 +49,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger("ia_financiera")
 
+class HealthCheckFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        return record.args and len(record.args) >= 3 and "/actuator/health" not in str(record.args[2])
+
+logging.getLogger("uvicorn.access").addFilter(HealthCheckFilter())
+
 config = obtener_configuracion()
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -55,6 +62,8 @@ config = obtener_configuracion()
 # ══════════════════════════════════════════════════════════════════════════ 
 _consumidor: ConsumidorIA | None = None
 _consumidor_activo: bool = False
+_outbox_scheduler: OutboxScheduler | None = None
+_outbox_scheduler_activo: bool = False
 _escuchador_sync: EscuchadorSincronizacionIA | None = None
 _escuchador_sync_activo: bool = False
 _escuchador_cambio: EscuchadorCambioDatosIA | None = None
@@ -102,13 +111,29 @@ def _iniciar_escuchadores_adicionales() -> None:
     # 1. Sincronización de Perfil (Redis)
     try:
         import redis
-        redis_client = redis.Redis(
-            host=config.redis_host,
-            port=config.redis_port,
-            db=config.redis_db,
-            password=config.redis_password or None,
-            decode_responses=True,
-        )
+        try:
+            redis_client = redis.Redis(
+                host=config.redis_host,
+                port=config.redis_port,
+                db=config.redis_db,
+                password=config.redis_password or None,
+                decode_responses=True,
+            )
+            redis_client.ping()
+        except Exception as conn_err:
+            err_str = str(conn_err)
+            if "without any password configured" in err_str or "no password is set" in err_str:
+                logger.warning(f"[MAIN] Redis no requiere contraseña. Reintentando sin contraseña... ({conn_err})")
+                redis_client = redis.Redis(
+                    host=config.redis_host,
+                    port=config.redis_port,
+                    db=config.redis_db,
+                    password=None,
+                    decode_responses=True,
+                )
+                redis_client.ping()
+            else:
+                raise conn_err
         _escuchador_sync = EscuchadorSincronizacionIA(redis_client)
         threading.Thread(target=_escuchador_sync.iniciar, name="hilo-sync-perfil", daemon=True).start()
         _escuchador_sync_activo = True
@@ -137,12 +162,10 @@ async def lifespan(app: FastAPI):
  
     Startup:
       1. Imprime el banner de inicio con la configuración activa.
-      2. Registra el microservicio en Eureka.
-      3. Arranca el ConsumidorIA en hilo daemon.
+      2. Arranca el ConsumidorIA en hilo daemon.
  
     Shutdown:
       1. Detiene el ConsumidorIA limpiamente.
-      2. Desregistra el microservicio de Eureka.
     """
     # ── Banner de inicio ──────────────────────────────────────────────────────
     logger.info("═" * 65)
@@ -163,11 +186,20 @@ async def lifespan(app: FastAPI):
                 config.porcentaje_ahorro_objetivo)
     logger.info("═" * 65)
 
-    # --- REGISTRO EN EUREKA ---
     inicializar_db()
-    await registrar_en_eureka(config)
     _iniciar_consumidor_rabbitmq()
     _iniciar_escuchadores_adicionales()
+
+    # --- OUTBOX SCHEDULER (Transactional Outbox — FASE 4) ---
+    global _outbox_scheduler, _outbox_scheduler_activo
+    try:
+        _outbox_scheduler = OutboxScheduler()
+        _outbox_scheduler.iniciar()
+        _outbox_scheduler_activo = True
+        logger.info("[MAIN] OutboxScheduler iniciado.")
+    except Exception as exc:
+        _outbox_scheduler_activo = False
+        logger.error("[MAIN] No se pudo iniciar el OutboxScheduler: %s", exc)
 
     # --- JOB DE MONITOREO DE COSTOS ---
     from app.servicios.ia.alerta_costos import job_monitoreo_costos
@@ -186,6 +218,13 @@ async def lifespan(app: FastAPI):
         except Exception as exc:
             logger.warning("[MAIN] Error al detener el ConsumidorIA: %s", str(exc))
 
+    if _outbox_scheduler:
+        try:
+            _outbox_scheduler.detener()
+            logger.info("[MAIN] OutboxScheduler detenido correctamente.")
+        except Exception as exc:
+            logger.warning("[MAIN] Error al detener el OutboxScheduler: %s", str(exc))
+
     if _escuchador_sync:
         try:
             _escuchador_sync.detener()
@@ -193,14 +232,20 @@ async def lifespan(app: FastAPI):
         except Exception as exc:
             logger.warning("[MAIN] Error al detener el EscuchadorSincronizacionIA: %s", str(exc))
 
-    await desregistrar_de_eureka()
+    if _escuchador_cambio:
+        try:
+            _escuchador_cambio.detener()
+            logger.info("[MAIN] EscuchadorCambioDatosIA detenido correctamente.")
+        except Exception as exc:
+            logger.warning("[MAIN] Error al detener el EscuchadorCambioDatosIA: %s", str(exc))
+
     logger.info("[MAIN] Microservicio IA de LUKA detenido correctamente.")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # APLICACIÓN FASTAPI
 # ══════════════════════════════════════════════════════════════════════════════
 app = FastAPI(
-    title=config.id_app_eureka,
+    title=config.nombre_app,
     version="4.0.0",
     description="""
 """,
@@ -254,6 +299,7 @@ app.add_middleware(
 
 # Registramos el manejador de la librería común para excepciones de negocio y generales
 app.add_exception_handler(LukaException, luka_exception_handler)
+app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(Exception, luka_exception_handler)
 
 
@@ -263,6 +309,7 @@ app.add_exception_handler(Exception, luka_exception_handler)
 
 # ── Router principal con los 10 módulos + /analisis-completo ─────────────────
 app.include_router(analisis.router)
+app.include_router(dashboard.router)
 
 # ── Health Check ─────────────────────────────────────────────────────────────
 @app.get(
@@ -274,7 +321,7 @@ app.include_router(analisis.router)
 
 async def health() -> dict:
     """
-    Endpoint de health check compatible con el servidor Eureka y el API Gateway.
+    Endpoint de health check compatible con el API Gateway.
  
     Retorna el estado de cada componente del microservicio:
       - motor_analitico : siempre UP (Pandas/Scikit-Learn son locales).
@@ -297,7 +344,12 @@ async def health() -> dict:
             "estado": "UP" if _consumidor_activo else "DEGRADADO",
             "broker": f"{config.rabbitmq_host}:{config.rabbitmq_puerto}",
             "cola": config.cola_ia_procesamiento,
+            "dlq": f"{config.cola_ia_procesamiento}.dlq",
             "descripcion": "Procesando eventos" if _consumidor_activo else "Sin conexión al broker",
+        },
+        "outbox_scheduler": {
+            "estado": "UP" if _outbox_scheduler_activo else "DEGRADADO",
+            "descripcion": "Publicando eventos pendientes" if _outbox_scheduler_activo else "Inactivo",
         },
         "sync_contexto_ia": {
             "estado": "UP" if _escuchador_sync_activo else "DEGRADADO",

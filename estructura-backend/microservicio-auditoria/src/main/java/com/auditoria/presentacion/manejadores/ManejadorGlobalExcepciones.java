@@ -24,12 +24,11 @@ public class ManejadorGlobalExcepciones extends ManejadorGlobalExcepcionesBase {
         log.warn("Acceso denegado: IP Bloqueada - {}", ex.getMessage());
         
         String path = request.getDescription(false).replace("uri=", "");
-        ResultadoApi<Void> resultado = ResultadoApi.falla(
-                CodigoError.CUENTA_BLOQUEADA, // Usamos un código similar o uno específico si existe
+        return crearRespuestaError(
+                CodigoError.CUENTA_BLOQUEADA,
                 ex.getMessage(),
+                HttpStatus.FORBIDDEN,
                 path
         );
-        
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(resultado);
     }
 }
