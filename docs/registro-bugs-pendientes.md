@@ -139,7 +139,7 @@ Este documento centraliza todos los bugs detectados y mejoras de UX pendientes e
 
 | # | Descripción | Estado | Asignado |
 |---|-------------|--------|----------|
-| F-32 | **Cards Adicionales:** Agregar 3 cards (ej. DIVERSIÓN) en la sección de Metas. | Pendiente | Paulo |
+| F-32 | ✅ **Cards Adicionales:** Agregar 3 cards (ej. DIVERSIÓN) en la sección de Metas. | **RESUELTO** | Paul |
 
 ### Perfil y Perfil Financiero (Nuevos)
 
