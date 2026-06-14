@@ -6,26 +6,49 @@ import { Injectable, signal, effect } from '@angular/core';
  */
 @Injectable({ providedIn: 'root' })
 export class ServicioTema {
-  /** Signal reactivo: true = tema oscuro (default), false = tema claro */
-  temaOscuro = signal(true);
+  private readonly STORAGE_KEY = 'luka-theme';
+  /** Signal reactivo: true = tema oscuro, false = tema claro */
+  temaOscuro = signal(false);
 
   constructor() {
     // Leer preferencia guardada
-    const guardado = localStorage.getItem('luka-tema');
-    if (guardado) {
-      this.temaOscuro.set(guardado === 'oscuro');
+    const guardado = localStorage.getItem(this.STORAGE_KEY);
+    // Migración de clave legacy
+    const legacy = localStorage.getItem('luka-tema');
+    if (!guardado && legacy) {
+      localStorage.setItem(this.STORAGE_KEY, legacy);
+      localStorage.removeItem('luka-tema');
+    }
+
+    const temaGuardado = localStorage.getItem(this.STORAGE_KEY);
+    console.debug('[TemaDebug][ServicioTema] localStorage luka-theme =', temaGuardado);
+    if (temaGuardado) {
+      this.temaOscuro.set(temaGuardado === 'oscuro');
     }
 
     // Efecto reactivo: sincronizar clase CSS del body
     effect(() => {
       const esOscuro = this.temaOscuro();
+      document.body.classList.toggle('theme-dark', esOscuro);
+      document.body.classList.toggle('dark', esOscuro);
       document.body.classList.toggle('tema-claro', !esOscuro);
-      localStorage.setItem('luka-tema', esOscuro ? 'oscuro' : 'claro');
+      localStorage.setItem(this.STORAGE_KEY, esOscuro ? 'oscuro' : 'claro');
+      console.debug('[TemaDebug][ServicioTema] apply =>', {
+        esOscuro,
+        bodyThemeDark: document.body.classList.contains('theme-dark'),
+        bodyDark: document.body.classList.contains('dark'),
+        bodyTemaClaro: document.body.classList.contains('tema-claro'),
+        persisted: localStorage.getItem(this.STORAGE_KEY)
+      });
     });
   }
 
   /** Alternar entre tema oscuro y claro */
   alternar(): void {
     this.temaOscuro.update(v => !v);
+  }
+
+  setTema(tema: 'oscuro' | 'claro'): void {
+    this.temaOscuro.set(tema === 'oscuro');
   }
 }

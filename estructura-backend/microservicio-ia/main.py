@@ -26,7 +26,6 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
  
-from app.clientes.cliente_eureka import desregistrar_de_eureka, registrar_en_eureka
 from app.configuracion import obtener_configuracion
 from app.libreria_comun.excepciones.base import LukaException
 from app.libreria_comun.excepciones.handler import luka_exception_handler, http_exception_handler
@@ -36,8 +35,8 @@ from app.mensajeria.consumidor_ia import ConsumidorIA
 from app.mensajeria.outbox_scheduler import OutboxScheduler
 from app.mensajeria.escuchador_sincronizacion_ia import EscuchadorSincronizacionIA
 from app.mensajeria.escuchador_cambio_datos_ia import EscuchadorCambioDatosIA
-from app.routers import analisis
-from app.persistencia.database import inicializar_db
+from app.routers import analisis, dashboard
+from app.persistencia.postgres.database import inicializar_db
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -112,13 +111,29 @@ def _iniciar_escuchadores_adicionales() -> None:
     # 1. Sincronización de Perfil (Redis)
     try:
         import redis
-        redis_client = redis.Redis(
-            host=config.redis_host,
-            port=config.redis_port,
-            db=config.redis_db,
-            password=config.redis_password or None,
-            decode_responses=True,
-        )
+        try:
+            redis_client = redis.Redis(
+                host=config.redis_host,
+                port=config.redis_port,
+                db=config.redis_db,
+                password=config.redis_password or None,
+                decode_responses=True,
+            )
+            redis_client.ping()
+        except Exception as conn_err:
+            err_str = str(conn_err)
+            if "without any password configured" in err_str or "no password is set" in err_str:
+                logger.warning(f"[MAIN] Redis no requiere contraseña. Reintentando sin contraseña... ({conn_err})")
+                redis_client = redis.Redis(
+                    host=config.redis_host,
+                    port=config.redis_port,
+                    db=config.redis_db,
+                    password=None,
+                    decode_responses=True,
+                )
+                redis_client.ping()
+            else:
+                raise conn_err
         _escuchador_sync = EscuchadorSincronizacionIA(redis_client)
         threading.Thread(target=_escuchador_sync.iniciar, name="hilo-sync-perfil", daemon=True).start()
         _escuchador_sync_activo = True
@@ -147,12 +162,10 @@ async def lifespan(app: FastAPI):
  
     Startup:
       1. Imprime el banner de inicio con la configuración activa.
-      2. Registra el microservicio en Eureka.
-      3. Arranca el ConsumidorIA en hilo daemon.
+      2. Arranca el ConsumidorIA en hilo daemon.
  
     Shutdown:
       1. Detiene el ConsumidorIA limpiamente.
-      2. Desregistra el microservicio de Eureka.
     """
     # ── Banner de inicio ──────────────────────────────────────────────────────
     logger.info("═" * 65)
@@ -173,10 +186,7 @@ async def lifespan(app: FastAPI):
                 config.porcentaje_ahorro_objetivo)
     logger.info("═" * 65)
 
-    # --- REGISTRO EN EUREKA ---
     inicializar_db()
-    if config.eureka_enable:
-        await registrar_en_eureka(config)
     _iniciar_consumidor_rabbitmq()
     _iniciar_escuchadores_adicionales()
 
@@ -229,15 +239,13 @@ async def lifespan(app: FastAPI):
         except Exception as exc:
             logger.warning("[MAIN] Error al detener el EscuchadorCambioDatosIA: %s", str(exc))
 
-    if config.eureka_enable:
-        await desregistrar_de_eureka()
     logger.info("[MAIN] Microservicio IA de LUKA detenido correctamente.")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # APLICACIÓN FASTAPI
 # ══════════════════════════════════════════════════════════════════════════════
 app = FastAPI(
-    title=config.id_app_eureka,
+    title=config.nombre_app,
     version="4.0.0",
     description="""
 """,
@@ -301,6 +309,7 @@ app.add_exception_handler(Exception, luka_exception_handler)
 
 # ── Router principal con los 10 módulos + /analisis-completo ─────────────────
 app.include_router(analisis.router)
+app.include_router(dashboard.router)
 
 # ── Health Check ─────────────────────────────────────────────────────────────
 @app.get(
@@ -312,7 +321,7 @@ app.include_router(analisis.router)
 
 async def health() -> dict:
     """
-    Endpoint de health check compatible con el servidor Eureka y el API Gateway.
+    Endpoint de health check compatible con el API Gateway.
  
     Retorna el estado de cada componente del microservicio:
       - motor_analitico : siempre UP (Pandas/Scikit-Learn son locales).

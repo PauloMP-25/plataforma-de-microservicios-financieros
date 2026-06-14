@@ -36,6 +36,7 @@ public class CargadorDatosIniciales implements CommandLineRunner {
         new DefinicionCategoria("Educación",               "Cursos, libros, colegiaturas",            "graduation-cap",  TipoMovimiento.GASTO),
         new DefinicionCategoria("Entretenimiento",         "Cine, juegos, salidas",                   "gamepad-2",       TipoMovimiento.GASTO),
         new DefinicionCategoria("Suscripciones Streaming", "Netflix, Spotify, Disney+, etc.",         "play-circle",     TipoMovimiento.GASTO),
+        new DefinicionCategoria("Suscripciones",           "Pagos de suscripciones y membresías",      "credit-card",     TipoMovimiento.GASTO),
         new DefinicionCategoria("Ropa y Calzado",          "Vestimenta y accesorios",                 "shirt",           TipoMovimiento.GASTO),
         new DefinicionCategoria("Tecnología",              "Dispositivos, software, gadgets",         "laptop",          TipoMovimiento.GASTO),
         new DefinicionCategoria("Viajes",                  "Vuelos, hoteles, vacaciones",             "plane",           TipoMovimiento.GASTO),

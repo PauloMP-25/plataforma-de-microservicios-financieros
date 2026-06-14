@@ -1,0 +1,137 @@
+# ---------------------------------------------------------------------------------------------------------------------
+#                            SPRING: Configuración general, perfiles e importación de .env
+# ---------------------------------------------------------------------------------------------------------------------
+spring:
+  config:
+    import: "optional:file:../.env[.properties]"
+  application:
+    name: microservicio-cliente
+  profiles:
+    active: local
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+
+# ---------------------------------------------------------------------------------------------------------------------
+#                              DATASOURCE: Conexión y credenciales de PostgreSQL local
+# ---------------------------------------------------------------------------------------------------------------------
+  datasource:
+    url: jdbc:postgresql://localhost:5432/db_luka_cliente
+    username: postgres
+    password: adminUTP
+    driver-class-name: org.postgresql.Driver
+
+# ---------------------------------------------------------------------------------------------------------------------
+#                                   DATA: Configuración de base de datos de Redis
+# ---------------------------------------------------------------------------------------------------------------------
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      ssl:
+        enabled: ${REDIS_SSL:true}
+
+# ---------------------------------------------------------------------------------------------------------------------
+#                                   JPA: Configuración de persistencia ORM Hibernate
+# ---------------------------------------------------------------------------------------------------------------------
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+# ---------------------------------------------------------------------------------------------------------------------
+#                              RABBITMQ: Broker de mensajería asíncrona y topologías
+# ---------------------------------------------------------------------------------------------------------------------
+  rabbitmq:
+    connection-name: ${spring.application.name}
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
+    virtual-host: ${SPRING_RABBITMQ_VIRTUAL_HOST:/}
+    cache:
+      channel:
+        size: 10
+        checkout-timeout: 1000
+    connection-timeout: 10000
+    listener:
+      simple:
+        auto-startup: true
+        acknowledge-mode: auto
+        prefetch: 1
+        concurrency: 1
+        max-concurrency: 3
+        retry:
+          enabled: true
+          initial-interval: 1000
+          max-attempts: 3
+          max-interval: 10000
+          multiplier: 2.0
+    publisher-confirm-type: correlated
+    publisher-returns: true
+
+# ---------------------------------------------------------------------------------------------------------------------
+#                                   SERVER: Puerto y configuración de red local
+# ---------------------------------------------------------------------------------------------------------------------
+server:
+  port: 8083
+
+# ---------------------------------------------------------------------------------------------------------------------
+#                               MICROSERVICIO: Direcciones de conexión de servicios externos
+# ---------------------------------------------------------------------------------------------------------------------
+microservicio:
+  nucleo:
+    financiero:
+      url: http://localhost:8085
+
+# ---------------------------------------------------------------------------------------------------------------------
+#                                   LUKA: Credenciales JWT de seguridad local
+# ---------------------------------------------------------------------------------------------------------------------
+luka:
+  jwt:
+    clave-secreta: ${JWT_SECRET_KEY:}
+    expiracion-ms: 86400000
+
+# ---------------------------------------------------------------------------------------------------------------------
+#                                 SPRINGDOC: Habilitación de la consola Swagger OpenAPI
+# ---------------------------------------------------------------------------------------------------------------------
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+  writer-with-default-pretty-printer: true
+
+# ---------------------------------------------------------------------------------------------------------------------
+#                                  LOGGING: Configuración y patrón de trazas log
+# ---------------------------------------------------------------------------------------------------------------------
+logging:
+  level:
+    root: INFO
+    com:
+      cliente: DEBUG
+    org:
+      springframework:
+        security: INFO
+        transaction: INFO
+      hibernate:
+        SQL: INFO
+  pattern:
+    console: "%d{HH:mm:ss} %-5p [%X{correlationId:-NoID}] - %msg%n"
+  file:
+    name: logs/microservicio-cliente.log
+
+# ---------------------------------------------------------------------------------------------------------------------
+#                                 MANAGEMENT: Redirecciones de Actuator Health
+# ---------------------------------------------------------------------------------------------------------------------
+management:
+  endpoints:
+    web:
+      path-mapping:
+        health: health-internal

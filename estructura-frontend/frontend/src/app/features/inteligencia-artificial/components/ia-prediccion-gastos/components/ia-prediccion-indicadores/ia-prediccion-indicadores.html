@@ -1,0 +1,80 @@
+<div class="indicadores-container">
+  <!-- Widget Complementario: El Termómetro del Futuro -->
+  <div class="future-thermometer-widget" [class.boiling]="proyeccionProximoMes > ingresoEsperado">
+    <div class="thermometer-header">
+      <span class="threshold-label">Presupuesto actual<br>S/. {{ ingresoEsperado | number:'1.0-0' }}</span>
+    </div>
+    <div class="thermometer-glass">
+      <div class="thermometer-fluid-track">
+        <div class="thermometer-fluid-level" [style.height.%]="(proyeccionProximoMes / maxThermometerValue) * 100">
+          <div class="boiling-bubbles" *ngIf="proyeccionProximoMes > ingresoEsperado">
+            <span class="bubble-particle"></span>
+            <span class="bubble-particle"></span>
+            <span class="bubble-particle"></span>
+            <span class="bubble-particle"></span>
+          </div>
+        </div>
+        <div class="income-threshold-line" [style.bottom.%]="(ingresoEsperado / maxThermometerValue) * 100">
+        </div>
+      </div>
+      <div class="thermometer-bulb-future"></div>
+    </div>
+    <div class="thermometer-label-tag">
+      <span>{{ proyeccionProximoMes > ingresoEsperado ? '🔥 EXCESO!' : 'ESTABLE' }}</span>
+    </div>
+  </div>
+
+  <div class="satellites-column">
+    <!-- Satélite 1: Pendiente/Tendencia -->
+    <div class="satellite sat-trend" [class]="getTendenciaClase()">
+      <div class="sat-inner">
+        <i [class]="getTendenciaIcono()"></i>
+        <div class="sat-details">
+          <span class="sat-label">Tendencia</span>
+          <span class="sat-val">
+            {{ porcentajeVariacion > 0 ? '+' : '' }}{{ porcentajeVariacion }}%
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Satélite 2: Escudo de Riesgo -->
+    <div class="satellite sat-risk" [class]="getEscudoClase()">
+      <div class="sat-inner">
+        <i [class]="getEscudoIcono()"></i>
+        <div class="sat-details">
+          <span class="sat-label">Riesgo</span>
+          <span class="sat-val">
+            {{ deficitEstimado > 0 ? 'DÉFICIT DETECTADO' : 'SEGURO' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Satélite 3: Estado Mensual (Ahorro/Déficit) -->
+    <div class="satellite sat-deficit">
+      <div class="sat-inner" [style.border-left-color]="deficitEstimado > 0 ? '#ef4444' : '#10b981'">
+        <i class="fa-solid fa-scale-balanced" [style.color]="deficitEstimado > 0 ? '#ef4444' : '#10b981'"></i>
+        <div class="sat-details">
+          <span class="sat-label">{{ deficitEstimado > 0 ? 'Déficit Estimado' : 'Ahorro Estimado' }}</span>
+          <span class="sat-val font-numeric">
+            S/. {{ getAbsDeficit() | number:'1.2-2' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Satélite 4: Ingreso Esperado -->
+    <div class="satellite sat-deficit" style="border-left-color: #10b981;">
+      <div class="sat-inner" style="border-left-color: #10b981;">
+        <i class="fa-solid fa-money-bill-wave" style="color: #10b981;"></i>
+        <div class="sat-details">
+          <span class="sat-label">Ingreso / Meta</span>
+          <span class="sat-val font-numeric">
+            S/. {{ ingresoEsperado | number:'1.2-2' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,22 @@
+<div class="details-container" [ngStyle]="{ '--cluster-color': currentCluster.color }">
+  <div class="card-glow-border"></div>
+  <div class="card-badge-top">LUKA ANALYSIS REPORT</div>
+  
+  <div class="back-details">
+    <h3 class="back-title"><i class="fa-solid fa-chart-pie"></i> Categorías de Gasto Asociadas</h3>
+    <p class="back-subtitle">Total del capital analizado este mes:</p>
+    <h2 class="total-monto font-display">S/. {{ montoAnalizado | number:'1.2-2' }}</h2>
+    
+    <div class="back-tags-grid">
+      <div *ngFor="let cat of currentCluster.categorias" class="categoria-tag">
+        <i class="fa-solid fa-tag"></i>
+        <span>{{ cat }}</span>
+      </div>
+    </div>
+    
+    <div class="advice-block-back">
+      <i class="fa-solid fa-lightbulb text-yellow-400"></i>
+      <p>El algoritmo de Luka agrupa transacciones usando modelos de clustering para deducir patrones recurrentes en tu estilo de vida.</p>
+    </div>
+  </div>
+</div>

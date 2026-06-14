@@ -1,20 +1,17 @@
-# ═══════════════════════════════════════════════════════════════════════════════
-#  LUKA APP — application-docker.yml
-#  Perfil Spring Boot activo cuando SPRING_PROFILES_ACTIVE=docker
-#
-#  INSTRUCCIÓN: Coloca este archivo en src/main/resources/ de CADA microservicio
-#  Java. Las variables entre ${...} son inyectadas por docker-compose.yml.
-# ═══════════════════════════════════════════════════════════════════════════════
+# ---------------------------------------------------------------------------------------------------------------------
+#                            SPRING: Configuración general y perfiles
+# ---------------------------------------------------------------------------------------------------------------------
 spring:
   application:
     name: microservicio-mensajeria
-
   cloud:
     openfeign:
       circuitbreaker:
         enabled: true
 
-  # ── Redis ────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------------------------------------------------
+#                                   DATA: Configuración de base de datos de Redis
+# ---------------------------------------------------------------------------------------------------------------------
   data:
     redis:
       host: ${SPRING_DATA_REDIS_HOST:redis}
@@ -22,14 +19,16 @@ spring:
       password: ${SPRING_REDIS_PASSWORD:}
       connect-timeout: 2s
       timeout: 1s
-  # ── Base de datos ────────────────────────────────────────────────────────────
+
+# ---------------------------------------------------------------------------------------------------------------------
+#                              DATASOURCE: Conexión y credenciales de PostgreSQL local
+# ---------------------------------------------------------------------------------------------------------------------
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/db_microservicio_mensajeria}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: org.postgresql.Driver
     hikari:
-      # Pool reducido para Render free tier (512 MB). Aumentar en producción premium.
       maximum-pool-size: 3
       minimum-idle: 1
       connection-timeout: 30000
@@ -37,7 +36,9 @@ spring:
       max-lifetime: 1800000
       pool-name: LukaHikariCP
 
-  # ── JPA / Hibernate ──────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------------------------------------------------
+#                                   JPA: Configuración de persistencia ORM Hibernate
+# ---------------------------------------------------------------------------------------------------------------------
   jpa:
     hibernate:
       ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
@@ -46,14 +47,15 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: false
         show_sql: false
-        # Mejora rendimiento en consultas por lotes
         jdbc:
           batch_size: 20
         order_inserts: true
         order_updates: true
     open-in-view: false
 
-  # ── RabbitMQ ─────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------------------------------------------------
+#                              RABBITMQ: Broker de mensajería asíncrona y topologías
+# ---------------------------------------------------------------------------------------------------------------------
   rabbitmq:
     host: ${SPRING_RABBITMQ_HOST:rabbitmq}
     port: ${SPRING_RABBITMQ_PORT:5672}
@@ -62,8 +64,8 @@ spring:
     virtual-host: ${SPRING_RABBITMQ_VIRTUAL_HOST:/}
     listener:
       simple:
-        acknowledge-mode: manual      # ACK manual para mayor control
-        prefetch: 1                   # Un mensaje a la vez por consumidor
+        acknowledge-mode: manual
+        prefetch: 1
         retry:
           enabled: true
           initial-interval: 3000ms
@@ -75,32 +77,9 @@ spring:
         initial-interval: 1000ms
         max-attempts: 3
 
-server:
-  port: 8084
-
-  # ── Eureka Client ─────────────────────────────────────────────────────────────
-  # EUREKA_CLIENT_ENABLED=true  → activar (Docker local)
-  # EUREKA_CLIENT_ENABLED=false → desactivar (Render producción, valor por defecto)
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka}
-    enabled: ${EUREKA_CLIENT_ENABLED:false}
-    register-with-eureka: ${EUREKA_CLIENT_ENABLED:false}
-    fetch-registry: ${EUREKA_CLIENT_ENABLED:false}
-    registry-fetch-interval-seconds: 10
-    eureka-connection-idle-timeout-seconds: 30
-  instance:
-    hostname: ${EUREKA_INSTANCE_HOSTNAME:ms-mensajeria}
-    prefer-ip-address: true
-    lease-renewal-interval-in-seconds: 10
-    lease-expiration-duration-in-seconds: 30
-    health-check-url-path: /actuator/health
-    status-page-url-path: /actuator/info
-    metadata-map:
-      startup: ${random.int}
-
-  # ── Correo (Spring Mail) ───────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------------------------------------------------
+#                                   MAIL: Configuración del servidor de correo SMTP
+# ---------------------------------------------------------------------------------------------------------------------
   mail:
     host: ${SPRING_MAIL_HOST:smtp.gmail.com}
     port: ${SPRING_MAIL_PORT:587}
@@ -117,7 +96,15 @@ eureka:
             trust: ${SPRING_MAIL_HOST:smtp.gmail.com}
         debug: false
 
-# ── Actuator (Health Checks) ───────────────────────────────────────────────────
+# ---------------------------------------------------------------------------------------------------------------------
+#                                   SERVER: Puerto y configuración de red local
+# ---------------------------------------------------------------------------------------------------------------------
+server:
+  port: 8084
+
+# ---------------------------------------------------------------------------------------------------------------------
+#                                 MANAGEMENT: Redirecciones de Actuator Health
+# ---------------------------------------------------------------------------------------------------------------------
 management:
   endpoints:
     web:
@@ -128,50 +115,48 @@ management:
     health:
       show-details: always
       probes:
-        enabled: true   # /actuator/health/liveness y /readiness para K8s
+        enabled: true
   health:
     rabbitmq:
       enabled: true
     db:
       enabled: true
     mail:
-      enabled: false
+      enabled: true
     diskspace:
-      enabled: false    # Innecesario en contenedores
+      enabled: false
 
-# ── Logging ────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------------------------------------------------
+#                                  LOGGING: Configuración y patrón de trazas log
+# ---------------------------------------------------------------------------------------------------------------------
 logging:
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5p [%X{correlationId:-NoID}] - %msg%n"
   level:
     root: INFO
-    "org.springframework.web": INFO
+    "org.springframework.web.servlet.DispatcherServlet": INFO
     "org.hibernate.SQL": WARN
-    "com.netflix.eureka": WARN
-    "com.netflix.discovery": WARN
 
-# ── Configuración Luka (JWT) ─────────────────────────────────────────
+# ---------------------------------------------------------------------------------------------------------------------
+#                                   LUKA: Credenciales JWT de seguridad local
+# ---------------------------------------------------------------------------------------------------------------------
 luka:
   jwt:
     clave-secreta: ${JWT_SECRET_KEY}
 
-# ── Notificaciones Externas (Twilio) ───────────────────────────────────────────
-#  Autenticación con API Key Restringida (permisos de Messaging únicamente).
-#  Declarar en el dashboard de Render las siguientes variables de entorno:
-#    TWILIO_ACCOUNT_SID, TWILIO_API_KEY_SID, TWILIO_API_KEY_SECRET, TWILIO_MESSAGING_SERVICE_SID
+# ---------------------------------------------------------------------------------------------------------------------
+#                                 TWILIO: Credenciales e integración del API de Twilio
+# ---------------------------------------------------------------------------------------------------------------------
 twilio:
   account-sid: ${TWILIO_ACCOUNT_SID}
   api-key-sid: ${TWILIO_API_KEY_SID}
   api-key-secret: ${TWILIO_API_KEY_SECRET}
   messaging-service-sid: ${TWILIO_MESSAGING_SERVICE_SID}
   sandbox-whatsapp-from: ${TWILIO_SANDBOX_WHATSAPP_FROM}
-  # ── Fallback para desarrollo local sin Messaging Service ─────────────────────
-  #  (Dejar en blanco en producción/Render; solo activar localmente)
   phone:
     number: ${TWILIO_SMS_FROM:}
   whatsapp:
     from: ${TWILIO_WHATSAPP_FROM:}
-  # ── Compatibilidad con TwilioInitializer (mantener si se usa API Key) ────────
   api-key:
     sid: ${TWILIO_API_KEY_SID}
     secret: ${TWILIO_API_KEY_SECRET}
@@ -179,4 +164,4 @@ twilio:
   auth:
     token: ${TWILIO_AUTH_TOKEN:}
   account:
-    sid: ${TWILIO_ACCOUNT_SID}
+    sid: ${TWILIO_ACCOUNT_SID}

@@ -1,0 +1,213 @@
+<section class="meta-form-page">
+  <!-- Cabecera de Página con Botón de Volver -->
+  <header class="meta-form-page__header anim-fade-up">
+    <div class="meta-form-page__header-content">
+      <div class="meta-form-page__header-title">
+        <a routerLink="/metas" class="meta-form-page__btn-back">
+          <i class="fa-solid fa-arrow-left"></i> Volver a Metas
+        </a>
+        <div class="meta-form-page__title-wrapper mt-3">
+          <h1>{{ modoEdicion ? 'Edita tu Meta Financiera' : 'Diseña tu próxima Meta' }}</h1>
+          <p>{{ modoEdicion ? 'Ajusta los detalles de tu meta para mantenerte en el camino correcto.' : '¿Qué gran logro financiero te propones alcanzar hoy?' }}</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mensajes de Estado Globales -->
+  @if (exitoMensaje()) {
+    <div class="meta-form-page__alert meta-form-page__alert--success anim-fade-up">
+      <i class="fa-solid fa-circle-check"></i>
+      <span>{{ exitoMensaje() }}</span>
+    </div>
+  }
+  @if (errorMensaje()) {
+    <div class="meta-form-page__alert meta-form-page__alert--danger anim-fade-up">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <span>{{ errorMensaje() }}</span>
+    </div>
+  }
+
+  <!-- Spinner de Carga -->
+  @if (cargando() && !formulario) {
+    <div class="meta-form-page__loading">
+      <div class="meta-form-page__spinner"></div>
+      <p>Cargando información de la meta...</p>
+    </div>
+  } @else {
+    <!-- Panel del Formulario principal -->
+    <div class="meta-form-page__container card anim-fade-up">
+      <form [formGroup]="formulario" (ngSubmit)="guardarMeta()" class="meta-form-page__form-two-columns">
+        
+        <!-- Columna Izquierda: Entradas de Formulario -->
+        <div class="form-col-left">
+          <!-- Selector Visual de Propósito (Categorías) -->
+          <div class="meta-form-page__form-group">
+            <label class="form-label-purpose"><i class="fa-solid fa-wand-magic-sparkles"></i> Elige un Propósito</label>
+            
+            @let formCtrlCat = formulario.get('categoria')?.value;
+
+            <div class="meta-form-page__purpose-grid">
+              @for (cat of categorias; track cat.id) {
+                <button type="button" 
+                        class="purpose-btn" 
+                        [ngClass]="{'purpose-btn--active': formCtrlCat === cat.id}"
+                        (click)="seleccionarCategoriaForm(cat.id)">
+                  <i [class]="cat.icono"></i>
+                  <span>{{ cat.nombre }}</span>
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Campo Nombre -->
+          <div class="meta-form-page__form-group">
+            <label for="formNombre">NOMBRE DE TU META</label>
+            <input id="formNombre" type="text" formControlName="nombre" placeholder="Ej. Mi Viaje a Cancún, Nueva Laptop..." />
+            @if (formulario.get('nombre')?.touched && formulario.get('nombre')?.errors) {
+              @if (formulario.get('nombre')?.errors?.['required']) {
+                <small class="error-msg"><i class="fa-solid fa-triangle-exclamation"></i> El nombre es obligatorio.</small>
+              }
+              @if (formulario.get('nombre')?.errors?.['minlength']) {
+                <small class="error-msg"><i class="fa-solid fa-triangle-exclamation"></i> Debe tener al menos 3 caracteres.</small>
+              }
+            }
+          </div>
+
+          <div class="form-row">
+            <!-- Campo Monto Objetivo -->
+            <div class="meta-form-page__form-group">
+              <label for="formMontoObj">MONTO OBJETIVO (S/)</label>
+              <input id="formMontoObj" type="number" formControlName="montoObjetivo" placeholder="Ej. 5000" />
+              @if (formulario.get('montoObjetivo')?.touched && formulario.get('montoObjetivo')?.errors) {
+                @if (formulario.get('montoObjetivo')?.errors?.['required']) {
+                  <small class="error-msg"><i class="fa-solid fa-triangle-exclamation"></i> El monto es obligatorio.</small>
+                }
+                @if (formulario.get('montoObjetivo')?.errors?.['min']) {
+                  <small class="error-msg"><i class="fa-solid fa-triangle-exclamation"></i> Debe ser al menos S/ 1.00.</small>
+                }
+              }
+            </div>
+
+            <!-- Campo Ahorro Inicial -->
+            <div class="meta-form-page__form-group">
+              <label for="formMontoAct">MONTO DISPONIBLE (S/)</label>
+              <input id="formMontoAct" type="number" formControlName="montoActual" placeholder="Ej. 0" />
+              @if (formulario.get('montoActual')?.touched && formulario.get('montoActual')?.errors) {
+                @if (formulario.get('montoActual')?.errors?.['required']) {
+                  <small class="error-msg"><i class="fa-solid fa-triangle-exclamation"></i> Requerido (usa 0 si no tienes ahorro).</small>
+                }
+                @if (formulario.get('montoActual')?.errors?.['min']) {
+                  <small class="error-msg"><i class="fa-solid fa-triangle-exclamation"></i> No puede ser negativo.</small>
+                }
+              }
+            </div>
+          </div>
+
+          <!-- Campo Fecha Objetivo con Helpers Rápidos -->
+          <div class="meta-form-page__form-group">
+            <label for="formFecha">¿PARA CUÁNDO LO NECESITAS?</label>
+            <input id="formFecha" type="date" formControlName="fechaLimite" [min]="fechaMinima" />
+            @if (formulario.get('fechaLimite')?.touched && formulario.get('fechaLimite')?.errors) {
+              @if (formulario.get('fechaLimite')?.errors?.['required']) {
+                <small class="error-msg"><i class="fa-solid fa-triangle-exclamation"></i> La fecha es obligatoria.</small>
+              }
+              @if (formulario.get('fechaLimite')?.errors?.['fechaPasada']) {
+                <small class="error-msg"><i class="fa-solid fa-triangle-exclamation"></i> Elige una fecha posterior o igual a hoy.</small>
+              }
+            }
+
+            <!-- Botones Rápidos de Fecha -->
+            <div class="quick-dates-container">
+              <button type="button" class="btn-quick-date" (click)="setFechaRapida(3)">+3 Meses</button>
+              <button type="button" class="btn-quick-date" (click)="setFechaRapida(6)">+6 Meses</button>
+              <button type="button" class="btn-quick-date" (click)="setFechaRapida(12)">+1 Año</button>
+              <button type="button" class="btn-quick-date" (click)="setFechaRapida(24)">+2 Años</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna Derecha: Vista Previa e Indicador de Ahorro Recomendado -->
+        <div class="form-col-right">
+          <!-- Vista Previa de la Burbuja de Progreso -->
+          <div class="meta-form-page__preview-box">
+            <h4>Vista previa de tu meta</h4>
+            
+            @let formName = formulario.get('nombre')?.value || '';
+            @let formObj = formulario.get('montoObjetivo')?.value || 0;
+            @let formAct = formulario.get('montoActual')?.value || 0;
+            @let formPct = formObj > 0 ? Math.min(100, (formAct / formObj) * 100) : 0;
+            @let formCatSelected = formulario.get('categoria')?.value || 'Otros';
+            @let formIconSelected = obtenerIconoCategoria(formCatSelected);
+            @let formDate = formulario.get('fechaLimite')?.value;
+            
+            <div class="bubble-container bubble-container--preview bubble-container--active"
+                 [style.background]="'conic-gradient(' + obtenerColorProgreso(formPct) + ' ' + formPct + '%, var(--border-color) 0)'">
+              <div class="bubble">
+                <div class="bubble__water" [style.transform]="'translateY(' + (formPct >= 100 ? 15 : (100 - formPct)) + '%)'">
+                  <div class="bubble__wave bubble__wave--front"></div>
+                  <div class="bubble__wave bubble__wave--back"></div>
+                </div>
+                <div class="bubble__content">
+                  <i [class]="formIconSelected" class="bubble__category-icon"></i>
+                  <span class="bubble__number">{{ formPct.toFixed(0) }}%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ficha Resumen Interactiva -->
+            <div class="meta-form-page__summary-details">
+              <div class="summary-item">
+                <span class="label">Propósito</span>
+                <span class="value">
+                  <i [class]="formIconSelected"></i> {{ formCatSelected }}
+                </span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Nombre</span>
+                <span class="value text-truncate" [title]="formName || 'Sin nombre'">
+                  {{ formName || 'Sin nombre aún' }}
+                </span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Meta Objetivo</span>
+                <span class="value font-mono">S/ {{ formObj.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Ahorro Inicial</span>
+                <span class="value text-success font-mono">S/ {{ formAct.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Fecha Límite</span>
+                <span class="value">{{ formDate ? (formDate | date:'dd/MM/yyyy') : 'No establecida' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cuadro de Proyección: Ahorro Mensual Recomendado -->
+          @let sugerido = getAhorroSugeridoInfo();
+          @if (sugerido.cuota > 0) {
+            <div class="meta-form-page__recommended-savings anim-fade-up">
+              <span class="recommend-title">AHORRO MENSUAL RECOMENDADO</span>
+              <span class="recommend-value">S/ {{ sugerido.cuota.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+              <span class="recommend-desc">Durante {{ sugerido.meses }} meses</span>
+            </div>
+          }
+        </div>
+
+        <!-- Acciones del Formulario (Alineados al pie de ambas columnas) -->
+        <div class="meta-form-page__actions-container">
+          <button type="button" class="btn-cancel" routerLink="/metas">Cancelar</button>
+          <button type="submit" class="btn-save" [disabled]="formulario.invalid || cargando()">
+            @if (cargando()) {
+              <i class="fa-solid fa-spinner fa-spin"></i> Guardando...
+            } @else {
+              {{ modoEdicion ? 'Guardar Cambios' : 'Crear Meta' }} <i class="fa-solid fa-arrow-right"></i>
+            }
+          </button>
+        </div>
+
+      </form>
+    </div>
+  }
+</section>

@@ -1,0 +1,160 @@
+<div class="panel-activo-horizontal" *ngIf="modulo">
+  <div class="form-horizontal">
+    
+    <!-- 1. Caso: Simulación de metas -->
+    <ng-container *ngIf="modulo.id === 'simular-meta'">
+      <div class="input-group">
+        <label>Nombre de la Meta</label>
+        <input type="text" [(ngModel)]="nombreMeta" class="app-input" placeholder="Ej. Ahorro para auto" />
+      </div>
+
+      <div class="input-group">
+        <label>Monto Objetivo</label>
+        <input type="number" [(ngModel)]="montoObjetivo" class="app-input" />
+      </div>
+
+      <div class="input-group">
+        <label>Ahorro Actual</label>
+        <input type="number" [(ngModel)]="montoActualAhorrado" class="app-input" />
+      </div>
+
+      <div class="input-group">
+        <label>Aporte Deseado</label>
+        <input type="number" [(ngModel)]="aporteMensualDeseado" class="app-input" />
+      </div>
+
+      <div class="input-group" style="min-width: 90px; flex: 0.5;">
+        <label>Plazo Años</label>
+        <input type="number" [(ngModel)]="aniosObjetivo" class="app-input" min="0" />
+      </div>
+
+      <div class="input-group" style="min-width: 90px; flex: 0.5;">
+        <label>Plazo Meses</label>
+        <input type="number" [(ngModel)]="mesesAdicionalesObjetivo" class="app-input" min="0" max="11" />
+      </div>
+      
+      <div class="ayudadita-box" *ngIf="!tieneResultado">
+        <i class="fa-solid fa-lightbulb icon-ayuda"></i>
+        <div class="ayudadita-content">
+          <h4>💡 ¿Cómo usar este simulador?</h4>
+          <p>
+            Completa los datos para que el coach financiero Luka arme tu plan de ahorro estratégico:
+          </p>
+          <ul class="ayudadita-lista">
+            <li><strong>Nombre y Monto:</strong> Definen qué quieres lograr y su costo real.</li>
+            <li><strong>Ahorro Actual:</strong> El capital base del que partes hoy.</li>
+            <li><strong>Aporte Deseado:</strong> La cantidad de soles que puedes comprometer cada mes.</li>
+            <li><strong>Plazo (Años y Meses):</strong> En cuánto tiempo aspiras a cumplir la meta.</li>
+          </ul>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- 2. Caso: Clasificación de transacciones -->
+    <ng-container *ngIf="modulo.id === 'clasificar-transaccion'">
+      <div class="input-group">
+        <label>ID Temporal</label>
+        <input type="text" [(ngModel)]="idTemporal" class="app-input" />
+      </div>
+
+      <div class="input-group">
+        <label>Tipo Movimiento</label>
+        <select [(ngModel)]="tipoMovimiento" class="app-input select">
+          <option value="GASTO">GASTO</option>
+          <option value="INGRESO">INGRESO</option>
+        </select>
+      </div>
+
+      <div class="input-group full-width">
+        <label>Etiquetas</label>
+        <input type="text" [(ngModel)]="etiquetas" class="app-input" placeholder="Separadas por comas" />
+      </div>
+    </ng-container>
+
+    <!-- 3. Caso general: Filtros por fecha (excluyendo simular-meta, clasificar-transaccion y comprobador-evolucion) -->
+    <ng-container *ngIf="modulo.id !== 'simular-meta' && modulo.id !== 'clasificar-transaccion' && modulo.id !== 'comprobador-evolucion'">
+      <div class="input-group">
+        <label>Fecha Inicio</label>
+        <input type="date" [(ngModel)]="fechaInicio" class="app-input" />
+      </div>
+
+      <div class="input-group">
+        <label>Fecha Fin</label>
+        <input type="date" [(ngModel)]="fechaFin" class="app-input" />
+      </div>
+
+      <div class="input-group" *ngIf="modulo.filtroFecha">
+        <label>Frecuencia de análisis</label>
+        <select [(ngModel)]="frecuenciaSelect" class="app-input select">
+          <option value="SEMANAL">Semanal</option>
+          <option value="QUINCENAL">Quincenal</option>
+          <option value="MENSUAL">Mensual</option>
+        </select>
+      </div>
+
+      <!-- Selector Temporal de Hitos para Espejo del Tiempo (Solo si tiene resultado) -->
+      <div class="input-group" *ngIf="modulo.id === 'espejo-temporal' && tieneResultado" style="min-width: 140px; flex: 0.8;">
+        <label>Horizonte</label>
+        <div class="temporal-selector-bar-inline">
+          <button 
+            type="button" 
+            class="btn-temp-inline" 
+            [class.active]="hitoSeleccionado === 3" 
+            (click)="setHitoInline(3)">
+            3m
+          </button>
+          <button 
+            type="button" 
+            class="btn-temp-inline" 
+            [class.active]="hitoSeleccionado === 6" 
+            (click)="setHitoInline(6)">
+            6m
+          </button>
+          <button 
+            type="button" 
+            class="btn-temp-inline" 
+            [class.active]="hitoSeleccionado === 12" 
+            (click)="setHitoInline(12)">
+            12m
+          </button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- 4. Caso: Comprobador de Evolución -->
+    <ng-container *ngIf="modulo.id === 'comprobador-evolucion'">
+      <div class="input-group">
+        <label>Ref. Inicio (Base)</label>
+        <input type="date" [(ngModel)]="fechaA_inicio" class="app-input" />
+      </div>
+
+      <div class="input-group">
+        <label>Ref. Fin (Base)</label>
+        <input type="date" [(ngModel)]="fechaA_fin" class="app-input" />
+      </div>
+
+      <div class="input-group">
+        <label>Evol. Inicio (Actual)</label>
+        <input type="date" [(ngModel)]="fechaB_inicio" class="app-input" />
+      </div>
+
+      <div class="input-group">
+        <label>Evol. Fin (Actual)</label>
+        <input type="date" [(ngModel)]="fechaB_fin" class="app-input" />
+      </div>
+    </ng-container>
+
+    <!-- Botón Ejecutar -->
+    <div class="btn-container">
+      <button class="btn-execute-horizontal" (click)="onEjecutar()" [disabled]="cargando" [style.background]="modulo.tagColor">
+        <span class="btn-content" *ngIf="!cargando">
+          <i class="fa-solid fa-bolt"></i> Consultar
+        </span>
+        <span class="btn-content font-bold animate-pulse" *ngIf="cargando">
+          <i class="fa-solid fa-circle-notch fa-spin"></i> Procesando...
+        </span>
+      </button>
+    </div>
+
+  </div>
+</div>

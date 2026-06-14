@@ -1,9 +1,9 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 #  LUKA APP — Docker Compose v3.9
-#  Stack completo: 6 Microservicios + Gateway + Eureka + RabbitMQ + PostgreSQL
+#  Stack completo: 6 Microservicios + Gateway + RabbitMQ + PostgreSQL
 #
 #  Jerarquía de arranque:
-#    PostgreSQL(s) ──► RabbitMQ ──► Eureka
+#    PostgreSQL(s) ──► RabbitMQ
 #                                     │
 #              ┌──────────────────────┼──────────────────────┐
 #              ▼                      ▼                       ▼
@@ -33,8 +33,6 @@ volumes:
   vol-rabbitmq-data:
     driver: local
   vol-rabbitmq-logs:
-    driver: local
-  vol-eureka-data:
     driver: local
 
 # ── REDES ─────────────────────────────────────────────────────────────────────
@@ -239,42 +237,6 @@ services:
         limits:
           memory: 512M
 
-  # ── EUREKA SERVER (Service Discovery) ────────────────────────────────────────
-
-  eureka-server:
-    <<: *spring-common
-    container_name: luka-eureka-server
-    hostname: eureka-server
-    # INSTRUCCIÓN: Construye desde el directorio de tu eureka-server
-    build:
-      context: ../infraestructura/eureka-server
-      dockerfile: Dockerfile
-    image: luka/eureka-server:latest
-    ports:
-      # Dashboard de Eureka accesible en http://localhost:8761
-      - "${EUREKA_DASHBOARD_PORT:-8761}:8761"
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
-      SERVER_PORT: 8761
-      # Modo standalone: Eureka no intenta registrarse a sí mismo
-      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"
-      EUREKA_CLIENT_FETCH_REGISTRY: "false"
-      # Autenticación básica para el dashboard
-      EUREKA_ADMIN_USER: ${EUREKA_USER:-admin}
-      EUREKA_ADMIN_PASSWORD: ${EUREKA_PASSWORD:-admin123}
-      # Reducimos el tiempo de expiración para detección rápida de fallos
-      EUREKA_SERVER_EVICTION_INTERVAL_TIMER_IN_MS: 5000
-      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=70.0 -XX:+UseG1GC"
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "-u", "${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}", "http://localhost:8761/actuator/health" ]
-      interval: 20s
-      timeout: 10s
-      retries: 10
-      start_period: 40s
-    deploy:
-      resources:
-        limits:
-          memory: 512M
   # ── REDIS (Caché y Rate Limiting para el Gateway) ───────────────────────────
   redis:
     image: redis:7-alpine
@@ -314,8 +276,6 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-      eureka-server:
-        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SERVER_PORT: 8081
@@ -325,11 +285,6 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
-      # Eureka
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}@eureka-server:8761/eureka
-      EUREKA_CLIENT_ENABLED: "true"
-      EUREKA_INSTANCE_HOSTNAME: ms-usuario
-      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
       SPRING_APPLICATION_NAME: microservicio-usuario
       # RabbitMQ
       SPRING_RABBITMQ_HOST: rabbitmq
@@ -376,8 +331,6 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-      eureka-server:
-        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SERVER_PORT: 8083
@@ -387,11 +340,6 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
-      # Eureka
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}@eureka-server:8761/eureka
-      EUREKA_CLIENT_ENABLED: "true"
-      EUREKA_INSTANCE_HOSTNAME: ms-cliente
-      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
       SPRING_APPLICATION_NAME: microservicio-cliente
       # RabbitMQ
       SPRING_RABBITMQ_HOST: rabbitmq
@@ -436,8 +384,6 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-      eureka-server:
-        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SERVER_PORT: 8082
@@ -447,11 +393,6 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
-      # Eureka
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}@eureka-server:8761/eureka
-      EUREKA_CLIENT_ENABLED: "true"
-      EUREKA_INSTANCE_HOSTNAME: ms-auditoria
-      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
       SPRING_APPLICATION_NAME: microservicio-auditoria
       # RabbitMQ (consumidor de la cola de auditoría)
       SPRING_RABBITMQ_HOST: rabbitmq
@@ -494,8 +435,6 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-      eureka-server:
-        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SERVER_PORT: 8084
@@ -505,11 +444,6 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
-      # Eureka
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}@eureka-server:8761/eureka
-      EUREKA_CLIENT_ENABLED: "true"
-      EUREKA_INSTANCE_HOSTNAME: ms-mensajeria
-      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
       SPRING_APPLICATION_NAME: microservicio-mensajeria
       # RabbitMQ
       SPRING_RABBITMQ_HOST: rabbitmq
@@ -529,6 +463,8 @@ services:
       # WhatsApp
       WHATSAPP_API_TOKEN: ${WHATSAPP_API_TOKEN}
       WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
+      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
       JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8084/actuator/health" ]
@@ -558,8 +494,6 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-      eureka-server:
-        condition: service_healthy
       ms-cliente:
         condition: service_healthy
     environment:
@@ -571,11 +505,6 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
-      # Eureka (para descubrir ms-cliente via Feign)
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}@eureka-server:8761/eureka
-      EUREKA_CLIENT_ENABLED: "true"
-      EUREKA_INSTANCE_HOSTNAME: ms-nucleo-financiero
-      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
       SPRING_APPLICATION_NAME: microservicio-nucleo-financiero
       # RabbitMQ (publica en exchange.ia tras cada transacción)
       SPRING_RABBITMQ_HOST: rabbitmq
@@ -624,16 +553,9 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-      eureka-server:
-        condition: service_healthy
       ms-nucleo-financiero:
         condition: service_healthy
     environment:
-      # ── Identidad en Eureka ──────────────────────────────────────────────
-      EUREKA_SERVIDOR_URL: http://${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}@eureka-server:8761/eureka
-      EUREKA_INSTANCIA_HOST: ms-ia
-      EUREKA_INSTANCIA_PUERTO: 8086
-      ID_APP_EUREKA: microservicio-ia
 
       # ── Google Gemini (CRÍTICO: requiere API key real) ───────────────────
       GEMINI_API_KEY: ${GEMINI_API_KEY}
@@ -662,6 +584,7 @@ services:
 
       # ── Seguridad JWT (compartido con Java) ──────────────────────────────
       JWT_CLAVE_SECRETA: ${JWT_SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       JWT_ALGORITMO: HS256
 
       # ── Parámetros de análisis IA ─────────────────────────────────────────
@@ -712,8 +635,6 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-      eureka-server:
-        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SERVER_PORT: 8087
@@ -722,13 +643,11 @@ services:
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-adminUTP}
       SPRING_JPA_HIBERNATE_DDL_AUTO: validate
-      # Eureka
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}@eureka-server:8761/eureka
-      EUREKA_INSTANCE_HOSTNAME: ms-pagos
       SPRING_APPLICATION_NAME: ms-pagos
       # Stripe
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL}
       # JWT
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
     healthcheck:
@@ -750,26 +669,12 @@ services:
     hostname: api-gateway
     build:
       context: ..
-      dockerfile: infraestructura/api-gateway/Dockerfile
+      dockerfile: api-gateway/Dockerfile
       args:
         APP_PORT: 8080
     image: luka/api-gateway:latest
     depends_on:
-      eureka-server:
-        condition: service_healthy
       redis:
-        condition: service_healthy
-      ms-usuario:
-        condition: service_healthy
-      ms-cliente:
-        condition: service_healthy
-      ms-auditoria:
-        condition: service_healthy
-      ms-mensajeria:
-        condition: service_healthy
-      ms-nucleo-financiero:
-        condition: service_healthy
-      ms-ia:
         condition: service_healthy
     ports:
       # ← ÚNICO PUERTO EXPUESTO AL MUNDO EXTERIOR
@@ -778,11 +683,6 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       SERVER_PORT: 8080
       SPRING_APPLICATION_NAME: api-gateway
-      # Eureka: el Gateway descubre los servicios dinámicamente
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://${EUREKA_USER:-admin}:${EUREKA_PASSWORD:-admin123}@eureka-server:8761/eureka
-      EUREKA_CLIENT_ENABLED: "true"
-      EUREKA_INSTANCE_HOSTNAME: api-gateway
-      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
       # Spring Cloud Gateway usa Reactor Netty (reactor, no servlet)
       SPRING_MAIN_WEB_APPLICATION_TYPE: reactive
       # JWT para validación en el Gateway

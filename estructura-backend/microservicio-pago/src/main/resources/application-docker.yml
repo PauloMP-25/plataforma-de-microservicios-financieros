@@ -1,24 +1,26 @@
-# ═══════════════════════════════════════════════════════════════════════════════
-#  LUKA APP — application-docker.yml (ms-pagos)
-# ═══════════════════════════════════════════════════════════════════════════════
-
+# ---------------------------------------------------------------------------------------------------------------------
+#                            SPRING: Configuración general y perfiles
+# ---------------------------------------------------------------------------------------------------------------------
 spring:
   application:
     name: ms-pagos
 
-  # ── Base de datos ────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------------------------------------------------
+#                              DATASOURCE: Conexión y credenciales de PostgreSQL local
+# ---------------------------------------------------------------------------------------------------------------------
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/db_microservicio_pagos}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: org.postgresql.Driver
     hikari:
-      # Pool reducido para Render free tier (512 MB). Aumentar en producción premium.
       maximum-pool-size: 3
       minimum-idle: 1
       connection-timeout: 30000
 
-  # ── JPA / Hibernate ──────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------------------------------------------------
+#                                   JPA: Configuración de persistencia ORM Hibernate
+# ---------------------------------------------------------------------------------------------------------------------
   jpa:
     hibernate:
       ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:validate}
@@ -29,7 +31,9 @@ spring:
         show_sql: false
     open-in-view: false
 
-  # ── RabbitMQ ─────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------------------------------------------------
+#                              RABBITMQ: Broker de mensajería asíncrona y topologías
+# ---------------------------------------------------------------------------------------------------------------------
   rabbitmq:
     host: ${SPRING_RABBITMQ_HOST:rabbitmq}
     port: ${SPRING_RABBITMQ_PORT:5672}
@@ -42,22 +46,15 @@ spring:
       simple:
         auto-startup: true
 
+# ---------------------------------------------------------------------------------------------------------------------
+#                                   SERVER: Puerto y configuración de red local
+# ---------------------------------------------------------------------------------------------------------------------
 server:
   port: 8087
 
-# ── Eureka Client ─────────────────────────────────────────────────────────────
-# EUREKA_CLIENT_ENABLED=true  → activar (Docker local)
-# EUREKA_CLIENT_ENABLED=false → desactivar (Render producción, valor por defecto)
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka}
-    enabled: ${EUREKA_CLIENT_ENABLED:false}
-  instance:
-    prefer-ip-address: true
-    hostname: ${EUREKA_INSTANCE_HOSTNAME:ms-pagos}
-
-# ── Actuator ───────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------------------------------------------------
+#                                 MANAGEMENT: Redirecciones de Actuator Health
+# ---------------------------------------------------------------------------------------------------------------------
 management:
   endpoints:
     web:
@@ -67,11 +64,16 @@ management:
     health:
       show-details: always
 
-# ── Seguridad JWT (Configuración Luka) ─────────────────────────────────────────
+# ---------------------------------------------------------------------------------------------------------------------
+#                                   LUKA: Credenciales JWT de seguridad local
+# ---------------------------------------------------------------------------------------------------------------------
 luka:
   jwt:
     clave-secreta: ${JWT_SECRET_KEY:}
 
+# ---------------------------------------------------------------------------------------------------------------------
+#                                 STRIPE: Credenciales e integración de pagos Stripe
+# ---------------------------------------------------------------------------------------------------------------------
 stripe:
   api-key: ${STRIPE_SECRET_KEY:sk_test_mock_secret}
   webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_mock_secret}

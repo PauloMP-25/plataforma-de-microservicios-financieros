@@ -9,8 +9,8 @@ import java.math.BigDecimal;
 @Getter
 public enum PlanSuscripcion {
     FREE(BigDecimal.ZERO, "Plan gratuito con funcionalidades básicas"),
-    PREMIUM(new BigDecimal("19.90"), "Plan premium con análisis avanzado"),
-    PRO(new BigDecimal("39.90"), "Plan profesional con todas las herramientas de coaching");
+    PREMIUM(new BigDecimal("25.00"), "Plan premium con análisis avanzado"),
+    PRO(new BigDecimal("15.00"), "Plan profesional con todas las herramientas de coaching");
 
     private final BigDecimal precio;
     private final String descripcion;

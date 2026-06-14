@@ -46,6 +46,13 @@ public class LimiteGasto {
     private UUID usuarioId;
 
     /**
+     * Nombre descriptivo del presupuesto
+     */
+    @Column(name = "nombre", nullable = false, length = 150)
+    @Builder.Default
+    private String nombre = "Presupuesto Mensual";
+
+    /**
      * Monto máximo permitido para esta categoría en el mes (en soles PEN).
      */
     @Column(name = "monto_limite", nullable = false, precision = 12, scale = 2)
@@ -81,6 +88,9 @@ public class LimiteGasto {
         fechaCreacion = LocalDateTime.now();
         fechaActualizacion = LocalDateTime.now();
         this.activo = true;
+        if (this.nombre == null) {
+            this.nombre = "Presupuesto Mensual";
+        }
     }
 
     @PreUpdate

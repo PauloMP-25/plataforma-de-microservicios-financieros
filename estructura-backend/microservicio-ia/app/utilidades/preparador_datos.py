@@ -43,7 +43,7 @@ MAPA_COLUMNAS: Dict[str, str] = {
     "fechaTransaccion":  "fecha_transaccion",
     "metodoPago":        "metodo_pago",
     "etiquetas":         "etiquetas",
-    "notas":             "notas",
+    "descripcion":       "descripcion",
     "fechaRegistro":     "fecha_registro",
     "categoria":         "categoria",
 }

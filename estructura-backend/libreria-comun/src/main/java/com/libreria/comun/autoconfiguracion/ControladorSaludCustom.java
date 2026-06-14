@@ -76,8 +76,6 @@ public class ControladorSaludCustom {
                     compDetails.put("descripcion", "UP".equals(status) ? "Espacio en disco suficiente" : "Problemas de espacio en disco");
                 } else if ("ping".equals(key)) {
                     compDetails.put("descripcion", "UP".equals(status) ? "Ping exitoso" : "Fallo en ping");
-                } else if ("discoveryComposite".equals(key) || "eureka".equalsIgnoreCase(key)) {
-                    compDetails.put("descripcion", "Conexión con Eureka " + descBase);
                 } else if ("refreshScope".equals(key)) {
                     compDetails.put("descripcion", "Refresh Scope " + descBase);
                 } else {

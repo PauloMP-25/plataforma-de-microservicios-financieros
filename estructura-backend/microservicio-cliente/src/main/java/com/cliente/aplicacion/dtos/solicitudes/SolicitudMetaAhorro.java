@@ -14,5 +14,7 @@ public record SolicitudMetaAhorro(
 
         @DecimalMin(value = "0.00", message = "El monto actual no puede ser negativo") @Digits(integer = 10, fraction = 2, message = "El monto actual tiene formato inválido") BigDecimal montoActual,
 
-        @Future(message = "La fecha límite debe ser una fecha futura") LocalDate fechaLimite) {
+        @Future(message = "La fecha límite debe ser una fecha futura") LocalDate fechaLimite,
+        
+        String proposito) {
 }

@@ -1,0 +1,61 @@
+<!-- Cabecera principal de la sección -->
+<div class="hub-header">
+  <div class="header-main-info" *ngIf="!moduloActivo">
+    <div class="header-pre-title">
+      <span class="status-pill">
+        <span class="pulse-dot"></span>
+        NÚCLEO COGNITIVO ACTIVO
+      </span>
+    </div>
+    <div class="title-with-icon">
+      <!-- Espacio reservado para la Mascota Oficial de Luka (Animalito saludando) -->
+      <div class="cyber-orb mascot-container" title="Espacio reservado para Mascota Luka">
+        <i class="fa-solid fa-robot animate-bounce mascot-temp-icon"></i>
+      </div>
+      <h1 class="page-title cyber-title">Centro de Inteligencia Artificial</h1>
+    </div>
+    <p class="page-subtitle cyber-subtitle">
+      Explora el núcleo inteligente de la plataforma Luka. Nuestro Coach Financiero de Inteligencia Artificial realiza análisis avanzados, proyecciones en tiempo real y optimizaciones para tu capital. A través de este centro neural, podrás evaluar tu salud económica global, identificar fugas silenciosas de dinero, proyectar tus egresos con precisión matemática y simular las rutas más eficientes para alcanzar tus metas. Deja que la IA potencie tus decisiones y tome el control de tu libertad financiera.
+    </p>
+  </div>
+
+  <div class="header-main-info" *ngIf="moduloActivo">
+    <div class="header-pre-title">
+      <span class="status-pill" [style.color]="moduloActivo.tagColor" [style.border-color]="moduloActivo.tagColor + '44'" [style.background]="moduloActivo.tagColor + '15'">
+        <i [className]="moduloActivo.icon"></i>
+        {{ moduloActivo.tag }}
+      </span>
+    </div>
+    <div class="title-with-icon">
+      <h1 class="page-title cyber-title">{{ moduloActivo.label }}</h1>
+    </div>
+    <p class="page-subtitle cyber-subtitle">
+      {{ moduloActivo.descripcion }}
+    </p>
+    
+    <!-- Viñetas horizontales en la cabecera -->
+    <ul class="header-feature-list" *ngIf="moduloActivo.features">
+      <li *ngFor="let feat of moduloActivo.features">
+        <i [className]="feat.icon" [style.color]="moduloActivo.tagColor"></i> {{ feat.text }}
+      </li>
+    </ul>
+  </div>
+
+  <!-- Widget de Conexión del Usuario (Estilo Enlace Neural) -->
+  <div class="user-connection-status">
+    <div class="avatar-container">
+      <div class="user-avatar-glow">
+        <i class="fa-solid fa-user-astronaut"></i>
+      </div>
+      <span class="pulse-ring"></span>
+    </div>
+    <div class="user-connection-info">
+      <span class="user-name">Paulo Moron</span>
+      <span class="connection-label">
+        <span class="connection-dot"></span>
+        ENLACE ESTABLECIDO
+      </span>
+    </div>
+  </div>
+</div>
+

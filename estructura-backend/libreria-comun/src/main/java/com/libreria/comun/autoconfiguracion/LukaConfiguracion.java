@@ -6,6 +6,11 @@ import com.libreria.comun.mensajeria.PublicadorEventosBase;
 import com.libreria.comun.seguridad.FiltroJwt;
 import com.libreria.comun.seguridad.PuntoEntradaJwt;
 import com.libreria.comun.seguridad.ServicioJwt;
+import com.libreria.comun.seguridad.FiltroAutenticacionInterna;
+import com.libreria.comun.seguridad.InterceptorFeignSeguridad;
+import com.libreria.comun.utilidades.CalculadorFechasStrategy;
+import com.libreria.comun.utilidades.CalculadorFechasCalendario;
+import com.libreria.comun.utilidades.CalculadorFechasDiasHabiles;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -67,6 +72,21 @@ public class LukaConfiguracion {
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     public static class ServletSecurityConfig {
 
+        @Value("${LUKA_INTERNAL_TOKEN:}")
+        private String tokenInterno;
+
+        @Bean
+        @ConditionalOnMissingBean
+        public FiltroAutenticacionInterna filtroAutenticacionInterna() {
+            return new FiltroAutenticacionInterna(tokenInterno);
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public InterceptorFeignSeguridad interceptorFeignSeguridad() {
+            return new InterceptorFeignSeguridad();
+        }
+
         @Bean
         @ConditionalOnMissingBean
         public ServicioJwt servicioJwt() {
@@ -90,6 +110,36 @@ public class LukaConfiguracion {
         public ManejadorGlobalExcepcionesBase manejadorGlobalExcepciones() {
             return new ManejadorGlobalExcepcionesBase() {
             };
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public FiltroCorrelacion filtroCorrelacion() {
+            return new FiltroCorrelacion();
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public FiltroLoggingPeticiones filtroLoggingPeticiones() {
+            return new FiltroLoggingPeticiones();
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public InterceptorCorrelacion interceptorCorrelacion() {
+            return new InterceptorCorrelacion();
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public CalculadorFechasStrategy calculadorFechasCalendario() {
+            return new CalculadorFechasCalendario();
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public CalculadorFechasStrategy calculadorFechasDiasHabiles() {
+            return new CalculadorFechasDiasHabiles();
         }
     }
 

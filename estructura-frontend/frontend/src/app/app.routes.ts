@@ -4,7 +4,8 @@ import { Layout } from './layout/layout/layout/layout';
 export const routes: Routes = [
   // ── Rutas Públicas ──
   {
-    path: 'inicio',
+    path: '',
+    pathMatch: 'full',
     loadComponent: () => import('./features/inicio/inicio').then(m => m.Inicio)
   },
   {
@@ -14,6 +15,14 @@ export const routes: Routes = [
   {
     path: 'recuperar-contrasena',
     loadChildren: () => import('./features/recuperar-contrasena/recuperar-contrasena.routes').then(m => m.RECUPERAR_CONTRASENA_ROUTES)
+  },
+
+  // ── Sistema Administrativo Independiente ──
+  {
+    path: 'admin',
+    loadChildren: () =>
+      import('./features/admin/admin.routes')
+        .then(m => m.ADMIN_ROUTES)
   },
 
   // ── Rutas Privadas (Dashboard) ──
@@ -68,6 +77,14 @@ export const routes: Routes = [
             .then(m => m.PERFIL_ROUTES)
       },
       
+      // ── Suscripcion ──
+      {
+        path: 'suscripcion',
+        loadChildren: () =>
+          import('./features/suscripcion/suscripcion.routes')
+            .then(m => m.SUSCRIPCION_ROUTES)
+      },
+      
       // -- Ayuda --
       {
         path: 'ayuda',
@@ -76,15 +93,23 @@ export const routes: Routes = [
             .then(m => m.AYUDA_ROUTES)
       },
 
+      // -- Inteligencia Artificial --
+      {
+        path: 'inteligencia-artificial',
+        loadChildren: () =>
+          import('./features/inteligencia-artificial/ia.routes')
+            .then(m => m.IA_ROUTES)
+      },
+
       {
         path: '',
-        redirectTo: '/inicio',
+        redirectTo: '/dashboard',
         pathMatch: 'full'
       }
     ]
   },
   {
     path: '**',
-    redirectTo: '/inicio'
+    redirectTo: '/'
   }
 ];

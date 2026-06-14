@@ -1,12 +1,7 @@
 export const environment = {
-  production: true,
-  gatewayUrl: 'https://luka-gateway.onrender.com',
-  msusuario: 'https://luka-gateway.onrender.com',
-  mscliente: 'https://luka-gateway.onrender.com',
-  msfinanciero: 'https://luka-gateway.onrender.com',
-  msauditoria: 'https://luka-gateway.onrender.com',
-  msia: 'https://luka-gateway.onrender.com',
-  stripePublicKey: 'pk_test_51TYXBDE4AqR3mWxPlfAzctutFrOPAvgymfdiULkFCHH3obWbSt0AAtk2HJXjY7gtesiMZejEOEwGWIcIyfpmHjuo00pbarT1lV',
-  stripeProductProId: 'prod_UXcxMz1rEEfN0k',
-  stripePriceProId: 'price_1TYXhuE4AqR3mWxPEqEN8HmA'
+  production: false,
+  gatewayUrl: 'http://localhost:8080',
+  stripePublicKey: 'pk_test_stripe_public_key_local_placeholder',
+  stripeProductProId: 'prod_stripe_product_id_local_placeholder',
+  stripePriceProId: 'price_stripe_price_id_local_placeholder'
 };

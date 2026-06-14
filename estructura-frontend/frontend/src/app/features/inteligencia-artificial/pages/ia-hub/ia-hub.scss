@@ -1,0 +1,262 @@
+@use '../../_ia-shared.scss' as *;
+
+.hub-container.cyber-theme {
+  position: relative;
+  padding: 20px 40px;
+  width: 100%;
+  max-width: 1800px;
+  margin: 0 auto;
+  min-height: calc(100vh - 80px);
+  display: flex;
+  flex-direction: column;
+  background-color: #020617;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  overflow-x: hidden;
+  z-index: 1;
+
+  :host-context(body.tema-claro) & {
+    background-color: #f8fafc;
+  }
+}
+
+/* ==========================================================================
+   BENTO BOX GRID
+   ========================================================================== */
+.vista-bento-modulos {
+  animation: fadeIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 190px;
+  grid-auto-flow: dense;
+  gap: 20px;
+  width: 100%;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 190px;
+  }
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+    min-height: 190px;
+  }
+}
+
+/* Bento Clases Específicas */
+.bento-hero { 
+  grid-column: span 2; 
+  grid-row: span 2; 
+
+  @media (max-width: 768px) {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+}
+
+.bento-wide { 
+  grid-column: span 2; 
+  grid-row: span 1; 
+
+  @media (max-width: 768px) {
+    grid-column: span 1;
+  }
+}
+
+.bento-tall { 
+  grid-column: span 1; 
+  grid-row: span 2; 
+
+  @media (max-width: 1024px) {
+    grid-row: span 1;
+  }
+}
+
+.bento-square { 
+  grid-column: span 1; 
+  grid-row: span 1; 
+}
+
+.bento-node {
+  width: 100%;
+  height: 100%;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
+  &:hover {
+    transform: translateY(-5px);
+  }
+}
+
+/* ==========================================================================
+   CONSOLA ACTIVA & TRANSICIÓN
+   ========================================================================== */
+.vista-consola {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.cyber-nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(15, 23, 42, 0.6);
+  padding: 12px 20px;
+  border-radius: 8px;
+  border-left: 4px solid #f59e0b;
+
+  :host-context(body.tema-claro) & {
+    background: #f1f5f9;
+    border-left-color: #d97706;
+  }
+}
+
+.cyber-btn-back {
+  background: transparent;
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  border-radius: 4px;
+  padding: 6px 12px;
+  color: #f59e0b;
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+
+  :host-context(body.tema-claro) & {
+    color: #d97706;
+    border-color: #d97706;
+  }
+
+  &:hover {
+    background: rgba(245, 158, 11, 0.1);
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+  }
+}
+
+.divider { margin: 0 8px; color: #64748b; }
+
+.error-banner.cyber-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid #ef4444;
+  border-left: 4px solid #ef4444;
+}
+
+.horizontal-filters-container {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.console-results-fullwidth {
+  width: 100%;
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* =========================================================================
+   Transición de Inmersión (Loading)
+   ========================================================================= */
+.immersion-transition-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.95);
+  backdrop-filter: blur(20px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.4s ease-in-out;
+  pointer-events: none;
+
+  :host-context(body.tema-claro) & {
+    background: rgba(241, 245, 249, 0.95);
+  }
+
+  &.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+
+    .immersion-hud {
+      opacity: 1;
+      transform: scale(1);
+    }
+    .immersion-glow {
+      animation: pulseGlow 1.5s infinite alternate ease-in-out;
+    }
+  }
+}
+
+.immersion-hud {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 10;
+  text-align: center;
+}
+
+.warp-loader {
+  width: 70px;
+  height: 70px;
+  border: 4px solid rgba(34, 211, 238, 0.1);
+  border-top-color: #22d3ee;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 24px;
+}
+
+.warp-label {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+
+  :host-context(body.tema-claro) & {
+    color: #0f172a;
+  }
+}
+
+.warp-sub {
+  font-size: 0.85rem;
+  color: #94a3b8;
+
+  :host-context(body.tema-claro) & {
+    color: #475569;
+  }
+}
+
+.immersion-glow {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.08) 0%, transparent 60%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes pulseGlow {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  100% { transform: scale(1.2); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; transform: translateY(15px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

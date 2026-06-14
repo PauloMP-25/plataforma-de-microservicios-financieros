@@ -3,7 +3,7 @@
 export interface NavItem {
   label: string;
   route: string;
-  icon:  string; 
+  icon:  string;
   badge?: number | string;
   exact?: boolean;
 }
@@ -35,6 +35,16 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'Presupuestos',
     route: '/presupuestos',
     icon:  'fa-solid fa-wallet'
+  },
+  {
+    label: 'Suscripciones',
+    route: '/suscripcion/pagos',
+    icon:  'fa-solid fa-receipt'
+  },
+  {
+    label: 'Inteligencia Artificial',
+    route: '/inteligencia-artificial',
+    icon:  'fa-solid fa-robot'
   },
 ];
 

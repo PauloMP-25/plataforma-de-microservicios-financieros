@@ -13,6 +13,8 @@ import { ServicioTema } from '../../core/services/servicio-tema';
 export class Inicio {
   readonly anioActual = new Date().getFullYear();
   menuAbierto = false;
+  mostrarMasGratis = false;
+  mostrarMasPro = false;
   readonly servicioTema = inject(ServicioTema);
 
   scrollHacia(idElemento: string): void {

@@ -173,10 +173,10 @@ public class TransaccionServiceImpl implements ITransaccionService {
                 .monto(request.monto())
                 .tipo(request.tipo())
                 .categoria(categoria)
-                .fechaTransaccion(LocalDateTime.now())
+                .fechaTransaccion(request.fechaTransaccion() != null ? request.fechaTransaccion() : LocalDateTime.now())
                 .metodoPago(request.metodoPago())
                 .etiquetas(request.etiquetas())
-                .notas(request.notas())
+                .descripcion(request.descripcion())
                 .build();
     }
 

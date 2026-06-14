@@ -1,26 +1,32 @@
-# ═══════════════════════════════════════════════════════════════════════════════
-#  LUKA APP — application-docker.yml
-#  Perfil Spring Boot activo cuando SPRING_PROFILES_ACTIVE=docker
-#
-#  INSTRUCCIÓN: Coloca este archivo en src/main/resources/ de CADA microservicio
-#  Java. Las variables entre ${...} son inyectadas por docker-compose.yml.
-# ═══════════════════════════════════════════════════════════════════════════════
-
+# ---------------------------------------------------------------------------------------------------------------------
+#                            SPRING: Configuración general y perfiles
+# ---------------------------------------------------------------------------------------------------------------------
 spring:
   application:
     name: microservicio-cliente
 
-server:
-  port: 8083
+# ---------------------------------------------------------------------------------------------------------------------
+#                                   DATA: Configuración de base de datos de Redis
+# ---------------------------------------------------------------------------------------------------------------------
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:redis}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      password: ${SPRING_REDIS_PASSWORD:}
+      connect-timeout: 2s
+      timeout: 1s
+      ssl:
+        enabled: ${SPRING_DATA_REDIS_SSL_ENABLED:false}
 
-  # ── Base de datos ────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------------------------------------------------
+#                              DATASOURCE: Conexión y credenciales de PostgreSQL local
+# ---------------------------------------------------------------------------------------------------------------------
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/db_microservicio_cliente}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: org.postgresql.Driver
     hikari:
-      # Pool reducido para Render free tier (512 MB). Aumentar en producción premium.
       maximum-pool-size: 3
       minimum-idle: 1
       connection-timeout: 30000
@@ -28,7 +34,9 @@ server:
       max-lifetime: 1800000
       pool-name: LukaHikariCP
 
-  # ── JPA / Hibernate ──────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------------------------------------------------
+#                                   JPA: Configuración de persistencia ORM Hibernate
+# ---------------------------------------------------------------------------------------------------------------------
   jpa:
     hibernate:
       ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
@@ -37,14 +45,15 @@ server:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: false
         show_sql: false
-        # Mejora rendimiento en consultas por lotes
         jdbc:
           batch_size: 20
         order_inserts: true
         order_updates: true
     open-in-view: false
 
-  # ── RabbitMQ ─────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------------------------------------------------
+#                              RABBITMQ: Broker de mensajería asíncrona y topologías
+# ---------------------------------------------------------------------------------------------------------------------
   rabbitmq:
     host: ${SPRING_RABBITMQ_HOST:rabbitmq}
     port: ${SPRING_RABBITMQ_PORT:5672}
@@ -53,8 +62,8 @@ server:
     virtual-host: ${SPRING_RABBITMQ_VIRTUAL_HOST:/}
     listener:
       simple:
-        acknowledge-mode: manual      # ACK manual para mayor control
-        prefetch: 1                   # Un mensaje a la vez por consumidor
+        acknowledge-mode: manual
+        prefetch: 1
         retry:
           enabled: true
           initial-interval: 3000ms
@@ -66,29 +75,15 @@ server:
         initial-interval: 1000ms
         max-attempts: 3
 
-  # ── Eureka Client ─────────────────────────────────────────────────────────────
-  # EUREKA_CLIENT_ENABLED=true  → activar (Docker local)
-  # EUREKA_CLIENT_ENABLED=false → desactivar (Render producción, valor por defecto)
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka}
-    enabled: ${EUREKA_CLIENT_ENABLED:false}
-    register-with-eureka: ${EUREKA_CLIENT_ENABLED:false}
-    fetch-registry: ${EUREKA_CLIENT_ENABLED:false}
-    registry-fetch-interval-seconds: 10
-    eureka-connection-idle-timeout-seconds: 30
-  instance:
-    hostname: ${EUREKA_INSTANCE_HOSTNAME:ms-cliente}
-    prefer-ip-address: ${EUREKA_INSTANCE_PREFER_IP_ADDRESS:false}
-    lease-renewal-interval-in-seconds: 10
-    lease-expiration-duration-in-seconds: 30
-    health-check-url-path: /actuator/health
-    status-page-url-path: /actuator/info
-    metadata-map:
-      startup: ${random.int}
+# ---------------------------------------------------------------------------------------------------------------------
+#                                   SERVER: Puerto y configuración de red local
+# ---------------------------------------------------------------------------------------------------------------------
+server:
+  port: 8083
 
-# ── Actuator (Health Checks) ───────────────────────────────────────────────────
+# ---------------------------------------------------------------------------------------------------------------------
+#                                 MANAGEMENT: Redirecciones de Actuator Health
+# ---------------------------------------------------------------------------------------------------------------------
 management:
   endpoints:
     web:
@@ -99,16 +94,18 @@ management:
     health:
       show-details: always
       probes:
-        enabled: true   # /actuator/health/liveness y /readiness para K8s
+        enabled: true
   health:
     rabbitmq:
       enabled: true
     db:
       enabled: true
     diskspace:
-      enabled: false    # Innecesario en contenedores
+      enabled: false
 
-# ── Logging ────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------------------------------------------------
+#                                  LOGGING: Configuración y patrón de trazas log
+# ---------------------------------------------------------------------------------------------------------------------
 logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
@@ -116,10 +113,10 @@ logging:
     root: INFO
     "org.springframework.web": INFO
     "org.hibernate.SQL": WARN
-    "com.netflix.eureka": WARN
-    "com.netflix.discovery": WARN
 
-# ── Seguridad JWT (Configuración Luka) ─────────────────────────────────────────
+# ---------------------------------------------------------------------------------------------------------------------
+#                                   LUKA: Credenciales JWT de seguridad local
+# ---------------------------------------------------------------------------------------------------------------------
 luka:
   jwt:
     clave-secreta: ${JWT_SECRET_KEY}

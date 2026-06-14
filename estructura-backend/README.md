@@ -6,7 +6,7 @@ Esta carpeta contiene la lógica de negocio, servicios de infraestructura y mód
 
 | Microservicio | Descripción | Tecnología |
 | :--- | :--- | :--- |
-| `microservicio-common` | Biblioteca compartida de seguridad (JWT), DTOs y excepciones. | Java / Spring |
+| `libreria-comun` | Biblioteca compartida de seguridad (JWT), DTOs y excepciones. | Java / Spring |
 | `microservicio-cliente` | Gestión de perfiles de usuario y entidades financieras. | Java / Spring Boot |
 | `microservicio-usuario` | Gestiona el acceso, contraseñas, roles y la lógica de seguridad de bloqueo de IP tras 3 intentos fallidos | Java / Spring Boot |
 | `microservicio-auditoria` | Registro centralizado de eventos y trazabilidad. | Java / Spring Boot |
@@ -23,8 +23,8 @@ Esta carpeta contiene la lógica de negocio, servicios de infraestructura y mód
 
 ## Flujo de Desarrollo
 
-1. **Configuración de Red:** Los microservicios se comunican internamente a través de un API Gateway y usan Service Discovery (Eureka).
-2. **Seguridad:** Todas las solicitudes deben pasar por la validación de JWT gestionada en el módulo `common`.
+1. **Configuración de Red:** Los microservicios se comunican internamente a través de un API Gateway de forma estática o mediante orquestación externa (sin Eureka).
+2. **Seguridad:** Todas las solicitudes deben pasar por la validación de JWT gestionada en la `libreria-comun`.
 3. **Persistencia:** Cada microservicio gestiona su propia base de datos para garantizar el bajo acoplamiento.
 
 ## Ejecución de Tests

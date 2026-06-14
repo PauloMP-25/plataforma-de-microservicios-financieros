@@ -13,10 +13,12 @@ export class SidebarStateService {
 
   // ── Estado interno ──
   private _collapsed = signal<boolean>(this.loadFromStorage());
+  private _mobileOpen = signal<boolean>(false);
 
   // ── Público (solo lectura) ──
   collapsed  = this._collapsed.asReadonly();
   expanded   = computed(() => !this._collapsed());
+  mobileOpen = this._mobileOpen.asReadonly();
 
   // ── Acciones ──
   toggle(): void {
@@ -32,6 +34,18 @@ export class SidebarStateService {
   expand(): void {
     this._collapsed.set(false);
     localStorage.setItem(this.STORAGE_KEY, 'false');
+  }
+
+  toggleMobile(): void {
+    this._mobileOpen.update(v => !v);
+  }
+
+  openMobile(): void {
+    this._mobileOpen.set(true);
+  }
+
+  closeMobile(): void {
+    this._mobileOpen.set(false);
   }
 
   // ── Privado ──

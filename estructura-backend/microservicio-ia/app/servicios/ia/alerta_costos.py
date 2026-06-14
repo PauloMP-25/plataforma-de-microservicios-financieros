@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 import asyncio
-from app.persistencia.cache_redis import CacheRedis
+from app.persistencia.redis.cache_redis import CacheRedis
 from app.configuracion import obtener_configuracion
 
 logger = logging.getLogger("ia_financiera.servicios.alerta_costos")

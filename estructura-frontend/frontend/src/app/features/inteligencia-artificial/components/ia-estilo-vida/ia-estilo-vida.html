@@ -1,0 +1,73 @@
+<div class="modulo-estilo-vida-contenedor" [ngStyle]="{ '--cluster-color': currentCluster().color }">
+
+  <ng-container *ngIf="cargando; else noCargando">
+    <div class="ia-scanner-overlay">
+      <div class="fingerprint-scanner">
+        <i class="fa-solid fa-fingerprint scan-icon"></i>
+        <div class="scan-line"></div>
+      </div>
+      <h3 class="scan-text">Procesando Patrones Financieros...</h3>
+    </div>
+  </ng-container>
+
+  <ng-template #noCargando>
+    <ng-container *ngIf="resultado; else estadoVacio">
+      <!-- Fila Superior: Polaroids Selector -->
+      <div class="top-row">
+        <app-ia-estilo-polaroids 
+          [clusterSeleccionado]="clusterSeleccionado()"
+          (clusterSeleccionadoChange)="actualizarCluster($event)">
+        </app-ia-estilo-polaroids>
+      </div>
+
+      <!-- Fila Inferior: 3 Columnas (Spotify Wrapped Style) -->
+      <div class="bottom-row-grid">
+      
+      <!-- Izquierda: Tu Identidad Fija -->
+      <div class="grid-column col-identity">
+        <app-ia-estilo-carnet 
+          [clusterSeleccionado]="clusterSeleccionado()">
+        </app-ia-estilo-carnet>
+
+        <!-- Mini Tarjeta Inferior de Resumen (Recuperada de la v1) -->
+        <div class="mini-dominance-card" [ngStyle]="{ '--cluster-color': currentCluster().color }">
+          <div class="mini-dominance-header">
+            <span class="mini-emoji">{{ currentCluster().emoji }}</span>
+            <span class="mini-name">{{ currentCluster().nombre }}</span>
+          </div>
+          <div class="mini-dominance-bar">
+            <div class="mini-dominance-fill" [style.width.%]="currentCluster().porcentajePredeterminado"></div>
+          </div>
+          <span class="mini-dominance-text">{{ currentCluster().porcentajePredeterminado }}% Dominancia Detectada</span>
+        </div>
+      </div>
+
+      <!-- Centro: El Escenario del Oráculo (Consejo Gemini) -->
+      <div class="grid-column col-coach">
+        <app-ia-estilo-consejo
+          [clusterSeleccionado]="clusterSeleccionado()"
+          [consejoBackend]="consejoBackend()"
+          [oraculoHablando]="oraculoHablando()">
+        </app-ia-estilo-consejo>
+      </div>
+
+      <!-- Derecha: Datos Analizados -->
+      <div class="grid-column col-details">
+        <app-ia-estilo-detalles
+          [clusterSeleccionado]="clusterSeleccionado()"
+          [montoAnalizado]="montoAnalizado()">
+        </app-ia-estilo-detalles>
+      </div>
+
+    </div>
+  </ng-container>
+
+  <ng-template #estadoVacio>
+    <div class="empty-state-ia">
+      <i class="fa-solid fa-fingerprint empty-icon"></i>
+      <h3>Descubre tu Personalidad Financiera</h3>
+      <p>LUKA analizará tus patrones de gasto y descubrirá a qué estilo de vida perteneces. ¡Presiona "Consultar" para empezar la magia!</p>
+    </div>
+  </ng-template>
+  </ng-template>
+</div>

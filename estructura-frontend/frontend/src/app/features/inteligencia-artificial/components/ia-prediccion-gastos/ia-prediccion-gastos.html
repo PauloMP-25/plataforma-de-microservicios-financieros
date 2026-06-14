@@ -1,0 +1,55 @@
+<div class="oraculo-container" [class.loading]="cargando">
+  <!-- Estado de Carga Mística -->
+  <div class="oraculo-loading" *ngIf="cargando">
+    <div class="mist-loader">
+      <div class="sphere-core"></div>
+      <div class="nebula-ring ring-1"></div>
+      <div class="nebula-ring ring-2"></div>
+    </div>
+    <p class="loading-text">Convocando al Oráculo Financiero...</p>
+  </div>
+
+  <!-- Vista Principal Modulares 3 Columnas + Footer -->
+  <div class="oraculo-view" *ngIf="!cargando && resultado">
+    <div class="oraculo-grid">
+      
+      <!-- COLUMNA IZQUIERDA: Termómetro y Satélites -->
+      <div class="column-left">
+        <app-ia-prediccion-indicadores 
+          [ingresoEsperado]="ingresoEsperado()"
+          [proyeccionProximoMes]="proyeccionProximoMes()"
+          [porcentajeVariacion]="porcentajeVariacion()"
+          [deficitEstimado]="deficitEstimado()"
+          [pendiente]="pendiente()"
+          [promedioHistorico]="promedioHistorico()">
+        </app-ia-prediccion-indicadores>
+      </div>
+
+      <!-- COLUMNA CENTRAL: Esfera de Cristal Mágica -->
+      <div class="column-center">
+        <app-ia-prediccion-oraculo
+          [historialMeses]="historialMeses()"
+          [proyeccionProximoMes]="proyeccionProximoMes()"
+          [oraculoHablando]="oraculoHablando()">
+        </app-ia-prediccion-oraculo>
+      </div>
+
+      <!-- COLUMNA DERECHA: Oráculo de Gemini -->
+      <div class="column-right">
+        <app-ia-prediccion-consejo
+          [textoCompleto]="consejo()"
+          (hablandoCambio)="setHablando($event)">
+        </app-ia-prediccion-consejo>
+      </div>
+
+    </div>
+
+    <!-- FOOTER: Métricas y Educación Financiera -->
+    <div class="oraculo-footer">
+      <app-ia-prediccion-metricas
+        [promedioHistorico]="promedioHistorico()"
+        [proyeccionProximoMes]="proyeccionProximoMes()">
+      </app-ia-prediccion-metricas>
+    </div>
+  </div>
+</div>

@@ -10,12 +10,13 @@ export interface TransaccionDTO {
   monto:             number;          
   tipo:              TipoMovimiento;  
   categoriaId:       string;          
-  categoriaNombre:   string;          
+  categoria:         string;          
   categoriaIcono:    string;          
   fechaTransaccion:  string;          
   metodoPago:        MetodoPago;
   etiquetas:         string | null;   
   notas:             string | null;
+  descripcion:       string | null;
   fechaRegistro:     string;          
 }
  
@@ -30,6 +31,7 @@ export interface TransaccionRequestDTO {
   metodoPago:        MetodoPago;
   etiquetas?:        string;          // opcional
   notas?:            string;          // opcional
+  descripcion?:      string;          // opcional
 }
  
 // ─── Filtros para listarHistorial ─────────────────────────────────────────────

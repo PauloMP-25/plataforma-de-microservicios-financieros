@@ -53,6 +53,7 @@ export class PresupuestosPage implements OnInit {
     const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).toISOString().split('T')[0];
 
     this.formulario = this.fb.group({
+      nombre: ['Presupuesto Mensual', [Validators.required, Validators.minLength(3), Validators.maxLength(150)]],
       montoLimite: [null, [Validators.required, Validators.min(1)]],
       porcentajeAlerta: [80, [Validators.required, Validators.min(1), Validators.max(100)]],
       fechaInicio: [primerDia, [Validators.required]],
@@ -82,13 +83,16 @@ export class PresupuestosPage implements OnInit {
             if (presupuesto && presupuesto.activo) {
               this.presupuestoActivo.set(presupuesto);
               this.formulario.patchValue({
+                nombre: presupuesto.nombre || 'Presupuesto Mensual',
                 montoLimite: presupuesto.montoLimite,
                 porcentajeAlerta: presupuesto.porcentajeAlerta,
                 fechaInicio: presupuesto.fechaInicio.split('T')[0],
                 fechaFin: presupuesto.fechaFin.split('T')[0]
               });
+              this.formulario.get('nombre')?.disable();
             } else {
               this.presupuestoActivo.set(null);
+              this.formulario.get('nombre')?.enable();
             }
             this.cargando.set(false);
           },
@@ -157,11 +161,13 @@ export class PresupuestosPage implements OnInit {
         this.exitoMensaje.set('Presupuesto desactivado correctamente.');
         this.presupuestoActivo.set(null);
         this.formulario.reset({
+          nombre: 'Presupuesto Mensual',
           montoLimite: null,
           porcentajeAlerta: 80,
           fechaInicio: new Date().toISOString().split('T')[0],
           fechaFin: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0]
         });
+        this.formulario.get('nombre')?.enable();
         this.cargarDatos();
         setTimeout(() => this.exitoMensaje.set(''), 3000);
       },
