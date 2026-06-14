@@ -1,6 +1,7 @@
 import { Component, Input, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RespuestaModuloDTO } from '../../../../core/models/financiero/ia.model';
+import { RespuestaModuloDTO } from '../../../../core/models/ia_coach/ia-base.model';
+import { ConsejoHabitosFinancierosDTO } from '../../../../core/models/ia_coach/ia-habitos.model';
 
 import { IaHabitosKpiComponent } from './components/ia-habitos-kpi/ia-habitos-kpi';
 import { IaHabitosRadarComponent } from './components/ia-habitos-radar/ia-habitos-radar';
@@ -33,5 +34,5 @@ export class IaHabitosFinancierosComponent {
   
   dimensiones = computed(() => this.resultado?.insight?.dimensiones || {});
   heatmapDatos = computed(() => this.resultado?.insight?.heatmap_datos || []);
-  consejo = computed(() => this.resultado?.consejo || '');
+  consejo = computed(() => (this.resultado?.consejo as ConsejoHabitosFinancierosDTO) || null);
 }

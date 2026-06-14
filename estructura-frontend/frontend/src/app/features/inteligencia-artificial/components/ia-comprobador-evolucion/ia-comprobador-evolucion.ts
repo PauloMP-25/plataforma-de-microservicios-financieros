@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RespuestaModuloDTO } from '../../../../core/models/financiero/ia.model';
+import { RespuestaModuloDTO, ConsejoEstructuradoEvolucion, RecetaMedicaFinanciera } from '../../../../core/models/ia_coach/ia-base.model';
 import { IaHubComponent } from '../../pages/ia-hub/ia-hub';
 
 import { LukaEscanerCargaComponent } from './components/luka-escaner-carga/luka-escaner-carga';
@@ -98,7 +98,9 @@ export class IaComprobadorEvolucionComponent implements OnChanges {
 
   private mapearDesdeBackend(res: RespuestaModuloDTO): EvolucionDashboardData {
     const hallazgos = res.insight?.hallazgos || {};
-    const consejo = typeof res.consejo === 'string' ? JSON.parse(res.consejo || '{}') : (res.consejo || {});
+    const consejo: ConsejoEstructuradoEvolucion = typeof res.consejo === 'string' 
+      ? JSON.parse(res.consejo || '{}') as ConsejoEstructuradoEvolucion 
+      : (res.consejo as ConsejoEstructuradoEvolucion || {} as ConsejoEstructuradoEvolucion);
 
     const imf = hallazgos.score_imf || 0;
     const narrativa = consejo.veredicto_narrativo || hallazgos.diagnostico_imf || '';
@@ -115,9 +117,9 @@ export class IaComprobadorEvolucionComponent implements OnChanges {
       categorias['ahorro'].estado = 'fracturado';
     }
 
-    const buscarReceta = (nombreG: string) => {
+    const buscarReceta = (nombreG: string): RecetaMedicaFinanciera | undefined => {
       const recetas = consejo.recetas_medicas || [];
-      return recetas.find((r: any) => r.categoria.toLowerCase().includes(nombreG.toLowerCase()));
+      return recetas.find((r) => r.categoria.toLowerCase().includes(nombreG.toLowerCase()));
     };
 
     const conquistasList = hallazgos.categorias_conquistadas || [];

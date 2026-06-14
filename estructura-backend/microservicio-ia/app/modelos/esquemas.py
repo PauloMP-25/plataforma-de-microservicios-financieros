@@ -7,7 +7,7 @@ análisis del Microservicio IA de LUKA.
 Cambios v5 (FASE 1 - Migración Incremental):
   - Nuevo: ConsejoEstructurado — esquema de salida JSON para Gemini Structured Outputs.
     Usado exclusivamente por GASTO_HORMIGA en esta fase.
-  - RespuestaModulo.consejo: Optional[str] → Optional[Union[str, ConsejoEstructurado]]
+  - RespuestaModulo.consejo: Optional[str] → Optional[Union[str, ConsejoEstructuradoHormiga]]
     para retrocompatibilidad con los 9 módulos que siguen devolviendo str plano.
   - a_dict_serializable(): blindado para serializar correctamente ambos tipos.
 ══════════════════════════════════════════════════════════════════════════════
@@ -71,7 +71,28 @@ class NombreModulo(str, Enum):
 # NUEVO v5: CONSEJO ESTRUCTURADO — Esquema para Gemini Structured Outputs
 # ══════════════════════════════════════════════════════════════════════════════
 
-class ConsejoEstructurado(BaseModel):
+class ConsejoEstructuradoHabitos(BaseModel):
+    """
+    Esquema de salida estructurada para el módulo HABITOS_FINANCIEROS.
+    """
+    pensamiento_interno_ia: str = Field(description="Análisis paso a paso del LLM.")
+    introduccion: str = Field(description="Saludo directo y evaluación rápida.")
+    analisis_patron: str = Field(description="Comentario sobre los patrones detectados.")
+    habito_atomico_sugerido: str = Field(description="Hábito accionable pequeño propuesto.")
+    mensaje_motivacional: str = Field(description="Cierre motivador.")
+
+class ConsejoEstructuradoReto(BaseModel):
+    """
+    Esquema de salida estructurada para el módulo RETO_AHORRO_DINAMICO.
+    Se adapta tanto a la fase de proposición (NUEVO) como evaluación (VEREDICTO).
+    """
+    pensamiento_interno_ia: str = Field(description="Análisis paso a paso de la meta de ahorro.")
+    titulo_mision: str = Field(description="Nombre creativo de la misión.")
+    diagnostico: str = Field(description="Explicación concisa del estado del reto o área de mejora.")
+    estrategia: str = Field(description="Acciones específicas para alcanzar o mantener el ahorro.")
+    mensaje_motivacional: str = Field(description="Mensaje enérgico para el usuario.")
+
+class ConsejoEstructuradoHormiga(BaseModel):
     """
     Esquema de salida estructurada para el módulo GASTO_HORMIGA.
 
@@ -82,7 +103,7 @@ class ConsejoEstructurado(BaseModel):
 
     Compatibilidad:
       - Los 9 módulos restantes siguen devolviendo str plano.
-      - RespuestaModulo.consejo es Union[str, ConsejoEstructurado] para soportar ambos.
+      - RespuestaModulo.consejo es Union[str, ConsejoEstructuradoHormiga] para soportar ambos.
       - a_dict_serializable() normaliza ambos tipos a dict antes de serializar.
     """
     pensamiento_interno_ia: str = Field(
@@ -447,6 +468,38 @@ class KpiWidget(BaseModel):
     tendencia: Optional[str] = Field(default=None)
  
  
+class ConsejoEstructuradoReporte(BaseModel):
+    """
+    Esquema de salida estructurada para el módulo REPORTE_COMPLETO.
+    """
+    pensamiento_interno_ia: str = Field(description="Análisis paso a paso del reporte.")
+    analisis_score: str = Field(description="Explicación del Score de Salud (Riesgo, Estable, Excelente).")
+    impacto_meta: str = Field(description="Análisis del balance y su efecto en la meta actual.")
+    veredicto_final: str = Field(description="Cierre ejecutivo de lo que va del año.")
+    mensaje_motivacional: str = Field(description="Frase motivadora respecto a lo que va del año.")
+
+class ConsejoEstructuradoEstilo(BaseModel):
+    """
+    Esquema de salida estructurada para el módulo ANALISIS_ESTILO_VIDA.
+    """
+    pensamiento_interno_ia: str = Field(description="Análisis sobre los clusters de gasto detectados.")
+    arquetipo: str = Field(description="Nombre creativo de la personalidad (ej: 'El Foodie Explorador').")
+    significado_arquetipo: str = Field(description="Breve descripción de qué significa esta personalidad y por qué se le asignó.")
+    descripcion_perfil: str = Field(description="Breve diagnóstico de su estilo de vida basado en los datos.")
+    consejo_tactico: str = Field(description="Hack para ahorrar sin renunciar a sus gustos de ese estilo de vida.")
+    alineacion_meta: str = Field(description="Cómo su estilo de vida impacta en su meta principal.")
+    mensaje_estilo_vida: str = Field(description="Frase motivadora alineada al arquetipo descubierto.")
+
+class ConsejoEstructuradoAutoClasificacion(BaseModel):
+    """
+    Esquema ultra estricto para el módulo AUTO_CLASIFICACION.
+    """
+    categorias_sugeridas: List[str] = Field(
+        description="Lista de exactamente 4 palabras únicas que mejor categorizan la descripción del gasto/ingreso.",
+        min_items=4,
+        max_items=4
+    )
+
 class EstadoCoach(str, Enum):
     EXITOSO = "EXITOSO"
     CUOTA_AGOTADA = "CUOTA_AGOTADA"
@@ -461,21 +514,15 @@ class RespuestaModulo(BaseModel):
 
     v5 — Cambio en campo `consejo`:
       - Antes: Optional[str]
-      - Ahora:  Optional[Union[str, ConsejoEstructurado]]
-
-    Retrocompatibilidad garantizada:
-      - Los 9 módulos que devuelven str siguen funcionando sin cambios.
-      - GASTO_HORMIGA devuelve ConsejoEstructurado cuando Gemini responde con éxito.
-      - El fallback de MotorReglasLocal sigue devolviendo str para todos los módulos.
-      - a_dict_serializable() normaliza ambos tipos para RabbitMQ/Outbox.
+      - Ahora:  Optional[Union[str, ConsejoEstructuradoHormiga]]
+    Contrato universal de salida para todos los módulos.
     """
     id_respuesta: str = Field(default_factory=lambda: str(uuid4()))
     usuario_id: str
     modulo: NombreModulo
     fecha_generacion: datetime = Field(default_factory=datetime.now)
  
-    # ── CAMBIO v5/v9: Union ampliado con ConsejoEstructuradoEspejo ──────────────
-    consejo: Optional[Union[str, ConsejoEstructurado, ConsejoEstructuradoEvolucion, ConsejoEstructuradoEntrenamiento, ConsejoEstructuradoEspejo, ConsejoEstructuradoPredecir, ConsejoEstructuradoSimularMeta, Any]] = Field(
+    consejo: Optional[Union[str, ConsejoEstructuradoHormiga, ConsejoEstructuradoEvolucion, ConsejoEstructuradoEntrenamiento, ConsejoEstructuradoEspejo, ConsejoEstructuradoPredecir, ConsejoEstructuradoSimularMeta, ConsejoEstructuradoHabitos, ConsejoEstructuradoReto, ConsejoEstructuradoReporte, ConsejoEstructuradoEstilo, ConsejoEstructuradoAutoClasificacion, Any]] = Field(
         default=None,
         description=(
             "Consejo financiero estructurado."

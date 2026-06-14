@@ -11,6 +11,7 @@ from datetime import datetime
 from typing import Dict, Any
 from app.servicios.core.base_analisis import BaseAnalisisService
 from app.libreria_comun.modelos.contexto import ContextoEstrategicoIADTO
+from app.modelos.esquemas import ConsejoEstructuradoReporte
 from app.servicios.ia.prompts.prompt_reporte_completo import generar_prompt_reporte_completo
 
 class ReporteCompletoService(BaseAnalisisService):
@@ -56,3 +57,6 @@ class ReporteCompletoService(BaseAnalisisService):
 
     def orquestar_prompt(self, metricas: Dict[str, Any], contexto: ContextoEstrategicoIADTO) -> str:
         return generar_prompt_reporte_completo(metricas, contexto)
+
+    def obtener_esquema_salida(self):
+        return ConsejoEstructuradoReporte

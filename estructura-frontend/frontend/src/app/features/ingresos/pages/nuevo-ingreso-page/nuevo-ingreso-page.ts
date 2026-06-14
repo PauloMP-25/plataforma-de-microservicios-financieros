@@ -133,8 +133,11 @@ export class NuevoIngresoPage {
     }).subscribe({
       next: (res) => {
         this.clasificandoIa.set(false);
-        if (res.datos && res.datos.sugerencias) {
-          this.sugerenciasSignal.set(res.datos.sugerencias);
+        if (res.datos) {
+          const categorias = res.datos.consejo?.categorias_sugeridas || res.datos.categorias_sugeridas || res.datos.sugerencias;
+          if (categorias) {
+            this.sugerenciasSignal.set(categorias);
+          }
         }
       },
       error: () => {

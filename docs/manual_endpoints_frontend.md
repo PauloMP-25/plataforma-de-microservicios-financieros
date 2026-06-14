@@ -99,15 +99,18 @@ Este manual sirve como referencia técnica para mapear las rutas llamadas desde 
 
 | Método   | Endpoint                            | Descripción                                 | Body / Parámetros                  | FUNCIONAL |
 |:-------- |:----------------------------------- |:------------------------------------------- |:---------------------------------- |:---------:|
-| **POST** | `/api/v1/ia/consultar`              | Consulta genérica al coach financiero       | `SolicitudIaDTO` (JSON)            | `[ ]`     |
-| **POST** | `/api/v1/ia/gasto-hormiga`          | Análisis e identificación de gastos hormiga | `PeticionConFiltroFechaDTO` (JSON) | `[ ]`     |
-| **POST** | `/api/v1/ia/predecir-gastos`        | Proyecciones matemáticas de gastos futuros  | `PeticionConFiltroFechaDTO` (JSON) | `[ ]`     |
-| **POST** | `/api/v1/ia/habitos-financieros`    | Análisis conductual sobre hábitos de gasto  | `PeticionConFiltroFechaDTO` (JSON) | `[ ]`     |
-| **POST** | `/api/v1/ia/estilo-vida`            | Evaluación de estilo de vida del cliente    | `PeticionConFiltroFechaDTO` (JSON) | `[ ]`     |
-| **POST** | `/api/v1/ia/reporte-completo`       | Compendio global de asesoría e IA           | `PeticionConFiltroFechaDTO` (JSON) | `[ ]`     |
-| **POST** | `/api/v1/ia/simular-meta`           | Simula plan de ahorro y tiempo estimado     | `PeticionSimularMetaDTO` (JSON)    | `[ ]`     |
-| **POST** | `/api/v1/ia/reto-ahorro`            | Genera retos de ahorro inteligentes         | `PeticionConFiltroFechaDTO` (JSON) | `[ ]`     |
-| **POST** | `/api/v1/ia/clasificar-transaccion` | Clasifica un gasto en base a su descripción | `SolicitudClasificacionDTO` (JSON) | `[ ]`     |
+| **POST** | `/api/v1/ia/consultar`              | Consulta genérica al coach financiero       | `SolicitudIaDTO` (JSON)            | `[x]`     |
+| **POST** | `/api/v1/ia/gasto-hormiga`          | Análisis e identificación de gastos hormiga | `PeticionConFiltroFechaDTO` (JSON) | `[x]`     |
+| **POST** | `/api/v1/ia/predecir-gastos`        | Proyecciones matemáticas de gastos futuros  | `PeticionConFiltroFechaDTO` (JSON) | `[x]`     |
+| **POST** | `/api/v1/ia/habitos-financieros`    | Análisis conductual sobre hábitos de gasto  | `PeticionConFiltroFechaDTO` (JSON) | `[x]`     |
+| **POST** | `/api/v1/ia/estilo-vida`            | Evaluación de estilo de vida del cliente    | `PeticionConFiltroFechaDTO` (JSON) | `[x]`     |
+| **POST** | `/api/v1/ia/reporte-completo`       | Compendio global de asesoría e IA           | `PeticionConFiltroFechaDTO` (JSON) | `[x]`     |
+| **POST** | `/api/v1/ia/simular-meta`           | Simula plan de ahorro y tiempo estimado     | `PeticionSimularMetaDTO` (JSON)    | `[x]`     |
+| **POST** | `/api/v1/ia/reto-ahorro`            | Genera retos de ahorro inteligentes         | `PeticionConFiltroFechaDTO` (JSON) | `[x]`     |
+| **POST** | `/api/v1/ia/clasificar-transaccion` | Clasifica un gasto en base a su descripción | `SolicitudClasificacionDTO` (JSON) | `[x]`     |
+| **POST** | `/api/v1/ia/comprobador-evolucion`  | Análisis médico forense del historial       | `PeticionConFiltroFechaDTO` (JSON) | `[x]`     |
+| **POST** | `/api/v1/ia/zona-entrenamiento`     | Rutina de ejercicios financieros            | `PeticionConFiltroFechaDTO` (JSON) | `[x]`     |
+| **POST** | `/api/v1/ia/espejo-tiempo`          | Visualización inmersiva de futuros          | `PeticionConFiltroFechaDTO` (JSON) | `[x]`     |
 
 ---
 

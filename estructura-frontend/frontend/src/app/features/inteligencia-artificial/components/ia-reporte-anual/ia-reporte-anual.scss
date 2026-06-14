@@ -529,3 +529,72 @@
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-4px); }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   ESTILOS PARA REPORTE ESTRUCTURADO
+   ══════════════════════════════════════════════════════════════════════════════ */
+.structured-report-coach {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+
+  .report-diagnostics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 12px;
+
+    .report-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 16px;
+      border-radius: 8px;
+      border-left: 3px solid rgba(255, 255, 255, 0.2);
+
+      i {
+        font-size: 1.25rem;
+        margin-top: 2px;
+      }
+
+      strong {
+        display: block;
+        color: var(--text-color, #e2e8f0);
+        margin-bottom: 4px;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+      }
+
+      p {
+        margin: 0;
+        color: var(--text-muted, #94a3b8);
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+
+      &.verdict-card {
+        border-left-color: #f59e0b;
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.02));
+        i { color: #f59e0b; }
+        
+        &.excellent-verdict {
+          border-left-color: #10b981;
+          background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.02));
+          i { color: #10b981; }
+        }
+      }
+    }
+  }
+
+  .report-motivation {
+    text-align: center;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+    padding: 16px;
+    margin-top: 8px;
+    border-radius: 4px;
+    color: #cbd5e1;
+    font-size: 1.05rem;
+  }
+}

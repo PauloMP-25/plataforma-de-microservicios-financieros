@@ -191,15 +191,42 @@
   </div>
 
   <!-- Consejo del Coach en la parte inferior del Bento -->
-  <div class="reporte-coach-consejo-box">
+  <div class="reporte-coach-consejo-box" *ngIf="consejoReporte()">
     <div class="coach-avatar-large">
       <i class="fa-solid fa-user-tie"></i>
     </div>
-    <div class="coach-text">
+    <div class="coach-text structured-report-coach">
       <h4>CONSEJO ESTRATÉGICO LUKA COACH:</h4>
-      <p>
-        "Paulo, tu balance neto positivo de S/ 2,450.00 indica una gestión responsable. Has mantenido un crecimiento constante en tus ahorros. Identificamos que tu punto crítico de gastos se concentra en Ocio y Delivery. Controlar estas fugas acelerará tu meta de la Laptop Gamer. ¡Mantén este gran ritmo!"
-      </p>
+      
+      <div class="report-diagnostics">
+        <div class="report-card">
+          <i class="fa-solid fa-file-invoice-dollar text-blue-400"></i>
+          <div>
+            <strong>Análisis del Score:</strong>
+            <p>{{ consejoReporte()!.analisis_score }}</p>
+          </div>
+        </div>
+        
+        <div class="report-card">
+          <i class="fa-solid fa-bullseye text-purple-400"></i>
+          <div>
+            <strong>Impacto en tus Metas:</strong>
+            <p>{{ consejoReporte()!.impacto_meta }}</p>
+          </div>
+        </div>
+        
+        <div class="report-card verdict-card" [class.excellent-verdict]="consejoReporte()!.veredicto_final === 'Excelente'">
+          <i class="fa-solid fa-gavel"></i>
+          <div>
+            <strong>Veredicto Final:</strong>
+            <p>{{ consejoReporte()!.veredicto_final }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="report-motivation">
+        <em>{{ consejoReporte()!.mensaje_motivacional }}</em>
+      </div>
     </div>
   </div>
 

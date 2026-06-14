@@ -1,4 +1,4 @@
-<div class="modulo-estilo-vida-contenedor" [ngStyle]="{ '--cluster-color': currentCluster().color }">
+<div class="modulo-estilo-vida-contenedor bento-container" [ngStyle]="{ '--cluster-color': currentCluster().color }">
 
   <ng-container *ngIf="cargando; else noCargando">
     <div class="ia-scanner-overlay">
@@ -6,68 +6,90 @@
         <i class="fa-solid fa-fingerprint scan-icon"></i>
         <div class="scan-line"></div>
       </div>
-      <h3 class="scan-text">Procesando Patrones Financieros...</h3>
+      <h3 class="scan-text">Analizando tu ADN Financiero...</h3>
     </div>
   </ng-container>
 
   <ng-template #noCargando>
-    <ng-container *ngIf="resultado; else estadoVacio">
-      <!-- Fila Superior: Polaroids Selector -->
-      <div class="top-row">
-        <app-ia-estilo-polaroids 
-          [clusterSeleccionado]="clusterSeleccionado()"
-          (clusterSeleccionadoChange)="actualizarCluster($event)">
-        </app-ia-estilo-polaroids>
-      </div>
-
-      <!-- Fila Inferior: 3 Columnas (Spotify Wrapped Style) -->
-      <div class="bottom-row-grid">
+    <ng-container *ngIf="resultado && consejoBackend(); else estadoVacio">
       
-      <!-- Izquierda: Tu Identidad Fija -->
-      <div class="grid-column col-identity">
-        <app-ia-estilo-carnet 
-          [clusterSeleccionado]="clusterSeleccionado()">
-        </app-ia-estilo-carnet>
+      <!-- Titulo Superior -->
+      <div class="bento-header">
+        <h2>Tu Estilo de Vida Financiero</h2>
+        <p>Basado en el análisis de tus patrones de consumo y transacciones.</p>
+      </div>
 
-        <!-- Mini Tarjeta Inferior de Resumen (Recuperada de la v1) -->
-        <div class="mini-dominance-card" [ngStyle]="{ '--cluster-color': currentCluster().color }">
-          <div class="mini-dominance-header">
-            <span class="mini-emoji">{{ currentCluster().emoji }}</span>
-            <span class="mini-name">{{ currentCluster().nombre }}</span>
+      <!-- Bento Grid -->
+      <div class="bento-grid">
+        
+        <!-- Bloque 1: Arquetipo (Destacado) -->
+        <div class="bento-item arquetipo-card">
+          <div class="emoji-container">{{ currentCluster().emoji }}</div>
+          <div class="arquetipo-info">
+            <span class="arquetipo-label">Arquetipo Principal</span>
+            <h3 class="arquetipo-title">{{ consejoBackend()?.arquetipo }}</h3>
+            <p class="arquetipo-desc">{{ consejoBackend()?.significado_arquetipo }}</p>
           </div>
-          <div class="mini-dominance-bar">
-            <div class="mini-dominance-fill" [style.width.%]="currentCluster().porcentajePredeterminado"></div>
-          </div>
-          <span class="mini-dominance-text">{{ currentCluster().porcentajePredeterminado }}% Dominancia Detectada</span>
         </div>
+
+        <!-- Bloque 2: Pensamiento Interno -->
+        <div class="bento-item pensamiento-card">
+          <div class="bento-item-header">
+            <i class="fa-solid fa-brain"></i>
+            <span>Razonamiento IA</span>
+          </div>
+          <div class="typing-container" [class.typing]="oraculoHablando()">
+            <p>{{ consejoBackend()?.pensamiento_interno_ia }}</p>
+          </div>
+        </div>
+
+        <!-- Bloque 3: Descripción del Perfil -->
+        <div class="bento-item perfil-card">
+          <div class="bento-item-header">
+            <i class="fa-solid fa-user-astronaut"></i>
+            <span>Perfil Detectado</span>
+          </div>
+          <p>{{ consejoBackend()?.descripcion_perfil }}</p>
+        </div>
+
+        <!-- Bloque 4: Consejo Táctico -->
+        <div class="bento-item tactico-card">
+          <div class="bento-item-header">
+            <i class="fa-solid fa-chess-knight"></i>
+            <span>Consejo Táctico</span>
+          </div>
+          <p>{{ consejoBackend()?.consejo_tactico }}</p>
+        </div>
+
+        <!-- Bloque 5: Alineación de Meta -->
+        <div class="bento-item meta-card">
+          <div class="bento-item-header">
+            <i class="fa-solid fa-bullseye"></i>
+            <span>Alineación de Metas</span>
+          </div>
+          <p>{{ consejoBackend()?.alineacion_meta }}</p>
+        </div>
+
+        <!-- Bloque 6: Mensaje Estilo de Vida (Mensaje Final) -->
+        <div class="bento-item mensaje-card">
+          <div class="bento-item-header">
+            <i class="fa-solid fa-sparkles"></i>
+            <span>Reflexión</span>
+          </div>
+          <p class="mensaje-text">"{{ consejoBackend()?.mensaje_estilo_vida }}"</p>
+        </div>
+
       </div>
 
-      <!-- Centro: El Escenario del Oráculo (Consejo Gemini) -->
-      <div class="grid-column col-coach">
-        <app-ia-estilo-consejo
-          [clusterSeleccionado]="clusterSeleccionado()"
-          [consejoBackend]="consejoBackend()"
-          [oraculoHablando]="oraculoHablando()">
-        </app-ia-estilo-consejo>
+    </ng-container>
+
+    <ng-template #estadoVacio>
+      <div class="empty-state-ia">
+        <i class="fa-solid fa-fingerprint empty-icon"></i>
+        <h3>Descubre tu Personalidad Financiera</h3>
+        <p>LUKA analizará tus patrones de gasto y descubrirá a qué estilo de vida perteneces. ¡Presiona "Consultar" para empezar la magia!</p>
       </div>
-
-      <!-- Derecha: Datos Analizados -->
-      <div class="grid-column col-details">
-        <app-ia-estilo-detalles
-          [clusterSeleccionado]="clusterSeleccionado()"
-          [montoAnalizado]="montoAnalizado()">
-        </app-ia-estilo-detalles>
-      </div>
-
-    </div>
-  </ng-container>
-
-  <ng-template #estadoVacio>
-    <div class="empty-state-ia">
-      <i class="fa-solid fa-fingerprint empty-icon"></i>
-      <h3>Descubre tu Personalidad Financiera</h3>
-      <p>LUKA analizará tus patrones de gasto y descubrirá a qué estilo de vida perteneces. ¡Presiona "Consultar" para empezar la magia!</p>
-    </div>
+    </ng-template>
   </ng-template>
-  </ng-template>
+
 </div>

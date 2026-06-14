@@ -14,13 +14,45 @@
   <!-- ── 1. ESTADO NUEVO (Briefing de Misión Secreta) ── -->
   <div class="pantalla-nuevo-briefing" *ngIf="estadoFicticio() === 'NUEVO'">
     <div class="scanline"></div>
-    <div class="briefing-box">
+    <div class="briefing-box structured-mission-card">
       <div class="briefing-header">
         <span class="terminal-tag"><i class="fa-solid fa-terminal"></i> CONEXIÓN ENCRIPTADA LUKA-HQ</span>
         <span class="terminal-status animate-pulse">RECIBIENDO MISIÓN...</span>
       </div>
       <div class="briefing-body">
-        <p class="typewriter-text">{{ briefingEscrito() }}<span class="cursor-blink">_</span></p>
+        
+        <div *ngIf="consejoDTO" class="mission-structured-grid">
+          <div class="mission-title-area">
+            <i class="fa-solid fa-crosshairs target-icon"></i>
+            <h4>{{ consejoDTO.titulo_mision }}</h4>
+          </div>
+          
+          <div class="mission-info-area">
+            <div class="info-card diag-card">
+              <i class="fa-solid fa-magnifying-glass-chart"></i>
+              <div>
+                <strong>Reconocimiento:</strong>
+                <p>{{ consejoDTO.diagnostico }}</p>
+              </div>
+            </div>
+            
+            <div class="info-card strategy-card">
+              <i class="fa-solid fa-chess-knight"></i>
+              <div>
+                <strong>Estrategia de Acción:</strong>
+                <p>{{ consejoDTO.estrategia }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mission-motivation-typewriter">
+          <span class="prompt-arrow">></span> 
+          <span class="typewriter-text text-emerald-300">
+            {{ briefingEscrito() }}<span class="cursor-blink">_</span>
+          </span>
+        </div>
+        
       </div>
       <div class="briefing-actions">
         <button class="btn-play-game" (click)="setEstado('ACTIVO')">
@@ -32,63 +64,42 @@
 
   <!-- ── 2. ESTADO ACTIVO (Mapa Isométrico y Contrato de Misión) ── -->
   <div class="pantalla-mision-activa" *ngIf="estadoFicticio() === 'ACTIVO'">
-    
     <!-- Capa HUD (Esquina Superior Derecha) -->
     <div class="hud-stats-container">
-      <!-- HP Corazones -->
       <div class="hud-stat hp-stat" title="Vidas Restantes (Intentos)">
         <i class="fa-solid fa-heart heart-pulse"></i>
         <i class="fa-solid fa-heart heart-pulse"></i>
         <i class="fa-solid fa-heart-crack text-slate-500"></i>
       </div>
-      <!-- Monedas acumuladas -->
       <div class="hud-stat coins-stat" title="Ahorro Realizado">
         <i class="fa-solid fa-coins animate-bounce-slow text-yellow-400"></i>
         <span>S/. {{ resultado?.kpi?.valor || '85.00' }}</span>
       </div>
-      <!-- Racha Flames -->
       <div class="hud-stat streak-stat" [class.animate-pop]="rachaAnimada()" title="Racha de retos superados">
         <i class="fa-solid fa-fire text-orange-500"></i>
         <span>x3</span>
       </div>
     </div>
 
-    <!-- Capa 1: El Mapa de la Misión (Fondo Isométrico CSS) -->
+    <!-- Capa 1: El Mapa de la Misión -->
     <div class="mapa-isometrico-viewport">
       <div class="mapa-isometrico-grid">
-        <!-- Baldosas del camino -->
-        <div 
-          *ngFor="let tile of baldosas()" 
-          class="baldosa"
-          [class.baldosa-completada]="tile.completada"
-          [class.baldosa-actual]="tile.actual"
-          [class.baldosa-futura]="!tile.completada && !tile.actual"
-        >
+        <div *ngFor="let tile of baldosas()" class="baldosa" [class.baldosa-completada]="tile.completada" [class.baldosa-actual]="tile.actual" [class.baldosa-futura]="!tile.completada && !tile.actual">
           <span class="tile-number">{{ tile.dia }}</span>
-          
-          <!-- Avatar del usuario (Pixel art SVG incrustado) en la baldosa actual -->
           <div class="avatar-pixel-art" *ngIf="tile.actual">
             <svg class="sprite-hero" viewBox="0 0 32 32">
-              <!-- Sombrero/Casco Heroe Luka -->
               <rect x="10" y="4" width="12" height="6" fill="#10b981" />
               <rect x="8" y="6" width="16" height="4" fill="#059669" />
-              <!-- Rostro -->
               <rect x="10" y="10" width="12" height="8" fill="#fbcfe8" />
-              <!-- Ojos Pixel -->
               <rect x="12" y="12" width="2" height="2" fill="#1e293b" />
               <rect x="18" y="12" width="2" height="2" fill="#1e293b" />
-              <!-- Capa/Cuerpo -->
               <rect x="8" y="18" width="16" height="10" fill="#3b82f6" />
               <rect x="11" y="20" width="10" height="8" fill="#1d4ed8" />
-              <!-- Botas -->
               <rect x="10" y="28" width="4" height="2" fill="#1e293b" />
               <rect x="18" y="28" width="4" height="2" fill="#1e293b" />
             </svg>
             <div class="avatar-shadow"></div>
-            <!-- Efecto de moneda ganada saltando alrededor -->
-            <div class="coin-bounce-particle">
-              <i class="fa-solid fa-circle-dollar-to-slot"></i>
-            </div>
+            <div class="coin-bounce-particle"><i class="fa-solid fa-circle-dollar-to-slot"></i></div>
           </div>
         </div>
       </div>
@@ -101,7 +112,7 @@
           <i class="fa-solid fa-fire-flame-curved"></i>
           <span>{{ resultado?.insight?.dificultad || 'MEDIA' | uppercase }}</span>
         </div>
-        <h3 class="mision-titulo">Operación: Cocina en Casa</h3>
+        <h3 class="mision-titulo">{{ consejoDTO?.titulo_mision || 'Operación: Cocina en Casa' }}</h3>
         <p class="mision-categoria">Objetivo: <i class="fa-solid fa-utensils"></i> {{ resultado?.insight?.categoria_objetivo || 'Restaurantes' }}</p>
       </div>
 
@@ -112,40 +123,30 @@
         </div>
       </div>
 
-      <!-- Barra de XP Fluida (Líquido Wave clip-path senoidal) -->
       <div class="xp-wave-bar-container">
         <div class="xp-label">
           <span>Progreso Temporal (Días transcurridos)</span>
           <span>{{ resultado?.insight?.progreso_temporal || '45' }}%</span>
         </div>
         <div class="wave-track">
-          <!-- Ola animada de líquido -->
-          <div 
-            class="wave-liquid" 
-            [style.height.%]="resultado?.insight?.progreso_temporal || 45"
-          >
+          <div class="wave-liquid" [style.height.%]="resultado?.insight?.progreso_temporal || 45">
             <div class="wave-shape wave-shape-1"></div>
             <div class="wave-shape wave-shape-2"></div>
             <div class="bubbles">
-              <span class="bubble"></span>
-              <span class="bubble"></span>
-              <span class="bubble"></span>
+              <span class="bubble"></span><span class="bubble"></span><span class="bubble"></span>
             </div>
           </div>
         </div>
       </div>
       
-      <!-- Consejos del Coach en la parte inferior de la tarjeta -->
-      <div class="consejo-box-game">
-        <div class="coach-avatar-small">
-          <i class="fa-solid fa-robot"></i>
-        </div>
-        <p class="consejo-body">
-          "Paulo, he detectado que los Sábados a las 6 PM gastas en Rappi/Restaurantes. Si evitas comer fuera, salvas <strong>S/ 85.00</strong> para la laptop."
+      <div class="consejo-box-game mt-3">
+        <div class="coach-avatar-small"><i class="fa-solid fa-robot"></i></div>
+        <p class="consejo-body text-slate-200">
+          <span *ngIf="consejoDTO?.diagnostico" class="block mb-1 text-xs opacity-70 text-blue-400 font-semibold">{{ consejoDTO?.diagnostico }}</span>
+          "{{ consejoDTO?.estrategia || 'Tu misión es evitar comer fuera por los próximos 7 días.' }}"
         </p>
       </div>
     </div>
-
   </div>
 
   <!-- ── 3. ESTADO VEREDICTO (VICTORIA) ── -->
@@ -157,7 +158,6 @@
     <div class="veredicto-box">
       <div class="victory-light"></div>
       
-      <!-- Avatar bailando -->
       <div class="avatar-pixel-art victory-dance">
         <svg class="sprite-hero" viewBox="0 0 32 32">
           <rect x="10" y="2" width="12" height="6" fill="#10b981" />
@@ -165,7 +165,6 @@
           <rect x="10" y="8" width="12" height="8" fill="#fbcfe8" />
           <rect x="12" y="10" width="2" height="2" fill="#1e293b" />
           <rect x="18" y="10" width="2" height="2" fill="#1e293b" />
-          <!-- Mano alzada de victoria -->
           <rect x="6" y="10" width="2" height="4" fill="#3b82f6" />
           <rect x="8" y="14" width="16" height="10" fill="#3b82f6" />
           <rect x="11" y="16" width="10" height="8" fill="#1d4ed8" />
@@ -176,21 +175,16 @@
 
       <h2 class="titulo-pantalla-veredicto">¡MISIÓN CUMPLIDA!</h2>
       
-      <!-- Medalla 3D giratoria -->
       <div class="vitrina-logros">
         <div class="medalla-3d-wrapper">
           <div class="medalla-3d animate-rotate-y">
-            <div class="medalla-cara medalla-frontal">
-              <i class="fa-solid fa-award"></i>
-            </div>
-            <div class="medalla-cara medalla-reverso">
-              <p>LUKA CHAMP</p>
-            </div>
+            <div class="medalla-cara medalla-frontal"><i class="fa-solid fa-award"></i></div>
+            <div class="medalla-cara medalla-reverso"><p>LUKA CHAMP</p></div>
           </div>
         </div>
       </div>
       
-      <p class="nombre-logro">"Guerrero Anti-Delivery"</p>
+      <p class="nombre-logro">"Guerrero Financiero"</p>
 
       <div class="resumen-victoria">
         <span class="resumen-label">Ahorro Neto Logrado</span>
@@ -198,7 +192,7 @@
       </div>
 
       <p class="mensaje-empatia">
-        Has completado con éxito la misión. Este ahorro ya fue destinado automáticamente a tu meta: <strong>Laptop Gamer</strong>.
+        {{ consejoDTO?.mensaje_motivacional || 'Has completado con éxito la misión. Este ahorro ya fue destinado automáticamente a tu meta.' }}
       </p>
 
       <button class="btn-play-game" (click)="setEstado('NUEVO')">
@@ -210,15 +204,12 @@
   <!-- ── 4. ESTADO VEREDICTO (DERROTA / GAME OVER) ── -->
   <div class="pantalla-veredicto veredicto-derrota" *ngIf="estadoFicticio() === 'VEREDICTO_DERROTA'">
     <div class="veredicto-box">
-      <!-- Avatar derrotado pose cabeza baja -->
       <div class="avatar-pixel-art defeat-pose">
         <svg class="sprite-hero" viewBox="0 0 32 32">
           <rect x="10" y="8" width="12" height="6" fill="#f43f5e" />
-          <!-- Rostro mirando hacia abajo -->
           <rect x="10" y="14" width="12" height="8" fill="#fbcfe8" />
           <rect x="12" y="18" width="2" height="2" fill="#6b7280" />
           <rect x="18" y="18" width="2" height="2" fill="#6b7280" />
-          <!-- Cuerpo -->
           <rect x="8" y="22" width="16" height="8" fill="#475569" />
           <rect x="10" y="30" width="4" height="2" fill="#1e293b" />
           <rect x="18" y="30" width="4" height="2" fill="#1e293b" />
@@ -240,7 +231,7 @@
       </div>
 
       <p class="mensaje-empatia">
-        Esta vez no se pudo, Paulo, pero el siguiente reto empieza mañana. El Coach Luka sugiere que un límite muy ajustado fue la causa.
+        {{ consejoDTO?.mensaje_motivacional || 'Esta vez no se pudo, pero el siguiente reto empieza mañana.' }}
       </p>
 
       <button class="btn-play-game btn-reintentar" (click)="setEstado('ACTIVO')">
@@ -248,5 +239,4 @@
       </button>
     </div>
   </div>
-
 </div>

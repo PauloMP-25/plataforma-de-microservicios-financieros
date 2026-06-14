@@ -9,7 +9,7 @@ Cambios v3 (FASE 5):
     la evolución del usuario entre sesiones.
   - Se eliminó la instrucción "Responde en Markdown". En su lugar, el prompt
     instruye explícitamente a Gemini a generar JSON con el esquema
-    ConsejoEstructurado (introduccion, analisis_ia, conexion_emocional,
+    ConsejoEstructuradoHormiga (introduccion, analisis_ia, conexion_emocional,
     plan_accion_titulo, plan_accion_pasos, comentario_positivo).
   - ejecutar_calculos: SIN CAMBIOS — la lógica Pandas es intocable.
 ══════════════════════════════════════════════════════════════════════════════
@@ -26,7 +26,7 @@ import pandas as pd
 from app.libreria_comun.modelos.contexto import ContextoEstrategicoIADTO
 from app.servicios.core.base_analisis import BaseAnalisisService
 from app.utilidades.excepciones import HistorialInsuficienteError
-from app.modelos.esquemas import ConsejoEstructurado
+from app.modelos.esquemas import ConsejoEstructuradoHormiga
 from app.servicios.ia.prompts.prompt_gasto_hormiga import generar_prompt_gasto_hormiga
 
 logger = logging.getLogger(__name__)
@@ -115,4 +115,4 @@ class DeteccionGastosHormigaService(BaseAnalisisService):
         return generar_prompt_gasto_hormiga(metricas, contexto)
 
     def obtener_esquema_salida(self):
-        return ConsejoEstructurado
+        return ConsejoEstructuradoHormiga

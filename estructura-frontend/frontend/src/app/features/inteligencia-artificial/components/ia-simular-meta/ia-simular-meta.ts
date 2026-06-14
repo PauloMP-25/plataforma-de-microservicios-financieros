@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, OnChanges, SimpleChanges, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RespuestaModuloDTO } from '../../../../core/models/financiero/ia.model';
+import { RespuestaModuloDTO } from '../../../../core/models/ia_coach/ia-base.model';
 
 import { MetaRespuestaCoachComponent } from './components/meta-respuesta-coach/meta-respuesta-coach';
 import { MetaTimelineComponent } from './components/meta-timeline/meta-timeline';

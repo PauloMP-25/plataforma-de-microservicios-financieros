@@ -13,6 +13,7 @@ from app.servicios.core.base_analisis import BaseAnalisisService
 from app.libreria_comun.modelos.contexto import ContextoEstrategicoIADTO
 from app.persistencia.postgres.database import SessionLocal
 from app.persistencia.postgres.modelos_db import IaRetoAhorro
+from app.modelos.esquemas import ConsejoEstructuradoReto
 from app.servicios.ia.prompts.prompt_reto_ahorro import generar_prompt_reto_ahorro
 
 class RetoAhorroDinamicoService(BaseAnalisisService):
@@ -58,6 +59,9 @@ class RetoAhorroDinamicoService(BaseAnalisisService):
 
     def orquestar_prompt(self, metricas: Dict[str, Any], contexto: ContextoEstrategicoIADTO) -> str:
         return generar_prompt_reto_ahorro(metricas, contexto)
+
+    def obtener_esquema_salida(self):
+        return ConsejoEstructuradoReto
 
     def _proponer_nuevo_reto(self, df, usuario_id, frecuencia, db, contexto):
         df['fecha'] = pd.to_datetime(df['fecha'])

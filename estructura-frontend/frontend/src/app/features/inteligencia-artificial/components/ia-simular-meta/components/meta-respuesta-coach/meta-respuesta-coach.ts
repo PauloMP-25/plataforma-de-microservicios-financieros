@@ -1,5 +1,6 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, signal, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ConsejoEstructuradoSimularMeta } from '../../../../../../core/models/ia_coach/ia-base.model';
 
 @Component({
   selector: 'app-meta-respuesta-coach',
@@ -8,20 +9,21 @@ import { CommonModule } from '@angular/common';
   templateUrl: './meta-respuesta-coach.html',
   styleUrl: './meta-respuesta-coach.scss'
 })
-export class MetaRespuestaCoachComponent {
-  @Input() consejo: any = null;
+export class MetaRespuestaCoachComponent implements OnChanges {
+  @Input() consejo: ConsejoEstructuradoSimularMeta | string | null = null;
+  
+  consejoObj = signal<ConsejoEstructuradoSimularMeta | null>(null);
+  consejoStr = signal<string>('');
 
-  get consejoFormateado(): string {
-    if (!this.consejo) return '';
-    if (typeof this.consejo === 'object') {
-      return `
-        <p>${this.consejo.introduccion}</p>
-        <p><strong>Diagnóstico:</strong> ${this.consejo.diagnostico_viabilidad}</p>
-        <p><strong>Plan de Acción:</strong> ${this.consejo.plan_accion}</p>
-        ${this.consejo.tecnica_sugerida ? `<p class="highlight-tip">💡 <strong>Técnica Sugerida:</strong> ${this.consejo.tecnica_sugerida}</p>` : ''}
-        <p><em>${this.consejo.mensaje_motivacional}</em></p>
-      `;
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['consejo'] && this.consejo) {
+      if (typeof this.consejo === 'object') {
+        this.consejoObj.set(this.consejo as ConsejoEstructuradoSimularMeta);
+        this.consejoStr.set('');
+      } else {
+        this.consejoObj.set(null);
+        this.consejoStr.set(this.consejo);
+      }
     }
-    return this.consejo;
   }
 }

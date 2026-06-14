@@ -11,7 +11,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RespuestaModuloDTO } from '../../../../core/models/financiero/ia.model';
+import { RespuestaModuloDTO, ConsejoEstructuradoHormiga } from '../../../../core/models/ia_coach/ia-base.model';
 
 /**
  * Interfaz para cada "sospechoso" del tablero de crímenes financieros.
@@ -52,8 +52,9 @@ export class IaGastoHormigaComponent implements OnChanges, AfterViewInit, OnDest
   ingresoReferencia = signal<number>(3200);
   cardHoveredIndex = signal<number | null>(null);
   odometroDisplay = signal<string>('0');
-  consejoTextoOriginal = signal<string>('');
-  consejoHtml = signal<string>('');
+  
+  // Consejo estructurado
+  consejoObj = signal<ConsejoEstructuradoHormiga | null>(null);
   consejoVisible = signal<boolean>(false);
 
   // ── Computed ──
@@ -89,7 +90,7 @@ export class IaGastoHormigaComponent implements OnChanges, AfterViewInit, OnDest
   });
 
   private animFrameId = 0;
-  private typewriterTimeout: any = null;
+  private revealTimeout: any = null;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['resultado'] && this.resultado) {
@@ -105,7 +106,7 @@ export class IaGastoHormigaComponent implements OnChanges, AfterViewInit, OnDest
 
   ngOnDestroy(): void {
     if (this.animFrameId) cancelAnimationFrame(this.animFrameId);
-    if (this.typewriterTimeout) clearTimeout(this.typewriterTimeout);
+    if (this.revealTimeout) clearTimeout(this.revealTimeout);
   }
 
   // ── Procesamiento de Datos ──
@@ -144,7 +145,14 @@ export class IaGastoHormigaComponent implements OnChanges, AfterViewInit, OnDest
 
     // Animaciones
     setTimeout(() => this.iniciarOdometro(), 800);
-    this.iniciarTypewriter(this.resultado?.consejo ?? '');
+    
+    const consejoRaw = this.resultado?.consejo;
+    if (typeof consejoRaw === 'object' && consejoRaw !== null) {
+      this.consejoObj.set(consejoRaw as ConsejoEstructuradoHormiga);
+      this.revealTimeout = setTimeout(() => {
+        this.consejoVisible.set(true);
+      }, 1500);
+    }
   }
 
   // ── Animación Odómetro Roll-Up ──
@@ -167,60 +175,6 @@ export class IaGastoHormigaComponent implements OnChanges, AfterViewInit, OnDest
     };
 
     this.animFrameId = requestAnimationFrame(animar);
-  }
-
-  // ── Animación Typewriter (Soporte HTML) ──
-  private iniciarTypewriter(texto: string): void {
-    if (!texto) return;
-    this.consejoTextoOriginal.set(texto);
-    this.consejoVisible.set(true);
-    this.consejoHtml.set('');
-    
-    // Parsear Markdown básico
-    let parsed = texto.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    parsed = parsed.replace(/\\n/g, '<br>').replace(/\n/g, '<br>');
-    
-    // Tokenizar HTML para la animación
-    const tokens: { type: string, value: string }[] = [];
-    let isTag = false;
-    let currentTag = '';
-    
-    for (let i = 0; i < parsed.length; i++) {
-      const char = parsed[i];
-      if (char === '<') {
-        isTag = true;
-        currentTag = char;
-      } else if (char === '>') {
-        isTag = false;
-        currentTag += char;
-        tokens.push({ type: 'tag', value: currentTag });
-        currentTag = '';
-      } else if (isTag) {
-        currentTag += char;
-      } else {
-        tokens.push({ type: 'text', value: char });
-      }
-    }
-
-    let i = 0;
-    const escribir = () => {
-      if (i < tokens.length) {
-        let toAdd = '';
-        while (i < tokens.length && tokens[i].type === 'tag') {
-          toAdd += tokens[i].value;
-          i++;
-        }
-        if (i < tokens.length && tokens[i].type === 'text') {
-          toAdd += tokens[i].value;
-          i++;
-        }
-        this.consejoHtml.update(prev => prev + toAdd);
-        this.typewriterTimeout = setTimeout(escribir, 12);
-      }
-    };
-
-    // Esperar a que las tarjetas caigan
-    this.typewriterTimeout = setTimeout(escribir, 1500);
   }
 
   // ── Hover de tarjetas ──
@@ -301,13 +255,29 @@ export class IaGastoHormigaComponent implements OnChanges, AfterViewInit, OnDest
     
     // Reiniciar animaciones
     if (this.animFrameId) cancelAnimationFrame(this.animFrameId);
-    if (this.typewriterTimeout) clearTimeout(this.typewriterTimeout);
+    if (this.revealTimeout) clearTimeout(this.revealTimeout);
     
     setTimeout(() => this.iniciarOdometro(), 100);
     if (cantidad === 0) {
-      this.iniciarTypewriter('¡Felicidades! No he encontrado gastos hormiga. Tus finanzas están en perfecto estado.');
+      this.consejoObj.set(null);
+      this.consejoVisible.set(false);
     } else {
-      this.iniciarTypewriter('He analizado tus gastos y hay pequeños consumos que están afectando tu meta. ¡Ajustemos esos hábitos y recuperemos el control! Puedes hacerlo.');
+      this.consejoObj.set({
+        pensamiento_interno_ia: "El usuario gasta demasiado en café y snacks. Se detectan patrones reincidentes en días laborables.",
+        introduccion: "Hola de nuevo. He revisado tus últimos movimientos y encontré algunas sorpresas.",
+        analisis_ia: "He detectado una fuga constante en compras menores, especialmente en Cafetería y Snacks. Aunque parecen inofensivas, suman un monto significativo al mes.",
+        conexion_emocional: "Cada sol que se escapa en estos gastos es un sol menos para esa meta de viaje que tanto deseas.",
+        plan_accion_titulo: "Operación: Control de Fugas",
+        plan_accion_pasos: [
+          "Prepara el café en casa antes de salir.",
+          "Establece un límite semanal de 30 soles para snacks.",
+          "Revisa tus suscripciones activas y cancela al menos una que no uses."
+        ],
+        comentario_positivo: "¡Tú tienes el control! Pequeños cambios hoy significan grandes ahorros mañana."
+      });
+      this.revealTimeout = setTimeout(() => {
+        this.consejoVisible.set(true);
+      }, 1500);
     }
   }
 }

@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RespuestaModuloDTO } from '../../../../core/models/financiero/ia.model';
+import { RespuestaModuloDTO, ConsejoEstructuradoEntrenamiento } from '../../../../core/models/ia_coach/ia-base.model';
 
 import { IaZonaAvatarComponent } from './components/ia-zona-avatar/ia-zona-avatar';
 import { IaZonaScoreBarComponent } from './components/ia-zona-score-bar/ia-zona-score-bar';
@@ -79,7 +79,7 @@ export class IaZonaEntrenamientoComponent implements OnInit, OnChanges {
     if (changes['resultado'] && this.resultado) {
       this.entrenamientoCargado.set(true);
       
-      const consejo = this.resultado.consejo || {};
+      const consejo = (this.resultado.consejo || {}) as ConsejoEstructuradoEntrenamiento;
       const insight = this.resultado.insight || {};
 
       this.estado.set({
@@ -94,8 +94,8 @@ export class IaZonaEntrenamientoComponent implements OnInit, OnChanges {
         saturacionCategorias: { valor: insight.saturacion_pct || 0, estado: ((insight.saturacion_pct || 0) > 40 ? 'alerta' : 'normal') }
       });
 
-      const rut = (consejo.rutina || []) as any[];
-      const mappedRutinas = rut.map((r: any, index: number) => ({
+      const rut = consejo.rutina || [];
+      const mappedRutinas = rut.map((r, index: number) => ({
         id: `ej-${index}`,
         nombre: r.nombre,
         descripcion: r.descripcion,
