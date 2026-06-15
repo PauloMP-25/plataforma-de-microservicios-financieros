@@ -128,8 +128,6 @@ class ConsejoEstructuradoHormiga(BaseModel):
     )
     plan_accion_pasos: List[str] = Field(
         ...,
-        min_length=2,
-        max_length=5,
         description="Lista de 2 a 5 pasos concretos y accionables para reducir los gastos hormiga.",
     )
     comentario_positivo: str = Field(
@@ -141,7 +139,7 @@ class ConsejoEstructuradoHormiga(BaseModel):
 class RecetaCategoria(BaseModel):
     categoria: str = Field(..., description="Nombre exacto de la categoría reincidente a tratar.")
     diagnostico: str = Field(..., description="Descripción del patrón detectado en lenguaje clínico y si es reincidencia o nuevo exceso.")
-    posologia: List[str] = Field(..., min_length=3, max_length=3, description="Exactamente 3 acciones medibles para esta semana.")
+    posologia: List[str] = Field(..., description="Exactamente 3 acciones medibles para esta semana.")
     pronostico: str = Field(..., description="Estimación en términos monetarios de cuánto dinero adicional tendría en 3 meses.")
 
 class ConsejoEstructuradoEvolucion(BaseModel):
@@ -160,7 +158,7 @@ class ConsejoEstructuradoEntrenamiento(BaseModel):
     pensamiento_interno_ia: str = Field(..., description="Razonamiento lógico sobre el estado físico del usuario basado en sus signos vitales.")
     estado_fisico: str = Field(..., description="Uno de los 5 estados: 'Atleta de Élite', 'En Forma', 'Sedentario', 'Lesionado' o 'UCI Financiera'.")
     evaluacion_previa: Optional[str] = Field(..., description="Breve evaluación del cumplimiento de la rutina del mes anterior. Vacío si es la primera vez.")
-    rutina: List[EjercicioEntrenamiento] = Field(..., min_length=3, max_length=3, description="Exactamente 3 ejercicios para el mes.")
+    rutina: List[EjercicioEntrenamiento] = Field(..., description="Exactamente 3 ejercicios para el mes.")
 
 
 class ConsejoEstructuradoEspejo(BaseModel):
@@ -456,7 +454,7 @@ class InsightAnalitico(BaseModel):
     balance_neto: float = Field(default=0.0)
     promedio_gasto_mensual: float = Field(default=0.0)
     promedio_ingreso_mensual: float = Field(default=0.0)
-    hallazgos: Dict[str, float | str | int | bool | list] = Field(default_factory=dict)
+    hallazgos: Dict[str, Any] = Field(default_factory=dict)
     nivel_alerta: NivelRiesgo = Field(default=NivelRiesgo.BAJO)
     periodo_analizado: str = Field(default="")
 
@@ -495,9 +493,7 @@ class ConsejoEstructuradoAutoClasificacion(BaseModel):
     Esquema ultra estricto para el módulo AUTO_CLASIFICACION.
     """
     categorias_sugeridas: List[str] = Field(
-        description="Lista de exactamente 4 palabras únicas que mejor categorizan la descripción del gasto/ingreso.",
-        min_items=4,
-        max_items=4
+        description="Lista de exactamente 4 palabras únicas que mejor categorizan la descripción del gasto/ingreso."
     )
 
 class EstadoCoach(str, Enum):

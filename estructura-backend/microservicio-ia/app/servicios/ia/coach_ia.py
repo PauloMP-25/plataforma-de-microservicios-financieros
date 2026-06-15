@@ -120,6 +120,11 @@ class CoachIA:
             costo_usd = self._calcular_costo_usd(in_tokens, out_tokens)
 
             logger.info(
+                "[TOKENS-CONSUMIDOS] Usuario: %s | Módulo: %s | Entrada: %d | Salida: %d | Total: %d | Costo: $%.6f USD",
+                usuario_id, modulo.value, in_tokens, out_tokens, total_tokens, costo_usd
+            )
+
+            logger.info(
                 "\n========================================================\n"
                 "[CONSEJO-IA-TOKENS] Consumo de Tokens para el consejo:\n"
                 "  - Usuario ID: %s\n"

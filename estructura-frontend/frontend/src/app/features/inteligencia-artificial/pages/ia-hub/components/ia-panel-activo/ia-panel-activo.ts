@@ -83,20 +83,28 @@ export class IaPanelActivoComponent implements OnInit, OnChanges {
         id_temporal: this.idTemporal,
         tipo_movimiento: this.tipoMovimiento,
         etiquetas: this.etiquetas,
+        descripcion: this.notas,
         notas: this.notas
       };
     } else if (this.modulo.id === 'comprobador-evolucion') {
       payload = {
-        rangoA_inicio: this.fechaA_inicio,
-        rangoA_fin: this.fechaA_fin,
-        rangoB_inicio: this.fechaB_inicio,
-        rangoB_fin: this.fechaB_fin
+        rango_a_inicio: this.fechaA_inicio + 'T00:00:00',
+        rango_a_fin: this.fechaA_fin + 'T23:59:59',
+        rango_b_inicio: this.fechaB_inicio + 'T00:00:00',
+        rango_b_fin: this.fechaB_fin + 'T23:59:59'
       };
     } else {
-      // Filtros de fecha estándar
+      // Filtros de fecha estándar mapeados al formato PeticionConFiltroFecha del backend
+      const partsInicio = this.fechaInicio.split('-');
+      const partsFin = this.fechaFin.split('-');
+      
       payload = {
-        fecha_inicio: this.fechaInicio,
-        fecha_fin: this.fechaFin,
+        anio_inicio: parseInt(partsInicio[0], 10),
+        mes_inicio: parseInt(partsInicio[1], 10),
+        dia_inicio: parseInt(partsInicio[2], 10),
+        anio_fin: parseInt(partsFin[0], 10),
+        mes_fin: parseInt(partsFin[1], 10),
+        dia_fin: parseInt(partsFin[2], 10),
         frecuencia: this.frecuenciaSelect
       };
     }

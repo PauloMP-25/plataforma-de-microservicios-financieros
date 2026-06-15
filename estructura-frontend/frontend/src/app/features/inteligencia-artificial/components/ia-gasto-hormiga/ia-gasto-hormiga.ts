@@ -114,16 +114,23 @@ export class IaGastoHormigaComponent implements OnChanges, AfterViewInit, OnDest
     const insight = this.resultado?.insight;
     if (!insight) return;
 
-    this.hayHormigas.set(insight.hay_hormigas ?? false);
-    this.fugaTotal.set(insight.total_gastos_hormiga ?? 0);
-    this.proyeccionAnual.set(insight.proyeccion_fuga_anual ?? 0);
-    this.variacion.set(insight.variacion_vs_mes_anterior ?? 0);
-    this.principalSospechoso.set(insight.principal_gasto_hormiga ?? 'N/A');
-    this.ingresoReferencia.set(insight.ingreso_mensual_referencia ?? 3200);
+    // Adaptabilidad para leer de backend real (insight.hallazgos) o mockup (insight)
+    const source = insight.hallazgos ? insight.hallazgos : insight;
+
+    this.hayHormigas.set(source.hay_hormigas ?? false);
+    this.fugaTotal.set(source.total_gastos_hormiga ?? 0);
+    this.proyeccionAnual.set(source.proyeccion_fuga_anual ?? 0);
+    this.variacion.set(source.variacion_vs_mes_anterior ?? 0);
+    this.principalSospechoso.set(source.principal_gasto_hormiga ?? 'N/A');
+    this.ingresoReferencia.set(source.ingreso_mensual_referencia ?? 3200);
 
     // Construir sospechosos con rotación aleatoria
-    const detectados = insight.gastos_detectados || [];
-    const sospechosos: SospechosoHormiga[] = detectados.map(
+    const detectados = source.gastos_detectados || [];
+    
+    // Primero, ordenar por total descendente
+    const detectadosOrdenados = [...detectados].sort((a: any, b: any) => (b.total || 0) - (a.total || 0));
+
+    const sospechosos: SospechosoHormiga[] = detectadosOrdenados.map(
       (g: any, i: number) => {
         const peligros = ['CRÍTICO', 'ALTO', 'MEDIO', 'BAJO'];
         const alternativas = ['Preparar en casa', 'Buscar opción free', 'Reducir a la mitad', 'Cancelar suscripción'];
@@ -134,7 +141,7 @@ export class IaGastoHormigaComponent implements OnChanges, AfterViewInit, OnDest
           categoria: g.categoria,
           promedio_por_compra: g.promedio_por_compra,
           dia_mayor_gasto: g.dia_mayor_gasto,
-          nivelPeligro: peligros[Math.floor(Math.random() * peligros.length)],
+          nivelPeligro: peligros[Math.min(i, peligros.length - 1)], // Peligro según el tamaño del gasto
           alternativa: alternativas[Math.floor(Math.random() * alternativas.length)],
           rotacion: (Math.random() * 6 - 3),
           delay: i * 200,
@@ -222,7 +229,6 @@ export class IaGastoHormigaComponent implements OnChanges, AfterViewInit, OnDest
     this.fugaTotal.set(cantidad * 150);
     this.proyeccionAnual.set(cantidad * 150 * 12);
     this.variacion.set(cantidad === 0 ? 0 : 5.2);
-    this.principalSospechoso.set(cantidad === 0 ? 'Ninguno' : 'Mock Principal');
     
     const mockGastos = Array.from({ length: cantidad }).map((_, i) => ({
       descripcion: `Gasto Identificado ${i + 1}`,
@@ -233,7 +239,12 @@ export class IaGastoHormigaComponent implements OnChanges, AfterViewInit, OnDest
       dia_mayor_gasto: 'Viernes'
     }));
 
-    const sospechosos: SospechosoHormiga[] = mockGastos.map(
+    // Primero, ordenar por total descendente
+    const mockGastosOrdenados = [...mockGastos].sort((a: any, b: any) => b.total - a.total);
+
+    this.principalSospechoso.set(cantidad === 0 ? 'Ninguno' : mockGastosOrdenados[0].categoria);
+
+    const sospechosos: SospechosoHormiga[] = mockGastosOrdenados.map(
       (g: any, i: number) => {
         const peligros = ['CRÍTICO', 'ALTO', 'MEDIO', 'BAJO'];
         const alternativas = ['Preparar en casa', 'Buscar opción free', 'Reducir a la mitad', 'Cancelar suscripción'];
@@ -244,7 +255,7 @@ export class IaGastoHormigaComponent implements OnChanges, AfterViewInit, OnDest
           categoria: g.categoria,
           promedio_por_compra: g.promedio_por_compra,
           dia_mayor_gasto: g.dia_mayor_gasto,
-          nivelPeligro: peligros[Math.floor(Math.random() * peligros.length)],
+          nivelPeligro: peligros[Math.min(i, peligros.length - 1)],
           alternativa: alternativas[Math.floor(Math.random() * alternativas.length)],
           rotacion: (Math.random() * 6 - 3),
           delay: i * 200,

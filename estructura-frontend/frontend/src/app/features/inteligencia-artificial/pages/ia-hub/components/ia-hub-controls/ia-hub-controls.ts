@@ -19,8 +19,19 @@ export class IaHubControlsComponent {
 
   @Output() tabChange = new EventEmitter<TabGroup>();
 
+  get quotaPercentage(): number {
+    const parts = this.consultasRestantes.split('/');
+    if (parts.length === 2) {
+      const current = parseInt(parts[0], 10);
+      const max = parseInt(parts[1], 10);
+      if (max > 0) {
+        return (current / max) * 100;
+      }
+    }
+    return 100;
+  }
+
   getCuotaText(tab: TabGroup): string {
-    // Si la cuota ya se maneja de forma global, esto podría omitirse o quedarse vacío.
     return '';
   }
 }

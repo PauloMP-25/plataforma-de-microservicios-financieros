@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subscription, Observable } from 'rxjs';
 
 import { IaService } from '../../../../core/services/ia.service';
 import { RespuestaModuloDTO } from '../../../../core/models/ia_coach/ia-base.model';
@@ -268,6 +268,10 @@ export class IaHubComponent implements OnInit, OnDestroy {
     return tab === 'TODOS' ? this.modulos : this.modulos.filter(m => m.tag === tab);
   });
 
+  consultasQuotaText = computed(() => {
+    return `${this.iaService.consultasRestantes()}/${this.iaService.consultasMaximas()}`;
+  });
+
   private querySub!: Subscription;
 
   ngOnInit() {
@@ -350,12 +354,43 @@ export class IaHubComponent implements OnInit, OnDestroy {
     this.errorMsg.set(null);
     this.resultado.set(null);
 
-    // Integración REAL con Backend para el Comprobador de Evolución y Zona de Entrenamiento
-    if (mod.id === 'comprobador-evolucion' || mod.id === 'zona-entrenamiento') {
-      const apiCall = mod.id === 'comprobador-evolucion' 
-        ? this.iaService.getComprobadorEvolucion(payload)
-        : this.iaService.getZonaEntrenamiento(payload);
+    // Integración REAL con Backend para todos los módulos
+    let apiCall: Observable<any> | null = null;
 
+    switch (mod.id) {
+      case 'gasto-hormiga':
+        apiCall = this.iaService.getGastoHormiga(payload);
+        break;
+      case 'predecir-gastos':
+        apiCall = this.iaService.getPredecirGastos(payload);
+        break;
+      case 'habitos-financieros':
+        apiCall = this.iaService.getHabitosFinancieros(payload);
+        break;
+      case 'estilo-vida':
+        apiCall = this.iaService.getEstiloVida(payload);
+        break;
+      case 'reporte-completo':
+        apiCall = this.iaService.getReporteCompleto(payload);
+        break;
+      case 'simular-meta':
+        apiCall = this.iaService.getSimularMeta(payload);
+        break;
+      case 'reto-ahorro':
+        apiCall = this.iaService.getRetoAhorro(payload);
+        break;
+      case 'comprobador-evolucion':
+        apiCall = this.iaService.getComprobadorEvolucion(payload);
+        break;
+      case 'zona-entrenamiento':
+        apiCall = this.iaService.getZonaEntrenamiento(payload);
+        break;
+      case 'espejo-temporal':
+        apiCall = this.iaService.getEspejoTemporal(payload);
+        break;
+    }
+
+    if (apiCall) {
       apiCall.subscribe({
         next: (res) => {
           if (res.exito && res.datos) {
@@ -376,7 +411,7 @@ export class IaHubComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Retardo simulado para recrear la animación premium de la red neuronal de Gemini Pro
+    // Fallback para módulos no configurados
     setTimeout(() => {
       try {
         const mockRes = this._generarRespuestaMock(mod, payload);
