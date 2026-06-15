@@ -64,7 +64,7 @@ class RetoAhorroDinamicoService(BaseAnalisisService):
         return ConsejoEstructuradoReto
 
     def _proponer_nuevo_reto(self, df, usuario_id, frecuencia, db, contexto):
-        df['fecha'] = pd.to_datetime(df['fecha'])
+        df['fecha'] = pd.to_datetime(df['fecha'], format="mixed")
         df_gastos = df[df['tipo'] == 'GASTO'].copy()
         if df_gastos.empty: return {"error": "Sin gastos"}
         
@@ -93,7 +93,7 @@ class RetoAhorroDinamicoService(BaseAnalisisService):
         }
 
     def _evaluar_resultado_final(self, df, reto, contexto):
-        df['fecha'] = pd.to_datetime(df['fecha'])
+        df['fecha'] = pd.to_datetime(df['fecha'], format="mixed")
         df_periodo = df[(df['fecha'] >= reto.fecha_inicio) & (df['fecha'] <= reto.fecha_fin) & (df['categoria'] == reto.categoria)]
         
         gasto_real = df_periodo[df_periodo['tipo'] == 'GASTO']['monto'].sum()

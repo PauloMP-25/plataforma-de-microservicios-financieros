@@ -23,7 +23,7 @@ class ReporteCompletoService(BaseAnalisisService):
         
         # 1. Ventana Anual: Desde el 1 de enero del año en curso
         anio_actual = datetime.now().year
-        df['fecha'] = pd.to_datetime(df['fecha'])
+        df['fecha'] = pd.to_datetime(df['fecha'], format="mixed")
         df_anual = df[df['fecha'].dt.year == anio_actual]
         
         if df_anual.empty:

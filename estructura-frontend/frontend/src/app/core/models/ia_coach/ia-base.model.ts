@@ -106,7 +106,7 @@ export interface RespuestaClasificacionDTO {
 
 export interface ConsejoEstructuradoHormiga {
   pensamiento_interno_ia: string;
-  introduccion: string;
+  introduccion?: string;
   analisis_ia: string;
   conexion_emocional: string;
   plan_accion_titulo: string;

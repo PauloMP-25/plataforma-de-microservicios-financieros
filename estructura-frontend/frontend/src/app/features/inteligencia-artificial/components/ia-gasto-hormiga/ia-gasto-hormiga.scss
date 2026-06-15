@@ -1429,6 +1429,36 @@ $pin-color: #dc2626;
     color: #f59e0b;
     font-size: 1.05rem;
   }
+
+  .btn-toggle-pasos {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #10b981;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease-in-out;
+    
+    &:hover {
+      background: rgba(16, 185, 129, 0.25);
+      border-color: #10b981;
+      transform: translateY(-1px);
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+
+    i {
+      font-size: 0.75rem;
+    }
+  }
 }
 
 @keyframes fadeIn {

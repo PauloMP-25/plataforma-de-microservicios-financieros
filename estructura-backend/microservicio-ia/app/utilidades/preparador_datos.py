@@ -130,9 +130,9 @@ def json_a_dataframe(respuesta_json: Dict) -> pd.DataFrame:
     df["categoria_nombre"] = df["categoria_nombre"].fillna("Sin categoría").astype(str)
     df["usuario_id"] = df["usuario_id"].astype(str)
 
-    for columna_fecha in ("fecha_transaccion", "fecha_registro"):
+    for columna_fecha in ("fecha_transaccion", "fecha_registro", "fecha"):
         if columna_fecha in df.columns:
-            df[columna_fecha] = pd.to_datetime(df[columna_fecha], errors="coerce")
+            df[columna_fecha] = pd.to_datetime(df[columna_fecha], format="mixed", errors="coerce")
 
     # ── 4. Columnas derivadas de fecha ────────────────────────────────────────
     if "fecha_transaccion" in df.columns and not df["fecha_transaccion"].isna().all():

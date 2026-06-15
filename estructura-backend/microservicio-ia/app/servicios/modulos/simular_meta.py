@@ -19,7 +19,7 @@ class SimularMetaService(BaseAnalisisService):
 
     def ejecutar_calculos(self, df: pd.DataFrame, contexto: ContextoEstrategicoIADTO, **kwargs) -> Dict[str, Any]:
         # 1. Validación Híbrida: 30 transacciones O al menos 30 días de historial
-        df['fecha'] = pd.to_datetime(df['fecha'])
+        df['fecha'] = pd.to_datetime(df['fecha'], format="mixed")
         dias_historial = (df['fecha'].max() - df['fecha'].min()).days
         
         if len(df) < 30 and dias_historial < 30:

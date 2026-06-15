@@ -48,7 +48,7 @@ class DeteccionGastosHormigaService(BaseAnalisisService):
         Lógica Pandas de detección de gastos hormiga.
         Esta función NO se modificó en ninguna fase. Es intocable.
         """
-        df["fecha"] = pd.to_datetime(df["fecha"])
+        df["fecha"] = pd.to_datetime(df["fecha"], format="mixed")
         mes_actual = df["fecha"].max().month
         anio_actual = df["fecha"].max().year
 
