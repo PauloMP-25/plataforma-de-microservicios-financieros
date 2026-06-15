@@ -21,7 +21,7 @@
       <span class="quota-value">{{ consultasRestantes }}</span>
     </div>
     <div class="quota-track">
-      <div class="quota-fill" style="width: 100%;"></div>
+      <div class="quota-fill" [style.width.%]="quotaPercentage"></div>
     </div>
   </div>
 

@@ -119,9 +119,20 @@ export class IaService {
     this.clasificacionesMaximas.set(2);
   }
 
+  private enriquecerPayload<T>(payload: T): T & { usuario_id?: string; token?: string } {
+    const user = this.authService.usuario();
+    if (!user) return payload as any;
+    return {
+      ...payload,
+      usuario_id: user.id,
+      token: user.token
+    };
+  }
+
   // Compatibilidad con código antiguo si lo hubiera
   consultar(payload: SolicitudIaDTO): Observable<RespuestaIaDTO> {
-    return this.http.post<RespuestaIaDTO>(`${this.base}/consultar`, payload).pipe(
+    const p = this.enriquecerPayload(payload);
+    return this.http.post<RespuestaIaDTO>(`${this.base}/consultar`, p).pipe(
       tap(() => this.descontarConsulta())
     );
   }
@@ -129,43 +140,50 @@ export class IaService {
   // ── Módulo de Análisis ──
   
   getGastoHormiga(payload: PeticionConFiltroFechaDTO): Observable<ResultadoApi<RespuestaModuloDTO>> {
-    return this.http.post<ResultadoApi<RespuestaModuloDTO>>(`${this.base}/gasto-hormiga`, payload).pipe(
+    const p = this.enriquecerPayload(payload);
+    return this.http.post<ResultadoApi<RespuestaModuloDTO>>(`${this.base}/gasto-hormiga`, p).pipe(
       tap(() => this.descontarConsulta())
     );
   }
 
   getPredecirGastos(payload: PeticionConFiltroFechaDTO): Observable<ResultadoApi<RespuestaModuloDTO>> {
-    return this.http.post<ResultadoApi<RespuestaModuloDTO>>(`${this.base}/predecir-gastos`, payload).pipe(
+    const p = this.enriquecerPayload(payload);
+    return this.http.post<ResultadoApi<RespuestaModuloDTO>>(`${this.base}/predecir-gastos`, p).pipe(
       tap(() => this.descontarConsulta())
     );
   }
 
   getHabitosFinancieros(payload: PeticionConFiltroFechaDTO): Observable<ResultadoApi<RespuestaModuloDTO>> {
-    return this.http.post<ResultadoApi<RespuestaModuloDTO>>(`${this.base}/habitos-financieros`, payload).pipe(
+    const p = this.enriquecerPayload(payload);
+    return this.http.post<ResultadoApi<RespuestaModuloDTO>>(`${this.base}/habitos-financieros`, p).pipe(
       tap(() => this.descontarConsulta())
     );
   }
 
   getEstiloVida(payload: PeticionConFiltroFechaDTO): Observable<ResultadoApi<RespuestaModuloDTO>> {
-    return this.http.post<ResultadoApi<RespuestaModuloDTO>>(`${this.base}/estilo-vida`, payload).pipe(
+    const p = this.enriquecerPayload(payload);
+    return this.http.post<ResultadoApi<RespuestaModuloDTO>>(`${this.base}/estilo-vida`, p).pipe(
       tap(() => this.descontarConsulta())
     );
   }
 
   getReporteCompleto(payload: PeticionConFiltroFechaDTO): Observable<ResultadoApi<RespuestaModuloDTO>> {
-    return this.http.post<ResultadoApi<RespuestaModuloDTO>>(`${this.base}/reporte-completo`, payload).pipe(
+    const p = this.enriquecerPayload(payload);
+    return this.http.post<ResultadoApi<RespuestaModuloDTO>>(`${this.base}/reporte-completo`, p).pipe(
       tap(() => this.descontarConsulta())
     );
   }
 
   getComprobadorEvolucion(payload: PeticionComparacionDTO): Observable<ResultadoApi<RespuestaModuloDTO>> {
-    return this.http.post<ResultadoApi<RespuestaModuloDTO>>(`${this.base}/comprobador-evolucion`, payload).pipe(
+    const p = this.enriquecerPayload(payload);
+    return this.http.post<ResultadoApi<RespuestaModuloDTO>>(`${this.base}/comprobador-evolucion`, p).pipe(
       tap(() => this.descontarConsulta())
     );
   }
 
   getZonaEntrenamiento(payload: PeticionConFiltroFechaDTO): Observable<ResultadoApi<RespuestaModuloDTO>> {
-    return this.http.post<ResultadoApi<RespuestaModuloDTO>>(`${this.base}/zona-entrenamiento`, payload).pipe(
+    const p = this.enriquecerPayload(payload);
+    return this.http.post<ResultadoApi<RespuestaModuloDTO>>(`${this.base}/zona-entrenamiento`, p).pipe(
       tap(() => this.descontarConsulta())
     );
   }
@@ -173,13 +191,22 @@ export class IaService {
   // ── Módulo de Coach ──
 
   getSimularMeta(payload: PeticionSimularMetaDTO): Observable<ResultadoApi<RespuestaModuloDTO>> {
-    return this.http.post<ResultadoApi<RespuestaModuloDTO>>(`${this.base}/simular-meta`, payload).pipe(
+    const p = this.enriquecerPayload(payload);
+    return this.http.post<ResultadoApi<RespuestaModuloDTO>>(`${this.base}/simular-meta`, p).pipe(
       tap(() => this.descontarConsulta())
     );
   }
 
   getRetoAhorro(payload: PeticionConFiltroFechaDTO): Observable<ResultadoApi<RespuestaModuloDTO>> {
-    return this.http.post<ResultadoApi<RespuestaModuloDTO>>(`${this.base}/reto-ahorro`, payload).pipe(
+    const p = this.enriquecerPayload(payload);
+    return this.http.post<ResultadoApi<RespuestaModuloDTO>>(`${this.base}/reto-ahorro`, p).pipe(
+      tap(() => this.descontarConsulta())
+    );
+  }
+
+  getEspejoTemporal(payload: PeticionConFiltroFechaDTO): Observable<ResultadoApi<RespuestaModuloDTO>> {
+    const p = this.enriquecerPayload(payload);
+    return this.http.post<ResultadoApi<RespuestaModuloDTO>>(`${this.base}/espejo-tiempo`, p).pipe(
       tap(() => this.descontarConsulta())
     );
   }
@@ -187,7 +214,8 @@ export class IaService {
   // ── Módulo de Clasificación ──
 
   getClasificarTransaccion(payload: SolicitudClasificacionDTO): Observable<ResultadoApi<RespuestaClasificacionDTO>> {
-    return this.http.post<ResultadoApi<RespuestaClasificacionDTO>>(`${this.base}/clasificar-transaccion`, payload).pipe(
+    const p = this.enriquecerPayload(payload);
+    return this.http.post<ResultadoApi<RespuestaClasificacionDTO>>(`${this.base}/clasificar-transaccion`, p).pipe(
       tap(() => this.descontarClasificacion())
     );
   }

@@ -83,6 +83,7 @@ class ServicioAnalisis:
           10. ── NUEVO ── Persistir interacción en historial.
           11. Construir y retornar RespuestaModulo.
         """
+        clave_bloqueo = None
         try:
             # ── 1. Verificar cuota semanal (early exit) ───────────────────────
             tipo_pool = (
@@ -110,165 +111,255 @@ class ServicioAnalisis:
                     )
                 )
 
-            # ── 2. NUEVO: Consultar historial previo ──────────────────────────
-            # Solo para GASTO_HORMIGA en esta fase.
-            # Para los otros módulos historial_previo = None (sin overhead de DB).
-            historial_previo = None
-            if modulo_enum == NombreModulo.GASTO_HORMIGA:
-                historial_previo = await asyncio.to_thread(
+            # ── Bloqueo de Concurrencia (Clics Dobles) ──────────────────────
+            lock_adquirido = self._cache_redis.adquirir_bloqueo_concurrente(
+                f"ia:lock:{peticion.usuario_id}:{modulo_enum.value}", ttl_segundos=15
+            )
+            if not lock_adquirido:
+                logger.warning(
+                    "[BLOQUEO-CONCURRENCIA] Solicitud duplicada detectada para usuario=%s modulo=%s",
+                    peticion.usuario_id, modulo_enum.value
+                )
+                ultimo_hist = await asyncio.to_thread(
+                    self._obtener_historial, peticion.usuario_id, modulo_enum.value
+                )
+                if ultimo_hist:
+                    logger.info("[BLOQUEO-CONCURRENCIA] Retornando último análisis de la DB para usuario=%s", peticion.usuario_id)
+                    consejo_previo = ultimo_hist.get_consejo()
+                    servicio = FabricaModulosAnalisis.obtener_modulo(modulo_enum)
+                    esquema_salida = servicio.obtener_esquema_salida()
+                    consejo_final = consejo_previo
+                    if isinstance(consejo_previo, dict) and esquema_salida:
+                        try:
+                            consejo_final = esquema_salida(**consejo_previo)
+                        except Exception:
+                            pass
+                    insight_dto = InsightAnalitico(
+                        modulo=modulo_enum,
+                        hallazgos=ultimo_hist.get_insight(),
+                    )
+                    estado_str = ultimo_hist.estado_coach or "EXITOSO"
+                    try:
+                        estado_coach = EstadoCoach(estado_str)
+                    except ValueError:
+                        estado_coach = EstadoCoach.EXITOSO
+                    return RespuestaModulo(
+                        usuario_id=peticion.usuario_id,
+                        modulo=modulo_enum,
+                        consejo=consejo_final,
+                        estado_coach=estado_coach,
+                        insight=insight_dto,
+                        usando_fallback=(estado_coach != EstadoCoach.EXITOSO),
+                    )
+                else:
+                    return RespuestaModulo(
+                        usuario_id=peticion.usuario_id,
+                        modulo=modulo_enum,
+                        consejo="Tu análisis financiero ya está siendo procesado en este momento. Por favor, espera unos segundos.",
+                        estado_coach=EstadoCoach.EXITOSO,
+                        insight=InsightAnalitico(
+                            modulo=modulo_enum,
+                            hallazgos={"procesando": True},
+                        ),
+                        usando_fallback=False,
+                    )
+
+            clave_bloqueo = f"ia:lock:{peticion.usuario_id}:{modulo_enum.value}"
+
+            try:
+                # ── 2. Obtener módulo de la Fábrica ──────────────────────────────
+                servicio = FabricaModulosAnalisis.obtener_modulo(modulo_enum)
+
+                # ── 3. Concurrencia HTTP (asyncio.gather) ─────────────────────────
+                mes = getattr(peticion, "mes", None)
+                anio = getattr(peticion, "anio", None)
+                dia_inicio = getattr(peticion, "dia_inicio", None)
+                mes_inicio = getattr(peticion, "mes_inicio", None)
+                anio_inicio = getattr(peticion, "anio_inicio", None)
+                dia_fin = getattr(peticion, "dia_fin", None)
+                mes_fin = getattr(peticion, "mes_fin", None)
+                anio_fin = getattr(peticion, "anio_fin", None)
+
+                tarea_financiera = self._cliente_financiero.obtener_historial_transacciones_async(
+                    peticion.usuario_id, peticion.token, peticion.tamanio_pagina,
+                    mes, anio, dia_inicio, mes_inicio, anio_inicio, dia_fin, mes_fin, anio_fin,
+                )
+                tarea_perfil = self._cliente_perfil.obtener_perfil_usuario_async(
+                    peticion.usuario_id, peticion.token
+                )
+
+                resp_financiero, dict_perfil = await asyncio.gather(
+                    tarea_financiera, tarea_perfil
+                )
+
+                datos_raw = resp_financiero.get("datos", [])
+                df = json_a_dataframe(datos_raw)
+                contexto = ContextoEstrategicoIADTO.model_validate(dict_perfil)
+                contexto.rol = kwargs.get("rol", "FREE")
+
+                # ── 4. Hash + detección de consulta duplicada (PostgreSQL) ────────
+                datos_normalizados = sorted(
+                    [json.dumps(t, sort_keys=True) for t in datos_raw]
+                )
+                hash_txs = hashlib.sha256(
+                    json.dumps(datos_normalizados).encode()
+                ).hexdigest()[:16]
+
+                descripcion_rango = _construir_descripcion_rango(
+                    mes, anio, mes_inicio, anio_inicio, mes_fin, anio_fin
+                )
+
+                # Consultar historial previo desde DB para verificar duplicado e inyectar contexto
+                ultimo_historial = await asyncio.to_thread(
                     self._obtener_historial, peticion.usuario_id, modulo_enum.value
                 )
 
-            # ── 3. Obtener módulo de la Fábrica ──────────────────────────────
-            servicio = FabricaModulosAnalisis.obtener_modulo(modulo_enum)
+                if ultimo_historial:
+                    insight_previo = ultimo_historial.get_insight()
+                    if (
+                        insight_previo.get("_hash_txs") == hash_txs
+                        and insight_previo.get("_descripcion_rango") == descripcion_rango
+                    ):
+                        logger.info(
+                            "[CACHE-HIT-DB] Consulta duplicada usuario=%s modulo=%s rango=%s",
+                            peticion.usuario_id, modulo_enum.value, descripcion_rango,
+                        )
+                        
+                        consejo_previo = ultimo_historial.get_consejo()
+                        
+                        # Convertir el consejo al modelo Pydantic del modulo si aplica
+                        esquema_salida = servicio.obtener_esquema_salida()
+                        consejo_final = consejo_previo
+                        if isinstance(consejo_previo, dict) and esquema_salida:
+                            try:
+                                consejo_final = esquema_salida(**consejo_previo)
+                            except Exception as e:
+                                logger.warning("[CACHE-HIT-DB] Error al deserializar a %s: %s", esquema_salida.__name__, e)
+                        
+                        total_txs = len(df) if not df.empty else 0
+                        total_ing = float(df[df["tipo"] == "INGRESO"]["monto"].sum()) if not df.empty else 0.0
+                        total_gas = float(df[df["tipo"] == "GASTO"]["monto"].sum()) if not df.empty else 0.0
+                        
+                        insight_dto = InsightAnalitico(
+                            modulo=modulo_enum,
+                            total_transacciones_analizadas=total_txs,
+                            total_ingresos=total_ing,
+                            total_gastos=total_gas,
+                            balance_neto=round(total_ing - total_gas, 2),
+                            hallazgos=insight_previo,
+                        )
+                        
+                        estado_str = ultimo_historial.estado_coach or "EXITOSO"
+                        try:
+                            estado_coach = EstadoCoach(estado_str)
+                        except ValueError:
+                            estado_coach = EstadoCoach.EXITOSO
+                            
+                        return RespuestaModulo(
+                            usuario_id=peticion.usuario_id,
+                            modulo=modulo_enum,
+                            consejo=consejo_final,
+                            estado_coach=estado_coach,
+                            insight=insight_dto,
+                            usando_fallback=(estado_coach != EstadoCoach.EXITOSO),
+                        )
 
-            # ── 4. Concurrencia HTTP (asyncio.gather) ─────────────────────────
-            mes = getattr(peticion, "mes", None)
-            anio = getattr(peticion, "anio", None)
-            dia_inicio = getattr(peticion, "dia_inicio", None)
-            mes_inicio = getattr(peticion, "mes_inicio", None)
-            anio_inicio = getattr(peticion, "anio_inicio", None)
-            dia_fin = getattr(peticion, "dia_fin", None)
-            mes_fin = getattr(peticion, "mes_fin", None)
-            anio_fin = getattr(peticion, "anio_fin", None)
+                # ── 5. Lógica del Motor Analítico (Pandas) ───────────────────────────
+                metricas = servicio.ejecutar_calculos(df, contexto, **kwargs)
 
-            tarea_financiera = self._cliente_financiero.obtener_historial_transacciones_async(
-                peticion.usuario_id, peticion.token, peticion.tamanio_pagina,
-                mes, anio, dia_inicio, mes_inicio, anio_inicio, dia_fin, mes_fin, anio_fin,
-            )
-            tarea_perfil = self._cliente_perfil.obtener_perfil_usuario_async(
-                peticion.usuario_id, peticion.token
-            )
+                # Inyectar firmas en métricas para que se guarden en DB
+                metricas["_hash_txs"] = hash_txs
+                metricas["_descripcion_rango"] = descripcion_rango
 
-            resp_financiero, dict_perfil = await asyncio.gather(
-                tarea_financiera, tarea_perfil
-            )
-
-            datos_raw = resp_financiero.get("datos", [])
-            df = json_a_dataframe(datos_raw)
-            contexto = ContextoEstrategicoIADTO.model_validate(dict_perfil)
-            contexto.rol = kwargs.get("rol", "FREE")
-
-            # ── 5. Hash + detección de consulta duplicada (Redis) ─────────────
-            datos_normalizados = sorted(
-                [json.dumps(t, sort_keys=True) for t in datos_raw]
-            )
-            hash_txs = hashlib.sha256(
-                json.dumps(datos_normalizados).encode()
-            ).hexdigest()[:16]
-
-            descripcion_rango = _construir_descripcion_rango(
-                mes, anio, mes_inicio, anio_inicio, mes_fin, anio_fin
-            )
-            clave_firma = (
-                f"ia:firma:{peticion.usuario_id}:"
-                f"{modulo_enum.value}:{descripcion_rango}:{hash_txs}"
-            )
-
-            descripcion_previa = self._cache_redis.obtener_firma(clave_firma)
-            if descripcion_previa:
-                logger.info(
-                    "[CACHE-HIT-FIRMA] Consulta duplicada usuario=%s modulo=%s rango=%s",
-                    peticion.usuario_id, modulo_enum.value, descripcion_rango,
-                )
-                return self._respuesta_duplicada(
-                    peticion.usuario_id, modulo_enum, df, descripcion_rango
-                )
-
-            # ── 6. NUEVO: Inyectar historial previo en métricas ───────────────
-            # La inyección ocurre ANTES de ejecutar_calculos para que el módulo
-            # pueda leerlo en orquestar_prompt. La lógica Pandas es intocable:
-            # ejecutar_calculos solo lee las métricas que conoce, ignora _historial_previo.
-            metricas = servicio.ejecutar_calculos(df, contexto, **kwargs)
-
-            if historial_previo is not None:
-                metricas["_historial_previo"] = historial_previo.get_consejo()
-                metricas["_historial_insight"] = historial_previo.get_insight()
-                logger.info(
-                    "[HISTORIAL] Historial previo inyectado para usuario=%s modulo=%s (id=%d)",
-                    peticion.usuario_id, modulo_enum.value, historial_previo.id,
-                )
-            else:
-                metricas["_historial_previo"] = None
-                metricas["_historial_insight"] = None
-
-            # Totales financieros para fallback
-            total_txs = len(df) if not df.empty else 0
-            total_ing = float(df[df["tipo"] == "INGRESO"]["monto"].sum()) if not df.empty else 0.0
-            total_gas = float(df[df["tipo"] == "GASTO"]["monto"].sum()) if not df.empty else 0.0
-            metricas["_total_ingresos"] = total_ing
-            metricas["_total_gastos"] = total_gas
-
-            prompt = servicio.orquestar_prompt(metricas, contexto)
-
-            # ── 7. NUEVO: Activar Structured Output dinámicamente según el módulo ───
-            esquema_salida = servicio.obtener_esquema_salida()
-
-            # ── 8. Ejecución en CoachIA ───────────────────────────────────────
-            consejo, estado, fallback = await self._coach.obtener_consejo_ia(
-                peticion.usuario_id,
-                modulo_enum,
-                prompt,
-                metricas,
-                contexto.rol,
-                contexto.nombres,
-                contexto=contexto,
-                esquema_salida=esquema_salida,   # ← NUEVO v8
-            )
-
-            # ── 9. NUEVO: Persistir interacción en historial ──────────────────
-            # Solo si Gemini respondió con éxito (no fallback).
-            # Errores de escritura no degradan la experiencia del usuario.
-            if not fallback and estado == EstadoCoach.EXITOSO:
-                asyncio.create_task(
-                    asyncio.to_thread(
-                        self._persistir_historial,
-                        usuario_id=peticion.usuario_id,
-                        modulo=modulo_enum.value,
-                        metricas=metricas,
-                        consejo=consejo,
-                        estado_coach=estado.value,
+                # Inyectar historial en métricas de coaching (solo GASTO_HORMIGA)
+                if modulo_enum == NombreModulo.GASTO_HORMIGA and ultimo_historial is not None:
+                    metricas["_historial_previo"] = ultimo_historial.get_consejo()
+                    metricas["_historial_insight"] = ultimo_historial.get_insight()
+                    logger.info(
+                        "[HISTORIAL] Historial previo inyectado para usuario=%s modulo=%s (id=%d)",
+                        peticion.usuario_id, modulo_enum.value, ultimo_historial.id,
                     )
+                else:
+                    metricas["_historial_previo"] = None
+                    metricas["_historial_insight"] = None
+
+                # Totales financieros para fallback
+                total_txs = len(df) if not df.empty else 0
+                total_ing = float(df[df["tipo"] == "INGRESO"]["monto"].sum()) if not df.empty else 0.0
+                total_gas = float(df[df["tipo"] == "GASTO"]["monto"].sum()) if not df.empty else 0.0
+                metricas["_total_ingresos"] = total_ing
+                metricas["_total_gastos"] = total_gas
+
+                prompt = servicio.orquestar_prompt(metricas, contexto)
+
+                # ── 7. NUEVO: Activar Structured Output dinámicamente según el módulo ───
+                esquema_salida = servicio.obtener_esquema_salida()
+
+                # ── 8. Ejecución en CoachIA ───────────────────────────────────────
+                consejo, estado, fallback = await self._coach.obtener_consejo_ia(
+                    peticion.usuario_id,
+                    modulo_enum,
+                    prompt,
+                    metricas,
+                    contexto.rol,
+                    contexto.nombres,
+                    contexto=contexto,
+                    esquema_salida=esquema_salida,   # ← NUEVO v8
                 )
 
-            # ── 10. Construir respuesta final ─────────────────────────────────
-            consejo_final = consejo
-            if isinstance(consejo, dict) and esquema_salida:
-                try:
-                    consejo_final = esquema_salida(**consejo)
-                except Exception as e:
-                    logger.warning(
-                        "[ORQUESTADOR] No se pudo convertir dict a %s: %s "
-                        "— usando dict raw como fallback de conversión.",
-                        esquema_salida.__name__,
-                        e,
+                # ── 9. NUEVO: Persistir interacción en historial ──────────────────
+                # Solo si Gemini respondió con éxito (no fallback).
+                # Errores de escritura no degradan la experiencia del usuario.
+                if not fallback and estado == EstadoCoach.EXITOSO:
+                    asyncio.create_task(
+                        asyncio.to_thread(
+                            self._persistir_historial,
+                            usuario_id=peticion.usuario_id,
+                            modulo=modulo_enum.value,
+                            metricas=metricas,
+                            consejo=consejo,
+                            estado_coach=estado.value,
+                        )
                     )
-                    # Si la conversión falla, almacenar como str serializado
-                    # para no romper RespuestaModulo (Union acepta str también).
-                    consejo_final = json.dumps(consejo, ensure_ascii=False)
 
-            insight_dto = InsightAnalitico(
-                modulo=modulo_enum,
-                total_transacciones_analizadas=total_txs,
-                total_ingresos=total_ing,
-                total_gastos=total_gas,
-                balance_neto=round(total_ing - total_gas, 2),
-                hallazgos=metricas,
-            )
+                # ── 10. Construir respuesta final ─────────────────────────────────
+                consejo_final = consejo
+                if isinstance(consejo, dict) and esquema_salida:
+                    try:
+                        consejo_final = esquema_salida(**consejo)
+                    except Exception as e:
+                        logger.warning(
+                            "[ORQUESTADOR] No se pudo convertir dict a %s: %s "
+                            "— usando dict raw como fallback de conversión.",
+                            esquema_salida.__name__,
+                            e,
+                        )
+                        # Si la conversión falla, almacenar como str serializado
+                        # para no romper RespuestaModulo (Union acepta str también).
+                        consejo_final = json.dumps(consejo, ensure_ascii=False)
 
-            resultado_final = RespuestaModulo(
-                usuario_id=peticion.usuario_id,
-                modulo=modulo_enum,
-                consejo=consejo_final,
-                estado_coach=estado,
-                insight=insight_dto,
-                usando_fallback=fallback,
-            )
+                insight_dto = InsightAnalitico(
+                    modulo=modulo_enum,
+                    total_transacciones_analizadas=total_txs,
+                    total_ingresos=total_ing,
+                    total_gastos=total_gas,
+                    balance_neto=round(total_ing - total_gas, 2),
+                    hallazgos=metricas,
+                )
 
-            # Registrar firma exitosa en Redis (TTL 7 días)
-            self._cache_redis.registrar_consulta(clave_firma, descripcion_rango)
+                resultado_final = RespuestaModulo(
+                    usuario_id=peticion.usuario_id,
+                    modulo=modulo_enum,
+                    consejo=consejo_final,
+                    estado_coach=estado,
+                    insight=insight_dto,
+                    usando_fallback=fallback,
+                )
 
-            return resultado_final
+                return resultado_final
+            finally:
+                if clave_bloqueo:
+                    self._cache_redis.liberar_bloqueo_concurrente(clave_bloqueo)
 
         except HistorialInsuficienteError as e:
             return RespuestaModulo(
@@ -302,6 +393,7 @@ class ServicioAnalisis:
         ip: str,
         **kwargs,
     ) -> RespuestaModulo:
+        clave_bloqueo = None
         try:
             rol_upper = kwargs.get("rol", "FREE").upper()
             limite = 20 if rol_upper == "PRO" else (50 if rol_upper == "PREMIUM" else 5)
@@ -319,111 +411,219 @@ class ServicioAnalisis:
                     )
                 )
 
-            servicio = FabricaModulosAnalisis.obtener_modulo(modulo_enum)
-
-            tarea_financiera_a = self._cliente_financiero.obtener_historial_transacciones_async(
-                peticion.usuario_id, peticion.token, peticion.tamanio_pagina,
-                desde_exacto=peticion.rango_a_inicio.isoformat(),
-                hasta_exacto=peticion.rango_a_fin.isoformat()
+            # ── Bloqueo de Concurrencia (Clics Dobles) ──────────────────────
+            lock_adquirido = self._cache_redis.adquirir_bloqueo_concurrente(
+                f"ia:lock:{peticion.usuario_id}:{modulo_enum.value}", ttl_segundos=15
             )
-            
-            tarea_financiera_b = self._cliente_financiero.obtener_historial_transacciones_async(
-                peticion.usuario_id, peticion.token, peticion.tamanio_pagina,
-                desde_exacto=peticion.rango_b_inicio.isoformat(),
-                hasta_exacto=peticion.rango_b_fin.isoformat()
-            )
-
-            tarea_perfil = self._cliente_perfil.obtener_perfil_usuario_async(
-                peticion.usuario_id, peticion.token
-            )
-
-            resp_financiera_a, resp_financiera_b, dict_perfil = await asyncio.gather(
-                tarea_financiera_a, tarea_financiera_b, tarea_perfil
-            )
-
-            datos_raw_a = resp_financiera_a.get("datos", [])
-            datos_raw_b = resp_financiera_b.get("datos", [])
-            df_a = json_a_dataframe(datos_raw_a)
-            df_b = json_a_dataframe(datos_raw_b)
-            
-            contexto = ContextoEstrategicoIADTO.model_validate(dict_perfil)
-            contexto.rol = kwargs.get("rol", "FREE")
-
-            # Redis cache key (combining both hashes)
-            datos_norm_a = sorted([json.dumps(t, sort_keys=True) for t in datos_raw_a])
-            datos_norm_b = sorted([json.dumps(t, sort_keys=True) for t in datos_raw_b])
-            hash_txs = hashlib.sha256(json.dumps(datos_norm_a + datos_norm_b).encode()).hexdigest()[:16]
-
-            descripcion_rango = (f"{peticion.rango_a_inicio.strftime('%Y-%m-%d')}_vs_"
-                                 f"{peticion.rango_b_fin.strftime('%Y-%m-%d')}")
-            clave_firma = f"ia:firma:{peticion.usuario_id}:{modulo_enum.value}:{descripcion_rango}:{hash_txs}"
-
-            descripcion_previa = self._cache_redis.obtener_firma(clave_firma)
-            if descripcion_previa:
-                return self._respuesta_duplicada(peticion.usuario_id, modulo_enum, df_b, descripcion_rango)
-
-            metricas = servicio.ejecutar_calculos(df_a, df_b, contexto, **kwargs)
-
-            total_txs = len(df_a) + len(df_b)
-            total_ing_a = float(df_a[df_a["tipo"] == "INGRESO"]["monto"].sum()) if not df_a.empty else 0.0
-            total_gas_a = float(df_a[df_a["tipo"] == "GASTO"]["monto"].sum()) if not df_a.empty else 0.0
-            total_ing_b = float(df_b[df_b["tipo"] == "INGRESO"]["monto"].sum()) if not df_b.empty else 0.0
-            total_gas_b = float(df_b[df_b["tipo"] == "GASTO"]["monto"].sum()) if not df_b.empty else 0.0
-            
-            metricas["_total_ingresos"] = total_ing_b
-            metricas["_total_gastos"] = total_gas_b
-            metricas["_historial_previo"] = None
-            metricas["_historial_insight"] = None
-
-            prompt = servicio.orquestar_prompt(metricas, contexto)
-
-            esquema_comparacion = servicio.obtener_esquema_salida()
-
-            consejo, estado, fallback = await self._coach.obtener_consejo_ia(
-                peticion.usuario_id, modulo_enum, prompt, metricas,
-                contexto.rol, contexto.nombres, contexto=contexto,
-                esquema_salida=esquema_comparacion
-            )
-
-            if isinstance(consejo, dict) and esquema_comparacion:
-                try:
-                    consejo = esquema_comparacion(**consejo)
-                except Exception as ex:
-                    logger.warning("[ORQUESTADOR] Error convirtiendo dict a %s: %s", esquema_comparacion.__name__, ex)
-                    consejo = json.dumps(consejo, ensure_ascii=False)
-
-            if not fallback and estado == EstadoCoach.EXITOSO:
-                asyncio.create_task(
-                    asyncio.to_thread(
-                        self._persistir_historial,
-                        usuario_id=peticion.usuario_id,
-                        modulo=modulo_enum.value,
-                        metricas=metricas,
-                        consejo=consejo,
-                        estado_coach=estado.value,
+            if not lock_adquirido:
+                logger.warning(
+                    "[BLOQUEO-CONCURRENCIA] Solicitud duplicada comparacion detectada para usuario=%s modulo=%s",
+                    peticion.usuario_id, modulo_enum.value
+                )
+                ultimo_hist = await asyncio.to_thread(
+                    self._obtener_historial, peticion.usuario_id, modulo_enum.value
+                )
+                if ultimo_hist:
+                    logger.info("[BLOQUEO-CONCURRENCIA] Retornando último análisis de la DB para usuario=%s", peticion.usuario_id)
+                    consejo_previo = ultimo_hist.get_consejo()
+                    servicio = FabricaModulosAnalisis.obtener_modulo(modulo_enum)
+                    esquema_comparacion = servicio.obtener_esquema_salida()
+                    consejo_final = consejo_previo
+                    if isinstance(consejo_previo, dict) and esquema_comparacion:
+                        try:
+                            consejo_final = esquema_comparacion(**consejo_previo)
+                        except Exception:
+                            pass
+                    insight_dto = InsightAnalitico(
+                        modulo=modulo_enum,
+                        hallazgos=ultimo_hist.get_insight(),
                     )
+                    estado_str = ultimo_hist.estado_coach or "EXITOSO"
+                    try:
+                        estado_coach = EstadoCoach(estado_str)
+                    except ValueError:
+                        estado_coach = EstadoCoach.EXITOSO
+                    return RespuestaModulo(
+                        usuario_id=peticion.usuario_id,
+                        modulo=modulo_enum,
+                        consejo=consejo_final,
+                        estado_coach=estado_coach,
+                        insight=insight_dto,
+                        usando_fallback=(estado_coach != EstadoCoach.EXITOSO),
+                    )
+                else:
+                    return RespuestaModulo(
+                        usuario_id=peticion.usuario_id,
+                        modulo=modulo_enum,
+                        consejo="Tu análisis comparativo ya está siendo procesado en este momento. Por favor, espera unos segundos.",
+                        estado_coach=EstadoCoach.EXITOSO,
+                        insight=InsightAnalitico(
+                            modulo=modulo_enum,
+                            hallazgos={"procesando": True},
+                        ),
+                        usando_fallback=False,
+                    )
+            
+            clave_bloqueo = f"ia:lock:{peticion.usuario_id}:{modulo_enum.value}"
+
+            try:
+                servicio = FabricaModulosAnalisis.obtener_modulo(modulo_enum)
+
+                tarea_financiera_a = self._cliente_financiero.obtener_historial_transacciones_async(
+                    peticion.usuario_id, peticion.token, peticion.tamanio_pagina,
+                    desde_exacto=peticion.rango_a_inicio.isoformat(),
+                    hasta_exacto=peticion.rango_a_fin.isoformat()
+                )
+                
+                tarea_financiera_b = self._cliente_financiero.obtener_historial_transacciones_async(
+                    peticion.usuario_id, peticion.token, peticion.tamanio_pagina,
+                    desde_exacto=peticion.rango_b_inicio.isoformat(),
+                    hasta_exacto=peticion.rango_b_fin.isoformat()
                 )
 
-            insight_dto = InsightAnalitico(
-                modulo=modulo_enum,
-                total_transacciones_analizadas=total_txs,
-                total_ingresos=total_ing_b,
-                total_gastos=total_gas_b,
-                balance_neto=round(total_ing_b - total_gas_b, 2),
-                hallazgos=metricas,
-            )
+                tarea_perfil = self._cliente_perfil.obtener_perfil_usuario_async(
+                    peticion.usuario_id, peticion.token
+                )
 
-            resultado_final = RespuestaModulo(
-                usuario_id=peticion.usuario_id,
-                modulo=modulo_enum,
-                consejo=consejo,
-                estado_coach=estado,
-                insight=insight_dto,
-                usando_fallback=fallback,
-            )
+                resp_financiera_a, resp_financiera_b, dict_perfil = await asyncio.gather(
+                    tarea_financiera_a, tarea_financiera_b, tarea_perfil
+                )
 
-            self._cache_redis.registrar_consulta(clave_firma, descripcion_rango)
-            return resultado_final
+                datos_raw_a = resp_financiera_a.get("datos", [])
+                datos_raw_b = resp_financiera_b.get("datos", [])
+                df_a = json_a_dataframe(datos_raw_a)
+                df_b = json_a_dataframe(datos_raw_b)
+                
+                contexto = ContextoEstrategicoIADTO.model_validate(dict_perfil)
+                contexto.rol = kwargs.get("rol", "FREE")
+
+                # Hash y rango para detección de consulta duplicada (PostgreSQL)
+                datos_norm_a = sorted([json.dumps(t, sort_keys=True) for t in datos_raw_a])
+                datos_norm_b = sorted([json.dumps(t, sort_keys=True) for t in datos_raw_b])
+                hash_txs = hashlib.sha256(json.dumps(datos_norm_a + datos_norm_b).encode()).hexdigest()[:16]
+
+                descripcion_rango = (f"{peticion.rango_a_inicio.strftime('%Y-%m-%d')}_vs_"
+                                     f"{peticion.rango_b_fin.strftime('%Y-%m-%d')}")
+
+                # Obtener último historial desde DB para verificar duplicado
+                ultimo_historial = await asyncio.to_thread(
+                    self._obtener_historial, peticion.usuario_id, modulo_enum.value
+                )
+
+                if ultimo_historial:
+                    insight_previo = ultimo_historial.get_insight()
+                    if (
+                        insight_previo.get("_hash_txs") == hash_txs
+                        and insight_previo.get("_descripcion_rango") == descripcion_rango
+                    ):
+                        logger.info(
+                            "[CACHE-HIT-DB-COMPARACION] Consulta duplicada usuario=%s modulo=%s rango=%s",
+                            peticion.usuario_id, modulo_enum.value, descripcion_rango,
+                        )
+                        
+                        consejo_previo = ultimo_historial.get_consejo()
+                        
+                        # Convertir el consejo al modelo Pydantic del modulo si aplica
+                        esquema_comparacion = servicio.obtener_esquema_salida()
+                        consejo_final = consejo_previo
+                        if isinstance(consejo_previo, dict) and esquema_comparacion:
+                            try:
+                                consejo_final = esquema_comparacion(**consejo_previo)
+                            except Exception as e:
+                                logger.warning("[CACHE-HIT-COMPARACION] Error al deserializar a %s: %s", esquema_comparacion.__name__, e)
+                        
+                        total_txs = len(df_a) + len(df_b)
+                        total_ing_b = float(df_b[df_b["tipo"] == "INGRESO"]["monto"].sum()) if not df_b.empty else 0.0
+                        total_gas_b = float(df_b[df_b["tipo"] == "GASTO"]["monto"].sum()) if not df_b.empty else 0.0
+                        
+                        insight_dto = InsightAnalitico(
+                            modulo=modulo_enum,
+                            total_transacciones_analizadas=total_txs,
+                            total_ingresos=total_ing_b,
+                            total_gastos=total_gas_b,
+                            balance_neto=round(total_ing_b - total_gas_b, 2),
+                            hallazgos=insight_previo,
+                        )
+                        
+                        estado_str = ultimo_historial.estado_coach or "EXITOSO"
+                        try:
+                            estado_coach = EstadoCoach(estado_str)
+                        except ValueError:
+                            estado_coach = EstadoCoach.EXITOSO
+                            
+                        return RespuestaModulo(
+                            usuario_id=peticion.usuario_id,
+                            modulo=modulo_enum,
+                            consejo=consejo_final,
+                            estado_coach=estado_coach,
+                            insight=insight_dto,
+                            usando_fallback=(estado_coach != EstadoCoach.EXITOSO),
+                        )
+
+                metricas = servicio.ejecutar_calculos(df_a, df_b, contexto, **kwargs)
+
+                total_txs = len(df_a) + len(df_b)
+                total_ing_a = float(df_a[df_a["tipo"] == "INGRESO"]["monto"].sum()) if not df_a.empty else 0.0
+                total_gas_a = float(df_a[df_a["tipo"] == "GASTO"]["monto"].sum()) if not df_a.empty else 0.0
+                total_ing_b = float(df_b[df_b["tipo"] == "INGRESO"]["monto"].sum()) if not df_b.empty else 0.0
+                total_gas_b = float(df_b[df_b["tipo"] == "GASTO"]["monto"].sum()) if not df_b.empty else 0.0
+                
+                metricas["_total_ingresos"] = total_ing_b
+                metricas["_total_gastos"] = total_gas_b
+                metricas["_historial_previo"] = None
+                metricas["_historial_insight"] = None
+
+                prompt = servicio.orquestar_prompt(metricas, contexto)
+
+                esquema_comparacion = servicio.obtener_esquema_salida()
+
+                consejo, estado, fallback = await self._coach.obtener_consejo_ia(
+                    peticion.usuario_id, modulo_enum, prompt, metricas,
+                    contexto.rol, contexto.nombres, contexto=contexto,
+                    esquema_salida=esquema_comparacion
+                )
+
+                if isinstance(consejo, dict) and esquema_comparacion:
+                    try:
+                        consejo = esquema_comparacion(**consejo)
+                    except Exception as ex:
+                        logger.warning("[ORQUESTADOR] Error convirtiendo dict a %s: %s", esquema_comparacion.__name__, ex)
+                        consejo = json.dumps(consejo, ensure_ascii=False)
+
+                if not fallback and estado == EstadoCoach.EXITOSO:
+                    asyncio.create_task(
+                        asyncio.to_thread(
+                            self._persistir_historial,
+                            usuario_id=peticion.usuario_id,
+                            modulo=modulo_enum.value,
+                            metricas=metricas,
+                            consejo=consejo,
+                            estado_coach=estado.value,
+                        )
+                    )
+
+                insight_dto = InsightAnalitico(
+                    modulo=modulo_enum,
+                    total_transacciones_analizadas=total_txs,
+                    total_ingresos=total_ing_b,
+                    total_gastos=total_gas_b,
+                    balance_neto=round(total_ing_b - total_gas_b, 2),
+                    hallazgos=metricas,
+                )
+
+                resultado_final = RespuestaModulo(
+                    usuario_id=peticion.usuario_id,
+                    modulo=modulo_enum,
+                    consejo=consejo,
+                    estado_coach=estado,
+                    insight=insight_dto,
+                    usando_fallback=fallback,
+                )
+
+                return resultado_final
+            finally:
+                if clave_bloqueo:
+                    self._cache_redis.liberar_bloqueo_concurrente(clave_bloqueo)
 
         except HistorialInsuficienteError as e:
             return RespuestaModulo(

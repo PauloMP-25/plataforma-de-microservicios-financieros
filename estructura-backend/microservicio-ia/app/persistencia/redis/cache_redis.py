@@ -178,3 +178,22 @@ class CacheRedis:
             self._client.set(clave, valor, ex=ex)
         except Exception as e:
             logger.warning(f"[CACHE-REDIS] Error al guardar clave {clave}: {e}")
+
+    def adquirir_bloqueo_concurrente(self, clave: str, ttl_segundos: int = 15) -> bool:
+        """Intenta adquirir un bloqueo atómico usando SET con NX (Not Exists)."""
+        if not self._client:
+            return True  # Por resiliencia, si Redis no está disponible, permitimos continuar
+        try:
+            return bool(self._client.set(clave, "lock", ex=ttl_segundos, nx=True))
+        except Exception as e:
+            logger.warning(f"[CACHE-REDIS] Error al adquirir bloqueo concurrentemente {clave}: {e}")
+            return True  # Permitir continuar en caso de fallo de Redis
+
+    def liberar_bloqueo_concurrente(self, clave: str) -> None:
+        """Libera el bloqueo de concurrencia."""
+        if not self._client:
+            return
+        try:
+            self._client.delete(clave)
+        except Exception as e:
+            logger.warning(f"[CACHE-REDIS] Error al liberar bloqueo {clave}: {e}")
