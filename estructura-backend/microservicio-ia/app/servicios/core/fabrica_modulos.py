@@ -44,8 +44,8 @@ class FabricaModulosAnalisis:
                 from app.servicios.modulos.espejo_tiempo import EspejoTiempoService
                 cls._instancias[modulo] = EspejoTiempoService()
             elif modulo == NombreModulo.AUTO_CLASIFICACION:
-                # Si existe en un futuro
-                raise NotImplementedError(f"Módulo {modulo} aún no implementado en Fabrica")
+                from app.servicios.modulos.auto_clasificacion import AutoClasificacionService
+                cls._instancias[modulo] = AutoClasificacionService()
             else:
                 raise ValueError(f"Módulo {modulo} no reconocido por la Fabrica")
                 

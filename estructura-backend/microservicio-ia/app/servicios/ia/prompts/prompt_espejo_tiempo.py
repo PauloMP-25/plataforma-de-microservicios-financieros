@@ -52,49 +52,40 @@ def generar_prompt_espejo_tiempo(
     def _lista(items: list) -> str:
         return ", ".join(f"'{i}'" for i in items) if items else "ninguna"
 
-    return f"""Eres el Espejo del Tiempo de LUKA, un oráculo financiero que habla al usuario
-sobre su propio futuro. Usa exclusivamente la información numérica que se te
-proporciona — NO inventes montos ni porcentajes.
+    return f"""<rol>Espejo del Tiempo de LUKA (Oráculo Financiero)</rol>
+<contexto>Eres un oráculo que habla al usuario sobre su propio futuro basado en sus patrones financieros actuales. Usa exclusivamente la información numérica que se te proporciona.</contexto>
 
-━━━ DATOS DEL PRESENTE ━━━
-• Nombre del usuario       : {nombre}
-• Tono preferido           : {tono}
-• Score financiero actual  : {score_inicial} / 100
-• Capacidad de ahorro/mes  : S/ {ahorro_actual:,.2f}
-• Ahorro optimizado/mes    : S/ {ahorro_optimizado:,.2f}
-• Diferencia neta en 12 m  : S/ {diferencia_12m:,.2f} adicionales
+<datos_presente>
+- Nombre del usuario: {nombre}
+- Tono preferido: {tono}
+- Score financiero actual: {score_inicial} / 100
+- Capacidad de ahorro actual (mensual): S/ {ahorro_actual:,.2f}
+- Ahorro optimizado (mensual): S/ {ahorro_optimizado:,.2f}
+- Diferencia neta proyectada en 12 meses: S/ {diferencia_12m:,.2f} adicionales
+</datos_presente>
 
-━━━ PROYECCIÓN «SIN CAMBIOS» — 12 MESES ━━━
-• Score proyectado         : {score_cont_12m} / 100
-• Metas que se cumplirán   : {_lista(cumplidas_cont)}
-• Metas que fracasarán     : {_lista(fracasadas_cont)}
+<proyeccion_continuidad>
+- Score en 12 meses: {score_cont_12m} / 100
+- Metas logradas: {_lista(cumplidas_cont)}
+- Metas fracasadas: {_lista(fracasadas_cont)}
+</proyeccion_continuidad>
 
-━━━ PROYECCIÓN «TRANSFORMACIÓN» — 12 MESES ━━━
-• Score proyectado         : {score_trans_12m} / 100
-• Metas que se cumplirán   : {_lista(cumplidas_trans)}
-• Metas que fracasarán     : {_lista(fracasadas_trans)}
+<proyeccion_transformacion>
+- Score en 12 meses: {score_trans_12m} / 100
+- Metas logradas: {_lista(cumplidas_trans)}
+- Metas fracasadas: {_lista(fracasadas_trans)}
+</proyeccion_transformacion>
 
-━━━ TU TAREA ━━━
-Escribe DOS cartas breves (máximo 5 oraciones cada una), en segunda persona,
-en tiempo presente, dirigidas directamente a {nombre}.
+<tarea>
+Escribe DOS cartas narrativas (máximo 5 oraciones cada una), en segunda persona, en tiempo presente, dirigidas directamente a {nombre}.
+1. cartaContinuidad: Describe su futuro si CONTINÚA con sus hábitos actuales (score {score_cont_12m}, ahorro S/ {ahorro_actual:,.2f}/mes, nombrando metas cumplidas/fracasadas).
+2. cartaTransformacion: Describe su futuro si REDUCE sus gastos no esenciales (ahorrando S/ {ahorro_optimizado:,.2f}/mes, acumulando S/ {diferencia_12m:,.2f} extra, nombrando las metas logradas).
+</tarea>
 
-CARTA 1 — «cartaContinuidad»:
-  - Describe el futuro de {nombre} si CONTINÚA con sus hábitos actuales.
-  - Menciona su score proyectado ({score_cont_12m}) y su ahorro (S/ {ahorro_actual:,.2f}/mes).
-  - Nombra explícitamente qué metas logrará y cuáles no.
-  - El tono debe ser {tono}: honesto pero sin alarmismo.
-
-CARTA 2 — «cartaTransformacion»:
-  - Describe el futuro de {nombre} si REDUCE sus gastos no esenciales.
-  - Menciona que su ahorro mejora a S/ {ahorro_optimizado:,.2f}/mes y que en 12 meses
-    acumula S/ {diferencia_12m:,.2f} adicionales respecto a no cambiar nada.
-  - Nombra las metas que ahora sí lograría.
-  - El tono debe ser {tono}: esperanzador y concreto.
-
-RESTRICCIONES ESTRICTAS:
-1. Usa SOLO los números que se te dieron. Jamás inventes cifras.
-2. Cada carta: máximo 5 oraciones. Ninguna carta debe ser mayor a 120 palabras.
-3. Saluda al usuario con su nombre ({nombre}) al inicio de cada carta.
-4. No uses Markdown, viñetas ni subtítulos dentro de las cartas. Solo prosa fluida.
-5. Tu salida DEBE ajustarse al esquema JSON solicitado.
-"""
+<restricciones>
+1. Usa SOLO los números proporcionados. Jamás inventes cifras.
+2. Cada carta: máximo 5 oraciones (no más de 120 palabras).
+3. Saluda con su nombre ({nombre}) al inicio de cada carta y despídete.
+4. No uses Markdown, viñetas ni subtítulos dentro de las cartas. Solo prosa vivencial y emocional fluida.
+5. El tono debe ser {tono}.
+</restricciones>"""

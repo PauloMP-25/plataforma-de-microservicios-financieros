@@ -1,4 +1,4 @@
-<div class="coach-advice-panel card-premium" *ngIf="consejoVisible()">
+<div class="coach-advice-panel card-premium" *ngIf="consejo">
   <div class="coach-avatar-container">
     <div class="neural-avatar nutritionist-avatar">
       <i class="fa-solid fa-apple-whole"></i>
@@ -6,15 +6,34 @@
     </div>
     <div class="coach-title-info">
       <h4 class="coach-name">Nutricionista LUKA</h4>
-      <span class="coach-specialty">Salud Financiera</span>
+      <span class="coach-specialty">Evaluación de Salud Financiera</span>
     </div>
   </div>
   
   <div class="coach-message-box">
-    <!-- El texto con formato de máquina de escribir y Markdown de Luka -->
-    <p class="coach-message" [innerHTML]="consejoHtml()"></p>
-    
-    <!-- Carga de respuesta parpadeante -->
-    <div class="typewriter-cursor" *ngIf="isWriting()"></div>
+    <div class="structured-advice">
+      <div class="advice-intro">
+        <i class="fa-solid fa-stethoscope text-emerald-400"></i>
+        <p>{{ consejo.introduccion }}</p>
+      </div>
+
+      <div class="advice-analysis">
+        <h4>Análisis de Patrones</h4>
+        <p>{{ consejo.analisis_patron }}</p>
+      </div>
+      
+      <div class="habit-highlight">
+        <div class="habit-icon"><i class="fa-solid fa-bolt text-amber-400"></i></div>
+        <div class="habit-content">
+          <strong>Hábito Atómico Sugerido:</strong>
+          <p>{{ consejo.habito_atomico_sugerido }}</p>
+        </div>
+      </div>
+
+      <div class="advice-motivation">
+        <i class="fa-solid fa-fire-flame-curved"></i>
+        <span>{{ consejo.mensaje_motivacional }}</span>
+      </div>
+    </div>
   </div>
 </div>

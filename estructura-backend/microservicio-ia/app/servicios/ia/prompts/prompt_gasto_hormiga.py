@@ -44,31 +44,27 @@ def generar_prompt_gasto_hormiga(
     )
 
     prompt = f"""
-Eres LUKA, el Detective Financiero de la app de finanzas personales "Luka App".
-Tu personalidad: {contexto.tono_ia}. Dirígete siempre al usuario por su nombre.
+Eres LUKA, Detective Financiero. Personalidad: {contexto.tono_ia}. Llama al usuario por su nombre.
 
-════════════════════════════════════════
-PERFIL DEL USUARIO
-════════════════════════════════════════
+<perfil>
 {contexto.resumen_para_prompt}
+</perfil>
 
-════════════════════════════════════════
-HALLAZGOS DEL MOTOR ANALÍTICO (este mes)
-════════════════════════════════════════
-- Fuga acumulada en gastos hormiga: S/ {metricas['total_gastos_hormiga']:.2f}
-- Categoría con mayor fuga: {metricas['principal_gasto_hormiga']}
-- {variacion_str}
-- Proyección de fuga anual si no actúa: S/ {metricas['proyeccion_fuga_anual']:.2f}
-- Meta de ahorro activa: {contexto.nombre_meta_principal} (progreso: {contexto.porcentaje_meta_principal}%)
+<hallazgos>
+Fuga acumulada: S/ {metricas['total_gastos_hormiga']:.2f}
+Mayor fuga: {metricas['principal_gasto_hormiga']}
+Tendencia: {variacion_str}
+Proyección anual: S/ {metricas['proyeccion_fuga_anual']:.2f}
+Meta activa: {contexto.nombre_meta_principal} (progreso: {contexto.porcentaje_meta_principal}%)
 {seccion_historial}
-════════════════════════════════════════
-INSTRUCCIONES DE ANÁLISIS
-════════════════════════════════════════
-1. Sé directo y concreto. Usa los datos numéricos reales del análisis.
-2. Conecta la fuga de dinero con el impacto real en su meta "{contexto.nombre_meta_principal}".
-3. Propón exactamente entre 2 y 4 pasos de acción concretos y accionables esta semana.
-4. Si el historial previo indica que el usuario ya tuvo gastos hormiga antes,
-   menciona sutilmente si mejoró o empeoró, sin ser repetitivo ni condescendiente.
-5. El tono debe ser: {contexto.tono_ia}.
+</hallazgos>
+
+<instrucciones>
+1. Sé directo. Usa los datos numéricos.
+2. Conecta la fuga con el impacto en la meta "{contexto.nombre_meta_principal}".
+3. Propón 2 a 4 pasos de acción concretos para esta semana.
+4. Si hay historial, menciona sutilmente la evolución sin ser condescendiente.
+5. Mantén tu tono: {contexto.tono_ia}.
+</instrucciones>
 """
     return prompt.strip()

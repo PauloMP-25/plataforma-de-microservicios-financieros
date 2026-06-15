@@ -9,7 +9,7 @@ Cambios v3 (FASE 5):
     la evolución del usuario entre sesiones.
   - Se eliminó la instrucción "Responde en Markdown". En su lugar, el prompt
     instruye explícitamente a Gemini a generar JSON con el esquema
-    ConsejoEstructurado (introduccion, analisis_ia, conexion_emocional,
+    ConsejoEstructuradoHormiga (introduccion, analisis_ia, conexion_emocional,
     plan_accion_titulo, plan_accion_pasos, comentario_positivo).
   - ejecutar_calculos: SIN CAMBIOS — la lógica Pandas es intocable.
 ══════════════════════════════════════════════════════════════════════════════
@@ -26,7 +26,7 @@ import pandas as pd
 from app.libreria_comun.modelos.contexto import ContextoEstrategicoIADTO
 from app.servicios.core.base_analisis import BaseAnalisisService
 from app.utilidades.excepciones import HistorialInsuficienteError
-from app.modelos.esquemas import ConsejoEstructurado
+from app.modelos.esquemas import ConsejoEstructuradoHormiga
 from app.servicios.ia.prompts.prompt_gasto_hormiga import generar_prompt_gasto_hormiga
 
 logger = logging.getLogger(__name__)
@@ -90,10 +90,44 @@ class DeteccionGastosHormigaService(BaseAnalisisService):
                 ) * 100
 
         top_hormiga = "N/A"
+        list_detectados = []
         if not hormigas_actual.empty:
             top_hormiga = (
                 hormigas_actual.groupby("categoria")["monto"].sum().idxmax()
             )
+            
+            # Agrupar por descripción para encontrar compras repetidas
+            col_grupo = "descripcion" if "descripcion" in hormigas_actual.columns else "categoria"
+            for name, group in hormigas_actual.groupby(col_grupo):
+                total_grupo = float(group["monto"].sum())
+                count_grupo = len(group)
+                promedio = float(group["monto"].mean())
+                categoria_grupo = str(group["categoria"].iloc[0]) if "categoria" in group.columns else "Otros"
+                
+                # Obtener día de mayor gasto
+                dia_pico = "N/A"
+                if "fecha" in group.columns:
+                    try:
+                        dias_es = {
+                            "Monday": "Lunes", "Tuesday": "Martes", "Wednesday": "Miércoles",
+                            "Thursday": "Jueves", "Friday": "Viernes", "Saturday": "Sábado", "Sunday": "Domingo"
+                        }
+                        dia_name = group.loc[group["monto"].idxmax()]["fecha"].strftime("%A")
+                        dia_pico = dias_es.get(dia_name, dia_name)
+                    except Exception:
+                        pass
+                
+                list_detectados.append({
+                    "descripcion": str(name),
+                    "frecuencia": f"{count_grupo} veces/mes" if count_grupo > 1 else "1 vez/mes",
+                    "total": round(total_grupo, 2),
+                    "categoria": categoria_grupo,
+                    "promedio_por_compra": round(promedio, 2),
+                    "dia_mayor_gasto": dia_pico
+                })
+            
+            # Ordenar por total y tomar top 5
+            list_detectados = sorted(list_detectados, key=lambda x: x["total"], reverse=True)[:5]
 
         return {
             "total_gastos_hormiga": round(total_hormiga_actual, 2),
@@ -102,6 +136,7 @@ class DeteccionGastosHormigaService(BaseAnalisisService):
             "proyeccion_fuga_anual": round(total_hormiga_actual * 12, 2),
             "hay_hormigas": total_hormiga_actual > 0,
             "comparacion_disponible": comparacion_disponible,
+            "gastos_detectados": list_detectados
         }
 
     # ── Prompting ─────────────────────────────────────────────────────────────
@@ -115,4 +150,4 @@ class DeteccionGastosHormigaService(BaseAnalisisService):
         return generar_prompt_gasto_hormiga(metricas, contexto)
 
     def obtener_esquema_salida(self):
-        return ConsejoEstructurado
+        return ConsejoEstructuradoHormiga

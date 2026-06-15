@@ -61,7 +61,7 @@
     </div>
 
     <!-- ══════════ CONSEJO DEL COACH IA (Arriba) ══════════ -->
-    <div class="consejo-detective" *ngIf="consejoVisible()">
+    <div class="consejo-detective" *ngIf="consejoVisible() && consejoObj()">
       <div class="consejo-avatar">
         <i class="fa-solid fa-user-secret"></i>
       </div>
@@ -70,7 +70,31 @@
           <i class="fa-solid fa-message-dots"></i>
           Informe del Coach Financiero
         </span>
-        <div class="consejo-texto html-consejo" [innerHTML]="consejoHtml()"></div>
+        
+        <div class="consejo-estructurado">
+          <p class="consejo-intro">{{ consejoObj()!.introduccion }}</p>
+          <div class="consejo-analisis">
+            <i class="fa-solid fa-chart-pie"></i>
+            <p>{{ consejoObj()!.analisis_ia }}</p>
+          </div>
+          <div class="consejo-conexion">
+            <i class="fa-solid fa-heart"></i>
+            <p>{{ consejoObj()!.conexion_emocional }}</p>
+          </div>
+          
+          <div class="consejo-plan">
+            <h4><i class="fa-solid fa-bullseye"></i> {{ consejoObj()!.plan_accion_titulo }}</h4>
+            <ul>
+              <li *ngFor="let paso of consejoObj()!.plan_accion_pasos">
+                <i class="fa-solid fa-check-circle"></i> {{ paso }}
+              </li>
+            </ul>
+          </div>
+          
+          <div class="consejo-cierre">
+            <strong>{{ consejoObj()!.comentario_positivo }}</strong>
+          </div>
+        </div>
       </div>
     </div>
 

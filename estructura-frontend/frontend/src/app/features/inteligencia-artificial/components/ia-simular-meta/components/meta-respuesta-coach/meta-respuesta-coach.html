@@ -1,8 +1,43 @@
-<div class="prompt-gemini-box">
-  <div class="prompt-header">
-    <i class="fa-solid fa-comment-dots"></i> RESPUESTA EN PRODUCCIÓN DEL COACH LUKA
+<div class="respuesta-coach" *ngIf="consejo">
+  <div class="avatar-col">
+    <div class="avatar-icon"><i class="fa-solid fa-user-tie"></i></div>
   </div>
-  <div class="prompt-content">
-    <p [innerHTML]="consejoFormateado"></p>
+  
+  <div class="content-col" *ngIf="consejoObj()">
+    <div class="coach-bubble structured-bubble">
+      <p class="sim-intro">{{ consejoObj()!.introduccion }}</p>
+      
+      <div class="sim-diagnostico">
+        <i class="fa-solid fa-magnifying-glass-chart"></i>
+        <div>
+          <strong>Diagnóstico de Viabilidad:</strong>
+          <p>{{ consejoObj()!.diagnostico_viabilidad }}</p>
+        </div>
+      </div>
+      
+      <div class="sim-plan">
+        <i class="fa-solid fa-map"></i>
+        <div>
+          <strong>Plan de Acción:</strong>
+          <p>{{ consejoObj()!.plan_accion }}</p>
+        </div>
+      </div>
+      
+      <div class="sim-tecnica" *ngIf="consejoObj()!.tecnica_sugerida">
+        <div class="tecnica-icon"><i class="fa-regular fa-lightbulb"></i></div>
+        <div class="tecnica-text">
+          <strong>Técnica Sugerida:</strong>
+          <p>{{ consejoObj()!.tecnica_sugerida }}</p>
+        </div>
+      </div>
+      
+      <div class="sim-motivacion">
+        <em>{{ consejoObj()!.mensaje_motivacional }}</em>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-col" *ngIf="!consejoObj()">
+    <div class="coach-bubble" [innerHTML]="consejoStr()"></div>
   </div>
 </div>

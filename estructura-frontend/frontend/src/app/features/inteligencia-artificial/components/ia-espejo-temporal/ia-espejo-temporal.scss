@@ -1,484 +1,387 @@
-@use '../../../../../styles.scss' as *;
+// ia-espejo-temporal.scss
+
+/* 
+  Paleta Base:
+  Continuidad: Frío, oscuro, oxidado (slate, cool-gray, zinc)
+  Transformación: Cálido, dorado, luminoso (amber, gold, yellow)
+*/
 
 .espejo-container {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  width: 100%;
-  animation: fadeIn 0.4s ease-out;
-  background: rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(16px);
-  padding: 1.25rem;
-  @media (min-width: 768px) {
-    padding: 2rem;
-  }
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
   position: relative;
+  width: 100%;
+  min-height: 80vh;
+  background-color: #0f172a; // Slate-900
+  color: #f8fafc;
   overflow: hidden;
-  transition: all 0.5s ease-in-out;
-
-  &.loading-active {
-    border: 1px solid rgba(249, 115, 22, 0.4);
-    box-shadow: 0 0 35px rgba(249, 115, 22, 0.15);
-    background: rgba(15, 23, 42, 0.55);
-  }
-}
-
-/* ── Pantalla Inicial / Placeholder / Cargando ── */
-.loading-overlay-scanner {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-  z-index: 5;
-  
-  .scan-glow-line {
-    position: absolute;
-    width: 150%;
-    height: 12px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(249, 115, 22, 0.8) 50%,
-      transparent
-    );
-    box-shadow: 0 0 25px rgba(249, 115, 22, 0.6);
-    transform: rotate(-45deg);
-    top: -100px;
-    left: -100px;
-    animation: scannerSweep 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  }
-}
-
-.espejo-prompt-content {
+  font-family: 'Inter', sans-serif;
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  padding: 5rem 2rem;
-  max-width: 600px;
-  margin: 0 auto;
-  animation: fadeIn 0.4s ease-out;
-  z-index: 2;
+  padding: 2rem;
+  border-radius: 1rem;
 
-  .prompt-orb {
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
-    background: rgba(249, 115, 22, 0.08);
-    border: 2px solid rgba(249, 115, 22, 0.35);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.2rem;
-    color: #f97316;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 0 25px rgba(249, 115, 22, 0.15);
-    animation: float 3s ease-in-out infinite;
-    transition: all 0.3s ease;
+  &.loading-active {
+    pointer-events: none;
+    opacity: 0.8;
+  }
+}
 
-    &.pulse-glow {
-      animation: float 3s ease-in-out infinite, pulseOrbOrange 1.5s ease-in-out infinite alternate;
-      border-color: #f97316;
-      color: #ffffff;
-      box-shadow: 0 0 35px rgba(249, 115, 22, 0.5);
-    }
+// LOADER
+.loading-overlay-scanner {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.9);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  .scan-glow-line {
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, #fbbf24, transparent);
+    animation: scan 2s infinite ease-in-out;
   }
 
   h3 {
+    margin-top: 2rem;
     font-size: 1.5rem;
-    font-weight: 800;
-    color: #f1f5f9;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.75rem;
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
-  }
-
-  p {
-    font-size: 1rem;
-    color: #cbd5e1;
-    margin: 0 0 1rem 0;
-    line-height: 1.6;
-
-    strong {
-      color: #f97316;
-    }
-  }
-
-  .prompt-desc {
-    font-size: 1.1rem;
-    color: #94a3b8;
-    max-width: 500px;
-    font-weight: 500;
-  }
-
-  .prompt-sub {
-    font-size: 0.85rem;
-    color: #64748b;
-    margin: 0;
+    letter-spacing: 2px;
   }
 }
 
-/* ── Estructura de Espejo / Marco de Vidrio ── */
-.mirror-frame-glass {
-  position: relative;
-  border-radius: 24px;
-  padding: 2rem;
-  background: rgba(15, 23, 42, 0.45);
-  border: 2px solid rgba(186, 230, 253, 0.35); // Celeste / blanco metálico
-  box-shadow: 0 8px 32px rgba(186, 230, 253, 0.05), inset 0 0 20px rgba(255, 255, 255, 0.02);
-  overflow: hidden;
+@keyframes scan {
+  0% { transform: translateY(-100px); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(100px); opacity: 0; }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}
+.text-amber-500 { color: #f59e0b; }
+.text-amber-400 { color: #fbbf24; }
+.text-slate-400 { color: #94a3b8; }
+
+.resultado-espejo-layout {
+  width: 100%;
+  max-width: 1200px;
   display: flex;
-  transition: all 0.4s ease;
+  flex-direction: column;
+  gap: 3rem;
+  z-index: 10;
+}
 
-  &:hover {
-    border-color: rgba(186, 230, 253, 0.55);
-    box-shadow: 0 12px 40px rgba(186, 230, 253, 0.12), inset 0 0 20px rgba(255, 255, 255, 0.04);
+// CONTADOR DINÁMICO
+.contador-dinamico-central {
+  text-align: center;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 1.5rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+
+  .contador-label {
+    font-size: 1.2rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 0.5rem;
   }
-
-  .mirror-glass-sheen {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 40%;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, transparent 60%);
-    pointer-events: none;
-    z-index: 1;
+  .contador-valor {
+    font-size: 4.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
   }
 }
 
-/* ── 1. Sección Superior: Banner de Presente (Consejo de Luka) ── */
-.mirror-presente-banner {
+// DÍPTICO PARALLAX
+.diptico-parallax-container {
+  display: flex;
+  gap: 2rem;
+  perspective: 1000px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+.panel-diptico {
+  flex: 1;
+  padding: 2rem;
+  border-radius: 1.5rem;
+  transition: transform 0.1s ease-out; // Smooth parallax
+  box-shadow: 0 15px 35px rgba(0,0,0,0.5);
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  align-items: center;
-  width: 100%;
-  margin-bottom: 0.5rem;
-
-  @media (min-width: 768px) {
-    flex-direction: row;
-    align-items: stretch;
-    gap: 2rem;
-  }
-
-  .presente-mirror-aside {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .mystic-mirror-circle-mini {
-    position: relative;
-    width: 90px;
-    height: 90px;
-    border-radius: 50%;
-    background: radial-gradient(circle at center, rgba(168, 85, 247, 0.15) 0%, rgba(15, 23, 42, 0.95) 70%, #030712 100%);
-    border: 2px solid rgba(168, 85, 247, 0.4);
-    box-shadow: 0 0 20px rgba(168, 85, 247, 0.2), inset 0 0 10px rgba(34, 211, 238, 0.05);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    transition: all 0.5s ease;
-
-    &:hover {
-      border-color: rgba(34, 211, 238, 0.6);
-      box-shadow: 0 0 25px rgba(34, 211, 238, 0.3);
-    }
-
-    .mirror-glow-effect {
-      position: absolute;
-      width: 150%;
-      height: 150%;
-      background: radial-gradient(circle, rgba(168, 85, 247, 0.08) 0%, transparent 60%);
-      pointer-events: none;
-      animation: slowRotate 20s linear infinite;
-    }
-
-    .avatar-luka-outer {
-      position: relative;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: rgba(34, 211, 238, 0.15);
-      border: 2px solid rgba(34, 211, 238, 0.4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.1rem;
-      color: #22d3ee;
-      z-index: 2;
-    }
-
-    .pulse-ring {
-      position: absolute;
-      inset: -5px;
-      border-radius: 50%;
-      border: 1px solid rgba(34, 211, 238, 0.35);
-      animation: ringPulse 1.8s infinite alternate ease-in-out;
-    }
-  }
-
-  .presente-content-body {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    justify-content: center;
-    flex: 1;
-
-    .presente-title {
-      font-size: 0.8rem;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      color: #a855f7; // Purple accent
-      text-transform: uppercase;
-      margin: 0;
-    }
-
-    .luka-advice-text {
-      font-size: 0.78rem;
-      line-height: 1.5;
-      color: #cbd5e1;
-      text-align: left;
-    }
-  }
-}
-
-/* ── 2. Sección Central: Grid de 2 Columnas (Pasado vs Futuro) ── */
-.mirror-dual-columns-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
-  width: 100%;
-  align-items: stretch;
-
-  @media (min-width: 768px) {
-    grid-template-columns: 1fr 1fr; // Balanced equal columns
-  }
-
-  .mirror-column {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-    width: 100%;
-    min-width: 0; // prevent grid item overflow
-  }
-
-  .column-header-clean {
+  
+  .panel-header {
+    font-size: 1.5rem;
+    font-weight: 700;
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1.5px solid rgba(255, 255, 255, 0.04);
-    
-    i {
-      font-size: 1.25rem;
-      
-      &.past-color-icon {
-        color: #94a3b8;
-      }
-      &.future-color-icon {
-        color: #f97316;
-      }
-    }
+    border-bottom: 2px solid;
+    padding-bottom: 1rem;
+  }
+}
 
-    span {
-      font-size: 0.95rem;
-      font-weight: 800;
-      color: #f1f5f9;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
+.panel-continuidad {
+  background: linear-gradient(145deg, #1e293b, #0f172a);
+  border: 1px solid #334155;
+  
+  .panel-header {
+    color: #94a3b8;
+    border-color: #334155;
+  }
+}
+
+.panel-transformacion {
+  background: linear-gradient(145deg, #2e2411, #1a1608);
+  border: 1px solid #785a16;
+  
+  .panel-header {
+    color: #fbbf24;
+    border-color: #785a16;
+  }
+}
+
+// CARTAS MANUSCRITAS
+.carta-manuscrita {
+  flex-grow: 1;
+  padding: 2rem;
+  border-radius: 8px;
+  font-family: 'Caveat', 'Dancing Script', cursive; // Tipografía manuscrita
+  font-size: 1.4rem;
+  line-height: 1.6;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+  position: relative;
+
+  .carta-content {
+    position: relative;
+    z-index: 2;
+  }
+}
+
+.carta-envejecida {
+  background-color: #d1bfae;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.15'/%3E%3C/svg%3E");
+  color: #3e2723;
+  border: 1px solid #a1887f;
+  border-radius: 2px 15px 5px 20px; // Irregular border
+}
+
+.carta-premium {
+  background-color: #fff9e6;
+  background-image: linear-gradient(120deg, #fff9e6 0%, #fef3c7 100%);
+  color: #5c4000;
+  border: 2px solid #fbbf24;
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
+}
+
+.metricas-panel {
+  display: flex;
+  justify-content: space-between;
+  background: rgba(0,0,0,0.2);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  
+  .metrica span {
+    color: inherit;
+    opacity: 0.7;
+    margin-right: 0.5rem;
+  }
+}
+
+
+// LÍNEA DE TIEMPO RAMIFICADA
+.linea-tiempo-ramificada {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  position: relative;
+  padding: 2rem 0;
+  margin: 2rem 0;
+
+  .eje-central {
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: #334155;
+    z-index: 1;
   }
 
-  /* Columna 1: Pasado Stack */
-  .past-cards-vertical-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+  .nodo-tiempo {
+    position: relative;
+    z-index: 2;
+    width: 24px;
+    height: 24px;
+    background: #1e293b;
+    border: 3px solid #64748b;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: scale(1.2);
+    }
+
+    &.activo {
+      border-color: #fbbf24;
+      background: #fbbf24;
+      box-shadow: 0 0 15px #fbbf24;
+
+      .marcador-mes {
+        color: #fbbf24;
+        font-weight: bold;
+      }
+    }
+
+    .marcador-mes {
+      position: absolute;
+      top: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+
+    // Ramas decorativas (CSS only)
+    .ramificacion {
+      position: absolute;
+      left: 50%;
+      width: 2px;
+      height: 40px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    &.activo .ramificacion {
+      opacity: 1;
+    }
+
+    .rama-continuidad {
+      bottom: 24px;
+      background: linear-gradient(to top, #64748b, transparent);
+      transform: rotate(-30deg);
+      transform-origin: bottom center;
+    }
+
+    .rama-transformacion {
+      bottom: 24px;
+      background: linear-gradient(to top, #fbbf24, transparent);
+      transform: rotate(30deg);
+      transform-origin: bottom center;
+    }
+  }
+}
+
+
+// SLIDER ANTES / DESPUÉS
+.slider-metas-container {
+  width: 100%;
+  margin-top: 2rem;
+  
+  h3 {
+    text-align: center;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    color: #e2e8f0;
+  }
+
+  .slider-wrapper {
+    position: relative;
     width: 100%;
+    height: 200px;
+    background: #1e293b;
+    border-radius: 1rem;
+    overflow: hidden;
+    cursor: col-resize;
+    user-select: none;
+    border: 1px solid #334155;
+  }
 
-    .past-card {
-      padding: 1.25rem 1.5rem;
-      border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.04);
-      background: rgba(15, 23, 42, 0.3);
-      transition: all 0.3s ease;
+  .slider-panel {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-      &:hover {
-        border-color: rgba(255, 255, 255, 0.08);
-        transform: translateY(-2px);
+    .metas-lista {
+      width: 100%;
+      max-width: 400px;
+      text-align: left;
+      
+      h4 {
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
       }
 
-      .past-metric-header {
+      .meta-item {
+        padding: 0.5rem 0;
+        font-size: 1.1rem;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        font-size: 0.72rem;
-        font-weight: 700;
-        letter-spacing: 0.05em;
-        color: #64748b;
-      }
+        gap: 0.75rem;
 
-      .past-metric-value {
-        font-size: 1.35rem;
-        font-weight: 800;
-        margin: 0.4rem 0;
-      }
-
-      .past-metric-desc {
-        font-size: 0.78rem;
-        color: #64748b;
-        margin: 0;
-        line-height: 1.4;
-      }
-
-      &.habit-warning-card {
-        border-color: rgba(245, 158, 11, 0.15);
-        background: rgba(245, 158, 11, 0.02);
-
-        &:hover {
-          border-color: rgba(245, 158, 11, 0.25);
-        }
+        &.exito i { color: #10b981; }
+        &.fracaso i { color: #ef4444; }
       }
     }
   }
 
-  /* Columna 2: Futuro Stack */
-  .future-cards-vertical-rows {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    width: 100%;
-  }
-}
-
-/* ── 3. Sección Inferior: Pie de Página (Diferencia Neta) ── */
-.mirror-footer-layout {
-  display: flex;
-  width: 100%;
-  margin-top: 1rem;
-  padding: 1.5rem;
-
-  @media (min-width: 768px) {
-    padding: 1.5rem 2rem;
+  .slider-despues {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(0,0,0,0));
   }
 
-  .net-difference-horizontal {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-    width: 100%;
+  .slider-antes {
+    background: linear-gradient(135deg, rgba(148, 163, 184, 0.1), rgba(0,0,0,0));
+    backdrop-filter: blur(5px);
+    border-left: 2px solid #fbbf24;
+  }
 
-    @media (min-width: 600px) {
-      flex-direction: row;
-      align-items: center;
-      gap: 1.5rem;
-    }
-
-    .diff-icon-glow {
-      width: 56px;
-      height: 56px;
+  .slider-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: #fbbf24;
+    transform: translateX(-50%);
+    box-shadow: 0 0 10px rgba(251,191,36,0.5);
+    z-index: 10;
+    pointer-events: none; // let wrapper handle mouse events
+    
+    .slider-handle-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 32px;
+      height: 32px;
+      background: #fbbf24;
+      color: #000;
       border-radius: 50%;
-      background: rgba(34, 211, 238, 0.08);
-      border: 2px solid rgba(34, 211, 238, 0.35);
       display: flex;
-      align-items: center;
       justify-content: center;
-      font-size: 1.5rem;
-      color: #22d3ee;
-      box-shadow: 0 0 20px rgba(34, 211, 238, 0.15);
-      flex-shrink: 0;
-    }
-
-    .diff-info {
-      display: flex;
-      flex-direction: column;
-      gap: 0.2rem;
-      flex: 1;
-
-      .diff-label {
-        font-size: 0.7rem;
-        font-weight: 700;
-        color: #22d3ee;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-      }
-
-      .diff-value {
-        font-size: 1.6rem;
-        font-weight: 800;
-        color: #f1f5f9;
-        margin: 0;
-        text-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
-      }
-
-      .diff-desc {
-        font-size: 0.78rem;
-        color: #94a3b8;
-        margin: 0;
-        line-height: 1.4;
-      }
+      align-items: center;
+      font-size: 14px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
     }
   }
-}
-
-/* ── Animaciones y Keyframes ── */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slowRotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-@keyframes ringPulse {
-  0% {
-    transform: scale(0.9);
-    opacity: 0.3;
-    border-color: rgba(34, 211, 238, 0.2);
-  }
-  100% {
-    transform: scale(1.1);
-    opacity: 1;
-    border-color: rgba(168, 85, 247, 0.6);
-  }
-}
-
-@keyframes scannerSweep {
-  0% {
-    top: -20%;
-    left: -20%;
-  }
-  100% {
-    top: 120%;
-    left: 120%;
-  }
-}
-
-@keyframes pulseOrbOrange {
-  0% {
-    background: rgba(249, 115, 22, 0.1);
-    box-shadow: 0 0 15px rgba(249, 115, 22, 0.2);
-  }
-  100% {
-    background: rgba(249, 115, 22, 0.4);
-    box-shadow: 0 0 35px rgba(249, 115, 22, 0.6);
-  }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
 }

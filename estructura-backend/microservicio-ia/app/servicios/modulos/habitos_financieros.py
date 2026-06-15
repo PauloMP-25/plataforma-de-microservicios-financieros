@@ -10,6 +10,7 @@ import numpy as np
 from typing import Dict, Any
 from app.servicios.core.base_analisis import BaseAnalisisService
 from app.libreria_comun.modelos.contexto import ContextoEstrategicoIADTO
+from app.modelos.esquemas import ConsejoEstructuradoHabitos
 from app.servicios.ia.prompts.prompt_habitos_financieros import generar_prompt_habitos_financieros
 
 class HabitosFinancierosService(BaseAnalisisService):
@@ -50,3 +51,7 @@ class HabitosFinancierosService(BaseAnalisisService):
 
     def orquestar_prompt(self, metricas: Dict[str, Any], contexto: ContextoEstrategicoIADTO) -> str:
         return generar_prompt_habitos_financieros(metricas, contexto)
+
+    def obtener_esquema_salida(self):
+        return ConsejoEstructuradoHabitos
+

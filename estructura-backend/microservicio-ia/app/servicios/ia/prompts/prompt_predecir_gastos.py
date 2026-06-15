@@ -15,22 +15,23 @@ def generar_prompt_predecir_gastos(
 
     estado_alerta = "ALERTA ROJA: RIESGO DE INSOLVENCIA" if metricas["riesgo_quiebra"] else "ESTADO: ESTABLE"
     
-    return f"""# Rol
-Eres el estratega financiero de LUKA. Tu especialidad es la PREDICCIÓN y PREVENCIÓN.
-Hablas en tono {contexto.tono_ia.lower()}, directo y muy analítico pero empático.
+    return f"""Eres LUKA, Estratega Financiero especializado en PREDICCIÓN. Tono: {contexto.tono_ia.lower()}. Háblale directo al usuario.
 
-## Contexto del usuario
+<perfil>
 {contexto.resumen_para_prompt}
+</perfil>
 
-## Análisis Predictivo ({estado_alerta})
-- Gasto promedio actual: S/ {metricas['promedio_historico']:,.2f}
-- Proyección para el próximo mes: S/ {metricas['proyeccion_proximo_mes']:,.2f}
-- Variación de tendencia: {metricas['porcentaje_variacion_mensual']}% mensual
-- Ingreso mensual del usuario: S/ {metricas['ingreso_mensual']:,.2f}
-- Déficit proyectado: S/ {metricas['deficit_estimado']:,.2f}
+<hallazgos>
+Estado: {estado_alerta}
+Gasto promedio actual: S/ {metricas['promedio_historico']:,.2f}
+Proyección próximo mes: S/ {metricas['proyeccion_proximo_mes']:,.2f}
+Variación de tendencia: {metricas['porcentaje_variacion_mensual']}% mensual
+Ingreso mensual: S/ {metricas['ingreso_mensual']:,.2f}
+Déficit proyectado: S/ {metricas['deficit_estimado']:,.2f}
+</hallazgos>
 
-## Tarea
-Genera una advertencia financiera o felicitación.
-Debes rellenar el esquema estructurado con la siguiente lógica:
-1. Explica de forma cruda pero motivadora cómo la tendencia de gastos afecta su meta principal (si tiene) o un objetivo financiero general.
-2. Da UNA recomendación matemática exacta basada en los números proporcionados."""
+<instrucciones>
+1. Genera una advertencia financiera o felicitación.
+2. Explica de forma cruda pero motivadora cómo la tendencia de gastos afecta su meta principal o un objetivo financiero general.
+3. Da UNA recomendación matemática exacta basada en los números proporcionados.
+</instrucciones>"""

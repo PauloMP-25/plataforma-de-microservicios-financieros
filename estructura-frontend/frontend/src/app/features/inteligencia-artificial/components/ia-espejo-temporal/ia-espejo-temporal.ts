@@ -1,12 +1,12 @@
-import { Component, Input, OnInit, OnChanges, SimpleChanges, signal, computed } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RespuestaModuloDTO, InsightEspejoTemporalDTO } from '../../../../core/models/financiero/ia.model';
-import { IaEspejoCardComponent } from './components/ia-espejo-card/ia-espejo-card';
+import { RespuestaModuloDTO } from '../../../../core/models/ia_coach/ia-base.model';
+import { InsightEspejoTemporalDTO } from '../../../../core/models/ia_coach/ia-espejo.model';
 
 @Component({
   selector: 'app-ia-espejo-temporal',
   standalone: true,
-  imports: [CommonModule, IaEspejoCardComponent],
+  imports: [CommonModule],
   templateUrl: './ia-espejo-temporal.html',
   styleUrl: './ia-espejo-temporal.scss'
 })
@@ -14,7 +14,6 @@ export class IaEspejoTemporalComponent implements OnInit, OnChanges {
   @Input() resultado: RespuestaModuloDTO | null = null;
   @Input() cargando = false;
 
-  // Hito activo seleccionado para visualizar el díptico interactivo (3, 6, 12 meses)
   hitoSeleccionado = signal<3 | 6 | 12>(12);
 
   @Input() set hitoSeleccionadoInput(value: 3 | 6 | 12) {
@@ -23,7 +22,6 @@ export class IaEspejoTemporalComponent implements OnInit, OnChanges {
     }
   }
 
-  // Datos mock específicos para Paulo
   private mockInsight: InsightEspejoTemporalDTO = {
     datosPresente: {
       scoreActual: 42,
@@ -76,33 +74,10 @@ export class IaEspejoTemporalComponent implements OnInit, OnChanges {
     }
   };
 
-  // Signal que contiene los datos del espejo actual
   espejoData = signal<InsightEspejoTemporalDTO>(this.mockInsight);
 
-  // Consejo del Coach Luka
-  consejoLuka = computed<string>(() => {
-    return this.resultado?.consejo || this.espejoData().narrativasGemini.cartaTransformacion;
-  });
+  animatedDiferenciaNeta = 0;
 
-  ngOnInit() {
-    this.cargarDatos();
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['resultado'] && this.resultado) {
-      this.cargarDatos();
-    }
-  }
-
-  private cargarDatos() {
-    if (this.resultado && this.resultado.insight) {
-      this.espejoData.set(this.resultado.insight as InsightEspejoTemporalDTO);
-    } else {
-      this.espejoData.set(this.mockInsight);
-    }
-  }
-
-  // Cálculo dinámico del impacto neto del ahorro según el hito seleccionado
   diferenciaNeta = computed<number>(() => {
     const data = this.espejoData();
     const hito = this.hitoSeleccionado();
@@ -123,7 +98,40 @@ export class IaEspejoTemporalComponent implements OnInit, OnChanges {
     return trans - cont;
   });
 
-  // Helper para obtener el hito activo del espejo seleccionado
+  // Efecto parallax
+  parallaxTransformContinuidad = 'translate(0px, 0px)';
+  parallaxTransformTransformacion = 'translate(0px, 0px)';
+
+  // Slider Antes/Después (Porcentaje)
+  sliderPosition = 50;
+  isDraggingSlider = false;
+
+  constructor() {
+    effect(() => {
+      // Animar el contador cada vez que cambia la diferencia
+      const targetValue = this.diferenciaNeta();
+      this.animateCounter(targetValue);
+    });
+  }
+
+  ngOnInit() {
+    this.cargarDatos();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['resultado'] && this.resultado) {
+      this.cargarDatos();
+    }
+  }
+
+  private cargarDatos() {
+    if (this.resultado && this.resultado.insight) {
+      this.espejoData.set(this.resultado.insight as InsightEspejoTemporalDTO);
+    } else {
+      this.espejoData.set(this.mockInsight);
+    }
+  }
+
   getHitoData(tipo: 'continuidad' | 'transformacion') {
     const data = this.espejoData();
     const hito = this.hitoSeleccionado();
@@ -134,8 +142,52 @@ export class IaEspejoTemporalComponent implements OnInit, OnChanges {
     return proyeccion.hitos12Meses;
   }
 
-  // Alternar el hito temporal a visualizar
   setHito(meses: 3 | 6 | 12) {
     this.hitoSeleccionado.set(meses);
+  }
+
+  onMouseMove(event: MouseEvent) {
+    const x = (event.clientX / window.innerWidth) - 0.5;
+    const y = (event.clientY / window.innerHeight) - 0.5;
+    
+    // El panel de continuidad se mueve opuesto al cursor
+    this.parallaxTransformContinuidad = `translate(${-x * 20}px, ${-y * 20}px)`;
+    // El panel de transformación se mueve con el cursor
+    this.parallaxTransformTransformacion = `translate(${x * 30}px, ${y * 30}px)`;
+  }
+
+  onSliderMove(event: MouseEvent) {
+    const wrapper = event.currentTarget as HTMLElement;
+    const rect = wrapper.getBoundingClientRect();
+    let position = ((event.clientX - rect.left) / rect.width) * 100;
+    
+    if (position < 0) position = 0;
+    if (position > 100) position = 100;
+    
+    this.sliderPosition = position;
+  }
+
+  private animateCounter(target: number) {
+    let startTimestamp: number | null = null;
+    const duration = 1000;
+    const startValue = this.animatedDiferenciaNeta;
+    const change = target - startValue;
+
+    const step = (timestamp: number) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      
+      // Easing function (easeOutQuad)
+      const easeProgress = progress * (2 - progress);
+      this.animatedDiferenciaNeta = startValue + change * easeProgress;
+
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      } else {
+        this.animatedDiferenciaNeta = target;
+      }
+    };
+
+    window.requestAnimationFrame(step);
   }
 }

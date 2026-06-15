@@ -104,3 +104,15 @@ El desarrollo se ejecutará de forma incremental a lo largo de 5 fases para gara
     *   Se recomienda configurar un Feature Flag para el comportamiento estructurado de `GASTO_HORMIGA`, permitiendo desactivarlo en producción de manera inmediata si se detectan anomalías de consumo.
 *   **Concurrencia en Consumidor RabbitMQ:**
     *   El `ConsumidorIA` se ejecuta mediante llamadas síncronas usando `asyncio.run()`. En caso de usar lógica asíncrona para guardar el historial en la Fase 4, validar la compatibilidad del event loop en el hilo daemon del consumidor de RabbitMQ para evitar colisiones de hilos.
+
+---
+
+## 💡 Estrategia Global: Técnicas Avanzadas de Prompting (Optimización de Tokens)
+
+Para maximizar el margen de rentabilidad por suscripción y reducir el consumo de tokens de Gemini, todos los módulos de LUKA deben aplicar estrictamente las siguientes **5 técnicas de optimización**:
+
+1. **Datos Pre-procesados (El core de la Fase 3)**: NUNCA enviar transacciones crudas a Gemini. Enviar exclusivamente los KPIs y Hallazgos analíticos ya calculados por Pandas (ej. promedios, variaciones, detección de fugas). Esto reduce los miles de tokens de entrada a solo decenas.
+2. **Etiquetas XML (`<perfil>`, `<instrucciones>`)**: En lugar de usar separadores visuales que consumen múltiples tokens (ej. `═════════`), usar XML. Los LLMs están altamente entrenados para interpretar estas etiquetas estructuradas rápidamente, mejorando la segmentación semántica del contexto.
+3. **Structured Outputs (Nativo Pydantic)**: No gastar tokens en el prompt explicando cómo estructurar el JSON. Se delega 100% al parámetro `response_schema` usando la integración nativa de Pydantic, forzando la salida sin "fluff".
+4. **Role y Persona upfront**: Definir el rol ("Eres LUKA...") y el tono en la primera línea del prompt para setear la temperatura cognitiva del modelo inmediatamente.
+5. **Reducción de "Fluff" y Zero-Shot**: Eliminar saludos o instrucciones conversacionales extensas ("Por favor", "Me gustaría que..."). Usar imperativos directos. Gracias a los esquemas estrictos, se omite el *Few-Shot* (dar ejemplos), utilizando *Zero-Shot* puro.

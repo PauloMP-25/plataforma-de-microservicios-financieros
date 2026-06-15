@@ -17,18 +17,43 @@ def generar_prompt_reto_ahorro(
 
     if estado == "VEREDICTO":
         resultado = "LOGRADO" if metricas['exito'] else "FALLIDO"
-        return f"""
-        Eres LUKA. El usuario terminó su reto de '{metricas['categoria']}'.
-        RESULTADO: {resultado}. AHORRO LOGRADO: S/ {metricas['ahorro_real']}.
-        GASTO REAL: S/ {metricas['gasto_real']} vs LÍMITE: S/ {metricas['monto_limite']}.
-        Tono: {contexto.tono_ia}.
-        """
+        return f"""Eres LUKA. Háblale directo al usuario. Tono: {contexto.tono_ia}.
+
+<perfil>
+Reto de Ahorro: {metricas['categoria']}
+{contexto.resumen_para_prompt}
+</perfil>
+
+<hallazgos>
+Resultado Final: {resultado}
+Gasto Real: S/ {metricas['gasto_real']}
+Límite de Gasto: S/ {metricas['monto_limite']}
+Ahorro Logrado: S/ {metricas['ahorro_real']}
+</hallazgos>
+
+<instrucciones>
+Genera un veredicto estructurado.
+Diagnóstico: Comenta por qué lo logró o por qué falló basándote en el gasto real vs el límite.
+Estrategia: Qué debe mejorar para la próxima o qué debe mantener.
+</instrucciones>"""
 
     if estado == "NUEVO":
-        return f"""
-        Eres LUKA. Propón una nueva MISIÓN DE AHORRO.
-        CATEGORÍA: {metricas['categoria_objetivo']}. DURACIÓN: {metricas['frecuencia']}.
-        Tono: {contexto.tono_ia}.
-        """
-    
+        return f"""Eres LUKA. Háblale directo al usuario. Tono: {contexto.tono_ia}.
+
+<perfil>
+Reto Propuesto: {metricas['categoria_objetivo']}
+{contexto.resumen_para_prompt}
+</perfil>
+
+<hallazgos>
+Frecuencia: {metricas['frecuencia']}
+Ahorro Potencial: S/ {metricas['ahorro_potencial']}
+</hallazgos>
+
+<instrucciones>
+Propón esta misión de ahorro de manera motivadora.
+Diagnóstico: Indica por qué es importante reducir el gasto en esa categoría.
+Estrategia: Dale una o dos reglas claras para no gastar más del límite.
+</instrucciones>"""
+
     return "[SKIP_IA] Sigue registrando tus movimientos."
