@@ -44,7 +44,7 @@ class PrediccionGastosService(BaseAnalisisService):
         self.validar_historial(df)
         
         # 1. Preparar datos temporales
-        df['fecha_dt'] = pd.to_datetime(df['fecha'])
+        df['fecha_dt'] = pd.to_datetime(df['fecha'], format="mixed")
         
         # Agrupar gastos por mes
         df_gastos = df[df['tipo'].str.upper() == "GASTO"].copy()

@@ -21,7 +21,7 @@ class HabitosFinancierosService(BaseAnalisisService):
         self.validar_historial(df)
         
         frecuencia = kwargs.get("frecuencia", "SEMANAL").upper()
-        df['fecha'] = pd.to_datetime(df['fecha'])
+        df['fecha'] = pd.to_datetime(df['fecha'], format="mixed")
         
         # 1. Definir ventana de análisis
         dias = 7 if frecuencia == "SEMANAL" else 15 if frecuencia == "QUINCENAL" else 30

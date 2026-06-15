@@ -695,13 +695,18 @@ export class IaHubComponent implements OnInit, OnDestroy {
 
     const consejos: Record<string, any> = {
       'gasto-hormiga': {
-        pensamiento_interno_ia: 'El usuario gasta demasiado en cafetería.',
-        introduccion: 'Paulo, vamos al grano.',
-        analisis_ia: 'Tus gastos en Cafetería han subido un 20% este mes. Lo que ves como S/ 12.00 diarios hoy, se traduce en una fuga de S/ 4,320.00 al año.',
-        conexion_emocional: 'Estás descuidando tu patrimonio por una comodidad momentánea. Con ese dinero podrías comprar lo que tanto quieres.',
-        plan_accion_titulo: 'Operación: Control de Fugas',
-        plan_accion_pasos: ['Lleva tu propio café en un termo al campus al menos tres días.'],
-        comentario_positivo: '¡Deja de financiar el marketing de las grandes cadenas y empieza a financiar tus sueños!'
+        pensamiento_interno_ia: 'He analizado los gastos hormiga de Cesar, notando una mejora en la reducción de fugas. Mi objetivo es ofrecer 5 pasos prácticos y conectar la fuga con su meta.',
+        analisis_ia: '¡Hola, Cesar! He estado revisando tus movimientos este mes. Tus gastos hormiga suman S/ 181.95, con el transporte siendo la categoría principal de fuga. ¡Pero hay buenas noticias! Has logrado disminuir tus gastos hormiga en un 11.2% respecto al mes anterior. Sin embargo, si esta tendencia de fuga se mantiene, podrías estar perdiendo S/ 2,183.40 al año.',
+        conexion_emocional: 'Esos S/ 181.95 que se te escaparon este mes, y la proyección anual de S/ 2,183.40, podrían ser una parte de tus ahorros para tu \'Viaje a Japón\'. ¡Imagina todo lo que harías con ese dinero allá!',
+        plan_accion_titulo: 'Plan de Acción: ¡Ahorra en Transporte para Japón!',
+        plan_accion_pasos: [
+          'Identifica rutas alternativas o considera caminar/bicicleta para trayectos cortos.',
+          'Revisa tus gastos de transporte diarios y busca al menos una forma de optimizarlos esta semana (ej. usar transporte público en lugar de taxi).',
+          'Establece un presupuesto semanal específico para transporte y monitorea que no lo excedas.',
+          'Organiza viajes compartidos con compañeros que tengan rutas similares para dividir los costos.',
+          'Camina en los tramos cortos de menos de 10 cuadras; además de ahorrar, beneficiará tu salud diaria.'
+        ],
+        comentario_positivo: '¡Sigue así, Cesar! Cada pequeño ajuste te acerca más a tu increíble viaje a Japón. ¡Estoy aquí para apoyarte en cada paso!'
       },
       'predecir-gastos': {
         pensamiento_interno_ia: 'Evaluando proyecciones de gasto vs ingreso esperado. Existe riesgo si no se ajustan los fijos.',

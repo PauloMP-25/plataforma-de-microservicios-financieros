@@ -98,3 +98,30 @@ Esto garantiza:
 ### Baja Prioridad (Deuda técnica)
 - Añadir índice compuesto `(usuario_id, modulo, fecha_generacion)` en `ia_historial_coaching` para optimizar consultas de historial cuando la tabla crezca.
 - Agregar `__init__.py` a las carpetas `prompts/` y `fallbacks/` para hacerlas paquetes explícitos.
+
+---
+
+## PRUEBAS DE RESPUESTA DE GEMINI POR MODULO
+
+| Módulo | Fecha de Prueba | ¿Exitoso? | Estado |
+|---|---|---|---|
+| `GASTO_HORMIGA` | 2026-06-15 | ✅ | Exitoso. Estructura unificada: sin `introduccion`, con saludo personalizado bajo `analisis_ia` y exactamente 5 pasos. |
+
+### Respuesta de Gemini — GASTO_HORMIGA
+
+```json
+{
+  "pensamiento_interno_ia": "He analizado los gastos hormiga de Cesar, notando una mejora en la reducción de fugas. Mi objetivo es ofrecer 5 pasos prácticos y conectar la fuga con su meta.",
+  "analisis_ia": "¡Hola, Cesar! He estado revisando tus movimientos este mes. Tus gastos hormiga suman S/ 181.95, con el transporte siendo la categoría principal de fuga. ¡Pero hay buenas noticias! Has logrado disminuir tus gastos hormiga en un 11.2% respecto al mes anterior. Sin embargo, si esta tendencia de fuga se mantiene, podrías estar perdiendo S/ 2,183.40 al año.",
+  "conexion_emocional": "Esos S/ 181.95 que se te escaparon este mes, y la proyección anual de S/ 2,183.40, podrían ser una parte de tus ahorros para tu 'Viaje a Japón'. ¡Imagina todo lo que harías con ese dinero allá!",
+  "plan_accion_titulo": "Plan de Acción: ¡Ahorra en Transporte para Japón!",
+  "plan_accion_pasos": [
+    "Identifica rutas alternativas o considera caminar/bicicleta para trayectos cortos.",
+    "Revisa tus gastos de transporte diarios y busca al menos una forma de optimizarlos esta semana (ej. usar transporte público en lugar de taxi).",
+    "Establece un presupuesto semanal específico para transporte y monitorea que no lo excedas.",
+    "Organiza viajes compartidos con compañeros que tengan rutas similares para dividir los costos.",
+    "Camina en los tramos cortos de menos de 10 cuadras; además de ahorrar, beneficiará tu salud diaria."
+  ],
+  "comentario_positivo": "¡Sigue así, Cesar! Cada pequeño ajuste te acerca más a tu increíble viaje a Japón. ¡Estoy aquí para apoyarte en cada paso!"
+}
+```

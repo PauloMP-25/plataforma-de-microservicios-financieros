@@ -110,13 +110,9 @@ class ConsejoEstructuradoHormiga(BaseModel):
         ...,
         description="Razonamiento lógico breve sobre los cálculos y variaciones. Mantenlo en máximo 1-2 oraciones para ahorrar tokens.",
     )
-    introduccion: str = Field(
-        ...,
-        description="Saludo personalizado y contexto del análisis. 1-2 frases.",
-    )
     analisis_ia: str = Field(
         ...,
-        description="Análisis detallado de los gastos hormiga detectados: montos, categorías y patrones.",
+        description="Saludo personalizado según el tono de la IA configurado en el perfil, seguido del análisis detallado de los gastos hormiga detectados: montos, categorías y patrones.",
     )
     conexion_emocional: str = Field(
         ...,
@@ -128,7 +124,7 @@ class ConsejoEstructuradoHormiga(BaseModel):
     )
     plan_accion_pasos: List[str] = Field(
         ...,
-        description="Lista de 2 a 5 pasos concretos y accionables para reducir los gastos hormiga.",
+        description="Lista de exactamente 5 pasos concretos y accionables para reducir los gastos hormiga.",
     )
     comentario_positivo: str = Field(
         ...,

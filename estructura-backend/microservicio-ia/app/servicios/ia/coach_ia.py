@@ -232,7 +232,6 @@ class CoachIA:
             # ── Rama B: Structured Output (JSON schema) ───────────────────────
             # response_schema acepta la clase Pydantic directamente (SDK >= 0.5)
             generation_config_structured = genai.types.GenerationConfig(
-                max_output_tokens=config.gemini_max_tokens,
                 temperature=config.gemini_temperatura,
                 response_mime_type="application/json",
                 response_schema=esquema_salida,
@@ -252,7 +251,7 @@ class CoachIA:
             except json.JSONDecodeError as e:
                 logger.error(
                     "[COACH-IA] Structured Output no es JSON válido: %s | raw: %s",
-                    e, respuesta.text[:200],
+                    e, respuesta.text,
                 )
                 # Re-lanzar para que el caller active el fallback
                 raise
