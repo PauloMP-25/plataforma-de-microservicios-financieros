@@ -14,6 +14,7 @@ import { MetaFiltersComponent } from '../../components/meta-filters/meta-filters
 import { MetaCardComponent } from '../../components/meta-card/meta-card.component';
 import { MetaDetailsSidebarComponent } from '../../components/meta-details-sidebar/meta-details-sidebar.component';
 import { MetaConfirmModalComponent } from '../../components/meta-confirm-modal/meta-confirm-modal.component';
+import { MetasUtilityService } from '../../services/metas-utility.service';
 
 @Component({
   selector: 'app-metas-page',
@@ -36,6 +37,7 @@ export class MetasPage implements OnInit {
   private transaccionesService = inject(Transacciones);
   private authService = inject(AuthService);
   private eventBus = inject(AppEventBus);
+  private metasUtility = inject(MetasUtilityService);
 
   // Estado
   metas = signal<RespuestaMetaAhorro[]>([]);
@@ -83,18 +85,7 @@ export class MetasPage implements OnInit {
   protected readonly Math = Math;
 
   // Lista de categorías con sus íconos correspondientes
-  readonly categorias = [
-    { id: 'Viaje', nombre: 'Viaje', icono: 'fa-solid fa-plane' },
-    { id: 'Vivienda', nombre: 'Vivienda', icono: 'fa-solid fa-house' },
-    { id: 'Auto', nombre: 'Auto', icono: 'fa-solid fa-car' },
-    { id: 'Estudios', nombre: 'Estudios', icono: 'fa-solid fa-graduation-cap' },
-    { id: 'Tecnología', nombre: 'Tecnología', icono: 'fa-solid fa-laptop' },
-    { id: 'Emergencia', nombre: 'Emergencia', icono: 'fa-solid fa-piggy-bank' },
-    { id: 'Salud', nombre: 'Salud', icono: 'fa-solid fa-kit-medical' },
-    { id: 'Inversión', nombre: 'Inversión', icono: 'fa-solid fa-chart-line' },
-    { id: 'Negocio', nombre: 'Negocio', icono: 'fa-solid fa-briefcase' },
-    { id: 'Otros', nombre: 'Otros', icono: 'fa-solid fa-bullseye' }
-  ];
+  categorias = this.metasUtility.categorias;
 
   // Ahorro disponible cargado desde FinancieroService (balance general)
   ahorroDisponible = computed(() => {
@@ -120,10 +111,10 @@ export class MetasPage implements OnInit {
     let saldoRestante = disponibleGlobal;
 
     const activasCalculadas = activasOrdenadas.map(meta => {
-      const datosVisuales = this.obtenerCategoriaYNombre(meta.nombre);
+      const datosVisuales = this.metasUtility.obtenerCategoriaYNombre(meta.nombre);
       const nombreVisual = datosVisuales.nombre;
       const categoriaVisual = meta.proposito || datosVisuales.categoria || 'Otros';
-      const iconoVisual = this.obtenerIconoCategoria(categoriaVisual);
+      const iconoVisual = this.metasUtility.obtenerIconoCategoria(categoriaVisual);
 
       const faltante = meta.montoObjetivo;
       const adicionalAplicado = Math.min(faltante, saldoRestante);
@@ -147,10 +138,10 @@ export class MetasPage implements OnInit {
     });
 
     const completadasMapeadas = completadas.map(meta => {
-      const datosVisuales = this.obtenerCategoriaYNombre(meta.nombre);
+      const datosVisuales = this.metasUtility.obtenerCategoriaYNombre(meta.nombre);
       const nombreVisual = datosVisuales.nombre;
       const categoriaVisual = meta.proposito || datosVisuales.categoria || 'Otros';
-      const iconoVisual = this.obtenerIconoCategoria(categoriaVisual);
+      const iconoVisual = this.metasUtility.obtenerIconoCategoria(categoriaVisual);
 
       return {
         ...meta,
@@ -317,26 +308,11 @@ export class MetasPage implements OnInit {
 
   // Descomponer prefijo del nombre
   obtenerCategoriaYNombre(metaNombre: string): { categoria: string; nombre: string; icono: string } {
-    const match = metaNombre.match(/^\[(.*?)\] (.*)$/);
-    if (match) {
-      const cat = match[1];
-      const nom = match[2];
-      return {
-        categoria: cat,
-        nombre: nom,
-        icono: this.obtenerIconoCategoria(cat)
-      };
-    }
-    return {
-      categoria: 'Otros',
-      nombre: metaNombre,
-      icono: this.obtenerIconoCategoria('Otros')
-    };
+    return this.metasUtility.obtenerCategoriaYNombre(metaNombre);
   }
 
   obtenerIconoCategoria(catId: string): string {
-    const cat = this.categorias.find(c => c.id === catId);
-    return cat ? cat.icono : 'fa-solid fa-bullseye';
+    return this.metasUtility.obtenerIconoCategoria(catId);
   }
 
   obtenerColorEstado(meta: any): string {
@@ -420,7 +396,7 @@ export class MetasPage implements OnInit {
 
     this.metasService.eliminarMeta(metaId).subscribe({
       next: () => {
-        this.removerMockLocalmente(metaId);
+        this.metasUtility.removerMockLocalmente(metaId);
         this.exitoMensaje.set('Meta de ahorro eliminada con éxito.');
         if (this.metaSeleccionada()?.id === metaId) {
           this.metaSeleccionada.set(null);
@@ -429,7 +405,7 @@ export class MetasPage implements OnInit {
         setTimeout(() => this.exitoMensaje.set(''), 4000);
       },
       error: () => {
-        this.removerMockLocalmente(metaId);
+        this.metasUtility.removerMockLocalmente(metaId);
         this.metas.update(items => items.filter(i => i.id !== metaId));
         if (this.metaSeleccionada()?.id === metaId) {
           this.metaSeleccionada.set(null);
@@ -439,19 +415,6 @@ export class MetasPage implements OnInit {
         setTimeout(() => this.exitoMensaje.set(''), 4000);
       }
     });
-  }
-
-  private removerMockLocalmente(id: string): void {
-    const localMetasStr = localStorage.getItem('luka_mock_metas');
-    if (localMetasStr) {
-      try {
-        let lista = JSON.parse(localMetasStr);
-        lista = lista.filter((m: any) => m.id !== id);
-        localStorage.setItem('luka_mock_metas', JSON.stringify(lista));
-      } catch (e) {
-        console.error(e);
-      }
-    }
   }
 
   // Selección para panel de detalle
@@ -514,8 +477,7 @@ export class MetasPage implements OnInit {
         setTimeout(() => this.exitoMensaje.set(''), 5000);
       },
       error: () => {
-        // Simulación offline si falla
-        this.marcarMockComoCompletadoLocalmente(meta.id, meta.montoObjetivo);
+        this.metasUtility.marcarMockComoCompletadoLocalmente(meta.id, meta.montoObjetivo);
         this.metas.update(items => items.map(i => {
           if (i.id === meta.id) {
             return {
@@ -535,29 +497,6 @@ export class MetasPage implements OnInit {
         setTimeout(() => this.exitoMensaje.set(''), 5000);
       }
     });
-  }
-
-  private marcarMockComoCompletadoLocalmente(id: string, montoObjetivo: number): void {
-    const localMetasStr = localStorage.getItem('luka_mock_metas');
-    if (localMetasStr) {
-      try {
-        let lista = JSON.parse(localMetasStr);
-        lista = lista.map((m: any) => {
-          if (m.id === id) {
-            return {
-              ...m,
-              montoActual: montoObjetivo,
-              completada: true,
-              fechaActualizacion: new Date().toISOString()
-            };
-          }
-          return m;
-        });
-        localStorage.setItem('luka_mock_metas', JSON.stringify(lista));
-      } catch (e) {
-        console.error(e);
-      }
-    }
   }
 
   limpiarFiltros(): void {
