@@ -2,13 +2,13 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { ClienteMetasLimitesService } from '../../../../core/services/cliente-metas-limites.service';
 import { RespuestaMetaAhorro, SolicitudMetaAhorro } from '../../../../core/models/cliente/meta-limite.model';
 import { FinancieroService } from '../../../../core/services/Financiero.service';
 import { MetasUtilityService } from '../../services/metas-utility.service';
 import { MetaPurposeSelectorComponent } from '../../components/meta-purpose-selector/meta-purpose-selector.component';
 import { MetaPreviewCardComponent } from '../../components/meta-preview-card/meta-preview-card.component';
 import { MetaRecommendedSavingsComponent } from '../../components/meta-recommended-savings/meta-recommended-savings.component';
+import { MetasDataService } from '../../services/metas-data.service';
 
 @Component({
   selector: 'app-meta-form-page',
@@ -28,7 +28,7 @@ export class MetaFormPage implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-  private metasService = inject(ClienteMetasLimitesService);
+  private metasDataService = inject(MetasDataService);
   private financieroService = inject(FinancieroService);
   private metasUtility = inject(MetasUtilityService);
 
@@ -101,19 +101,13 @@ export class MetaFormPage implements OnInit {
     this.cargando.set(true);
     this.errorMensaje.set('');
 
-    this.metasService.obtenerMeta(id).subscribe({
+    this.metasDataService.obtenerMeta(id).subscribe({
       next: (meta) => {
         this.completarFormularioConMeta(meta);
         this.cargando.set(false);
       },
       error: () => {
-        // Fallback a localStorage o mock iniciales
-        const mock = this.metasUtility.obtenerListaMockActual().find(m => m.id === id);
-        if (mock) {
-          this.completarFormularioConMeta(mock);
-        } else {
-          this.errorMensaje.set('No se pudo encontrar la meta seleccionada en el sistema.');
-        }
+        this.errorMensaje.set('No se pudo encontrar la meta seleccionada en el sistema.');
         this.cargando.set(false);
       }
     });
@@ -203,32 +197,27 @@ export class MetaFormPage implements OnInit {
 
     if (this.modoEdicion && this.metaId) {
       // Flujo de edición
-      this.metasService.actualizarMeta(this.metaId, payload).subscribe({
+      this.metasDataService.actualizarMeta(this.metaId, payload).subscribe({
         next: () => {
           this.exitoMensaje.set(`Meta "${formVal.nombre}" actualizada con éxito.`);
           this.finalizarConExito();
         },
-        error: (err) => {
-          console.error('Error al actualizar meta editada:', err);
-          // Edición offline/mock fallback
-          this.metasUtility.actualizarMockLocalmente(this.metaId!, payload);
-          this.exitoMensaje.set(`Meta "${formVal.nombre}" actualizada con éxito (Modo Pruebas).`);
-          this.finalizarConExito();
+        error: () => {
+          this.errorMensaje.set('Hubo un error al guardar la meta de ahorro.');
+          this.cargando.set(false);
         }
       });
     } else {
       // Flujo de creación
-      this.metasService.crearMeta(payload).subscribe({
+      this.metasDataService.crearMeta(payload).subscribe({
         next: (nuevaMeta) => {
           const datosVisuales = this.metasUtility.obtenerCategoriaYNombre(nuevaMeta.nombre);
           this.exitoMensaje.set(`Meta "${datosVisuales.nombre}" creada con éxito.`);
           this.finalizarConExito();
         },
         error: () => {
-          // Creación offline/mock
-          this.metasUtility.crearMockLocalmente(payload);
-          this.exitoMensaje.set(`Meta "${formVal.nombre}" creada con éxito (Modo Pruebas).`);
-          this.finalizarConExito();
+          this.errorMensaje.set('Hubo un error al crear la meta de ahorro.');
+          this.cargando.set(false);
         }
       });
     }

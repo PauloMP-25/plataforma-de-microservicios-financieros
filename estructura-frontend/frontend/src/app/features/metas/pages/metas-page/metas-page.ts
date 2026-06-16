@@ -1,20 +1,18 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { ClienteMetasLimitesService } from '../../../../core/services/cliente-metas-limites.service';
 import { RespuestaMetaAhorro } from '../../../../core/models/cliente/meta-limite.model';
 import { FinancieroService } from '../../../../core/services/Financiero.service';
-import { Transacciones } from '../../../../core/services/transacciones';
 import { AuthService } from '../../../../core/services/auth.service';
 import { AppEventBus } from '../../../../core/services/app-event-bus.service';
 import { TransaccionRequestDTO } from '../../../../core/models/financiero/transaccion.model';
-import { forkJoin } from 'rxjs';
 import { MetaKpiComponent } from '../../components/meta-kpi/meta-kpi.component';
 import { MetaFiltersComponent } from '../../components/meta-filters/meta-filters.component';
 import { MetaCardComponent } from '../../components/meta-card/meta-card.component';
 import { MetaDetailsSidebarComponent } from '../../components/meta-details-sidebar/meta-details-sidebar.component';
 import { MetaConfirmModalComponent } from '../../components/meta-confirm-modal/meta-confirm-modal.component';
 import { MetasUtilityService } from '../../services/metas-utility.service';
+import { MetasDataService } from '../../services/metas-data.service';
 
 @Component({
   selector: 'app-metas-page',
@@ -32,9 +30,8 @@ import { MetasUtilityService } from '../../services/metas-utility.service';
 })
 export class MetasPage implements OnInit {
   private router = inject(Router);
-  private metasService = inject(ClienteMetasLimitesService);
+  private metasDataService = inject(MetasDataService);
   private financieroService = inject(FinancieroService);
-  private transaccionesService = inject(Transacciones);
   private authService = inject(AuthService);
   private eventBus = inject(AppEventBus);
   private metasUtility = inject(MetasUtilityService);
@@ -69,8 +66,9 @@ export class MetasPage implements OnInit {
     yearsSet.add(currentYear + 2);
 
     this.metas().forEach(m => {
-      if (m.fechaLimite) {
-        const parts = m.fechaLimite.substring(0, 10).split('-');
+      const fechaAnio = m.fechaCreacion || m.fechaLimite;
+      if (fechaAnio) {
+        const parts = fechaAnio.substring(0, 10).split('-');
         if (parts.length === 3) {
           const y = parseInt(parts[0], 10);
           if (!isNaN(y)) yearsSet.add(y);
@@ -187,14 +185,15 @@ export class MetasPage implements OnInit {
       });
     }
 
-    // Filtro por Año
+    // Filtro por Año (Basado en la fecha de creación)
     const anio = this.filtroAnio();
     if (anio !== 'Todos') {
       const anioNum = parseInt(anio, 10);
       listado = listado.filter(m => {
-        if (!m.fechaLimite) return false;
-        const limitStr = m.fechaLimite.substring(0, 10);
-        const parts = limitStr.split('-');
+        const fechaAnio = m.fechaCreacion || m.fechaLimite;
+        if (!fechaAnio) return false;
+        const startStr = fechaAnio.substring(0, 10);
+        const parts = startStr.split('-');
         if (parts.length !== 3) return false;
         const year = parseInt(parts[0], 10);
         return year === anioNum;
@@ -263,7 +262,7 @@ export class MetasPage implements OnInit {
     this.cargando.set(true);
     this.errorMensaje.set('');
 
-    this.metasService.listarMetas(0, 100).subscribe({
+    this.metasDataService.listarMetas(0, 100).subscribe({
       next: (pagina) => {
         if (pagina && pagina.content) {
           this.metas.set(pagina.content);
@@ -279,8 +278,7 @@ export class MetasPage implements OnInit {
           if (fresca) this.metaSeleccionada.set(fresca);
         }
       },
-      error: (err) => {
-        console.error('Error al recuperar metas de la API:', err);
+      error: () => {
         this.errorMensaje.set('Hubo un error al cargar tus metas. Por favor, intenta de nuevo.');
         this.metas.set([]);
         this.cargando.set(false);
@@ -394,9 +392,8 @@ export class MetasPage implements OnInit {
     this.errorMensaje.set('');
     this.exitoMensaje.set('');
 
-    this.metasService.eliminarMeta(metaId).subscribe({
+    this.metasDataService.eliminarMeta(metaId).subscribe({
       next: () => {
-        this.metasUtility.removerMockLocalmente(metaId);
         this.exitoMensaje.set('Meta de ahorro eliminada con éxito.');
         if (this.metaSeleccionada()?.id === metaId) {
           this.metaSeleccionada.set(null);
@@ -405,14 +402,9 @@ export class MetasPage implements OnInit {
         setTimeout(() => this.exitoMensaje.set(''), 4000);
       },
       error: () => {
-        this.metasUtility.removerMockLocalmente(metaId);
-        this.metas.update(items => items.filter(i => i.id !== metaId));
-        if (this.metaSeleccionada()?.id === metaId) {
-          this.metaSeleccionada.set(null);
-        }
-        this.exitoMensaje.set('Meta de ahorro eliminada con éxito (Modo Pruebas).');
+        this.errorMensaje.set('Hubo un error al eliminar la meta de ahorro.');
         this.cargando.set(false);
-        setTimeout(() => this.exitoMensaje.set(''), 4000);
+        setTimeout(() => this.errorMensaje.set(''), 4000);
       }
     });
   }
@@ -460,12 +452,13 @@ export class MetasPage implements OnInit {
       notas: `Meta alcanzada: ${meta.nombreVisual}|Gasto registrado automáticamente al cumplir el objetivo financiero|DIARIO`
     };
 
-    forkJoin({
-      gasto: this.transaccionesService.registrar(transaccionPayload),
-      meta: this.metasService.actualizarProgresoMeta(meta.id, meta.montoObjetivo)
-    }).subscribe({
-      next: () => {
-        this.exitoMensaje.set(`¡Felicidades! Has completado tu meta "${meta.nombreVisual}". Se registró un gasto de S/ ${meta.montoObjetivo.toFixed(2)}.`);
+    this.metasDataService.completarMeta(meta, transaccionPayload).subscribe({
+      next: (res) => {
+        const mensajeExito = res.isMock
+          ? `¡Felicidades! Has completado tu meta "${meta.nombreVisual}" (Modo Pruebas).`
+          : `¡Felicidades! Has completado tu meta "${meta.nombreVisual}". Se registró un gasto de S/ ${meta.montoObjetivo.toFixed(2)}.`;
+        
+        this.exitoMensaje.set(mensajeExito);
         this.modalConfirmarCompletar.set(null);
         this.metaSeleccionada.set(null);
         
@@ -477,24 +470,8 @@ export class MetasPage implements OnInit {
         setTimeout(() => this.exitoMensaje.set(''), 5000);
       },
       error: () => {
-        this.metasUtility.marcarMockComoCompletadoLocalmente(meta.id, meta.montoObjetivo);
-        this.metas.update(items => items.map(i => {
-          if (i.id === meta.id) {
-            return {
-              ...i,
-              montoActual: meta.montoObjetivo,
-              completada: true,
-              fechaActualizacion: new Date().toISOString()
-            };
-          }
-          return i;
-        }));
-
-        this.exitoMensaje.set(`¡Felicidades! Has completado tu meta "${meta.nombreVisual}" (Modo Pruebas).`);
-        this.modalConfirmarCompletar.set(null);
-        this.metaSeleccionada.set(null);
+        this.errorMensaje.set('Hubo un error al completar la meta de ahorro.');
         this.cargando.set(false);
-        setTimeout(() => this.exitoMensaje.set(''), 5000);
       }
     });
   }
