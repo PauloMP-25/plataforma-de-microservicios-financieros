@@ -86,7 +86,7 @@ export class MetasPage implements OnInit {
 
     const activasCalculadas = activasOrdenadas.map(meta => {
       const datosVisuales = this.obtenerCategoriaYNombre(meta.nombre);
-      const nombreVisual = meta.proposito ? meta.nombre : datosVisuales.nombre;
+      const nombreVisual = datosVisuales.nombre;
       const categoriaVisual = meta.proposito || datosVisuales.categoria || 'Otros';
       const iconoVisual = this.obtenerIconoCategoria(categoriaVisual);
 
@@ -113,7 +113,7 @@ export class MetasPage implements OnInit {
 
     const completadasMapeadas = completadas.map(meta => {
       const datosVisuales = this.obtenerCategoriaYNombre(meta.nombre);
-      const nombreVisual = meta.proposito ? meta.nombre : datosVisuales.nombre;
+      const nombreVisual = datosVisuales.nombre;
       const categoriaVisual = meta.proposito || datosVisuales.categoria || 'Otros';
       const iconoVisual = this.obtenerIconoCategoria(categoriaVisual);
 

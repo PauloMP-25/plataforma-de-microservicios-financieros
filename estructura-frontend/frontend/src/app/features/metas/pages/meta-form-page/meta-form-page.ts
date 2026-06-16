@@ -198,7 +198,7 @@ export class MetaFormPage implements OnInit {
   completarFormularioConMeta(meta: RespuestaMetaAhorro): void {
     const datosVisuales = this.obtenerCategoriaYNombre(meta.nombre);
     this.formulario.patchValue({
-      nombre: meta.proposito ? meta.nombre : datosVisuales.nombre,
+      nombre: datosVisuales.nombre,
       categoria: meta.proposito || datosVisuales.categoria || 'Otros',
       montoObjetivo: meta.montoObjetivo,
       montoActual: meta.montoActual,
