@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-meta-bubble',
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
+  styleUrl: './meta-bubble.component.scss',
   host: {
     'class': 'bubble-container',
     '[class.bubble-container--large]': 'size() === "large"',

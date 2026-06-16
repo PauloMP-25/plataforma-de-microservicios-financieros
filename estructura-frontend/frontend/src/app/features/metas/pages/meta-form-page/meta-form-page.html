@@ -141,19 +141,13 @@
             @let formIconSelected = obtenerIconoCategoria(formCatSelected);
             @let formDate = formulario.get('fechaLimite')?.value;
             
-            <div class="bubble-container bubble-container--preview bubble-container--active"
-                 [style.background]="'conic-gradient(' + obtenerColorProgreso(formPct) + ' ' + formPct + '%, var(--border-color) 0)'">
-              <div class="bubble">
-                <div class="bubble__water" [style.transform]="'translateY(' + (formPct >= 100 ? 15 : (100 - formPct)) + '%)'">
-                  <div class="bubble__wave bubble__wave--front"></div>
-                  <div class="bubble__wave bubble__wave--back"></div>
-                </div>
-                <div class="bubble__content">
-                  <i [class]="formIconSelected" class="bubble__category-icon"></i>
-                  <span class="bubble__number">{{ formPct.toFixed(0) }}%</span>
-                </div>
-              </div>
-            </div>
+            <app-meta-bubble 
+              [icono]="formIconSelected" 
+              [porcentaje]="formPct" 
+              [estado]="'active'" 
+              [color]="obtenerColorProgreso(formPct)" 
+              [size]="'preview'">
+            </app-meta-bubble>
 
             <!-- Ficha Resumen Interactiva -->
             <div class="meta-form-page__summary-details">

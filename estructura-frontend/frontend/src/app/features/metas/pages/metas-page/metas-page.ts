@@ -90,6 +90,9 @@ export class MetasPage implements OnInit {
     { id: 'Estudios', nombre: 'Estudios', icono: 'fa-solid fa-graduation-cap' },
     { id: 'Tecnología', nombre: 'Tecnología', icono: 'fa-solid fa-laptop' },
     { id: 'Emergencia', nombre: 'Emergencia', icono: 'fa-solid fa-piggy-bank' },
+    { id: 'Salud', nombre: 'Salud', icono: 'fa-solid fa-kit-medical' },
+    { id: 'Inversión', nombre: 'Inversión', icono: 'fa-solid fa-chart-line' },
+    { id: 'Negocio', nombre: 'Negocio', icono: 'fa-solid fa-briefcase' },
     { id: 'Otros', nombre: 'Otros', icono: 'fa-solid fa-bullseye' }
   ];
 

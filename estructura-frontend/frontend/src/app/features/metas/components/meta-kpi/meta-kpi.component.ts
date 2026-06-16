@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-meta-kpi',
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
+  styleUrl: './meta-kpi.component.scss',
   host: {
     'class': 'metas-page__kpi-card card',
   },

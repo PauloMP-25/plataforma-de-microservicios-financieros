@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-meta-filters',
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
+  styleUrl: './meta-filters.component.scss',
   host: {
     'class': 'metas-page__filters card anim-fade-up',
   },

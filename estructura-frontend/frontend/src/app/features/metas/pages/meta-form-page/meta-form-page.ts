@@ -5,11 +5,12 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ClienteMetasLimitesService } from '../../../../core/services/cliente-metas-limites.service';
 import { RespuestaMetaAhorro, SolicitudMetaAhorro } from '../../../../core/models/cliente/meta-limite.model';
 import { FinancieroService } from '../../../../core/services/Financiero.service';
+import { MetaBubbleComponent } from '../../components/meta-bubble/meta-bubble.component';
 
 @Component({
   selector: 'app-meta-form-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, MetaBubbleComponent],
   templateUrl: './meta-form-page.html',
   styleUrl: './meta-form-page.scss',
 })
@@ -38,6 +39,9 @@ export class MetaFormPage implements OnInit {
     { id: 'Estudios', nombre: 'Estudios', icono: 'fa-solid fa-graduation-cap' },
     { id: 'Tecnología', nombre: 'Tecnología', icono: 'fa-solid fa-laptop' },
     { id: 'Emergencia', nombre: 'Emergencia', icono: 'fa-solid fa-piggy-bank' },
+    { id: 'Salud', nombre: 'Salud', icono: 'fa-solid fa-kit-medical' },
+    { id: 'Inversión', nombre: 'Inversión', icono: 'fa-solid fa-chart-line' },
+    { id: 'Negocio', nombre: 'Negocio', icono: 'fa-solid fa-briefcase' },
     { id: 'Otros', nombre: 'Otros', icono: 'fa-solid fa-bullseye' }
   ];
 

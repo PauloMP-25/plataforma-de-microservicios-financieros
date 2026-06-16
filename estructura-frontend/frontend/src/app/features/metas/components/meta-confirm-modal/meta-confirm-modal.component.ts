@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-meta-confirm-modal',
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
+  styleUrl: './meta-confirm-modal.component.scss',
   template: `
     <div class="metas-page__modal-backdrop" (click)="cancel.emit()">
       <div class="metas-page__confirm-modal card" (click)="$event.stopPropagation()">

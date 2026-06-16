@@ -4,8 +4,10 @@ import { MetaBubbleComponent } from '../meta-bubble/meta-bubble.component';
 
 @Component({
   selector: 'app-meta-details-sidebar',
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, MetaBubbleComponent],
+  styleUrl: './meta-details-sidebar.component.scss',
   template: `
     <div class="metas-page__sidebar-backdrop" (click)="close.emit()">
       <aside class="metas-page__sidebar card" (click)="$event.stopPropagation()">

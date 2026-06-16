@@ -4,8 +4,10 @@ import { MetaBubbleComponent } from '../meta-bubble/meta-bubble.component';
 
 @Component({
   selector: 'app-meta-card',
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, MetaBubbleComponent],
+  styleUrl: './meta-card.component.scss',
   host: {
     'class': 'metas-page__card card',
     '[class.metas-page__card--selected]': 'isSelected()',
