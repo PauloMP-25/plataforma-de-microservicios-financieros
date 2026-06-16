@@ -9,11 +9,23 @@ import { AuthService } from '../../../../core/services/auth.service';
 import { AppEventBus } from '../../../../core/services/app-event-bus.service';
 import { TransaccionRequestDTO } from '../../../../core/models/financiero/transaccion.model';
 import { forkJoin } from 'rxjs';
+import { MetaKpiComponent } from '../../components/meta-kpi/meta-kpi.component';
+import { MetaFiltersComponent } from '../../components/meta-filters/meta-filters.component';
+import { MetaCardComponent } from '../../components/meta-card/meta-card.component';
+import { MetaDetailsSidebarComponent } from '../../components/meta-details-sidebar/meta-details-sidebar.component';
+import { MetaConfirmModalComponent } from '../../components/meta-confirm-modal/meta-confirm-modal.component';
 
 @Component({
   selector: 'app-metas-page',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    MetaKpiComponent,
+    MetaFiltersComponent,
+    MetaCardComponent,
+    MetaDetailsSidebarComponent,
+    MetaConfirmModalComponent
+  ],
   templateUrl: './metas-page.html',
   styleUrl: './metas-page.scss',
 })
