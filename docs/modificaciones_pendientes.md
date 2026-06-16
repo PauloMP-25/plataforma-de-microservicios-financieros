@@ -82,14 +82,19 @@ Este documento centraliza todas las modificaciones, refactorizaciones, pruebas, 
 
 ---
 
-### 🎯 Layout: Metas
+### 🎯 Layout: Metas [Responsable: Paul Bendezu]
 
 | Categoría | Descripción | Prioridad | Estado | Fecha de registro | Fecha de cambio |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| Integración API | **[F-65] Metas - Integración de Campos:** Enlazar y renderizar correctamente todos los campos y atributos de datos que envía el backend para la sección de metas. | Alta | Pendiente | 15 de junio de 2026 | — |
-| Interactividad | **[F-66] Metas - Funcionalidad de Filtros:** Hacer completamente operativos los filtros de visualización de metas, procesando correctamente la selección en el frontend. | Media | Pendiente | 15 de junio de 2026 | — |
-| Estilos | **[F-67] Metas - Coherencia Estética:** Revisar el diseño para garantizar la correcta visualización de colores, jerarquías y textos de los componentes tanto en el tema oscuro como en el tema claro. | Media | Pendiente | 15 de junio de 2026 | — |
-| Modularización | **[F-30] Modularizar Metas:** Refactorizar la sección aislando su lógica y estructura en microcomponentes dedicados. | Media | Pendiente | 12 de junio de 2026 | — |
+| Integración API | **[F-65] Metas - Integración de Campos:** Enlazar y renderizar correctamente todos los campos y atributos de datos que envía el backend para la sección de metas. | Alta | ✔ Completado | 15 de junio de 2026 | 16 de junio de 2026 |
+| Interactividad | **[F-66] Metas - Funcionalidad de Filtros:** Hacer completamente operativos los filtros de visualización de metas, procesando correctamente la selección en el frontend. | Media | ✔ Completado | 15 de junio de 2026 | 16 de junio de 2026 |
+| Estilos | **[F-67] Metas - Coherencia Estética:** Revisar el diseño para garantizar la correcta visualización de colores, jerarquías y textos de los componentes tanto en el tema oscuro como en el tema claro. | Media | ✔ Completado | 15 de junio de 2026 | 16 de junio de 2026 |
+| Modularización | **[F-30] Modularizar Metas:** Refactorizar la sección aislando su lógica y estructura en microcomponentes dedicados. | Media | ✔ Completado | 12 de junio de 2026 | 16 de junio de 2026 |
+| Lógica de Negocio | **[F-30-A] Nuevas Categorías de Metas:** Añadir tres propósitos adicionales (Salud, Inversión, Negocio) con iconos específicos y soporte en el listado y formulario. | Media | ✔ Completado | 15 de junio de 2026 | 16 de junio de 2026 |
+| Arquitectura | **[F-30-B] Servicio Utilitario & Mocks:** Centralizar lógica de categorías, parseo de prefijos y ciclo de vida de almacenamiento mock local en `MetasUtilityService`. | Media | ✔ Completado | 15 de junio de 2026 | 16 de junio de 2026 |
+| Arquitectura | **[F-30-C] Centralización de Datos (`MetasDataService`):** Aislar llamadas HTTP y lógica de fallback a mocks locales en un servicio de datos inyectable. | Alta | ✔ Completado | 16 de junio de 2026 | 16 de junio de 2026 |
+| Interactividad | **[F-66-A] Filtro de Año por Fecha de Creación:** Modificar la lógica de filtros y años disponibles para operar sobre la fecha de creación de la meta. | Media | ✔ Completado | 16 de junio de 2026 | 16 de junio de 2026 |
+| Estilos / Bugfix | **[F-67-A] Corrección de Alineación en Detalles:** Corregir el layout flexbox de "Faltan ahorrar" en la barra lateral de detalles de meta. | Alta | ✔ Completado | 16 de junio de 2026 | 16 de junio de 2026 |
 
 ---
 
