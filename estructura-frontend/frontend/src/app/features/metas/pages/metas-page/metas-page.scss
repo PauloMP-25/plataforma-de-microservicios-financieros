@@ -119,7 +119,7 @@
     border: 3px solid var(--border-color);
     border-top-color: var(--color-primary);
     border-radius: 50%;
-    animation: wave-spin 1s linear infinite;
+    animation: spin 1s linear infinite;
   }
 
   /* ── KPI Cards Dashboard ── */
@@ -234,6 +234,13 @@
       &:focus {
         border-color: var(--color-primary);
         box-shadow: 0 0 0 3px rgba(91, 106, 240, 0.15);
+      }
+    }
+
+    select {
+      option {
+        background-color: var(--bg-card);
+        color: var(--text-primary);
       }
     }
   }
@@ -375,22 +382,34 @@
       &.badge-success {
         border-color: rgba(34, 197, 94, 0.35);
         background: rgba(34, 197, 94, 0.12);
-        color: #22c55e;
+        color: #15803d;
         backdrop-filter: blur(8px);
+
+        body.theme-dark & {
+          color: #22c55e;
+        }
       }
 
       &.badge-danger {
         border-color: rgba(239, 68, 68, 0.35);
         background: rgba(239, 68, 68, 0.12);
-        color: #ef4444;
+        color: #b91c1c;
         backdrop-filter: blur(8px);
+
+        body.theme-dark & {
+          color: #ef4444;
+        }
       }
 
       &.badge-primary {
         border-color: rgba(91, 106, 240, 0.35);
         background: rgba(91, 106, 240, 0.12);
-        color: #8ea2ff;
+        color: var(--color-primary);
         backdrop-filter: blur(8px);
+
+        body.theme-dark & {
+          color: #8ea2ff;
+        }
       }
     }
 
@@ -1227,6 +1246,12 @@
   }
   to {
     transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
