@@ -5,13 +5,22 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ClienteMetasLimitesService } from '../../../../core/services/cliente-metas-limites.service';
 import { RespuestaMetaAhorro, SolicitudMetaAhorro } from '../../../../core/models/cliente/meta-limite.model';
 import { FinancieroService } from '../../../../core/services/Financiero.service';
-import { MetaBubbleComponent } from '../../components/meta-bubble/meta-bubble.component';
 import { MetasUtilityService } from '../../services/metas-utility.service';
+import { MetaPurposeSelectorComponent } from '../../components/meta-purpose-selector/meta-purpose-selector.component';
+import { MetaPreviewCardComponent } from '../../components/meta-preview-card/meta-preview-card.component';
+import { MetaRecommendedSavingsComponent } from '../../components/meta-recommended-savings/meta-recommended-savings.component';
 
 @Component({
   selector: 'app-meta-form-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, MetaBubbleComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    MetaPurposeSelectorComponent,
+    MetaPreviewCardComponent,
+    MetaRecommendedSavingsComponent
+  ],
   templateUrl: './meta-form-page.html',
   styleUrl: './meta-form-page.scss',
 })
