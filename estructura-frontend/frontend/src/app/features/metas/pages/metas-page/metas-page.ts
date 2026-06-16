@@ -46,6 +46,26 @@ export class MetasPage implements OnInit {
   filtroMontoMin = signal<number | null>(null);
   filtroMontoMax = signal<number | null>(null);
 
+  // Lista de años dinámicos basados en metas y el año actual
+  aniosDisponibles = computed(() => {
+    const yearsSet = new Set<number>();
+    const currentYear = new Date().getFullYear();
+    yearsSet.add(currentYear);
+    yearsSet.add(currentYear + 1);
+    yearsSet.add(currentYear + 2);
+
+    this.metas().forEach(m => {
+      if (m.fechaLimite) {
+        const parts = m.fechaLimite.substring(0, 10).split('-');
+        if (parts.length === 3) {
+          const y = parseInt(parts[0], 10);
+          if (!isNaN(y)) yearsSet.add(y);
+        }
+      }
+    });
+
+    return Array.from(yearsSet).sort((a, b) => a - b);
+  });
 
   // Exponer Math para la plantilla HTML
   protected readonly Math = Math;
@@ -153,18 +173,25 @@ export class MetasPage implements OnInit {
       const mesNum = parseInt(mes, 10);
       listado = listado.filter(m => {
         if (!m.fechaLimite) return false;
-        const date = new Date(m.fechaLimite + 'T00:00:00');
-        return date.getMonth() === mesNum;
+        const limitStr = m.fechaLimite.substring(0, 10);
+        const parts = limitStr.split('-');
+        if (parts.length !== 3) return false;
+        const month = parseInt(parts[1], 10) - 1; // 0-indexed en JS
+        return month === mesNum;
       });
     }
 
     // Filtro por Año
     const anio = this.filtroAnio();
     if (anio !== 'Todos') {
+      const anioNum = parseInt(anio, 10);
       listado = listado.filter(m => {
         if (!m.fechaLimite) return false;
-        const date = new Date(m.fechaLimite + 'T00:00:00');
-        return date.getFullYear() === parseInt(anio, 10);
+        const limitStr = m.fechaLimite.substring(0, 10);
+        const parts = limitStr.split('-');
+        if (parts.length !== 3) return false;
+        const year = parseInt(parts[0], 10);
+        return year === anioNum;
       });
     }
 
