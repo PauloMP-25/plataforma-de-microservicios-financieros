@@ -360,54 +360,7 @@ export class PerfilFinanciero implements OnInit {
     return todos.filter(l => l.desbloqueado).slice(0, 3);
   });
 
-  // ── Composición por categorías (mock avanzado) ───────────────
-  composicionIngresos = computed<CategoriaComposicion[]>(() => {
-    const r = this.resumenActual();
-    if (!r || r.totalIngresos === 0) return [];
-    const total = r.totalIngresos;
-    return [
-      { nombre: 'Salario', porcentaje: 68, monto: total * 0.68, color: '#22c55e' },
-      { nombre: 'Freelance', porcentaje: 18, monto: total * 0.18, color: '#5b6af0' },
-      { nombre: 'Inversiones', porcentaje: 9, monto: total * 0.09, color: '#f59e0b' },
-      { nombre: 'Otros', porcentaje: 5, monto: total * 0.05, color: '#8290af' },
-    ];
-  });
 
-  composicionGastos = computed<CategoriaComposicion[]>(() => {
-    const r = this.resumenActual();
-    if (!r || r.totalGastos === 0) return [];
-    const total = r.totalGastos;
-    return [
-      { nombre: 'Vivienda', porcentaje: 40, monto: total * 0.40, color: '#ef4444' },
-      { nombre: 'Alimentación', porcentaje: 25, monto: total * 0.25, color: '#f59e0b' },
-      { nombre: 'Transporte', porcentaje: 15, monto: total * 0.15, color: '#5b6af0' },
-      { nombre: 'Otros', porcentaje: 20, monto: total * 0.20, color: '#8290af' },
-    ];
-  });
-
-  private calcularSegmentos(cats: CategoriaComposicion[]) {
-    const radio = 60;
-    const cx = 75;
-    const cy = 75;
-    let acumulado = 0;
-    return cats.map(cat => {
-      const inicio = acumulado;
-      acumulado += cat.porcentaje;
-      const fin = acumulado;
-      const anguloInicio = (inicio / 100) * 2 * Math.PI - Math.PI / 2;
-      const anguloFin = (fin / 100) * 2 * Math.PI - Math.PI / 2;
-      const x1 = cx + radio * Math.cos(anguloInicio);
-      const y1 = cy + radio * Math.sin(anguloInicio);
-      const x2 = cx + radio * Math.cos(anguloFin);
-      const y2 = cy + radio * Math.sin(anguloFin);
-      const largeArc = fin - inicio > 50 ? 1 : 0;
-      const d = `M ${cx},${cy} L ${x1.toFixed(2)},${y1.toFixed(2)} A ${radio},${radio} 0 ${largeArc},1 ${x2.toFixed(2)},${y2.toFixed(2)} Z`;
-      return { ...cat, d };
-    });
-  }
-
-  donaSegmentosIngresos = computed(() => this.calcularSegmentos(this.composicionIngresos()));
-  donaSegmentosGastos = computed(() => this.calcularSegmentos(this.composicionGastos()));
 
   // ── Tendencia SVG ────────────────────────────────────────────
   tendenciaNormalizada = computed(() => {
@@ -635,12 +588,6 @@ export class PerfilFinanciero implements OnInit {
     const ingresos = resumen?.totalIngresos ?? 0;
     const gastos = resumen?.totalGastos ?? 0;
     const saldo = ingresos - gastos;
-    const rowsIngresos = this.composicionIngresos().map(cat => `
-      <tr><td>${cat.nombre}</td><td>${cat.porcentaje}%</td><td>S/ ${this.formatMoneda(cat.monto)}</td></tr>
-    `).join('');
-    const rowsGastos = this.composicionGastos().map(cat => `
-      <tr><td>${cat.nombre}</td><td>${cat.porcentaje}%</td><td>S/ ${this.formatMoneda(cat.monto)}</td></tr>
-    `).join('');
     const rowsTendencia = this.tendencia().map(punto => `
       <tr><td>${punto.mes} ${punto.anio}</td><td>S/ ${this.formatMoneda(punto.ingresos)}</td><td>S/ ${this.formatMoneda(punto.gastos)}</td><td>S/ ${this.formatMoneda(punto.ahorro)}</td></tr>
     `).join('');
@@ -665,7 +612,6 @@ export class PerfilFinanciero implements OnInit {
           table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12px; }
           th, td { border-bottom: 1px solid #e2e8f0; padding: 8px; text-align: left; }
           th { background: #eef2ff; color: #312e81; }
-          .split { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
           .footer { margin-top: 24px; color: #64748b; font-size: 11px; }
         </style>
       </head>
@@ -686,10 +632,6 @@ export class PerfilFinanciero implements OnInit {
         <section>
           <h2>Tendencia financiera</h2>
           <table><thead><tr><th>Mes</th><th>Ingresos</th><th>Gastos</th><th>Ahorro</th></tr></thead><tbody>${rowsTendencia}</tbody></table>
-        </section>
-        <section class="split">
-          <div><h2>Composición de ingresos</h2><table><thead><tr><th>Categoría</th><th>%</th><th>Monto</th></tr></thead><tbody>${rowsIngresos}</tbody></table></div>
-          <div><h2>Composición de gastos</h2><table><thead><tr><th>Categoría</th><th>%</th><th>Monto</th></tr></thead><tbody>${rowsGastos}</tbody></table></div>
         </section>
         <p class="footer">Reporte generado desde Luka App. Para guardar como PDF, selecciona “Guardar como PDF” en el diálogo de impresión.</p>
       </body>
