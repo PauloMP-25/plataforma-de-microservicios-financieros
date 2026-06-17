@@ -5,9 +5,6 @@ import { PerfilFinancieroService } from '../../services/perfil-financiero.servic
 @Component({
   selector: 'app-perfil-tendencia',
   imports: [CommonModule],
-  host: {
-    'class': 'pf-tendencia card'
-  },
   templateUrl: './perfil-tendencia.html',
   styleUrl: './perfil-tendencia.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

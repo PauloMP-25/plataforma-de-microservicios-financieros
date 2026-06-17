@@ -5,9 +5,6 @@ import { PerfilFinancieroService } from '../../services/perfil-financiero.servic
 @Component({
   selector: 'app-perfil-logros',
   imports: [CommonModule],
-  host: {
-    'class': 'pf-logros card'
-  },
   templateUrl: './perfil-logros.html',
   styleUrl: './perfil-logros.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
