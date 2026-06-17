@@ -31,6 +31,9 @@
       <button class="pf-page__btn-export" type="button" (click)="exportarPdf()">
         <i class="fa-solid fa-download"></i> Exportar PDF
       </button>
+      <button class="pf-page__btn-config" type="button" (click)="abrirModalConfig()">
+        <i class="fa-solid fa-gear"></i> Configurar Perfil
+      </button>
     </div>
   </header>
 
@@ -298,60 +301,150 @@
         </header>
 
         <div class="pf-modal__body">
-          <p class="pf-modal__subtitle">Esta información permite a Luka proporcionarte recomendaciones de IA y análisis personalizados.</p>
-
-          <div class="pf-form-group">
-            <label for="ocupacion">Ocupación / Profesión</label>
-            <div class="pf-input-wrapper" [class.has-error]="erroresConfig()['ocupacion']">
-              <i class="fa-solid fa-briefcase pf-input-icon"></i>
-              <input id="ocupacion" type="text" [ngModel]="formConfig().ocupacion" (input)="actualizarCampoConfig('ocupacion', $any($event.target).value)" placeholder="Ej. Ingeniero de Software, Médico..." />
+          <!-- Indicador visual de pasos del Wizard -->
+          <div class="pf-wizard-steps">
+            <div class="pf-wizard-step" [class.active]="pasoActual() >= 1" [class.completed]="pasoActual() > 1">
+              <span class="pf-wizard-step__number">@if (pasoActual() > 1) { <i class="fa-solid fa-check"></i> } @else { 1 }</span>
+              <span class="pf-wizard-step__label">Datos Básicos</span>
             </div>
-            @if (erroresConfig()['ocupacion']) { <small class="pf-error-text">{{ erroresConfig()['ocupacion'] }}</small> }
+            <div class="pf-wizard-line" [class.active]="pasoActual() >= 2"></div>
+            <div class="pf-wizard-step" [class.active]="pasoActual() >= 2" [class.completed]="pasoActual() > 2">
+              <span class="pf-wizard-step__number">@if (pasoActual() > 2) { <i class="fa-solid fa-check"></i> } @else { 2 }</span>
+              <span class="pf-wizard-step__label">Estilo de Vida</span>
+            </div>
+            <div class="pf-wizard-line" [class.active]="pasoActual() >= 3"></div>
+            <div class="pf-wizard-step" [class.active]="pasoActual() >= 3" [class.completed]="pasoActual() > 3">
+              <span class="pf-wizard-step__number">3</span>
+              <span class="pf-wizard-step__label">Tono Asistente IA</span>
+            </div>
           </div>
 
-          <div class="pf-form-group">
-            <label for="ingresoMensual">Ingreso Mensual Estimado (S/)</label>
-            <div class="pf-input-wrapper pf-input-wrapper--disabled" [class.has-error]="erroresConfig()['ingresoMensual']">
-              <i class="fa-solid fa-lock pf-input-icon"></i>
-              <input id="ingresoMensual" type="number" [ngModel]="formConfig().ingresoMensual" readonly tabindex="-1" placeholder="Ej. 3500" min="0" />
-            </div>
-            <small class="pf-help-text" style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.25rem; margin-top: 0.2rem;">
-              <i class="fa-solid fa-circle-info"></i> Auto-calculado a partir de tus ingresos reales del periodo.
-            </small>
-            @if (erroresConfig()['ingresoMensual']) { <small class="pf-error-text">{{ erroresConfig()['ingresoMensual'] }}</small> }
-          </div>
+          <!-- Paso 1: Datos Básicos -->
+          @if (pasoActual() === 1) {
+            <div class="pf-wizard-pane anim-fade-in">
+              <p class="pf-modal__subtitle">Completa tu profesión o actividad principal e ingresos mensuales.</p>
 
-          <div class="pf-form-group">
-            <label for="estiloVida">Estilo de Vida</label>
-            <div class="pf-input-wrapper" [class.has-error]="erroresConfig()['estiloVida']">
-              <i class="fa-solid fa-leaf pf-input-icon"></i>
-              <select id="estiloVida" [ngModel]="formConfig().estiloVida" (change)="actualizarCampoConfig('estiloVida', $any($event.target).value)">
-                <option value="Ahorrativo">Ahorrativo</option>
-                <option value="Conservador">Conservador</option>
-                <option value="Equilibrado">Equilibrado</option>
-                <option value="Dinamico">Dinámico</option>
-                <option value="Premium">Premium</option>
-              </select>
-            </div>
-            @if (erroresConfig()['estiloVida']) { <small class="pf-error-text">{{ erroresConfig()['estiloVida'] }}</small> }
-          </div>
+              <div class="pf-form-group">
+                <label for="ocupacion">Ocupación / Profesión</label>
+                <div class="pf-input-wrapper" [class.has-error]="erroresConfig()['ocupacion']">
+                  <i class="fa-solid fa-briefcase pf-input-icon"></i>
+                  <input id="ocupacion" type="text" [ngModel]="formConfig().ocupacion" (input)="actualizarCampoConfig('ocupacion', $any($event.target).value)" placeholder="Ej. Ingeniero de Software, Médico..." />
+                </div>
+                @if (erroresConfig()['ocupacion']) { <small class="pf-error-text">{{ erroresConfig()['ocupacion'] }}</small> }
+              </div>
 
-          <div class="pf-form-group">
-            <label for="tonoIA">Tono del Asistente IA</label>
-            <div class="pf-input-wrapper" [class.has-error]="erroresConfig()['tonoIA']">
-              <i class="fa-solid fa-robot pf-input-icon"></i>
-              <select id="tonoIA" [ngModel]="formConfig().tonoIA" (change)="actualizarCampoConfig('tonoIA', $any($event.target).value)">
-                <option value="Amigable">Amigable y Cercano</option>
-                <option value="Formal">Formal y Analítico</option>
-                <option value="Directo">Directo y al Grano</option>
-                <option value="Motivador">Motivador y Entusiasta</option>
-              </select>
+              <div class="pf-form-group">
+                <label for="ingresoMensual">Ingreso Mensual Estimado (S/)</label>
+                <div class="pf-input-wrapper pf-input-wrapper--disabled" [class.has-error]="erroresConfig()['ingresoMensual']">
+                  <i class="fa-solid fa-lock pf-input-icon"></i>
+                  <input id="ingresoMensual" type="number" [ngModel]="formConfig().ingresoMensual" readonly tabindex="-1" placeholder="Ej. 3500" min="0" />
+                </div>
+                <small class="pf-help-text" style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.25rem; margin-top: 0.2rem;">
+                  <i class="fa-solid fa-circle-info"></i> Auto-calculado a partir de tus ingresos reales del periodo.
+                </small>
+                @if (erroresConfig()['ingresoMensual']) { <small class="pf-error-text">{{ erroresConfig()['ingresoMensual'] }}</small> }
+              </div>
             </div>
-            @if (erroresConfig()['tonoIA']) { <small class="pf-error-text">{{ erroresConfig()['tonoIA'] }}</small> }
-          </div>
+          }
+
+          <!-- Paso 2: Estilo de Vida (Slider de Tolerancia al Riesgo) -->
+          @if (pasoActual() === 2) {
+            <div class="pf-wizard-pane anim-fade-in">
+              <p class="pf-modal__subtitle">Usa el control deslizante para definir tu tolerancia al riesgo y estilo de vida financiero.</p>
+
+              <div class="pf-slider-container">
+                <div class="pf-slider-labels">
+                  <span [class.active]="formConfig().estiloVida === 'AHORRATIVO'">Ahorrativo</span>
+                  <span [class.active]="formConfig().estiloVida === 'MODERADO'">Moderado</span>
+                  <span [class.active]="formConfig().estiloVida === 'GASTADOR'">Gastador</span>
+                  <span [class.active]="formConfig().estiloVida === 'INVERSOR'">Inversor</span>
+                </div>
+
+                <div class="pf-slider-wrapper">
+                  <input type="range" min="1" max="4" [value]="estiloVidaSliderVal()" (input)="onEstiloVidaSliderChange($event)" class="pf-slider" />
+                </div>
+
+                <div class="pf-slider-card">
+                  @if (formConfig().estiloVida === 'AHORRATIVO') {
+                    <div class="pf-slider-card__content anim-fade-in">
+                      <div class="pf-slider-card__icon"><i class="fa-solid fa-piggy-bank"></i></div>
+                      <div class="pf-slider-card__text">
+                        <h4>Ahorrativo 🏦</h4>
+                        <p>Baja tolerancia al riesgo. Tu principal enfoque es acumular capital de forma segura y minimizar egresos superfluos.</p>
+                      </div>
+                    </div>
+                  }
+                  @if (formConfig().estiloVida === 'MODERADO') {
+                    <div class="pf-slider-card__content anim-fade-in">
+                      <div class="pf-slider-card__icon"><i class="fa-solid fa-scale-balanced"></i></div>
+                      <div class="pf-slider-card__text">
+                        <h4>Moderado ⚖️</h4>
+                        <p>Tolerancia media. Buscas un equilibrio saludable entre tus gastos necesarios, el ahorro y el disfrute del presente.</p>
+                      </div>
+                    </div>
+                  }
+                  @if (formConfig().estiloVida === 'GASTADOR') {
+                    <div class="pf-slider-card__content anim-fade-in">
+                      <div class="pf-slider-card__icon"><i class="fa-solid fa-bag-shopping"></i></div>
+                      <div class="pf-slider-card__text">
+                        <h4>Gastador 🛍️</h4>
+                        <p>Preferencia por el consumo. Priorizas el confort, las experiencias y la adquisición de bienes y servicios.</p>
+                      </div>
+                    </div>
+                  }
+                  @if (formConfig().estiloVida === 'INVERSOR') {
+                    <div class="pf-slider-card__content anim-fade-in">
+                      <div class="pf-slider-card__icon"><i class="fa-solid fa-chart-line"></i></div>
+                      <div class="pf-slider-card__text">
+                        <h4>Inversor 📈</h4>
+                        <p>Alta tolerancia al riesgo. Buscas activamente rentabilizar tu excedente financiero y asumir retos financieros calculados.</p>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Paso 3: Tono del Asistente IA (Tarjetas Visuales Seleccionables) -->
+          @if (pasoActual() === 3) {
+            <div class="pf-wizard-pane anim-fade-in">
+              <p class="pf-modal__subtitle">Elige la personalidad preferida para las respuestas y consejos que generará la Inteligencia Artificial.</p>
+
+              <div class="pf-tono-grid">
+                <button type="button" class="pf-tono-card" [class.active]="formConfig().tonoIA === 'AMIGABLE'" (click)="seleccionarTonoIA('AMIGABLE')">
+                  <div class="pf-tono-card__icon"><i class="fa-solid fa-face-smile"></i></div>
+                  <h4>Amigable y Cercano</h4>
+                  <p>Un trato cálido, empático y fácil de comprender para tu día a día.</p>
+                  <span class="pf-tono-card__check"><i class="fa-solid fa-circle-check"></i></span>
+                </button>
+
+                <button type="button" class="pf-tono-card" [class.active]="formConfig().tonoIA === 'FORMAL'" (click)="seleccionarTonoIA('FORMAL')">
+                  <div class="pf-tono-card__icon"><i class="fa-solid fa-user-tie"></i></div>
+                  <h4>Formal y Analítico</h4>
+                  <p>Explicaciones detalladas, lenguaje técnico y análisis financiero riguroso.</p>
+                  <span class="pf-tono-card__check"><i class="fa-solid fa-circle-check"></i></span>
+                </button>
+
+                <button type="button" class="pf-tono-card" [class.active]="formConfig().tonoIA === 'DIRECTO'" (click)="seleccionarTonoIA('DIRECTO')">
+                  <div class="pf-tono-card__icon"><i class="fa-solid fa-bolt"></i></div>
+                  <h4>Directo y al Grano</h4>
+                  <p>Consejos rápidos, concisos y enfocados estrictamente en la acción inmediata.</p>
+                  <span class="pf-tono-card__check"><i class="fa-solid fa-circle-check"></i></span>
+                </button>
+
+                <button type="button" class="pf-tono-card" [class.active]="formConfig().tonoIA === 'MOTIVADOR'" (click)="seleccionarTonoIA('MOTIVADOR')">
+                  <div class="pf-tono-card__icon"><i class="fa-solid fa-fire"></i></div>
+                  <h4>Motivador y Entusiasta</h4>
+                  <p>Impulso constante, frases de aliento y retos continuos para superarte.</p>
+                  <span class="pf-tono-card__check"><i class="fa-solid fa-circle-check"></i></span>
+                </button>
+              </div>
+            </div>
+          }
 
           @if (mensajeConfig()) {
-            <div class="pf-alert" [class.pf-alert--success]="mensajeConfig()?.tipo === 'success'" [class.pf-alert--error]="mensajeConfig()?.tipo === 'error'">
+            <div class="pf-alert" [class.pf-alert--success]="mensajeConfig()?.tipo === 'success'" [class.pf-alert--error]="mensajeConfig()?.tipo === 'error'" style="margin-top: 1rem;">
               <i class="fa-solid" [ngClass]="mensajeConfig()?.tipo === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'"></i>
               <span>{{ mensajeConfig()?.texto }}</span>
             </div>
@@ -359,10 +452,19 @@
         </div>
 
         <footer class="pf-modal__footer">
-          <button type="button" class="pf-btn pf-btn--secondary" (click)="cerrarModalConfig()">Cancelar</button>
-          <button type="button" class="pf-btn pf-btn--primary" [disabled]="configurando()" (click)="guardarConfiguracion()">
-            {{ configurando() ? 'Guardando...' : 'Guardar Perfil' }}
-          </button>
+          @if (pasoActual() === 1) {
+            <button type="button" class="pf-btn pf-btn--secondary" (click)="cerrarModalConfig()">Cancelar</button>
+          } @else {
+            <button type="button" class="pf-btn pf-btn--secondary" (click)="retrocederPaso()">Atrás</button>
+          }
+
+          @if (pasoActual() < 3) {
+            <button type="button" class="pf-btn pf-btn--primary" (click)="avanzarPaso()">Siguiente</button>
+          } @else {
+            <button type="button" class="pf-btn pf-btn--primary" [disabled]="configurando()" (click)="guardarConfiguracion()">
+              {{ configurando() ? 'Guardando...' : 'Guardar Perfil' }}
+            </button>
+          }
         </footer>
       </div>
     </div>

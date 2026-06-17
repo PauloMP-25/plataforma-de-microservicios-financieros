@@ -92,12 +92,22 @@ export class PerfilFinanciero implements OnInit {
   // ── Modal Configuración ──────────────────────────────────────
   modalConfigAbierto = signal<boolean>(false);
   configurando = signal<boolean>(false);
+  pasoActual = signal<number>(1);
 
   formConfig = signal<SolicitudPerfilFinanciero>({
     ocupacion: '',
     ingresoMensual: 0,
-    estiloVida: 'Equilibrado',
-    tonoIA: 'Amigable'
+    estiloVida: 'MODERADO',
+    tonoIA: 'AMIGABLE'
+  });
+
+  estiloVidaSliderVal = computed(() => {
+    const estilo = this.formConfig().estiloVida;
+    if (estilo === 'AHORRATIVO') return 1;
+    if (estilo === 'MODERADO') return 2;
+    if (estilo === 'GASTADOR') return 3;
+    if (estilo === 'INVERSOR') return 4;
+    return 2;
   });
 
   erroresConfig = signal<{ [key: string]: string }>({});
@@ -115,18 +125,22 @@ export class PerfilFinanciero implements OnInit {
         this.formConfig.set({
           ocupacion: perfil.ocupacion || '',
           ingresoMensual: totalIngresos,
-          estiloVida: perfil.estiloVida || 'Equilibrado',
-          tonoIA: perfil.tonoIA || 'Amigable'
+          estiloVida: perfil.estiloVida || 'MODERADO',
+          tonoIA: perfil.tonoIA || 'AMIGABLE'
         });
+        this.pasoActual.set(1);
         this.modalConfigAbierto.set(true);
       },
       error: () => {
         // Fallback si no existe, abre con los datos por defecto
         const totalIngresos = this.resumenActual()?.totalIngresos ?? 0;
-        this.formConfig.update(f => ({
-          ...f,
-          ingresoMensual: totalIngresos
-        }));
+        this.formConfig.set({
+          ocupacion: '',
+          ingresoMensual: totalIngresos,
+          estiloVida: 'MODERADO',
+          tonoIA: 'AMIGABLE'
+        });
+        this.pasoActual.set(1);
         this.modalConfigAbierto.set(true);
       }
     });
@@ -136,6 +150,51 @@ export class PerfilFinanciero implements OnInit {
     this.modalConfigAbierto.set(false);
     this.erroresConfig.set({});
     this.mensajeConfig.set(null);
+    this.pasoActual.set(1);
+  }
+
+  onEstiloVidaSliderChange(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const val = Number(target.value);
+    let estilo = 'MODERADO';
+    if (val === 1) estilo = 'AHORRATIVO';
+    else if (val === 2) estilo = 'MODERADO';
+    else if (val === 3) estilo = 'GASTADOR';
+    else if (val === 4) estilo = 'INVERSOR';
+    this.actualizarCampoConfig('estiloVida', estilo);
+  }
+
+  seleccionarTonoIA(tono: string): void {
+    this.actualizarCampoConfig('tonoIA', tono);
+  }
+
+  avanzarPaso(): void {
+    if (this.pasoActual() === 1) {
+      // Validar datos básicos
+      const data = this.formConfig();
+      const errores = { ...this.erroresConfig() };
+      let hasError = false;
+
+      if (!data.ocupacion || data.ocupacion.trim().length < 3) {
+        errores['ocupacion'] = 'La ocupación debe tener al menos 3 caracteres.';
+        hasError = true;
+      } else {
+        delete errores['ocupacion'];
+      }
+
+      this.erroresConfig.set(errores);
+      if (hasError) return;
+    }
+
+    if (this.pasoActual() < 3) {
+      this.pasoActual.update(p => p + 1);
+    }
+  }
+
+  retrocederPaso(): void {
+    if (this.pasoActual() > 1) {
+      this.pasoActual.update(p => p - 1);
+    }
   }
 
   abrirModalPlanes(): void {
