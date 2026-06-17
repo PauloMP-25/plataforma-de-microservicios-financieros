@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { of } from 'rxjs';
+import { RouterTestingModule } from '@angular/router/testing';
 import { PerfilFinanciero } from './perfil-financiero';
 import { PerfilFinancieroService } from './services/perfil-financiero.service';
 import { AppEventBus } from '../../../core/services/app-event-bus.service';
@@ -72,7 +73,7 @@ describe('PerfilFinanciero', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [PerfilFinanciero],
+      imports: [PerfilFinanciero, RouterTestingModule],
       providers: [
         { provide: AppEventBus, useValue: mockEventBus }
       ]

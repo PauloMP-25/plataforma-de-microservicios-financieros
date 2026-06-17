@@ -1,0 +1,95 @@
+<section class="pf-logros-page anim-fade-up">
+  <!-- Cabecera de la página -->
+  <header class="pf-logros-page__header">
+    <div class="pf-logros-page__header-left">
+      <div class="pf-logros-page__back-btn" routerLink="/perfil/financiero">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Volver al Perfil</span>
+      </div>
+      <h1>Logros Financieros</h1>
+      <p>Desbloquea logros gestionando correctamente tu dinero y mantén buenos hábitos.</p>
+    </div>
+    <div class="pf-logros-page__progress-pill">
+      <i class="fa-solid fa-trophy text-warning"></i>
+      <span>{{ service.progresoLogros().desbloqueados }} / {{ service.progresoLogros().total }} Logros</span>
+    </div>
+  </header>
+
+  <!-- Grilla de Logros -->
+  <div class="pf-logros-page__grid">
+    @for (logro of logrosPaginados(); track logro.id) {
+      <div class="pf-logro-card" [class.pf-logro-card--desbloqueado]="logro.desbloqueado">
+        <span class="pf-logro-card__status-indicator">
+          @if (logro.desbloqueado) {
+            <i class="fa-solid fa-circle-check text-success"></i>
+          } @else {
+            <i class="fa-solid fa-lock text-muted"></i>
+          }
+        </span>
+
+        <div class="pf-logro-card__icon-wrap" [ngClass]="logro.desbloqueado ? 'pf-logro-card__icon-wrap--unlocked' : 'pf-logro-card__icon-wrap--' + logro.iconoColor">
+          <i [class]="logro.icono"></i>
+        </div>
+
+        <span class="pf-logro-card__titulo">{{ logro.titulo }}</span>
+        <p class="pf-logro-card__descripcion">{{ logro.descripcion }}</p>
+
+        @if (logro.desbloqueado) {
+          <span class="pf-logro-card__estado">¡Desbloqueado!</span>
+        } @else {
+          <span class="pf-logro-card__progreso-texto">
+            @if (logro.id === 'ahorro-inicial') {
+              S/ {{ logro.progreso.toLocaleString('es-PE', { maximumFractionDigits: 0 }) }} / S/ {{ logro.meta.toLocaleString('es-PE', { maximumFractionDigits: 0 }) }}
+            } @else if (logro.id === 'gran-ahorrador') {
+              S/ {{ logro.progreso.toLocaleString('es-PE', { maximumFractionDigits: 0 }) }} / S/ {{ logro.meta.toLocaleString('es-PE', { maximumFractionDigits: 0 }) }}
+            } @else if (logro.id === 'maestro-ahorro') {
+              S/ {{ logro.progreso.toLocaleString('es-PE', { maximumFractionDigits: 0 }) }} / S/ {{ logro.meta.toLocaleString('es-PE', { maximumFractionDigits: 0 }) }}
+            } @else if (logro.id === 'patrimonio-positivo') {
+              S/ {{ logro.progreso.toLocaleString('es-PE', { maximumFractionDigits: 0 }) }} / S/ {{ logro.meta.toLocaleString('es-PE', { maximumFractionDigits: 0 }) }}
+            } @else if (logro.id === 'salud-estable') {
+              {{ logro.progreso.toLocaleString('es-PE', { maximumFractionDigits: 1 }) }} / {{ logro.meta }} meses
+            } @else {
+              {{ logro.progreso.toLocaleString('es-PE', { maximumFractionDigits: 1 }) }} / {{ logro.meta }}
+            }
+          </span>
+          <div class="pf-logro-card__progreso-bar">
+            <div class="pf-logro-card__progreso-fill" [style.width.%]="(logro.progreso / logro.meta) * 100"></div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Controles de Paginación -->
+  @if (totalPaginas() > 1) {
+    <div class="pf-logros-page__pagination">
+      <button 
+        type="button" 
+        class="pagination-btn" 
+        [disabled]="paginaActual() === 1" 
+        (click)="anteriorPagina()">
+        <i class="fa-solid fa-chevron-left"></i> Anterior
+      </button>
+      
+      <div class="pagination-pages">
+        @for (p of paginasArray(); track p) {
+          <button 
+            type="button" 
+            class="pagination-page-btn" 
+            [class.active]="paginaActual() === p" 
+            (click)="cambiarPagina(p)">
+            {{ p }}
+          </button>
+        }
+      </div>
+      
+      <button 
+        type="button" 
+        class="pagination-btn" 
+        [disabled]="paginaActual() === totalPaginas()" 
+        (click)="siguientePagina()">
+        Siguiente <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+  }
+</section>

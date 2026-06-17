@@ -34,6 +34,20 @@ export const PERFIL_ROUTES: Routes = [
             .then(m => m.PerfilFinanciero)
       },
       {
+        path: 'financiero/logros',
+        data: {
+          title: 'Logros financieros',
+          breadcrumbs: [
+            { label: 'Perfil', route: '/perfil' },
+            { label: 'Perfil financiero', route: '/perfil/financiero' },
+            { label: 'Logros financieros' }
+          ]
+        },
+        loadComponent: () =>
+          import('./perfil-financiero/pages/perfil-logros-page/perfil-logros-page')
+            .then(m => m.PerfilLogrosPage)
+      },
+      {
         path: 'configuracion',
         data: {
           title: 'Configuración',

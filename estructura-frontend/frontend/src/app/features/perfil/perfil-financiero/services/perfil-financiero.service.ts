@@ -144,11 +144,12 @@ export class PerfilFinancieroService {
     const r = this.resumenActual();
     const metas = this.metasCompletadas();
     if (!r) return this.logrosMock();
-    return [
+
+    const tempLogros: LogroFinanciero[] = [
       {
         id: 'primer-ingreso',
-        titulo: 'Primer ingreso',
-        descripcion: 'Registra tu primer ingreso',
+        titulo: 'Primer paso financiero',
+        descripcion: 'Registra tu primer ingreso.',
         icono: 'fa-solid fa-circle-dollar-to-slot',
         iconoColor: 'success',
         desbloqueado: r.cantidadIngresos >= 1,
@@ -157,20 +158,20 @@ export class PerfilFinancieroService {
         categoria: 'ingresos',
       },
       {
-        id: 'acumulado-2000',
-        titulo: 'Has acumulado S/ 2,000',
-        descripcion: 'Acumula S/ 2,000 en ingresos',
+        id: 'ahorro-inicial',
+        titulo: 'Ahorro inicial',
+        descripcion: 'Acumula S/ 2,000 en tus ingresos o balance positivo.',
         icono: 'fa-solid fa-sack-dollar',
         iconoColor: 'warning',
         desbloqueado: r.totalIngresos >= 2000,
         progreso: Math.min(r.totalIngresos, 2000),
         meta: 2000,
-        categoria: 'ingresos',
+        categoria: 'ahorro',
       },
       {
-        id: 'racha-movimientos',
-        titulo: 'Racha de 30 días',
-        descripcion: 'Registra movimientos 30 días seguidos',
+        id: 'constancia-diaria',
+        titulo: 'Constancia diaria',
+        descripcion: 'Mantén una racha de 30 días registrando movimientos.',
         icono: 'fa-solid fa-fire',
         iconoColor: 'danger',
         desbloqueado: r.totalTransacciones >= 30,
@@ -179,9 +180,9 @@ export class PerfilFinancieroService {
         categoria: 'movimientos',
       },
       {
-        id: 'primera-meta',
-        titulo: 'Primera meta completada',
-        descripcion: 'Completa tu primera meta de ahorro',
+        id: 'objetivo-cumplido',
+        titulo: 'Objetivo cumplido',
+        descripcion: 'Completa tu primera meta financiera.',
         icono: 'fa-solid fa-bullseye',
         iconoColor: 'primary',
         desbloqueado: metas >= 1,
@@ -190,9 +191,9 @@ export class PerfilFinancieroService {
         categoria: 'metas',
       },
       {
-        id: 'cien-movimientos',
-        titulo: 'Registrar 100 movimientos',
-        descripcion: 'Lleva un control consistente de tus finanzas',
+        id: 'registrador-experto',
+        titulo: 'Registrador experto',
+        descripcion: 'Registra 100 movimientos financieros.',
         icono: 'fa-solid fa-list-check',
         iconoColor: 'info',
         desbloqueado: r.totalTransacciones >= 100,
@@ -201,9 +202,9 @@ export class PerfilFinancieroService {
         categoria: 'movimientos',
       },
       {
-        id: 'ahorro-10000',
-        titulo: 'Ahorrar S/ 10,000',
-        descripcion: 'Supera los S/ 10,000 acumulados en ingresos',
+        id: 'gran-ahorrador',
+        titulo: 'Gran ahorrador',
+        descripcion: 'Ahorra S/ 10,000.',
         icono: 'fa-solid fa-piggy-bank',
         iconoColor: 'success',
         desbloqueado: r.totalIngresos >= 10000,
@@ -212,20 +213,20 @@ export class PerfilFinancieroService {
         categoria: 'ahorro',
       },
       {
-        id: 'salud-financiera',
-        titulo: 'Mantener salud financiera saludable',
-        descripcion: 'Mantén un índice de salud mayor a 50 durante 3 meses',
+        id: 'salud-estable',
+        titulo: 'Salud estable',
+        descripcion: 'Mantén una salud financiera saludable durante 3 meses.',
         icono: 'fa-solid fa-heart-pulse',
         iconoColor: 'danger',
         desbloqueado: (this.indicesSalud()?.score ?? 0) >= 50,
-        progreso: Math.min((this.indicesSalud()?.score ?? 0) / 50, 1) * 3,
+        progreso: (this.indicesSalud()?.score ?? 0) >= 50 ? 3 : 1,
         meta: 3,
         categoria: 'salud',
       },
       {
-        id: 'completar-5-metas',
-        titulo: 'Completar 5 metas',
-        descripcion: 'Alcanza 5 metas de ahorro',
+        id: 'cumplidor-metas',
+        titulo: 'Cumplidor de metas',
+        descripcion: 'Completa 5 metas financieras.',
         icono: 'fa-solid fa-trophy',
         iconoColor: 'warning',
         desbloqueado: metas >= 5,
@@ -233,15 +234,109 @@ export class PerfilFinancieroService {
         meta: 5,
         categoria: 'metas',
       },
+      {
+        id: 'control-financiero',
+        titulo: 'Control financiero',
+        descripcion: 'Mantente dentro de tu presupuesto durante 30 días.',
+        icono: 'fa-solid fa-shield-halved',
+        iconoColor: 'primary',
+        desbloqueado: r.totalTransacciones >= 10,
+        progreso: r.totalTransacciones >= 10 ? 30 : 12,
+        meta: 30,
+        categoria: 'presupuesto',
+      },
+      {
+        id: 'ahorrador-constante',
+        titulo: 'Ahorrador constante',
+        descripcion: 'Ahorra durante 3 meses seguidos.',
+        icono: 'fa-solid fa-calendar-check',
+        iconoColor: 'success',
+        desbloqueado: r.totalIngresos > r.totalGastos,
+        progreso: r.totalIngresos > r.totalGastos ? 3 : 1,
+        meta: 3,
+        categoria: 'ahorro',
+      },
+      {
+        id: 'patrimonio-positivo',
+        titulo: 'Patrimonio positivo',
+        descripcion: 'Alcanza un patrimonio operativo neto de S/ 5,000.',
+        icono: 'fa-solid fa-chart-line',
+        iconoColor: 'info',
+        desbloqueado: (r.totalIngresos - r.totalGastos) >= 5000,
+        progreso: Math.min(Math.max(0, r.totalIngresos - r.totalGastos), 5000),
+        meta: 5000,
+        categoria: 'balance',
+      },
+      {
+        id: 'categorizador-experto',
+        titulo: 'Categorizador experto',
+        descripcion: 'Utiliza todas las categorías principales en tus movimientos.',
+        icono: 'fa-solid fa-tags',
+        iconoColor: 'warning',
+        desbloqueado: r.totalTransacciones >= 15,
+        progreso: r.totalTransacciones >= 15 ? 5 : 3,
+        meta: 5,
+        categoria: 'movimientos',
+      },
+      {
+        id: 'cero-excesos',
+        titulo: 'Cero excesos',
+        descripcion: 'No superes tus límites de presupuesto durante 2 meses.',
+        icono: 'fa-solid fa-circle-xmark',
+        iconoColor: 'danger',
+        desbloqueado: r.totalTransacciones > 0,
+        progreso: r.totalTransacciones > 0 ? 2 : 1,
+        meta: 2,
+        categoria: 'presupuesto',
+      },
+      {
+        id: 'racha-imparable',
+        titulo: 'Racha imparable',
+        descripcion: 'Mantén actividad financiera durante 100 días.',
+        icono: 'fa-solid fa-bolt',
+        iconoColor: 'primary',
+        desbloqueado: r.totalTransacciones >= 100,
+        progreso: Math.min(r.totalTransacciones, 100),
+        meta: 100,
+        categoria: 'movimientos',
+      },
+      {
+        id: 'maestro-ahorro',
+        titulo: 'Maestro del ahorro',
+        descripcion: 'Acumula S/ 25,000 ahorrados.',
+        icono: 'fa-solid fa-crown',
+        iconoColor: 'warning',
+        desbloqueado: r.totalIngresos >= 25000,
+        progreso: Math.min(r.totalIngresos, 25000),
+        meta: 25000,
+        categoria: 'ahorro',
+      },
     ];
+
+    const desbloqueados = tempLogros.filter(l => l.desbloqueado).length;
+
+    tempLogros.push({
+      id: 'leyenda-luka',
+      titulo: 'Leyenda Luka',
+      descripcion: 'Desbloquea todos los logros del sistema.',
+      icono: 'fa-solid fa-star',
+      iconoColor: 'success',
+      desbloqueado: desbloqueados >= 15,
+      progreso: desbloqueados,
+      meta: 15,
+      categoria: 'general',
+    });
+
+    return tempLogros;
   });
 
   logrosVisibles = computed(() => {
     const todos = this.logrosFinancieros();
-    if (this.mostrarTodosLogros()) {
-      return todos;
+    const desbloqueados = todos.filter(l => l.desbloqueado);
+    if (desbloqueados.length > 0) {
+      return desbloqueados.slice(0, 3);
     }
-    return todos.filter(l => l.desbloqueado).slice(0, 3);
+    return todos.slice(0, 3);
   });
 
   // ── Tendencia SVG ────────────────────────────────────────────
@@ -661,15 +756,38 @@ export class PerfilFinancieroService {
   }
 
   private logrosMock(): LogroFinanciero[] {
-    return [
-      { id: 'primer-ingreso', titulo: 'Primer ingreso', descripcion: 'Registra tu primer ingreso', icono: 'fa-solid fa-circle-dollar-to-slot', iconoColor: 'success', desbloqueado: true, progreso: 1, meta: 1, categoria: 'ingresos' },
-      { id: 'acumulado-2000', titulo: 'Has acumulado S/ 2,000', descripcion: 'Acumula S/ 2,000 en ingresos', icono: 'fa-solid fa-sack-dollar', iconoColor: 'warning', desbloqueado: true, progreso: 2000, meta: 2000, categoria: 'ingresos' },
-      { id: 'racha-movimientos', titulo: 'Racha de 30 días', descripcion: 'Registra movimientos 30 días seguidos', icono: 'fa-solid fa-fire', iconoColor: 'danger', desbloqueado: true, progreso: 30, meta: 30, categoria: 'movimientos' },
-      { id: 'primera-meta', titulo: 'Primera meta completada', descripcion: 'Completa tu primera meta de ahorro', icono: 'fa-solid fa-bullseye', iconoColor: 'primary', desbloqueado: true, progreso: 1, meta: 1, categoria: 'metas' },
-      { id: 'cien-movimientos', titulo: 'Registrar 100 movimientos', descripcion: 'Lleva un control consistente', icono: 'fa-solid fa-list-check', iconoColor: 'info', desbloqueado: false, progreso: 75, meta: 100, categoria: 'movimientos' },
-      { id: 'ahorro-10000', titulo: 'Ahorrar S/ 10,000', descripcion: 'Supera los S/ 10,000 acumulados', icono: 'fa-solid fa-piggy-bank', iconoColor: 'success', desbloqueado: false, progreso: 6200, meta: 10000, categoria: 'ahorro' },
-      { id: 'salud-financiera', titulo: 'Mantener salud saludable', descripcion: 'Mantén índice > 50 durante 3 meses', icono: 'fa-solid fa-heart-pulse', iconoColor: 'danger', desbloqueado: false, progreso: 2, meta: 3, categoria: 'salud' },
-      { id: 'completar-5-metas', titulo: 'Completar 5 metas', descripcion: 'Alcanza 5 metas de ahorro', icono: 'fa-solid fa-trophy', iconoColor: 'warning', desbloqueado: false, progreso: 3, meta: 5, categoria: 'metas' },
+    const mockList: LogroFinanciero[] = [
+      { id: 'primer-ingreso', titulo: 'Primer paso financiero', descripcion: 'Registra tu primer ingreso.', icono: 'fa-solid fa-circle-dollar-to-slot', iconoColor: 'success', desbloqueado: true, progreso: 1, meta: 1, categoria: 'ingresos' },
+      { id: 'ahorro-inicial', titulo: 'Ahorro inicial', descripcion: 'Acumula S/ 2,000 en tus ingresos o balance positivo.', icono: 'fa-solid fa-sack-dollar', iconoColor: 'warning', desbloqueado: true, progreso: 2000, meta: 2000, categoria: 'ahorro' },
+      { id: 'constancia-diaria', titulo: 'Constancia diaria', descripcion: 'Mantén una racha de 30 días registrando movimientos.', icono: 'fa-solid fa-fire', iconoColor: 'danger', desbloqueado: true, progreso: 30, meta: 30, categoria: 'movimientos' },
+      { id: 'objetivo-cumplido', titulo: 'Objetivo cumplido', descripcion: 'Completa tu primera meta financiera.', icono: 'fa-solid fa-bullseye', iconoColor: 'primary', desbloqueado: true, progreso: 1, meta: 1, categoria: 'metas' },
+      { id: 'registrador-experto', titulo: 'Registrador experto', descripcion: 'Registra 100 movimientos financieros.', icono: 'fa-solid fa-list-check', iconoColor: 'info', desbloqueado: false, progreso: 75, meta: 100, categoria: 'movimientos' },
+      { id: 'gran-ahorrador', titulo: 'Gran ahorrador', descripcion: 'Ahorra S/ 10,000.', icono: 'fa-solid fa-piggy-bank', iconoColor: 'success', desbloqueado: false, progreso: 6200, meta: 10000, categoria: 'ahorro' },
+      { id: 'salud-estable', titulo: 'Salud estable', descripcion: 'Mantén una salud financiera saludable durante 3 meses.', icono: 'fa-solid fa-heart-pulse', iconoColor: 'danger', desbloqueado: false, progreso: 2, meta: 3, categoria: 'salud' },
+      { id: 'cumplidor-metas', titulo: 'Cumplidor de metas', descripcion: 'Completa 5 metas financieras.', icono: 'fa-solid fa-trophy', iconoColor: 'warning', desbloqueado: false, progreso: 3, meta: 5, categoria: 'metas' },
+      { id: 'control-financiero', titulo: 'Control financiero', descripcion: 'Mantente dentro de tu presupuesto durante 30 días.', icono: 'fa-solid fa-shield-halved', iconoColor: 'primary', desbloqueado: true, progreso: 30, meta: 30, categoria: 'presupuesto' },
+      { id: 'ahorrador-constante', titulo: 'Ahorrador constante', descripcion: 'Ahorra durante 3 meses seguidos.', icono: 'fa-solid fa-calendar-check', iconoColor: 'success', desbloqueado: false, progreso: 1, meta: 3, categoria: 'ahorro' },
+      { id: 'patrimonio-positivo', titulo: 'Patrimonio positivo', descripcion: 'Alcanza un patrimonio operativo neto de S/ 5,000.', icono: 'fa-solid fa-chart-line', iconoColor: 'info', desbloqueado: false, progreso: 1200, meta: 5000, categoria: 'balance' },
+      { id: 'categorizador-experto', titulo: 'Categorizador experto', descripcion: 'Utiliza todas las categorías principales en tus movimientos.', icono: 'fa-solid fa-tags', iconoColor: 'warning', desbloqueado: true, progreso: 5, meta: 5, categoria: 'movimientos' },
+      { id: 'cero-excesos', titulo: 'Cero excesos', descripcion: 'No superes tus límites de presupuesto durante 2 meses.', icono: 'fa-solid fa-circle-xmark', iconoColor: 'danger', desbloqueado: true, progreso: 2, meta: 2, categoria: 'presupuesto' },
+      { id: 'racha-imparable', titulo: 'Racha imparable', descripcion: 'Mantén actividad financiera durante 100 días.', icono: 'fa-solid fa-bolt', iconoColor: 'primary', desbloqueado: false, progreso: 45, meta: 100, categoria: 'movimientos' },
+      { id: 'maestro-ahorro', titulo: 'Maestro del ahorro', descripcion: 'Acumula S/ 25,000 ahorrados.', icono: 'fa-solid fa-crown', iconoColor: 'warning', desbloqueado: false, progreso: 6200, meta: 25000, categoria: 'ahorro' }
     ];
+
+    const desbloqueados = mockList.filter(l => l.desbloqueado).length;
+
+    mockList.push({
+      id: 'leyenda-luka',
+      titulo: 'Leyenda Luka',
+      descripcion: 'Desbloquea todos los logros del sistema.',
+      icono: 'fa-solid fa-star',
+      iconoColor: 'success',
+      desbloqueado: desbloqueados >= 15,
+      progreso: desbloqueados,
+      meta: 15,
+      categoria: 'general'
+    });
+
+    return mockList;
   }
 }
