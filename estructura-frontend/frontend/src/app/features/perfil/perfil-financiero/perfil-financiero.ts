@@ -122,11 +122,26 @@ export class PerfilFinanciero implements OnInit {
     this.perfilService.consultarPerfilFinanciero(usuario.id).subscribe({
       next: (perfil) => {
         const totalIngresos = this.resumenActual()?.totalIngresos ?? 0;
+        
+        // Normalización estricta de valores cargados del backend
+        const backendEstilo = (perfil.estiloVida || '').toUpperCase().trim();
+        const backendTono = (perfil.tonoIA || '').toUpperCase().trim();
+        
+        let estiloVida = 'MODERADO';
+        if (['AHORRATIVO', 'MODERADO', 'GASTADOR', 'INVERSOR'].includes(backendEstilo)) {
+          estiloVida = backendEstilo;
+        }
+
+        let tonoIA = 'AMIGABLE';
+        if (['FORMAL', 'AMIGABLE', 'MOTIVADOR', 'DIRECTO'].includes(backendTono)) {
+          tonoIA = backendTono;
+        }
+
         this.formConfig.set({
           ocupacion: perfil.ocupacion || '',
           ingresoMensual: totalIngresos,
-          estiloVida: perfil.estiloVida || 'MODERADO',
-          tonoIA: perfil.tonoIA || 'AMIGABLE'
+          estiloVida: estiloVida,
+          tonoIA: tonoIA
         });
         this.pasoActual.set(1);
         this.modalConfigAbierto.set(true);
