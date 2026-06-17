@@ -377,10 +377,13 @@
 
           <div class="pf-form-group">
             <label for="ingresoMensual">Ingreso Mensual Estimado (S/)</label>
-            <div class="pf-input-wrapper" [class.has-error]="erroresConfig()['ingresoMensual']">
-              <i class="fa-solid fa-money-bill pf-input-icon"></i>
-              <input id="ingresoMensual" type="number" [ngModel]="formConfig().ingresoMensual" (input)="actualizarCampoConfig('ingresoMensual', $any($event.target).valueAsNumber)" placeholder="Ej. 3500" min="0" />
+            <div class="pf-input-wrapper pf-input-wrapper--disabled" [class.has-error]="erroresConfig()['ingresoMensual']">
+              <i class="fa-solid fa-lock pf-input-icon"></i>
+              <input id="ingresoMensual" type="number" [ngModel]="formConfig().ingresoMensual" readonly tabindex="-1" placeholder="Ej. 3500" min="0" />
             </div>
+            <small class="pf-help-text" style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.25rem; margin-top: 0.2rem;">
+              <i class="fa-solid fa-circle-info"></i> Auto-calculado a partir de tus ingresos reales del periodo.
+            </small>
             @if (erroresConfig()['ingresoMensual']) { <small class="pf-error-text">{{ erroresConfig()['ingresoMensual'] }}</small> }
           </div>
 

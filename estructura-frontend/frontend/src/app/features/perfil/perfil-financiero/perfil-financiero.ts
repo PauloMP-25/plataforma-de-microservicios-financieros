@@ -94,9 +94,10 @@ export class PerfilFinanciero implements OnInit {
     // Cargar perfil real del backend para el modal
     this.perfilService.consultarPerfilFinanciero(usuario.id).subscribe({
       next: (perfil) => {
+        const totalIngresos = this.resumenActual()?.totalIngresos ?? 0;
         this.formConfig.set({
           ocupacion: perfil.ocupacion || '',
-          ingresoMensual: perfil.ingresoMensual || 0,
+          ingresoMensual: totalIngresos,
           estiloVida: perfil.estiloVida || 'Equilibrado',
           tonoIA: perfil.tonoIA || 'Amigable'
         });
@@ -104,6 +105,11 @@ export class PerfilFinanciero implements OnInit {
       },
       error: () => {
         // Fallback si no existe, abre con los datos por defecto
+        const totalIngresos = this.resumenActual()?.totalIngresos ?? 0;
+        this.formConfig.update(f => ({
+          ...f,
+          ingresoMensual: totalIngresos
+        }));
         this.modalConfigAbierto.set(true);
       }
     });
@@ -155,8 +161,8 @@ export class PerfilFinanciero implements OnInit {
     if (!data.ocupacion || data.ocupacion.trim().length < 3) {
       errores['ocupacion'] = 'La ocupación debe tener al menos 3 caracteres.';
     }
-    if (data.ingresoMensual === null || data.ingresoMensual === undefined || data.ingresoMensual <= 0) {
-      errores['ingresoMensual'] = 'El ingreso mensual debe ser mayor a 0.';
+    if (data.ingresoMensual === null || data.ingresoMensual === undefined || data.ingresoMensual < 0) {
+      errores['ingresoMensual'] = 'El ingreso mensual no puede ser negativo.';
     }
     if (!data.estiloVida) {
       errores['estiloVida'] = 'Selecciona un estilo de vida.';

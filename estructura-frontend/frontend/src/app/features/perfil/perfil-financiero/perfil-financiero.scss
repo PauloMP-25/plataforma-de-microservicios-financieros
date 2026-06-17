@@ -1440,6 +1440,24 @@
     appearance: none;
   }
 
+  &--disabled {
+    input {
+      background: var(--bg-surface-soft);
+      color: var(--text-secondary);
+      cursor: not-allowed;
+      border-color: var(--border-color);
+      opacity: 0.8;
+
+      &:focus {
+        border-color: var(--border-color) !important;
+        box-shadow: none !important;
+      }
+    }
+    .pf-input-icon {
+      color: var(--text-muted);
+    }
+  }
+
   &.has-error {
     input, select {
       border-color: var(--color-danger);
