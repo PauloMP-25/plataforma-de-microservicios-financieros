@@ -1,18 +1,19 @@
 import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router } from '@angular/router';
 import { PerfilFinancieroService, LogroFinanciero } from '../../services/perfil-financiero.service';
 
 @Component({
   selector: 'app-perfil-logros-page',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule],
   templateUrl: './perfil-logros-page.html',
   styleUrl: './perfil-logros-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PerfilLogrosPage implements OnInit {
   public service = inject(PerfilFinancieroService);
+  private router = inject(Router);
 
   // ── Paginación ──────────────────────────────────────────────
   paginaActual = signal<number>(1);
@@ -62,5 +63,9 @@ export class PerfilLogrosPage implements OnInit {
     if (this.paginaActual() > 1) {
       this.paginaActual.update(p => p - 1);
     }
+  }
+
+  volverAlPerfil(): void {
+    this.router.navigate(['/perfil/financiero']);
   }
 }
