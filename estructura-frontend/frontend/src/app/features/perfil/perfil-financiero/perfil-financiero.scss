@@ -172,22 +172,7 @@
     animation: wave-spin-pf 0.8s linear infinite;
   }
 
-  /* ── Grid de KPIs ── */
-  &__kpis {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.25rem;
 
-    @media (max-width: 1350px) {
-      grid-template-columns: repeat(3, 1fr);
-    }
-    @media (max-width: 992px) {
-      grid-template-columns: repeat(2, 1fr);
-    }
-    @media (max-width: 640px) {
-      grid-template-columns: 1fr;
-    }
-  }
 
   /* ── Banner Luka Premium (Golden Premium Theme) ── */
   &__premium-banner {
