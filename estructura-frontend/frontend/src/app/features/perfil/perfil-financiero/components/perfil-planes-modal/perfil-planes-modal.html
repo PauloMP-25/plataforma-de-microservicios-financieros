@@ -1,0 +1,106 @@
+@if (service.modalPlanesAbierto()) {
+  <div class="pf-planes-backdrop" (click)="service.cerrarModalPlanes()">
+    <section class="pf-planes-modal" (click)="$event.stopPropagation()">
+      <button type="button" class="pf-planes-modal__close" (click)="service.cerrarModalPlanes()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="pf-planes-modal__grid">
+        <article class="pf-plan-card pf-plan-card--pro">
+          <span class="pf-plan-card__tag">PLAN</span>
+
+          <div class="pf-plan-card__header">
+            <div>
+              <h3>Pro <i class="fa-solid fa-star"></i></h3>
+              <p>Todo lo esencial para organizar tus finanzas con IA.</p>
+            </div>
+            <div class="pf-plan-card__illustration pf-plan-card__illustration--pro">
+              <i class="fa-solid fa-chart-line"></i>
+            </div>
+          </div>
+
+          <div class="pf-plan-card__price"><span>S/</span><strong>14.90</strong><small>/mes</small></div>
+          <p class="pf-plan-card__cancel">Cancela cuando quieras.</p>
+          <hr />
+          <h4>Incluye:</h4>
+
+          <ul class="pf-plan-card__features">
+            <li>
+              <i class="fa-solid fa-brain"></i>
+              <span><strong>Asistente IA Financiero</strong><small>Resuelve dudas y recibe orientación financiera.</small></span>
+            </li>
+            <li>
+              <i class="fa-solid fa-bullseye"></i>
+              <span><strong>Recomendaciones personalizadas</strong><small>Sugerencias según tus hábitos y objetivos.</small></span>
+            </li>
+            <li>
+              <i class="fa-solid fa-chart-pie"></i>
+              <span><strong>Reportes y análisis inteligentes</strong><small>Visualiza tus finanzas de forma clara.</small></span>
+            </li>
+          </ul>
+
+          <div class="pf-plan-card__queries">
+            <h4>Uso mensual de IA</h4>
+            <div><span>Módulos de Analítica</span><strong>20 consultas</strong></div>
+            <div><span>Auto Clasificar</span><strong>10 consultas</strong></div>
+          </div>
+
+          <button type="button" class="pf-plan-card__button" [disabled]="service.comprandoPlan()" (click)="service.comprarPlan('PRO')">
+            {{ service.comprandoPlan() ? 'Redirigiendo...' : '✨ Elegir Plan Pro' }}
+          </button>
+          <p class="pf-plan-card__secure"><i class="fa-solid fa-lock"></i> Pago seguro y protegido</p>
+        </article>
+
+        <article class="pf-plan-card pf-plan-card--premium">
+          <span class="pf-plan-card__popular"><i class="fa-solid fa-star"></i> MÁS POPULAR</span>
+          <span class="pf-plan-card__tag pf-plan-card__tag--premium">PLAN</span>
+
+          <div class="pf-plan-card__header">
+            <div>
+              <h3>Premium <i class="fa-solid fa-crown"></i></h3>
+              <p>Todo lo que necesitas para tomar mejores decisiones y crecer tu dinero.</p>
+            </div>
+            <div class="pf-plan-card__illustration pf-plan-card__illustration--premium">
+              <i class="fa-solid fa-chart-simple"></i>
+            </div>
+          </div>
+
+          <div class="pf-plan-card__price"><span>S/</span><strong>25.90</strong><small>/mes</small></div>
+          <p class="pf-plan-card__cancel">Cancela cuando quieras.</p>
+          <hr />
+          <h4>Incluye todo lo del plan Pro, más:</h4>
+
+          <ul class="pf-plan-card__features">
+            <li>
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <span><strong>Análisis avanzado con IA</strong><small>Insights más profundos para tomar mejores decisiones.</small></span>
+            </li>
+            <li>
+              <i class="fa-solid fa-star"></i>
+              <span><strong>Recomendaciones inteligentes avanzadas</strong><small>Sugerencias contextuales y más precisas.</small></span>
+            </li>
+            <li>
+              <i class="fa-solid fa-chart-pie"></i>
+              <span><strong>Reportes avanzados limitados</strong><small>Más detalle, más control, mejores resultados.</small></span>
+            </li>
+            <li>
+              <i class="fa-solid fa-shield-halved"></i>
+              <span><strong>Prioridad y nuevas funciones</strong><small>Acceso anticipado a nuevas herramientas.</small></span>
+            </li>
+          </ul>
+
+          <div class="pf-plan-card__queries pf-plan-card__queries--premium">
+            <h4>Uso mensual de IA</h4>
+            <div><span>Módulos de Analítica</span><strong>50 consultas</strong></div>
+            <div><span>Auto Clasificar</span><strong>20 consultas</strong></div>
+          </div>
+
+          <button type="button" class="pf-plan-card__button pf-plan-card__button--premium" [disabled]="service.comprandoPlan()" (click)="service.comprarPlan('PREMIUM')">
+            {{ service.comprandoPlan() ? 'Redirigiendo...' : '✨ Elegir Plan Premium' }}
+          </button>
+          <p class="pf-plan-card__secure"><i class="fa-solid fa-lock"></i> Pago seguro y protegido</p>
+        </article>
+      </div>
+    </section>
+  </div>
+}

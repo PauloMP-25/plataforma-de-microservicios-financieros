@@ -10,8 +10,8 @@
       <div class="pf-page__date-selects">
         <div class="pf-page__date-select">
           <i class="fa-regular fa-calendar"></i>
-          <select [value]="mesSeleccionado()" (change)="onMesChange($event)">
-            @for (mes of mesesDisponibles; track mes.valor) {
+          <select [value]="service.mesSeleccionado()" (change)="onMesChange($event)">
+            @for (mes of service.mesesDisponibles; track mes.valor) {
               <option [value]="mes.valor">{{ mes.label }}</option>
             }
           </select>
@@ -20,561 +20,75 @@
 
         <div class="pf-page__date-select">
           <i class="fa-regular fa-calendar"></i>
-          <select [value]="anioSeleccionado()" (change)="onAnioChange($event)">
-            @for (anio of aniosDisponibles; track anio) {
+          <select [value]="service.anioSeleccionado()" (change)="onAnioChange($event)">
+            @for (anio of service.aniosDisponibles; track anio) {
               <option [value]="anio">{{ anio }}</option>
             }
           </select>
           <i class="fa-solid fa-chevron-down"></i>
         </div>
       </div>
-      <button class="pf-page__btn-export" type="button" (click)="exportarPdf()">
+      <button class="pf-page__btn-export" type="button" (click)="service.exportarPdf()">
         <i class="fa-solid fa-download"></i> Exportar PDF
       </button>
-      <button class="pf-page__btn-config" type="button" (click)="abrirModalConfig()">
+      <button class="pf-page__btn-config" type="button" (click)="service.abrirModalConfig()">
         <i class="fa-solid fa-gear"></i> Configurar Perfil
       </button>
     </div>
   </header>
 
-  @if (cargando() && !resumenActual()) {
+  @if (service.cargando() && !service.resumenActual()) {
     <div class="pf-page__loading">
       <div class="pf-page__spinner"></div>
       <p>Calculando tu perfil financiero...</p>
     </div>
   } @else {
 
-  <!-- ── KPI Cards ── -->
-  <div class="pf-page__kpis anim-fade-up">
+    <!-- ── KPI Cards ── -->
+    <app-perfil-kpis class="anim-fade-up" />
 
-    <!-- Índice de Salud Financiera -->
-    <article class="pf-kpi card pf-kpi--health">
-      <div class="pf-kpi__icon-wrap pf-kpi__icon-wrap--health">
-        <i class="fa-solid fa-heart-pulse"></i>
-      </div>
-      <div class="pf-kpi__body">
-        <span class="pf-kpi__label">Índice de salud financiera <i class="fa-regular fa-circle-question pf-kpi__hint"></i></span>
-        @if (indicesSalud(); as idx) {
-          <span class="pf-kpi__value-with-max text-health">
-            <span class="pf-kpi__value-big">{{ idx.score }}</span><span class="pf-kpi__value-max">/ 100</span>
-          </span>
-          <div class="pf-kpi__health-bar">
-            <div class="pf-kpi__health-fill pf-kpi__health-fill--health" [style.width.%]="idx.score">
-              <span class="pf-kpi__health-shimmer"></span>
-            </div>
-          </div>
-          <span class="pf-kpi__sub text-health">Nivel de salud: {{ idx.etiqueta }}</span>
-          @if (variacionSalud() !== null) {
-            <span class="pf-kpi__variation" [ngClass]="variacionSalud()! >= 0 ? 'pf-kpi__variation--up' : 'pf-kpi__variation--down'">
-              <i class="fa-solid" [ngClass]="variacionSalud()! >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'"></i>
-              {{ variacionSalud()! >= 0 ? '+' : '' }}{{ variacionSalud() }} pts vs {{ nombreMesAnterior() }}
-            </span>
-          }
-        } @else {
-          <span class="pf-kpi__value pf-kpi__value--empty">Sin datos suficientes</span>
-        }
-      </div>
-    </article>
-
-    <!-- Progreso de Logros -->
-    <article class="pf-kpi card pf-kpi--logros">
-      <div class="pf-kpi__icon-wrap pf-kpi__icon-wrap--info">
-        <i class="fa-solid fa-bullseye"></i>
-      </div>
-      <div class="pf-kpi__body">
-        <span class="pf-kpi__label">Progreso global de logros <i class="fa-regular fa-circle-question pf-kpi__hint"></i></span>
-        <span class="pf-kpi__value-with-max text-info">
-          <span class="pf-kpi__value-big">{{ progresoLogros().desbloqueados }}</span>
-          <span class="pf-kpi__value-max">/ {{ progresoLogros().total }}</span>
-        </span>
-        <div class="pf-kpi__health-bar">
-          <div class="pf-kpi__health-fill pf-kpi__health-fill--info"
-               [style.width.%]="progresoLogros().total > 0 ? (progresoLogros().desbloqueados / progresoLogros().total) * 100 : 0">
-            <span class="pf-kpi__health-shimmer"></span>
-          </div>
+    <!-- ── Banner Premium ── -->
+    <div class="pf-page__premium-banner anim-fade-up" *ngIf="!service.auth.esPremium() && !service.auth.esPro()">
+      <div class="pf-premium__left">
+        <div class="pf-premium__icon">
+          <i class="fa-solid fa-crown"></i>
         </div>
-        <span class="pf-kpi__sub text-muted">Logros alcanzados</span>
-        <span class="pf-kpi__variation pf-kpi__variation--neutral">
-          {{ progresoLogros().total > 0 ? ((progresoLogros().desbloqueados / progresoLogros().total) * 100).toFixed(0) : 0 }}% completado
-        </span>
-      </div>
-    </article>
-
-    <!-- Capacidad de Ahorro Real -->
-    <article class="pf-kpi card pf-kpi--saving">
-      <div class="pf-kpi__icon-wrap pf-kpi__icon-wrap--warning">
-        <i class="fa-solid fa-piggy-bank"></i>
-      </div>
-      <div class="pf-kpi__body">
-        <span class="pf-kpi__label">Tasa de ahorro real <i class="fa-regular fa-circle-question pf-kpi__hint"></i></span>
-        @if (capacidadAhorro() !== null) {
-          <span class="pf-kpi__value text-warning">
-            {{ capacidadAhorro()!.toFixed(1) }}%
-          </span>
-          <span class="pf-kpi__sub text-muted">Porcentaje de ingresos ahorrado</span>
-          @if (variacionAhorro() !== null) {
-            <span class="pf-kpi__variation" [ngClass]="variacionAhorro()! >= 0 ? 'pf-kpi__variation--up' : 'pf-kpi__variation--down'">
-              <i class="fa-solid" [ngClass]="variacionAhorro()! >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'"></i>
-              {{ variacionAhorro()! >= 0 ? '+' : '' }}{{ variacionAhorro()!.toFixed(1) }}% vs {{ nombreMesAnterior() }}
-            </span>
-          }
-        } @else {
-          <span class="pf-kpi__value pf-kpi__value--empty">Sin datos suficientes</span>
-        }
-      </div>
-    </article>
-  </div>
-
-  <!-- ── Banner Premium ── -->
-  <div class="pf-page__premium-banner anim-fade-up" *ngIf="!auth.esPremium() && !auth.esPro()">
-    <div class="pf-premium__left">
-      <div class="pf-premium__icon">
-        <i class="fa-solid fa-crown"></i>
-      </div>
-      <div>
-        <h3>Resumen de situación financiera</h3>
-        <p>Obtén un análisis completo de tu salud financiera, tendencias, riesgos y recomendaciones personalizadas para mejorar tus finanzas.</p>
-      </div>
-    </div>
-    <div class="pf-premium__right">
-      <button class="pf-premium__btn pf-premium__btn--secondary" type="button" (click)="abrirModalPlanes()">
-        Ver resumen de situación <i class="fa-solid fa-lock"></i>
-      </button>
-      <span class="pf-premium__label">Disponible en LUKA · Premium</span>
-    </div>
-  </div>
-
-  <!-- ── Cuerpo Principal: Logros + Gráficos ── -->
-  <div class="pf-page__main-row anim-fade-up">
-
-    <!-- Columna Izquierda: Logros Financieros -->
-    <section class="pf-logros card">
-      <div class="pf-logros__header">
-        <div class="pf-logros__title-wrap">
-          <i class="fa-solid fa-trophy text-warning"></i>
-          <h2>Logros financieros</h2>
+        <div>
+          <h3>Resumen de situation financiera</h3>
+          <p>Obtén un análisis completo de tu salud financiera, tendencias, riesgos y recomendaciones personalizadas para mejorar tus finanzas.</p>
         </div>
-        <p class="pf-logros__sub">Sigue avanzando y desbloquea más logros.</p>
       </div>
-
-      <div class="pf-logros__grid">
-        @for (logro of logrosVisibles(); track logro.id) {
-          <div class="pf-logro-card" [class.pf-logro-card--desbloqueado]="logro.desbloqueado">
-
-            <span class="pf-logro-card__status-indicator">
-              @if (logro.desbloqueado) {
-                <i class="fa-solid fa-circle-check text-success"></i>
-              } @else {
-                <i class="fa-solid fa-lock text-muted"></i>
-              }
-            </span>
-
-            <div class="pf-logro-card__icon-wrap" [ngClass]="logro.desbloqueado ? 'pf-logro-card__icon-wrap--unlocked' : 'pf-logro-card__icon-wrap--' + logro.iconoColor">
-              <i [class]="logro.icono"></i>
-            </div>
-
-            <span class="pf-logro-card__titulo">{{ logro.titulo }}</span>
-
-            @if (logro.desbloqueado) {
-              <span class="pf-logro-card__estado">¡Desbloqueado!</span>
-            } @else {
-              <span class="pf-logro-card__progreso-texto">
-                @if (logro.id === 'ahorro-10000') {
-                  S/ {{ logro.progreso.toLocaleString('es-PE', { maximumFractionDigits: 0 }) }} / S/ {{ logro.meta.toLocaleString('es-PE', { maximumFractionDigits: 0 }) }}
-                } @else if (logro.id === 'salud-financiera') {
-                  {{ logro.progreso.toLocaleString('es-PE', { maximumFractionDigits: 1 }) }} / {{ logro.meta }} meses
-                } @else {
-                  {{ logro.progreso.toLocaleString('es-PE', { maximumFractionDigits: 1 }) }} / {{ logro.meta }}
-                }
-              </span>
-              <div class="pf-logro-card__progreso-bar">
-                <div class="pf-logro-card__progreso-fill" [style.width.%]="(logro.progreso / logro.meta) * 100"></div>
-              </div>
-            }
-          </div>
-        }
-      </div>
-
-      <div class="pf-logros__footer">
-        <button class="pf-logros__ver-todos" type="button" (click)="toggleLogros()">
-          {{ mostrarTodosLogros() ? 'Ver menos' : 'Ver todos los logros >' }}
+      <div class="pf-premium__right">
+        <button class="pf-premium__btn pf-premium__btn--secondary" type="button" (click)="service.abrirModalPlanes()">
+          Ver resumen de situación <i class="fa-solid fa-lock"></i>
         </button>
+        <span class="pf-premium__label">Disponible en LUKA · Premium</span>
       </div>
-    </section>
-
-    <!-- Columna Derecha: Gráficos (Tendencia + Composición) -->
-    <div class="pf-graphics-col">
-
-      <!-- Tendencia Financiera -->
-      <section class="pf-tendencia card">
-        <div class="pf-tendencia__header">
-          <h2>Tendencia financiera</h2>
-          <div class="pf-tendencia__controls">
-            <div class="pf-tendencia__filtros">
-              <button [class.active]="filtroTendencia() === 3" (click)="cambiarTendencia(3)" type="button">3 meses</button>
-              <button [class.active]="filtroTendencia() === 6" (click)="cambiarTendencia(6)" type="button">6 meses</button>
-              <button [class.active]="filtroTendencia() === 12" (click)="cambiarTendencia(12)" type="button">12 meses</button>
-            </div>
-            <div class="pf-tendencia__leyenda">
-              <span><span class="dot dot--ingresos"></span> Ingresos</span>
-              <span><span class="dot dot--gastos"></span> Gastos</span>
-            </div>
-          </div>
-        </div>
-
-        @if (tendencia().length > 0) {
-          <div class="pf-tendencia__chart-container">
-            <div class="pf-tendencia__eje-y">
-              <span>S/ 8,000</span>
-              <span>S/ 6,000</span>
-              <span>S/ 4,000</span>
-              <span>S/ 2,000</span>
-              <span>S/ 0</span>
-            </div>
-            <div class="pf-tendencia__chart-main">
-              <svg class="pf-tendencia__svg" viewBox="0 0 500 160" preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="trend-ingresos-grad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#22c55e" stop-opacity="0.15"/>
-                    <stop offset="100%" stop-color="#22c55e" stop-opacity="0.0"/>
-                  </linearGradient>
-                  <linearGradient id="trend-gastos-grad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#ef4444" stop-opacity="0.10"/>
-                    <stop offset="100%" stop-color="#ef4444" stop-opacity="0.0"/>
-                  </linearGradient>
-                </defs>
-
-                <!-- Líneas horizontales de guía -->
-                <line x1="0" y1="0" x2="500" y2="0" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="4,4"/>
-                <line x1="0" y1="40" x2="500" y2="40" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="4,4"/>
-                <line x1="0" y1="80" x2="500" y2="80" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="4,4"/>
-                <line x1="0" y1="120" x2="500" y2="120" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="4,4"/>
-                <line x1="0" y1="160" x2="500" y2="160" stroke="var(--border-color)" stroke-width="1"/>
-
-                <!-- Áreas y Líneas -->
-                <path [attr.d]="tendenciaNormalizada().ingresos + ' L ' + tendenciaNormalizada().w + ',' + tendenciaNormalizada().h + ' L 0,' + tendenciaNormalizada().h + ' Z'" fill="url(#trend-ingresos-grad)" class="trend-area" />
-                <path [attr.d]="tendenciaNormalizada().gastos + ' L ' + tendenciaNormalizada().w + ',' + tendenciaNormalizada().h + ' L 0,' + tendenciaNormalizada().h + ' Z'" fill="url(#trend-gastos-grad)" class="trend-area" />
-
-                <path [attr.d]="tendenciaNormalizada().ingresos" stroke="#22c55e" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="trend-line trend-line--ingresos"/>
-                <path [attr.d]="tendenciaNormalizada().gastos" stroke="#ef4444" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="trend-line trend-line--gastos"/>
-
-                <!-- Puntos interactivos -->
-                @for (punto of tendencia(); track punto.mes; let i = $index) {
-                  <circle [attr.cx]="tendenciaNormalizada().mapX(i)" [attr.cy]="tendenciaNormalizada().mapY(punto.ingresos)" r="4.5" fill="#22c55e" stroke="var(--bg-card)" stroke-width="1.5" class="trend-node trend-node--ingresos">
-                    <title>Ingresos ({{ punto.mes }}): S/ {{ formatMoneda(punto.ingresos) }}</title>
-                  </circle>
-                  <circle [attr.cx]="tendenciaNormalizada().mapX(i)" [attr.cy]="tendenciaNormalizada().mapY(punto.gastos)" r="4.5" fill="#ef4444" stroke="var(--bg-card)" stroke-width="1.5" class="trend-node trend-node--gastos">
-                    <title>Gastos ({{ punto.mes }}): S/ {{ formatMoneda(punto.gastos) }}</title>
-                  </circle>
-                }
-              </svg>
-              <div class="pf-tendencia__eje-x">
-                @for (punto of tendencia(); track punto.mes; let i = $index) {
-                  <span>{{ punto.mes }} {{ punto.anio }}</span>
-                }
-              </div>
-            </div>
-          </div>
-        }
-      </section>
-
     </div>
 
-  </div>
+    <!-- ── Cuerpo Principal: Logros + Gráficos ── -->
+    <div class="pf-page__main-row anim-fade-up">
+      <!-- Columna Izquierda: Logros Financieros -->
+      <app-perfil-logros />
 
+      <!-- Columna Derecha: Gráficos (Tendencia) -->
+      <div class="pf-graphics-col">
+        <app-perfil-tendencia />
+      </div>
+    </div>
 
-  <!-- ── Nota de Pie ── -->
-  <footer class="pf-page__footer anim-fade-up">
-    <i class="fa-solid fa-circle-info"></i>
-    <span>Los cálculos de todos los indicadores son realizados por el backend. Los datos se muestran según el período seleccionado y el usuario autenticado.</span>
-  </footer>
+    <!-- ── Nota de Pie ── -->
+    <footer class="pf-page__footer anim-fade-up">
+      <i class="fa-solid fa-circle-info"></i>
+      <span>Los cálculos de todos los indicadores son realizados por el backend. Los datos se muestran según el período seleccionado y el usuario autenticado.</span>
+    </footer>
 
   }
 
   <!-- ── Modal Configuración Perfil Financiero ── -->
-  @if (modalConfigAbierto()) {
-    <div class="pf-modal-backdrop" (click)="cerrarModalConfig()">
-      <div class="pf-modal" (click)="$event.stopPropagation()">
-        <header class="pf-modal__header">
-          <h2>Editar Perfil Financiero</h2>
-          <button type="button" class="pf-modal__close" (click)="cerrarModalConfig()"><i class="fa-solid fa-xmark"></i></button>
-        </header>
+  <app-perfil-wizard-modal />
 
-        <div class="pf-modal__body">
-          <!-- Indicador visual de pasos del Wizard -->
-          <div class="pf-wizard-steps">
-            <div class="pf-wizard-step" [class.active]="pasoActual() >= 1" [class.completed]="pasoActual() > 1">
-              <span class="pf-wizard-step__number">@if (pasoActual() > 1) { <i class="fa-solid fa-check"></i> } @else { 1 }</span>
-              <span class="pf-wizard-step__label">Datos Básicos</span>
-            </div>
-            <div class="pf-wizard-line" [class.active]="pasoActual() >= 2"></div>
-            <div class="pf-wizard-step" [class.active]="pasoActual() >= 2" [class.completed]="pasoActual() > 2">
-              <span class="pf-wizard-step__number">@if (pasoActual() > 2) { <i class="fa-solid fa-check"></i> } @else { 2 }</span>
-              <span class="pf-wizard-step__label">Estilo de Vida</span>
-            </div>
-            <div class="pf-wizard-line" [class.active]="pasoActual() >= 3"></div>
-            <div class="pf-wizard-step" [class.active]="pasoActual() >= 3" [class.completed]="pasoActual() > 3">
-              <span class="pf-wizard-step__number">3</span>
-              <span class="pf-wizard-step__label">Tono Asistente IA</span>
-            </div>
-          </div>
-
-          <!-- Paso 1: Datos Básicos -->
-          @if (pasoActual() === 1) {
-            <div class="pf-wizard-pane anim-fade-in">
-              <p class="pf-modal__subtitle">Completa tu profesión o actividad principal e ingresos mensuales.</p>
-
-              <div class="pf-form-group">
-                <label for="ocupacion">Ocupación / Profesión</label>
-                <div class="pf-input-wrapper" [class.has-error]="erroresConfig()['ocupacion']">
-                  <i class="fa-solid fa-briefcase pf-input-icon"></i>
-                  <input id="ocupacion" type="text" [ngModel]="formConfig().ocupacion" (input)="actualizarCampoConfig('ocupacion', $any($event.target).value)" placeholder="Ej. Ingeniero de Software, Médico..." />
-                </div>
-                @if (erroresConfig()['ocupacion']) { <small class="pf-error-text">{{ erroresConfig()['ocupacion'] }}</small> }
-              </div>
-
-              <div class="pf-form-group">
-                <label for="ingresoMensual">Ingreso Mensual Estimado (S/)</label>
-                <div class="pf-input-wrapper pf-input-wrapper--disabled" [class.has-error]="erroresConfig()['ingresoMensual']">
-                  <i class="fa-solid fa-lock pf-input-icon"></i>
-                  <input id="ingresoMensual" type="number" [ngModel]="formConfig().ingresoMensual" readonly tabindex="-1" placeholder="Ej. 3500" min="0" />
-                </div>
-                <small class="pf-help-text" style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.25rem; margin-top: 0.2rem;">
-                  <i class="fa-solid fa-circle-info"></i> Auto-calculado a partir de tus ingresos reales del periodo.
-                </small>
-                @if (erroresConfig()['ingresoMensual']) { <small class="pf-error-text">{{ erroresConfig()['ingresoMensual'] }}</small> }
-              </div>
-            </div>
-          }
-
-          <!-- Paso 2: Estilo de Vida (Slider de Tolerancia al Riesgo) -->
-          @if (pasoActual() === 2) {
-            <div class="pf-wizard-pane anim-fade-in">
-              <p class="pf-modal__subtitle">Usa el control deslizante para definir tu tolerancia al riesgo y estilo de vida financiero.</p>
-
-              <div class="pf-slider-container">
-                <div class="pf-slider-labels">
-                  <span [class.active]="formConfig().estiloVida === 'AHORRATIVO'">Ahorrativo</span>
-                  <span [class.active]="formConfig().estiloVida === 'MODERADO'">Moderado</span>
-                  <span [class.active]="formConfig().estiloVida === 'GASTADOR'">Gastador</span>
-                  <span [class.active]="formConfig().estiloVida === 'INVERSOR'">Inversor</span>
-                </div>
-
-                <div class="pf-slider-wrapper">
-                  <input type="range" min="1" max="4" [value]="estiloVidaSliderVal()" (input)="onEstiloVidaSliderChange($event)" class="pf-slider" />
-                </div>
-
-                <div class="pf-slider-card">
-                  @if (formConfig().estiloVida === 'AHORRATIVO') {
-                    <div class="pf-slider-card__content anim-fade-in">
-                      <div class="pf-slider-card__icon"><i class="fa-solid fa-piggy-bank"></i></div>
-                      <div class="pf-slider-card__text">
-                        <h4>Ahorrativo 🏦</h4>
-                        <p>Baja tolerancia al riesgo. Tu principal enfoque es acumular capital de forma segura y minimizar egresos superfluos.</p>
-                      </div>
-                    </div>
-                  }
-                  @if (formConfig().estiloVida === 'MODERADO') {
-                    <div class="pf-slider-card__content anim-fade-in">
-                      <div class="pf-slider-card__icon"><i class="fa-solid fa-scale-balanced"></i></div>
-                      <div class="pf-slider-card__text">
-                        <h4>Moderado ⚖️</h4>
-                        <p>Tolerancia media. Buscas un equilibrio saludable entre tus gastos necesarios, el ahorro y el disfrute del presente.</p>
-                      </div>
-                    </div>
-                  }
-                  @if (formConfig().estiloVida === 'GASTADOR') {
-                    <div class="pf-slider-card__content anim-fade-in">
-                      <div class="pf-slider-card__icon"><i class="fa-solid fa-bag-shopping"></i></div>
-                      <div class="pf-slider-card__text">
-                        <h4>Gastador 🛍️</h4>
-                        <p>Preferencia por el consumo. Priorizas el confort, las experiencias y la adquisición de bienes y servicios.</p>
-                      </div>
-                    </div>
-                  }
-                  @if (formConfig().estiloVida === 'INVERSOR') {
-                    <div class="pf-slider-card__content anim-fade-in">
-                      <div class="pf-slider-card__icon"><i class="fa-solid fa-chart-line"></i></div>
-                      <div class="pf-slider-card__text">
-                        <h4>Inversor 📈</h4>
-                        <p>Alta tolerancia al riesgo. Buscas activamente rentabilizar tu excedente financiero y asumir retos financieros calculados.</p>
-                      </div>
-                    </div>
-                  }
-                </div>
-              </div>
-            </div>
-          }
-
-          <!-- Paso 3: Tono del Asistente IA (Tarjetas Visuales Seleccionables) -->
-          @if (pasoActual() === 3) {
-            <div class="pf-wizard-pane anim-fade-in">
-              <p class="pf-modal__subtitle">Elige la personalidad preferida para las respuestas y consejos que generará la Inteligencia Artificial.</p>
-
-              <div class="pf-tono-grid">
-                <button type="button" class="pf-tono-card" [class.active]="formConfig().tonoIA === 'AMIGABLE'" (click)="seleccionarTonoIA('AMIGABLE')">
-                  <div class="pf-tono-card__icon"><i class="fa-solid fa-face-smile"></i></div>
-                  <h4>Amigable y Cercano</h4>
-                  <p>Un trato cálido, empático y fácil de comprender para tu día a día.</p>
-                  <span class="pf-tono-card__check"><i class="fa-solid fa-circle-check"></i></span>
-                </button>
-
-                <button type="button" class="pf-tono-card" [class.active]="formConfig().tonoIA === 'FORMAL'" (click)="seleccionarTonoIA('FORMAL')">
-                  <div class="pf-tono-card__icon"><i class="fa-solid fa-user-tie"></i></div>
-                  <h4>Formal y Analítico</h4>
-                  <p>Explicaciones detalladas, lenguaje técnico y análisis financiero riguroso.</p>
-                  <span class="pf-tono-card__check"><i class="fa-solid fa-circle-check"></i></span>
-                </button>
-
-                <button type="button" class="pf-tono-card" [class.active]="formConfig().tonoIA === 'DIRECTO'" (click)="seleccionarTonoIA('DIRECTO')">
-                  <div class="pf-tono-card__icon"><i class="fa-solid fa-bolt"></i></div>
-                  <h4>Directo y al Grano</h4>
-                  <p>Consejos rápidos, concisos y enfocados estrictamente en la acción inmediata.</p>
-                  <span class="pf-tono-card__check"><i class="fa-solid fa-circle-check"></i></span>
-                </button>
-
-                <button type="button" class="pf-tono-card" [class.active]="formConfig().tonoIA === 'MOTIVADOR'" (click)="seleccionarTonoIA('MOTIVADOR')">
-                  <div class="pf-tono-card__icon"><i class="fa-solid fa-fire"></i></div>
-                  <h4>Motivador y Entusiasta</h4>
-                  <p>Impulso constante, frases de aliento y retos continuos para superarte.</p>
-                  <span class="pf-tono-card__check"><i class="fa-solid fa-circle-check"></i></span>
-                </button>
-              </div>
-            </div>
-          }
-
-          @if (mensajeConfig()) {
-            <div class="pf-alert" [class.pf-alert--success]="mensajeConfig()?.tipo === 'success'" [class.pf-alert--error]="mensajeConfig()?.tipo === 'error'" style="margin-top: 1rem;">
-              <i class="fa-solid" [ngClass]="mensajeConfig()?.tipo === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'"></i>
-              <span>{{ mensajeConfig()?.texto }}</span>
-            </div>
-          }
-        </div>
-
-        <footer class="pf-modal__footer">
-          @if (pasoActual() === 1) {
-            <button type="button" class="pf-btn pf-btn--secondary" (click)="cerrarModalConfig()">Cancelar</button>
-          } @else {
-            <button type="button" class="pf-btn pf-btn--secondary" (click)="retrocederPaso()">Atrás</button>
-          }
-
-          @if (pasoActual() < 3) {
-            <button type="button" class="pf-btn pf-btn--primary" (click)="avanzarPaso()">Siguiente</button>
-          } @else {
-            <button type="button" class="pf-btn pf-btn--primary" [disabled]="configurando()" (click)="guardarConfiguracion()">
-              {{ configurando() ? 'Guardando...' : 'Guardar Perfil' }}
-            </button>
-          }
-        </footer>
-      </div>
-    </div>
-  }
-
-  @if (modalPlanesAbierto()) {
-    <div class="pf-planes-backdrop" (click)="cerrarModalPlanes()">
-      <section class="pf-planes-modal" (click)="$event.stopPropagation()">
-        <button type="button" class="pf-planes-modal__close" (click)="cerrarModalPlanes()">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-
-        <div class="pf-planes-modal__grid">
-          <article class="pf-plan-card pf-plan-card--pro">
-            <span class="pf-plan-card__tag">PLAN</span>
-
-            <div class="pf-plan-card__header">
-              <div>
-                <h3>Pro <i class="fa-solid fa-star"></i></h3>
-                <p>Todo lo esencial para organizar tus finanzas con IA.</p>
-              </div>
-              <div class="pf-plan-card__illustration pf-plan-card__illustration--pro">
-                <i class="fa-solid fa-chart-line"></i>
-              </div>
-            </div>
-
-            <div class="pf-plan-card__price"><span>S/</span><strong>14.90</strong><small>/mes</small></div>
-            <p class="pf-plan-card__cancel">Cancela cuando quieras.</p>
-            <hr />
-            <h4>Incluye:</h4>
-
-            <ul class="pf-plan-card__features">
-              <li>
-                <i class="fa-solid fa-brain"></i>
-                <span><strong>Asistente IA Financiero</strong><small>Resuelve dudas y recibe orientación financiera.</small></span>
-              </li>
-              <li>
-                <i class="fa-solid fa-bullseye"></i>
-                <span><strong>Recomendaciones personalizadas</strong><small>Sugerencias según tus hábitos y objetivos.</small></span>
-              </li>
-              <li>
-                <i class="fa-solid fa-chart-pie"></i>
-                <span><strong>Reportes y análisis inteligentes</strong><small>Visualiza tus finanzas de forma clara.</small></span>
-              </li>
-            </ul>
-
-            <div class="pf-plan-card__queries">
-              <h4>Uso mensual de IA</h4>
-              <div><span>Módulos de Analítica</span><strong>20 consultas</strong></div>
-              <div><span>Auto Clasificar</span><strong>10 consultas</strong></div>
-            </div>
-
-            <button type="button" class="pf-plan-card__button" [disabled]="comprandoPlan()" (click)="comprarPlan('PRO')">
-              {{ comprandoPlan() ? 'Redirigiendo...' : '✨ Elegir Plan Pro' }}
-            </button>
-            <p class="pf-plan-card__secure"><i class="fa-solid fa-lock"></i> Pago seguro y protegido</p>
-          </article>
-
-          <article class="pf-plan-card pf-plan-card--premium">
-            <span class="pf-plan-card__popular"><i class="fa-solid fa-star"></i> MÁS POPULAR</span>
-            <span class="pf-plan-card__tag pf-plan-card__tag--premium">PLAN</span>
-
-            <div class="pf-plan-card__header">
-              <div>
-                <h3>Premium <i class="fa-solid fa-crown"></i></h3>
-                <p>Todo lo que necesitas para tomar mejores decisiones y crecer tu dinero.</p>
-              </div>
-              <div class="pf-plan-card__illustration pf-plan-card__illustration--premium">
-                <i class="fa-solid fa-chart-simple"></i>
-              </div>
-            </div>
-
-            <div class="pf-plan-card__price"><span>S/</span><strong>25.90</strong><small>/mes</small></div>
-            <p class="pf-plan-card__cancel">Cancela cuando quieras.</p>
-            <hr />
-            <h4>Incluye todo lo del plan Pro, más:</h4>
-
-            <ul class="pf-plan-card__features">
-              <li>
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
-                <span><strong>Análisis avanzado con IA</strong><small>Insights más profundos para tomar mejores decisiones.</small></span>
-              </li>
-              <li>
-                <i class="fa-solid fa-star"></i>
-                <span><strong>Recomendaciones inteligentes avanzadas</strong><small>Sugerencias contextuales y más precisas.</small></span>
-              </li>
-              <li>
-                <i class="fa-solid fa-chart-pie"></i>
-                <span><strong>Reportes avanzados limitados</strong><small>Más detalle, más control, mejores resultados.</small></span>
-              </li>
-              <li>
-                <i class="fa-solid fa-shield-halved"></i>
-                <span><strong>Prioridad y nuevas funciones</strong><small>Acceso anticipado a nuevas herramientas.</small></span>
-              </li>
-            </ul>
-
-            <div class="pf-plan-card__queries pf-plan-card__queries--premium">
-              <h4>Uso mensual de IA</h4>
-              <div><span>Módulos de Analítica</span><strong>50 consultas</strong></div>
-              <div><span>Auto Clasificar</span><strong>20 consultas</strong></div>
-            </div>
-
-            <button type="button" class="pf-plan-card__button pf-plan-card__button--premium" [disabled]="comprandoPlan()" (click)="comprarPlan('PREMIUM')">
-              {{ comprandoPlan() ? 'Redirigiendo...' : '✨ Elegir Plan Premium' }}
-            </button>
-            <p class="pf-plan-card__secure"><i class="fa-solid fa-lock"></i> Pago seguro y protegido</p>
-          </article>
-        </div>
-      </section>
-    </div>
-  }
+  <!-- ── Modal Planes Luka ── -->
+  <app-perfil-planes-modal />
 
 </section>
