@@ -1,25 +1,11 @@
-import { Injectable, inject, signal, computed, DestroyRef } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
 import { FinancieroService } from '../../../../core/services/Financiero.service';
 import { ClienteMetasLimitesService } from '../../../../core/services/cliente-metas-limites.service';
-import { ClientePerfilService } from '../../../../core/services/cliente-perfil.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { SuscripcionService } from '../../../../core/services/suscripcion.service';
 import { ResumenFinancieroDTO } from '../../../../core/models/financiero/resumen.model';
-import { SolicitudPerfilFinanciero } from '../../../../core/models/cliente/perfil-cliente.model';
 import { RespuestaMetaAhorro } from '../../../../core/models/cliente/meta-limite.model';
 import { forkJoin } from 'rxjs';
-
-export interface LogroFinanciero {
-  id: string;
-  titulo: string;
-  descripcion: string;
-  icono: string;
-  iconoColor: string;
-  desbloqueado: boolean;
-  progreso: number;
-  meta: number;
-  categoria: string;
-}
 
 export interface PuntoTendencia {
   mes: string;
@@ -36,7 +22,6 @@ export class PerfilFinancieroService {
   public auth = inject(AuthService);
   private financieroService = inject(FinancieroService);
   private metasService = inject(ClienteMetasLimitesService);
-  private perfilService = inject(ClientePerfilService);
   private suscripcionService = inject(SuscripcionService);
 
   // ── Estado ──────────────────────────────────────────────────
@@ -71,21 +56,6 @@ export class PerfilFinancieroService {
 
   aniosDisponibles = [2024, 2025, 2026];
 
-  // ── Modal Configuración ──────────────────────────────────────
-  modalConfigAbierto = signal<boolean>(false);
-  configurando = signal<boolean>(false);
-  pasoActual = signal<number>(1);
-
-  formConfig = signal<SolicitudPerfilFinanciero>({
-    ocupacion: '',
-    ingresoMensual: 0,
-    estiloVida: 'MODERADO',
-    tonoIA: 'AMIGABLE'
-  });
-
-  erroresConfig = signal<{ [key: string]: string }>({});
-  mensajeConfig = signal<{ texto: string, tipo: 'success' | 'error' } | null>(null);
-
   // ── KPIs Computados ─────────────────────────────────────────
   indicesSalud = computed(() => {
     const r = this.resumenActual();
@@ -103,12 +73,6 @@ export class PerfilFinancieroService {
     const r = this.resumenActual();
     if (!r || r.totalIngresos === 0) return null;
     return ((r.totalIngresos - r.totalGastos) / r.totalIngresos) * 100;
-  });
-
-  progresoLogros = computed(() => {
-    const total = this.logrosFinancieros().length;
-    const desbloqueados = this.logrosFinancieros().filter(l => l.desbloqueado).length;
-    return { desbloqueados, total };
   });
 
   variacionAhorro = computed(() => {
@@ -139,206 +103,6 @@ export class PerfilFinancieroService {
     const mesAnterior = mes === 1 ? 12 : mes - 1;
     const anioAnterior = mes === 1 ? anio - 1 : anio;
     return `${nombresMeses[mesAnterior - 1]} ${anioAnterior}`;
-  });
-
-  // ── Logros ──────────────────────────────────────────────────
-  logrosFinancieros = computed<LogroFinanciero[]>(() => {
-    const r = this.resumenActual();
-    const metas = this.metasCompletadas();
-    if (!r) return this.logrosMock();
-
-    const tempLogros: LogroFinanciero[] = [
-      {
-        id: 'primer-ingreso',
-        titulo: 'Primer paso financiero',
-        descripcion: 'Registra tu primer ingreso.',
-        icono: 'fa-solid fa-circle-dollar-to-slot',
-        iconoColor: 'success',
-        desbloqueado: r.cantidadIngresos >= 1,
-        progreso: Math.min(r.cantidadIngresos, 1),
-        meta: 1,
-        categoria: 'ingresos',
-      },
-      {
-        id: 'ahorro-inicial',
-        titulo: 'Ahorro inicial',
-        descripcion: 'Acumula S/ 2,000 en tus ingresos o balance positivo.',
-        icono: 'fa-solid fa-sack-dollar',
-        iconoColor: 'warning',
-        desbloqueado: r.totalIngresos >= 2000,
-        progreso: Math.min(r.totalIngresos, 2000),
-        meta: 2000,
-        categoria: 'ahorro',
-      },
-      {
-        id: 'constancia-diaria',
-        titulo: 'Constancia diaria',
-        descripcion: 'Mantén una racha de 30 días registrando movimientos.',
-        icono: 'fa-solid fa-fire',
-        iconoColor: 'danger',
-        desbloqueado: r.totalTransacciones >= 30,
-        progreso: Math.min(r.totalTransacciones, 30),
-        meta: 30,
-        categoria: 'movimientos',
-      },
-      {
-        id: 'objetivo-cumplido',
-        titulo: 'Objetivo cumplido',
-        descripcion: 'Completa tu primera meta financiera.',
-        icono: 'fa-solid fa-bullseye',
-        iconoColor: 'primary',
-        desbloqueado: metas >= 1,
-        progreso: Math.min(metas, 1),
-        meta: 1,
-        categoria: 'metas',
-      },
-      {
-        id: 'registrador-experto',
-        titulo: 'Registrador experto',
-        descripcion: 'Registra 100 movimientos financieros.',
-        icono: 'fa-solid fa-list-check',
-        iconoColor: 'info',
-        desbloqueado: r.totalTransacciones >= 100,
-        progreso: Math.min(r.totalTransacciones, 100),
-        meta: 100,
-        categoria: 'movimientos',
-      },
-      {
-        id: 'gran-ahorrador',
-        titulo: 'Gran ahorrador',
-        descripcion: 'Ahorra S/ 10,000.',
-        icono: 'fa-solid fa-piggy-bank',
-        iconoColor: 'success',
-        desbloqueado: r.totalIngresos >= 10000,
-        progreso: Math.min(r.totalIngresos, 10000),
-        meta: 10000,
-        categoria: 'ahorro',
-      },
-      {
-        id: 'salud-estable',
-        titulo: 'Salud estable',
-        descripcion: 'Mantén una salud financiera saludable durante 3 meses.',
-        icono: 'fa-solid fa-heart-pulse',
-        iconoColor: 'danger',
-        desbloqueado: (this.indicesSalud()?.score ?? 0) >= 50,
-        progreso: (this.indicesSalud()?.score ?? 0) >= 50 ? 3 : 1,
-        meta: 3,
-        categoria: 'salud',
-      },
-      {
-        id: 'cumplidor-metas',
-        titulo: 'Cumplidor de metas',
-        descripcion: 'Completa 5 metas financieras.',
-        icono: 'fa-solid fa-trophy',
-        iconoColor: 'warning',
-        desbloqueado: metas >= 5,
-        progreso: Math.min(metas, 5),
-        meta: 5,
-        categoria: 'metas',
-      },
-      {
-        id: 'control-financiero',
-        titulo: 'Control financiero',
-        descripcion: 'Mantente dentro de tu presupuesto durante 30 días.',
-        icono: 'fa-solid fa-shield-halved',
-        iconoColor: 'primary',
-        desbloqueado: r.totalTransacciones >= 10,
-        progreso: r.totalTransacciones >= 10 ? 30 : 12,
-        meta: 30,
-        categoria: 'presupuesto',
-      },
-      {
-        id: 'ahorrador-constante',
-        titulo: 'Ahorrador constante',
-        descripcion: 'Ahorra durante 3 meses seguidos.',
-        icono: 'fa-solid fa-calendar-check',
-        iconoColor: 'success',
-        desbloqueado: r.totalIngresos > r.totalGastos,
-        progreso: r.totalIngresos > r.totalGastos ? 3 : 1,
-        meta: 3,
-        categoria: 'ahorro',
-      },
-      {
-        id: 'patrimonio-positivo',
-        titulo: 'Patrimonio positivo',
-        descripcion: 'Alcanza un patrimonio operativo neto de S/ 5,000.',
-        icono: 'fa-solid fa-chart-line',
-        iconoColor: 'info',
-        desbloqueado: (r.totalIngresos - r.totalGastos) >= 5000,
-        progreso: Math.min(Math.max(0, r.totalIngresos - r.totalGastos), 5000),
-        meta: 5000,
-        categoria: 'balance',
-      },
-      {
-        id: 'categorizador-experto',
-        titulo: 'Categorizador experto',
-        descripcion: 'Utiliza todas las categorías principales en tus movimientos.',
-        icono: 'fa-solid fa-tags',
-        iconoColor: 'warning',
-        desbloqueado: r.totalTransacciones >= 15,
-        progreso: r.totalTransacciones >= 15 ? 5 : 3,
-        meta: 5,
-        categoria: 'movimientos',
-      },
-      {
-        id: 'cero-excesos',
-        titulo: 'Cero excesos',
-        descripcion: 'No superes tus límites de presupuesto durante 2 meses.',
-        icono: 'fa-solid fa-circle-xmark',
-        iconoColor: 'danger',
-        desbloqueado: r.totalTransacciones > 0,
-        progreso: r.totalTransacciones > 0 ? 2 : 1,
-        meta: 2,
-        categoria: 'presupuesto',
-      },
-      {
-        id: 'racha-imparable',
-        titulo: 'Racha imparable',
-        descripcion: 'Mantén actividad financiera durante 100 días.',
-        icono: 'fa-solid fa-bolt',
-        iconoColor: 'primary',
-        desbloqueado: r.totalTransacciones >= 100,
-        progreso: Math.min(r.totalTransacciones, 100),
-        meta: 100,
-        categoria: 'movimientos',
-      },
-      {
-        id: 'maestro-ahorro',
-        titulo: 'Maestro del ahorro',
-        descripcion: 'Acumula S/ 25,000 ahorrados.',
-        icono: 'fa-solid fa-crown',
-        iconoColor: 'warning',
-        desbloqueado: r.totalIngresos >= 25000,
-        progreso: Math.min(r.totalIngresos, 25000),
-        meta: 25000,
-        categoria: 'ahorro',
-      },
-    ];
-
-    const desbloqueados = tempLogros.filter(l => l.desbloqueado).length;
-
-    tempLogros.push({
-      id: 'leyenda-luka',
-      titulo: 'Leyenda Luka',
-      descripcion: 'Desbloquea todos los logros del sistema.',
-      icono: 'fa-solid fa-star',
-      iconoColor: 'success',
-      desbloqueado: desbloqueados >= 15,
-      progreso: desbloqueados,
-      meta: 15,
-      categoria: 'general',
-    });
-
-    return tempLogros;
-  });
-
-  logrosVisibles = computed(() => {
-    const todos = this.logrosFinancieros();
-    const desbloqueados = todos.filter(l => l.desbloqueado);
-    if (desbloqueados.length > 0) {
-      return desbloqueados.slice(0, 3);
-    }
-    return todos.slice(0, 3);
   });
 
   // ── Tendencia SVG ────────────────────────────────────────────
@@ -381,15 +145,6 @@ export class PerfilFinancieroService {
       h,
       w,
     };
-  });
-
-  estiloVidaSliderVal = computed(() => {
-    const estilo = this.formConfig().estiloVida;
-    if (estilo === 'AHORRATIVO') return 1;
-    if (estilo === 'MODERADO') return 2;
-    if (estilo === 'GASTADOR') return 3;
-    if (estilo === 'INVERSOR') return 4;
-    return 2;
   });
 
   readonly meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
@@ -487,28 +242,6 @@ export class PerfilFinancieroService {
     this.generarTendencia(meses);
   }
 
-  exportarPdf(): void {
-    const resumen = this.resumenActual();
-    const nombresMeses = [
-      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-    ];
-    const periodoLabel = `${nombresMeses[this.mesSeleccionado() - 1]} ${this.anioSeleccionado()}`;
-    const salud = this.indicesSalud();
-    const ahorro = this.capacidadAhorro();
-    const logros = this.progresoLogros();
-    const fechaGeneracion = new Date().toLocaleString('es-PE', { dateStyle: 'long', timeStyle: 'short' });
-    const html = this.construirReportePdf(resumen, periodoLabel, salud, ahorro, logros, fechaGeneracion);
-    const ventana = window.open('', '_blank', 'width=980,height=720');
-    if (!ventana) return;
-
-    ventana.document.open();
-    ventana.document.write(html);
-    ventana.document.close();
-    ventana.focus();
-    setTimeout(() => ventana.print(), 350);
-  }
-
   toggleLogros(): void {
     this.mostrarTodosLogros.update(v => !v);
   }
@@ -518,107 +251,6 @@ export class PerfilFinancieroService {
     if (score >= 50) return 'info';
     if (score >= 25) return 'warning';
     return 'danger';
-  }
-
-  formatMoneda(valor: number): string {
-    return valor.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  }
-
-  formatMonedaSinDecimales(valor: number): string {
-    return valor.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-  }
-
-  abrirModalConfig(): void {
-    const usuario = this.auth.usuario();
-    if (!usuario) return;
-
-    this.perfilService.consultarPerfilFinanciero(usuario.id).subscribe({
-      next: (perfil) => {
-        const totalIngresos = this.resumenActual()?.totalIngresos ?? 0;
-        const backendEstilo = (perfil.estiloVida || '').toUpperCase().trim();
-        const backendTono = (perfil.tonoIA || '').toUpperCase().trim();
-        
-        let estiloVida = 'MODERADO';
-        if (['AHORRATIVO', 'MODERADO', 'GASTADOR', 'INVERSOR'].includes(backendEstilo)) {
-          estiloVida = backendEstilo;
-        }
-
-        let tonoIA = 'AMIGABLE';
-        if (['FORMAL', 'AMIGABLE', 'MOTIVADOR', 'DIRECTO'].includes(backendTono)) {
-          tonoIA = backendTono;
-        }
-
-        this.formConfig.set({
-          ocupacion: perfil.ocupacion || '',
-          ingresoMensual: totalIngresos,
-          estiloVida: estiloVida,
-          tonoIA: tonoIA
-        });
-        this.pasoActual.set(1);
-        this.modalConfigAbierto.set(true);
-      },
-      error: () => {
-        const totalIngresos = this.resumenActual()?.totalIngresos ?? 0;
-        this.formConfig.set({
-          ocupacion: '',
-          ingresoMensual: totalIngresos,
-          estiloVida: 'MODERADO',
-          tonoIA: 'AMIGABLE'
-        });
-        this.pasoActual.set(1);
-        this.modalConfigAbierto.set(true);
-      }
-    });
-  }
-
-  cerrarModalConfig(): void {
-    this.modalConfigAbierto.set(false);
-    this.erroresConfig.set({});
-    this.mensajeConfig.set(null);
-    this.pasoActual.set(1);
-  }
-
-  onEstiloVidaSliderChange(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    const val = Number(target.value);
-    let estilo = 'MODERADO';
-    if (val === 1) estilo = 'AHORRATIVO';
-    else if (val === 2) estilo = 'MODERADO';
-    else if (val === 3) estilo = 'GASTADOR';
-    else if (val === 4) estilo = 'INVERSOR';
-    this.actualizarCampoConfig('estiloVida', estilo);
-  }
-
-  seleccionarTonoIA(tono: string): void {
-    this.actualizarCampoConfig('tonoIA', tono);
-  }
-
-  avanzarPaso(): void {
-    if (this.pasoActual() === 1) {
-      const data = this.formConfig();
-      const errores = { ...this.erroresConfig() };
-      let hasError = false;
-
-      if (!data.ocupacion || data.ocupacion.trim().length < 3) {
-        errores['ocupacion'] = 'La ocupación debe tener al menos 3 caracteres.';
-        hasError = true;
-      } else {
-        delete errores['ocupacion'];
-      }
-
-      this.erroresConfig.set(errores);
-      if (hasError) return;
-    }
-
-    if (this.pasoActual() < 3) {
-      this.pasoActual.update(p => p + 1);
-    }
-  }
-
-  retrocederPaso(): void {
-    if (this.pasoActual() > 1) {
-      this.pasoActual.update(p => p - 1);
-    }
   }
 
   abrirModalPlanes(): void {
@@ -646,150 +278,11 @@ export class PerfilFinancieroService {
     });
   }
 
-  actualizarCampoConfig(campo: keyof SolicitudPerfilFinanciero, valor: string | number): void {
-    this.formConfig.update(f => ({ ...f, [campo]: valor }));
-    const errs = { ...this.erroresConfig() };
-    delete errs[campo];
-    this.erroresConfig.set(errs);
+  formatMoneda(valor: number): string {
+    return valor.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
-  validarFormConfig(): boolean {
-    const data = this.formConfig();
-    const errores: { [key: string]: string } = {};
-
-    if (!data.ocupacion || data.ocupacion.trim().length < 3) {
-      errores['ocupacion'] = 'La ocupación debe tener al menos 3 caracteres.';
-    }
-    if (data.ingresoMensual === null || data.ingresoMensual === undefined || data.ingresoMensual < 0) {
-      errores['ingresoMensual'] = 'El ingreso mensual no puede ser negativo.';
-    }
-    if (!data.estiloVida) {
-      errores['estiloVida'] = 'Selecciona un estilo de vida.';
-    }
-    if (!data.tonoIA) {
-      errores['tonoIA'] = 'Selecciona un tono para la IA.';
-    }
-
-    this.erroresConfig.set(errores);
-    return Object.keys(errores).length === 0;
-  }
-
-  guardarConfiguracion(): void {
-    if (!this.validarFormConfig()) return;
-
-    const usuario = this.auth.usuario();
-    if (!usuario) return;
-
-    this.configurando.set(true);
-    this.mensajeConfig.set(null);
-
-    this.perfilService.guardarPerfilFinanciero(usuario.id, this.formConfig()).subscribe({
-      next: () => {
-        this.configurando.set(false);
-        this.mensajeConfig.set({ texto: 'Perfil financiero actualizado exitosamente.', tipo: 'success' });
-        setTimeout(() => this.cerrarModalConfig(), 2000);
-      },
-      error: () => {
-        this.configurando.set(false);
-        this.mensajeConfig.set({ texto: 'Ocurrió un error al guardar. Intenta de nuevo.', tipo: 'error' });
-      }
-    });
-  }
-
-  private construirReportePdf(
-    resumen: ResumenFinancieroDTO | null,
-    periodo: string,
-    salud: { score: number; etiqueta: string } | null,
-    ahorro: number | null,
-    logros: { desbloqueados: number; total: number },
-    fechaGeneracion: string
-  ): string {
-    const ingresos = resumen?.totalIngresos ?? 0;
-    const gastos = resumen?.totalGastos ?? 0;
-    const saldo = ingresos - gastos;
-    const rowsTendencia = this.tendencia().map(punto => `
-      <tr><td>${punto.mes} ${punto.anio}</td><td>S/ ${this.formatMoneda(punto.ingresos)}</td><td>S/ ${this.formatMoneda(punto.gastos)}</td><td>S/ ${this.formatMoneda(punto.ahorro)}</td></tr>
-    `).join('');
-
-    return `<!doctype html>
-      <html lang="es">
-      <head>
-        <meta charset="utf-8">
-        <title>Perfil financiero - ${periodo}</title>
-        <style>
-          @page { size: A4; margin: 16mm; }
-          body { margin: 0; font-family: Arial, sans-serif; color: #0f172a; background: #fff; }
-          .hero { padding: 22px; border-radius: 18px; color: #fff; background: linear-gradient(135deg, #4f46e5, #7c3aed); }
-          h1 { margin: 0 0 6px; font-size: 26px; }
-          h2 { margin: 22px 0 10px; font-size: 17px; color: #312e81; }
-          p { margin: 0; color: inherit; }
-          .muted { color: #64748b; font-size: 12px; }
-          .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 18px 0; }
-          .card { border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; background: #f8fafc; }
-          .label { display: block; color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: 700; }
-          .value { display: block; margin-top: 6px; font-size: 21px; font-weight: 800; }
-          table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12px; }
-          th, td { border-bottom: 1px solid #e2e8f0; padding: 8px; text-align: left; }
-          th { background: #eef2ff; color: #312e81; }
-          .footer { margin-top: 24px; color: #64748b; font-size: 11px; }
-        </style>
-      </head>
-      <body>
-        <section class="hero">
-          <h1>Reporte de Perfil Financiero</h1>
-          <p>Periodo: ${periodo}</p>
-          <p>Generado: ${fechaGeneracion}</p>
-        </section>
-        <section class="grid">
-          <article class="card"><span class="label">Ingresos</span><span class="value">S/ ${this.formatMoneda(ingresos)}</span></article>
-          <article class="card"><span class="label">Gastos</span><span class="value">S/ ${this.formatMoneda(gastos)}</span></article>
-          <article class="card"><span class="label">Saldo operativo</span><span class="value">S/ ${this.formatMoneda(saldo)}</span></article>
-          <article class="card"><span class="label">Salud financiera</span><span class="value">${salud ? `${salud.score}/100` : 'Sin datos'}</span><span class="muted">${salud?.etiqueta ?? ''}</span></article>
-          <article class="card"><span class="label">Tasa de ahorro</span><span class="value">${ahorro !== null ? `${ahorro.toFixed(1)}%` : 'Sin datos'}</span></article>
-          <article class="card"><span class="label">Logros</span><span class="value">${logros.desbloqueados}/${logros.total}</span></article>
-        </section>
-        <section>
-          <h2>Tendencia financiera</h2>
-          <table><thead><tr><th>Mes</th><th>Ingresos</th><th>Gastos</th><th>Ahorro</th></tr></thead><tbody>${rowsTendencia}</tbody></table>
-        </section>
-        <p class="footer">Reporte generado desde Luka App. Para guardar como PDF, selecciona “Guardar como PDF” en el diálogo de impresión.</p>
-      </body>
-      </html>`;
-  }
-
-  private logrosMock(): LogroFinanciero[] {
-    const mockList: LogroFinanciero[] = [
-      { id: 'primer-ingreso', titulo: 'Primer paso financiero', descripcion: 'Registra tu primer ingreso.', icono: 'fa-solid fa-circle-dollar-to-slot', iconoColor: 'success', desbloqueado: true, progreso: 1, meta: 1, categoria: 'ingresos' },
-      { id: 'ahorro-inicial', titulo: 'Ahorro inicial', descripcion: 'Acumula S/ 2,000 en tus ingresos o balance positivo.', icono: 'fa-solid fa-sack-dollar', iconoColor: 'warning', desbloqueado: true, progreso: 2000, meta: 2000, categoria: 'ahorro' },
-      { id: 'constancia-diaria', titulo: 'Constancia diaria', descripcion: 'Mantén una racha de 30 días registrando movimientos.', icono: 'fa-solid fa-fire', iconoColor: 'danger', desbloqueado: true, progreso: 30, meta: 30, categoria: 'movimientos' },
-      { id: 'objetivo-cumplido', titulo: 'Objetivo cumplido', descripcion: 'Completa tu primera meta financiera.', icono: 'fa-solid fa-bullseye', iconoColor: 'primary', desbloqueado: true, progreso: 1, meta: 1, categoria: 'metas' },
-      { id: 'registrador-experto', titulo: 'Registrador experto', descripcion: 'Registra 100 movimientos financieros.', icono: 'fa-solid fa-list-check', iconoColor: 'info', desbloqueado: false, progreso: 75, meta: 100, categoria: 'movimientos' },
-      { id: 'gran-ahorrador', titulo: 'Gran ahorrador', descripcion: 'Ahorra S/ 10,000.', icono: 'fa-solid fa-piggy-bank', iconoColor: 'success', desbloqueado: false, progreso: 6200, meta: 10000, categoria: 'ahorro' },
-      { id: 'salud-estable', titulo: 'Salud estable', descripcion: 'Mantén una salud financiera saludable durante 3 meses.', icono: 'fa-solid fa-heart-pulse', iconoColor: 'danger', desbloqueado: false, progreso: 2, meta: 3, categoria: 'salud' },
-      { id: 'cumplidor-metas', titulo: 'Cumplidor de metas', descripcion: 'Completa 5 metas financieras.', icono: 'fa-solid fa-trophy', iconoColor: 'warning', desbloqueado: false, progreso: 3, meta: 5, categoria: 'metas' },
-      { id: 'control-financiero', titulo: 'Control financiero', descripcion: 'Mantente dentro de tu presupuesto durante 30 días.', icono: 'fa-solid fa-shield-halved', iconoColor: 'primary', desbloqueado: true, progreso: 30, meta: 30, categoria: 'presupuesto' },
-      { id: 'ahorrador-constante', titulo: 'Ahorrador constante', descripcion: 'Ahorra durante 3 meses seguidos.', icono: 'fa-solid fa-calendar-check', iconoColor: 'success', desbloqueado: false, progreso: 1, meta: 3, categoria: 'ahorro' },
-      { id: 'patrimonio-positivo', titulo: 'Patrimonio positivo', descripcion: 'Alcanza un patrimonio operativo neto de S/ 5,000.', icono: 'fa-solid fa-chart-line', iconoColor: 'info', desbloqueado: false, progreso: 1200, meta: 5000, categoria: 'balance' },
-      { id: 'categorizador-experto', titulo: 'Categorizador experto', descripcion: 'Utiliza todas las categorías principales en tus movimientos.', icono: 'fa-solid fa-tags', iconoColor: 'warning', desbloqueado: true, progreso: 5, meta: 5, categoria: 'movimientos' },
-      { id: 'cero-excesos', titulo: 'Cero excesos', descripcion: 'No superes tus límites de presupuesto durante 2 meses.', icono: 'fa-solid fa-circle-xmark', iconoColor: 'danger', desbloqueado: true, progreso: 2, meta: 2, categoria: 'presupuesto' },
-      { id: 'racha-imparable', titulo: 'Racha imparable', descripcion: 'Mantén actividad financiera durante 100 días.', icono: 'fa-solid fa-bolt', iconoColor: 'primary', desbloqueado: false, progreso: 45, meta: 100, categoria: 'movimientos' },
-      { id: 'maestro-ahorro', titulo: 'Maestro del ahorro', descripcion: 'Acumula S/ 25,000 ahorrados.', icono: 'fa-solid fa-crown', iconoColor: 'warning', desbloqueado: false, progreso: 6200, meta: 25000, categoria: 'ahorro' }
-    ];
-
-    const desbloqueados = mockList.filter(l => l.desbloqueado).length;
-
-    mockList.push({
-      id: 'leyenda-luka',
-      titulo: 'Leyenda Luka',
-      descripcion: 'Desbloquea todos los logros del sistema.',
-      icono: 'fa-solid fa-star',
-      iconoColor: 'success',
-      desbloqueado: desbloqueados >= 15,
-      progreso: desbloqueados,
-      meta: 15,
-      categoria: 'general'
-    });
-
-    return mockList;
+  formatMonedaSinDecimales(valor: number): string {
+    return valor.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
   }
 }

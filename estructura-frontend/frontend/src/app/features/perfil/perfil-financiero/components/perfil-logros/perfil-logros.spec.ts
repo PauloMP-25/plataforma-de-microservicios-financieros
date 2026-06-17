@@ -2,15 +2,15 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { PerfilLogros } from './perfil-logros';
-import { PerfilFinancieroService } from '../../services/perfil-financiero.service';
+import { PerfilLogrosService } from '../../services/perfil-logros.service';
 
 describe('PerfilLogros', () => {
   let component: PerfilLogros;
   let fixture: ComponentFixture<PerfilLogros>;
-  let mockService: any;
+  let mockLogrosService: any;
 
   beforeEach(async () => {
-    mockService = {
+    mockLogrosService = {
       logrosVisibles: signal([
         { id: '1', titulo: 'Logro 1', descripcion: 'Desc', icono: 'fa-star', iconoColor: 'success', desbloqueado: true, progreso: 1, meta: 1, category: 'cat' }
       ]),
@@ -21,7 +21,7 @@ describe('PerfilLogros', () => {
     await TestBed.configureTestingModule({
       imports: [PerfilLogros, RouterTestingModule],
       providers: [
-        { provide: PerfilFinancieroService, useValue: mockService }
+        { provide: PerfilLogrosService, useValue: mockLogrosService }
       ]
     }).compileComponents();
 

@@ -1,7 +1,8 @@
 import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { PerfilFinancieroService, LogroFinanciero } from '../../services/perfil-financiero.service';
+import { PerfilFinancieroService } from '../../services/perfil-financiero.service';
+import { PerfilLogrosService, LogroFinanciero } from '../../services/perfil-logros.service';
 
 @Component({
   selector: 'app-perfil-logros-page',
@@ -12,7 +13,8 @@ import { PerfilFinancieroService, LogroFinanciero } from '../../services/perfil-
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PerfilLogrosPage implements OnInit {
-  public service = inject(PerfilFinancieroService);
+  public financieroService = inject(PerfilFinancieroService);
+  public logrosService = inject(PerfilLogrosService);
   private router = inject(Router);
 
   // ── Paginación ──────────────────────────────────────────────
@@ -20,14 +22,14 @@ export class PerfilLogrosPage implements OnInit {
   itemsPorPagina = signal<number>(8);
 
   logrosPaginados = computed<LogroFinanciero[]>(() => {
-    const todos = this.service.logrosFinancieros();
+    const todos = this.logrosService.logrosFinancieros();
     const inicio = (this.paginaActual() - 1) * this.itemsPorPagina();
     const fin = inicio + this.itemsPorPagina();
     return todos.slice(inicio, fin);
   });
 
   totalPaginas = computed<number>(() => {
-    const totalItems = this.service.logrosFinancieros().length;
+    const totalItems = this.logrosService.logrosFinancieros().length;
     return Math.ceil(totalItems / this.itemsPorPagina());
   });
 
@@ -42,8 +44,8 @@ export class PerfilLogrosPage implements OnInit {
 
   ngOnInit(): void {
     // Si no hay datos cargados en el servicio, los cargamos
-    if (!this.service.resumenActual()) {
-      this.service.cargarDatos();
+    if (!this.financieroService.resumenActual()) {
+      this.financieroService.cargarDatos();
     }
   }
 

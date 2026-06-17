@@ -1,15 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { PerfilWizardModal } from './perfil-wizard-modal';
-import { PerfilFinancieroService } from '../../services/perfil-financiero.service';
+import { PerfilWizardService } from '../../services/perfil-wizard.service';
 
 describe('PerfilWizardModal', () => {
   let component: PerfilWizardModal;
   let fixture: ComponentFixture<PerfilWizardModal>;
-  let mockService: any;
+  let mockWizardService: any;
 
   beforeEach(async () => {
-    mockService = {
+    mockWizardService = {
       modalConfigAbierto: signal(true),
       pasoActual: signal(1),
       formConfig: signal({
@@ -34,7 +34,7 @@ describe('PerfilWizardModal', () => {
     await TestBed.configureTestingModule({
       imports: [PerfilWizardModal],
       providers: [
-        { provide: PerfilFinancieroService, useValue: mockService }
+        { provide: PerfilWizardService, useValue: mockWizardService }
       ]
     }).compileComponents();
 

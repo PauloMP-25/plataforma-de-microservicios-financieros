@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PerfilFinancieroService } from '../../services/perfil-financiero.service';
+import { PerfilLogrosService } from '../../services/perfil-logros.service';
 
 @Component({
   selector: 'app-perfil-kpis',
@@ -11,4 +12,5 @@ import { PerfilFinancieroService } from '../../services/perfil-financiero.servic
 })
 export class PerfilKpis {
   public service = inject(PerfilFinancieroService);
+  public logrosService = inject(PerfilLogrosService);
 }

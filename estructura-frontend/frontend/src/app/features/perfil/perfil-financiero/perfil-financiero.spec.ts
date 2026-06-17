@@ -4,12 +4,18 @@ import { of } from 'rxjs';
 import { RouterTestingModule } from '@angular/router/testing';
 import { PerfilFinanciero } from './perfil-financiero';
 import { PerfilFinancieroService } from './services/perfil-financiero.service';
+import { PerfilLogrosService } from './services/perfil-logros.service';
+import { PerfilWizardService } from './services/perfil-wizard.service';
+import { PerfilReporteService } from './services/perfil-reporte.service';
 import { AppEventBus } from '../../../core/services/app-event-bus.service';
 
 describe('PerfilFinanciero', () => {
   let component: PerfilFinanciero;
   let fixture: ComponentFixture<PerfilFinanciero>;
   let mockService: any;
+  let mockLogrosService: any;
+  let mockWizardService: any;
+  let mockReporteService: any;
   let mockEventBus: any;
 
   beforeEach(async () => {
@@ -28,12 +34,10 @@ describe('PerfilFinanciero', () => {
         esPro: signal(false)
       },
       indicesSalud: signal(null),
-      progresoLogros: signal({ desbloqueados: 0, total: 0 }),
       capacidadAhorro: signal(null),
       variacionSalud: signal(null),
       variacionAhorro: signal(null),
       nombreMesAnterior: signal(''),
-      logrosVisibles: signal([]),
       mostrarTodosLogros: signal(false),
       tendencia: signal([]),
       filtroTendencia: signal(6),
@@ -48,6 +52,19 @@ describe('PerfilFinanciero', () => {
         h: 160,
         w: 500
       }),
+      modalPlanesAbierto: signal(false),
+      comprandoPlan: signal(false),
+      abrirModalPlanes: jasmine.createSpy('abrirModalPlanes')
+    };
+
+    mockLogrosService = {
+      logrosVisibles: signal([]),
+      logrosFinancieros: signal([]),
+      progresoLogros: signal({ desbloqueados: 0, total: 0 })
+    };
+
+    mockWizardService = {
+      abrirModalConfig: jasmine.createSpy('abrirModalConfig'),
       modalConfigAbierto: signal(false),
       pasoActual: signal(1),
       formConfig: signal({
@@ -59,13 +76,11 @@ describe('PerfilFinanciero', () => {
       erroresConfig: signal({}),
       mensajeConfig: signal(null),
       estiloVidaSliderVal: signal(2),
-      configurando: signal(false),
-      modalPlanesAbierto: signal(false),
-      comprandoPlan: signal(false),
-      exportarPdf: jasmine.createSpy('exportarPdf'),
-      abrirModalConfig: jasmine.createSpy('abrirModalConfig'),
-      abrirModalPlanes: jasmine.createSpy('abrirModalPlanes'),
-      formatMoneda: (v: number) => '0.00'
+      configurando: signal(false)
+    };
+
+    mockReporteService = {
+      exportarPdf: jasmine.createSpy('exportarPdf')
     };
 
     mockEventBus = {
@@ -75,15 +90,12 @@ describe('PerfilFinanciero', () => {
     await TestBed.configureTestingModule({
       imports: [PerfilFinanciero, RouterTestingModule],
       providers: [
-        { provide: AppEventBus, useValue: mockEventBus }
+        { provide: AppEventBus, useValue: mockEventBus },
+        { provide: PerfilFinancieroService, useValue: mockService },
+        { provide: PerfilLogrosService, useValue: mockLogrosService },
+        { provide: PerfilWizardService, useValue: mockWizardService },
+        { provide: PerfilReporteService, useValue: mockReporteService }
       ]
-    })
-    .overrideComponent(PerfilFinanciero, {
-      set: {
-        providers: [
-          { provide: PerfilFinancieroService, useValue: mockService }
-        ]
-      }
     })
     .compileComponents();
 

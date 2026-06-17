@@ -3,15 +3,21 @@ import { signal } from '@angular/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { PerfilLogrosPage } from './perfil-logros-page';
 import { PerfilFinancieroService } from '../../services/perfil-financiero.service';
+import { PerfilLogrosService } from '../../services/perfil-logros.service';
 
 describe('PerfilLogrosPage', () => {
   let component: PerfilLogrosPage;
   let fixture: ComponentFixture<PerfilLogrosPage>;
   let mockService: any;
+  let mockLogrosService: any;
 
   beforeEach(async () => {
     mockService = {
       resumenActual: signal({}),
+      cargarDatos: jasmine.createSpy('cargarDatos')
+    };
+
+    mockLogrosService = {
       logrosFinancieros: signal([
         { id: '1', titulo: 'Logro 1', descripcion: 'Desc 1', icono: 'fa-star', iconoColor: 'success', desbloqueado: true, progreso: 1, meta: 1, categoria: 'cat' },
         { id: '2', titulo: 'Logro 2', descripcion: 'Desc 2', icono: 'fa-star', iconoColor: 'success', desbloqueado: false, progreso: 0, meta: 1, categoria: 'cat' },
@@ -23,14 +29,14 @@ describe('PerfilLogrosPage', () => {
         { id: '8', titulo: 'Logro 8', descripcion: 'Desc 8', icono: 'fa-star', iconoColor: 'success', desbloqueado: false, progreso: 0, meta: 1, categoria: 'cat' },
         { id: '9', titulo: 'Logro 9', descripcion: 'Desc 9', icono: 'fa-star', iconoColor: 'success', desbloqueado: false, progreso: 0, meta: 1, categoria: 'cat' }
       ]),
-      progresoLogros: signal({ desbloqueados: 1, total: 9 }),
-      cargarDatos: jasmine.createSpy('cargarDatos')
+      progresoLogros: signal({ desbloqueados: 1, total: 9 })
     };
 
     await TestBed.configureTestingModule({
       imports: [PerfilLogrosPage, RouterTestingModule],
       providers: [
-        { provide: PerfilFinancieroService, useValue: mockService }
+        { provide: PerfilFinancieroService, useValue: mockService },
+        { provide: PerfilLogrosService, useValue: mockLogrosService }
       ]
     }).compileComponents();
 

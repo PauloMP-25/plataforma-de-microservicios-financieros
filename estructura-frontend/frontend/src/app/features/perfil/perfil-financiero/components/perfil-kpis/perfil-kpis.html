@@ -35,18 +35,18 @@
   <div class="pf-kpi__body">
     <span class="pf-kpi__label">Progreso global de logros <i class="fa-regular fa-circle-question pf-kpi__hint"></i></span>
     <span class="pf-kpi__value-with-max text-info">
-      <span class="pf-kpi__value-big">{{ service.progresoLogros().desbloqueados }}</span>
-      <span class="pf-kpi__value-max">/ {{ service.progresoLogros().total }}</span>
+      <span class="pf-kpi__value-big">{{ logrosService.progresoLogros().desbloqueados }}</span>
+      <span class="pf-kpi__value-max">/ {{ logrosService.progresoLogros().total }}</span>
     </span>
     <div class="pf-kpi__health-bar">
       <div class="pf-kpi__health-fill pf-kpi__health-fill--info"
-           [style.width.%]="service.progresoLogros().total > 0 ? (service.progresoLogros().desbloqueados / service.progresoLogros().total) * 100 : 0">
+           [style.width.%]="logrosService.progresoLogros().total > 0 ? (logrosService.progresoLogros().desbloqueados / logrosService.progresoLogros().total) * 100 : 0">
         <span class="pf-kpi__health-shimmer"></span>
       </div>
     </div>
     <span class="pf-kpi__sub text-muted">Logros alcanzados</span>
     <span class="pf-kpi__variation pf-kpi__variation--neutral">
-      {{ service.progresoLogros().total > 0 ? ((service.progresoLogros().desbloqueados / service.progresoLogros().total) * 100).toFixed(0) : 0 }}% completado
+      {{ logrosService.progresoLogros().total > 0 ? ((logrosService.progresoLogros().desbloqueados / logrosService.progresoLogros().total) * 100).toFixed(0) : 0 }}% completado
     </span>
   </div>
 </article>

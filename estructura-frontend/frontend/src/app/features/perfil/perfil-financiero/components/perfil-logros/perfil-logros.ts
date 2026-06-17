@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { PerfilFinancieroService } from '../../services/perfil-financiero.service';
+import { PerfilLogrosService } from '../../services/perfil-logros.service';
 
 @Component({
   selector: 'app-perfil-logros',
@@ -11,7 +11,7 @@ import { PerfilFinancieroService } from '../../services/perfil-financiero.servic
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PerfilLogros {
-  public service = inject(PerfilFinancieroService);
+  public service = inject(PerfilLogrosService);
   private router = inject(Router);
 
   irALogros(): void {

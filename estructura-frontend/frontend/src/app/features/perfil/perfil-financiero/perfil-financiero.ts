@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AppEventBus } from '../../../core/services/app-event-bus.service';
 import { PerfilFinancieroService } from './services/perfil-financiero.service';
+import { PerfilWizardService } from './services/perfil-wizard.service';
+import { PerfilReporteService } from './services/perfil-reporte.service';
 
 // Subcomponentes Standalone
 import { PerfilKpis } from './components/perfil-kpis/perfil-kpis';
@@ -28,6 +30,8 @@ import { PerfilPlanesModal } from './components/perfil-planes-modal/perfil-plane
 })
 export class PerfilFinanciero implements OnInit {
   public service = inject(PerfilFinancieroService);
+  private wizardService = inject(PerfilWizardService);
+  private reporteService = inject(PerfilReporteService);
   private eventBus = inject(AppEventBus);
   private destroyRef = inject(DestroyRef);
 
@@ -50,5 +54,13 @@ export class PerfilFinanciero implements OnInit {
     const select = event.target as HTMLSelectElement;
     this.service.anioSeleccionado.set(Number(select.value));
     this.service.cargarDatos();
+  }
+
+  exportarPdf(): void {
+    this.reporteService.exportarPdf();
+  }
+
+  abrirModalConfig(): void {
+    this.wizardService.abrirModalConfig();
   }
 }
