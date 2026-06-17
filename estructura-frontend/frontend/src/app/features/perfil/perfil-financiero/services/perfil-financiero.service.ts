@@ -29,7 +29,9 @@ export interface PuntoTendencia {
   ahorro: number;
 }
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class PerfilFinancieroService {
   public auth = inject(AuthService);
   private financieroService = inject(FinancieroService);

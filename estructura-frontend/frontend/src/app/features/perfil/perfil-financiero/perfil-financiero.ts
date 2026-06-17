@@ -23,7 +23,6 @@ import { PerfilPlanesModal } from './components/perfil-planes-modal/perfil-plane
     PerfilWizardModal,
     PerfilPlanesModal
   ],
-  providers: [PerfilFinancieroService],
   templateUrl: './perfil-financiero.html',
   styleUrl: './perfil-financiero.scss',
 })
