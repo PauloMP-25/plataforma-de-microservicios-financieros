@@ -7,14 +7,26 @@
       <p>Tu resumen financiero personal y progreso general</p>
     </div>
     <div class="pf-page__header-actions">
-      <div class="pf-page__date-select">
-        <i class="fa-regular fa-calendar"></i>
-        <select [value]="periodoSeleccionadoKey()" (change)="onPeriodoChange($event)">
-          @for (periodo of periodosDisponibles; track periodo.key) {
-            <option [value]="periodo.key">{{ periodo.label }}</option>
-          }
-        </select>
-        <i class="fa-solid fa-chevron-down"></i>
+      <div class="pf-page__date-selects">
+        <div class="pf-page__date-select">
+          <i class="fa-regular fa-calendar"></i>
+          <select [value]="mesSeleccionado()" (change)="onMesChange($event)">
+            @for (mes of mesesDisponibles; track mes.valor) {
+              <option [value]="mes.valor">{{ mes.label }}</option>
+            }
+          </select>
+          <i class="fa-solid fa-chevron-down"></i>
+        </div>
+
+        <div class="pf-page__date-select">
+          <i class="fa-regular fa-calendar"></i>
+          <select [value]="anioSeleccionado()" (change)="onAnioChange($event)">
+            @for (anio of aniosDisponibles; track anio) {
+              <option [value]="anio">{{ anio }}</option>
+            }
+          </select>
+          <i class="fa-solid fa-chevron-down"></i>
+        </div>
       </div>
       <button class="pf-page__btn-export" type="button" (click)="exportarPdf()">
         <i class="fa-solid fa-download"></i> Exportar PDF

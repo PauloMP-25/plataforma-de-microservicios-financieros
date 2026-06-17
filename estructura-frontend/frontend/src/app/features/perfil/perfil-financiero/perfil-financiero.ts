@@ -69,8 +69,25 @@ export class PerfilFinanciero implements OnInit {
   modalPlanesAbierto = signal<boolean>(false);
   comprandoPlan = signal<boolean>(false);
 
-  periodosDisponibles: { key: string; label: string; mes: number; anio: number }[] = [];
-  periodoSeleccionadoKey = signal<string>('');
+  mesSeleccionado = signal<number>(5);
+  anioSeleccionado = signal<number>(2025);
+
+  mesesDisponibles = [
+    { valor: 1, label: 'Enero' },
+    { valor: 2, label: 'Febrero' },
+    { valor: 3, label: 'Marzo' },
+    { valor: 4, label: 'Abril' },
+    { valor: 5, label: 'Mayo' },
+    { valor: 6, label: 'Junio' },
+    { valor: 7, label: 'Julio' },
+    { valor: 8, label: 'Agosto' },
+    { valor: 9, label: 'Septiembre' },
+    { valor: 10, label: 'Octubre' },
+    { valor: 11, label: 'Noviembre' },
+    { valor: 12, label: 'Diciembre' }
+  ];
+
+  aniosDisponibles = [2024, 2025, 2026];
 
   // ── Modal Configuración ──────────────────────────────────────
   modalConfigAbierto = signal<boolean>(false);
@@ -245,10 +262,8 @@ export class PerfilFinanciero implements OnInit {
       'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
       'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
     ];
-    const periodo = this.periodosDisponibles.find(p => p.key === this.periodoSeleccionadoKey());
-    if (!periodo) return 'mes anterior';
-    const mes = periodo.mes;
-    const anio = periodo.anio;
+    const mes = this.mesSeleccionado();
+    const anio = this.anioSeleccionado();
     const mesAnterior = mes === 1 ? 12 : mes - 1;
     const anioAnterior = mes === 1 ? anio - 1 : anio;
     return `${nombresMeses[mesAnterior - 1]} ${anioAnterior}`;
@@ -407,48 +422,28 @@ export class PerfilFinanciero implements OnInit {
   readonly meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
   ngOnInit(): void {
-    this.generarPeriodos();
     this.cargarDatos();
     this.eventBus.on('TRANSACTION_MODIFIED')
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.cargarDatos());
   }
 
-  generarPeriodos(): void {
-    const nombresMeses = [
-      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-    ];
-    const hoy = new Date();
-    const lista = [];
-    for (let i = 0; i < 24; i++) {
-      const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
-      const mes = d.getMonth() + 1;
-      const anio = d.getFullYear();
-      const label = `${nombresMeses[d.getMonth()]} ${anio}`;
-      const key = `${anio}-${mes}`;
-      lista.push({ key, label, mes, anio });
-    }
-    this.periodosDisponibles = lista;
-    const mayo2025 = lista.find(p => p.mes === 5 && p.anio === 2025);
-    if (mayo2025) {
-      this.periodoSeleccionadoKey.set(mayo2025.key);
-    } else if (lista.length > 0) {
-      this.periodoSeleccionadoKey.set(lista[0].key);
-    }
+  onMesChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.mesSeleccionado.set(Number(select.value));
+    this.cargarDatos();
   }
 
-  onPeriodoChange(event: Event): void {
+  onAnioChange(event: Event): void {
     const select = event.target as HTMLSelectElement;
-    this.periodoSeleccionadoKey.set(select.value);
+    this.anioSeleccionado.set(Number(select.value));
     this.cargarDatos();
   }
 
   cargarDatos(): void {
     this.cargando.set(true);
-    const periodo = this.periodosDisponibles.find(p => p.key === this.periodoSeleccionadoKey());
-    const mes = periodo ? periodo.mes : new Date().getMonth() + 1;
-    const anio = periodo ? periodo.anio : new Date().getFullYear();
+    const mes = this.mesSeleccionado();
+    const anio = this.anioSeleccionado();
     const mesAnterior = mes === 1 ? 12 : mes - 1;
     const anioAnterior = mes === 1 ? anio - 1 : anio;
 
@@ -540,12 +535,16 @@ export class PerfilFinanciero implements OnInit {
 
   exportarPdf(): void {
     const resumen = this.resumenActual();
-    const periodo = this.periodosDisponibles.find(p => p.key === this.periodoSeleccionadoKey());
+    const nombresMeses = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    const periodoLabel = `${nombresMeses[this.mesSeleccionado() - 1]} ${this.anioSeleccionado()}`;
     const salud = this.indicesSalud();
     const ahorro = this.capacidadAhorro();
     const logros = this.progresoLogros();
     const fechaGeneracion = new Date().toLocaleString('es-PE', { dateStyle: 'long', timeStyle: 'short' });
-    const html = this.construirReportePdf(resumen, periodo?.label ?? 'Periodo actual', salud, ahorro, logros, fechaGeneracion);
+    const html = this.construirReportePdf(resumen, periodoLabel, salud, ahorro, logros, fechaGeneracion);
     const ventana = window.open('', '_blank', 'width=980,height=720');
     if (!ventana) return;
 

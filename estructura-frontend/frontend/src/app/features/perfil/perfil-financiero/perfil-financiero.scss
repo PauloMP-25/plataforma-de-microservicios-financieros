@@ -45,6 +45,12 @@
     gap: 0.75rem;
   }
 
+  &__date-selects {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
   &__date-select {
     display: inline-flex;
     align-items: center;
