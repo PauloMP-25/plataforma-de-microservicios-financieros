@@ -1,71 +1,69 @@
-<section class="pf-tendencia card">
-  <div class="pf-tendencia__header">
-    <h2>Tendencia financiera</h2>
-    <div class="pf-tendencia__controls">
-      <div class="pf-tendencia__filtros">
-        <button [class.active]="service.filtroTendencia() === 3" (click)="service.cambiarTendencia(3)" type="button">3 meses</button>
-        <button [class.active]="service.filtroTendencia() === 6" (click)="service.cambiarTendencia(6)" type="button">6 meses</button>
-        <button [class.active]="service.filtroTendencia() === 12" (click)="service.cambiarTendencia(12)" type="button">12 meses</button>
-      </div>
-      <div class="pf-tendencia__leyenda">
-        <span><span class="dot dot--ingresos"></span> Ingresos</span>
-        <span><span class="dot dot--gastos"></span> Gastos</span>
+<div class="pf-tendencia__header">
+  <h2>Tendencia financiera</h2>
+  <div class="pf-tendencia__controls">
+    <div class="pf-tendencia__filtros">
+      <button [class.active]="service.filtroTendencia() === 3" (click)="service.cambiarTendencia(3)" type="button">3 meses</button>
+      <button [class.active]="service.filtroTendencia() === 6" (click)="service.cambiarTendencia(6)" type="button">6 meses</button>
+      <button [class.active]="service.filtroTendencia() === 12" (click)="service.cambiarTendencia(12)" type="button">12 meses</button>
+    </div>
+    <div class="pf-tendencia__leyenda">
+      <span><span class="dot dot--ingresos"></span> Ingresos</span>
+      <span><span class="dot dot--gastos"></span> Gastos</span>
+    </div>
+  </div>
+</div>
+
+@if (service.tendencia().length > 0) {
+  <div class="pf-tendencia__chart-container">
+    <div class="pf-tendencia__eje-y">
+      <span>S/ 8,000</span>
+      <span>S/ 6,000</span>
+      <span>S/ 4,000</span>
+      <span>S/ 2,000</span>
+      <span>S/ 0</span>
+    </div>
+    <div class="pf-tendencia__chart-main">
+      <svg class="pf-tendencia__svg" viewBox="0 0 500 160" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="trend-ingresos-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#22c55e" stop-opacity="0.15"/>
+            <stop offset="100%" stop-color="#22c55e" stop-opacity="0.0"/>
+          </linearGradient>
+          <linearGradient id="trend-gastos-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#ef4444" stop-opacity="0.10"/>
+            <stop offset="100%" stop-color="#ef4444" stop-opacity="0.0"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Líneas horizontales de guía -->
+        <line x1="0" y1="0" x2="500" y2="0" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="0" y1="40" x2="500" y2="40" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="0" y1="80" x2="500" y2="80" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="0" y1="120" x2="500" y2="120" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="0" y1="160" x2="500" y2="160" stroke="var(--border-color)" stroke-width="1"/>
+
+        <!-- Áreas y Líneas -->
+        <path [attr.d]="service.tendenciaNormalizada().ingresos + ' L ' + service.tendenciaNormalizada().w + ',' + service.tendenciaNormalizada().h + ' L 0,' + service.tendenciaNormalizada().h + ' Z'" fill="url(#trend-ingresos-grad)" class="trend-area" />
+        <path [attr.d]="service.tendenciaNormalizada().gastos + ' L ' + service.tendenciaNormalizada().w + ',' + service.tendenciaNormalizada().h + ' L 0,' + service.tendenciaNormalizada().h + ' Z'" fill="url(#trend-gastos-grad)" class="trend-area" />
+
+        <path [attr.d]="service.tendenciaNormalizada().ingresos" stroke="#22c55e" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="trend-line trend-line--ingresos"/>
+        <path [attr.d]="service.tendenciaNormalizada().gastos" stroke="#ef4444" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="trend-line trend-line--gastos"/>
+
+        <!-- Puntos interactivos -->
+        @for (punto of service.tendencia(); track punto.mes; let i = $index) {
+          <circle [attr.cx]="service.tendenciaNormalizada().mapX(i)" [attr.cy]="service.tendenciaNormalizada().mapY(punto.ingresos)" r="4.5" fill="#22c55e" stroke="var(--bg-card)" stroke-width="1.5" class="trend-node trend-node--ingresos">
+            <title>Ingresos ({{ punto.mes }}): S/ {{ service.formatMoneda(punto.ingresos) }}</title>
+          </circle>
+          <circle [attr.cx]="service.tendenciaNormalizada().mapX(i)" [attr.cy]="service.tendenciaNormalizada().mapY(punto.gastos)" r="4.5" fill="#ef4444" stroke="var(--bg-card)" stroke-width="1.5" class="trend-node trend-node--gastos">
+            <title>Gastos ({{ punto.mes }}): S/ {{ service.formatMoneda(punto.gastos) }}</title>
+          </circle>
+        }
+      </svg>
+      <div class="pf-tendencia__eje-x">
+        @for (punto of service.tendencia(); track punto.mes; let i = $index) {
+          <span>{{ punto.mes }} {{ punto.anio }}</span>
+        }
       </div>
     </div>
   </div>
-
-  @if (service.tendencia().length > 0) {
-    <div class="pf-tendencia__chart-container">
-      <div class="pf-tendencia__eje-y">
-        <span>S/ 8,000</span>
-        <span>S/ 6,000</span>
-        <span>S/ 4,000</span>
-        <span>S/ 2,000</span>
-        <span>S/ 0</span>
-      </div>
-      <div class="pf-tendencia__chart-main">
-        <svg class="pf-tendencia__svg" viewBox="0 0 500 160" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="trend-ingresos-grad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#22c55e" stop-opacity="0.15"/>
-              <stop offset="100%" stop-color="#22c55e" stop-opacity="0.0"/>
-            </linearGradient>
-            <linearGradient id="trend-gastos-grad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#ef4444" stop-opacity="0.10"/>
-              <stop offset="100%" stop-color="#ef4444" stop-opacity="0.0"/>
-            </linearGradient>
-          </defs>
-
-          <!-- Líneas horizontales de guía -->
-          <line x1="0" y1="0" x2="500" y2="0" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="4,4"/>
-          <line x1="0" y1="40" x2="500" y2="40" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="4,4"/>
-          <line x1="0" y1="80" x2="500" y2="80" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="4,4"/>
-          <line x1="0" y1="120" x2="500" y2="120" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="4,4"/>
-          <line x1="0" y1="160" x2="500" y2="160" stroke="var(--border-color)" stroke-width="1"/>
-
-          <!-- Áreas y Líneas -->
-          <path [attr.d]="service.tendenciaNormalizada().ingresos + ' L ' + service.tendenciaNormalizada().w + ',' + service.tendenciaNormalizada().h + ' L 0,' + service.tendenciaNormalizada().h + ' Z'" fill="url(#trend-ingresos-grad)" class="trend-area" />
-          <path [attr.d]="service.tendenciaNormalizada().gastos + ' L ' + service.tendenciaNormalizada().w + ',' + service.tendenciaNormalizada().h + ' L 0,' + service.tendenciaNormalizada().h + ' Z'" fill="url(#trend-gastos-grad)" class="trend-area" />
-
-          <path [attr.d]="service.tendenciaNormalizada().ingresos" stroke="#22c55e" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="trend-line trend-line--ingresos"/>
-          <path [attr.d]="service.tendenciaNormalizada().gastos" stroke="#ef4444" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="trend-line trend-line--gastos"/>
-
-          <!-- Puntos interactivos -->
-          @for (punto of service.tendencia(); track punto.mes; let i = $index) {
-            <circle [attr.cx]="service.tendenciaNormalizada().mapX(i)" [attr.cy]="service.tendenciaNormalizada().mapY(punto.ingresos)" r="4.5" fill="#22c55e" stroke="var(--bg-card)" stroke-width="1.5" class="trend-node trend-node--ingresos">
-              <title>Ingresos ({{ punto.mes }}): S/ {{ service.formatMoneda(punto.ingresos) }}</title>
-            </circle>
-            <circle [attr.cx]="service.tendenciaNormalizada().mapX(i)" [attr.cy]="service.tendenciaNormalizada().mapY(punto.gastos)" r="4.5" fill="#ef4444" stroke="var(--bg-card)" stroke-width="1.5" class="trend-node trend-node--gastos">
-              <title>Gastos ({{ punto.mes }}): S/ {{ service.formatMoneda(punto.gastos) }}</title>
-            </circle>
-          }
-        </svg>
-        <div class="pf-tendencia__eje-x">
-          @for (punto of service.tendencia(); track punto.mes; let i = $index) {
-            <span>{{ punto.mes }} {{ punto.anio }}</span>
-          }
-        </div>
-      </div>
-    </div>
-  }
-</section>
+}
