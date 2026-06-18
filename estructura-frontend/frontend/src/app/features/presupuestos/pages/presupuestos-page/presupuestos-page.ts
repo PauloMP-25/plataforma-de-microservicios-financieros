@@ -4,6 +4,8 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractContro
 import { PresupuestoService } from '../../../../core/services/presupuesto.service';
 import { FinancieroService } from '../../../../core/services/Financiero.service';
 import { PresupuestoDTO } from '../../../../core/models/financiero/presupuesto.model';
+import { NotificacionService } from '../../../../core/services/notificacion.service';
+
 
 @Component({
   selector: 'app-presupuestos-page',
@@ -18,6 +20,8 @@ export class PresupuestosPage implements OnInit {
   private presupuestoService = inject(PresupuestoService);
   private financieroService = inject(FinancieroService);
   private datePipe = inject(DatePipe);
+  private notificacionService = inject(NotificacionService);
+
 
   // --- SIGNALS DE ESTADO ---
   formulario!: FormGroup;
@@ -189,6 +193,7 @@ export class PresupuestosPage implements OnInit {
     request$.subscribe({
       next: () => {
         this.mostrarToast('Límite actualizado correctamente.', 'success');
+        this.notificacionService.mostrarPresupuestoCreado(payload.nombre || 'Presupuesto');
         this.cargarDatosDashboard();
       },
       error: () => {

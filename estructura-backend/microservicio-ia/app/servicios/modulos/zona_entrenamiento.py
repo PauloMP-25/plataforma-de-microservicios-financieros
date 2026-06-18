@@ -3,10 +3,17 @@ from typing import Any, Dict
 from datetime import datetime
 
 from app.libreria_comun.modelos.contexto import ContextoEstrategicoIADTO
-from app.servicios.modulos.base import ModuloBase
+from app.servicios.core.base_analisis import BaseAnalisisService
 from app.servicios.ia.prompts.prompt_entrenamiento import generar_prompt_entrenamiento
+from app.modelos.esquemas import ConsejoEstructuradoEntrenamiento
 
-class ZonaEntrenamiento(ModuloBase):
+class ZonaEntrenamiento(BaseAnalisisService):
+    def __init__(self):
+        super().__init__(nombre_modulo="ZONA_ENTRENAMIENTO", min_transacciones=20)
+
+    def obtener_esquema_salida(self):
+        return ConsejoEstructuradoEntrenamiento
+
     def ejecutar_calculos(
         self, df: pd.DataFrame, contexto: ContextoEstrategicoIADTO, **kwargs
     ) -> Dict[str, Any]:

@@ -1,0 +1,17 @@
+@if (notificacionService.activa(); as notif) {
+  <div class="notif-overlay" (click)="notificacionService.cerrar()">
+    <div class="notif-card" [ngClass]="'notif-card--' + notif.tipo" (click)="$event.stopPropagation()">
+      <button type="button" class="notif-close" (click)="notificacionService.cerrar()">&times;</button>
+      <div class="notif-body">
+        <div class="notif-icon-wrapper">
+          <i class="fa-solid" [ngClass]="'fa-' + notif.icono"></i>
+        </div>
+        <div class="notif-content">
+          <h3>{{ notif.titulo }}</h3>
+          <p>{{ notif.mensaje }}</p>
+        </div>
+      </div>
+      <div class="notif-progress-bar" [style.animation-duration.ms]="notif.duracion"></div>
+    </div>
+  </div>
+}

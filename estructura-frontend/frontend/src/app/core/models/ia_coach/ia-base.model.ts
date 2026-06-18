@@ -96,9 +96,14 @@ export interface RespuestaModuloDTO {
   kpi?: KpiWidgetDTO;
 }
 
+export interface CategoriaSugerida {
+  categoria: string;
+  icono: string;
+}
+
 export interface RespuestaClasificacionDTO {
   id_temporal: string;
-  sugerencias?: string[];
+  sugerencias?: CategoriaSugerida[];
   categorias_sugeridas?: string[];
   consejo?: ConsejoEstructuradoAutoClasificacionDTO;
   usando_fallback: boolean;

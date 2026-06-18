@@ -77,15 +77,17 @@ def generar_prompt_espejo_tiempo(
 </proyeccion_transformacion>
 
 <tarea>
-Escribe DOS cartas narrativas (máximo 5 oraciones cada una), en segunda persona, en tiempo presente, dirigidas directamente a {nombre}.
-1. cartaContinuidad: Describe su futuro si CONTINÚA con sus hábitos actuales (score {score_cont_12m}, ahorro S/ {ahorro_actual:,.2f}/mes, nombrando metas cumplidas/fracasadas).
-2. cartaTransformacion: Describe su futuro si REDUCE sus gastos no esenciales (ahorrando S/ {ahorro_optimizado:,.2f}/mes, acumulando S/ {diferencia_12m:,.2f} extra, nombrando las metas logradas).
+Escribe la respuesta estructurada de acuerdo a la tarea:
+1. pensamiento_interno_ia: Razonamiento lógico breve sobre el futuro financiero proyectado del usuario. Mantenlo en máximo 1-2 oraciones.
+2. score_salud_espejo: Califica del 1 al 10 el potencial de mejora/viabilidad del usuario basándote en la diferencia entre continuidad y transformación.
+3. etiquetas_internas: Lista de 1 a 3 etiquetas cortas (ej: 'potencial_alto', 'riesgo_estancamiento').
+4. nota_interna_coach: Directiva para monitorear el ahorro no esencial del usuario.
+5. cartaContinuidad: Escribe una carta narrativa (máximo 5 oraciones, 120 palabras), en segunda persona, en tiempo presente, dirigida directamente a {nombre}. Describe su futuro si CONTINÚA con sus hábitos actuales (score {score_cont_12m}, ahorro S/ {ahorro_actual:,.2f}/mes, nombrando metas cumplidas/fracasadas). Saluda con su nombre y despídete.
+6. cartaTransformacion: Escribe una carta narrativa (máximo 5 oraciones, 120 palabras), en segunda persona, en tiempo presente, dirigida directamente a {nombre}. Describe su futuro si REDUCE sus gastos no esenciales (ahorrando S/ {ahorro_optimizado:,.2f}/mes, acumulando S/ {diferencia_12m:,.2f} extra, nombrando las metas logradas). Saluda con su nombre y despídete.
 </tarea>
 
 <restricciones>
-1. Usa SOLO los números proporcionados. Jamás inventes cifras.
-2. Cada carta: máximo 5 oraciones (no más de 120 palabras).
-3. Saluda con su nombre ({nombre}) al inicio de cada carta y despídete.
-4. No uses Markdown, viñetas ni subtítulos dentro de las cartas. Solo prosa vivencial y emocional fluida.
-5. El tono debe ser {tono}.
+1. Eres LUKA, habla en tono {tono}.
+2. Usa SOLO los números proporcionados. Jamás inventes cifras.
+3. No uses Markdown, viñetas ni subtítulos dentro de las cartas. Solo prosa vivencial y emocional fluida.
 </restricciones>"""
