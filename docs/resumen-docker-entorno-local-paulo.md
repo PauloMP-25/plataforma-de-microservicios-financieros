@@ -25,27 +25,6 @@ Este documento describe los cambios realizados para consolidar el entorno, corre
 
 ---
 
-## 2. Corrección de los comandos de desarrollo
-
-### Problema
-Los aliases `devfrontend` y `devbackend` estaban definidos únicamente en `~/.bashrc.luka`, que solo se carga en shells interactivos. Al abrir una terminal nueva (VS Code, Terminator sin perfil de login, etc.) los comandos no se encontraban.
-
-### Solución
-Se crearon scripts ejecutables en `~/.local/bin/` que están en el `$PATH` global y funcionan en cualquier tipo de terminal:
-
-| Archivo | Comando | Descripción |
-|---|---|---|
-| `~/.local/bin/devfrontend` | `devfrontend` | Lanza `ng serve` del frontend Angular |
-| `~/.local/bin/devbackend-g1` | `devbackend-g1` | Fase 1: api-gateway + ms-auditoria |
-| `~/.local/bin/devbackend-g2` | `devbackend-g2` | Fase 2: ms-usuario + ms-cliente + ms-mensajeria |
-| `~/.local/bin/devbackend-g3` | `devbackend-g3` | Fase 3: ms-nucleo-financiero + ms-ia + ms-pagos |
-
-El alias `devbackend` (sin número) sigue disponible en `~/.bashrc.luka` y equivale a `devbackend-g1`.
-
-Los microservicios se dividen en 3 grupos para poder iniciarlos **en fases** y no sobrecargar la laptop.
-
----
-
 ## 3. Optimización de Docker — archivo `docker-compose-hibrido.yml`
 
 Archivo modificado: `estructura-backend/docker/docker-compose-hibrido.yml`
@@ -103,25 +82,10 @@ JAVA_OPTS: "-Xms64m -Xmx200m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 
 
 ---
 
-## 4. Corrección de los scripts de inicio (`comando/`)
-
-Archivos modificados:
-- `comando/start-grupo-1.sh`
-- `comando/start-grupo-2.sh`
-- `comando/start-grupo-3.sh`
-
 ### Cambios aplicados
 - Todos los scripts ahora usan `-f docker-compose-hibrido.yml` explícitamente.
 - Se corrigió la lista de `SERVICES` en cada grupo para incluir **solo microservicios** (sin BDs, RabbitMQ ni Redis).
 - Se actualizaron los comentarios de cabecera indicando que la infraestructura corre localmente.
-
-### Distribución de servicios por grupo
-
-| Grupo | Servicios | Puertos |
-|---|---|---|
-| **g1** | api-gateway, ms-auditoria | 8080, 8082 |
-| **g2** | ms-usuario, ms-cliente, ms-mensajeria | 8081, 8083, 8084 |
-| **g3** | ms-nucleo-financiero, ms-ia, ms-pagos | 8085, 8086, 8087 |
 
 ---
 
@@ -132,6 +96,3 @@ Archivos modificados:
 > El archivo `docker-compose.yml` (sin `-hibrido`) sigue siendo el archivo de producción/staging con todos los contenedores completos. No modificarlo para el entorno local.
 
 ---
-
-*Autor: Paulo — Fecha: 03/06/2026*
-*Rama: `testing/correccion-errores` → merge pendiente a `develop`*

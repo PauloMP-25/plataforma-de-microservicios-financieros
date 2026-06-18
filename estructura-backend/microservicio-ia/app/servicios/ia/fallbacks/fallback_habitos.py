@@ -28,8 +28,10 @@ def generar_fallback_habitos(
 
     return {
         "pensamiento_interno_ia": "Fallback activado. Generando respuesta basada en reglas predefinidas y estadísticas de Pandas.",
-        "introduccion": "Hola, aquí tienes un resumen rápido de tus hábitos recientes.",
-        "analisis_patron": patron,
+        "score_salud_habitos": 5,
+        "etiquetas_internas": ["fallback", "riesgo_medio"],
+        "nota_interna_coach": "Revisar hábitos de la categoría dominante en la próxima sesión.",
+        "analisis_patron": f"Hola {nombres}, aquí tienes un resumen rápido. {patron}",
         "habito_atomico_sugerido": habito,
         "mensaje_motivacional": motivacional
     }

@@ -36,6 +36,9 @@ def generar_fallback_comprobador_evolucion(datos: Dict[str, Any], nombres: str, 
 
     return {
         "pensamiento_interno_ia": "Servicio Gemini inactivo. Generando diagnóstico básico estadístico usando Pandas.",
+        "score_salud_evolucion": max(1, min(10, int(imf / 10))),
+        "etiquetas_internas": ["fallback_activado", "diagnostico_base"],
+        "nota_interna_coach": "Monitorear categorías reincidentes en la siguiente interacción.",
         "veredicto_narrativo": f"Basado puramente en cálculo estadístico, tu Índice de Madurez es de {imf}/100 ({diag}). Mis funciones avanzadas están pausadas, pero el motor analítico sugiere lo siguiente:",
         "recetas_medicas": recetas
     }

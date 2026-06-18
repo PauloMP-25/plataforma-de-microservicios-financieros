@@ -440,18 +440,34 @@ export class IaHubComponent implements OnInit, OnDestroy {
         ]
       },
       'predecir-gastos': {
-        prediccion_total: 1850.00,
-        variacion_estimada: 7.5,
-        alertas: ['Margen de seguridad ajustado', 'Fondo de reserva recomendado equivalente a tres meses de gastos'],
-        promedio_historico: 1800.00,
-        proyeccion_proximo_mes: 1850.00,
+        tiene_datos: true,
+        promedio_historico: 7676.94,
+        proyeccion_proximo_mes: 17427.48,
+        gasto_proyectado: 17427.48,
+        balance_proyectado: -13927.48,
         pendiente: 'SUBE',
-        porcentaje_variacion_mensual: 7.5,
-        deficit_estimado: 0.00,
-        ingreso_esperado: 2000.00,
-        margen_seguridad: 7.5,
-        nivel_riesgo: 'MODERADO',
-        historial_meses: [1750, 1820, 1780, 1800, 1850]
+        porcentaje_variacion_mensual: 84.7,
+        ingreso_mensual: 3500.0,
+        riesgo_quiebra: true,
+        deficit_estimado: 13927.48,
+        meses_analizados: 2,
+        tiene_tendencia_alcista: true,
+        historial_meses: [7676.94, 15353.88, 17427.48],
+        ingreso_esperado: 3500.0,
+        hallazgos: {
+          tiene_datos: true,
+          promedio_historico: 7676.94,
+          proyeccion_proximo_mes: 17427.48,
+          gasto_proyectado: 17427.48,
+          balance_proyectado: -13927.48,
+          pendiente: 6500.36,
+          porcentaje_variacion_mensual: 84.7,
+          ingreso_mensual: 3500.0,
+          riesgo_quiebra: true,
+          deficit_estimado: 13927.48,
+          meses_analizados: 2,
+          tiene_tendencia_alcista: true
+        }
       },
       'habitos-financieros': {
         frecuencia_analizada: 'SEMANAL',
@@ -535,18 +551,42 @@ export class IaHubComponent implements OnInit, OnDestroy {
         porcentaje_gasto_critico: 25
       },
       'simular-meta': {
-        meta_nombre: payload?.nombre_meta || 'Laptop Gamer',
-        monto_objetivo: Number(payload?.monto_objetivo) || 3500,
-        aporte_mensual: Number(payload?.aporte_mensual_deseado) || 350,
-        meses_estimados: 6.5,
-        fecha_proyectada: 'Marzo 2027',
+        modulo: "SIMULAR_META",
+        total_transacciones_analizadas: 102,
+        total_ingresos: 29499.54,
+        total_gastos: 15353.88,
+        balance_neto: 14145.66,
+        promedio_gasto_mensual: 0.0,
+        promedio_ingreso_mensual: 0.0,
+        meta_nombre: "Laptop Gamer",
+        monto_objetivo: Number(payload?.monto_objetivo) || 5000.0,
+        aporte_mensual: Number(payload?.aporte_mensual_deseado) || 350.0,
+        meses_estimados: 0.4,
+        fecha_proyectada: 'Junio 2026',
         viabilidad_fecha_objetivo: true,
-        ahorro_faltante: 3000.00,
+        ahorro_faltante: 5000.0,
         escenario_alternativo: {
           aporte: (Number(payload?.aporte_mensual_deseado) || 350) + 150,
-          meses: Math.ceil((Number(payload?.monto_objetivo) || 3500) / ((Number(payload?.aporte_mensual_deseado) || 350) + 150))
+          meses: Math.ceil((Number(payload?.monto_objetivo) || 5000) / ((Number(payload?.aporte_mensual_deseado) || 350) + 150))
         },
-        raw_payload: payload
+        raw_payload: {
+          nombre_meta: payload?.nombre_meta || "Laptop Gamer",
+          monto_objetivo: Number(payload?.monto_objetivo) || 5000,
+          monto_actual_ahorrado: Number(payload?.monto_actual_ahorrado) || 0,
+          aporte_mensual_deseado: Number(payload?.aporte_mensual_deseado) || 350
+        },
+        hallazgos: {
+          meta_nombre: payload?.nombre_meta || "Laptop Gamer",
+          es_viable: true,
+          meses_para_lograrlo: 0.4,
+          capacidad_ahorro_mensual: 14145.66,
+          viabilidad_fecha_objetivo: null,
+          ahorro_faltante: 5000.0,
+          _hash_txs: "11b314776c3e783c",
+          _descripcion_rango: "todos-los-periodos",
+          _total_ingresos: 29499.54,
+          _total_gastos: 15353.88
+        }
       },
       'reto-ahorro': {
         estado_reto: 'ACTIVO',
@@ -709,28 +749,26 @@ export class IaHubComponent implements OnInit, OnDestroy {
         comentario_positivo: '¡Sigue así, Cesar! Cada pequeño ajuste te acerca más a tu increíble viaje a Japón. ¡Estoy aquí para apoyarte en cada paso!'
       },
       'predecir-gastos': {
-        pensamiento_interno_ia: 'Evaluando proyecciones de gasto vs ingreso esperado. Existe riesgo si no se ajustan los fijos.',
-        introduccion: 'Hola Paulo, las matemáticas no mienten.',
-        analisis_tendencia: 'Basado en tus 3 últimos meses, proyectamos que tu próximo mes requerirá S/. 1,850.00 debido al alza sostenida en "Alimentación" (Deliverys).',
-        impacto_meta: 'Si tus ingresos esperados se mantienen en S/. 2,000.00, tu margen libre será de apenas S/. 150.00.',
-        recomendacion_matematica: 'Si reduces tus pedidos de Rappi a 2 veces por semana, tu proyección de gasto bajará en S/. 280.00, salvando el mes.',
-        mensaje_motivacional: '¡Estás a tiempo de cambiar la tendencia de este mes!'
+        pensamiento_interno_ia: "El riesgo de insolvencia es extremadamente alto. Con un ingreso de S/ 3,500.00 y gastos proyectados de S/ 17,427.48, el déficit de S/ 13,927.48 es insostenible. La tendencia de gastos está completamente desalineada con los ingresos, requiriendo una intervención drástica.",
+        analisis_tendencia: "¡Hola, Cesar! LUKA aquí, tu estratega financiero. Mira, la proyección para el próximo mes nos muestra un panorama que necesita nuestra atención. Tus gastos proyectados se disparan a S/ 17,427.48, lo que representa un aumento del 84.7% mensual.",
+        impacto_meta: "Con esta tendencia, tu emocionante viaje a Japón, que ya lleva un 15% de progreso, se ve seriamente comprometido. Un déficit proyectado de S/ 13,927.48 significa que no solo no podrás ahorrar para tu meta, sino que estarías gastando mucho más de lo que ingresas, alejándote de ese sueño.",
+        recomendacion_matematica: "Para evitar el déficit proyectado y al menos igualar tus ingresos, necesitas reducir tus gastos proyectados en al menos S/ 13,927.48, lo que representa aproximadamente un 80% de tus gastos actuales proyectados.",
+        mensaje_motivacional: "Sé que suena fuerte, pero estoy aquí para ayudarte a retomar el control y redirigir tu camino hacia tus metas. ¡Juntos podemos hacerlo!"
       },
       'habitos-financieros': {
-        pensamiento_interno_ia: 'El fin de semana es el punto débil.',
-        introduccion: '¡Hola Paulo!',
-        analisis_patron: 'He notado que tus Sábados a las 6 PM son el momento donde tu billetera más sufre, especialmente en Restaurantes.',
-        habito_atomico_sugerido: 'Prueba la Regla de las 48 horas: si ves algo que quieres comprar un sábado, espérate al lunes. Si aún lo quieres, cómpralo.',
-        mensaje_motivacional: 'Verás cómo el 80% de esos antojos desaparecen solos. ¡Tú tienes el control!'
+        pensamiento_interno_ia: 'Se identificó que el gasto de los martes es un patrón fuerte que puede desestabilizar la meta si no se controla.',
+        analisis_patron: '¡Hola Cesar! He estado revisando tus movimientos y he notado algo interesante: los martes parecen ser tu día de mayor gasto, especialmente en la categoría de Alimentación. Esto es un patrón claro que podemos observar en tus finanzas semanales.',
+        habito_atomico_sugerido: 'Para empezar a tomar control de ese día, ¿qué te parece si cada lunes por la noche dedicas 5 minutos a planificar tus comidas del martes o, mejor aún, preparas tu almuerzo para llevar al trabajo ese día? Es un pequeño gesto que puede hacer una gran diferencia.',
+        mensaje_motivacional: 'Recuerda, Cesar, cada pequeño cambio suma. ¡Tú tienes el poder de construir los hábitos que te llevarán a Japón!'
       },
       'estilo-vida': {
-        pensamiento_interno_ia: 'El usuario es foodie.',
-        arquetipo: 'El Foodie Explorador',
-        significado_arquetipo: 'Tienes un paladar exigente: el 65% de tus gastos no fijos se van en descubrir nuevos sabores.',
-        descripcion_perfil: 'Como tu perfil es gastronómico, podrías ahorrar un 15% mensual si aprovechas los días de promociones bancarias.',
-        consejo_tactico: 'Ponte un presupuesto semanal de salidas fijo.',
-        alineacion_meta: 'Ese ahorro extra de S/ 120.00 sumaría bastante en un año.',
-        mensaje_estilo_vida: '¡Sigue explorando, pero con estrategia!'
+        pensamiento_interno_ia: 'Se detecta un fuerte enfoque en el cluster EXPLORER (15.9%) y un interés secundario en WELLNESS (5.2%). Esto sugiere un perfil que valora las experiencias y el autocuidado.',
+        arquetipo: 'El Explorador Consciente',
+        significado_arquetipo: 'Significa que te encanta descubrir nuevos lugares y experiencias, pero también valoras mucho tu bienestar y cuidado personal. Buscas un equilibrio entre la aventura y el autocuidado.',
+        descripcion_perfil: '¡Hola, Cesar! Qué gusto verte por aquí. Analizando tus movimientos, veo que eres una persona que valora mucho las experiencias y el bienestar. Tus gastos muestran una clara inclinación a explorar el mundo y a invertir en tu cuidado personal, lo cual es genial para una vida plena.',
+        consejo_tactico: 'Para seguir explorando sin afectar tu meta, ¿qué tal si buscas aventuras más cercanas o escapadas de fin de semana que no requieran grandes inversiones? También puedes explorar opciones de bienestar al aire libre.',
+        alineacion_meta: 'Tu estilo de vida explorador está muy alineado con tu meta de viajar a Japón, ¡es la esencia de lo que te mueve! Sin embargo, es clave que tus exploraciones actuales no compitan demasiado con el ahorro para ese gran viaje.',
+        mensaje_estilo_vida: 'Sigue explorando el mundo y cuidando de ti, Cesar. Cada paso consciente te acerca a tu próxima gran aventura.'
       },
       'reporte-completo': {
         pensamiento_interno_ia: 'El score es alto, finanzas estables.',
@@ -740,12 +778,11 @@ export class IaHubComponent implements OnInit, OnDestroy {
         mensaje_motivacional: '¡Gran trabajo, Paulo!'
       },
       'simular-meta': {
-        pensamiento_interno_ia: 'Meta de ahorro con un plazo exigente pero alcanzable ajustando gastos no esenciales.',
-        introduccion: '¡Paulo, tu meta es TOTALMENTE VIABLE y estás más cerca de lo que crees!',
-        diagnostico_viabilidad: 'Con tu capacidad de ahorro actual de S/ 450.00 al mes y tu ahorro previo de S/ 500.00, en aproximadamente 6.5 meses estarás lográndolo.',
-        plan_accion: 'He analizado tus finanzas y si logras optimizar solo un poco tus gastos de ocio, podrías subir ese aporte a S/ 550.00 y lograrlo en solo 5 meses.',
-        tecnica_sugerida: 'Microahorro de Ocio: Guarda el dinero de las salidas que canceles.',
-        mensaje_motivacional: '¡Mantén el enfoque, cada sol ahorrado hoy te acerca a tu meta!'
+        pensamiento_interno_ia: "El monto faltante para la Laptop Gamer es S/ 5000.0. La capacidad de ahorro mensual detectada es S/ 14145.66. Dado que la capacidad de ahorro excede significativamente el monto faltante, la meta es altamente viable y se puede alcanzar en menos de un mes (0.4 meses).",
+        diagnostico_viabilidad: "¡Hola, Cesar! Soy LUKA y tengo excelentes noticias para ti. ¡Tu meta de la Laptop Gamer es completamente viable! Con tu capacidad de ahorro actual, podrás alcanzarla en un abrir y cerrar de ojos.",
+        plan_accion: "Para alcanzar tu Laptop Gamer, simplemente mantén tu ritmo de ahorro actual. Te sugiero destinar S/ 5000.0 de tu capacidad de ahorro mensual directamente a esta meta. ¡Lo lograrás muy pronto!",
+        tecnica_sugerida: "Ahorro Automático: Configura una transferencia automática desde tu cuenta principal a una cuenta de ahorro específica para tu Laptop Gamer tan pronto recibas tu ingreso. Así, el ahorro se convierte en una prioridad y no en lo que 'sobra'.",
+        mensaje_motivacional: "¡Sigue así, Cesar! Tu disciplina financiera te está llevando a cumplir tus sueños más rápido de lo que imaginas. ¡Estoy emocionado por ver esa nueva laptop en tus manos!"
       },
       'reto-ahorro': {
         pensamiento_interno_ia: 'El usuario gasta en restaurantes. Cortar este gasto genera ahorro rápido.',
@@ -811,10 +848,10 @@ export class IaHubComponent implements OnInit, OnDestroy {
         tipoGrafico: 'BARRAS',
         unidad: 'S/.',
         datos: [
-          { etiqueta: 'Fijos (Vivienda/Servicios)', valor: 1200, color: '#10b981' },
-          { etiqueta: 'Alimentación', valor: 450, color: '#3b82f6' },
-          { etiqueta: 'Entretenimiento', valor: 150, color: '#f43f5e' },
-          { etiqueta: 'Otros', valor: 50, color: '#6b7280' }
+          { etiqueta: 'Fijos (Vivienda/Servicios)', valor: 12000, color: '#10b981' },
+          { etiqueta: 'Alimentación', valor: 4928.72, color: '#3b82f6' },
+          { etiqueta: 'Entretenimiento', valor: 450, color: '#f43f5e' },
+          { etiqueta: 'Otros', valor: 48.76, color: '#6b7280' }
         ]
       },
       'habitos-financieros': {
@@ -851,9 +888,9 @@ export class IaHubComponent implements OnInit, OnDestroy {
         tipoGrafico: 'BARRAS',
         unidad: 'S/.',
         datos: [
-          { etiqueta: 'Meta Total', valor: Number(payload?.monto_objetivo) || 3500, color: '#cbd5e1' },
+          { etiqueta: 'Meta Total', valor: Number(payload?.monto_objetivo) || 5000, color: '#cbd5e1' },
           { etiqueta: 'Aporte Mensual Deseado', valor: Number(payload?.aporte_mensual_deseado) || 350, color: '#22d3ee' },
-          { etiqueta: 'Escenario de Ahorro Recomendado (+S/.150/mes)', valor: (Number(payload?.aporte_mensual_deseado) || 350) + 150, color: '#a855f7' }
+          { etiqueta: 'Capacidad de Ahorro Real', valor: 14145.66, color: '#a855f7' }
         ]
       },
       'reto-ahorro': {
@@ -881,11 +918,11 @@ export class IaHubComponent implements OnInit, OnDestroy {
 
     const kpis: Record<string, any> = {
       'gasto-hormiga': { valor: 360.50, etiqueta: 'Fuga mensual por antojos', tendencia: 'ALZA', variacion_porcentaje: 20.0, unidad: 'S/.' },
-      'predecir-gastos': { valor: 1850.00, etiqueta: 'Gasto Proyectado Próximo Mes', tendencia: 'ALZA', variacion_porcentaje: 7.5, unidad: 'S/.' },
+      'predecir-gastos': { valor: 17427.48, etiqueta: 'Gasto Proyectado Próximo Mes', tendencia: 'ALZA', variacion_porcentaje: 84.7, unidad: 'S/.' },
       'habitos-financieros': { valor: 72, etiqueta: 'Índice de Hábitos Financieros', tendencia: 'ESTABLE', variacion_porcentaje: 0, unidad: '/100' },
       'estilo-vida': { valor: 55, etiqueta: 'Porcentaje Gasto Necesidades', tendencia: 'BAJA', variacion_porcentaje: -3.2, unidad: '%' },
       'reporte-completo': { valor: 720, etiqueta: 'Ahorro Neto este Mes', tendencia: 'ALZA', variacion_porcentaje: 25.4, unidad: 'S/.' },
-      'simular-meta': { valor: Math.ceil((Number(payload?.monto_objetivo) || 3500) / (Number(payload?.aporte_mensual_deseado) || 350)), etiqueta: 'Meses Requeridos para la Meta', tendencia: 'ESTABLE', variacion_porcentaje: 0, unidad: 'meses' },
+      'simular-meta': { valor: 0.4, etiqueta: 'Meses Requeridos para la Meta', tendencia: 'ESTABLE', variacion_porcentaje: 0, unidad: 'meses' },
       'reto-ahorro': { valor: 85.00, etiqueta: 'Ahorro Estimado Total', tendencia: 'ALZA', variacion_porcentaje: 100, unidad: 'S/.' },
       'espejo-temporal': { valor: 1450, etiqueta: 'Impacto Neto Proyectado a 12 Meses', tendencia: 'ALZA', variacion_porcentaje: 0, unidad: 'S/.' },
       'comprobador-evolucion': { valor: 64, etiqueta: 'Índice de Salud Financiera Metódica (IMF)', tendencia: 'BAJA', variacion_porcentaje: 0, unidad: '%' },

@@ -24,9 +24,12 @@ Categoría más impactante: {metricas['categoria_critica']} ({metricas['porcenta
 </hallazgos>
 
 <instrucciones>
-Genera un análisis ejecutivo de lo que va del año.
-1. analisis_score: Explica brevemente qué significa su puntuación (0-40 Riesgo, 40-70 Estable, 70+ Excelente).
-2. impacto_meta: Relaciona su balance anual y la categoría crítica con su meta principal.
-3. veredicto_final: Un párrafo ejecutivo resumiendo su desempeño en lo que va del año.
-4. mensaje_motivacional: Una frase potente para mantener la disciplina por el resto de este año.
+Genera un análisis ejecutivo de lo que va del año siguiendo estrictamente el esquema de salida.
+1. score_salud_reporte: Califica la salud financiera general de este año del 1 al 10 en base al score y balance.
+2. etiquetas_internas: Lista de 1 a 3 etiquetas de categorización general para el coach.
+3. nota_interna_coach: Directiva interna para la siguiente sesión sobre este reporte anual.
+4. analisis_score: Explica brevemente qué significa su puntuación (0-40 Riesgo, 40-70 Estable, 70+ Excelente).
+5. impacto_meta: Relaciona su balance anual y la categoría crítica con su meta principal.
+6. veredicto_final: Un párrafo ejecutivo resumiendo su desempeño en lo que va del año.
+7. mensaje_motivacional: Una frase potente para mantener la disciplina por el resto de este año.
 </instrucciones>"""

@@ -76,8 +76,19 @@ class ConsejoEstructuradoHabitos(BaseModel):
     Esquema de salida estructurada para el módulo HABITOS_FINANCIEROS.
     """
     pensamiento_interno_ia: str = Field(description="Análisis paso a paso del LLM.")
-    introduccion: str = Field(description="Saludo directo y evaluación rápida.")
-    analisis_patron: str = Field(description="Comentario sobre los patrones detectados.")
+    score_salud_habitos: int = Field(
+        ...,
+        description="Puntuación interna del 1 al 10 evaluando la salud financiera del usuario respecto a sus hábitos. Útil para seguimiento histórico."
+    )
+    etiquetas_internas: List[str] = Field(
+        ...,
+        description="Lista de 1 a 3 etiquetas cortas (ej: 'riesgo_fuga', 'mejora_constante') para categorizar la situación actual. No se mostrará al usuario.",
+    )
+    nota_interna_coach: str = Field(
+        ...,
+        description="Breve directiva u objetivo que dejas para ti mismo para la próxima sesión. No se mostrará al usuario.",
+    )
+    analisis_patron: str = Field(description="Saludo inicial según el tono IA y luego un comentario detallado sobre los patrones detectados.")
     habito_atomico_sugerido: str = Field(description="Hábito accionable pequeño propuesto.")
     mensaje_motivacional: str = Field(description="Cierre motivador.")
 
@@ -87,6 +98,18 @@ class ConsejoEstructuradoReto(BaseModel):
     Se adapta tanto a la fase de proposición (NUEVO) como evaluación (VEREDICTO).
     """
     pensamiento_interno_ia: str = Field(description="Análisis paso a paso de la meta de ahorro.")
+    score_salud_reto: int = Field(
+        ...,
+        description="Puntuación interna del 1 al 10 evaluando la salud o viabilidad del reto financiero. Útil para seguimiento histórico."
+    )
+    etiquetas_internas: List[str] = Field(
+        ...,
+        description="Lista de 1 a 3 etiquetas cortas para categorizar el reto y desempeño. No se mostrará al usuario.",
+    )
+    nota_interna_coach: str = Field(
+        ...,
+        description="Breve directiva u objetivo que dejas para ti mismo para la próxima sesión. No se mostrará al usuario.",
+    )
     titulo_mision: str = Field(description="Nombre creativo de la misión.")
     diagnostico: str = Field(description="Explicación concisa del estado del reto o área de mejora.")
     estrategia: str = Field(description="Acciones específicas para alcanzar o mantener el ahorro.")
@@ -109,6 +132,18 @@ class ConsejoEstructuradoHormiga(BaseModel):
     pensamiento_interno_ia: str = Field(
         ...,
         description="Razonamiento lógico breve sobre los cálculos y variaciones. Mantenlo en máximo 1-2 oraciones para ahorrar tokens.",
+    )
+    score_salud_hormiga: int = Field(
+        ...,
+        description="Puntuación interna del 1 al 10 evaluando la salud financiera del usuario respecto a gastos hormiga. Útil para seguimiento histórico.",
+    )
+    etiquetas_internas: List[str] = Field(
+        ...,
+        description="Lista de 1 a 3 etiquetas cortas (ej: 'riesgo_fuga', 'mejora_constante') para categorizar la situación actual. No se mostrará al usuario.",
+    )
+    nota_interna_coach: str = Field(
+        ...,
+        description="Breve directiva u objetivo que dejas para ti mismo para la próxima sesión (ej: 'Revisar si redujo transporte'). No se mostrará al usuario.",
     )
     analisis_ia: str = Field(
         ...,
@@ -140,6 +175,18 @@ class RecetaCategoria(BaseModel):
 
 class ConsejoEstructuradoEvolucion(BaseModel):
     pensamiento_interno_ia: str = Field(..., description="Razonamiento lógico sobre el diagnóstico del IMF y las recetas.")
+    score_salud_evolucion: int = Field(
+        ...,
+        description="Puntuación interna del 1 al 10 de madurez financiera en base al IMF. Útil para seguimiento histórico."
+    )
+    etiquetas_internas: List[str] = Field(
+        ...,
+        description="Lista de 1 a 3 etiquetas cortas para categorizar la situación actual. No se mostrará al usuario.",
+    )
+    nota_interna_coach: str = Field(
+        ...,
+        description="Breve directiva u objetivo que dejas para ti mismo para la próxima sesión. No se mostrará al usuario.",
+    )
     veredicto_narrativo: str = Field(..., description="Párrafo de máximo 4 oraciones que justifica la clasificación diagnóstica final.")
     recetas_medicas: List[RecetaCategoria] = Field(..., description="Lista de recetas. Una por cada categoría reincidente (o de mantenimiento si no hay reincidencias).")
 
@@ -152,6 +199,18 @@ class EjercicioEntrenamiento(BaseModel):
 
 class ConsejoEstructuradoEntrenamiento(BaseModel):
     pensamiento_interno_ia: str = Field(..., description="Razonamiento lógico sobre el estado físico del usuario basado en sus signos vitales.")
+    score_salud_entrenamiento: int = Field(
+        ...,
+        description="Puntuación del 1 al 10 que califica el estado físico financiero del usuario. Útil para seguimiento histórico."
+    )
+    etiquetas_internas: List[str] = Field(
+        ...,
+        description="Lista de 1 a 3 etiquetas cortas para categorizar la situación actual. No se mostrará al usuario.",
+    )
+    nota_interna_coach: str = Field(
+        ...,
+        description="Breve directiva u objetivo que dejas para ti mismo para la próxima sesión. No se mostrará al usuario.",
+    )
     estado_fisico: str = Field(..., description="Uno de los 5 estados: 'Atleta de Élite', 'En Forma', 'Sedentario', 'Lesionado' o 'UCI Financiera'.")
     evaluacion_previa: Optional[str] = Field(..., description="Breve evaluación del cumplimiento de la rutina del mes anterior. Vacío si es la primera vez.")
     rutina: List[EjercicioEntrenamiento] = Field(..., description="Exactamente 3 ejercicios para el mes.")
@@ -168,6 +227,19 @@ class ConsejoEstructuradoEspejo(BaseModel):
     cartaContinuidad    — Carta al usuario si continúa con sus hábitos actuales.
     cartaTransformacion — Carta al usuario si optimiza sus gastos no esenciales.
     """
+    pensamiento_interno_ia: str = Field(..., description="Razonamiento lógico sobre el futuro financiero del usuario.")
+    score_salud_espejo: int = Field(
+        ...,
+        description="Puntuación del 1 al 10 que evalúa el potencial de mejora del usuario. Útil para seguimiento histórico."
+    )
+    etiquetas_internas: List[str] = Field(
+        ...,
+        description="Lista de 1 a 3 etiquetas cortas para categorizar la situación actual. No se mostrará al usuario.",
+    )
+    nota_interna_coach: str = Field(
+        ...,
+        description="Breve directiva u objetivo que dejas para ti mismo para la próxima sesión. No se mostrará al usuario.",
+    )
     cartaContinuidad: str = Field(
         ...,
         description=(
@@ -187,8 +259,10 @@ class ConsejoEstructuradoEspejo(BaseModel):
 
 class ConsejoEstructuradoPredecir(BaseModel):
     pensamiento_interno_ia: str = Field(..., description="Razonamiento lógico sobre el riesgo de insolvencia y la tendencia de gastos.")
-    introduccion: str = Field(..., description="Saludo personalizado indicando el estado de alerta o estabilidad.")
-    analisis_tendencia: str = Field(..., description="Análisis de la proyección para el próximo mes y la variación porcentual.")
+    score_salud_predecir: int = Field(..., description="Puntuación interna del 1 al 10 evaluando la salud financiera del usuario en relación a sus proyecciones futuras.")
+    etiquetas_internas: List[str] = Field(..., description="Lista de 1 a 3 etiquetas cortas (ej: 'alerta_fijos', 'tendencia_estable') para categorizar la situación actual. No se mostrará al usuario.")
+    nota_interna_coach: str = Field(..., description="Breve directiva u objetivo que dejas para ti mismo para la próxima sesión. No se mostrará al usuario.")
+    analisis_tendencia: str = Field(..., description="Saludo personalizado según el tono de IA del usuario, seguido del análisis de la proyección para el próximo mes y la variación porcentual.")
     impacto_meta: str = Field(..., description="Explicación de cómo esta tendencia afecta su meta de ahorro principal. Si no tiene metas, inventa un objetivo financiero.")
     recomendacion_matematica: str = Field(..., description="Recomendación exacta basada en los números (ej. 'necesitas reducir tus gastos en un 10%').")
     mensaje_motivacional: str = Field(..., description="Frase de cierre empática y motivacional.")
@@ -196,8 +270,10 @@ class ConsejoEstructuradoPredecir(BaseModel):
 
 class ConsejoEstructuradoSimularMeta(BaseModel):
     pensamiento_interno_ia: str = Field(..., description="Razonamiento lógico sobre la viabilidad basada en el déficit y la capacidad de ahorro.")
-    introduccion: str = Field(..., description="Saludo personalizado e indicación clara de si la meta es viable o no.")
-    diagnostico_viabilidad: str = Field(..., description="Explicación concisa basada en el tiempo estimado y la capacidad de ahorro.")
+    score_salud_meta: int = Field(..., description="Puntuación interna del 1 al 10 evaluando la disciplina y viabilidad de las metas del usuario.")
+    etiquetas_internas: List[str] = Field(..., description="Lista de 1 a 3 etiquetas cortas (ej: 'meta_viable', 'deficit_critico') para categorizar la situación actual. No se mostrará al usuario.")
+    nota_interna_coach: str = Field(..., description="Breve directiva u objetivo que dejas para ti mismo para la próxima sesión relacionada a esta meta. No se mostrará al usuario.")
+    diagnostico_viabilidad: str = Field(..., description="Saludo personalizado según el tono de IA, seguido de la indicación clara de si la meta es viable o no en base al tiempo estimado y la capacidad de ahorro.")
     plan_accion: str = Field(..., description="Pasos concretos a tomar (ej: ajustes necesarios si no es viable, o mantenimiento si lo es).")
     tecnica_sugerida: Optional[str] = Field(..., description="Nombre y breve descripción de una técnica de ahorro recomendada.")
     mensaje_motivacional: str = Field(..., description="Cierre empático.")
@@ -220,10 +296,15 @@ class SolicitudClasificacionDTO(BaseModel):
     etiquetas: Optional[str] = ""
     descripcion: Optional[str] = ""
 
+class CategoriaSugeridaDTO(BaseModel):
+    categoria: str = Field(..., description="Nombre de la categoría sugerida en español.")
+    icono: str = Field(..., description="Nombre del icono FontAwesome (ej. 'utensils', 'bus', 'wifi', 'house', 'briefcase-medical', 'film', 'graduation-cap', 'piggy-bank', 'wallet', 'gift', 'shield-halved', 'ticket').")
+
 class RespuestaClasificacionDTO(BaseModel):
     id_temporal: str
-    sugerencias: List[str]
+    sugerencias: List[CategoriaSugeridaDTO]
     usando_fallback: bool = False
+
 
 class FiltroDeFecha(BaseModel):
     mes: Optional[int] = Field(default=None, ge=1, le=12)
@@ -467,6 +548,18 @@ class ConsejoEstructuradoReporte(BaseModel):
     Esquema de salida estructurada para el módulo REPORTE_COMPLETO.
     """
     pensamiento_interno_ia: str = Field(description="Análisis paso a paso del reporte.")
+    score_salud_reporte: int = Field(
+        ...,
+        description="Puntuación interna del 1 al 10 evaluando la salud financiera general en base al reporte. Útil para seguimiento histórico."
+    )
+    etiquetas_internas: List[str] = Field(
+        ...,
+        description="Lista de 1 a 3 etiquetas cortas para categorizar el reporte general. No se mostrará al usuario.",
+    )
+    nota_interna_coach: str = Field(
+        ...,
+        description="Breve directiva u objetivo que dejas para ti mismo para la próxima sesión. No se mostrará al usuario.",
+    )
     analisis_score: str = Field(description="Explicación del Score de Salud (Riesgo, Estable, Excelente).")
     impacto_meta: str = Field(description="Análisis del balance y su efecto en la meta actual.")
     veredicto_final: str = Field(description="Cierre ejecutivo de lo que va del año.")
@@ -477,9 +570,21 @@ class ConsejoEstructuradoEstilo(BaseModel):
     Esquema de salida estructurada para el módulo ANALISIS_ESTILO_VIDA.
     """
     pensamiento_interno_ia: str = Field(description="Análisis sobre los clusters de gasto detectados.")
+    score_salud_estilo: int = Field(
+        ...,
+        description="Puntuación interna del 1 al 10 evaluando la salud del estilo de vida financiero actual. Útil para seguimiento histórico."
+    )
+    etiquetas_internas: List[str] = Field(
+        ...,
+        description="Lista de 1 a 3 etiquetas cortas para categorizar la situación actual. No se mostrará al usuario.",
+    )
+    nota_interna_coach: str = Field(
+        ...,
+        description="Breve directiva u objetivo que dejas para ti mismo para la próxima sesión. No se mostrará al usuario.",
+    )
     arquetipo: str = Field(description="Nombre creativo de la personalidad (ej: 'El Foodie Explorador').")
     significado_arquetipo: str = Field(description="Breve descripción de qué significa esta personalidad y por qué se le asignó.")
-    descripcion_perfil: str = Field(description="Breve diagnóstico de su estilo de vida basado en los datos.")
+    descripcion_perfil: str = Field(description="Saludo inicial según el tono IA y luego un diagnóstico breve de su estilo de vida basado en los datos.")
     consejo_tactico: str = Field(description="Hack para ahorrar sin renunciar a sus gustos de ese estilo de vida.")
     alineacion_meta: str = Field(description="Cómo su estilo de vida impacta en su meta principal.")
     mensaje_estilo_vida: str = Field(description="Frase motivadora alineada al arquetipo descubierto.")

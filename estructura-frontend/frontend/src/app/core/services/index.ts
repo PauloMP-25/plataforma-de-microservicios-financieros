@@ -11,4 +11,5 @@ export * from './otp.service';
 export * from './presupuesto.service';
 export * from './sidebar-state.service';
 export * from './transacciones';
+export * from './notificacion.service';
 

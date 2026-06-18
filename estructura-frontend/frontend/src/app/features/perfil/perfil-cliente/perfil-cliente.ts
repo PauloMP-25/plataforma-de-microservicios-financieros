@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AvatarConfig, AvatarService, AuthService, ClientePerfilService } from '../../../core/services';
+import { AvatarConfig, AvatarService, AuthService, ClientePerfilService, NotificacionService } from '../../../core/services';
 import { AvatarDisplay } from './components/avatar-display/avatar-display';
 import { AvatarSelector } from './components/avatar-selector/avatar-selector';
 import { RespuestaDatosPersonales } from '../../../core/models';
@@ -47,6 +47,7 @@ export class PerfilCliente {
   private readonly avatarService = inject(AvatarService);
   private readonly clientePerfilService = inject(ClientePerfilService);
   private readonly authService = inject(AuthService);
+  private readonly notificacionService = inject(NotificacionService);
 
   readonly paisesCatalogo: PaisCatalogo[] = [
     { codigo: 'PE', nombre: 'Perú', banderaClase: 'flag flag--pe', prefijo: '+51', ciudades: ['Lima', 'Ica', 'Arequipa', 'Cusco', 'Trujillo', 'Piura'] },
@@ -247,6 +248,7 @@ export class PerfilCliente {
 
     this.cerrarModalAvatar();
     this.mensajeExito.set('Cambios guardados correctamente.');
+    this.notificacionService.mostrarDatosGuardados('Avatar personalizado actualizado correctamente.');
     setTimeout(() => this.mensajeExito.set(''), 2500);
   }
 
@@ -374,6 +376,7 @@ export class PerfilCliente {
         this.hidratarFormularioDesdePerfil(perfilActualizado);
         this.guardandoPerfil.set(false);
         this.mensajeExito.set('Datos personales actualizados correctamente.');
+        this.notificacionService.mostrarDatosGuardados('Datos personales actualizados correctamente.');
         setTimeout(() => this.mensajeExito.set(''), 2500);
       },
       error: (err: any) => {
@@ -403,6 +406,7 @@ export class PerfilCliente {
         this.guardandoPassword.set(false);
         this.cambioPassword.set({ passwordActual: '', nuevoPassword: '', confirmarPassword: '' });
         this.mensajeExito.set('Contraseña actualizada correctamente.');
+        this.notificacionService.mostrarDatosGuardados('Contraseña actualizada correctamente.');
         setTimeout(() => this.mensajeExito.set(''), 2500);
       },
       error: () => {

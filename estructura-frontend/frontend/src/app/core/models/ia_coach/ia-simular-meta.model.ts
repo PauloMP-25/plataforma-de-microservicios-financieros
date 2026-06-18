@@ -1,6 +1,5 @@
 export interface ConsejoSimularMetaDTO {
   pensamiento_interno_ia: string;
-  introduccion: string;
   diagnostico_viabilidad: string;
   plan_accion: string;
   tecnica_sugerida?: string;

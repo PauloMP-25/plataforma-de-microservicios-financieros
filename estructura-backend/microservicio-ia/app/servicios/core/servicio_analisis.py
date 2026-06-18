@@ -181,7 +181,7 @@ class ServicioAnalisis:
                 anio_fin = getattr(peticion, "anio_fin", None)
 
                 tarea_financiera = self._cliente_financiero.obtener_historial_transacciones_async(
-                    peticion.usuario_id, peticion.token, peticion.tamanio_pagina,
+                    peticion.usuario_id, peticion.token, getattr(peticion, "tamanio_pagina", 200),
                     mes, anio, dia_inicio, mes_inicio, anio_inicio, dia_fin, mes_fin, anio_fin,
                 )
                 tarea_perfil = self._cliente_perfil.obtener_perfil_usuario_async(
@@ -271,14 +271,21 @@ class ServicioAnalisis:
                 metricas["_hash_txs"] = hash_txs
                 metricas["_descripcion_rango"] = descripcion_rango
 
-                # Inyectar historial en métricas de coaching (solo GASTO_HORMIGA)
-                if modulo_enum == NombreModulo.GASTO_HORMIGA and ultimo_historial is not None:
-                    metricas["_historial_previo"] = ultimo_historial.get_consejo()
-                    metricas["_historial_insight"] = ultimo_historial.get_insight()
-                    logger.info(
-                        "[HISTORIAL] Historial previo inyectado para usuario=%s modulo=%s (id=%d)",
-                        peticion.usuario_id, modulo_enum.value, ultimo_historial.id,
-                    )
+                # Solo inyectar historial para módulos que ya implementan State Tracking
+                if modulo_enum in [
+                    NombreModulo.GASTO_HORMIGA,
+                    NombreModulo.HABITOS_FINANCIEROS,
+                    NombreModulo.ANALISIS_ESTILO_VIDA,
+                    NombreModulo.ESPEJO_TEMPORAL,
+                    NombreModulo.ZONA_ENTRENAMIENTO
+                ]:
+                    if ultimo_historial is not None:
+                        metricas["_historial_previo"] = ultimo_historial.get_consejo()
+                        metricas["_historial_insight"] = ultimo_historial.get_insight()
+                        logger.info(
+                            "[HISTORIAL] Historial previo inyectado para usuario=%s modulo=%s (id=%d)",
+                            peticion.usuario_id, modulo_enum.value, ultimo_historial.id,
+                        )
                 else:
                     metricas["_historial_previo"] = None
                     metricas["_historial_insight"] = None
@@ -326,7 +333,21 @@ class ServicioAnalisis:
                 consejo_final = consejo
                 if isinstance(consejo, dict) and esquema_salida:
                     try:
-                        consejo_final = esquema_salida(**consejo)
+                        # 1. Validar que cumple el esquema original
+                        obj = esquema_salida(**consejo)
+                        # 2. Generar dict para la respuesta
+                        consejo_final = obj.model_dump()
+                        
+                        # 3. Remover campos exclusivos del backend (State Tracking)
+                        claves_a_remover = [
+                            "score_salud_estilo", "score_salud_habitos", "score_salud_hormiga",
+                            "score_salud_predecir", "score_salud_meta", "score_salud_reto",
+                            "score_salud_reporte", "score_salud_espejo", "score_salud_entrenamiento",
+                            "etiquetas_internas", "nota_interna_coach"
+                        ]
+                        for k in claves_a_remover:
+                            consejo_final.pop(k, None)
+                            
                     except Exception as e:
                         logger.warning(
                             "[ORQUESTADOR] No se pudo convertir dict a %s: %s "
@@ -334,9 +355,15 @@ class ServicioAnalisis:
                             esquema_salida.__name__,
                             e,
                         )
-                        # Si la conversión falla, almacenar como str serializado
-                        # para no romper RespuestaModulo (Union acepta str también).
-                        consejo_final = json.dumps(consejo, ensure_ascii=False)
+                        # Si la conversión falla, enviar el raw limpiado también por seguridad
+                        consejo_final = consejo.copy()
+                        for k in [
+                            "score_salud_estilo", "score_salud_habitos", "score_salud_hormiga",
+                            "score_salud_predecir", "score_salud_meta", "score_salud_reto",
+                            "score_salud_reporte", "score_salud_espejo", "score_salud_entrenamiento",
+                            "etiquetas_internas", "nota_interna_coach"
+                        ]:
+                            consejo_final.pop(k, None)
 
                 insight_dto = InsightAnalitico(
                     modulo=modulo_enum,
@@ -470,13 +497,13 @@ class ServicioAnalisis:
                 servicio = FabricaModulosAnalisis.obtener_modulo(modulo_enum)
 
                 tarea_financiera_a = self._cliente_financiero.obtener_historial_transacciones_async(
-                    peticion.usuario_id, peticion.token, peticion.tamanio_pagina,
+                    peticion.usuario_id, peticion.token, getattr(peticion, "tamanio_pagina", 200),
                     desde_exacto=peticion.rango_a_inicio.isoformat(),
                     hasta_exacto=peticion.rango_a_fin.isoformat()
                 )
                 
                 tarea_financiera_b = self._cliente_financiero.obtener_historial_transacciones_async(
-                    peticion.usuario_id, peticion.token, peticion.tamanio_pagina,
+                    peticion.usuario_id, peticion.token, getattr(peticion, "tamanio_pagina", 200),
                     desde_exacto=peticion.rango_b_inicio.isoformat(),
                     hasta_exacto=peticion.rango_b_fin.isoformat()
                 )
@@ -583,13 +610,6 @@ class ServicioAnalisis:
                     esquema_salida=esquema_comparacion
                 )
 
-                if isinstance(consejo, dict) and esquema_comparacion:
-                    try:
-                        consejo = esquema_comparacion(**consejo)
-                    except Exception as ex:
-                        logger.warning("[ORQUESTADOR] Error convirtiendo dict a %s: %s", esquema_comparacion.__name__, ex)
-                        consejo = json.dumps(consejo, ensure_ascii=False)
-
                 if not fallback and estado == EstadoCoach.EXITOSO:
                     asyncio.create_task(
                         asyncio.to_thread(
@@ -601,6 +621,24 @@ class ServicioAnalisis:
                             estado_coach=estado.value,
                         )
                     )
+
+                consejo_final = consejo
+                if isinstance(consejo, dict) and esquema_comparacion:
+                    try:
+                        obj = esquema_comparacion(**consejo)
+                        consejo_final = obj.model_dump()
+                        
+                        claves_a_remover = [
+                            "score_salud_evolucion",
+                            "etiquetas_internas", "nota_interna_coach"
+                        ]
+                        for k in claves_a_remover:
+                            consejo_final.pop(k, None)
+                    except Exception as ex:
+                        logger.warning("[ORQUESTADOR] Error convirtiendo dict a %s: %s", esquema_comparacion.__name__, ex)
+                        consejo_final = consejo.copy()
+                        for k in ["score_salud_evolucion", "etiquetas_internas", "nota_interna_coach"]:
+                            consejo_final.pop(k, None)
 
                 insight_dto = InsightAnalitico(
                     modulo=modulo_enum,
@@ -614,7 +652,7 @@ class ServicioAnalisis:
                 resultado_final = RespuestaModulo(
                     usuario_id=peticion.usuario_id,
                     modulo=modulo_enum,
-                    consejo=consejo,
+                    consejo=consejo_final,
                     estado_coach=estado,
                     insight=insight_dto,
                     usando_fallback=fallback,

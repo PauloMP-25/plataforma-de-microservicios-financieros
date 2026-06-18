@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
-import { AuthService } from '../../../core/services/auth.service';
+import { AuthService, NotificacionService } from '../../../core/services';
 
 @Component({
   selector: 'app-iniciar-sesion',
@@ -20,7 +20,8 @@ export class IniciarSesion {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private notificacionService: NotificacionService
   ) {
     this.formulario = this.fb.group({
       correo: ['', [Validators.required, Validators.email]],
@@ -49,6 +50,7 @@ export class IniciarSesion {
       next: (resp) => {
         this.cargando = false;
         if (resp.exito) {
+          this.notificacionService.mostrarLoginExitoso(resp.datos?.nombreUsuario || 'Usuario');
           this.router.navigate(['/dashboard']);
         } else {
           this.errorMensaje = resp.mensaje || 'Error al iniciar sesión';

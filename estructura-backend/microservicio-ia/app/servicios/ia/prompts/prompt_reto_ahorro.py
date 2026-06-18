@@ -32,9 +32,12 @@ Ahorro Logrado: S/ {metricas['ahorro_real']}
 </hallazgos>
 
 <instrucciones>
-Genera un veredicto estructurado.
-Diagnóstico: Comenta por qué lo logró o por qué falló basándote en el gasto real vs el límite.
-Estrategia: Qué debe mejorar para la próxima o qué debe mantener.
+Genera un veredicto estructurado siguiendo el esquema de respuesta.
+1. score_salud_reto: Califica del 1 al 10 la salud financiera del usuario según el veredicto del reto.
+2. etiquetas_internas: Lista de 1 a 3 etiquetas cortas sobre el desempeño.
+3. nota_interna_coach: Nota técnica sobre el reto.
+4. Diagnóstico: Comenta por qué lo logró o por qué falló basándote en el gasto real vs el límite.
+5. Estrategia: Qué debe mejorar para la próxima o qué debe mantener.
 </instrucciones>"""
 
     if estado == "NUEVO":
@@ -51,9 +54,12 @@ Ahorro Potencial: S/ {metricas['ahorro_potencial']}
 </hallazgos>
 
 <instrucciones>
-Propón esta misión de ahorro de manera motivadora.
-Diagnóstico: Indica por qué es importante reducir el gasto en esa categoría.
-Estrategia: Dale una o dos reglas claras para no gastar más del límite.
+Propón esta misión de ahorro de manera motivadora siguiendo el esquema de respuesta.
+1. score_salud_reto: Califica del 1 al 10 la viabilidad de que logre el reto según sus transacciones previas.
+2. etiquetas_internas: Lista de 1 a 3 etiquetas cortas sobre el reto.
+3. nota_interna_coach: Nota técnica recomendando monitorear esta categoría.
+4. Diagnóstico: Indica por qué es importante reducir el gasto en esa categoría.
+5. Estrategia: Dale una o dos reglas claras para no gastar más del límite.
 </instrucciones>"""
 
     return "[SKIP_IA] Sigue registrando tus movimientos."

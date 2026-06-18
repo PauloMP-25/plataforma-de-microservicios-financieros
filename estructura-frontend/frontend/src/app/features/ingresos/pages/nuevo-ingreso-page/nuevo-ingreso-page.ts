@@ -9,8 +9,10 @@ import { AuthService } from '../../../../core/services/auth.service';
 import { Transacciones } from '../../../../core/services/transacciones';
 import { FinancieroService } from '../../../../core/services/Financiero.service';
 import { IaService } from '../../../../core/services/ia.service';
+import { CategoriaSugerida } from '../../../../core/models/ia_coach/ia-base.model';
 import { AppEventBus } from '../../../../core/services/app-event-bus.service';
 import { TransaccionRequestDTO } from '../../../../core/models/financiero/transaccion.model';
+import { NotificacionService } from '../../../../core/services/notificacion.service';
 import { DistribucionCategoria, IngresoFormData, IngresoReciente, OptionItem } from '../../types/ingresos.interfaces';
 
 @Component({
@@ -28,6 +30,11 @@ export class NuevoIngresoPage {
   private readonly iaService = inject(IaService);
   private readonly eventBus = inject(AppEventBus);
   private readonly router = inject(Router);
+  private readonly notificacionService = inject(NotificacionService);
+
+  readonly sugerenciaSeleccionadaSignal = signal<CategoriaSugerida | null>(null);
+  readonly categoriaIAPendiente = signal<{ nombre: string; icono: string } | null>(null);
+  get sugerenciaSeleccionada(): CategoriaSugerida | null { return this.sugerenciaSeleccionadaSignal(); }
 
   readonly metodos: OptionItem[] = [
     { label: 'Efectivo', value: 'EFECTIVO' },
@@ -45,32 +52,41 @@ export class NuevoIngresoPage {
     etiquetas: ['Trabajo', 'Mensual'],
   };
 
-  readonly sugerenciasSignal = signal<string[]>([]);
+  readonly sugerenciasSignal = signal<CategoriaSugerida[]>([]);
   readonly guardando = signal<boolean>(false);
   readonly clasificandoIa = signal<boolean>(false);
-  get sugerencias(): string[] { return this.sugerenciasSignal(); }
+  get sugerencias(): CategoriaSugerida[] { return this.sugerenciasSignal(); }
   get intentosIaRestantes(): number { return this.iaService.clasificacionesRestantes(); }
   get intentosIaMaximos(): number { return this.iaService.clasificacionesMaximas(); }
 
   // ── Signals computados para enlazar al estado real ──
   readonly categoriasSignal = computed<OptionItem[]>(() => {
     const cats = this.stateService.categorias();
+    const pending = this.categoriaIAPendiente();
+    let options: OptionItem[] = [];
     if (cats.length > 0) {
-      // Si la categoría por defecto es 'Salario', la mapeamos al UUID correspondiente una vez cargado
       const match = cats.find(c => c.nombre.toLowerCase() === 'salario');
       if (match && this.form.categoria === 'Salario') {
         this.form.categoria = match.id;
       }
-      return cats.map(c => ({ label: c.nombre, value: c.id }));
+      options = cats.map(c => ({ label: c.nombre, value: c.id }));
+    } else {
+      options = [
+        { label: 'Salario', value: 'salario' },
+        { label: 'Freelance', value: 'freelance' },
+        { label: 'Inversiones', value: 'inversion' },
+        { label: 'Ventas', value: 'venta' },
+        { label: 'Otros Ingresos', value: 'otros' },
+      ];
     }
-    return [
-      { label: 'Salario', value: 'salario' },
-      { label: 'Freelance', value: 'freelance' },
-      { label: 'Inversiones', value: 'inversion' },
-      { label: 'Ventas', value: 'venta' },
-      { label: 'Otros Ingresos', value: 'otros' },
-    ];
+    if (pending) {
+      if (!options.some(o => o.label.toLowerCase() === pending.nombre.toLowerCase())) {
+        options.push({ label: pending.nombre, value: 'PENDIENTE_IA' });
+      }
+    }
+    return options;
   });
+
 
   readonly distribucionSignal = computed<DistribucionCategoria[]>(() => {
     const transacciones = this.stateService.ingresos();
@@ -134,9 +150,9 @@ export class NuevoIngresoPage {
       next: (res) => {
         this.clasificandoIa.set(false);
         if (res.datos) {
-          const categorias = res.datos.consejo?.categorias_sugeridas || res.datos.categorias_sugeridas || res.datos.sugerencias;
-          if (categorias) {
-            this.sugerenciasSignal.set(categorias);
+          const sugerencias = res.datos.sugerencias;
+          if (sugerencias) {
+            this.sugerenciasSignal.set(sugerencias);
           }
         }
       },
@@ -146,7 +162,11 @@ export class NuevoIngresoPage {
         const matched = ['Salario', 'Freelance', 'Inversiones', 'Ventas', 'Otros Ingresos'].filter(c =>
           c.toLowerCase().includes(desc.toLowerCase())
         );
-        this.sugerenciasSignal.set(matched.length > 0 ? matched : ['Salario', 'Otros Ingresos']);
+        const fallbackList: CategoriaSugerida[] = (matched.length > 0 ? matched : ['Salario', 'Freelance', 'Inversiones', 'Ventas', 'Otros Ingresos']).slice(0, 5).map(c => ({
+          categoria: c,
+          icono: this.iconoCategoria(c)
+        }));
+        this.sugerenciasSignal.set(fallbackList);
       }
     });
   }
@@ -161,7 +181,7 @@ export class NuevoIngresoPage {
     return 'plus-circle';
   }
 
-  crearCategoriaManualmente(nombre: string): void {
+  crearCategoriaManualmente(nombre: string, icono?: string): void {
     const nameTrim = nombre.trim();
     if (!nameTrim) return;
 
@@ -178,7 +198,7 @@ export class NuevoIngresoPage {
     this.financieroService.crearCategoria({
       nombre: nameTrim,
       descripcion: 'Categoría personalizada de ingresos',
-      icono: this.iconoCategoria(nameTrim),
+      icono: icono || this.iconoCategoria(nameTrim),
       tipo: 'INGRESO'
     }).subscribe({
       next: (cat) => {
@@ -193,8 +213,31 @@ export class NuevoIngresoPage {
     });
   }
 
-  seleccionarSugerencia(nombre: string): void {
-    this.crearCategoriaManualmente(nombre);
+  seleccionarSugerencia(sug: CategoriaSugerida): void {
+    this.sugerenciaSeleccionadaSignal.set(sug);
+  }
+
+  confirmarSugerencia(): void {
+    const sug = this.sugerenciaSeleccionadaSignal();
+    if (!sug) return;
+
+    const match = this.categorias.find(
+      c => c.label.toLowerCase() === sug.categoria.toLowerCase()
+    );
+    if (match) {
+      this.form.categoria = match.value;
+      this.categoriaIAPendiente.set(null);
+    } else {
+      this.categoriaIAPendiente.set({ nombre: sug.categoria, icono: sug.icono });
+      this.form.categoria = 'PENDIENTE_IA';
+    }
+    this.sugerenciaSeleccionadaSignal.set(null);
+  }
+
+
+  private nombreCategoriaPorId(id: string): string {
+    const match = this.categorias.find(c => c.value === id);
+    return match ? match.label : 'Ingresos';
   }
 
   guardar(): void {
@@ -204,59 +247,86 @@ export class NuevoIngresoPage {
       return;
     }
 
-    // Buscar el UUID de la categoría
-    let catId = '';
-    const selectedCat = this.form.categoria;
-    const match = this.categorias.find(
-      c => c.label.toLowerCase() === selectedCat.toLowerCase() || c.value === selectedCat
-    );
-    catId = match ? match.value : selectedCat;
+    const registrarIngresoFinal = (catId: string) => {
+      this.guardando.set(true);
 
-    const getLocalIsoString = (date: Date): string => {
-      const now = new Date();
-      date.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
-      const tzOffset = date.getTimezoneOffset() * 60000;
-      return new Date(date.getTime() - tzOffset).toISOString().slice(0, 19);
-    };
+      const getLocalIsoString = (date: Date): string => {
+        const now = new Date();
+        date.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+        const tzOffset = date.getTimezoneOffset() * 60000;
+        return new Date(date.getTime() - tzOffset).toISOString().slice(0, 19);
+      };
 
-    // Normalizar la fecha del formulario 'dd/mm/yyyy' o similar a formato ISO
-    let fechaTransaccion = getLocalIsoString(new Date());
-    if (this.form.fechaTransaccion) {
-      const parts = this.form.fechaTransaccion.split('/');
-      if (parts.length === 3) {
-        // dd/mm/yyyy -> yyyy-mm-dd
-        const local = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
-        fechaTransaccion = getLocalIsoString(local);
-      } else {
-        const parsed = new Date(this.form.fechaTransaccion);
-        if (!Number.isNaN(parsed.getTime())) {
-          fechaTransaccion = getLocalIsoString(parsed);
+      let fechaTransaccion = getLocalIsoString(new Date());
+      if (this.form.fechaTransaccion) {
+        const parts = this.form.fechaTransaccion.split('/');
+        if (parts.length === 3) {
+          const local = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
+          fechaTransaccion = getLocalIsoString(local);
+        } else {
+          const parsed = new Date(this.form.fechaTransaccion);
+          if (!Number.isNaN(parsed.getTime())) {
+            fechaTransaccion = getLocalIsoString(parsed);
+          }
         }
       }
-    }
 
-    const payload: TransaccionRequestDTO = {
-      usuarioId,
-      nombreCliente: this.authService.usuario()?.nombreUsuario ?? 'Cliente',
-      monto: Number(this.form.monto),
-      tipo: 'INGRESO',
-      categoriaId: catId,
-      fechaTransaccion,
-      metodoPago: this.form.metodoPago,
-      etiquetas: this.form.etiquetas.join(','),
-      descripcion: this.form.descripcion
+      const payload: TransaccionRequestDTO = {
+        usuarioId,
+        nombreCliente: this.authService.usuario()?.nombreUsuario ?? 'Cliente',
+        monto: Number(this.form.monto),
+        tipo: 'INGRESO',
+        categoriaId: catId,
+        fechaTransaccion,
+        metodoPago: this.form.metodoPago,
+        etiquetas: this.form.etiquetas.join(','),
+        descripcion: this.form.descripcion
+      };
+
+      this.transaccionesService.registrar(payload).subscribe({
+        next: () => {
+          this.guardando.set(false);
+          this.stateService.invalidarCache();
+          this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
+          const catNombre = this.categoriaIAPendiente()?.nombre || this.nombreCategoriaPorId(catId);
+          this.notificacionService.mostrarIngresoRegistrado(Number(this.form.monto), catNombre);
+          this.router.navigate(['/ingresos']);
+        },
+        error: (err) => {
+          this.guardando.set(false);
+          console.error('Error al registrar ingreso:', err);
+        }
+      });
     };
 
-    this.transaccionesService.registrar(payload).subscribe({
-      next: () => {
-        this.stateService.invalidarCache();
-        this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
-        this.router.navigate(['/ingresos']);
-      },
-      error: (err) => {
-        console.error('Error al registrar ingreso:', err);
-      }
-    });
+    const pendingCat = this.categoriaIAPendiente();
+    if (this.form.categoria === 'PENDIENTE_IA' && pendingCat) {
+      this.guardando.set(true);
+      this.financieroService.crearCategoria({
+        nombre: pendingCat.nombre,
+        descripcion: 'Categoría personalizada de ingresos recomendada por IA',
+        icono: pendingCat.icono,
+        tipo: 'INGRESO'
+      }).subscribe({
+        next: (cat) => {
+          this.stateService.categorias.update(cats => [...cats, cat]);
+          this.form.categoria = cat.id;
+          registrarIngresoFinal(cat.id);
+        },
+        error: (err) => {
+          this.guardando.set(false);
+          console.error('Error al crear categoría de IA para ingreso:', err);
+        }
+      });
+    } else {
+      let catId = '';
+      const selectedCat = this.form.categoria;
+      const match = this.categorias.find(
+        c => c.label.toLowerCase() === selectedCat.toLowerCase() || c.value === selectedCat
+      );
+      catId = match ? match.value : selectedCat;
+      registrarIngresoFinal(catId);
+    }
   }
 
   cancelar(): void {

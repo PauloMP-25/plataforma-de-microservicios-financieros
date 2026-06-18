@@ -29,6 +29,9 @@ def generar_fallback_reto_ahorro(
             
         return {
             "pensamiento_interno_ia": "Fallback: Veredicto generado por reglas locales.",
+            "score_salud_reto": 7 if exito else 4,
+            "etiquetas_internas": ["fallback", "reto_veredicto", "logrado" if exito else "fallido"],
+            "nota_interna_coach": f"Reto finalizado: {resultado}. Revisar consistencia de ahorro.",
             "titulo_mision": titulo,
             "diagnostico": diag,
             "estrategia": estrategia,
@@ -41,6 +44,9 @@ def generar_fallback_reto_ahorro(
     
     return {
         "pensamiento_interno_ia": "Fallback: Propuesta de nueva misión generada por reglas locales.",
+        "score_salud_reto": 5,
+        "etiquetas_internas": ["fallback", "reto_propuesto", cat.lower()],
+        "nota_interna_coach": f"Nueva misión propuesta para {cat}.",
         "titulo_mision": f"Operación: Controlar {cat}",
         "diagnostico": f"Hemos detectado que puedes optimizar tus gastos en {cat}.",
         "estrategia": f"Intenta reducir tus compras en esta categoría para ahorrar potencialmente S/ {ahorro}.",

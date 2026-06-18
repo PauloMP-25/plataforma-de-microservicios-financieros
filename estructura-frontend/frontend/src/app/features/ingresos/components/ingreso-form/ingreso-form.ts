@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IngresoFormData, OptionItem } from '../../types/ingresos.interfaces';
+import { CategoriaSugerida } from '../../../../core/models/ia_coach/ia-base.model';
 
 @Component({
   selector: 'app-ingreso-form',
@@ -20,15 +21,17 @@ export class IngresoFormComponent {
     metodoPago: 'TRANSFERENCIA',
     etiquetas: [],
   };
-  @Input() sugerencias: string[] = [];
+  @Input() sugerencias: CategoriaSugerida[] = [];
   @Input() clasificandoIa = false;
   @Input() intentosIaRestantes = 0;
   @Input() intentosIaMaximos = 2;
+  @Input() sugerenciaSeleccionada: CategoriaSugerida | null = null;
 
   @Output() modelChange = new EventEmitter<IngresoFormData>();
   @Output() guardar = new EventEmitter<void>();
   @Output() cancelar = new EventEmitter<void>();
-  @Output() seleccionarSugerencia = new EventEmitter<string>();
+  @Output() seleccionarSugerencia = new EventEmitter<CategoriaSugerida>();
+  @Output() confirmarSugerencia = new EventEmitter<void>();
   @Output() crearCategoriaManualmente = new EventEmitter<string>();
   @Output() clasificarIa = new EventEmitter<void>();
 
@@ -73,6 +76,6 @@ export class IngresoFormComponent {
   }
 
   get puedeSugerirCategoriaIa(): boolean {
-    return (this.model.descripcion?.trim()?.length || 0) >= 4 && !this.clasificandoIa && this.intentosIaRestantes > 0;
+    return (this.model.descripcion?.trim()?.length || 0) >= 4 && !this.clasificandoIa && this.intentosIaRestantes > 0 && this.sugerencias.length === 0;
   }
 }
