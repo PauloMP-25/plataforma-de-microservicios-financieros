@@ -1,0 +1,68 @@
+.meta-form-page__purpose-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+
+  .purpose-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.65rem 0.5rem;
+    background: var(--bg-body);
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-family: var(--font-main);
+    transition: var(--transition-bounce);
+    width: 100%;
+
+    i {
+      font-size: 1.15rem;
+      transition: transform 0.2s ease;
+    }
+
+    span {
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    &:hover:not([disabled]) {
+      border-color: var(--color-primary-light);
+      color: var(--text-primary);
+      transform: translateY(-2px);
+
+      i {
+        transform: scale(1.1);
+      }
+    }
+
+    &--active {
+      background: var(--color-primary-soft);
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+      box-shadow: 0 4px 10px rgba(91, 106, 240, 0.12);
+
+      i {
+        transform: scale(1.15);
+      }
+    }
+
+    &[disabled] {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.form-label-purpose {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 700;
+}

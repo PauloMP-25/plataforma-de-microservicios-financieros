@@ -72,7 +72,6 @@
         </span>
         
         <div class="consejo-estructurado">
-          <p class="consejo-intro">{{ consejoObj()!.introduccion }}</p>
           <div class="consejo-analisis">
             <i class="fa-solid fa-chart-pie"></i>
             <p>{{ consejoObj()!.analisis_ia }}</p>
@@ -85,10 +84,14 @@
           <div class="consejo-plan">
             <h4><i class="fa-solid fa-bullseye"></i> {{ consejoObj()!.plan_accion_titulo }}</h4>
             <ul>
-              <li *ngFor="let paso of consejoObj()!.plan_accion_pasos">
+              <li *ngFor="let paso of (mostrarTodosLosPasos() ? consejoObj()!.plan_accion_pasos : (consejoObj()!.plan_accion_pasos | slice:0:3))">
                 <i class="fa-solid fa-check-circle"></i> {{ paso }}
               </li>
             </ul>
+            <button class="btn-toggle-pasos" (click)="togglePasos()" *ngIf="consejoObj()!.plan_accion_pasos.length > 3">
+              {{ mostrarTodosLosPasos() ? 'Ver menos' : 'Ver más' }}
+              <i class="fa-solid" [class.fa-chevron-up]="mostrarTodosLosPasos()" [class.fa-chevron-down]="!mostrarTodosLosPasos()"></i>
+            </button>
           </div>
           
           <div class="consejo-cierre">

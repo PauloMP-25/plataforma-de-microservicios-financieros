@@ -90,7 +90,7 @@ class EspejoTiempoService:
 
         # Normalización del DataFrame
         df = df.copy()
-        df["fecha"] = pd.to_datetime(df["fecha"])
+        df["fecha"] = pd.to_datetime(df["fecha"], format="mixed")
         df["categoria"] = df["categoria"].str.lower().str.strip()
 
         # Metas activas pasadas como kwargs (lista de dicts)

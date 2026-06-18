@@ -41,125 +41,54 @@
   @if (mostrarDashboard()) {
     <!-- Panel Resumen Superior: KPI Cards (Mockup LUKA Layout) -->
     <div class="metas-page__resumen-dashboard anim-fade-up">
-      <!-- Tarjeta KPI 1: Metas Activas -->
-      <article class="metas-page__kpi-card card">
-        <div class="metas-page__kpi-icon text-primary">
-          <i class="fa-solid fa-bullseye"></i>
-        </div>
-        <div class="metas-page__kpi-info">
-          <span class="metas-page__kpi-title">Metas activas</span>
-          <span class="metas-page__kpi-value">{{ metasActivasCount() }}</span>
-          <span class="metas-page__kpi-sub">En progreso</span>
-        </div>
-      </article>
+      <app-meta-kpi 
+        [title]="'Metas activas'" 
+        [value]="metasActivasCount()" 
+        [sub]="'En progreso'" 
+        [icon]="'fa-solid fa-bullseye'" 
+        [iconClass]="'text-primary'">
+      </app-meta-kpi>
 
-      <!-- Tarjeta KPI 2: Metas Cumplidas -->
-      <article class="metas-page__kpi-card card">
-        <div class="metas-page__kpi-icon text-success">
-          <i class="fa-solid fa-circle-check"></i>
-        </div>
-        <div class="metas-page__kpi-info">
-          <span class="metas-page__kpi-title">Metas cumplidas</span>
-          <span class="metas-page__kpi-value">{{ metasCumplidasCount() }}</span>
-          <span class="metas-page__kpi-sub">¡Felicidades!</span>
-        </div>
-      </article>
+      <app-meta-kpi 
+        [title]="'Metas cumplidas'" 
+        [value]="metasCumplidasCount()" 
+        [sub]="'¡Felicidades!'" 
+        [icon]="'fa-solid fa-circle-check'" 
+        [iconClass]="'text-success'">
+      </app-meta-kpi>
 
-      <!-- Tarjeta KPI 3: Monto Disponible -->
-      <article class="metas-page__kpi-card card">
-        <div class="metas-page__kpi-icon text-info">
-          <i class="fa-solid fa-wallet"></i>
-        </div>
-        <div class="metas-page__kpi-info">
-          <span class="metas-page__kpi-title">Monto disponible</span>
-          <span class="metas-page__kpi-value">S/ {{ formatMoneda(ahorroDisponible()) }}</span>
-          <span class="metas-page__kpi-sub">Para avanzar en tus metas</span>
-        </div>
-      </article>
+      <app-meta-kpi 
+        [title]="'Monto disponible'" 
+        [value]="'S/ ' + formatMoneda(ahorroDisponible())" 
+        [sub]="'Para avanzar en tus metas'" 
+        [icon]="'fa-solid fa-wallet'" 
+        [iconClass]="'text-info'">
+      </app-meta-kpi>
 
-      <!-- Tarjeta KPI 4: Próxima Meta por Vencer -->
-      <article class="metas-page__kpi-card card">
-        <div class="metas-page__kpi-icon text-warning">
-          <i class="fa-regular fa-calendar"></i>
-        </div>
-        <div class="metas-page__kpi-info">
-          <span class="metas-page__kpi-title">Próxima meta</span>
-          @if (metaMasCercana(); as masCercana) {
-            <span class="metas-page__kpi-value-text">{{ obtenerCategoriaYNombre(masCercana.nombre).nombre }}</span>
-            <span class="metas-page__kpi-sub text-warning">Vence el {{ masCercana.fechaLimite | date:'dd/MM/yyyy' }}</span>
-          }
-          @if (!metaMasCercana()) {
-            <span class="metas-page__kpi-value-text">Ninguna</span>
-            <span class="metas-page__kpi-sub">Crea un objetivo</span>
-          }
-        </div>
-      </article>
+      <app-meta-kpi 
+        [title]="'Próxima meta'" 
+        [value]="metaMasCercana() ? obtenerCategoriaYNombre(metaMasCercana()!.nombre).nombre : 'Ninguna'" 
+        [sub]="metaMasCercana() ? 'Vence el ' + (metaMasCercana()!.fechaLimite | date:'dd/MM/yyyy') : 'Crea un objetivo'" 
+        [icon]="'fa-regular fa-calendar'" 
+        [iconClass]="'text-warning'">
+      </app-meta-kpi>
     </div>
 
     <!-- Barra de Filtros -->
-    <div class="metas-page__filters card anim-fade-up">
-      <div class="metas-page__filters-grid">
-        <!-- Filtro Estado -->
-        <div class="metas-page__filter-group">
-          <label for="filtroEstado">Estado</label>
-          <select id="filtroEstado" [value]="filtroEstado()" (change)="filtroEstado.set($any($event.target).value); paginaActual.set(1)">
-            <option value="Todas">Todas</option>
-            <option value="Activas">Activas</option>
-            <option value="Cumplidas">Cumplidas</option>
-            <option value="Vencidas">Vencidas</option>
-          </select>
-        </div>
-
-        <!-- Filtro Mes -->
-        <div class="metas-page__filter-group">
-          <label for="filtroMes">Mes</label>
-          <select id="filtroMes" [value]="filtroMes()" (change)="filtroMes.set($any($event.target).value); paginaActual.set(1)">
-            <option value="Todos">Todos</option>
-            <option value="0">Enero</option>
-            <option value="1">Febrero</option>
-            <option value="2">Marzo</option>
-            <option value="3">Abril</option>
-            <option value="4">Mayo</option>
-            <option value="5">Junio</option>
-            <option value="6">Julio</option>
-            <option value="7">Agosto</option>
-            <option value="8">Septiembre</option>
-            <option value="9">Octubre</option>
-            <option value="10">Noviembre</option>
-            <option value="11">Diciembre</option>
-          </select>
-        </div>
-
-        <!-- Filtro Año -->
-        <div class="metas-page__filter-group">
-          <label for="filtroAnio">Año</label>
-          <select id="filtroAnio" [value]="filtroAnio()" (change)="filtroAnio.set($any($event.target).value); paginaActual.set(1)">
-            <option value="Todos">Todos</option>
-            <option value="2025">2025</option>
-            <option value="2026">2026</option>
-            <option value="2027">2027</option>
-            <option value="2028">2028</option>
-          </select>
-        </div>
-
-        <!-- Rango de Monto Objetivo -->
-        <div class="metas-page__filter-group">
-          <label>Rango de monto objetivo (S/)</label>
-          <div class="metas-page__range-inputs">
-            <input type="number" placeholder="Mínimo" [value]="filtroMontoMin()" (input)="filtroMontoMin.set($any($event.target).value ? +$any($event.target).value : null); paginaActual.set(1)">
-            <span>-</span>
-            <input type="number" placeholder="Máximo" [value]="filtroMontoMax()" (input)="filtroMontoMax.set($any($event.target).value ? +$any($event.target).value : null); paginaActual.set(1)">
-          </div>
-        </div>
-
-        <!-- Botones de Acción de Filtros -->
-        <div class="metas-page__filter-actions">
-          <button type="button" class="btn-clear" (click)="limpiarFiltros()">
-            <i class="fa-solid fa-rotate-left"></i> Limpiar
-          </button>
-        </div>
-      </div>
-    </div>
+    <app-meta-filters
+      [filtroEstado]="filtroEstado()"
+      [filtroMes]="filtroMes()"
+      [filtroAnio]="filtroAnio()"
+      [filtroMontoMin]="filtroMontoMin()"
+      [filtroMontoMax]="filtroMontoMax()"
+      [anios]="aniosDisponibles()"
+      (estadoChange)="filtroEstado.set($event); paginaActual.set(1)"
+      (mesChange)="filtroMes.set($event); paginaActual.set(1)"
+      (anioChange)="filtroAnio.set($event); paginaActual.set(1)"
+      (montoMinChange)="filtroMontoMin.set($event); paginaActual.set(1)"
+      (montoMaxChange)="filtroMontoMax.set($event); paginaActual.set(1)"
+      (clear)="limpiarFiltros()">
+    </app-meta-filters>
 
     <!-- Sección Principal: Grid de Tarjetas e Información -->
     <div class="metas-page__layout-container">
@@ -172,83 +101,14 @@
         @defer (on viewport) {
           <div class="metas-page__grid">
             @for (meta of metasPaginadas(); track meta.id) {
-              <article class="metas-page__card card" 
-                       [class.metas-page__card--selected]="metaSeleccionada()?.id === meta.id"
-                       [class.metas-page__card--success]="meta.completada"
-                       [class.metas-page__card--danger]="esVencida(meta) && !meta.completada"
-                       [class.metas-page__card--active]="!meta.completada && !esVencida(meta)"
-                       (click)="seleccionarMeta(meta, $event)"
-                       style="will-change: transform, box-shadow;">
-                
-                <!-- Botón de Opciones (Tres Puntos) -->
-                <button type="button" class="card-options-btn" (click)="seleccionarMeta(meta, $event); $event.stopPropagation()">
-                  <i class="fa-solid fa-ellipsis-vertical"></i>
-                  <span class="tooltip">Ver detalles</span>
-                </button>
-
-                    <!-- Encabezado de la Tarjeta Minimalista -->
-                <div class="metas-page__card-header">
-                  <div class="metas-page__card-category">
-                    <i [class]="meta.iconoVisual" class="metas-page__card-category-icon" [ngClass]="'text-' + obtenerColorEstado(meta)"></i>
-                    <h3>{{ meta.nombreVisual }}</h3>
-                  </div>
-                </div>
-  
-                <!-- Lógica de Progreso de la Tarjeta (Burbuja Centralizada) -->
-                <div class="metas-page__card-body">
-                  <!-- Gráfico de Burbuja de Agua (CSS Wave) -->
-                  <div class="bubble-container" 
-                       [ngClass]="'bubble-container--' + obtenerColorEstado(meta)"
-                       [style.background]="'conic-gradient(' + obtenerColorProgreso(meta) + ' ' + meta.porcentajeProgreso + '%, var(--border-color) 0)'"
-                       style="will-change: transform;">
-                    <div class="bubble">
-                      <div class="bubble__water" [style.transform]="'translateY(' + (meta.porcentajeProgreso >= 100 ? 15 : (100 - meta.porcentajeProgreso)) + '%)'" style="will-change: transform;">
-                        <div class="bubble__wave bubble__wave--front"></div>
-                        <div class="bubble__wave bubble__wave--back"></div>
-                      </div>
-                      <div class="bubble__content">
-                        <i [class]="meta.iconoVisual" class="bubble__category-icon"></i>
-                        <span class="bubble__number">{{ meta.porcentajeProgreso.toFixed(0) }}%</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Detalles Financieros Minimalistas -->
-                  <div class="metas-page__card-minimal-details">
-                    @if (mostrarCajaExito(meta)) {
-                      <span class="monto-principal text-success">S/ {{ formatMoneda(meta.montoObjetivo) }}</span>
-                      <span class="sub-label text-secondary">{{ obtenerFechaActualizacionOCreacion(meta) | date:'dd/MM/yyyy' }}</span>
-                    }
-                    @if (mostrarCajaProgreso(meta)) {
-                      <span class="monto-principal">
-                        S/ {{ formatMoneda(meta.montoAplicado) }} 
-                        <span class="monto-total">/ S/ {{ formatMoneda(meta.montoObjetivo) }}</span>
-                      </span>
-                      <span class="sub-label" [ngClass]="esVencida(meta) ? 'text-danger' : 'text-secondary'">
-                        {{ meta.fechaLimite | date:'dd/MM/yyyy' }}
-                      </span>
-                    }
-                  </div>
-                </div>
-
-                <!-- Footer de la Tarjeta (Acción y Estado) -->
-                <div class="metas-page__card-footer" (click)="$event.stopPropagation()">
-                  @if (mostrarBotonCompletar(meta)) {
-                    <button type="button" class="btn-action btn-action--complete" (click)="solicitarCompletarMeta(meta)">
-                      <i class="fa-solid fa-circle-check"></i> Completar
-                    </button>
-                  }
-
-                  <!-- Badge de Estado -->
-                  <span class="card-badge badge"
-                        [class.badge-success]="meta.completada"
-                        [class.badge-danger]="esVencida(meta) && !meta.completada"
-                        [class.badge-primary]="!meta.completada && !esVencida(meta)">
-                    {{ obtenerTextoEstado(meta) }}
-                  </span>
-                </div>
-
-              </article>
+              <app-meta-card 
+                [meta]="meta" 
+                [disponible]="ahorroDisponible()" 
+                [isSelected]="metaSeleccionada()?.id === meta.id"
+                (select)="seleccionarMeta(meta, $event)"
+                (optionsClick)="seleccionarMeta(meta)"
+                (complete)="solicitarCompletarMeta(meta)">
+              </app-meta-card>
             } @empty {
               <div class="metas-page__empty-grid card">
                 <i class="fa-solid fa-vault"></i>
@@ -300,194 +160,26 @@
 
       <!-- Panel Lateral Derecho: Detalles de la Meta Seleccionada -->
       @if (metaSeleccionada(); as seleccionada) {
-        <div class="metas-page__sidebar-backdrop" (click)="cerrarDetalle()">
-          <aside class="metas-page__sidebar card" (click)="$event.stopPropagation()">
-            <div class="metas-page__sidebar-header">
-              <h2>Detalle de la meta</h2>
-              <button class="btn-close" (click)="cerrarDetalle()">
-                <i class="fa-solid fa-xmark"></i>
-              </button>
-            </div>
-
-            <div class="metas-page__sidebar-content">
-              <!-- Icono y Nombre -->
-              <div class="metas-page__sidebar-title-section">
-                <div class="metas-page__sidebar-icon-circle" [ngClass]="'metas-page__sidebar-icon-circle--' + obtenerColorEstado(seleccionada)">
-                  <i [class]="seleccionada.iconoVisual"></i>
-                </div>
-                <div>
-                  <h3>{{ seleccionada.nombreVisual }}</h3>
-                  <span class="badge"
-                        [class.badge-success]="seleccionada.completada"
-                        [class.badge-danger]="esVencida(seleccionada) && !seleccionada.completada"
-                        [class.badge-primary]="!seleccionada.completada && !esVencida(seleccionada)">
-                    {{ obtenerTextoEstado(seleccionada) }}
-                  </span>
-                </div>
-              </div>
-
-              <!-- Gráfico de Burbuja Grande (Sin textos de etiquetas) -->
-              <div class="metas-page__sidebar-bubble-section">
-                <div class="bubble-container bubble-container--large" 
-                     [ngClass]="'bubble-container--' + obtenerColorEstado(seleccionada)"
-                     [style.background]="'conic-gradient(' + obtenerColorProgreso(seleccionada) + ' ' + seleccionada.porcentajeProgreso + '%, var(--border-color) 0)'">
-                  <div class="bubble bubble--large">
-                    <div class="bubble__water" [style.transform]="'translateY(' + (seleccionada.porcentajeProgreso >= 100 ? 15 : (100 - seleccionada.porcentajeProgreso)) + '%)'">
-                      <div class="bubble__wave bubble__wave--front"></div>
-                      <div class="bubble__wave bubble__wave--back"></div>
-                    </div>
-                    <div class="bubble__content">
-                      <i [class]="seleccionada.iconoVisual" class="bubble__category-icon"></i>
-                      <span class="bubble__number">{{ seleccionada.porcentajeProgreso.toFixed(0) }}%</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Valores Financieros y Fechas -->
-              <div class="metas-page__sidebar-details-grid">
-                <div class="detail-item">
-                  <span class="label">Monto Aplicado</span>
-                  <span class="value text-success">S/ {{ formatMoneda(seleccionada.montoAplicado) }}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="label">Monto Objetivo</span>
-                  <span class="value">S/ {{ formatMoneda(seleccionada.montoObjetivo) }}</span>
-                </div>
-
-                <div class="detail-item-wide border-t border-b border-color py-3 my-2">
-                  @if (!seleccionada.completada) {
-                    <div class="flex-between">
-                      <span class="label">Faltan ahorrar</span>
-                      <span class="value text-warning">S/ {{ formatMoneda(seleccionada.montoObjetivo - seleccionada.montoAplicado) }}</span>
-                    </div>
-                  }
-                </div>
-
-                @if (seleccionada.completada) {
-                  <div class="detail-item">
-                    <span class="label"><i class="fa-solid fa-award text-success"></i> Completada el</span>
-                    <span class="value">{{ obtenerFechaActualizacionOCreacion(seleccionada) | date:'dd/MM/yyyy' }}</span>
-                  </div>
-                }
-                <div class="detail-item">
-                  <span class="label"><i class="fa-regular fa-calendar-days"></i> Fecha de inicio</span>
-                  <span class="value">{{ seleccionada.fechaCreacion | date:'dd/MM/yyyy' }}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="label"><i class="fa-regular fa-calendar-check"></i> Fecha objetivo</span>
-                  <span class="value">{{ seleccionada.fechaLimite | date:'dd/MM/yyyy' }}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="label"><i class="fa-regular fa-clock"></i> Categoría</span>
-                  <span class="value">{{ seleccionada.categoriaVisual }}</span>
-                </div>
-                @if (seleccionada.completada) {
-                  <div class="detail-item">
-                    <span class="label"><i class="fa-solid fa-hourglass-end"></i> Tiempo empleado</span>
-                    <span class="value">{{ obtenerTiempoEmpleadoMeta(seleccionada) }}</span>
-                  </div>
-                }
-              </div>
-
-              <!-- Acciones del Sidebar -->
-              <div class="metas-page__sidebar-actions">
-                @if (mostrarBotonCompletar(seleccionada)) {
-                  <button type="button" class="btn-sidebar btn-sidebar--complete" (click)="solicitarCompletarMeta(seleccionada)">
-                    <i class="fa-solid fa-circle-check"></i> Completar Meta
-                  </button>
-                }
-                @if (mostrarBotonProgreso(seleccionada)) {
-                  <button type="button" class="btn-sidebar btn-sidebar--progress" disabled>
-                    <i class="fa-solid fa-spinner fa-spin"></i> En Progreso
-                  </button>
-                }
-                @if (mostrarBotonEditar(seleccionada)) {
-                  <button type="button" class="btn-sidebar btn-sidebar--edit" (click)="abrirEditarMeta(seleccionada)">
-                    <i class="fa-regular fa-pen-to-square"></i> Editar Meta
-                  </button>
-                }
-                <button type="button" class="btn-sidebar btn-sidebar--delete" (click)="eliminarMeta(seleccionada.id)">
-                  <i class="fa-regular fa-trash-can"></i> Eliminar Meta
-                </button>
-              </div>
-
-              <!-- Caja de Impacto Financiero -->
-              <div class="metas-page__sidebar-impact">
-                <h4><i class="fa-solid fa-chart-line"></i> Impacto en tus finanzas</h4>
-                @if (mostrarCajaExito(seleccionada)) {
-                  <p>Esta meta ya fue completada. El monto de S/ <strong>{{ formatMoneda(seleccionada.montoObjetivo) }}</strong> se descontó de tu ingreso disponible y se registró como un gasto en tu historial financiero.</p>
-                }
-                @if (mostrarCajaProgreso(seleccionada)) {
-                  <p>Al completar esta meta se descontarán S/ <strong>{{ formatMoneda(seleccionada.montoObjetivo) }}</strong> de tu balance disponible global y se guardará la transacción correspondiente en la categoría de gastos.</p>
-                }
-              </div>
-            </div>
-          </aside>
-        </div>
-        }
-      </div>
-    }
-
-
+        <app-meta-details-sidebar 
+          [meta]="seleccionada" 
+          [disponible]="ahorroDisponible()"
+          (close)="cerrarDetalle()"
+          (edit)="abrirEditarMeta(seleccionada)"
+          (delete)="eliminarMeta(seleccionada.id)"
+          (complete)="solicitarCompletarMeta(seleccionada)">
+        </app-meta-details-sidebar>
+      }
+    </div>
+  }
 
   <!-- Modal de Confirmación de Completado de Meta -->
   @if (modalConfirmarCompletar(); as metaConfirmar) {
-    <div class="metas-page__modal-backdrop" (click)="cerrarModalCompletar()">
-      <div class="metas-page__confirm-modal card" (click)="$event.stopPropagation()">
-        
-        <header class="metas-page__confirm-header">
-          <i class="fa-solid fa-circle-question icon-question"></i>
-          <h3>¿Deseas completar esta meta?</h3>
-        </header>
-
-        <div class="metas-page__confirm-body">
-          <p class="desc-warning">
-            El monto objetivo será descontado de tu ahorro disponible y se registrará como un gasto en tu historial financiero.
-          </p>
-
-          <div class="metas-page__confirm-data">
-            <div class="data-row">
-              <span class="label">Meta:</span>
-              <strong class="value text-primary">{{ metaConfirmar.nombreVisual }}</strong>
-            </div>
-            <div class="data-row">
-              <span class="label">Monto objetivo:</span>
-              <strong class="value">S/ {{ formatMoneda(metaConfirmar.montoObjetivo) }}</strong>
-            </div>
-            <div class="data-row">
-              <span class="label">Saldo disponible actual:</span>
-              <strong class="value text-success">S/ {{ formatMoneda(ahorroDisponible()) }}</strong>
-            </div>
-            
-            <div class="divider"></div>
-            
-            <div class="data-row">
-              <span class="label">Saldo disponible restante:</span>
-              <strong class="value" [ngClass]="saldoNegativoAlCompletar(metaConfirmar) ? 'text-danger' : 'text-success'">
-                S/ {{ formatMoneda(ahorroDisponible() - metaConfirmar.montoObjetivo) }}
-              </strong>
-            </div>
-          </div>
-          
-          @if (saldoNegativoAlCompletar(metaConfirmar)) {
-            <small class="error-msg py-2 block"><i class="fa-solid fa-triangle-exclamation"></i> Advertencia: Tu saldo disponible quedará en negativo.</small>
-          }
-        </div>
-
-        <footer class="metas-page__confirm-footer">
-          <button type="button" class="btn-cancel" (click)="cerrarModalCompletar()">Cancelar</button>
-          <button type="button" class="btn-confirm" [disabled]="cargando()" (click)="confirmarCompletarMeta()">
-            @if (cargando()) {
-              <i class="fa-solid fa-spinner fa-spin"></i> Procesando...
-            }
-            @if (!cargando()) {
-              Confirmar y completar
-            }
-          </button>
-        </footer>
-
-      </div>
-    </div>
+    <app-meta-confirm-modal 
+      [meta]="metaConfirmar" 
+      [disponible]="ahorroDisponible()"
+      [cargando]="cargando()"
+      (confirm)="confirmarCompletarMeta()"
+      (cancel)="cerrarModalCompletar()">
+    </app-meta-confirm-modal>
   }
 </section>

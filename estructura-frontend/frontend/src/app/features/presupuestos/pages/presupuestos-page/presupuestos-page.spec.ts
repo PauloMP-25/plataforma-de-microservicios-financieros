@@ -14,10 +14,12 @@ describe('PresupuestosPage', () => {
 
   const mockPresupuestoActivo: PresupuestoDTO = {
     id: '1',
+    nombre: 'Presupuesto de Prueba',
     montoLimite: 2000,
     porcentajeAlerta: 80,
     fechaInicio: '2026-06-01T00:00:00.000Z',
     fechaFin: '2026-06-30T00:00:00.000Z',
+    fechaCreacion: '2026-06-01T00:00:00.000Z',
     activo: true,
     usuarioId: '10'
   };
@@ -32,7 +34,7 @@ describe('PresupuestosPage', () => {
     ]);
     mockFinancieroService = jasmine.createSpyObj('FinancieroService', ['getResumen']);
 
-    mockFinancieroService.getResumen.and.returnValue(of({ totalGastos: 1200 }));
+    mockFinancieroService.getResumen.and.returnValue(of({ totalGastos: 1200 } as any));
     mockPresupuestoService.obtenerActivo.and.returnValue(of(mockPresupuestoActivo));
     mockPresupuestoService.listarHistorial.and.returnValue(of([]));
 
@@ -75,7 +77,7 @@ describe('PresupuestosPage', () => {
   });
 
   it('debería marcar el estado como alerta si supera el porcentaje definido', () => {
-    mockFinancieroService.getResumen.and.returnValue(of({ totalGastos: 1700 }));
+    mockFinancieroService.getResumen.and.returnValue(of({ totalGastos: 1700 } as any));
     fixture.detectChanges();
     expect(component.estadoAlerta()).toBe('alerta');
   });
@@ -90,7 +92,7 @@ describe('PresupuestosPage', () => {
   });
 
   it('debería llamar al servicio crear cuando no hay un presupuesto activo', fakeAsync(() => {
-    mockPresupuestoService.obtenerActivo.and.returnValue(of(null));
+    mockPresupuestoService.obtenerActivo.and.returnValue(of(null as any));
     mockPresupuestoService.crear.and.returnValue(of(mockPresupuestoActivo));
     fixture.detectChanges();
 

@@ -18,7 +18,7 @@ class ZonaEntrenamiento(ModuloBase):
             return metricas
 
         hoy = datetime.now()
-        df['fecha'] = pd.to_datetime(df['fecha'])
+        df['fecha'] = pd.to_datetime(df['fecha'], format="mixed")
         df_gastos = df[df['tipo'] == "GASTO"]
         df_ingresos = df[df['tipo'] == "INGRESO"]
 

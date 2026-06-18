@@ -56,6 +56,7 @@ export class IaGastoHormigaComponent implements OnChanges, AfterViewInit, OnDest
   // Consejo estructurado
   consejoObj = signal<ConsejoEstructuradoHormiga | null>(null);
   consejoVisible = signal<boolean>(false);
+  mostrarTodosLosPasos = signal<boolean>(false);
 
   // ── Computed ──
   esAlertaCritica = computed(() => {
@@ -264,6 +265,8 @@ export class IaGastoHormigaComponent implements OnChanges, AfterViewInit, OnDest
     );
     this.sospechosos.set(sospechosos);
     
+    this.mostrarTodosLosPasos.set(false);
+
     // Reiniciar animaciones
     if (this.animFrameId) cancelAnimationFrame(this.animFrameId);
     if (this.revealTimeout) clearTimeout(this.revealTimeout);
@@ -274,21 +277,26 @@ export class IaGastoHormigaComponent implements OnChanges, AfterViewInit, OnDest
       this.consejoVisible.set(false);
     } else {
       this.consejoObj.set({
-        pensamiento_interno_ia: "El usuario gasta demasiado en café y snacks. Se detectan patrones reincidentes en días laborables.",
-        introduccion: "Hola de nuevo. He revisado tus últimos movimientos y encontré algunas sorpresas.",
-        analisis_ia: "He detectado una fuga constante en compras menores, especialmente en Cafetería y Snacks. Aunque parecen inofensivas, suman un monto significativo al mes.",
-        conexion_emocional: "Cada sol que se escapa en estos gastos es un sol menos para esa meta de viaje que tanto deseas.",
-        plan_accion_titulo: "Operación: Control de Fugas",
+        pensamiento_interno_ia: "He analizado los gastos hormiga de Cesar, notando una mejora en la reducción de fugas. Mi objetivo es ofrecer 5 pasos prácticos y conectar la fuga con su meta.",
+        analisis_ia: "¡Hola, Cesar! He estado revisando tus movimientos este mes. Tus gastos hormiga suman S/ 181.95, con el transporte siendo la categoría principal de fuga. ¡Pero hay buenas noticias! Has logrado disminuir tus gastos hormiga en un 11.2% respecto al mes anterior. Sin embargo, si esta tendencia de fuga se mantiene, podrías estar perdiendo S/ 2,183.40 al año.",
+        conexion_emocional: "Esos S/ 181.95 que se te escaparon este mes, y la proyección anual de S/ 2,183.40, podrían ser una parte de tus ahorros para tu 'Viaje a Japón'. ¡Imagina todo lo que harías con ese dinero allá!",
+        plan_accion_titulo: "Plan de Acción: ¡Ahorra en Transporte para Japón!",
         plan_accion_pasos: [
-          "Prepara el café en casa antes de salir.",
-          "Establece un límite semanal de 30 soles para snacks.",
-          "Revisa tus suscripciones activas y cancela al menos una que no uses."
+          "Identifica rutas alternativas o considera caminar/bicicleta para trayectos cortos.",
+          "Revisa tus gastos de transporte diarios y busca al menos una forma de optimizarlos esta semana (ej. usar transporte público en lugar de taxi).",
+          "Establece un presupuesto semanal específico para transporte y monitorea que no lo excedas.",
+          "Organiza viajes compartidos con compañeros que tengan rutas similares para dividir los costos.",
+          "Camina en los tramos cortos de menos de 10 cuadras; además de ahorrar, beneficiará tu salud diaria."
         ],
-        comentario_positivo: "¡Tú tienes el control! Pequeños cambios hoy significan grandes ahorros mañana."
+        comentario_positivo: "¡Sigue así, Cesar! Cada pequeño ajuste te acerca más a tu increíble viaje a Japón. ¡Estoy aquí para apoyarte en cada paso!"
       });
       this.revealTimeout = setTimeout(() => {
         this.consejoVisible.set(true);
       }, 1500);
     }
+  }
+
+  togglePasos() {
+    this.mostrarTodosLosPasos.set(!this.mostrarTodosLosPasos());
   }
 }

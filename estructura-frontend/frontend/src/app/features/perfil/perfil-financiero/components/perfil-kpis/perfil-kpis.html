@@ -1,0 +1,76 @@
+<!-- Índice de Salud Financiera -->
+<article class="pf-kpi card pf-kpi--health">
+  <div class="pf-kpi__icon-wrap pf-kpi__icon-wrap--health">
+    <i class="fa-solid fa-heart-pulse"></i>
+  </div>
+  <div class="pf-kpi__body">
+    <span class="pf-kpi__label">Índice de salud financiera <i class="fa-regular fa-circle-question pf-kpi__hint"></i></span>
+    @if (service.indicesSalud(); as idx) {
+      <span class="pf-kpi__value-with-max text-health">
+        <span class="pf-kpi__value-big">{{ idx.score }}</span><span class="pf-kpi__value-max">/ 100</span>
+      </span>
+      <div class="pf-kpi__health-bar">
+        <div class="pf-kpi__health-fill pf-kpi__health-fill--health" [style.width.%]="idx.score">
+          <span class="pf-kpi__health-shimmer"></span>
+        </div>
+      </div>
+      <span class="pf-kpi__sub text-health">Nivel de salud: {{ idx.etiqueta }}</span>
+      @if (service.variacionSalud() !== null) {
+        <span class="pf-kpi__variation" [ngClass]="service.variacionSalud()! >= 0 ? 'pf-kpi__variation--up' : 'pf-kpi__variation--down'">
+          <i class="fa-solid" [ngClass]="service.variacionSalud()! >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'"></i>
+          {{ service.variacionSalud()! >= 0 ? '+' : '' }}{{ service.variacionSalud() }} pts vs {{ service.nombreMesAnterior() }}
+        </span>
+      }
+    } @else {
+      <span class="pf-kpi__value pf-kpi__value--empty">Sin datos suficientes</span>
+    }
+  </div>
+</article>
+
+<!-- Progreso de Logros -->
+<article class="pf-kpi card pf-kpi--logros">
+  <div class="pf-kpi__icon-wrap pf-kpi__icon-wrap--info">
+    <i class="fa-solid fa-bullseye"></i>
+  </div>
+  <div class="pf-kpi__body">
+    <span class="pf-kpi__label">Progreso global de logros <i class="fa-regular fa-circle-question pf-kpi__hint"></i></span>
+    <span class="pf-kpi__value-with-max text-info">
+      <span class="pf-kpi__value-big">{{ logrosService.progresoLogros().desbloqueados }}</span>
+      <span class="pf-kpi__value-max">/ {{ logrosService.progresoLogros().total }}</span>
+    </span>
+    <div class="pf-kpi__health-bar">
+      <div class="pf-kpi__health-fill pf-kpi__health-fill--info"
+           [style.width.%]="logrosService.progresoLogros().total > 0 ? (logrosService.progresoLogros().desbloqueados / logrosService.progresoLogros().total) * 100 : 0">
+        <span class="pf-kpi__health-shimmer"></span>
+      </div>
+    </div>
+    <span class="pf-kpi__sub text-muted">Logros alcanzados</span>
+    <span class="pf-kpi__variation pf-kpi__variation--neutral">
+      {{ logrosService.progresoLogros().total > 0 ? ((logrosService.progresoLogros().desbloqueados / logrosService.progresoLogros().total) * 100).toFixed(0) : 0 }}% completado
+    </span>
+  </div>
+</article>
+
+<!-- Capacidad de Ahorro Real -->
+<article class="pf-kpi card pf-kpi--saving">
+  <div class="pf-kpi__icon-wrap pf-kpi__icon-wrap--warning">
+    <i class="fa-solid fa-piggy-bank"></i>
+  </div>
+  <div class="pf-kpi__body">
+    <span class="pf-kpi__label">Tasa de ahorro real <i class="fa-regular fa-circle-question pf-kpi__hint"></i></span>
+    @if (service.capacidadAhorro() !== null) {
+      <span class="pf-kpi__value text-warning">
+        {{ service.capacidadAhorro()!.toFixed(1) }}%
+      </span>
+      <span class="pf-kpi__sub text-muted">Porcentaje de ingresos ahorrado</span>
+      @if (service.variacionAhorro() !== null) {
+        <span class="pf-kpi__variation" [ngClass]="service.variacionAhorro()! >= 0 ? 'pf-kpi__variation--up' : 'pf-kpi__variation--down'">
+          <i class="fa-solid" [ngClass]="service.variacionAhorro()! >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'"></i>
+          {{ service.variacionAhorro()! >= 0 ? '+' : '' }}{{ service.variacionAhorro()!.toFixed(1) }}% vs {{ service.nombreMesAnterior() }}
+        </span>
+      }
+    } @else {
+      <span class="pf-kpi__value pf-kpi__value--empty">Sin datos suficientes</span>
+    }
+  </div>
+</article>

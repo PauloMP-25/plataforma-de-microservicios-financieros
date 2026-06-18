@@ -1,0 +1,53 @@
+<section class="pf-logros card">
+  <div class="pf-logros__header">
+    <div class="pf-logros__title-wrap">
+      <i class="fa-solid fa-trophy text-warning"></i>
+      <h2>Logros financieros</h2>
+    </div>
+    <p class="pf-logros__sub">Sigue avanzando y desbloquea más logros.</p>
+  </div>
+
+  <div class="pf-logros__grid">
+    @for (logro of service.logrosVisibles(); track logro.id) {
+      <div class="pf-logro-card" [class.pf-logro-card--desbloqueado]="logro.desbloqueado">
+
+        <span class="pf-logro-card__status-indicator">
+          @if (logro.desbloqueado) {
+            <i class="fa-solid fa-circle-check text-success"></i>
+          } @else {
+            <i class="fa-solid fa-lock text-muted"></i>
+          }
+        </span>
+
+        <div class="pf-logro-card__icon-wrap" [ngClass]="logro.desbloqueado ? 'pf-logro-card__icon-wrap--unlocked' : 'pf-logro-card__icon-wrap--' + logro.iconoColor">
+          <i [class]="logro.icono"></i>
+        </div>
+
+        <span class="pf-logro-card__titulo">{{ logro.titulo }}</span>
+
+        @if (logro.desbloqueado) {
+          <span class="pf-logro-card__estado">¡Desbloqueado!</span>
+        } @else {
+          <span class="pf-logro-card__progreso-texto">
+            @if (logro.id === 'ahorro-10000') {
+              S/ {{ logro.progreso.toLocaleString('es-PE', { maximumFractionDigits: 0 }) }} / S/ {{ logro.meta.toLocaleString('es-PE', { maximumFractionDigits: 0 }) }}
+            } @else if (logro.id === 'salud-financiera') {
+              {{ logro.progreso.toLocaleString('es-PE', { maximumFractionDigits: 1 }) }} / {{ logro.meta }} meses
+            } @else {
+              {{ logro.progreso.toLocaleString('es-PE', { maximumFractionDigits: 1 }) }} / {{ logro.meta }}
+            }
+          </span>
+          <div class="pf-logro-card__progreso-bar">
+            <div class="pf-logro-card__progreso-fill" [style.width.%]="(logro.progreso / logro.meta) * 100"></div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <div class="pf-logros__footer">
+    <button class="pf-logros__ver-todos" type="button" (click)="irALogros()">
+      Ver todos los logros >
+    </button>
+  </div>
+</section>
