@@ -25,10 +25,10 @@
   }
 
   .card {
-    border: 1px solid #e2e8f0;
+    border: 1px solid #243047;
     border-radius: 20px;
-    background: #ffffff;
-    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+    background: #0f172a;
+    box-shadow: 0 14px 32px rgba(2, 6, 23, 0.35);
     position: relative;
     overflow: hidden;
 
@@ -92,12 +92,12 @@
       font-size: 34px;
       line-height: 1;
       font-weight: 800;
-      color: #222a45;
+      color: #e5e7eb;
     }
 
     > p {
       margin: 0;
-      color: #6f7594;
+      color: #94a3b8;
       font-size: 14px;
     }
   }
@@ -121,12 +121,18 @@
       color: #1e9f53;
       border: 1px solid #c1f0d2;
     }
+
+    .badge-warning {
+      background: #fef3c7;
+      color: #d97706;
+      border: 1px solid #fde68a;
+    }
   }
 
   &__hero-summary {
-    border: 1px solid #cfd6f0;
+    border: 1px solid #2c3b56;
     border-radius: 10px;
-    background: #f7f8ff;
+    background: #111b30;
     padding: 12px 14px;
     display: grid;
     gap: 10px;
@@ -139,13 +145,13 @@
 
     span {
       font-size: 12px;
-      color: #7a809d;
+      color: #94a3b8;
     }
 
     strong {
       font-size: 20px;
       line-height: 1;
-      color: #1f2848;
+      color: #e5e7eb;
       font-weight: 800;
     }
   }
@@ -155,7 +161,7 @@
     gap: 5px;
 
     small {
-      color: #7a809d;
+      color: #94a3b8;
       font-size: 11px;
       font-weight: 600;
     }
@@ -164,9 +170,9 @@
   &__meter-track {
     height: 10px;
     border-radius: 999px;
-    background: #dde2f4;
+    background: #1e293b;
     overflow: hidden;
-    border: 1px solid #cfd6ee;
+    border: 1px solid #334155;
   }
 
   &__meter-fill {
@@ -219,20 +225,20 @@
 
   &__section {
     padding: 28px;
-    background: #ffffff;
+    background: #0f172a;
 
     h2 {
       margin: 0;
       font-size: 28px;
       line-height: 1.2;
-      color: #0f172a;
+      color: #e5e7eb;
       font-weight: 800;
       letter-spacing: -0.04em;
     }
 
     p {
       margin: 6px 0 0;
-      color: #64748b;
+      color: #94a3b8;
       font-size: 15px;
     }
   }
@@ -256,9 +262,9 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #6d28d9;
-    background: linear-gradient(135deg, #f1e7ff, #f8f5ff);
-    border: 1px solid #ede4ff;
+    color: #a78bfa;
+    background: #1e293b;
+    border: 1px solid #334155;
 
     svg {
       width: 30px;
@@ -281,6 +287,11 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
+  }
+
+  &__grid-1 {
+    display: grid;
+    gap: 8px;
   }
 
   &__birth-row {
@@ -334,40 +345,10 @@
       width: 100%;
       min-width: 0;
       height: 48px;
-      border: 1px solid #d8e0ec;
+      border: 1px solid #334155;
       border-radius: 12px;
-      background: #ffffff;
-      color: #111827;
-      padding: 0 12px 0 40px;
-      font-size: 15px;
-      line-height: 1.2;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-  }
-
-  &__phone-number {
-    position: relative;
-    display: flex;
-    align-items: center;
-
-    .perfil-cliente__field-icon {
-      position: absolute;
-      left: 12px;
-      margin-right: 0;
-      color: #64748b;
-      z-index: 2;
-    }
-
-    .perfil-cliente__input {
-      width: 100%;
-      min-width: 0;
-      height: 48px;
-      border: 1px solid #d8e0ec;
-      border-radius: 12px;
-      background: #ffffff;
-      color: #111827;
+      background: #0b1220;
+      color: #e2e8f0;
       padding: 0 12px 0 40px;
       font-size: 15px;
       line-height: 1.2;
@@ -386,9 +367,10 @@
 
     .perfil-cliente__input {
       height: 48px;
-      border: 1px solid #d8e0ec;
+      border: 1px solid #334155;
       border-radius: 12px;
-      background: #ffffff;
+      background: #0b1220;
+      color: #e2e8f0;
       padding: 0 36px 0 12px;
       font-size: 15px;
       line-height: 1.2;
@@ -448,22 +430,22 @@
   &__label {
     font-size: 10px;
     font-weight: 700;
-    color: #7f86a3;
+    color: #94a3b8;
     letter-spacing: .04em;
     text-transform: uppercase;
   }
 
   &__field {
     min-height: 50px;
-    border: 1px solid #d8e0ec;
+    border: 1px solid #334155;
     border-radius: 12px;
-    background: #ffffff;
+    background: #0b1220;
     padding: 0 16px;
     display: flex;
     align-items: center;
 
     &--readonly {
-      background: #e9edf9;
+      background: #0f172a;
     }
 
     &--full {
@@ -548,8 +530,8 @@
     height: 100%;
     border: none;
     border-radius: 0;
-    background: #fff;
-    color: #111827;
+    background: #0b1220;
+    color: #e2e8f0;
     padding: 0;
     font-size: 15px;
 
@@ -560,8 +542,8 @@
     }
 
     &:disabled {
-      background: #eef1fb;
-      color: #6f7692;
+      background: #0f172a;
+      color: #94a3b8;
       cursor: not-allowed;
       opacity: 1;
     }
@@ -569,7 +551,7 @@
 
   &__input--locked {
     border-style: solid;
-    border: 1px solid #d8e0ec;
+    border: 1px solid #334155;
   }
 
   &__action-btn {
@@ -602,7 +584,6 @@
     width: auto;
     min-width: 260px;
     padding: 0 26px;
-    justify-self: end;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -673,31 +654,31 @@
     gap: 10px;
   }
 
+  // ── Sección Seguridad ─────────────────────────────────────────
   &__section--security {
     padding: 28px;
-    background: #ffffff !important;
-    border: 1px solid #e2e8f0;
+    background: #0f172a;
+    border: 1px solid #243047;
 
     &:hover {
-      background: #ffffff !important;
       box-shadow: none;
       transform: none;
     }
 
     .perfil-cliente__section-head {
-      margin-bottom: 10px;
-      gap: 12px;
+      margin-bottom: 16px;
+      gap: 14px;
     }
 
     .perfil-cliente__section-icon {
-      width: 64px;
-      height: 64px;
-      min-width: 64px;
-      border-radius: 18px;
+      width: 56px;
+      height: 56px;
+      min-width: 56px;
+      border-radius: 16px;
 
       svg {
-        width: 30px;
-        height: 30px;
+        width: 26px;
+        height: 26px;
       }
     }
 
@@ -710,35 +691,45 @@
 
     .perfil-cliente__field--stacked {
       position: relative;
-      padding-top: 10px;
-      padding-bottom: 10px;
-      gap: 8px;
+      border: 1px solid #243047;
+      border-radius: 14px;
+      background: #111b30;
+      padding: 12px 14px;
+      gap: 6px;
+    }
+
+    .perfil-cliente__label {
+      color: #7f8ea8;
     }
 
     .perfil-cliente__input {
-      height: 100%;
-      min-height: 48px;
-      padding-left: 36px;
+      height: 44px;
+      min-height: 44px;
+      padding-left: 38px;
       padding-right: 52px;
-      border: 1px solid #d8e0ec;
-      border-radius: 12px;
-      background: #ffffff;
+      border: 1px solid #2c3b56;
+      border-radius: 10px;
+      background: #0b1220;
+      color: #e2e8f0;
+      font-size: 14px;
 
       &:focus {
         border-color: #2563eb;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.22);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+        outline: none;
       }
     }
 
     .perfil-cliente__field-icon {
       position: absolute;
-      left: 16px;
+      left: 24px;
       top: 50%;
-      transform: translateY(4px);
+      transform: translateY(6px);
       margin-right: 0;
       width: 16px;
       height: 16px;
       min-width: 16px;
+      color: #4e6080;
 
       svg {
         width: 16px;
@@ -748,23 +739,39 @@
 
     .perfil-cliente__toggle-eye {
       top: 50%;
-      transform: translateY(4px);
-      right: 20px;
-      width: 20px;
-      height: 20px;
+      transform: translateY(6px);
+      right: 22px;
+      width: 18px;
+      height: 18px;
+      color: #4e6080;
 
       svg {
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
       }
     }
 
-    .perfil-cliente__password-helper,
-    .perfil-cliente__security-meter p {
-      margin: 6px 0 0;
-      font-size: 14px;
-      color: #66708f;
-      line-height: 1.35;
+    .perfil-cliente__password-helper {
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.4;
+    }
+
+    .perfil-cliente__security-meter {
+      background: #111b30;
+      border: 1px solid #243047;
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: grid;
+      gap: 8px;
+
+      p {
+        margin: 0;
+        font-size: 12px;
+        color: #64748b;
+        line-height: 1.35;
+      }
     }
 
     .perfil-cliente__security-head {
@@ -772,32 +779,29 @@
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      padding-right: 20px;
 
       span {
-        font-size: 16px;
+        font-size: 13px;
         font-weight: 700;
-        color: #0f172a;
+        color: #94a3b8;
       }
     }
 
     .perfil-cliente__strength-badge {
-      font-size: 14px;
-      font-weight: 800;
+      font-size: 12px;
+      font-weight: 700;
       color: #dc2626;
-      background: #fee2e2;
+      background: rgba(220, 38, 38, 0.12);
       border-radius: 999px;
-      padding: 8px 16px;
-      margin-right: 6px;
+      padding: 3px 10px;
     }
 
     .perfil-cliente__meter-track {
-      margin: 2px 0 0;
-      height: 10px;
+      height: 8px;
       border-radius: 999px;
-      background: #dbe3ef;
+      background: #1e293b;
       overflow: hidden;
-      border: 1px solid #d0d9e8;
+      border: 1px solid #2c3b56;
     }
 
     .perfil-cliente__meter-fill {
@@ -806,26 +810,9 @@
       background: linear-gradient(90deg, #ef4444, #f59e0b 55%, #22c55e 100%);
       transition: width 220ms ease;
     }
-
-    .perfil-cliente__meter-labels {
-      margin-top: 2px;
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      font-size: 11px;
-      font-weight: 700;
-      color: #6a7394;
-
-      span:nth-child(1) { text-align: left; }
-      span:nth-child(2) { text-align: center; }
-      span:nth-child(3) { text-align: right; }
-    }
   }
 
-  &__grid-1 {
-    display: grid;
-    gap: 8px;
-  }
-
+  // ── Utilidades auxiliares ─────────────────────────────────────
   &__security-meter {
     display: grid;
     gap: 6px;
@@ -909,6 +896,12 @@
     min-height: 220px;
   }
 
+  &__skeleton-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
   &__modal-backdrop {
     position: fixed;
     inset: 0;
@@ -973,7 +966,7 @@
   100% { background-position: 0 0; }
 }
 
-  @media (max-width: 1150px) {
+@media (max-width: 1150px) {
   .perfil-cliente {
     &__hero {
       grid-template-columns: 1fr;
@@ -1006,7 +999,7 @@
   }
 }
 
-/* Override final para evitar conflictos de estilos globales/SaaS */
+/* Override para el input de teléfono (ViewEncapsulation.None requiere alta especificidad) */
 .perfil-cliente .perfil-cliente__section--info .perfil-cliente__phone-row {
   grid-template-columns: minmax(160px, 200px) minmax(280px, 1fr) !important;
   gap: 12px !important;
@@ -1031,26 +1024,25 @@
   min-width: 0 !important;
   height: 48px !important;
   padding: 0 12px 0 40px !important;
-  border: 1px solid #d8e0ec !important;
+  border: 1px solid #334155 !important;
   border-radius: 12px !important;
-  background: #ffffff !important;
-  color: #111827 !important;
+  background: #0b1220 !important;
+  color: #e2e8f0 !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   white-space: nowrap !important;
 }
 
-/* ===== Dark mode fixes (Perfil Cliente) ===== */
-:host-context(body.theme-dark) .perfil-cliente,
-:host-context(body.dark) .perfil-cliente {
+/* ===== Light mode overrides (tema-claro) ===== */
+body.tema-claro .perfil-cliente {
   .card,
   &__section,
   &__panel,
   &__hero,
   &__section--security {
-    background: #0f172a !important;
-    border-color: #243047 !important;
-    box-shadow: 0 14px 32px rgba(2, 6, 23, 0.35) !important;
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06) !important;
   }
 
   h2,
@@ -1058,58 +1050,132 @@
   strong,
   label,
   .perfil-cliente__title,
-  .perfil-cliente__status-value {
-    color: #e5e7eb !important;
+  .perfil-cliente__status-value,
+  .perfil-cliente__security-head span {
+    color: #222a45 !important;
   }
 
   p,
   small,
-  span,
   .perfil-cliente__label,
   .perfil-cliente__quote,
   .perfil-cliente__status-label,
   .perfil-cliente__password-helper {
-    color: #94a3b8 !important;
+    color: #6f7594 !important;
   }
 
   &__hero-summary,
   &__hero-status,
-  &__security-meter,
   &__quick-progress,
-  &__quick-stat,
-  &__field,
-  &__field--stacked {
-    background: #111b30 !important;
-    border-color: #2c3b56 !important;
+  &__quick-stat {
+    background: #f4f6fb !important;
+    border-color: #dde3f0 !important;
   }
 
-  &__input,
-  .perfil-cliente__section--info .perfil-cliente__phone-number .perfil-cliente__input,
-  .perfil-cliente__section--security .perfil-cliente__input {
-    background: #0b1220 !important;
-    color: #e2e8f0 !important;
-    border-color: #334155 !important;
+  &__field {
+    background: #f7f8ff !important;
+    border-color: #dde3f0 !important;
+  }
+
+  &__input {
+    background: #ffffff !important;
+    color: #111827 !important;
+    border-color: #d8e0ec !important;
   }
 
   &__input::placeholder {
-    color: #64748b !important;
+    color: #94a3b8 !important;
   }
 
   &__input:disabled,
   &__input--locked {
-    background: #0f172a !important;
-    color: #94a3b8 !important;
-    border-color: #334155 !important;
+    background: #e9edf9 !important;
+    color: #6f7692 !important;
+    border-color: #d8e0ec !important;
   }
 
   &__meter-track {
-    background: #1e293b !important;
-    border-color: #334155 !important;
+    background: #dde2f4 !important;
+    border-color: #cfd6ee !important;
   }
 
   &__section-icon {
-    background: #1e293b !important;
-    border-color: #334155 !important;
-    color: #a78bfa !important;
+    background: linear-gradient(135deg, #f1e7ff, #f8f5ff) !important;
+    border-color: #ede4ff !important;
+    color: #6d28d9 !important;
+  }
+
+  &__section-icon--shield {
+    background: linear-gradient(135deg, #eaf4ff, #f5faff) !important;
+    border-color: #d7e9ff !important;
+    color: #2563eb !important;
+  }
+
+  &__field-icon {
+    color: #64748b !important;
+  }
+
+  .perfil-cliente__strength-badge {
+    background: #fee2e2 !important;
+    color: #dc2626 !important;
+  }
+
+  // Sección seguridad en tema claro
+  &__section--security {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+
+    .perfil-cliente__field--stacked {
+      background: #f4f6fb !important;
+      border-color: #dde3f0 !important;
+    }
+
+    .perfil-cliente__label {
+      color: #6f7594 !important;
+    }
+
+    .perfil-cliente__input {
+      background: #ffffff !important;
+      color: #111827 !important;
+      border-color: #d0d9ea !important;
+    }
+
+    .perfil-cliente__security-meter {
+      background: #f4f6fb !important;
+      border-color: #dde3f0 !important;
+
+      span {
+        color: #4a5578 !important;
+      }
+
+      p {
+        color: #6f7594 !important;
+      }
+    }
+
+    .perfil-cliente__security-head span {
+      color: #4a5578 !important;
+    }
+
+    .perfil-cliente__meter-track {
+      background: #dde2f4 !important;
+      border-color: #cfd6ee !important;
+    }
+
+    .perfil-cliente__password-helper {
+      color: #6f7594 !important;
+    }
+
+    .perfil-cliente__field-icon,
+    .perfil-cliente__toggle-eye {
+      color: #94a3b8 !important;
+    }
+  }
+
+  // Override teléfono en tema claro
+  .perfil-cliente__section--info .perfil-cliente__phone-number .perfil-cliente__input {
+    background: #ffffff !important;
+    color: #111827 !important;
+    border-color: #d8e0ec !important;
   }
 }
