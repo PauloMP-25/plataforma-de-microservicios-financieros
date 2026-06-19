@@ -9,6 +9,8 @@ import { forkJoin } from 'rxjs';
 import { AppEventBus } from '../../../../core/services/app-event-bus.service';
 import { GastosStateService } from '../../../../core/services/gastos-state.service';
 import { IaService } from '../../../../core/services/ia.service';
+import { CategoriaSugerida } from '../../../../core/models/ia_coach/ia-base.model';
+import { NotificacionService } from '../../../../core/services/notificacion.service';
 
 @Component({
   selector: 'app-gastos-page',
@@ -24,13 +26,17 @@ export class GastosPage implements OnDestroy {
   private readonly eventBus = inject(AppEventBus);
   private readonly stateService = inject(GastosStateService);
   private readonly iaService = inject(IaService);
+  private readonly notificacionService = inject(NotificacionService);
+  readonly iaSugeridaConfirmada = signal<boolean>(false);
 
-  readonly sugerenciasIa = signal<string[]>([]);
+  readonly sugerenciasIa = signal<CategoriaSugerida[]>([]);
+  readonly sugerenciaSeleccionada = signal<CategoriaSugerida | null>(null);
+  readonly categoriaIAPendiente = signal<{ nombre: string; icono: string } | null>(null);
   readonly clasificandoIa = signal(false);
   readonly intentosIaRestantes = computed(() => this.iaService.clasificacionesRestantes());
   readonly intentosIaMaximos = computed(() => this.iaService.clasificacionesMaximas());
   readonly puedeSugerirCategoriaIa = computed(() =>
-    this.descripcion().trim().length >= 4 && !this.clasificandoIa() && this.intentosIaRestantes() > 0
+    this.descripcion().trim().length >= 4 && !this.clasificandoIa() && this.intentosIaRestantes() > 0 && this.sugerenciasIa().length === 0
   );
   readonly cargando = computed(() => this.stateService.cargando());
   readonly terminoBusqueda = signal('');
@@ -108,8 +114,15 @@ export class GastosPage implements OnDestroy {
   }
 
   get categoriasConCrear(): any[] {
+    const base = [...this.categoriasDisponibles];
+    const pending = this.categoriaIAPendiente();
+    if (pending) {
+      if (!base.some(c => c.nombre.toLowerCase() === pending.nombre.toLowerCase())) {
+        base.push({ id: 'PENDIENTE_IA', nombre: pending.nombre });
+      }
+    }
     return [
-      ...this.categoriasDisponibles,
+      ...base,
       { id: 'CREAR_NUEVA', nombre: '＋ Crear nueva categoría...' }
     ];
   }
@@ -466,6 +479,11 @@ export class GastosPage implements OnDestroy {
     this.modalAbierto.set(false);
   }
 
+  private nombreCategoriaPorId(id: string): string {
+    const match = this.categoriasDisponibles.find(c => c.id === id);
+    return match ? match.nombre : 'Gastos';
+  }
+
   guardarGasto(): void {
     const errores = this.validarFormulario();
     this.errores.set(errores);
@@ -491,100 +509,124 @@ export class GastosPage implements OnDestroy {
       return new Date(localDate.getTime() - tzOffset).toISOString().slice(0, 19);
     };
 
-    const editId = this.gastoEditandoId();
-    if (editId) {
-      if (editId.startsWith('g') || editId.startsWith('mock-')) {
-        this.pagadosMock.update((items) =>
-          items.map((i) =>
-            i.id !== editId
-              ? i
-              : {
-                  ...i,
-                  nombre: this.nombreGasto().trim(),
-                  detalle: this.descripcion().trim(),
-                  monto: Number(this.monto()),
-                  metodo: this.metodoPago(),
-                  fecha: this.fecha()
-                    ? new Date(this.fecha()).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
-                    : i.fecha,
-                }
-          )
-        );
-        this.usarMockVisualPagados.set(true);
-        this.modalAbierto.set(false);
-        this.resetFormulario();
-        return;
-      }
-
-      const usuarioIdEdit = this.authService.usuario()?.id;
-      if (!usuarioIdEdit) {
-        this.mensajeFormulario.set('No se encontró sesión activa.');
-        return;
-      }
-
-
-
-      const requestEdit: TransaccionRequestDTO = {
-        usuarioId: usuarioIdEdit,
-        nombreCliente: this.authService.usuario()?.nombreUsuario ?? 'Cliente',
-        monto: Number(this.monto()),
-        tipo: 'GASTO',
-        categoriaId: this.categoria() || 'otros',
-        fechaTransaccion: getLocalIsoString(this.fecha()),
-        metodoPago: this.metodoPago(),
-        notas: `${this.nombreGasto().trim()}|${this.descripcion().trim()}`,
-        descripcion: this.descripcion().trim(),
-        etiquetas: this.etiquetas().join(','),
-      };
-
-      this.transaccionesService.actualizar(editId, requestEdit).subscribe({
-        next: () => {
-          this.guardandoGasto.set(false);
-          this.modalAbierto.set(false);
-          this.resetFormulario();
-          this.stateService.invalidarCache();
-          this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
-        },
-        error: () => {
-          this.guardandoGasto.set(false);
-          this.mensajeFormulario.set('No se pudo actualizar el gasto.');
-        },
-      });
-      return;
-    }
-
     const usuarioId = this.authService.usuario()?.id;
     if (!usuarioId) {
       this.mensajeFormulario.set('No se encontró sesión activa.');
       return;
     }
 
-    const request: TransaccionRequestDTO = {
-      usuarioId,
-      nombreCliente: this.authService.usuario()?.nombreUsuario ?? 'Cliente',
-      monto: Number(this.monto()),
-      tipo: 'GASTO',
-      categoriaId: this.categoria(),
-      fechaTransaccion: getLocalIsoString(this.fecha()),
-      metodoPago: this.metodoPago(),
-      notas: `${this.nombreGasto().trim()}|${this.descripcion().trim()}`,
-      descripcion: this.descripcion().trim(),
-      etiquetas: this.etiquetas().join(','),
+    const registrarTransaccionFinal = (catId: string) => {
+      this.guardandoGasto.set(true);
+      const editId = this.gastoEditandoId();
+      if (editId) {
+        if (editId.startsWith('g') || editId.startsWith('mock-')) {
+          this.pagadosMock.update((items) =>
+            items.map((i) =>
+              i.id !== editId
+                ? i
+                : {
+                    ...i,
+                    nombre: this.nombreGasto().trim(),
+                    detalle: this.descripcion().trim(),
+                    monto: Number(this.monto()),
+                    metodo: this.metodoPago(),
+                    fecha: this.fecha()
+                      ? new Date(this.fecha()).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
+                      : i.fecha,
+                  }
+            )
+          );
+          this.usarMockVisualPagados.set(true);
+          this.modalAbierto.set(false);
+          this.resetFormulario();
+          this.guardandoGasto.set(false);
+          this.notificacionService.mostrarGastoRegistrado(Number(this.monto()), this.nombreCategoriaPorId(catId));
+          return;
+        }
+
+        const requestEdit: TransaccionRequestDTO = {
+          usuarioId,
+          nombreCliente: this.authService.usuario()?.nombreUsuario ?? 'Cliente',
+          monto: Number(this.monto()),
+          tipo: 'GASTO',
+          categoriaId: catId || 'otros',
+          fechaTransaccion: getLocalIsoString(this.fecha()),
+          metodoPago: this.metodoPago(),
+          notas: `${this.nombreGasto().trim()}|${this.descripcion().trim()}`,
+          descripcion: this.descripcion().trim(),
+          etiquetas: this.etiquetas().join(','),
+        };
+
+        this.transaccionesService.actualizar(editId, requestEdit).subscribe({
+          next: () => {
+            this.guardandoGasto.set(false);
+            this.modalAbierto.set(false);
+            this.resetFormulario();
+            this.stateService.invalidarCache();
+            this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
+            this.notificacionService.mostrarGastoRegistrado(Number(this.monto()), this.nombreCategoriaPorId(catId));
+          },
+          error: () => {
+            this.guardandoGasto.set(false);
+            this.mensajeFormulario.set('No se pudo actualizar el gasto.');
+          },
+        });
+      } else {
+        const request: TransaccionRequestDTO = {
+          usuarioId,
+          nombreCliente: this.authService.usuario()?.nombreUsuario ?? 'Cliente',
+          monto: Number(this.monto()),
+          tipo: 'GASTO',
+          categoriaId: catId,
+          fechaTransaccion: getLocalIsoString(this.fecha()),
+          metodoPago: this.metodoPago(),
+          notas: `${this.nombreGasto().trim()}|${this.descripcion().trim()}`,
+          descripcion: this.descripcion().trim(),
+          etiquetas: this.etiquetas().join(','),
+        };
+
+        this.transaccionesService.registrar(request).subscribe({
+          next: () => {
+            this.guardandoGasto.set(false);
+            this.modalAbierto.set(false);
+            this.resetFormulario();
+            this.stateService.invalidarCache();
+            this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
+            this.notificacionService.mostrarGastoRegistrado(Number(this.monto()), this.nombreCategoriaPorId(catId));
+          },
+          error: () => {
+            this.guardandoGasto.set(false);
+            this.mensajeFormulario.set('No se pudo registrar el gasto.');
+          },
+        });
+      }
     };
 
-    this.transaccionesService.registrar(request).subscribe({
-      next: () => {
-        this.guardandoGasto.set(false);
-        this.modalAbierto.set(false);
-        this.stateService.invalidarCache();
-        this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
-      },
-      error: () => {
-        this.guardandoGasto.set(false);
-        this.mensajeFormulario.set('No se pudo registrar el gasto.');
-      },
-    });
+    const pendingCat = this.categoriaIAPendiente();
+    if (this.categoria() === 'PENDIENTE_IA' && pendingCat) {
+      this.guardandoGasto.set(true);
+      this.financieroService.crearCategoria({
+        nombre: pendingCat.nombre,
+        descripcion: 'Categoría personalizada de gastos recomendada por IA',
+        icono: pendingCat.icono,
+        tipo: 'GASTO'
+      }).subscribe({
+        next: (cat) => {
+          this.stateService.categorias.update(cats => [...cats, cat]);
+          this.categoria.set(cat.id);
+          registrarTransaccionFinal(cat.id);
+        },
+        error: (err) => {
+          this.guardandoGasto.set(false);
+          this.mensajeFormulario.set('No se pudo crear la categoría recomendada por IA.');
+          console.error(err);
+        }
+      });
+    } else {
+      registrarTransaccionFinal(this.categoria());
+    }
   }
+
 
   clasificarConIa(): void {
     const d = this.descripcion().trim();
@@ -604,9 +646,9 @@ export class GastosPage implements OnDestroy {
       next: (res) => {
         this.clasificandoIa.set(false);
         if (res.datos) {
-          const categorias = res.datos.consejo?.categorias_sugeridas || res.datos.categorias_sugeridas || res.datos.sugerencias;
-          if (categorias) {
-            this.sugerenciasIa.set(categorias);
+          const sugerencias = res.datos.sugerencias;
+          if (sugerencias) {
+            this.sugerenciasIa.set(sugerencias);
           }
         }
       },
@@ -615,7 +657,11 @@ export class GastosPage implements OnDestroy {
         const matched = ['Alimentos', 'Transporte', 'Servicios', 'Hogar', 'Salud', 'Educación', 'Entretenimiento'].filter(c =>
           c.toLowerCase().includes(d.toLowerCase())
         );
-        this.sugerenciasIa.set(matched.length > 0 ? matched : ['Otros Gastos']);
+        const fallbackList: CategoriaSugerida[] = (matched.length > 0 ? matched : ['Alimentos', 'Transporte', 'Servicios', 'Hogar', 'Otros']).slice(0, 5).map(c => ({
+          categoria: c,
+          icono: this.iconoCategoria(c)
+        }));
+        this.sugerenciasIa.set(fallbackList);
       }
     });
   }
@@ -634,7 +680,7 @@ export class GastosPage implements OnDestroy {
     this.etiquetas.update(tags => tags.filter(t => t !== tag));
   }
 
-  confirmarCrearCategoriaGasto(nombre: string): void {
+  confirmarCrearCategoriaGasto(nombre: string, icono?: string): void {
     const nameTrim = nombre.trim();
     if (!nameTrim) return;
 
@@ -649,7 +695,7 @@ export class GastosPage implements OnDestroy {
     this.financieroService.crearCategoria({
       nombre: nameTrim,
       descripcion: 'Categoría personalizada de gastos',
-      icono: this.iconoCategoria(nameTrim),
+      icono: icono || this.iconoCategoria(nameTrim),
       tipo: 'GASTO'
     }).subscribe({
       next: (cat) => {
@@ -662,9 +708,27 @@ export class GastosPage implements OnDestroy {
     });
   }
 
-  seleccionarSugerenciaGasto(nombre: string): void {
-    this.confirmarCrearCategoriaGasto(nombre);
+  seleccionarSugerenciaGasto(sug: CategoriaSugerida): void {
+    this.sugerenciaSeleccionada.set(sug);
   }
+
+  confirmarSugerenciaGasto(): void {
+    const sug = this.sugerenciaSeleccionada();
+    if (!sug) return;
+
+    const match = this.categoriasDisponibles.find(
+      c => c.nombre.toLowerCase() === sug.categoria.toLowerCase()
+    );
+    if (match) {
+      this.categoria.set(match.id);
+      this.categoriaIAPendiente.set(null);
+    } else {
+      this.categoriaIAPendiente.set({ nombre: sug.categoria, icono: sug.icono });
+      this.categoria.set('PENDIENTE_IA');
+    }
+    this.sugerenciaSeleccionada.set(null);
+  }
+
 
   private validarFormulario(): Record<string, string> {
     const out: Record<string, string> = {};

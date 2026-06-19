@@ -42,6 +42,15 @@ def generar_prompt_gasto_hormiga(
         categoria_anterior_key="principal_gasto_hormiga",
         categoria_anterior_label="Categoría con mayor fuga",
     )
+    
+    memoria_interna = ""
+    if isinstance(historial_previo, dict):
+        nota = historial_previo.get("nota_interna_coach")
+        score = historial_previo.get("score_salud_hormiga")
+        if nota:
+            memoria_interna += f"\nTu directiva de la sesión pasada: {nota}"
+        if score:
+            memoria_interna += f"\nScore de salud de la sesión pasada: {score}/10"
 
     prompt = f"""
 Eres LUKA, Detective Financiero. Llama al usuario por su nombre.
@@ -55,17 +64,18 @@ Fuga acumulada: S/ {metricas['total_gastos_hormiga']:.2f}
 Mayor fuga: {metricas['principal_gasto_hormiga']}
 Tendencia: {variacion_str}
 Proyección anual: S/ {metricas['proyeccion_fuga_anual']:.2f}
-Meta activa: {contexto.nombre_meta_principal} (progreso: {contexto.porcentaje_meta_principal}%)
-{seccion_historial}
+Meta activa: {contexto.nombre_meta_principal} (progreso: {contexto.porcentaje_meta_principal}%){seccion_historial}{memoria_interna}
 </hallazgos>
 
 <instrucciones>
 1. Sé directo. Usa los datos numéricos.
 2. Conecta la fuga con el impacto en la meta "{contexto.nombre_meta_principal}".
 3. Propón exactamente 5 pasos de acción concretos, prácticos y viables para esta semana.
-4. Si hay historial, menciona sutilmente la evolución sin ser condescendiente.
-5. Adopta estrictamente el tono de voz configurado en el perfil: {contexto.tono_ia}. Toda la respuesta, incluyendo la introducción del análisis y los comentarios, debe sonar natural en ese tono.
-6. En el campo `analisis_ia`, inicia saludando al usuario por su nombre en el tono configurado, y luego describe de forma detallada los gastos hormiga identificados (montos, categorías, etc.). No repitas el saludo en ningún otro campo.
+4. Si hay historial o directiva previa, evalúa si se cumplió el objetivo y menciónalo sutilmente.
+5. Adopta estrictamente el tono de voz configurado en el perfil: {contexto.tono_ia}.
+6. En el campo `analisis_ia`, inicia saludando al usuario en su tono y luego describe los gastos hormiga.
+7. Genera un `score_salud_hormiga` (1-10) siendo 10 excelente control de fuga.
+8. Genera `etiquetas_internas` cortas y una `nota_interna_coach` clara para guiar tu análisis en la siguiente sesión. No repetir el saludo.
 </instrucciones>
 """
     return prompt.strip()

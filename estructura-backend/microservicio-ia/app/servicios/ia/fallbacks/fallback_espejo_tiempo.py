@@ -44,6 +44,10 @@ def generar_fallback_espejo_tiempo(
     score_trans = hitos_trans_12m.get("scoreProyectado", score_actual)
 
     return {
+        "pensamiento_interno_ia": "Servicio Gemini inactivo. Generando cartas automáticas basadas en proyecciones Pandas.",
+        "score_salud_espejo": max(1, min(10, int(score_actual / 10))),
+        "etiquetas_internas": ["fallback_activado", "espejo_base"],
+        "nota_interna_coach": "Monitorear margen de optimización de no esenciales en siguiente sesión.",
         "cartaContinuidad": (
             f"{primer_nombre}, si mantienes tus hábitos actuales durante los próximos 12 meses, "
             f"tu score financiero llegará a {score_cont} puntos. "

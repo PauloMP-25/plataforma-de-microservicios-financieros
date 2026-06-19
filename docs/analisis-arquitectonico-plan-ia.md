@@ -107,6 +107,18 @@ El desarrollo se ejecutará de forma incremental a lo largo de 5 fases para gara
 
 ---
 
+## 🧠 Estrategia de Memoria y State Tracking (Optimización de Tokens)
+
+Para mantener un hilo conductor entre sesiones sin que el consumo de tokens crezca exponencialmente, se implementa una técnica de **Memoria Resumida o State Tracking**. En lugar de inyectar toda la respuesta de la sesión anterior en el prompt actual, se utilizan metadatos comprimidos generados por la propia IA:
+
+1. **Nota Interna del Coach (`nota_interna_coach`):** Gemini genera una directiva u objetivo corto para su "yo del futuro" (ej. *"Revisar si logró reducir gastos en transporte"*). En la siguiente sesión, solo se inyecta esta breve nota.
+2. **Score de Salud Específico (`score_salud_hormiga`):** Gemini califica la salud financiera del usuario (del 1 al 10). Proveer a la IA el score anterior le permite deducir rápidamente si hubo mejora sin necesidad de extenso contexto textual.
+3. **Etiquetas de Comportamiento (`etiquetas_internas`):** Generación de *flags* cortas (ej. `["riesgo_fuga", "mejora_constante"]`) que ocupan pocos tokens y que el backend puede usar en el futuro para inyección condicional de memoria.
+
+Estos campos son invisibles para el usuario pero fundamentales para mantener el estado reduciendo drásticamente el costo de input payload.
+
+---
+
 ## 💡 Estrategia Global: Técnicas Avanzadas de Prompting (Optimización de Tokens)
 
 Para maximizar el margen de rentabilidad por suscripción y reducir el consumo de tokens de Gemini, todos los módulos de LUKA deben aplicar estrictamente las siguientes **5 técnicas de optimización**:

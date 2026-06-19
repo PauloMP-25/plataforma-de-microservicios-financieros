@@ -22,9 +22,11 @@
           [clasificandoIa]="clasificandoIa()"
           [intentosIaRestantes]="intentosIaRestantes"
           [intentosIaMaximos]="intentosIaMaximos"
+          [sugerenciaSeleccionada]="sugerenciaSeleccionada"
           (modelChange)="form = $event"
           (clasificarIa)="clasificarConIa()"
           (seleccionarSugerencia)="seleccionarSugerencia($event)"
+          (confirmarSugerencia)="confirmarSugerencia()"
           (crearCategoriaManualmente)="crearCategoriaManualmente($event)"
           (guardar)="guardar()"
           (cancelar)="cancelar()">

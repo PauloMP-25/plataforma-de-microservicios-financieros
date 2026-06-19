@@ -24,12 +24,16 @@ def generar_fallback_estilo_vida(
     
     arq_nombre, arq_sig, tactica = arquetipos.get(cluster, arquetipos["MINIMALISTA"])
     
+    meta_principal = contexto.nombre_meta_principal if contexto else "tu meta actual"
     return {
-        "pensamiento_interno_ia": f"Fallback: Perfil generado por reglas locales para el cluster {cluster}.",
+        "pensamiento_interno_ia": f"Fallback activado. Generando perfil para el cluster {cluster}.",
+        "score_salud_estilo": 5,
+        "etiquetas_internas": ["fallback", "riesgo_medio"],
+        "nota_interna_coach": f"Analizar en detalle el cluster {cluster} en la próxima sesión.",
         "arquetipo": arq_nombre,
         "significado_arquetipo": arq_sig,
-        "descripcion_perfil": f"Basado en tus gastos recientes, tu foco principal es {cluster.lower()}.",
+        "descripcion_perfil": f"¡Hola {nombres}! Basado en tus gastos recientes, tu foco principal es {cluster.lower()}.",
         "consejo_tactico": tactica,
-        "alineacion_meta": "Al optimizar tu estilo de vida, liberarás fondos más rápido para tu meta actual.",
+        "alineacion_meta": f"Al optimizar tu estilo de vida, liberarás fondos más rápido para '{meta_principal}'.",
         "mensaje_estilo_vida": "¡Disfruta lo que amas de forma inteligente!"
     }

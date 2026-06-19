@@ -27,8 +27,13 @@ def generar_fallback_reporte(
     cat = metricas.get("categoria_critica", "general")
     impacto = f"El gasto en {cat} representa un impacto importante que puede retrasar tus metas."
     
+    score_salud = max(1, min(10, int(score // 10)))
+    
     return {
         "pensamiento_interno_ia": "Fallback: Reporte generado por reglas locales basadas en rangos de score.",
+        "score_salud_reporte": score_salud,
+        "etiquetas_internas": ["fallback", "reporte_completo", f"salud_{score_salud}"],
+        "nota_interna_coach": f"Reporte generado con score {score}. Categoría crítica: {cat}.",
         "analisis_score": analisis,
         "impacto_meta": impacto,
         "veredicto_final": veredicto,
