@@ -15,7 +15,7 @@ import {
 } from '../../types/ingresos.interfaces';
 
 @Component({
-  selector: 'app-ingresos-page',
+  selector: 'app-app-ingresos-page',
   standalone: true,
   imports: [
     CommonModule,
@@ -32,7 +32,7 @@ export class IngresosPage {
   private readonly stateService = inject(IngresosStateService);
   private readonly eventBus = inject(AppEventBus);
 
-  // â”€â”€ Signals computados para transformar el estado a la interfaz de Ingresos â”€â”€
+  // ── Signals computados para transformar el estado a la interfaz de Ingresos ──
   readonly kpisSignal = computed<IngresoKpi[]>(() => {
     const resumen = this.stateService.resumenActual();
 
@@ -42,9 +42,36 @@ export class IngresosPage {
     const primaryCatName = cats[0]?.categoria ?? 'Ninguna';
     const primaryCatPorc = cats[0]?.porcentaje ? `${cats[0].porcentaje.toFixed(0)}% del total` : '0% del total';
 
+    // Lógica dinámica para calcular los nuevos KPIs agregados
+    const varIngresos = this.variacionIngresos;
+    const absVar = this.absVariacionIngresos.toFixed(1);
+    const signo = varIngresos >= 0 ? '+' : '-';
+
+    // Cálculo de ingreso promedio aproximado
+    const promedio = cantidad > 0 ? total / cantidad : 0;
+
     return [
       { titulo: 'Ingresos registrados', valor: String(cantidad), subtitulo: 'Este mes', color: 'violet' },
       { titulo: 'Categoria principal', valor: primaryCatName, subtitulo: primaryCatPorc, color: 'amber' },
+      // ── NUEVAS 3 TARJETAS COMPLETAMENTE ACOPLADAS ──
+      {
+        titulo: 'Comparación mes anterior',
+        valor: `${signo}${absVar}%`,
+        subtitulo: `Respecto a ${this.nombreMesAnterior}`,
+        color: 'emerald'
+      },
+      {
+        titulo: 'Ingreso promedio',
+        valor: `S/ ${promedio.toFixed(2)}`,
+        subtitulo: 'Por transacción',
+        color: 'sky'
+      },
+      {
+        titulo: 'Progreso meta',
+        valor: total > 0 ? `${Math.min(Math.round((total / 8000) * 100), 100)}%` : '0%',
+        subtitulo: 'Meta de S/ 8,000.00',
+        color: 'sky'
+      }
     ];
   });
 
@@ -112,7 +139,7 @@ export class IngresosPage {
     });
   });
 
-  // Getters para compatibilidad de enlace directo en plantilla HTML sin alterar bindings bÃ¡sicos
+  // Getters para compatibilidad de enlace directo en plantilla HTML sin alterar bindings básicos
   get kpis(): IngresoKpi[] { return this.kpisSignal(); }
   get distribucion(): DistribucionCategoria[] { return this.distribucionSignal(); }
   get tendencia(): IngresoTendenciaPunto[] { return this.tendenciaSignal(); }
