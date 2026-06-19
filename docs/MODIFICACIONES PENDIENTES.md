@@ -73,7 +73,7 @@ Este documento centraliza todas las modificaciones, refactorizaciones, pruebas, 
 
 | Categoría | Descripción | Prioridad | Estado | Fecha de registro | Fecha de cambio |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| Estructura | **[F-57] Ingresos - Botón de Historial:** Eliminar el botón de "Historial" de la parte inferior del layout, dejando exclusivamente el superior para mantener consistencia con la vista de gastos. | Media | Pendiente | 15 de junio de 2026 | — |
+| Estructura | **[F-57] Ingresos - Botón de Historial:** Eliminar el botón de "Historial" de la parte inferior del layout, dejando exclusivamente el superior para mantener consistencia con la vista de gastos. | Media | Pendiente | 15 de junio de 2026 | X |
 | UX / UI | **[F-58] Ingresos - Tarjetas KPI:** Añadir dos tarjetas KPI estratégicas junto a "Ingresos registrados" y "Categoría principal" (por ejemplo: "Comparación mes anterior (%)" e "Ingreso Promedio" o "Progreso de Meta"). | Media | Pendiente | 15 de junio de 2026 | — |
 | Gráficos | **[F-59] Ingresos - Gráfico de Categoría:** Limitar el gráfico de "Ingresos por Categoría" para que renderice exclusivamente el Top 5 de fuentes de ingreso más relevantes. | Media | Pendiente | 15 de junio de 2026 | — |
 | Interactividad | **[F-60] Ingresos - Paginación de Recientes:** Ajustar la tabla de "Ingresos recientes" para mostrar únicamente los 6 primeros registros, incorporando controles de paginación funcionales para navegar por el resto de datos. | Media | Pendiente | 15 de junio de 2026 | — |
