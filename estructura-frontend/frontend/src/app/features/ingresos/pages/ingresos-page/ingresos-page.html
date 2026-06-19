@@ -6,25 +6,38 @@
         <p class="text-sm text-slate-500 dark:text-slate-400">Visualiza y analiza todo el dinero que entra.</p>
       </div>
       <div class="grid grid-cols-1 gap-2 sm:flex sm:gap-3">
-        <a routerLink="/ingresos/nuevo" class="inline-flex items-center justify-center gap-3 rounded-xl bg-violet-600 px-6 py-3 text-base font-extrabold text-white shadow-[0_10px_24px_rgba(124,58,237,.30)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-violet-500 hover:shadow-[0_14px_30px_rgba(124,58,237,.38)]">
-          <span class="inline-grid h-7 w-7 place-items-center rounded-full bg-white/20 shadow-[inset_0_0_0_1px_rgba(255,255,255,.25)]">
+        <a routerLink="/ingresos/nuevo"
+          class="inline-flex items-center justify-center gap-3 rounded-xl bg-violet-600 px-6 py-3 text-base font-extrabold text-white shadow-[0_10px_24px_rgba(124,58,237,.30)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-violet-500 hover:shadow-[0_14px_30px_rgba(124,58,237,.38)]">
+          <span
+            class="inline-grid h-7 w-7 place-items-center rounded-full bg-white/20 shadow-[inset_0_0_0_1px_rgba(255,255,255,.25)]">
             <i class="fa-solid fa-plus"></i>
           </span>
           Nuevo ingreso
         </a>
-        <a routerLink="/ingresos/historial" class="text-center rounded-xl border border-emerald-300 bg-white px-6 py-3 text-base font-extrabold text-emerald-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-emerald-50 dark:border-emerald-500/40 dark:bg-slate-900 dark:text-emerald-300 dark:hover:bg-emerald-500/10">Ver historial</a>
+        <a routerLink="/ingresos/historial"
+          class="text-center rounded-xl border border-emerald-300 bg-white px-6 py-3 text-base font-extrabold text-emerald-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-emerald-50 dark:border-emerald-500/40 dark:bg-slate-900 dark:text-emerald-300 dark:hover:bg-emerald-500/10">Ver
+          historial</a>
       </div>
     </header>
 
-    <article class="relative mb-3 overflow-hidden rounded-3xl border border-emerald-300/30 bg-gradient-to-r from-cyan-700 via-teal-600 to-emerald-600 p-7 text-white shadow-[0_14px_35px_rgba(15,118,110,.35)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(15,118,110,.42)] md:p-8">
+    <article
+      class="relative mb-3 overflow-hidden rounded-3xl border border-emerald-300/30 bg-gradient-to-r from-cyan-700 via-teal-600 to-emerald-600 p-7 text-white shadow-[0_14px_35px_rgba(15,118,110,.35)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(15,118,110,.42)] md:p-8">
       <div class="absolute inset-y-0 right-0 w-2/5 bg-gradient-to-l from-emerald-400/10 to-transparent"></div>
       <div class="pointer-events-none absolute right-4 top-1/2 hidden -translate-y-1/2 md:block lg:right-6">
-        <svg width="470" height="128" viewBox="0 0 470 128" fill="none" xmlns="http://www.w3.org/2000/svg" class="opacity-95">
-          <path d="M8 92L52 48L86 64L126 36L166 52L204 44L246 58L288 38L328 50L384 26L462 8" stroke="#7CFF9A" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="52" cy="48" r="5" fill="#7CFF9A"/><circle cx="86" cy="64" r="5" fill="#7CFF9A"/><circle cx="126" cy="36" r="5" fill="#7CFF9A"/>
-          <circle cx="166" cy="52" r="5" fill="#7CFF9A"/><circle cx="204" cy="44" r="5" fill="#7CFF9A"/><circle cx="246" cy="58" r="5" fill="#7CFF9A"/>
-          <circle cx="288" cy="38" r="5" fill="#7CFF9A"/><circle cx="328" cy="50" r="5" fill="#7CFF9A"/><circle cx="384" cy="26" r="5" fill="#7CFF9A"/>
-          <circle cx="462" cy="8" r="5" fill="#7CFF9A"/>
+        <svg width="470" height="128" viewBox="0 0 470 128" fill="none" xmlns="http://www.w3.org/2000/svg"
+          class="opacity-95">
+          <path d="M8 92L52 48L86 64L126 36L166 52L204 44L246 58L288 38L328 50L384 26L462 8" stroke="#7CFF9A"
+            stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+          <circle cx="52" cy="48" r="5" fill="#7CFF9A" />
+          <circle cx="86" cy="64" r="5" fill="#7CFF9A" />
+          <circle cx="126" cy="36" r="5" fill="#7CFF9A" />
+          <circle cx="166" cy="52" r="5" fill="#7CFF9A" />
+          <circle cx="204" cy="44" r="5" fill="#7CFF9A" />
+          <circle cx="246" cy="58" r="5" fill="#7CFF9A" />
+          <circle cx="288" cy="38" r="5" fill="#7CFF9A" />
+          <circle cx="328" cy="50" r="5" fill="#7CFF9A" />
+          <circle cx="384" cy="26" r="5" fill="#7CFF9A" />
+          <circle cx="462" cy="8" r="5" fill="#7CFF9A" />
         </svg>
       </div>
 
@@ -32,7 +45,8 @@
         <p class="text-2xl font-semibold tracking-tight">Ingresos de {{ nombreMesActual }}</p>
         <p class="mt-1 text-6xl font-extrabold leading-none">S/ {{ totalIngresosActual.toFixed(2) }}</p>
         <p class="mt-3 text-xl font-medium text-emerald-100">
-          {{ variacionIngresos >= 0 ? '†‘' : '†“' }} {{ absVariacionIngresos.toFixed(1) }}% respecto a {{ nombreMesAnterior }} (S/ {{ totalIngresosAnterior.toFixed(2) }})
+          {{ variacionIngresos >= 0 ? '†‘' : '†“' }} {{ absVariacionIngresos.toFixed(1) }}% respecto a {{
+          nombreMesAnterior }} (S/ {{ totalIngresosAnterior.toFixed(2) }})
         </p>
       </div>
     </article>
@@ -43,19 +57,11 @@
 
     <section class="grid grid-cols-1 items-stretch gap-5 xl:grid-cols-3">
       <div class="h-full xl:col-span-2">
-        <app-ingreso-chart [distribucion]="distribucion" [tendencia]="tendencia" totalLabel="S/ 3,850"></app-ingreso-chart>
+        <app-ingreso-chart [distribucion]="distribucion" [tendencia]="tendencia"
+          totalLabel="S/ 3,850"></app-ingreso-chart>
       </div>
       <app-ingreso-recent-list class="block h-full" [items]="recientes"></app-ingreso-recent-list>
     </section>
 
-    <section class="rounded-2xl border border-dashed border-emerald-300 bg-emerald-50/70 p-5 text-emerald-900 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-100">
-      <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h3 class="text-lg font-extrabold">Historial de ingresos organizado</h3>
-          <p class="mt-1 text-sm text-emerald-700 dark:text-emerald-200">Revisa todos tus ingresos en una vista amplia, con filtros y más comodidad para encontrar cada registro.</p>
-        </div>
-        <a routerLink="/ingresos/historial" class="rounded-xl bg-emerald-600 px-5 py-3 text-center text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(5,150,105,.25)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-emerald-500">Abrir historial</a>
-      </div>
-    </section>
   </section>
 </main>
