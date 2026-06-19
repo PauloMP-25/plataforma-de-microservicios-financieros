@@ -91,6 +91,7 @@ readonly perfilNavItems = [
   { route: '/perfil/cliente',       label: 'Perfil Cliente',    icon: 'fa-solid fa-user' },
   { route: '/perfil/financiero',    label: 'Perfil Financiero', icon: 'fa-solid fa-chart-pie' },
   { route: '/perfil/configuracion', label: 'Configuración',     icon: 'fa-solid fa-gear' },
+  { route: '/ayuda',               label: 'Ayuda',             icon: 'fa-solid fa-circle-question' },
 ];
 
   constructor(
@@ -102,7 +103,9 @@ readonly perfilNavItems = [
     this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe((e: any) => {
-        this.isPerfilSection = (e.url.startsWith('/perfil') && !e.url.startsWith('/perfil/historial')) || e.url.startsWith('/suscripcion/luka');
+        this.isPerfilSection = (e.url.startsWith('/perfil') && !e.url.startsWith('/perfil/historial'))
+          || e.url.startsWith('/suscripcion/luka')
+          || e.url.startsWith('/ayuda');
       });
   }
 

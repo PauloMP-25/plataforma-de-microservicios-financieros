@@ -1,7 +1,7 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ClientePerfilService } from '../../../core/services/cliente-perfil.service';
 import { RespuestaDatosPersonales, SolicitudDatosPersonales } from '../../../core/models/cliente/perfil-cliente.model';
@@ -55,6 +55,21 @@ export class Configuracion {
   readonly servicioTema = inject(ServicioTema);
   private readonly clientePerfilService = inject(ClientePerfilService);
   private readonly suscripcionService = inject(SuscripcionService);
+  private readonly router = inject(Router);
+
+  /**
+   * Computed signal que centraliza la validación del plan.
+   * true  → usuario PREMIUM o PRO  → muestra banner de IA.
+   * false → usuario FREE            → muestra banner de upgrade.
+   */
+  readonly esPlanPremiumOPro = computed(() =>
+    this.authService.esPremium() || this.authService.esPro()
+  );
+
+  /** Navega a la sección de Inteligencia Artificial. */
+  navegarAIA(): void {
+    this.router.navigate(['/inteligencia-artificial']);
+  }
 
   readonly tema = signal<'oscuro' | 'claro'>('claro');
   readonly colorPrincipal = signal<string>('#6d4aff');
