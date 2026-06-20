@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 import { Layout } from './layout/layout/layout/layout';
+import { authGuard } from './core/guards/auth.guard';
+import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
   // ── Rutas Públicas ──
@@ -20,6 +22,7 @@ export const routes: Routes = [
   // ── Sistema Administrativo Independiente ──
   {
     path: 'admin',
+    canActivate: [authGuard, roleGuard(['ADMIN', 'ROLE_ADMIN'])],
     loadChildren: () =>
       import('./features/admin/admin.routes')
         .then(m => m.ADMIN_ROUTES)
@@ -29,6 +32,7 @@ export const routes: Routes = [
   {
     path: '',
     component: Layout,
+    canActivate: [authGuard],
     children: [      // ── Dashboard ──
       {
         path: 'dashboard',

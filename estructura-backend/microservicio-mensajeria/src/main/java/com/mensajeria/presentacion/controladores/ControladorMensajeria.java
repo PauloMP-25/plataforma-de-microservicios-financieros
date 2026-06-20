@@ -3,8 +3,8 @@ package com.mensajeria.presentacion.controladores;
 import com.mensajeria.aplicacion.dtos.solicitudes.*;
 import com.mensajeria.aplicacion.dtos.respuestas.RespuestaGeneracion;
 import com.mensajeria.aplicacion.dtos.respuestas.RespuestaValidacion;
+import com.mensajeria.aplicacion.dtos.respuestas.RespuestaCodigoAuditoria;
 import com.mensajeria.aplicacion.puertos.IMensajeriaService;
-import com.mensajeria.dominio.entidades.CodigoVerificacion;
 import com.libreria.comun.enums.PropositoCodigo;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -151,7 +151,7 @@ public class ControladorMensajeria {
      * @return HTTP 200 con {@link ResultadoApi} envolviendo la página de resultados.
      */
     @GetMapping("/buscar")
-    public ResponseEntity<ResultadoApi<Page<CodigoVerificacion>>> buscarCodigos(
+    public ResponseEntity<ResultadoApi<Page<RespuestaCodigoAuditoria>>> buscarCodigos(
             @RequestParam(required = false) UUID usuarioId,
             @RequestParam(required = false) PropositoCodigo proposito,
             @RequestParam(required = false) Boolean usado,
@@ -162,7 +162,7 @@ public class ControladorMensajeria {
 
         log.debug("[GET] /otp/buscar — usuarioId: {}, proposito: {}, usado: {}", usuarioId, proposito, usado);
 
-        Page<CodigoVerificacion> resultados = mensajeriaService.buscarCodigos(
+        Page<RespuestaCodigoAuditoria> resultados = mensajeriaService.buscarCodigos(
                 usuarioId, proposito, usado, inicio, fin,
                 PageRequest.of(pagina, tamanio, Sort.by(Sort.Direction.DESC, "fechaCreacion")));
 

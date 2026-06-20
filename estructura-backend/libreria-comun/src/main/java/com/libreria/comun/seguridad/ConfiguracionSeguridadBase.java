@@ -48,6 +48,10 @@ public abstract class ConfiguracionSeguridadBase {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(puntoEntradaJwt))
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.deny())
+                        .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob:; connect-src 'self' *;"))
+                )
                 .addFilterBefore(filtroJwt, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(filtroAutenticacionInterna, FiltroJwt.class);
     }

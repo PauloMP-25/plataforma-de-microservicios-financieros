@@ -1,8 +1,6 @@
 package com.cliente.aplicacion.dtos.respuestas;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import java.time.LocalDateTime;
-
 /**
  * DTO de salida para DatosPersonales — nunca expone datos internos sensibles.
  */
@@ -17,7 +15,5 @@ public record RespuestaDatosPersonales(
         String        fotoPerfilUrl,
         String        pais,
         String        ciudad,
-        Boolean       datosCompletos,
-        LocalDateTime fechaCreacion,
-        LocalDateTime fechaActualizacion
+        Boolean       datosCompletos
 ) {}

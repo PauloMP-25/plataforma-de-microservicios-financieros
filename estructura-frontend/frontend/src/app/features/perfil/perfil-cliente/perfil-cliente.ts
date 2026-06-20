@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { HasUnsavedChanges } from '../../../core/guards/pending-changes.guard';
 import { AvatarConfig, AvatarService, AuthService, ClientePerfilService, NotificacionService } from '../../../core/services';
 import { AvatarDisplay } from './components/avatar-display/avatar-display';
 import { AvatarSelector } from './components/avatar-selector/avatar-selector';
@@ -45,7 +46,10 @@ type PerfilFormKey = keyof PerfilForm;
   templateUrl: './perfil-cliente.html',
   styleUrl: './perfil-cliente.scss',
 })
-export class PerfilCliente {
+export class PerfilCliente implements HasUnsavedChanges {
+  hasUnsavedChanges(): boolean {
+    return JSON.stringify(this.form()) !== JSON.stringify(this.formOriginal());
+  }
   private readonly avatarService = inject(AvatarService);
   private readonly clientePerfilService = inject(ClientePerfilService);
   private readonly authService = inject(AuthService);

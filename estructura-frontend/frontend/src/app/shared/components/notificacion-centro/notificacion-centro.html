@@ -1,6 +1,6 @@
 @if (notificacionService.activa(); as notif) {
-  <div class="notif-overlay" (click)="notificacionService.cerrar()">
-    <div class="notif-card" [ngClass]="'notif-card--' + notif.tipo" (click)="$event.stopPropagation()">
+  <div class="notif-container">
+    <div class="notif-card" [ngClass]="'notif-card--' + notif.tipo">
       <button type="button" class="notif-close" (click)="notificacionService.cerrar()">&times;</button>
       <div class="notif-body">
         <div class="notif-icon-wrapper">

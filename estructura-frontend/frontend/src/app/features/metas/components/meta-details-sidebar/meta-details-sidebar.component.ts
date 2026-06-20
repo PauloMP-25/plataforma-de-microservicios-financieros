@@ -175,7 +175,7 @@ export class MetaDetailsSidebarComponent {
 
   obtenerFechaActualizacionOCreacion(): string {
     const meta = this.meta();
-    return meta.fechaActualizacion || meta.fechaCreacion;
+    return meta.fechaActualizacion || meta.fechaCreacion || '';
   }
 
   calcularTiempoEmpleado(creacion: string, actualizacion: string): string {
@@ -193,6 +193,9 @@ export class MetaDetailsSidebarComponent {
 
   obtenerTiempoEmpleadoMeta(): string {
     const meta = this.meta();
+    if (!meta.fechaCreacion) {
+      return 'N/A';
+    }
     const fin = meta.fechaActualizacion || meta.fechaCreacion;
     return this.calcularTiempoEmpleado(meta.fechaCreacion, fin);
   }

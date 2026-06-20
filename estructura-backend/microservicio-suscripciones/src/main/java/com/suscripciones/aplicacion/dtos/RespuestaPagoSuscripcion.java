@@ -12,7 +12,6 @@ public record RespuestaPagoSuscripcion(
         UUID transaccionId,
         BigDecimal monto,
         java.time.LocalDate fechaPago,
-        String estado,
-        java.time.LocalDateTime fechaCreacion
+        String estado
 ) {
 }

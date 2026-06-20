@@ -13,7 +13,8 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { DashboardStateService } from './dashboard-state.service';
-import { Observable, tap } from 'rxjs';
+import { Observable, ReplaySubject, tap } from 'rxjs';
+import { map, take } from 'rxjs/operators';
 import { environment } from '../../enviroments/environment';
 import {
   SolicitudLogin, SolicitudRegistro,
@@ -39,12 +40,35 @@ export class AuthService {
 
   private dashboardState = inject(DashboardStateService);
 
+  // ReplaySubject to notify when the initial session check is complete
+  private inicializado$ = new ReplaySubject<void>(1);
+
   constructor(private http: HttpClient, private router: Router) {
     if (this.getToken()) {
       this.obtenerUsuarioActual().subscribe({
-        error: (err) => console.debug('[AuthService] No se pudo autorefrescar el usuario al inicializar:', err)
+        next: (resp) => {
+          if (!resp || !resp.exito) {
+            console.warn('[AuthService] Sesión no válida al inicializar.');
+            this.logout();
+          }
+          this.inicializado$.next();
+        },
+        error: (err) => {
+          console.error('[AuthService] No se pudo autorefrescar el usuario al inicializar:', err);
+          this.logout();
+          this.inicializado$.next();
+        }
       });
+    } else {
+      this.inicializado$.next();
     }
+  }
+
+  esperarInicializacion(): Observable<boolean> {
+    return this.inicializado$.asObservable().pipe(
+      map(() => this.logueado()),
+      take(1)
+    );
   }
 
   // ── Obtener/Refrescar Usuario Actual ──
@@ -125,7 +149,7 @@ export class AuthService {
     localStorage.removeItem(USUARIO_KEY);
     this._usuario.set(null);
     this.dashboardState.limpiarEstado();
-    this.router.navigate(['/login']);
+    this.router.navigate(['/']);
   }
 
   // ── Token para el interceptor ──

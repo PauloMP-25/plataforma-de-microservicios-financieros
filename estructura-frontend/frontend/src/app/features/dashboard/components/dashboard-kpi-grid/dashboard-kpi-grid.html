@@ -1,0 +1,84 @@
+<div class="kpi-grid">
+  <!-- Tasa de Ahorro -->
+  <div class="kpi-card-wrapper">
+    <div class="kpi-card-inner">
+      <div class="kpi-card-front glass-panel" [class.negative]="tasaAhorro < 0">
+        <div class="kpi-icon"><i class="fa-solid fa-piggy-bank"></i></div>
+        <div class="kpi-info">
+          <h3 class="kpi-title">Tasa de Ahorro</h3>
+          <p class="kpi-value">{{ tasaAhorro | number:'1.1-1' }}%</p>
+        </div>
+      </div>
+      <div class="kpi-card-back glass-panel" [class.negative]="tasaAhorro < 0">
+        <div class="kpi-icon"><i class="fa-solid fa-piggy-bank"></i></div>
+        <div class="kpi-back-info">
+          <h4 class="back-title">Tasa de Ahorro</h4>
+          <p class="back-description">Porcentaje de tus ingresos netos que logras guardar tras restar tus egresos del mes.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gasto Promedio Diario -->
+  <div class="kpi-card-wrapper">
+    <div class="kpi-card-inner">
+      <div class="kpi-card-front glass-panel">
+        <div class="kpi-icon" style="background: rgba(236, 72, 153, 0.1); color: #ec4899;"><i class="fa-solid fa-calendar-day"></i></div>
+        <div class="kpi-info">
+          <h3 class="kpi-title">Gasto Prom. Diario</h3>
+          <p class="kpi-value">S/ {{ gastoPromedioDiario | number:'1.2-2' }}</p>
+        </div>
+      </div>
+      <div class="kpi-card-back glass-panel" style="border-color: rgba(236, 72, 153, 0.2);">
+        <div class="kpi-icon" style="background: rgba(236, 72, 153, 0.1); color: #ec4899;"><i class="fa-solid fa-calendar-day"></i></div>
+        <div class="kpi-back-info">
+          <h4 class="back-title" style="color: #ec4899;">Gasto Prom. Diario</h4>
+          <p class="back-description">Monto estimado que gastas cada día en promedio dentro del período seleccionado.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cumplimiento de Presupuesto -->
+  <div class="kpi-card-wrapper">
+    <div class="kpi-card-inner">
+      <div class="kpi-card-front glass-panel" [class.warning]="cumplimientoPresupuesto > 85" [class.danger]="cumplimientoPresupuesto > 100">
+        <div class="kpi-icon" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;"><i class="fa-solid fa-scale-balanced"></i></div>
+        <div class="kpi-info">
+          <h3 class="kpi-title">Uso de Presupuesto</h3>
+          <p class="kpi-value">{{ cumplimientoPresupuesto | number:'1.1-1' }}%</p>
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" [style.width.%]="cumplimientoPresupuesto > 100 ? 100 : cumplimientoPresupuesto"></div>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-card-back glass-panel" [class.warning]="cumplimientoPresupuesto > 85" [class.danger]="cumplimientoPresupuesto > 100" style="border-color: rgba(168, 85, 247, 0.2);">
+        <div class="kpi-icon" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;"><i class="fa-solid fa-scale-balanced"></i></div>
+        <div class="kpi-back-info">
+          <h4 class="back-title" style="color: #a855f7;">Uso de Presupuesto</h4>
+          <p class="back-description">Porcentaje del presupuesto total asignado que ya ha sido consumido por transacciones.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Proyección a Fin de Mes -->
+  <div class="kpi-card-wrapper">
+    <div class="kpi-card-inner">
+      <div class="kpi-card-front glass-panel">
+        <div class="kpi-icon" style="background: rgba(6, 182, 212, 0.1); color: #06b6d4;"><i class="fa-solid fa-chart-line"></i></div>
+        <div class="kpi-info">
+          <h3 class="kpi-title">Proyección Fin de Mes</h3>
+          <p class="kpi-value">S/ {{ proyeccionFinDeMes | number:'1.2-2' }}</p>
+        </div>
+      </div>
+      <div class="kpi-card-back glass-panel" style="border-color: rgba(6, 182, 212, 0.2);">
+        <div class="kpi-icon" style="background: rgba(6, 182, 212, 0.1); color: #06b6d4;"><i class="fa-solid fa-chart-line"></i></div>
+        <div class="kpi-back-info">
+          <h4 class="back-title" style="color: #06b6d4;">Proyección Fin de Mes</h4>
+          <p class="back-description">Estimación de tus egresos totales para el cierre de mes en base a tu velocidad de gasto actual.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

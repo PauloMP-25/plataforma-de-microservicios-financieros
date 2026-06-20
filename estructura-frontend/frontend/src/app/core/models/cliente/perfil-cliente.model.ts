@@ -21,8 +21,8 @@ export interface RespuestaDatosPersonales {
   pais: string;
   ciudad: string;
   datosCompletos: boolean;
-  fechaCreacion: string;
-  fechaActualizacion: string;
+  fechaCreacion?: string;
+  fechaActualizacion?: string;
 }
 
 export interface SolicitudPerfilFinanciero {
@@ -37,7 +37,7 @@ export interface RespuestaPerfilFinanciero {
   ingresoMensual: number;
   estiloVida: string;
   tonoIA: string;
-  fechaCreacion: string;
-  fechaActualizacion: string;
+  fechaCreacion?: string;
+  fechaActualizacion?: string;
 }
 

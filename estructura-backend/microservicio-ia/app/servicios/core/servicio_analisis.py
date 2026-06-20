@@ -134,9 +134,11 @@ class ServicioAnalisis:
                             consejo_final = esquema_salida(**consejo_previo)
                         except Exception:
                             pass
+                    insight_previo = ultimo_hist.get_insight() or {}
+                    hallazgos_limpios = {k: v for k, v in insight_previo.items() if not k.startswith("_")}
                     insight_dto = InsightAnalitico(
                         modulo=modulo_enum,
-                        hallazgos=ultimo_hist.get_insight(),
+                        hallazgos=hallazgos_limpios,
                     )
                     estado_str = ultimo_hist.estado_coach or "EXITOSO"
                     try:
@@ -240,13 +242,14 @@ class ServicioAnalisis:
                         total_ing = float(df[df["tipo"] == "INGRESO"]["monto"].sum()) if not df.empty else 0.0
                         total_gas = float(df[df["tipo"] == "GASTO"]["monto"].sum()) if not df.empty else 0.0
                         
+                        insight_previo_limpio = {k: v for k, v in (insight_previo or {}).items() if not k.startswith("_")}
                         insight_dto = InsightAnalitico(
                             modulo=modulo_enum,
                             total_transacciones_analizadas=total_txs,
-                            total_ingresos=total_ing,
-                            total_gastos=total_gas,
+                            total_ingresos=round(total_ing, 2),
+                            total_gastos=round(total_gas, 2),
                             balance_neto=round(total_ing - total_gas, 2),
-                            hallazgos=insight_previo,
+                            hallazgos=insight_previo_limpio,
                         )
                         
                         estado_str = ultimo_historial.estado_coach or "EXITOSO"
@@ -318,12 +321,18 @@ class ServicioAnalisis:
                 # Solo si Gemini respondió con éxito (no fallback).
                 # Errores de escritura no degradan la experiencia del usuario.
                 if not fallback and estado == EstadoCoach.EXITOSO:
+                    # Crear una copia de metricas para persistir en DB,
+                    # manteniendo _hash_txs y _descripcion_rango pero quitando _historial_previo e _historial_insight
+                    metricas_db = metricas.copy()
+                    metricas_db.pop("_historial_previo", None)
+                    metricas_db.pop("_historial_insight", None)
+                    
                     asyncio.create_task(
                         asyncio.to_thread(
                             self._persistir_historial,
                             usuario_id=peticion.usuario_id,
                             modulo=modulo_enum.value,
-                            metricas=metricas,
+                            metricas=metricas_db,
                             consejo=consejo,
                             estado_coach=estado.value,
                         )
@@ -365,13 +374,14 @@ class ServicioAnalisis:
                         ]:
                             consejo_final.pop(k, None)
 
+                hallazgos_limpios = {k: v for k, v in metricas.items() if not k.startswith("_")}
                 insight_dto = InsightAnalitico(
                     modulo=modulo_enum,
                     total_transacciones_analizadas=total_txs,
-                    total_ingresos=total_ing,
-                    total_gastos=total_gas,
+                    total_ingresos=round(total_ing, 2),
+                    total_gastos=round(total_gas, 2),
                     balance_neto=round(total_ing - total_gas, 2),
-                    hallazgos=metricas,
+                    hallazgos=hallazgos_limpios,
                 )
 
                 resultado_final = RespuestaModulo(
@@ -461,9 +471,11 @@ class ServicioAnalisis:
                             consejo_final = esquema_comparacion(**consejo_previo)
                         except Exception:
                             pass
+                    insight_previo = ultimo_hist.get_insight() or {}
+                    hallazgos_limpios = {k: v for k, v in insight_previo.items() if not k.startswith("_")}
                     insight_dto = InsightAnalitico(
                         modulo=modulo_enum,
-                        hallazgos=ultimo_hist.get_insight(),
+                        hallazgos=hallazgos_limpios,
                     )
                     estado_str = ultimo_hist.estado_coach or "EXITOSO"
                     try:
@@ -563,13 +575,14 @@ class ServicioAnalisis:
                         total_ing_b = float(df_b[df_b["tipo"] == "INGRESO"]["monto"].sum()) if not df_b.empty else 0.0
                         total_gas_b = float(df_b[df_b["tipo"] == "GASTO"]["monto"].sum()) if not df_b.empty else 0.0
                         
+                        insight_previo_limpio = {k: v for k, v in (insight_previo or {}).items() if not k.startswith("_")}
                         insight_dto = InsightAnalitico(
                             modulo=modulo_enum,
                             total_transacciones_analizadas=total_txs,
-                            total_ingresos=total_ing_b,
-                            total_gastos=total_gas_b,
+                            total_ingresos=round(total_ing_b, 2),
+                            total_gastos=round(total_gas_b, 2),
                             balance_neto=round(total_ing_b - total_gas_b, 2),
-                            hallazgos=insight_previo,
+                            hallazgos=insight_previo_limpio,
                         )
                         
                         estado_str = ultimo_historial.estado_coach or "EXITOSO"
@@ -611,12 +624,16 @@ class ServicioAnalisis:
                 )
 
                 if not fallback and estado == EstadoCoach.EXITOSO:
+                    metricas_db = metricas.copy()
+                    metricas_db.pop("_historial_previo", None)
+                    metricas_db.pop("_historial_insight", None)
+                    
                     asyncio.create_task(
                         asyncio.to_thread(
                             self._persistir_historial,
                             usuario_id=peticion.usuario_id,
                             modulo=modulo_enum.value,
-                            metricas=metricas,
+                            metricas=metricas_db,
                             consejo=consejo,
                             estado_coach=estado.value,
                         )
@@ -640,13 +657,14 @@ class ServicioAnalisis:
                         for k in ["score_salud_evolucion", "etiquetas_internas", "nota_interna_coach"]:
                             consejo_final.pop(k, None)
 
+                hallazgos_limpios = {k: v for k, v in metricas.items() if not k.startswith("_")}
                 insight_dto = InsightAnalitico(
                     modulo=modulo_enum,
                     total_transacciones_analizadas=total_txs,
-                    total_ingresos=total_ing_b,
-                    total_gastos=total_gas_b,
+                    total_ingresos=round(total_ing_b, 2),
+                    total_gastos=round(total_gas_b, 2),
                     balance_neto=round(total_ing_b - total_gas_b, 2),
-                    hallazgos=metricas,
+                    hallazgos=hallazgos_limpios,
                 )
 
                 resultado_final = RespuestaModulo(
@@ -760,8 +778,8 @@ class ServicioAnalisis:
         insight_dto = InsightAnalitico(
             modulo=modulo_enum,
             total_transacciones_analizadas=total_txs,
-            total_ingresos=total_ing,
-            total_gastos=total_gas,
+            total_ingresos=round(total_ing, 2),
+            total_gastos=round(total_gas, 2),
             balance_neto=round(total_ing - total_gas, 2),
             hallazgos={"consulta_duplicada": True, "rango": descripcion_rango},
         )

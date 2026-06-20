@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +52,7 @@ public class ServicioAdminPagosImpl implements IServicioAdminPagos {
             porPlan.put(((PlanSuscripcion) fila[0]).name(), (Long) fila[1]);
         }
 
-        return new ResumenPagosDTO(total, ingresos, porEstado, porPlan);
+        return new ResumenPagosDTO(total, ingresos.setScale(2, RoundingMode.HALF_UP), porEstado, porPlan);
     }
 
     @SuppressWarnings("null")

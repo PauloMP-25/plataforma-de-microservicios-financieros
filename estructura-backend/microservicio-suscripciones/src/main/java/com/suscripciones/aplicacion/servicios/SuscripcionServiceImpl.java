@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -203,10 +204,9 @@ public class SuscripcionServiceImpl implements ISuscripcionService {
                 pagoGuardado.getId(),
                 suscripcion.getId(),
                 pagoGuardado.getTransaccionId(),
-                monto,
+                monto.setScale(2, RoundingMode.HALF_UP),
                 fechaPago,
-                pagoGuardado.getEstado(),
-                LocalDateTime.now()
+                pagoGuardado.getEstado()
         );
     }
 
@@ -286,17 +286,14 @@ public class SuscripcionServiceImpl implements ISuscripcionService {
     private RespuestaSuscripcion mapearARespuesta(Suscripcion suscripcion) {
         return new RespuestaSuscripcion(
                 suscripcion.getId(),
-                suscripcion.getUsuarioId(),
                 suscripcion.getNombre(),
-                suscripcion.getMonto(),
+                suscripcion.getMonto().setScale(2, RoundingMode.HALF_UP),
                 suscripcion.getEstado(),
                 suscripcion.getMetodoPago(),
                 suscripcion.getFechaInicio(),
                 suscripcion.getFechaVencimiento(),
                 suscripcion.getFechaUltimoPago(),
-                suscripcion.getTipoEstrategia(),
-                suscripcion.getFechaCreacion(),
-                suscripcion.getFechaActualizacion()
+                suscripcion.getTipoEstrategia()
         );
     }
 }

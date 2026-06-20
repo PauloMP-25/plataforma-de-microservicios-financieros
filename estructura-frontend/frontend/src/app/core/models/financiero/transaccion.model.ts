@@ -5,7 +5,7 @@ export type MetodoPago = 'EFECTIVO' | 'TARJETA' | 'TRANSFERENCIA' | 'DIGITAL';
 
 export interface TransaccionDTO {
   id:                string;          
-  usuarioId:         string;         
+  usuarioId?:        string;         
   nombreCliente:     string;         
   monto:             number;          
   tipo:              TipoMovimiento;  
@@ -17,7 +17,7 @@ export interface TransaccionDTO {
   etiquetas:         string | null;   
   notas:             string | null;
   descripcion:       string | null;
-  fechaRegistro:     string;          
+  fechaRegistro?:    string;          
 }
  
 // ─── Lo que mandas al backend para crear/editar ───────────────────────────────
