@@ -86,6 +86,28 @@ export class DashboardHeaderComponent {
     this.onFiltroChange();
   }
 
+  getTituloConFecha(): string {
+    if (!this.fechaInicio && !this.fechaFin) {
+      return 'DASHBOARD FINANCIERO - TODO EL TIEMPO';
+    }
+    
+    const format = (dateStr: string) => {
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+      return dateStr;
+    };
+
+    if (this.fechaInicio && this.fechaFin) {
+      return `DASHBOARD FINANCIERO - ${format(this.fechaInicio)} A ${format(this.fechaFin)}`.toUpperCase();
+    } else if (this.fechaInicio) {
+      return `DASHBOARD FINANCIERO - DESDE ${format(this.fechaInicio)}`.toUpperCase();
+    } else {
+      return `DASHBOARD FINANCIERO - HASTA ${format(this.fechaFin)}`.toUpperCase();
+    }
+  }
+
   private formatDate(date: Date): string {
     const yyyy = date.getFullYear();
     const mm = String(date.getMonth() + 1).padStart(2, '0');

@@ -132,12 +132,6 @@ export class ChartExpenseIncomeRatioComponent implements AfterViewInit, OnDestro
             ctx.moveTo(left, yVal);
             ctx.lineTo(right, yVal);
             ctx.stroke();
-            
-            // Texto arriba de la línea
-            ctx.fillStyle = '#ef4444';
-            ctx.font = 'bold 11px Inter, sans-serif';
-            ctx.textAlign = 'right';
-            ctx.fillText('Límite Saludable (80%)', right - 10, yVal - 6);
             ctx.restore();
           }
         },

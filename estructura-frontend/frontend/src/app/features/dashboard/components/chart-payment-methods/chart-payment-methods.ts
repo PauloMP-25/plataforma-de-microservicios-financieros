@@ -90,11 +90,11 @@ export class ChartPaymentMethodsComponent implements AfterViewInit, OnDestroy {
                     const style = meta.controller.getStyle(i, false) as any;
                     const val = data.datasets[0].data[i] as number;
                     return {
-                      text: `${label}: ${val} trans.`,
+                      text: `${label}`,
                       fillStyle: style['backgroundColor'] as string,
                       strokeStyle: style['borderColor'] as string,
                       lineWidth: style['borderWidth'] as number,
-                      hidden: isNaN(data.datasets[0].data[i] as number) || !chart.getDataVisibility(i),
+                      hidden: !chart.getDataVisibility(i),
                       index: i
                     };
                   });

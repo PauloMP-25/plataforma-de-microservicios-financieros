@@ -1,9 +1,15 @@
 <div class="chart-container" style="position: relative; height: 100%; width: 100%; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
-  <div class="header-area" style="align-self: flex-start; width: 100%;">
-    <h3 class="chart-title" style="margin: 0;">Relación Gasto-Ingreso</h3>
-    <p class="chart-subtitle" style="font-size: 0.82rem; color: var(--text-secondary); margin: 4px 0 12px 0; line-height: 1.4;">
-      Porcentaje de tus ingresos mensuales destinados a cubrir gastos. Mantenerlo bajo es ideal (límite recomendado: 80%).
-    </p>
+  <div class="header-area" style="align-self: flex-start; width: 100%; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
+    <div style="flex: 1; min-width: 250px;">
+      <h3 class="chart-title" style="margin: 0;">Relación Gasto-Ingreso</h3>
+      <p class="chart-subtitle" style="font-size: 0.82rem; color: var(--text-secondary); margin: 4px 0 0 0; line-height: 1.4;">
+        Porcentaje de tus ingresos mensuales destinados a cubrir gastos. Mantenerlo bajo es ideal (límite recomendado: 80%).
+      </p>
+    </div>
+    <div class="custom-legend" style="display: flex; align-items: center; gap: 8px; align-self: center; padding: 6px 10px; border-radius: 6px; background: rgba(0,0,0,0.02); border: 1px solid var(--border-color); font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);">
+      <span style="display: inline-block; width: 24px; height: 0; border-top: 2.5px dashed #ef4444; vertical-align: middle;"></span>
+      <span>Límite Recomendado: 80%</span>
+    </div>
   </div>
   
   <div class="chart-expense-income-ratio" style="position: relative; flex: 1; min-height: 0; width: 100%;">

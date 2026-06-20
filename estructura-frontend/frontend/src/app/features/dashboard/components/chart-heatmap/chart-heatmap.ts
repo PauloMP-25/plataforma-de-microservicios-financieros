@@ -49,10 +49,14 @@ export class ChartHeatmapComponent implements AfterViewInit, OnDestroy {
     const textColor = isDark ? '#94a3b8' : '#64748b';
     const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
 
-    // Se usa un gráfico de barras como pseudo heatmap mapeando la intensidad a la opacidad/color
+    // Se usa un gráfico de barras como pseudo heatmap mapeando la intensidad al color/opacidad según umbral
     const backgroundColors = data.map(d => {
-      const opacity = Math.min(Math.max(d.intensidad / 10, 0.2), 1);
-      return `rgba(236, 72, 153, ${opacity})`;
+      const opacity = Math.min(Math.max(d.intensidad / 10, 0.35), 1);
+      if (d.intensidad > 5) {
+        return `rgba(236, 72, 153, ${opacity})`; // Rosa intenso si supera 5
+      } else {
+        return `rgba(99, 102, 241, ${opacity})`;  // Indigo/azul si es <= 5
+      }
     });
 
     const config: ChartConfiguration = {
@@ -98,7 +102,6 @@ export class ChartHeatmapComponent implements AfterViewInit, OnDestroy {
           const { ctx } = chart;
           ctx.save();
           ctx.font = 'bold 11px Inter, sans-serif';
-          ctx.fillStyle = isDark ? '#cbd5e1' : '#475569';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'bottom';
           
@@ -110,6 +113,8 @@ export class ChartHeatmapComponent implements AfterViewInit, OnDestroy {
                 if (val !== undefined && val !== null && val > 0) {
                   const label = `${val}`;
                   const { x, y } = element.tooltipPosition();
+                  // Color dinámico de etiqueta coincidiendo con el color de barra
+                  ctx.fillStyle = val > 5 ? '#ec4899' : '#6366f1';
                   ctx.fillText(label, x, y - 4);
                 }
               });
@@ -130,8 +135,12 @@ export class ChartHeatmapComponent implements AfterViewInit, OnDestroy {
     const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
 
     const backgroundColors = data.map(d => {
-      const opacity = Math.min(Math.max(d.intensidad / 10, 0.2), 1);
-      return `rgba(236, 72, 153, ${opacity})`;
+      const opacity = Math.min(Math.max(d.intensidad / 10, 0.35), 1);
+      if (d.intensidad > 5) {
+        return `rgba(236, 72, 153, ${opacity})`;
+      } else {
+        return `rgba(99, 102, 241, ${opacity})`;
+      }
     });
 
     this.chart.data.labels = data.map(d => d.dia);
