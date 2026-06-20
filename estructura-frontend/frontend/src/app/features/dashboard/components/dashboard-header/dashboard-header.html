@@ -9,17 +9,17 @@
     <div class="filter-group date-presets-group">
       <label class="filter-label">Filtros Rápidos</label>
       <div class="presets-buttons">
-        <button type="button" class="preset-btn" (click)="seleccionarRangoRapido('semana')" [class.active]="esRangoActivo('semana')">
-          ESTA SEMANA
+        <button type="button" class="preset-btn" (click)="seleccionarRangoRapido('anio')" [class.active]="esRangoActivo('anio')">
+          ESTE AÑO
         </button>
         <button type="button" class="preset-btn" (click)="seleccionarRangoRapido('mes')" [class.active]="esRangoActivo('mes')">
-          {{ obtenerNombreMesActual() }}
+          ÚLTIMO MES
         </button>
         <button type="button" class="preset-btn" (click)="seleccionarRangoRapido('tres_meses')" [class.active]="esRangoActivo('tres_meses')">
           ÚLTIMOS 3 MESES
         </button>
-        <button type="button" class="preset-btn" (click)="seleccionarRangoRapido('anio')" [class.active]="esRangoActivo('anio')">
-          ESTE AÑO
+        <button type="button" class="preset-btn" (click)="seleccionarRangoRapido('semana')" [class.active]="esRangoActivo('semana')">
+          ÚLTIMA SEMANA
         </button>
         <button type="button" *ngIf="fechaInicio || fechaFin" class="preset-btn clear-btn" (click)="limpiarFiltrosFechas()" title="Limpiar fechas">
           <i class="fa-solid fa-xmark"></i>

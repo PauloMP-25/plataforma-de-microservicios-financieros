@@ -30,14 +30,14 @@
 
 .header-filters {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: 3.3fr 1fr 1fr 1.2fr 1.2fr;
   gap: 16px;
   width: 100%;
   align-items: flex-end;
 }
 
 .date-presets-group {
-  grid-column: span 2;
+  grid-column: span 1;
 }
 
 .presets-buttons {
@@ -135,8 +135,11 @@
 }
 
 @media (max-width: 1024px) {
+  .header-filters {
+    grid-template-columns: 1fr 1fr;
+  }
   .date-presets-group {
-    grid-column: span 1;
+    grid-column: span 2;
   }
 }
 
