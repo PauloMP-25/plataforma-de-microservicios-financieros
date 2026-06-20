@@ -1,31 +1,23 @@
 import { TransaccionDTO } from '../financiero/transaccion.model';
 
 /**
-   Resumen consolidado para las tarjetas KPI del Dashboard.
+ * Resumen consolidado avanzado para las tarjetas KPI del Dashboard V2.
  */
 export interface DashboardResumenDTO {
   desde: string; // ISO LocalDateTime
   hasta: string; // ISO LocalDateTime
-  totalIngresos: number;
-  totalGastos: number;
-  balance: number;
-  cantidadIngresos: number;
-  cantidadGastos: number;
-  tasaAhorro: number; // Calculado en el front o provisto
+  tasaAhorro: number; // Porcentaje de ahorro
+  gastoPromedioDiario: number; // Nuevo KPI
+  cumplimientoPresupuesto: number; // % consumido
+  proyeccionFinDeMes: number; // Balance proyectado
 }
 
-/**
-   Punto de datos para el gráfico de líneas comparativo de flujo de caja.
- */
 export interface CashflowPointDTO {
-  mes: string; // Ene, Feb, etc.
+  mes: string;
   ingresos: number;
   gastos: number;
 }
 
-/**
-   Distribución de gastos agrupados para el gráfico circular/dona.
- */
 export interface CategoriaDistribucionDTO {
   categoria: string;
   total: number;
@@ -33,12 +25,44 @@ export interface CategoriaDistribucionDTO {
   color: string;
 }
 
+/** [NUEVO] Ingresos/Gastos Fijos vs Variables */
+export interface FijoVariableDTO {
+  tipo: 'FIJO' | 'VARIABLE';
+  monto: number;
+  porcentaje: number;
+}
+
+/** [NUEVO] Mapa de calor de gastos por día de semana */
+export interface HeatmapPointDTO {
+  dia: string; // Lunes, Martes, etc.
+  intensidad: number; // 0-10 o monto
+}
+
+/** [NUEVO] Progreso de metas */
+export interface MetaProgressDTO {
+  nombre: string;
+  objetivo: number;
+  actual: number;
+  porcentaje: number;
+  color: string;
+}
+
+/** [NUEVO] Comparativa histórica mensual */
+export interface ComparativaMensualDTO {
+  mes: string;
+  actual: number; // Gasto este año
+  anterior: number; // Gasto el año pasado
+}
+
 /**
-   DTO contenedor principal para la carga completa del Dashboard.
+ * DTO contenedor principal (Enriquecido)
  */
-export interface DashboardDataDTO {
+export interface DashboardAnaliticaDTO {
   resumen: DashboardResumenDTO;
   flujoCaja: CashflowPointDTO[];
   distribucionGastos: CategoriaDistribucionDTO[];
-  recientes: TransaccionDTO[];
+  fijoVariable: FijoVariableDTO[];
+  heatmap: HeatmapPointDTO[];
+  metas: MetaProgressDTO[];
+  comparativa: ComparativaMensualDTO[];
 }

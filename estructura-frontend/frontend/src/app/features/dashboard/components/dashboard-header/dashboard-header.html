@@ -1,0 +1,56 @@
+<header class="dashboard-header card glass-panel">
+  <div class="header-left">
+    <h1 class="dashboard-title">Analítica Financiera</h1>
+    <p class="dashboard-subtitle">Control integral de tu rendimiento financiero con filtros avanzados</p>
+  </div>
+  
+  <div class="header-filters">
+    <!-- Buscador de transacciones / Búsqueda global -->
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input 
+        type="text" 
+        placeholder="Buscar..." 
+        [(ngModel)]="terminoBusqueda"
+        (ngModelChange)="onFiltroChange()"
+        class="search-input"
+      />
+      <button *ngIf="terminoBusqueda" class="clear-search" (click)="limpiarBusqueda()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- Fechas -->
+    <div class="filter-group">
+      <label class="filter-label">Desde</label>
+      <input type="date" class="date-input" [(ngModel)]="fechaInicio" (ngModelChange)="onFiltroChange()" />
+    </div>
+    
+    <div class="filter-group">
+      <label class="filter-label">Hasta</label>
+      <input type="date" class="date-input" [(ngModel)]="fechaFin" (ngModelChange)="onFiltroChange()" />
+    </div>
+
+    <!-- Tipo de Movimiento -->
+    <div class="filter-group">
+      <label class="filter-label">Tipo</label>
+      <select class="period-selector-select" [(ngModel)]="tipoMovimiento" (ngModelChange)="onFiltroChange()">
+        <option value="">Todos</option>
+        <option value="INGRESO">Solo Ingresos</option>
+        <option value="EGRESO">Solo Egresos</option>
+      </select>
+    </div>
+
+    <!-- Método de pago -->
+    <div class="filter-group">
+      <label class="filter-label">Método</label>
+      <select class="period-selector-select" [(ngModel)]="metodoPago" (ngModelChange)="onFiltroChange()">
+        <option value="">Todos</option>
+        <option value="EFECTIVO">Efectivo</option>
+        <option value="TARJETA">Tarjeta</option>
+        <option value="TRANSFERENCIA">Transferencia</option>
+        <option value="DIGITAL">Digital</option>
+      </select>
+    </div>
+  </div>
+</header>

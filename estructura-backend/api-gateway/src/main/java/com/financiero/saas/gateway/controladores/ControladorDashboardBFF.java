@@ -284,6 +284,163 @@ public class ControladorDashboardBFF {
                 });
     }
 
+    /**
+     * Endpoint BFF para Analítica Avanzada (Dashboard V2).
+     * Soporta filtros dinámicos y consolida los 6 nuevos gráficos y KPIs enriquecidos.
+     */
+    @GetMapping("/analitica-avanzada")
+    public Mono<ResponseEntity<ResultadoApi<?>>> getAnaliticaAvanzada(
+            @RequestParam(required = false) String fechaInicio,
+            @RequestParam(required = false) String fechaFin,
+            @RequestParam(required = false) String metodoPago,
+            @RequestParam(required = false) String tipoMovimiento,
+            @RequestHeader(value = "X-Usuario-Id", required = false) String usuarioId,
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION) String authHeader) {
+
+        String resolvedUsuarioId = usuarioId;
+        if (resolvedUsuarioId == null || resolvedUsuarioId.isEmpty()) {
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                try {
+                    resolvedUsuarioId = servicioJwt.extraerUsuarioId(token);
+                } catch (Exception e) {
+                    log.error("[BFF-DASHBOARD] Error al extraer usuarioId del token JWT en /analitica-avanzada: {}", e.getMessage());
+                }
+            }
+        }
+
+        if (resolvedUsuarioId == null || resolvedUsuarioId.isEmpty()) {
+            ResultadoApi<?> errBody = ResultadoApi.falla(
+                    CodigoError.ACCESO_NO_AUTORIZADO,
+                    "Identidad de usuario no provista o token inválido.",
+                    "/api/v1/dashboard/analitica-avanzada"
+            );
+            return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errBody));
+        }
+
+        final String finalUsuarioId = resolvedUsuarioId;
+        
+        // Construir clave de caché única basada en los filtros
+        String filtrosHash = String.format("%s_%s_%s_%s", 
+            fechaInicio != null ? fechaInicio : "all",
+            fechaFin != null ? fechaFin : "all",
+            metodoPago != null ? metodoPago : "all",
+            tipoMovimiento != null ? tipoMovimiento : "all"
+        );
+        String keyAnalitica = "dashboard:analitica:" + finalUsuarioId + ":" + filtrosHash;
+
+        log.info("[BFF-DASHBOARD] Petición /analitica-avanzada recibida para usuarioId={}, filtros={}", finalUsuarioId, filtrosHash);
+
+        return redisTemplate.opsForValue().get(keyAnalitica)
+                .map(this::parseJsonSilently)
+                .doOnNext(node -> log.debug("[BFF-DASHBOARD] Cache HIT para analítica avanzada de usuarioId={}", finalUsuarioId))
+                .map(node -> {
+                    ResultadoApi<?> body = new ResultadoApi<>(
+                            true,
+                            200,
+                            null,
+                            "Analítica avanzada recuperada con éxito (Caché Redis).",
+                            node,
+                            null,
+                            null,
+                            "/api/v1/dashboard/analitica-avanzada",
+                            LocalDateTime.now()
+                    );
+                    return ResponseEntity.ok(body);
+                })
+                .switchIfEmpty(Mono.defer(() -> {
+                    log.debug("[BFF-DASHBOARD] Cache MISS para analítica avanzada. Consultando y generando agregación...");
+                    
+                    // Aquí simularemos temporalmente el llamado a ms-nucleo-financiero / ms-ia
+                    // En la fase 2 se conectará con el WebClient real
+                    JsonNode dataNode = mockAnaliticaAvanzada();
+                    
+                    // Guardar en caché por 5 minutos
+                    return redisTemplate.opsForValue()
+                            .set(keyAnalitica, dataNode.toString(), Duration.ofMinutes(5))
+                            .thenReturn(dataNode)
+                            .map(node -> {
+                                ResultadoApi<?> body = new ResultadoApi<>(
+                                        true,
+                                        200,
+                                        null,
+                                        "Analítica avanzada generada con éxito.",
+                                        node,
+                                        null,
+                                        null,
+                                        "/api/v1/dashboard/analitica-avanzada",
+                                        LocalDateTime.now()
+                                );
+                                return ResponseEntity.ok(body);
+                            });
+                }))
+                .onErrorResume(error -> {
+                    log.error("[BFF-DASHBOARD] Error al obtener analítica avanzada para usuarioId={}: {}", finalUsuarioId, error.getMessage());
+                    ResultadoApi<?> errBody = ResultadoApi.falla(
+                            CodigoError.ERROR_INTERNO,
+                            "Error al recuperar los datos analíticos: " + error.getMessage(),
+                            "/api/v1/dashboard/analitica-avanzada"
+                    );
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errBody));
+                });
+    }
+
+    private JsonNode mockAnaliticaAvanzada() {
+        try {
+            String json = """
+            {
+              "resumen": {
+                "desde": "2026-06-01T00:00:00Z",
+                "hasta": "2026-06-30T23:59:59Z",
+                "tasaAhorro": 22.5,
+                "gastoPromedioDiario": 65.20,
+                "cumplimientoPresupuesto": 68.4,
+                "proyeccionFinDeMes": 1850.00
+              },
+              "flujoCaja": [
+                { "mes": "Ene", "ingresos": 3000, "gastos": 2500 },
+                { "mes": "Feb", "ingresos": 3200, "gastos": 2600 },
+                { "mes": "Mar", "ingresos": 3100, "gastos": 2800 },
+                { "mes": "Abr", "ingresos": 3500, "gastos": 2400 },
+                { "mes": "May", "ingresos": 3600, "gastos": 2300 },
+                { "mes": "Jun", "ingresos": 3800, "gastos": 2100 }
+              ],
+              "distribucionGastos": [
+                { "categoria": "Alimentación", "total": 800, "porcentaje": 35, "color": "#f59e0b" },
+                { "categoria": "Vivienda", "total": 600, "porcentaje": 25, "color": "#3b82f6" },
+                { "categoria": "Transporte", "total": 400, "porcentaje": 15, "color": "#10b981" },
+                { "categoria": "Entretenimiento", "total": 300, "porcentaje": 15, "color": "#8b5cf6" },
+                { "categoria": "Otros", "total": 200, "porcentaje": 10, "color": "#64748b" }
+              ],
+              "fijoVariable": [
+                { "tipo": "FIJO", "monto": 1400, "porcentaje": 65 },
+                { "tipo": "VARIABLE", "monto": 900, "porcentaje": 35 }
+              ],
+              "heatmap": [
+                { "dia": "Lunes", "intensidad": 3 },
+                { "dia": "Martes", "intensidad": 5 },
+                { "dia": "Miércoles", "intensidad": 4 },
+                { "dia": "Jueves", "intensidad": 6 },
+                { "dia": "Viernes", "intensidad": 8 },
+                { "dia": "Sábado", "intensidad": 10 },
+                { "dia": "Domingo", "intensidad": 7 }
+              ],
+              "metas": [
+                { "nombre": "Fondo de Emergencia", "objetivo": 10000, "actual": 6500, "porcentaje": 65, "color": "#10b981" }
+              ],
+              "comparativa": [
+                { "mes": "Abr", "actual": 2400, "anterior": 2200 },
+                { "mes": "May", "actual": 2300, "anterior": 2400 },
+                { "mes": "Jun", "actual": 2100, "anterior": 2500 }
+              ]
+            }
+            """;
+            return objectMapper.readTree(json);
+        } catch (Exception e) {
+            return objectMapper.createObjectNode();
+        }
+    }
+
     private Mono<JsonNode> fetchPerfilFromService(String usuarioId, String authHeader) {
         String url = (urlProdCliente.startsWith("lb://") || urlProdCliente.contains("microservicio-cliente"))
                 ? "http://microservicio-cliente/api/v1/clientes/perfil/" + usuarioId

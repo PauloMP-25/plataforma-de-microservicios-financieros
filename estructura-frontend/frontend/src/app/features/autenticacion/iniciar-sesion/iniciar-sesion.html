@@ -47,6 +47,13 @@
     <a routerLink="/recuperar-contrasena" class="auth__enlace-olvide" id="enlace-olvide-password">¿Olvidaste tu contraseña?</a>
   </div>
 
+  <!-- [F-29] Botón Mock para Pruebas -->
+  <div style="margin-bottom: 1.5rem; text-align: center;">
+    <button type="button" (click)="usarMock()" style="background: rgba(138, 43, 226, 0.1); border: 1px dashed var(--luka-color-primario, #8a2be2); color: var(--luka-color-primario, #8a2be2); padding: 0.6rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 500; transition: all 0.3s ease;">
+      <i class="fas fa-vial"></i> Ingresar con Usuario de Prueba (Mock)
+    </button>
+  </div>
+
   <!-- Botón Submit -->
   <button type="submit" class="auth__btn-submit" [disabled]="cargando" id="btn-submit-login">
     <span *ngIf="!cargando">Ingresar <i class="fas fa-arrow-right"></i></span>

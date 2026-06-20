@@ -1,0 +1,55 @@
+<div class="charts-grid">
+  <!-- Gráfico de Líneas: Flujo de Caja (Ocupa 2 columnas si hay espacio) -->
+  <div class="chart-card full-width">
+    @defer (on viewport) {
+      <app-chart-cashflow></app-chart-cashflow>
+    } @placeholder {
+      <div class="chart-loader"><i class="fa-solid fa-spinner fa-spin"></i> Cargando Flujo de Caja...</div>
+    }
+  </div>
+
+  <!-- Gráfico Circular: Distribución de Gastos -->
+  <div class="chart-card">
+    @defer (on viewport) {
+      <app-chart-distribution></app-chart-distribution>
+    } @placeholder {
+      <div class="chart-loader"><i class="fa-solid fa-spinner fa-spin"></i> Cargando Distribución...</div>
+    }
+  </div>
+
+  <!-- Gráfico de Barras Apiladas: Fijos vs Variables -->
+  <div class="chart-card">
+    @defer (on viewport) {
+      <app-chart-fixed-vs-variable></app-chart-fixed-vs-variable>
+    } @placeholder {
+      <div class="chart-loader"><i class="fa-solid fa-spinner fa-spin"></i> Cargando Fijos vs Variables...</div>
+    }
+  </div>
+
+  <!-- Gráfico de Mapa de Calor: Gastos por Día -->
+  <div class="chart-card">
+    @defer (on viewport) {
+      <app-chart-heatmap></app-chart-heatmap>
+    } @placeholder {
+      <div class="chart-loader"><i class="fa-solid fa-spinner fa-spin"></i> Cargando Mapa de Calor...</div>
+    }
+  </div>
+
+  <!-- Gráfico Radial: Progreso de Metas -->
+  <div class="chart-card">
+    @defer (on viewport) {
+      <app-chart-goals-progress></app-chart-goals-progress>
+    } @placeholder {
+      <div class="chart-loader"><i class="fa-solid fa-spinner fa-spin"></i> Cargando Progreso de Metas...</div>
+    }
+  </div>
+
+  <!-- Gráfico Barras Agrupadas: Comparativa Histórica (Ocupa 2 columnas) -->
+  <div class="chart-card full-width">
+    @defer (on viewport) {
+      <app-chart-historical-comparison></app-chart-historical-comparison>
+    } @placeholder {
+      <div class="chart-loader"><i class="fa-solid fa-spinner fa-spin"></i> Cargando Comparativa Histórica...</div>
+    }
+  </div>
+</div>
