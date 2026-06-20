@@ -69,8 +69,10 @@ comprarPlan(plan: 'PRO' | 'PREMIUM'): void {
 
 
   // TODO: reemplazar con MenuService.getNavItems(usuarioRol)
-  //       GET /api/menu?rol=estudiante  →  NavItem[]
-  navItems       = NAV_ITEMS;
+  navItems = [
+    ...NAV_ITEMS,
+    { route: '/perfil/historial', label: 'Historial', icon: 'fa-solid fa-clock-rotate-left' }
+  ];
   bottomNavItems = BOTTOM_NAV_ITEMS;
 
   // ── Mascota —  usar showMascotMsg() y mascotMsg() ──
@@ -88,9 +90,8 @@ isPerfilSection = false;
 readonly perfilNavItems = [
   { route: '/perfil/cliente',       label: 'Perfil Cliente',    icon: 'fa-solid fa-user' },
   { route: '/perfil/financiero',    label: 'Perfil Financiero', icon: 'fa-solid fa-chart-pie' },
-  { route: '/suscripcion/luka',     label: 'Membresía',         icon: 'fa-solid fa-crown' },
   { route: '/perfil/configuracion', label: 'Configuración',     icon: 'fa-solid fa-gear' },
-  { route: '/perfil/historial',     label: 'Historial',         icon: 'fa-solid fa-clock-rotate-left' },
+  { route: '/ayuda',               label: 'Ayuda',             icon: 'fa-solid fa-circle-question' },
 ];
 
   constructor(
@@ -102,7 +103,9 @@ readonly perfilNavItems = [
     this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe((e: any) => {
-        this.isPerfilSection = e.url.startsWith('/perfil') || e.url.startsWith('/suscripcion/luka');
+        this.isPerfilSection = (e.url.startsWith('/perfil') && !e.url.startsWith('/perfil/historial'))
+          || e.url.startsWith('/suscripcion/luka')
+          || e.url.startsWith('/ayuda');
       });
   }
 

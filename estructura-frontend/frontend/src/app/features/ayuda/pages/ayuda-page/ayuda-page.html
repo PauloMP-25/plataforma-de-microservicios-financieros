@@ -1,117 +1,487 @@
 <div class="ayuda-container anim-fade-up">
   <main class="ayuda-card">
 
+    <!-- ══ CABECERA ══ -->
     <section class="ayuda-header">
       <div class="ayuda-title-row">
-        <i class="fa-solid fa-circle-question ayuda-title-icon"></i>
-        <h2>Centro de Ayuda</h2>
-      </div>
-      <p class="ayuda-subtitle">
-        ¿Tienes dudas o necesitas asistencia? Estamos aquí para ayudarte.
-        Elige el canal de contacto o revisa las preguntas frecuentes.
-      </p>
-    </section>
-
-    <section class="ayuda-section">
-      <p class="section-title">Contáctanos</p>
-      <div class="contacto-grid">
-        <a 
-          *ngFor="let canal of canalesContacto"
-          class="contacto-card"
-          [ngClass]="canal.cardClass"
-          [href]="canal.href"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <span class="availability-badge" [ngClass]="canal.badgeClass">
-            {{ canal.badge }}
-          </span>
-          <div class="contacto-icon-wrap" [ngClass]="canal.iconWrapClass">
-            <i [class]="canal.iconoClass"></i>
-          </div>
-          <div class="contacto-card-info">
-            <span class="contacto-card-label">{{ canal.tipo }}</span>
-            <span class="contacto-card-value">{{ canal.valor }}</span>
-            <span class="contacto-card-horario">
-              <i class="fa-regular fa-clock"></i> {{ canal.horario }}
-            </span>
-            <span class="contacto-card-cta" [ngClass]="canal.ctaClass">
-              {{ canal.textoBoton }}
-              <i class="fa-solid fa-arrow-right" style="font-size:0.7rem"></i>
-            </span>
-          </div>
-        </a>
-      </div>
-    </section>
-
-    <section class="ayuda-section">
-
-      <div class="faq-section-header">
-        <p class="section-title" style="margin:0">Preguntas Frecuentes</p>
-        <div class="faq-search-wrapper">
-          <i class="fa-solid fa-magnifying-glass faq-search-icon"></i>
-          <input
-            type="text"
-            class="faq-search-input"
-            placeholder="Buscar pregunta..."
-            [(ngModel)]="busqueda"
-          >
+        <div class="ayuda-header-icon">
+          <i class="fa-solid fa-headset"></i>
+        </div>
+        <div>
+          <h2>Centro de Asistencia</h2>
+          <p class="ayuda-subtitle">¿Cómo podemos ayudarte hoy? Elige una opción para continuar.</p>
         </div>
       </div>
+    </section>
 
-      <div class="faq-tabs">
+    <!-- ══ TABS DE NAVEGACIÓN ══ -->
+    <nav class="ayuda-tabs" role="tablist" aria-label="Secciones de ayuda">
+      @for (tab of tabs; track tab.id) {
         <button
-          *ngFor="let cat of categorias"
-          class="faq-tab"
-          [class.active]="categoriaActiva === cat.id"
-          (click)="seleccionarCategoria(cat.id)"
+          type="button"
+          class="ayuda-tab"
+          [class.is-active]="tabActiva() === tab.id"
+          (click)="cambiarTab(tab.id)"
+          [id]="'tab-' + tab.id"
+          role="tab"
+          [attr.aria-selected]="tabActiva() === tab.id"
         >
-          <i [class]="cat.icono"></i> {{ cat.label }}
+          <i [class]="tab.icon"></i>
+          <span>{{ tab.label }}</span>
         </button>
-      </div>
+      }
+    </nav>
 
-      <div class="faq-list">
-        <div
-          *ngFor="let faq of preguntasFiltradas"
-          class="faq-item"
-          [class.open]="faq.abierta"
-          (click)="conmutarFaq(faq.id)"
-        >
-          <div class="faq-question-row">
-            <div class="faq-q-icon"><i [class]="faq.iconoClass"></i></div>
-            <span class="faq-question">{{ faq.pregunta }}</span>
-            <div class="faq-toggle-icon">
-              <i class="fa-solid fa-plus"></i>
+    <!-- ══════════════════════════════════════════ -->
+    <!-- TAB: CENTRO DE AYUDA                       -->
+    <!-- ══════════════════════════════════════════ -->
+    @if (tabActiva() === 'centro') {
+      <div class="ayuda-tab-content" role="tabpanel" aria-labelledby="tab-centro">
+
+        <!-- Canales de contacto -->
+        <section class="ayuda-section">
+          <p class="section-title">Contáctanos directamente</p>
+          <div class="contacto-grid">
+            <a
+              *ngFor="let canal of canalesContacto"
+              class="contacto-card"
+              [ngClass]="canal.cardClass"
+              [href]="canal.href"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span class="availability-badge" [ngClass]="canal.badgeClass">{{ canal.badge }}</span>
+              <div class="contacto-icon-wrap" [ngClass]="canal.iconWrapClass">
+                <i [class]="canal.iconoClass"></i>
+              </div>
+              <div class="contacto-card-info">
+                <span class="contacto-card-label">{{ canal.tipo }}</span>
+                <span class="contacto-card-value">{{ canal.valor }}</span>
+                <span class="contacto-card-horario">
+                  <i class="fa-regular fa-clock"></i> {{ canal.horario }}
+                </span>
+                <span class="contacto-card-cta" [ngClass]="canal.ctaClass">
+                  {{ canal.textoBoton }}
+                  <i class="fa-solid fa-arrow-right" style="font-size:0.7rem"></i>
+                </span>
+              </div>
+            </a>
+          </div>
+        </section>
+
+        <!-- FAQ -->
+        <section class="ayuda-section">
+          <div class="faq-section-header">
+            <p class="section-title" style="margin:0">Preguntas Frecuentes</p>
+            <div class="faq-search-wrapper">
+              <i class="fa-solid fa-magnifying-glass faq-search-icon"></i>
+              <input
+                type="text"
+                class="faq-search-input"
+                placeholder="Buscar pregunta..."
+                [(ngModel)]="busqueda"
+              >
             </div>
           </div>
-          <div class="faq-answer">
-            <p>{{ faq.respuesta }}</p>
-            <span class="faq-answer-tag">
-              <i [class]="faq.iconoClass"></i> {{ faq.categoria | titlecase }}
+
+          <div class="faq-tabs">
+            <button
+              *ngFor="let cat of categorias"
+              class="faq-tab"
+              [class.active]="categoriaActiva === cat.id"
+              (click)="seleccionarCategoria(cat.id)"
+            >
+              <i [class]="cat.icono"></i> {{ cat.label }}
+            </button>
+          </div>
+
+          <div class="faq-list">
+            <div
+              *ngFor="let faq of preguntasFiltradas"
+              class="faq-item"
+              [class.open]="faq.abierta"
+              (click)="conmutarFaq(faq.id)"
+            >
+              <div class="faq-question-row">
+                <div class="faq-q-icon"><i [class]="faq.iconoClass"></i></div>
+                <span class="faq-question">{{ faq.pregunta }}</span>
+                <div class="faq-toggle-icon"><i class="fa-solid fa-plus"></i></div>
+              </div>
+              <div class="faq-answer">
+                <p>{{ faq.respuesta }}</p>
+                <span class="faq-answer-tag">
+                  <i [class]="faq.iconoClass"></i> {{ faq.categoria | titlecase }}
+                </span>
+              </div>
+            </div>
+
+            <div class="faq-no-results" *ngIf="preguntasFiltradas.length === 0">
+              <i class="fa-solid fa-face-meh no-results-icon"></i>
+              <strong>No encontramos resultados</strong>
+              <span>Intenta con otro término o contáctanos directamente.</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- CTA Banner -->
+        <div class="ayuda-cta-banner">
+          <div class="cta-banner-text">
+            <span class="cta-banner-title">¿No encontraste lo que buscabas?</span>
+            <span class="cta-banner-desc">
+              Nuestro equipo está disponible para resolver cualquier consulta personalizada.
             </span>
           </div>
+          <button type="button" class="btn btn-primary" (click)="irAContactar()">
+            <i class="fa-solid fa-paper-plane"></i> Enviar consulta
+          </button>
         </div>
 
-        <div class="faq-no-results" *ngIf="preguntasFiltradas.length === 0">
-          <i class="fa-solid fa-face-meh no-results-icon"></i>
-          <strong>No encontramos resultados</strong>
-          <span>Intenta con otro término o contáctanos directamente.</span>
-        </div>
       </div>
+    }
 
-    </section>
+    <!-- ══════════════════════════════════════════ -->
+    <!-- TAB: CONTACTAR SOPORTE                     -->
+    <!-- ══════════════════════════════════════════ -->
+    @if (tabActiva() === 'soporte') {
+      <div class="ayuda-tab-content" role="tabpanel" aria-labelledby="tab-soporte">
 
-    <div class="ayuda-cta-banner">
-      <div class="cta-banner-text">
-        <span class="cta-banner-title">¿No encontraste lo que buscabas?</span>
-        <span class="cta-banner-desc">
-          Nuestro equipo está disponible para resolver cualquier consulta personalizada.
-        </span>
+        @if (exitoContacto()) {
+          <!-- Estado de éxito -->
+          <div class="ayuda-exito">
+            <div class="exito-icon">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h3>¡Mensaje enviado con éxito!</h3>
+            <p>Nuestro equipo de soporte se pondrá en contacto contigo en las próximas 24 horas hábiles.</p>
+            <button type="button" class="btn btn-primary" (click)="resetContacto()">
+              <i class="fa-solid fa-plus"></i> Nueva consulta
+            </button>
+          </div>
+        } @else {
+          <div class="ayuda-form-header">
+            <div class="form-header-icon">
+              <i class="fa-solid fa-headset"></i>
+            </div>
+            <div>
+              <h3>Contactar soporte</h3>
+              <p>Cuéntanos tu consulta y te responderemos a la brevedad.</p>
+            </div>
+          </div>
+
+          <form [formGroup]="formContacto" (ngSubmit)="enviarContacto()" class="ayuda-form" novalidate>
+
+            <!-- Categoría -->
+            <div class="form-field" [class.has-error]="fContactoCategoria.invalid && fContactoCategoria.touched">
+              <label class="form-label">
+                <i class="fa-solid fa-tag"></i> Categoría
+                <span class="field-required">*</span>
+              </label>
+              <div class="category-pills">
+                @for (cat of categoriasContacto; track cat) {
+                  <button
+                    type="button"
+                    class="category-pill"
+                    [class.is-active]="fContactoCategoria.value === cat"
+                    (click)="fContactoCategoria.setValue(cat)"
+                  >{{ cat }}</button>
+                }
+              </div>
+              @if (fContactoCategoria.invalid && fContactoCategoria.touched) {
+                <span class="field-error">
+                  <i class="fa-solid fa-circle-exclamation"></i> Selecciona una categoría.
+                </span>
+              }
+            </div>
+
+            <!-- Asunto -->
+            <div class="form-field" [class.has-error]="fContactoAsunto.invalid && fContactoAsunto.touched">
+              <label class="form-label" for="contacto-asunto">
+                <i class="fa-solid fa-pen-to-square"></i> Asunto
+                <span class="field-required">*</span>
+              </label>
+              <input
+                id="contacto-asunto"
+                type="text"
+                class="form-control"
+                formControlName="asunto"
+                placeholder="Ej: No puedo acceder a mi cuenta"
+                maxlength="100"
+              >
+              <div class="field-footer">
+                @if (fContactoAsunto.invalid && fContactoAsunto.touched) {
+                  <span class="field-error">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    @if (fContactoAsunto.errors?.['required']) { El asunto es obligatorio. }
+                    @else if (fContactoAsunto.errors?.['minlength']) { Mínimo 5 caracteres. }
+                  </span>
+                } @else { <span></span> }
+                <span class="char-counter" [class.near-limit]="(fContactoAsunto.value?.length || 0) > 80">
+                  {{ fContactoAsunto.value?.length || 0 }}/100
+                </span>
+              </div>
+            </div>
+
+            <!-- Mensaje -->
+            <div class="form-field" [class.has-error]="fContactoMensaje.invalid && fContactoMensaje.touched">
+              <label class="form-label" for="contacto-mensaje">
+                <i class="fa-solid fa-message"></i> Mensaje
+                <span class="field-required">*</span>
+              </label>
+              <textarea
+                id="contacto-mensaje"
+                class="form-control form-control--textarea"
+                formControlName="mensaje"
+                placeholder="Describe detalladamente tu consulta o problema..."
+                maxlength="1000"
+                rows="5"
+              ></textarea>
+              <div class="field-footer">
+                @if (fContactoMensaje.invalid && fContactoMensaje.touched) {
+                  <span class="field-error">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    @if (fContactoMensaje.errors?.['required']) { El mensaje es obligatorio. }
+                    @else if (fContactoMensaje.errors?.['minlength']) { Mínimo 20 caracteres. }
+                  </span>
+                } @else { <span></span> }
+                <span class="char-counter" [class.near-limit]="(fContactoMensaje.value?.length || 0) > 800">
+                  {{ fContactoMensaje.value?.length || 0 }}/1000
+                </span>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-submit" [disabled]="enviandoContacto()">
+              @if (enviandoContacto()) {
+                <i class="fa-solid fa-spinner fa-spin"></i> Enviando...
+              } @else {
+                <i class="fa-solid fa-paper-plane"></i> Enviar consulta
+              }
+            </button>
+
+          </form>
+        }
+
       </div>
-      <a href="mailto:soporte@luka.pe" class="btn btn-primary">
-        <i class="fa-solid fa-paper-plane"></i> Enviar consulta
-      </a>
-    </div>
+    }
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- TAB: REPORTAR UN PROBLEMA                  -->
+    <!-- ══════════════════════════════════════════ -->
+    @if (tabActiva() === 'reporte') {
+      <div class="ayuda-tab-content" role="tabpanel" aria-labelledby="tab-reporte">
+
+        @if (exitoReporte()) {
+          <!-- Estado de éxito -->
+          <div class="ayuda-exito">
+            <div class="exito-icon exito-icon--warning">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h3>¡Reporte enviado!</h3>
+            <p>Hemos recibido tu reporte. Nuestro equipo técnico lo revisará y te contactará a la brevedad.</p>
+            <button type="button" class="btn btn-primary" (click)="resetReporte()">
+              <i class="fa-solid fa-plus"></i> Nuevo reporte
+            </button>
+          </div>
+        } @else {
+          <div class="ayuda-form-header">
+            <div class="form-header-icon form-header-icon--warning">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+              <h3>Reportar un problema</h3>
+              <p>Cuéntanos qué está pasando para que podamos solucionarlo rápidamente.</p>
+            </div>
+          </div>
+
+          <form [formGroup]="formReporte" (ngSubmit)="enviarReporte()" class="ayuda-form" novalidate>
+
+            <!-- Descripción corta -->
+            <div class="form-field" [class.has-error]="fReporteDescCorta.invalid && fReporteDescCorta.touched">
+              <label class="form-label">
+                <i class="fa-solid fa-circle-exclamation"></i> ¿Qué problema estás experimentando?
+                <span class="field-required">*</span>
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                formControlName="descripcionCorta"
+                placeholder="Describe brevemente el problema..."
+              >
+              @if (fReporteDescCorta.invalid && fReporteDescCorta.touched) {
+                <span class="field-error">
+                  <i class="fa-solid fa-circle-exclamation"></i> Este campo es obligatorio.
+                </span>
+              }
+              <div class="ejemplos-grid">
+                @for (ej of ejemplosProblema; track ej) {
+                  <button type="button" class="ejemplo-chip" (click)="usarEjemplo(ej)">{{ ej }}</button>
+                }
+              </div>
+            </div>
+
+            <!-- Prioridad -->
+            <div class="form-field">
+              <label class="form-label">
+                <i class="fa-solid fa-flag"></i> Prioridad
+                <span class="field-required">*</span>
+              </label>
+              <div class="prioridad-grid">
+                @for (p of prioridades; track p.value) {
+                  <button
+                    type="button"
+                    class="prioridad-card"
+                    [class.is-active]="fReportePrioridad.value === p.value"
+                    [class.prioridad-card--baja]="p.value === 'baja'"
+                    [class.prioridad-card--media]="p.value === 'media'"
+                    [class.prioridad-card--alta]="p.value === 'alta'"
+                    (click)="fReportePrioridad.setValue(p.value)"
+                  >
+                    <span class="prioridad-emoji">{{ p.emoji }}</span>
+                    <strong class="prioridad-label">{{ p.label }}</strong>
+                    <span class="prioridad-desc">{{ p.desc }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Sección -->
+            <div class="form-field" [class.has-error]="fReporteSeccion.invalid && fReporteSeccion.touched">
+              <label class="form-label" for="reporte-seccion">
+                <i class="fa-solid fa-location-dot"></i> ¿En qué sección ocurrió?
+                <span class="field-required">*</span>
+              </label>
+              <select
+                id="reporte-seccion"
+                class="form-control form-control--select"
+                formControlName="seccion"
+              >
+                <option value="" disabled>Selecciona una sección...</option>
+                @for (s of seccionesProblema; track s) {
+                  <option [value]="s">{{ s }}</option>
+                }
+              </select>
+              @if (fReporteSeccion.invalid && fReporteSeccion.touched) {
+                <span class="field-error">
+                  <i class="fa-solid fa-circle-exclamation"></i> Selecciona la sección afectada.
+                </span>
+              }
+            </div>
+
+            <!-- Descripción detallada -->
+            <div class="form-field" [class.has-error]="fReporteDesc.invalid && fReporteDesc.touched">
+              <label class="form-label" for="reporte-descripcion">
+                <i class="fa-solid fa-align-left"></i> Describe el problema
+                <span class="field-required">*</span>
+              </label>
+              <textarea
+                id="reporte-descripcion"
+                class="form-control form-control--textarea"
+                formControlName="descripcion"
+                placeholder="Explica el problema con el mayor detalle posible: qué ves, qué mensajes de error aparecen, con qué frecuencia ocurre..."
+                maxlength="2000"
+                rows="5"
+              ></textarea>
+              <div class="field-footer">
+                @if (fReporteDesc.invalid && fReporteDesc.touched) {
+                  <span class="field-error">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    @if (fReporteDesc.errors?.['required']) { Este campo es obligatorio. }
+                    @else if (fReporteDesc.errors?.['minlength']) { Mínimo 20 caracteres. }
+                  </span>
+                } @else { <span></span> }
+                <span class="char-counter" [class.near-limit]="(fReporteDesc.value?.length || 0) > 1600">
+                  {{ fReporteDesc.value?.length || 0 }}/2000
+                </span>
+              </div>
+            </div>
+
+            <!-- Qué estabas haciendo -->
+            <div class="form-field">
+              <label class="form-label" for="reporte-que-hacias">
+                <i class="fa-solid fa-person-walking"></i> ¿Qué estabas haciendo cuando ocurrió?
+                <span class="field-optional">(Opcional)</span>
+              </label>
+              <textarea
+                id="reporte-que-hacias"
+                class="form-control form-control--textarea"
+                formControlName="queHacias"
+                placeholder="Ej: Estaba intentando agregar un gasto desde el dashboard..."
+                maxlength="500"
+                rows="3"
+              ></textarea>
+              <div class="field-footer">
+                <span></span>
+                <span class="char-counter" [class.near-limit]="(fReporteQueHacias.value?.length || 0) > 400">
+                  {{ fReporteQueHacias.value?.length || 0 }}/500
+                </span>
+              </div>
+            </div>
+
+            <!-- Archivo adjunto -->
+            <div class="form-field">
+              <label class="form-label">
+                <i class="fa-solid fa-paperclip"></i> Adjuntar evidencia
+                <span class="field-optional">(Opcional)</span>
+              </label>
+
+              @if (!archivoAdjunto()) {
+                <label class="upload-zone">
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp"
+                    (change)="onArchivoSeleccionado($event)"
+                    hidden
+                  >
+                  <div class="upload-zone-content">
+                    <div class="upload-zone-icon">
+                      <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <strong>Arrastra un archivo o haz clic para seleccionar</strong>
+                    <span>JPG, PNG, WEBP · Máximo 5 MB</span>
+                  </div>
+                </label>
+              } @else {
+                <div class="upload-preview">
+                  @if (previewUrl()) {
+                    <img [src]="previewUrl()!" alt="Vista previa" class="upload-preview-img">
+                  }
+                  <div class="upload-preview-info">
+                    <i class="fa-solid fa-image"></i>
+                    <div class="upload-preview-meta">
+                      <strong>{{ archivoAdjunto()!.name }}</strong>
+                      <span>{{ formatBytes(archivoAdjunto()!.size) }}</span>
+                    </div>
+                    <button
+                      type="button"
+                      class="upload-remove"
+                      (click)="eliminarArchivo()"
+                      aria-label="Eliminar archivo"
+                    >
+                      <i class="fa-solid fa-xmark"></i>
+                    </button>
+                  </div>
+                </div>
+              }
+
+              @if (errorArchivo()) {
+                <span class="field-error">
+                  <i class="fa-solid fa-circle-exclamation"></i> {{ errorArchivo() }}
+                </span>
+              }
+            </div>
+
+            <button type="submit" class="btn btn-submit btn-submit--warning" [disabled]="enviandoReporte()">
+              @if (enviandoReporte()) {
+                <i class="fa-solid fa-spinner fa-spin"></i> Enviando reporte...
+              } @else {
+                <i class="fa-solid fa-triangle-exclamation"></i> Enviar reporte
+              }
+            </button>
+
+          </form>
+        }
+
+      </div>
+    }
 
   </main>
 </div>

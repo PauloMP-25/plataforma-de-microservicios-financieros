@@ -1,0 +1,72 @@
+<article class="perfil-cliente__section perfil-cliente__section--security card">
+  <div class="perfil-cliente__section-head">
+    <span class="perfil-cliente__section-icon perfil-cliente__section-icon--shield" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 4v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V7l7-4z"/></svg>
+    </span>
+    <div>
+      <h2 class="perfil-cliente__title">Seguridad de la cuenta</h2>
+      <p>Mantén tu cuenta segura actualizando tu contraseña.</p>
+    </div>
+  </div>
+
+  <div class="perfil-cliente__grid-1">
+    <!-- Contraseña actual -->
+    <div class="perfil-cliente__field perfil-cliente__field--stacked">
+      <label class="perfil-cliente__label" for="passwordActual">Contraseña actual</label>
+      <span class="perfil-cliente__field-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V8a4 4 0 1 1 8 0v3"/></svg></span>
+      <input id="passwordActual" class="perfil-cliente__input perfil-cliente__input--password"
+        [type]="mostrarPasswordActual ? 'text' : 'password'"
+        [value]="cambioPassword.passwordActual"
+        (input)="onCampoInput('passwordActual', $any($event.target).value)"/>
+      <button type="button" class="perfil-cliente__toggle-eye" (click)="onToggle('actual')" aria-label="Mostrar u ocultar contraseña">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+
+    <!-- Nueva contraseña -->
+    <div class="perfil-cliente__field perfil-cliente__field--stacked">
+      <label class="perfil-cliente__label" for="nuevoPassword">Nueva contraseña</label>
+      <span class="perfil-cliente__field-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V8a4 4 0 1 1 8 0v3"/></svg></span>
+      <input id="nuevoPassword" class="perfil-cliente__input perfil-cliente__input--password"
+        [type]="mostrarPasswordNueva ? 'text' : 'password'"
+        [value]="cambioPassword.nuevoPassword"
+        (input)="onCampoInput('nuevoPassword', $any($event.target).value)"/>
+      <button type="button" class="perfil-cliente__toggle-eye" (click)="onToggle('nueva')" aria-label="Mostrar u ocultar contraseña">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+
+    <p class="perfil-cliente__password-helper">Mínimo 8 caracteres, incluye mayúsculas, minúsculas y números.</p>
+
+    <!-- Medidor de fortaleza -->
+    <div class="perfil-cliente__security-meter">
+      <div class="perfil-cliente__security-head">
+        <span>Seguridad de la contraseña</span>
+        <small class="perfil-cliente__strength-badge">{{ fortalezaPassword.label }}</small>
+      </div>
+      <div class="perfil-cliente__meter-track" aria-hidden="true">
+        <div class="perfil-cliente__meter-fill" [style.width.%]="fortalezaPassword.percent"></div>
+      </div>
+      <p>Usa una contraseña más fuerte para proteger tu cuenta.</p>
+    </div>
+
+    <!-- Confirmar nueva contraseña -->
+    <div class="perfil-cliente__field perfil-cliente__field--stacked">
+      <label class="perfil-cliente__label" for="confirmarPassword">Confirmar nueva contraseña</label>
+      <span class="perfil-cliente__field-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V8a4 4 0 1 1 8 0v3"/></svg></span>
+      <input id="confirmarPassword" class="perfil-cliente__input perfil-cliente__input--password"
+        [type]="mostrarPasswordConfirmar ? 'text' : 'password'"
+        [value]="cambioPassword.confirmarPassword"
+        (input)="onCampoInput('confirmarPassword', $any($event.target).value)"/>
+      <button type="button" class="perfil-cliente__toggle-eye" (click)="onToggle('confirmar')" aria-label="Mostrar u ocultar contraseña">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <button type="button" class="perfil-cliente__action-btn perfil-cliente__action-btn--security"
+    [disabled]="guardando"
+    (click)="onGuardar()">
+    {{ guardando ? 'Guardando...' : 'Actualizar contraseña' }}
+  </button>
+</article>

@@ -17,6 +17,7 @@
           <div class="configuracion__segmentado">
             <button
               type="button"
+              class="configuracion__btn-tema--oscuro"
               [class.is-active]="tema() === 'oscuro'"
               (click)="seleccionarTema('oscuro')"
             >
@@ -25,6 +26,7 @@
             </button>
             <button
               type="button"
+              class="configuracion__btn-tema--claro"
               [class.is-active]="tema() === 'claro'"
               (click)="seleccionarTema('claro')"
             >
@@ -58,42 +60,96 @@
       </div>
     </article>
 
-    <article class="configuracion__card">
-      <section class="configuracion__panel configuracion__panel--premium" [style.--accent-color]="colorPrincipal()">
-        <div class="configuracion__premium-top">
-          <span class="configuracion__premium-pill"><i class="fa-solid fa-star"></i> PREMIUM</span>
-          <span class="configuracion__premium-pill configuracion__premium-pill--right"><i class="fa-solid fa-star"></i> POPULAR</span>
-        </div>
+    @if (esPlanPremiumOPro()) {
+      <!-- Banner IA — visible para usuarios PREMIUM y PRO -->
+      <article class="configuracion__card">
+        <section class="configuracion__panel configuracion__panel--ia" [style.--accent-color]="colorPrincipal()">
 
-        <div class="configuracion__premium-title-wrap">
-          <div class="configuracion__premium-badge" aria-hidden="true">
-            <i class="fa-solid fa-crown"></i>
+          <div class="configuracion__ia-top">
+            <span class="configuracion__ia-pill">
+              <i class="fa-solid fa-microchip"></i> IA ACTIVA
+            </span>
+            <span class="configuracion__ia-pill configuracion__ia-pill--right">
+              <i class="fa-solid fa-circle-check"></i> TU PLAN
+            </span>
           </div>
-          <div>
-            <h3 class="configuracion__premium-title">Luka <span>Premium</span></h3>
-            <p class="configuracion__premium-subtitle">Desbloquea experiencias avanzadas con IA para que tomes mejores decisiones financieras.</p>
+
+          <div class="configuracion__ia-title-wrap">
+            <div class="configuracion__ia-badge" aria-hidden="true">
+              <i class="fa-solid fa-robot"></i>
+            </div>
+            <div>
+              <h3 class="configuracion__ia-title">🤖 Inteligencia Artificial <span>disponible</span></h3>
+              <p class="configuracion__ia-subtitle">
+                Tu plan incluye acceso a herramientas de IA para análisis y recomendaciones financieras inteligentes.
+              </p>
+            </div>
           </div>
-        </div>
 
-        <div class="configuracion__premium-body">
-          <aside class="configuracion__premium-aside">
-            <p class="configuracion__premium-price-label">Desde solo</p>
-            <p class="configuracion__premium-price"><span>S/</span> 9.90</p>
-            <p class="configuracion__premium-periodo">/ mes</p>
+          <div class="configuracion__ia-features">
+            <div class="configuracion__ia-feature">
+              <i class="fa-solid fa-brain"></i>
+              <span>Análisis financiero inteligente</span>
+            </div>
+            <div class="configuracion__ia-feature">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <span>Recomendaciones personalizadas</span>
+            </div>
+            <div class="configuracion__ia-feature">
+              <i class="fa-solid fa-chart-pie"></i>
+              <span>Reportes con insights avanzados</span>
+            </div>
+          </div>
 
-<button type="button" class="configuracion__premium-cta-main" (click)="abrirModalPlanes()">
-  ✨ Ver planes
-</button>
+          <button type="button" class="configuracion__ia-cta" (click)="navegarAIA()">
+            <i class="fa-solid fa-robot"></i> Abrir IA
+          </button>
 
-</aside>
-        </div>
+          <div class="configuracion__ia-footer">
+            <div><i class="fa-solid fa-shield-halved"></i><span><strong>Privacidad garantizada</strong><small>Tus datos nunca se comparten</small></span></div>
+            <div><i class="fa-solid fa-bolt"></i><span><strong>Respuesta en tiempo real</strong><small>IA siempre disponible</small></span></div>
+          </div>
 
-        <div class="configuracion__premium-footer">
-          <div><i class="fa-solid fa-lock"></i><span><strong>Pago seguro</strong><small>Tus datos siempre protegidos</small></span></div>
-          <div><i class="fa-solid fa-bolt"></i><span><strong>Acceso inmediato</strong><small>Empieza a disfrutar al instante</small></span></div>
-        </div>
-      </section>
-    </article>
+        </section>
+      </article>
+    } @else {
+      <!-- Banner Upgrade — visible para usuarios FREE -->
+      <article class="configuracion__card">
+        <section class="configuracion__panel configuracion__panel--premium" [style.--accent-color]="colorPrincipal()">
+          <div class="configuracion__premium-top">
+            <span class="configuracion__premium-pill"><i class="fa-solid fa-star"></i> PREMIUM</span>
+            <span class="configuracion__premium-pill configuracion__premium-pill--right"><i class="fa-solid fa-star"></i> POPULAR</span>
+          </div>
+
+          <div class="configuracion__premium-title-wrap">
+            <div class="configuracion__premium-badge" aria-hidden="true">
+              <i class="fa-solid fa-crown"></i>
+            </div>
+            <div>
+              <h3 class="configuracion__premium-title">Luka <span>Premium</span></h3>
+              <p class="configuracion__premium-subtitle">Desbloquea experiencias avanzadas con IA para que tomes mejores decisiones financieras.</p>
+            </div>
+          </div>
+
+          <div class="configuracion__premium-body">
+            <aside class="configuracion__premium-aside">
+              <p class="configuracion__premium-price-label">Desde solo</p>
+              <p class="configuracion__premium-price"><span>S/</span> 9.90</p>
+              <p class="configuracion__premium-periodo">/ mes</p>
+
+              <button type="button" class="configuracion__premium-cta-main" (click)="abrirModalPlanes()">
+                ✨ Ver planes
+              </button>
+            </aside>
+          </div>
+
+          <div class="configuracion__premium-footer">
+            <div><i class="fa-solid fa-lock"></i><span><strong>Pago seguro</strong><small>Tus datos siempre protegidos</small></span></div>
+            <div><i class="fa-solid fa-bolt"></i><span><strong>Acceso inmediato</strong><small>Empieza a disfrutar al instante</small></span></div>
+          </div>
+        </section>
+      </article>
+    }
 
 
     <article class="configuracion__card">
@@ -114,9 +170,9 @@
       </div>
       <section class="configuracion__panel">
         <ul class="configuracion__links-lista">
-          <li><a href="#" (click)="$event.preventDefault()">Centro de ayuda</a></li>
-          <li><a href="#" (click)="$event.preventDefault()">Contactar soporte</a></li>
-          <li><a href="#" (click)="$event.preventDefault()">Reportar un problema</a></li>
+          <li><a routerLink="/ayuda">Centro de ayuda</a></li>
+          <li><a routerLink="/ayuda" [queryParams]="{tab: 'soporte'}">Contactar soporte</a></li>
+          <li><a routerLink="/ayuda" [queryParams]="{tab: 'reporte'}">Reportar un problema</a></li>
         </ul>
       </section>
     </article>
