@@ -122,14 +122,14 @@ Este documento centraliza todas las modificaciones, refactorizaciones, pruebas, 
 
 | Categoría | Descripción | Prioridad | Estado | Fecha de registro | Fecha de cambio |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| Integración API | **[F-79] Inteligencia Artificial - Integración de DTOs:** Verificar y mapear correctamente la recepción de los nuevos DTOs expuestos por el `microservicio-ia`. | Alta | Pendiente | 15 de junio de 2026 | — |
-| Lógica de Negocio | **[F-80] Inteligencia Artificial - Sincronización en Header:** Actualizar (aumentar/disminuir) dinámicamente el contador de "Consultas IA" (Autoclasificar) mostrado en el header principal cada vez que el usuario utilice un módulo de simulación. | Alta | Pendiente | 15 de junio de 2026 | — |
-| Interactividad | **[F-81] Inteligencia Artificial - Filtros Dinámicos:** Hacer completamente dinámicos los filtros dentro de los módulos IA y solventar los bugs visuales menores generados al interactuar con ellos. | Alta | Pendiente | 15 de junio de 2026 | — |
-| Pruebas / QA | **[F-82] Inteligencia Artificial - Pruebas ('cesar_test'):** Validar funcionalmente cada módulo del simulador utilizando la cuenta de prueba `cesar_test` para aprovechar su data semilla de 700 registros y comprobar el rendimiento/visualización real. | Alta | Pendiente | 15 de junio de 2026 | — |
+| Integración API | **[F-79] Inteligencia Artificial - Integración de DTOs:** Verificar y mapear correctamente la recepción de los nuevos DTOs expuestos por el `microservicio-ia`. | Alta | Completado | 15 de junio de 2026 | 20 de junio de 2026 |
+| Lógica de Negocio | **[F-80] Inteligencia Artificial - Sincronización en Header:** Actualizar (aumentar/disminuir) dinámicamente el contador de "Consultas IA" (Autoclasificar) mostrado en el header principal cada vez que el usuario utilice un módulo de simulación. | Alta | Completado | 15 de junio de 2026 | 20 de junio de 2026 |
+| Interactividad | **[F-81] Inteligencia Artificial - Filtros Dinámicos:** Hacer completamente dinámicos los filtros dentro de los módulos IA y solventar los bugs visuales menores generados al interactuar con ellos. | Alta | Completado | 15 de junio de 2026 | 20 de junio de 2026 |
+| Pruebas / QA | **[F-82] Inteligencia Artificial - Pruebas ('cesar_test'):** Validar funcionalmente cada módulo del simulador utilizando la cuenta de prueba `cesar_test` para aprovechar su data semilla de 700 registros y comprobar el rendimiento/visualización real. | Alta | Completado | 15 de junio de 2026 | 20 de junio de 2026 |
 | UX / UI | **[F-83] Inteligencia Artificial - Tooltips de Ayuda:** Implementar botones informativos "¿Cómo usar este simulador?" en cada uno de los submódulos, tomando como referencia base el comportamiento actual de "Simular Meta". | Media | Pendiente | 15 de junio de 2026 | — |
 | Estilos | **[F-84] Inteligencia Artificial - Mejora Visual Interna:** Refinar sustancialmente el diseño, márgenes, proporciones y los estilos visuales del interior de cada submódulo interactivo de la vista IA. | Media | Pendiente | 15 de junio de 2026 | — |
 | Estilos | **[F-85] Inteligencia Artificial - Coherencia de Temas:** Asegurar que los componentes, paneles de simulación y textos de IA mantengan una alta legibilidad sin problemas visuales tanto en el tema oscuro como en el tema claro. | Media | Pendiente | 15 de junio de 2026 | — |
-| Estilos / Textos | **[F-23] Texto de Sugerencia IA:** Cambiar el texto a: "Tienes 2 intentos de sugerencia por IA. El contador también es visible en el header como 'Autoclasificar'." | Baja | Pendiente | 12 de junio de 2026 | — |
+| Estilos / Textos | **[F-23] Texto de Sugerencia IA:** Cambiar el texto a: "Tienes 2 intentos de sugerencia por IA. El contador también es visible en el header como 'Autoclasificar'." | Baja | Completado | 12 de junio de 2026 | 20 de junio de 2026 |
 
 ---
 
