@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { map } from 'rxjs';
 
 /**
  * Guard para proteger rutas restringidas por roles específicos.
@@ -10,20 +11,24 @@ export const roleGuard = (allowedRoles: string[]): CanActivateFn => {
   return (route, state) => {
     const authService = inject(AuthService);
     const router = inject(Router);
-    const usuario = authService.usuario();
 
-    if (!usuario) {
-      router.navigate(['/autenticacion/iniciar-sesion']);
-      return false;
-    }
+    return authService.esperarInicializacion().pipe(
+      map((logueado) => {
+        if (!logueado) {
+          router.navigate(['/']);
+          return false;
+        }
 
-    const hasRole = usuario.roles?.some(r => allowedRoles.includes(r));
-    if (hasRole) {
-      return true;
-    }
+        const usuario = authService.usuario();
+        const hasRole = usuario?.roles?.some(r => allowedRoles.includes(r));
+        if (hasRole) {
+          return true;
+        }
 
-    console.warn('[RoleGuard] Rol no autorizado para la ruta:', state.url);
-    router.navigate(['/dashboard']);
-    return false;
+        console.warn('[RoleGuard] Rol no autorizado para la ruta:', state.url);
+        router.navigate(['/dashboard']);
+        return false;
+      })
+    );
   };
 };
