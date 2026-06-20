@@ -402,8 +402,14 @@ public class ControladorDashboardBFF {
                 { "mes": "Feb", "ingresos": 3200, "gastos": 2600 },
                 { "mes": "Mar", "ingresos": 3100, "gastos": 2800 },
                 { "mes": "Abr", "ingresos": 3500, "gastos": 2400 },
-                { "mes": "May", "ingresos": 3600, "gastos": 2300 },
-                { "mes": "Jun", "ingresos": 3800, "gastos": 2100 }
+                { "mes": "May", "ingresos": 3400, "gastos": 2700 },
+                { "mes": "Jun", "ingresos": 3600, "gastos": 2900 },
+                { "mes": "Jul", "ingresos": 3800, "gastos": 3100 },
+                { "mes": "Ago", "ingresos": 3700, "gastos": 3000 },
+                { "mes": "Sep", "ingresos": 3900, "gastos": 3200 },
+                { "mes": "Oct", "ingresos": 4000, "gastos": 3300 },
+                { "mes": "Nov", "ingresos": 4200, "gastos": 3400 },
+                { "mes": "Dic", "ingresos": 4500, "gastos": 3600 }
               ],
               "distribucionGastos": [
                 { "categoria": "Alimentación", "total": 800, "porcentaje": 35, "color": "#f59e0b" },
@@ -411,10 +417,6 @@ public class ControladorDashboardBFF {
                 { "categoria": "Transporte", "total": 400, "porcentaje": 15, "color": "#10b981" },
                 { "categoria": "Entretenimiento", "total": 300, "porcentaje": 15, "color": "#8b5cf6" },
                 { "categoria": "Otros", "total": 200, "porcentaje": 10, "color": "#64748b" }
-              ],
-              "fijoVariable": [
-                { "tipo": "FIJO", "monto": 1400, "porcentaje": 65 },
-                { "tipo": "VARIABLE", "monto": 900, "porcentaje": 35 }
               ],
               "heatmap": [
                 { "dia": "Lunes", "intensidad": 3 },
@@ -429,9 +431,24 @@ public class ControladorDashboardBFF {
                 { "nombre": "Fondo de Emergencia", "objetivo": 10000, "actual": 6500, "porcentaje": 65, "color": "#10b981" }
               ],
               "comparativa": [
+                { "mes": "Ene", "actual": 2500, "anterior": 2300 },
+                { "mes": "Feb", "actual": 2600, "anterior": 2400 },
+                { "mes": "Mar", "actual": 2800, "anterior": 2500 },
                 { "mes": "Abr", "actual": 2400, "anterior": 2200 },
-                { "mes": "May", "actual": 2300, "anterior": 2400 },
-                { "mes": "Jun", "actual": 2100, "anterior": 2500 }
+                { "mes": "May", "actual": 2700, "anterior": 2600 },
+                { "mes": "Jun", "actual": 2900, "anterior": 2700 },
+                { "mes": "Jul", "actual": 3100, "anterior": 2900 },
+                { "mes": "Ago", "actual": 3000, "anterior": 2800 },
+                { "mes": "Sep", "actual": 3200, "anterior": 3000 },
+                { "mes": "Oct", "actual": 3300, "anterior": 3100 },
+                { "mes": "Nov", "actual": 3400, "anterior": 3200 },
+                { "mes": "Dic", "actual": 3600, "anterior": 3300 }
+              ],
+              "transaccionesMetodo": [
+                { "metodo": "Tarjeta", "cantidad": 25, "color": "#3b82f6" },
+                { "metodo": "Efectivo", "cantidad": 15, "color": "#10b981" },
+                { "metodo": "Transferencia", "cantidad": 18, "color": "#a855f7" },
+                { "metodo": "Digital", "cantidad": 12, "color": "#f59e0b" }
               ]
             }
             """;

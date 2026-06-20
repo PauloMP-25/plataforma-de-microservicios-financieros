@@ -77,7 +77,7 @@ export class ChartPaymentMethodsComponent implements AfterViewInit, OnDestroy {
         },
         plugins: {
           legend: {
-            position: 'right',
+            position: 'bottom',
             labels: {
               color: textColor,
               font: { family: 'Inter, sans-serif', size: 12, weight: 'bold' },

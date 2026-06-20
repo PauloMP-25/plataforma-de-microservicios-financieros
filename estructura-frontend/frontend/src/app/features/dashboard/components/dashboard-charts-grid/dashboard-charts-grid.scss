@@ -8,6 +8,15 @@
   &.compact-mode {
     grid-template-columns: 1.5fr 1fr 0.8fr;
   }
+
+  &.three-months {
+    .cashflow-card { order: 1; }
+    .heatmap-card { order: 2; }
+    .distribution-card { order: 3; }
+    .historical-card { order: 4; }
+    .ratio-card { order: 5; }
+    .payment-card { order: 6; }
+  }
 }
 
 .chart-card {

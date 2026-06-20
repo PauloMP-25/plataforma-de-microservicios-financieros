@@ -66,14 +66,14 @@ export class ChartDistributionComponent implements AfterViewInit, OnDestroy {
         layout: {
           padding: {
             left: 10,
-            right: 45,
+            right: 10,
             top: 10,
             bottom: 10
           }
         },
         plugins: {
           legend: {
-            position: 'right',
+            position: 'bottom',
             labels: {
               color: textColor,
               font: { family: 'Inter, sans-serif', size: 13, weight: 'bold' },
