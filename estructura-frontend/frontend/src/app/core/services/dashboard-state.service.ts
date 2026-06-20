@@ -49,15 +49,34 @@ export class DashboardStateService {
     // Deprecated o ignorado para V2, retenido por compatibilidad con Auth
   }
 
+  private initialLoadDone = false;
+
   /**
    * Carga los datos analíticos enriquecidos pasando los filtros al backend.
    */
   cargarAnalitica(filtros?: DashboardFiltros): void {
+    // Si ya cargó y no se enviaron filtros nuevos, evitamos múltiples llamadas innecesarias
+    if (this.initialLoadDone && !filtros) {
+      return;
+    }
+
     this.loading.set(true);
     this.error.set(null);
 
     // Actualizamos el signal de filtros si vienen nuevos
     if (filtros) {
+      // Comparar si son iguales (simplificado) para evitar re-fetch si no cambiaron
+      const actuales = this.filtrosActuales();
+      if (
+        actuales.fechaInicio === filtros.fechaInicio &&
+        actuales.fechaFin === filtros.fechaFin &&
+        actuales.metodoPago === filtros.metodoPago &&
+        actuales.tipoMovimiento === filtros.tipoMovimiento &&
+        this.initialLoadDone
+      ) {
+        this.loading.set(false);
+        return;
+      }
       this.filtrosActuales.set(filtros);
     }
 
@@ -75,7 +94,13 @@ export class DashboardStateService {
           const d = resp.datos;
           this.resumen.set(d.resumen);
           this.flujoCaja.set(d.flujoCaja || []);
-          this.distribucionGastos.set(d.distribucionGastos || []);
+          
+          // Tomar solo los 5 gastos más importantes (ordenados)
+          const dist = (d.distribucionGastos || [])
+            .sort((a, b) => b.total - a.total)
+            .slice(0, 5);
+          this.distribucionGastos.set(dist);
+
           this.fijoVariable.set(d.fijoVariable || []);
           this.heatmap.set(d.heatmap || []);
           this.metas.set(d.metas || []);
@@ -84,12 +109,14 @@ export class DashboardStateService {
           this.error.set(resp.mensaje || 'Error al cargar analítica avanzada');
         }
         this.loading.set(false);
+        this.initialLoadDone = true;
       },
       error: (err) => {
         console.warn('[DashboardStateService] Fallback a mock de analítica avanzada:', err);
         // Mock fallback temporal para frontend dev
         this.cargarMock();
         this.loading.set(false);
+        this.initialLoadDone = true;
       }
     });
   }
