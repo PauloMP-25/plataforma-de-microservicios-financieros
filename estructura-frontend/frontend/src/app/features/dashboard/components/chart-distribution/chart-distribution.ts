@@ -63,6 +63,14 @@ export class ChartDistributionComponent implements AfterViewInit, OnDestroy {
         responsive: true,
         maintainAspectRatio: false,
         cutout: '75%',
+        layout: {
+          padding: {
+            left: 10,
+            right: 45,
+            top: 10,
+            bottom: 10
+          }
+        },
         plugins: {
           legend: {
             position: 'right',
@@ -70,27 +78,7 @@ export class ChartDistributionComponent implements AfterViewInit, OnDestroy {
               color: textColor,
               font: { family: 'Inter, sans-serif', size: 13, weight: 'bold' },
               usePointStyle: true,
-              padding: 16,
-              generateLabels: (chart: any) => {
-                const data = chart.data;
-                if (data.labels?.length && data.datasets.length) {
-                  const dataset = data.datasets[0];
-                  const total = (dataset.data as number[]).reduce((acc, curr) => acc + curr, 0);
-                  return data.labels.map((label: string, i: number) => {
-                    const value = dataset.data[i] as number;
-                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
-                    return {
-                      text: `${label}: S/ ${value.toLocaleString()} (${percentage}%)`,
-                      fillStyle: (dataset.backgroundColor as string[])[i],
-                      strokeStyle: (dataset.backgroundColor as string[])[i],
-                      lineWidth: 0,
-                      hidden: false,
-                      index: i
-                    };
-                  });
-                }
-                return [];
-              }
+              padding: 16
             }
           },
           tooltip: {
