@@ -2,9 +2,9 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ChartCashflowComponent } from '../chart-cashflow/chart-cashflow';
 import { ChartDistributionComponent } from '../chart-distribution/chart-distribution';
-import { ChartFixedVsVariableComponent } from '../chart-fixed-vs-variable/chart-fixed-vs-variable';
+import { ChartExpenseIncomeRatioComponent } from '../chart-expense-income-ratio/chart-expense-income-ratio';
 import { ChartHeatmapComponent } from '../chart-heatmap/chart-heatmap';
-import { ChartGoalsProgressComponent } from '../chart-goals-progress/chart-goals-progress';
+import { ChartPaymentMethodsComponent } from '../chart-payment-methods/chart-payment-methods';
 import { ChartHistoricalComparisonComponent } from '../chart-historical-comparison/chart-historical-comparison';
 
 @Component({
@@ -14,9 +14,9 @@ import { ChartHistoricalComparisonComponent } from '../chart-historical-comparis
     CommonModule,
     ChartCashflowComponent,
     ChartDistributionComponent,
-    ChartFixedVsVariableComponent,
+    ChartExpenseIncomeRatioComponent,
     ChartHeatmapComponent,
-    ChartGoalsProgressComponent,
+    ChartPaymentMethodsComponent,
     ChartHistoricalComparisonComponent
   ],
   templateUrl: './dashboard-charts-grid.html',

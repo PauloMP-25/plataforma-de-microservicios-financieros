@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, OnDestroy, effect } from '@angular/core';
+import { Component, AfterViewInit, OnDestroy, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Chart, ChartConfiguration } from 'chart.js/auto';
 import { DashboardStateService } from '../../../../core/services/dashboard-state.service';
@@ -13,6 +13,10 @@ import { ServicioTema } from '../../../../core/services/servicio-tema';
 })
 export class ChartHistoricalComparisonComponent implements AfterViewInit, OnDestroy {
   private chart: Chart | undefined;
+
+  tituloComparativa = computed(() => {
+    return this.esFiltroSemanal() ? 'Comparativa Semanal' : 'Comparativa Mensual';
+  });
 
   constructor(
     private stateService: DashboardStateService,
@@ -37,6 +41,18 @@ export class ChartHistoricalComparisonComponent implements AfterViewInit, OnDest
     }
   }
 
+  private esFiltroSemanal(): boolean {
+    const filtros = this.stateService.filtrosActuales();
+    if (filtros.fechaInicio && filtros.fechaFin) {
+      const start = new Date(filtros.fechaInicio);
+      const end = new Date(filtros.fechaFin);
+      const diffTime = Math.abs(end.getTime() - start.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays <= 7;
+    }
+    return false;
+  }
+
   private inicializarGrafico(): void {
     const canvas = document.getElementById('historicalComparisonCanvas') as HTMLCanvasElement;
     if (!canvas) return;
@@ -49,19 +65,23 @@ export class ChartHistoricalComparisonComponent implements AfterViewInit, OnDest
     const textColor = isDark ? '#94a3b8' : '#64748b';
     const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
 
+    const esSemana = this.esFiltroSemanal();
+    const labelActual = esSemana ? 'Esta Semana' : 'Este Año';
+    const labelAnterior = esSemana ? 'Semana Anterior' : 'Año Anterior';
+
     const config: ChartConfiguration = {
       type: 'bar',
       data: {
         labels: data.map(d => d.mes),
         datasets: [
           {
-            label: 'Este Año',
+            label: labelActual,
             data: data.map(d => d.actual),
             backgroundColor: '#5b6af0',
             borderRadius: 4
           },
           {
-            label: 'Año Anterior',
+            label: labelAnterior,
             data: data.map(d => d.anterior),
             backgroundColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
             borderRadius: 4
@@ -81,7 +101,7 @@ export class ChartHistoricalComparisonComponent implements AfterViewInit, OnDest
         },
         plugins: {
           legend: {
-            labels: { color: textColor, font: { family: 'Inter, sans-serif', size: 14, weight: 'bold' } }
+            labels: { color: textColor, font: { family: 'Inter, sans-serif', size: 13, weight: 'bold' } }
           },
           tooltip: {
             backgroundColor: isDark ? 'rgba(30, 41, 59, 0.9)' : 'rgba(255, 255, 255, 0.9)',
@@ -139,6 +159,10 @@ export class ChartHistoricalComparisonComponent implements AfterViewInit, OnDest
     
     const textColor = isDark ? '#94a3b8' : '#64748b';
     const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+
+    const esSemana = this.esFiltroSemanal();
+    this.chart.data.datasets[0].label = esSemana ? 'Esta Semana' : 'Este Año';
+    this.chart.data.datasets[1].label = esSemana ? 'Semana Anterior' : 'Año Anterior';
 
     this.chart.data.labels = data.map(d => d.mes);
     this.chart.data.datasets[0].data = data.map(d => d.actual);

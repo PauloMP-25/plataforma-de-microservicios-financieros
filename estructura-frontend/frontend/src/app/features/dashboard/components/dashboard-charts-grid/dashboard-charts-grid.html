@@ -1,5 +1,5 @@
 <div class="charts-grid">
-  <!-- Gráfico de Líneas: Flujo de Caja (Ocupa 2 columnas si hay espacio) -->
+  <!-- Gráfico de Líneas: Flujo de Caja (Ocupa todo el ancho) -->
   <div class="chart-card full-width">
     @defer (on viewport) {
       <app-chart-cashflow></app-chart-cashflow>
@@ -17,15 +17,6 @@
     }
   </div>
 
-  <!-- Gráfico de Barras Apiladas: Fijos vs Variables -->
-  <div class="chart-card">
-    @defer (on viewport) {
-      <app-chart-fixed-vs-variable></app-chart-fixed-vs-variable>
-    } @placeholder {
-      <div class="chart-loader"><i class="fa-solid fa-spinner fa-spin"></i> Cargando Fijos vs Variables...</div>
-    }
-  </div>
-
   <!-- Gráfico de Mapa de Calor: Gastos por Día -->
   <div class="chart-card">
     @defer (on viewport) {
@@ -35,21 +26,30 @@
     }
   </div>
 
-  <!-- Gráfico Radial: Progreso de Metas -->
+  <!-- Gráfico: Uso de Métodos de Pago -->
   <div class="chart-card">
     @defer (on viewport) {
-      <app-chart-goals-progress></app-chart-goals-progress>
+      <app-chart-payment-methods></app-chart-payment-methods>
     } @placeholder {
-      <div class="chart-loader"><i class="fa-solid fa-spinner fa-spin"></i> Cargando Progreso de Metas...</div>
+      <div class="chart-loader"><i class="fa-solid fa-spinner fa-spin"></i> Cargando Métodos de Pago...</div>
     }
   </div>
 
-  <!-- Gráfico Barras Agrupadas: Comparativa Histórica (Ocupa 2 columnas) -->
+  <!-- Gráfico Barras Agrupadas: Comparativa Histórica (Ocupa todo el ancho) -->
   <div class="chart-card full-width">
     @defer (on viewport) {
       <app-chart-historical-comparison></app-chart-historical-comparison>
     } @placeholder {
       <div class="chart-loader"><i class="fa-solid fa-spinner fa-spin"></i> Cargando Comparativa Histórica...</div>
+    }
+  </div>
+
+  <!-- Gráfico: Relación Gasto-Ingreso (Ocupa todo el ancho al final para evitar compresión de etiquetas) -->
+  <div class="chart-card full-width">
+    @defer (on viewport) {
+      <app-chart-expense-income-ratio></app-chart-expense-income-ratio>
+    } @placeholder {
+      <div class="chart-loader"><i class="fa-solid fa-spinner fa-spin"></i> Cargando Relación Gasto-Ingreso...</div>
     }
   </div>
 </div>

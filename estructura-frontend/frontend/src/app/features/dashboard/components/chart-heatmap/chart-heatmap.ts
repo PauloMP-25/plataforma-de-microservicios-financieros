@@ -60,7 +60,7 @@ export class ChartHeatmapComponent implements AfterViewInit, OnDestroy {
       data: {
         labels: data.map(d => d.dia),
         datasets: [{
-          label: 'Intensidad de Gasto',
+          label: 'Gastos Registrados',
           data: data.map(d => d.intensidad),
           backgroundColor: backgroundColors,
           borderRadius: 4
@@ -85,6 +85,8 @@ export class ChartHeatmapComponent implements AfterViewInit, OnDestroy {
             ticks: { color: textColor, font: { family: 'Inter, sans-serif', size: 12, weight: 'bold' } }
           },
           y: {
+            grace: '25%',
+            suggestedMax: 12,
             grid: { color: gridColor },
             ticks: { display: false } // No mostrar números para dar efecto heatmap
           }

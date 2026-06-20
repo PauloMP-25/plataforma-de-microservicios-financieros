@@ -7,7 +7,6 @@ import {
   DashboardResumenDTO, 
   CashflowPointDTO, 
   CategoriaDistribucionDTO,
-  FijoVariableDTO,
   HeatmapPointDTO,
   MetaProgressDTO,
   ComparativaMensualDTO,
@@ -31,10 +30,10 @@ export class DashboardStateService {
   readonly resumen = signal<DashboardResumenDTO | null>(null);
   readonly flujoCaja = signal<CashflowPointDTO[]>([]);
   readonly distribucionGastos = signal<CategoriaDistribucionDTO[]>([]);
-  readonly fijoVariable = signal<FijoVariableDTO[]>([]);
   readonly heatmap = signal<HeatmapPointDTO[]>([]);
   readonly metas = signal<MetaProgressDTO[]>([]);
   readonly comparativa = signal<ComparativaMensualDTO[]>([]);
+  readonly transaccionesMetodo = signal<{ metodo: string, cantidad: number, color: string }[]>([]);
 
   // ── Filtros Actuales ──
   readonly filtrosActuales = signal<DashboardFiltros>({});
@@ -101,10 +100,10 @@ export class DashboardStateService {
             .slice(0, 5);
           this.distribucionGastos.set(dist);
 
-          this.fijoVariable.set(d.fijoVariable || []);
           this.heatmap.set(d.heatmap || []);
           this.metas.set(d.metas || []);
           this.comparativa.set(d.comparativa || []);
+          this.transaccionesMetodo.set(d.transaccionesMetodo || []);
         } else {
           this.error.set(resp.mensaje || 'Error al cargar analítica avanzada');
         }
@@ -136,10 +135,10 @@ export class DashboardStateService {
     this.resumen.set(null);
     this.flujoCaja.set([]);
     this.distribucionGastos.set([]);
-    this.fijoVariable.set([]);
     this.heatmap.set([]);
     this.metas.set([]);
     this.comparativa.set([]);
+    this.transaccionesMetodo.set([]);
     this.filtrosActuales.set({});
     this.loading.set(false);
     this.error.set(null);
@@ -191,12 +190,30 @@ export class DashboardStateService {
       { mes: 'Ene', ingresos: 3000, gastos: 2500 },
       { mes: 'Feb', ingresos: 3200, gastos: 2600 },
       { mes: 'Mar', ingresos: 3100, gastos: 2800 },
-      { mes: 'Abr', ingresos: 3500, gastos: 2400 }
+      { mes: 'Abr', ingresos: 3500, gastos: 2400 },
+      { mes: 'May', ingresos: 3400, gastos: 2700 },
+      { mes: 'Jun', ingresos: 3600, gastos: 2900 },
+      { mes: 'Jul', ingresos: 3800, gastos: 3100 },
+      { mes: 'Ago', ingresos: 3700, gastos: 3000 },
+      { mes: 'Sep', ingresos: 3900, gastos: 3200 },
+      { mes: 'Oct', ingresos: 4000, gastos: 3300 },
+      { mes: 'Nov', ingresos: 4200, gastos: 3400 },
+      { mes: 'Dic', ingresos: 4500, gastos: 3600 }
     ];
 
     let comparativaData = [
-      { mes: 'Marzo', actual: 2800, anterior: 2500 },
-      { mes: 'Abril', actual: 2400, anterior: 2600 }
+      { mes: 'Ene', actual: 3000, anterior: 2800 },
+      { mes: 'Feb', actual: 3200, anterior: 2900 },
+      { mes: 'Mar', actual: 3100, anterior: 3000 },
+      { mes: 'Abr', actual: 3500, anterior: 3200 },
+      { mes: 'May', actual: 3400, anterior: 3100 },
+      { mes: 'Jun', actual: 3600, anterior: 3300 },
+      { mes: 'Jul', actual: 3800, anterior: 3500 },
+      { mes: 'Ago', actual: 3700, anterior: 3400 },
+      { mes: 'Sep', actual: 3900, anterior: 3600 },
+      { mes: 'Oct', actual: 4000, anterior: 3700 },
+      { mes: 'Nov', actual: 4200, anterior: 3800 },
+      { mes: 'Dic', actual: 4500, anterior: 4000 }
     ];
 
     if (filtros.fechaInicio || filtros.fechaFin) {
@@ -214,7 +231,13 @@ export class DashboardStateService {
             { mes: 'Sem. Actual', ingresos: ingresosBase, gastos: gastosBase }
           ];
           comparativaData = [
-            { mes: 'Período', actual: gastosBase, anterior: gastosBase * 0.85 }
+            { mes: 'Lun', actual: Math.round(120 * multiplier), anterior: Math.round(100 * multiplier) },
+            { mes: 'Mar', actual: Math.round(150 * multiplier), anterior: Math.round(130 * multiplier) },
+            { mes: 'Mié', actual: Math.round(80 * multiplier),  anterior: Math.round(95 * multiplier) },
+            { mes: 'Jue', actual: Math.round(200 * multiplier), anterior: Math.round(150 * multiplier) },
+            { mes: 'Vie', actual: Math.round(350 * multiplier), anterior: Math.round(300 * multiplier) },
+            { mes: 'Sáb', actual: Math.round(400 * multiplier), anterior: Math.round(380 * multiplier) },
+            { mes: 'Dom', actual: Math.round(180 * multiplier), anterior: Math.round(200 * multiplier) }
           ];
           promedioDiario = gastosBase / 7;
         } else if (diffDays <= 31) {
@@ -224,7 +247,8 @@ export class DashboardStateService {
             { mes: 'Abr', ingresos: ingresosBase, gastos: gastosBase }
           ];
           comparativaData = [
-            { mes: 'Abril', actual: gastosBase, anterior: gastosBase * 0.95 }
+            { mes: 'Marzo', actual: gastosBase * 0.9, anterior: gastosBase * 0.95 },
+            { mes: 'Abril', actual: gastosBase, anterior: gastosBase * 0.9 }
           ];
         }
       }
@@ -264,10 +288,6 @@ export class DashboardStateService {
       { categoria: 'Otros', total: Math.round(200 * multiplier), porcentaje: 10, color: '#64748b' }
     ].slice(0, 5) : []);
 
-    this.fijoVariable.set(showGastos ? [
-      { tipo: 'FIJO', monto: Math.round(1200 * multiplier), porcentaje: 60 },
-      { tipo: 'VARIABLE', monto: Math.round(800 * multiplier), porcentaje: 40 }
-    ] : []);
 
     this.heatmap.set(showGastos ? [
       { dia: 'Lunes', intensidad: Math.round(4 * multiplier) || 1 },
@@ -282,6 +302,13 @@ export class DashboardStateService {
     this.metas.set([
       { nombre: 'Fondo de Emergencia', objetivo: 5000, actual: Math.round(3500 * (showIngresos ? multiplier : 0.5)), porcentaje: 70, color: '#10b981' },
       { nombre: 'Viaje Fin de Año', objetivo: 2000, actual: Math.round(500 * (showIngresos ? multiplier : 0.5)), porcentaje: 25, color: '#3b82f6' }
+    ]);
+
+    this.transaccionesMetodo.set([
+      { metodo: 'Tarjeta', cantidad: Math.round(25 * multiplier) || 2, color: '#3b82f6' },
+      { metodo: 'Efectivo', cantidad: Math.round(15 * multiplier) || 1, color: '#10b981' },
+      { metodo: 'Transferencia', cantidad: Math.round(18 * multiplier) || 1, color: '#a855f7' },
+      { metodo: 'Digital', cantidad: Math.round(12 * multiplier) || 1, color: '#f59e0b' }
     ]);
 
     this.comparativa.set(comparativaData);

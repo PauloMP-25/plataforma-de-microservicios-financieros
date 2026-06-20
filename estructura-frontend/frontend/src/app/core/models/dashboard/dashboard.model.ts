@@ -25,12 +25,7 @@ export interface CategoriaDistribucionDTO {
   color: string;
 }
 
-/** [NUEVO] Ingresos/Gastos Fijos vs Variables */
-export interface FijoVariableDTO {
-  tipo: 'FIJO' | 'VARIABLE';
-  monto: number;
-  porcentaje: number;
-}
+
 
 /** [NUEVO] Mapa de calor de gastos por día de semana */
 export interface HeatmapPointDTO {
@@ -61,8 +56,8 @@ export interface DashboardAnaliticaDTO {
   resumen: DashboardResumenDTO;
   flujoCaja: CashflowPointDTO[];
   distribucionGastos: CategoriaDistribucionDTO[];
-  fijoVariable: FijoVariableDTO[];
   heatmap: HeatmapPointDTO[];
   metas: MetaProgressDTO[];
   comparativa: ComparativaMensualDTO[];
+  transaccionesMetodo?: { metodo: string; cantidad: number; color: string }[];
 }

@@ -1,6 +1,6 @@
 .charts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 }
 
@@ -16,9 +16,9 @@
 
   app-chart-cashflow,
   app-chart-distribution,
-  app-chart-fixed-vs-variable,
+  app-chart-expense-income-ratio,
   app-chart-heatmap,
-  app-chart-goals-progress,
+  app-chart-payment-methods,
   app-chart-historical-comparison {
     flex: 1;
     display: flex;
@@ -48,7 +48,14 @@
   opacity: 0.7;
 }
 
-@media (min-width: 1024px) {
+.full-width {
+  grid-column: span 3;
+}
+
+@media (max-width: 1024px) {
+  .charts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
   .full-width {
     grid-column: span 2;
   }
