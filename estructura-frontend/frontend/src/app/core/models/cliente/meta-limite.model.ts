@@ -23,8 +23,8 @@ export interface RespuestaMetaAhorro {
   fechaLimite: string;
   completada: boolean;
   proposito?: string;
-  fechaCreacion: string;
-  fechaActualizacion: string;
+  fechaCreacion?: string;
+  fechaActualizacion?: string;
 }
 
 export interface SolicitudLimiteGasto {

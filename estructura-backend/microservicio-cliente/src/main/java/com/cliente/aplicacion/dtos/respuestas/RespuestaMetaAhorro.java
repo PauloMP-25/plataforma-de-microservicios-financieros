@@ -3,7 +3,6 @@ package com.cliente.aplicacion.dtos.respuestas;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -19,7 +18,5 @@ public record RespuestaMetaAhorro(
                 BigDecimal porcentajeProgreso,
                 LocalDate fechaLimite,
                 Boolean completada,
-                String proposito,
-                LocalDateTime fechaCreacion,
-                LocalDateTime fechaActualizacion) {
+                String proposito) {
 }

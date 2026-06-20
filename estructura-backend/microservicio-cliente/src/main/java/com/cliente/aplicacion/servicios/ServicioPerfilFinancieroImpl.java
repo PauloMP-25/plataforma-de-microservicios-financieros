@@ -109,7 +109,6 @@ public class ServicioPerfilFinancieroImpl implements ServicioPerfilFinanciero {
     private RespuestaPerfilFinanciero convertirADTO(PerfilFinanciero e) {
         return new RespuestaPerfilFinanciero(
                 e.getOcupacion(),
-                e.getIngresoMensual(), e.getEstiloVida(), e.getTonoIA(),
-                e.getFechaCreacion(), e.getFechaActualizacion());
+                e.getIngresoMensual(), e.getEstiloVida(), e.getTonoIA());
     }
 }

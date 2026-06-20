@@ -82,7 +82,7 @@ public interface IMensajeriaService {
      * Busca códigos de verificación dinámicamente utilizando Specifications.
      * Método administrativo para auditoría de OTPs históricos.
      */
-    org.springframework.data.domain.Page<com.mensajeria.dominio.entidades.CodigoVerificacion> buscarCodigos(
+    org.springframework.data.domain.Page<com.mensajeria.aplicacion.dtos.respuestas.RespuestaCodigoAuditoria> buscarCodigos(
             java.util.UUID usuarioId,
             PropositoCodigo proposito,
             Boolean usado,

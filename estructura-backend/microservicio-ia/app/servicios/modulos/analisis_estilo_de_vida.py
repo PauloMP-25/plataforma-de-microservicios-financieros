@@ -40,7 +40,7 @@ class AnalisisEstiloVidaService(BaseAnalisisService):
         for nombre, cats in clusters.items():
             monto_cluster = df[(df['tipo'] == 'GASTO') & (df['categoria'].isin(cats))]['monto'].sum()
             analisis_clusters[nombre] = {
-                "monto": float(monto_cluster),
+                "monto": round(float(monto_cluster), 2),
                 "porcentaje": round((monto_cluster / total_gasto) * 100, 1)
             }
         
@@ -50,7 +50,7 @@ class AnalisisEstiloVidaService(BaseAnalisisService):
         return {
             "cluster_dominante": cluster_dominante,
             "distribucion": analisis_clusters,
-            "total_analizado": float(total_gasto),
+            "total_analizado": round(float(total_gasto), 2),
             "categorias_detectadas": df['categoria'].unique().tolist()
         }
 

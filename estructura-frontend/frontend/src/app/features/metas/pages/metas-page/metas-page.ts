@@ -367,12 +367,15 @@ export class MetasPage implements OnInit {
   }
 
   obtenerTiempoEmpleadoMeta(meta: RespuestaMetaAhorro): string {
+    if (!meta.fechaCreacion) {
+      return 'N/A';
+    }
     const fin = meta.fechaActualizacion || meta.fechaCreacion;
     return this.calcularTiempoEmpleado(meta.fechaCreacion, fin);
   }
 
   obtenerFechaActualizacionOCreacion(meta: RespuestaMetaAhorro): string {
-    return meta.fechaActualizacion || meta.fechaCreacion;
+    return meta.fechaActualizacion || meta.fechaCreacion || '';
   }
 
   abrirCrearMeta(): void {
