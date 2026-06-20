@@ -226,9 +226,15 @@ export class DashboardStateService {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         
         if (diffDays <= 7) {
-          // Weekly: Show only 1 month (or a subset of cashflow)
+          // Weekly: Show daily cashflow points for each day of the week
           cashflowData = [
-            { mes: 'Sem. Actual', ingresos: ingresosBase, gastos: gastosBase }
+            { mes: 'Lun', ingresos: Math.round(450 * multiplier), gastos: Math.round(380 * multiplier) },
+            { mes: 'Mar', ingresos: Math.round(520 * multiplier), gastos: Math.round(410 * multiplier) },
+            { mes: 'Mié', ingresos: Math.round(380 * multiplier), gastos: Math.round(350 * multiplier) },
+            { mes: 'Jue', ingresos: Math.round(610 * multiplier), gastos: Math.round(490 * multiplier) },
+            { mes: 'Vie', ingresos: Math.round(700 * multiplier), gastos: Math.round(650 * multiplier) },
+            { mes: 'Sáb', ingresos: Math.round(550 * multiplier), gastos: Math.round(720 * multiplier) },
+            { mes: 'Dom', ingresos: Math.round(300 * multiplier), gastos: Math.round(250 * multiplier) }
           ];
           comparativaData = [
             { mes: 'Lun', actual: Math.round(120 * multiplier), anterior: Math.round(100 * multiplier) },
@@ -241,14 +247,33 @@ export class DashboardStateService {
           ];
           promedioDiario = gastosBase / 7;
         } else if (diffDays <= 31) {
-          // Monthly: Show last 2 months
+          // Monthly: Show current month + previous month with dynamic names
+          const mesesNombres = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+          const mesActual = end.getMonth();
+          const mesAnterior = mesActual === 0 ? 11 : mesActual - 1;
           cashflowData = [
-            { mes: 'Mar', ingresos: ingresosBase * 0.9, gastos: gastosBase * 1.1 },
-            { mes: 'Abr', ingresos: ingresosBase, gastos: gastosBase }
+            { mes: mesesNombres[mesAnterior], ingresos: ingresosBase * 0.9, gastos: gastosBase * 1.1 },
+            { mes: mesesNombres[mesActual], ingresos: ingresosBase, gastos: gastosBase }
           ];
           comparativaData = [
-            { mes: 'Marzo', actual: gastosBase * 0.9, anterior: gastosBase * 0.95 },
-            { mes: 'Abril', actual: gastosBase, anterior: gastosBase * 0.9 }
+            { mes: mesesNombres[mesAnterior], actual: gastosBase * 0.9, anterior: gastosBase * 0.95 },
+            { mes: mesesNombres[mesActual], actual: gastosBase, anterior: gastosBase * 0.9 }
+          ];
+        } else if (diffDays <= 100) {
+          // ~3 months: Show 3 months
+          const mesesNombres = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+          const mesActual = end.getMonth();
+          const mes1 = mesActual >= 2 ? mesActual - 2 : mesActual + 10;
+          const mes2 = mesActual >= 1 ? mesActual - 1 : 11;
+          cashflowData = [
+            { mes: mesesNombres[mes1], ingresos: ingresosBase * 0.85, gastos: gastosBase * 1.05 },
+            { mes: mesesNombres[mes2], ingresos: ingresosBase * 0.95, gastos: gastosBase * 0.95 },
+            { mes: mesesNombres[mesActual], ingresos: ingresosBase, gastos: gastosBase }
+          ];
+          comparativaData = [
+            { mes: mesesNombres[mes1], actual: gastosBase * 0.85, anterior: gastosBase * 0.8 },
+            { mes: mesesNombres[mes2], actual: gastosBase * 0.95, anterior: gastosBase * 0.9 },
+            { mes: mesesNombres[mesActual], actual: gastosBase, anterior: gastosBase * 0.95 }
           ];
         }
       }

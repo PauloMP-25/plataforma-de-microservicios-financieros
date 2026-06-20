@@ -94,10 +94,10 @@ export class ChartCashflowComponent implements AfterViewInit, OnDestroy {
         maintainAspectRatio: false,
         layout: {
           padding: {
-            left: 20,
-            right: 25,
-            top: 20,
-            bottom: 5
+            left: 10,
+            right: 40,
+            top: 25,
+            bottom: 10
           }
         },
         plugins: {
@@ -121,7 +121,7 @@ export class ChartCashflowComponent implements AfterViewInit, OnDestroy {
             ticks: { color: textColor, font: { family: 'Inter, sans-serif', size: 12, weight: 'bold' } }
           },
           y: {
-            grace: '15%',
+            grace: '20%',
             grid: { color: gridColor },
             ticks: { color: textColor, font: { family: 'Inter, sans-serif', size: 12, weight: 'bold' } }
           }
@@ -131,25 +131,85 @@ export class ChartCashflowComponent implements AfterViewInit, OnDestroy {
         id: 'dataLabels',
         afterDraw: (chart) => {
           const { ctx } = chart;
+          const chartArea = chart.chartArea;
           ctx.save();
           ctx.font = 'bold 11px Inter, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'bottom';
           
-          chart.data.datasets.forEach((dataset, i) => {
-            const meta = chart.getDatasetMeta(i);
-            if (!meta.hidden) {
-              meta.data.forEach((element: any, index) => {
-                const val = dataset.data[index] as number;
-                if (val !== undefined && val !== null) {
-                  const label = `S/ ${val.toLocaleString()}`;
-                  const { x, y } = element.tooltipPosition();
-                  ctx.fillStyle = dataset.borderColor as string;
-                  ctx.fillText(label, x, y - 6);
-                }
-              });
+          const datasets = chart.data.datasets;
+          const showIngresos = !chart.getDatasetMeta(0).hidden;
+          const showGastos = !chart.getDatasetMeta(1).hidden;
+
+          // Helper: draw a single label with axis boundary checks
+          const drawLabel = (label: string, x: number, y: number, color: string, above: boolean) => {
+            ctx.fillStyle = color;
+            // Measure text width for boundary check
+            const textWidth = ctx.measureText(label).width;
+            const halfText = textWidth / 2;
+
+            // Clamp X so label doesn't overlap Y-axis ticks or right edge
+            let labelX = x;
+            if (labelX - halfText < chartArea.left + 5) {
+              ctx.textAlign = 'left';
+              labelX = chartArea.left + 5;
+            } else if (labelX + halfText > chartArea.right - 5) {
+              ctx.textAlign = 'right';
+              labelX = chartArea.right - 5;
+            } else {
+              ctx.textAlign = 'center';
             }
-          });
+
+            // Choose above or below, and clamp Y so it doesn't exceed chart area
+            if (above) {
+              ctx.textBaseline = 'bottom';
+              const labelY = Math.max(y - 10, chartArea.top + 12);
+              ctx.fillText(label, labelX, labelY);
+            } else {
+              ctx.textBaseline = 'top';
+              const labelY = Math.min(y + 10, chartArea.bottom - 14);
+              ctx.fillText(label, labelX, labelY);
+            }
+          };
+
+          if (showIngresos && showGastos) {
+            const metaIngresos = chart.getDatasetMeta(0);
+            const metaGastos = chart.getDatasetMeta(1);
+
+            metaIngresos.data.forEach((element: any, index) => {
+              const val = datasets[0].data[index] as number;
+              if (val !== undefined && val !== null) {
+                const valGastos = datasets[1].data[index] as number;
+                const isTop = valGastos === undefined || val >= valGastos;
+                const label = `S/ ${val.toLocaleString()}`;
+                const { x, y } = element.tooltipPosition();
+                drawLabel(label, x, y, datasets[0].borderColor as string, isTop);
+              }
+            });
+
+            metaGastos.data.forEach((element: any, index) => {
+              const val = datasets[1].data[index] as number;
+              if (val !== undefined && val !== null) {
+                const valIngresos = datasets[0].data[index] as number;
+                const isTop = valIngresos === undefined || val >= valIngresos;
+                const label = `S/ ${val.toLocaleString()}`;
+                const { x, y } = element.tooltipPosition();
+                drawLabel(label, x, y, datasets[1].borderColor as string, isTop);
+              }
+            });
+          } else {
+            datasets.forEach((dataset, i) => {
+              const meta = chart.getDatasetMeta(i);
+              if (!meta.hidden) {
+                meta.data.forEach((element: any, index) => {
+                  const val = dataset.data[index] as number;
+                  if (val !== undefined && val !== null) {
+                    const label = `S/ ${val.toLocaleString()}`;
+                    const { x, y } = element.tooltipPosition();
+                    drawLabel(label, x, y, dataset.borderColor as string, true);
+                  }
+                });
+              }
+            });
+          }
           ctx.restore();
         }
       }]

@@ -2,6 +2,12 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
+  overflow: hidden;
+  max-width: 100%;
+
+  &.compact-mode {
+    grid-template-columns: 1.5fr 1fr 0.8fr;
+  }
 }
 
 .chart-card {
@@ -13,6 +19,12 @@
   display: flex;
   flex-direction: column;
   position: relative;
+  overflow: hidden;
+  min-width: 0;
+
+  &.cashflow-card {
+    min-height: 420px;
+  }
 
   app-chart-cashflow,
   app-chart-distribution,
@@ -25,6 +37,7 @@
     flex-direction: column;
     min-height: 0;
     width: 100%;
+    overflow: hidden;
   }
 }
 
@@ -55,6 +68,10 @@
 @media (max-width: 1024px) {
   .charts-grid {
     grid-template-columns: repeat(2, 1fr);
+
+    &.compact-mode {
+      grid-template-columns: 1.4fr 1fr;
+    }
   }
   .full-width {
     grid-column: span 2;
@@ -64,6 +81,10 @@
 @media (max-width: 768px) {
   .charts-grid {
     grid-template-columns: 1fr;
+
+    &.compact-mode {
+      grid-template-columns: 1fr;
+    }
   }
   .full-width {
     grid-column: span 1;

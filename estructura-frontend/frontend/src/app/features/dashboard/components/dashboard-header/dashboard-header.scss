@@ -7,6 +7,7 @@
   border-radius: var(--radius-lg);
   background: var(--bg-card);
   border: 1px solid var(--border-color);
+  overflow: hidden;
 
   .header-left {
     width: 100%;
@@ -30,7 +31,7 @@
 
 .header-filters {
   display: grid;
-  grid-template-columns: 3.3fr 1fr 1fr 1.2fr 1.2fr;
+  grid-template-columns: 1fr 130px 130px 145px 145px;
   gap: 16px;
   width: 100%;
   align-items: flex-end;
@@ -64,7 +65,7 @@
     cursor: pointer;
     transition: var(--transition);
     white-space: nowrap;
-    padding: 0 4px;
+    padding: 0 8px;
 
     &:hover {
       color: var(--text-primary);
@@ -134,7 +135,7 @@
   }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   .header-filters {
     grid-template-columns: 1fr 1fr;
   }

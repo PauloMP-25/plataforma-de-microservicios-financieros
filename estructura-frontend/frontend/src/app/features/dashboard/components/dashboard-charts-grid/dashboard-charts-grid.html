@@ -1,6 +1,6 @@
-<div class="charts-grid">
-  <!-- Gráfico de Líneas: Flujo de Caja (Ocupa todo el ancho si hay suficientes meses) -->
-  <div class="chart-card" [class.full-width]="stateService.flujoCaja().length > 4">
+<div class="charts-grid" [class.compact-mode]="stateService.flujoCaja().length >= 2 && stateService.flujoCaja().length <= 4">
+  <!-- Gráfico de Líneas: Flujo de Caja -->
+  <div class="chart-card cashflow-card" [class.full-width]="stateService.flujoCaja().length > 4">
     @defer (on viewport) {
       <app-chart-cashflow></app-chart-cashflow>
     } @placeholder {
@@ -35,7 +35,7 @@
     }
   </div>
 
-  <!-- Gráfico Barras Agrupadas: Comparativa Histórica (Ocupa todo el ancho si hay suficientes meses/días) -->
+  <!-- Gráfico Barras Agrupadas: Comparativa Histórica -->
   <div class="chart-card" [class.full-width]="stateService.comparativa().length > 4">
     @defer (on viewport) {
       <app-chart-historical-comparison></app-chart-historical-comparison>
@@ -44,7 +44,7 @@
     }
   </div>
 
-  <!-- Gráfico: Relación Gasto-Ingreso (Ocupa todo el ancho al final si hay suficientes meses) -->
+  <!-- Gráfico: Relación Gasto-Ingreso -->
   <div class="chart-card" [class.full-width]="stateService.flujoCaja().length > 4">
     @defer (on viewport) {
       <app-chart-expense-income-ratio></app-chart-expense-income-ratio>

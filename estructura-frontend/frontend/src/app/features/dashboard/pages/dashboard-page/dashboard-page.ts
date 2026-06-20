@@ -28,9 +28,6 @@ export class DashboardPage implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Carga inicial (sin filtros)
-    this.stateService.cargarAnalitica();
-
     this.busSubscription = this.eventBus.on('TRANSACTION_MODIFIED').subscribe(() => {
       console.log('[DashboardPage] Invalidador de caché activado. Recargando analítica...');
       this.stateService.invalidarCache();
