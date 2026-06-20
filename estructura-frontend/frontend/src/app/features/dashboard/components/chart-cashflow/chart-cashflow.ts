@@ -129,7 +129,7 @@ export class ChartCashflowComponent implements AfterViewInit, OnDestroy {
       },
       plugins: [{
         id: 'dataLabels',
-        afterDatasetsDraw: (chart) => {
+        afterDraw: (chart) => {
           const { ctx } = chart;
           ctx.save();
           ctx.font = 'bold 11px Inter, sans-serif';

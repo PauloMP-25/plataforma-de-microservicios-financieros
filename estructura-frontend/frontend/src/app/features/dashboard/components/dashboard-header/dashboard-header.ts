@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DashboardFiltros } from '../../../../core/services/dashboard-state.service';
@@ -10,13 +10,18 @@ import { DashboardFiltros } from '../../../../core/services/dashboard-state.serv
   templateUrl: './dashboard-header.html',
   styleUrls: ['./dashboard-header.scss']
 })
-export class DashboardHeaderComponent {
+export class DashboardHeaderComponent implements OnInit {
   @Output() filtrosCambio = new EventEmitter<DashboardFiltros>();
 
-  fechaInicio: string = '';
+  fechaInicio: string = '2026-01-01';
   fechaFin: string = '';
   tipoMovimiento: string = '';
   metodoPago: string = '';
+
+  ngOnInit(): void {
+    this.fechaFin = this.formatDate(new Date());
+    setTimeout(() => this.onFiltroChange());
+  }
 
   onFiltroChange(): void {
     const filtros: DashboardFiltros = {

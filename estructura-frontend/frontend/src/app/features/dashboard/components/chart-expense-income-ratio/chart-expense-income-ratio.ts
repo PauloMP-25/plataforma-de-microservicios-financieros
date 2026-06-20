@@ -137,7 +137,7 @@ export class ChartExpenseIncomeRatioComponent implements AfterViewInit, OnDestro
         },
         {
           id: 'dataLabels',
-          afterDatasetsDraw: (chart) => {
+          afterDraw: (chart) => {
             const { ctx } = chart;
             ctx.save();
             ctx.font = 'bold 11px Inter, sans-serif';

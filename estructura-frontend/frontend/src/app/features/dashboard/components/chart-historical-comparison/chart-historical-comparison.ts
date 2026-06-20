@@ -125,7 +125,7 @@ export class ChartHistoricalComparisonComponent implements AfterViewInit, OnDest
       },
       plugins: [{
         id: 'dataLabels',
-        afterDatasetsDraw: (chart) => {
+        afterDraw: (chart) => {
           const { ctx } = chart;
           ctx.save();
           ctx.font = 'bold 11px Inter, sans-serif';
