@@ -1,6 +1,7 @@
 import { Routes } from "@angular/router";
 import { MetasPage } from "./pages/metas-page/metas-page";
 import { MetaFormPage } from "./pages/meta-form-page/meta-form-page";
+import { pendingChangesGuard } from "../../core/guards/pending-changes.guard";
 
 export const METAS_ROUTES: Routes = [
   {
@@ -17,6 +18,7 @@ export const METAS_ROUTES: Routes = [
   {
     path: 'nueva',
     component: MetaFormPage,
+    canDeactivate: [pendingChangesGuard],
     data: {
         title: 'Nueva Meta',
         breadcrumbs: [
@@ -28,6 +30,7 @@ export const METAS_ROUTES: Routes = [
   {
     path: 'editar/:id',
     component: MetaFormPage,
+    canDeactivate: [pendingChangesGuard],
     data: {
         title: 'Editar Meta',
         breadcrumbs: [

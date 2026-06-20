@@ -5,6 +5,7 @@ import { RespuestaMetaAhorro } from '../../../../core/models/cliente/meta-limite
 import { FinancieroService } from '../../../../core/services/Financiero.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { AppEventBus } from '../../../../core/services/app-event-bus.service';
+import { NotificacionService } from '../../../../core/services/notificacion.service';
 import { TransaccionRequestDTO } from '../../../../core/models/financiero/transaccion.model';
 import { MetaKpiComponent } from '../../components/meta-kpi/meta-kpi.component';
 import { MetaFiltersComponent } from '../../components/meta-filters/meta-filters.component';
@@ -35,6 +36,7 @@ export class MetasPage implements OnInit {
   private authService = inject(AuthService);
   private eventBus = inject(AppEventBus);
   private metasUtility = inject(MetasUtilityService);
+  private notificacionService = inject(NotificacionService);
 
   // Estado
   metas = signal<RespuestaMetaAhorro[]>([]);
@@ -397,17 +399,25 @@ export class MetasPage implements OnInit {
 
     this.metasDataService.eliminarMeta(metaId).subscribe({
       next: () => {
-        this.exitoMensaje.set('Meta de ahorro eliminada con éxito.');
+        this.notificacionService.mostrar(
+          'Meta Eliminada',
+          'La meta de ahorro fue eliminada con éxito.',
+          'meta',
+          'trash-can'
+        );
         if (this.metaSeleccionada()?.id === metaId) {
           this.metaSeleccionada.set(null);
         }
         this.cargarMetas();
-        setTimeout(() => this.exitoMensaje.set(''), 4000);
       },
       error: () => {
-        this.errorMensaje.set('Hubo un error al eliminar la meta de ahorro.');
+        this.notificacionService.mostrar(
+          'Error',
+          'Hubo un error al intentar eliminar la meta de ahorro.',
+          'meta',
+          'triangle-exclamation'
+        );
         this.cargando.set(false);
-        setTimeout(() => this.errorMensaje.set(''), 4000);
       }
     });
   }
@@ -461,7 +471,7 @@ export class MetasPage implements OnInit {
           ? `¡Felicidades! Has completado tu meta "${meta.nombreVisual}" (Modo Pruebas).`
           : `¡Felicidades! Has completado tu meta "${meta.nombreVisual}". Se registró un gasto de S/ ${meta.montoObjetivo.toFixed(2)}.`;
         
-        this.exitoMensaje.set(mensajeExito);
+        this.notificacionService.mostrar('¡Felicidades!', mensajeExito, 'meta', 'award', 5000);
         this.modalConfirmarCompletar.set(null);
         this.metaSeleccionada.set(null);
         
@@ -469,11 +479,14 @@ export class MetasPage implements OnInit {
         this.cargarMetas();
         
         this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
-        
-        setTimeout(() => this.exitoMensaje.set(''), 5000);
       },
       error: () => {
-        this.errorMensaje.set('Hubo un error al completar la meta de ahorro.');
+        this.notificacionService.mostrar(
+          'Error',
+          'Hubo un error al completar la meta de ahorro.',
+          'meta',
+          'triangle-exclamation'
+        );
         this.cargando.set(false);
       }
     });

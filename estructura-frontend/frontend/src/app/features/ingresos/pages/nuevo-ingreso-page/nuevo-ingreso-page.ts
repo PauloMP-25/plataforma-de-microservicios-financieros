@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { HasUnsavedChanges } from '../../../../core/guards/pending-changes.guard';
 import { IngresoFormComponent } from '../../components/ingreso-form/ingreso-form';
 import { IngresoPreviewComponent } from '../../components/ingreso-preview/ingreso-preview';
 import { IngresoRecentListComponent } from '../../components/ingreso-recent-list/ingreso-recent-list';
@@ -22,7 +23,7 @@ import { DistribucionCategoria, IngresoFormData, IngresoReciente, OptionItem } f
   templateUrl: './nuevo-ingreso-page.html',
   styleUrl: './nuevo-ingreso-page.scss',
 })
-export class NuevoIngresoPage {
+export class NuevoIngresoPage implements HasUnsavedChanges {
   private readonly stateService = inject(IngresosStateService);
   private readonly authService = inject(AuthService);
   private readonly transaccionesService = inject(Transacciones);
@@ -31,6 +32,13 @@ export class NuevoIngresoPage {
   private readonly eventBus = inject(AppEventBus);
   private readonly router = inject(Router);
   private readonly notificacionService = inject(NotificacionService);
+
+  formularioGuardado = false;
+  private initialForm = '';
+
+  hasUnsavedChanges(): boolean {
+    return !this.formularioGuardado && JSON.stringify(this.form) !== this.initialForm;
+  }
 
   readonly sugerenciaSeleccionadaSignal = signal<CategoriaSugerida | null>(null);
   readonly categoriaIAPendiente = signal<{ nombre: string; icono: string } | null>(null);
@@ -130,6 +138,7 @@ export class NuevoIngresoPage {
 
   constructor() {
     this.stateService.cargarDatos();
+    this.initialForm = JSON.stringify(this.form);
   }
 
   clasificarConIa(): void {
@@ -246,6 +255,8 @@ export class NuevoIngresoPage {
       console.error('No se encontró sesión activa.');
       return;
     }
+
+    this.formularioGuardado = true;
 
     const registrarIngresoFinal = (catId: string) => {
       this.guardando.set(true);

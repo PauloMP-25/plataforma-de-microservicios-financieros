@@ -233,11 +233,11 @@ Esta sección agrupa 20 requerimientos críticos de arquitectura, seguridad y re
 
 | Categoría | Descripción | Capa | Prioridad | Estado |
 | :--- | :--- | :--- | :--- | :--- |
-| Seguridad | **[S-01] Guards de Rutas (Autenticación):** Implementar `AuthGuard` y `RoleGuard` en Angular para bloquear totalmente el acceso mediante URL directa a vistas privadas (Dashboard, Perfil, etc.) si no hay sesión activa. | Frontend | Alta | Pendiente |
+| Seguridad | **[S-01] Guards de Rutas (Autenticación):** Implementar `AuthGuard` y `RoleGuard` en Angular para bloquear totalmente el acceso mediante URL directa a vistas privadas (Dashboard, Perfil, etc.) si no hay sesión activa. | Frontend | Alta | Completado |
 | Seguridad | **[S-02] Validación Estricta JWT:** El API Gateway o microservicios deben validar rigurosamente la firma, expiración y emisor del Token JWT en cada petición HTTP, rechazando con HTTP 401 si es inválido. | Backend | Alta | Completado |
 | Seguridad | **[S-03] Protección CSRF & XSS:** Desinfectar (*sanitize*) sistemáticamente todos los inputs de texto en Angular y habilitar cabeceras HTTP de seguridad (Helmet, CORS estrictos) en el backend. | Fullstack | Alta | Pendiente |
 | Seguridad | **[S-04] Rate Limiting:** Implementar un límite de peticiones (Rate Limiting) en endpoints críticos (Login, IA, Registro) para frustrar ataques de fuerza bruta o de denegación de servicio (DDoS). | Backend | Alta | Completado |
-| Seguridad | **[S-05] Cifrado de BD:** Asegurar que datos sensibles como contraseñas, documentos de identidad o tokens de integraciones estén debidamente encriptados o hasheados (BCrypt) en PostgreSQL. | Backend | Alta | Pendiente |
+| Seguridad | **[S-05] Cifrado de BD:** Asegurar que datos sensibles como contraseñas, documentos de identidad o tokens de integraciones estén debidamente encriptados o hasheados (BCrypt) en PostgreSQL. | Backend | Alta | Completado |
 | Rendimiento | **[P-01] Caché Distribuido (Redis):** Implementar Redis en el backend para almacenar en caché consultas pesadas o catálogos estáticos (ej. listas de categorías) que no cambian constantemente, aliviando la BD. | Backend | Alta | Completado |
 | Rendimiento | **[P-02] Paginación Real en Base de Datos:** Garantizar que los endpoints que retornan grandes volúmenes de datos utilicen paginación a nivel de SQL (`LIMIT`/`OFFSET`) y no carguen toda la tabla a memoria. | Backend | Alta | Completado |
 | Rendimiento | **[P-03] Optimización de Assets (Imágenes):** Convertir avatares y recursos gráficos a formatos de nueva generación (WebP) y aplicar estrategias de *Lazy Loading* nativo en todas las etiquetas de imagen de la app. | Frontend | Media | Pendiente |
@@ -251,7 +251,7 @@ Esta sección agrupa 20 requerimientos críticos de arquitectura, seguridad y re
 | UX / UI | **[U-01] Esqueletos de Carga (Skeleton Loaders):** Reemplazar los *spinners* clásicos por *Skeleton Loaders* en gráficos y tablas, mejorando psicológicamente la percepción de velocidad para el usuario. | Frontend | Media | Pendiente |
 | Navegación | **[U-02] Breadcrumbs Dinámicos:** Construir un sistema de migas de pan automáticas en el Header que permita al usuario saber rápidamente en qué sub-módulo está y navegar hacia arriba fácilmente. | Frontend | Baja | Completado |
 | UX / UI | **[U-03] Control de Cambios no Guardados:** Activar un `CanDeactivate Guard` que lance un modal de advertencia ("Tienes cambios sin guardar") si el usuario intenta cambiar de vista mientras rellena un formulario importante. | Frontend | Alta | Pendiente |
-| UX / UI | **[U-04] Feedback de Acciones (Toasts Globales):** Asegurar que el 100% de las transacciones (guardar, eliminar, actualizar) disparen un mensaje flotante (*Toast* o *Snackbar*) informando éxito o error para mantener tranquilo al usuario. | Frontend | Alta | Pendiente |
+| UX / UI | **[U-04] Feedback de Acciones (Toasts Globales):** Asegurar que el 100% de las transacciones (guardar, eliminar, actualizar) disparen un mensaje flotante (*Toast* o *Snackbar*) informando éxito o error para mantener tranquilo al usuario. | Frontend | Alta | Completado |
 | Estructura | **[U-05] Entorno de Pruebas "Staging":** Orquestar mediante Docker Compose un entorno espejo de Staging completo (BBDD + Backend empaquetado + Frontend servido con Nginx) idéntico a producción para el QA final. | DevOps | Alta | Pendiente |
 
 ---

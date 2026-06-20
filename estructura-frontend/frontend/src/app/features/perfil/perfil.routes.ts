@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { PerfilLayout } from './perfil-layout/perfil-layout';
+import { pendingChangesGuard } from '../../core/guards/pending-changes.guard';
 
 export const PERFIL_ROUTES: Routes = [
   {
@@ -9,6 +10,7 @@ export const PERFIL_ROUTES: Routes = [
       { path: '', redirectTo: 'cliente', pathMatch: 'full' },
       {
         path: 'cliente',
+        canDeactivate: [pendingChangesGuard],
         data: {
           title: 'Mi perfil',
           breadcrumbs: [
