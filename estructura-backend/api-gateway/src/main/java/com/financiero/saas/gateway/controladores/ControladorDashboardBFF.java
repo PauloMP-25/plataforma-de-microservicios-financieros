@@ -346,7 +346,8 @@ public class ControladorDashboardBFF {
                             "/api/v1/dashboard/analitica-avanzada",
                             LocalDateTime.now()
                     );
-                    return ResponseEntity.ok(body);
+                    ResponseEntity<ResultadoApi<?>> responseEntity = ResponseEntity.ok(body);
+                    return responseEntity;
                 })
                 .switchIfEmpty(Mono.defer(() -> {
                     log.debug("[BFF-DASHBOARD] Cache MISS para analítica avanzada. Consultando y generando agregación...");
@@ -371,7 +372,8 @@ public class ControladorDashboardBFF {
                                         "/api/v1/dashboard/analitica-avanzada",
                                         LocalDateTime.now()
                                 );
-                                return ResponseEntity.ok(body);
+                                ResponseEntity<ResultadoApi<?>> responseEntity = ResponseEntity.ok(body);
+                                return responseEntity;
                             });
                 }))
                 .onErrorResume(error -> {
@@ -381,7 +383,8 @@ public class ControladorDashboardBFF {
                             "Error al recuperar los datos analíticos: " + error.getMessage(),
                             "/api/v1/dashboard/analitica-avanzada"
                     );
-                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errBody));
+                    ResponseEntity<ResultadoApi<?>> errResponse = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errBody);
+                    return Mono.just(errResponse);
                 });
     }
 
