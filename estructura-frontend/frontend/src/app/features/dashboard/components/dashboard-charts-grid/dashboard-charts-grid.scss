@@ -9,7 +9,7 @@
     grid-template-columns: 1.5fr 1fr 0.8fr;
   }
 
-  &.three-months {
+  &.short-period-layout {
     .cashflow-card { order: 1; }
     .heatmap-card { order: 2; }
     .distribution-card { order: 3; }

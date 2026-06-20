@@ -1,4 +1,4 @@
-<div class="charts-grid" [class.compact-mode]="stateService.flujoCaja().length >= 2 && stateService.flujoCaja().length <= 4" [class.three-months]="stateService.flujoCaja().length === 3">
+<div class="charts-grid" [class.compact-mode]="stateService.flujoCaja().length >= 2 && stateService.flujoCaja().length <= 4" [class.short-period-layout]="stateService.flujoCaja().length <= 4 && stateService.flujoCaja().length > 0">
   <!-- Gráfico de Líneas: Flujo de Caja -->
   <div class="chart-card cashflow-card" [class.full-width]="stateService.flujoCaja().length > 4">
     @defer (on viewport) {
