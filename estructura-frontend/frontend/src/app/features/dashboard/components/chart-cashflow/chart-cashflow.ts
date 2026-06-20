@@ -94,7 +94,7 @@ export class ChartCashflowComponent implements AfterViewInit, OnDestroy {
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            labels: { color: textColor, font: { family: 'Inter, sans-serif', size: 13 } }
+            labels: { color: textColor, font: { family: 'Inter, sans-serif', size: 14, weight: 'bold' } }
           },
           tooltip: {
             mode: 'index',
@@ -110,14 +110,40 @@ export class ChartCashflowComponent implements AfterViewInit, OnDestroy {
         scales: {
           x: {
             grid: { color: gridColor },
-            ticks: { color: textColor, font: { family: 'Inter, sans-serif' } }
+            ticks: { color: textColor, font: { family: 'Inter, sans-serif', size: 12, weight: 'bold' } }
           },
           y: {
             grid: { color: gridColor },
-            ticks: { color: textColor, font: { family: 'Inter, sans-serif' } }
+            ticks: { color: textColor, font: { family: 'Inter, sans-serif', size: 12, weight: 'bold' } }
           }
         }
-      }
+      },
+      plugins: [{
+        id: 'dataLabels',
+        afterDatasetsDraw: (chart) => {
+          const { ctx } = chart;
+          ctx.save();
+          ctx.font = 'bold 11px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+          
+          chart.data.datasets.forEach((dataset, i) => {
+            const meta = chart.getDatasetMeta(i);
+            if (!meta.hidden) {
+              meta.data.forEach((element: any, index) => {
+                const val = dataset.data[index] as number;
+                if (val !== undefined && val !== null) {
+                  const label = `S/ ${val.toLocaleString()}`;
+                  const { x, y } = element.tooltipPosition();
+                  ctx.fillStyle = dataset.borderColor as string;
+                  ctx.fillText(label, x, y - 6);
+                }
+              });
+            }
+          });
+          ctx.restore();
+        }
+      }]
     };
 
     this.chart = new Chart(ctx, config);

@@ -73,7 +73,7 @@ export class ChartHistoricalComparisonComponent implements AfterViewInit, OnDest
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            labels: { color: textColor, font: { family: 'Inter, sans-serif' } }
+            labels: { color: textColor, font: { family: 'Inter, sans-serif', size: 14, weight: 'bold' } }
           },
           tooltip: {
             backgroundColor: isDark ? 'rgba(30, 41, 59, 0.9)' : 'rgba(255, 255, 255, 0.9)',
@@ -86,14 +86,40 @@ export class ChartHistoricalComparisonComponent implements AfterViewInit, OnDest
         scales: {
           x: {
             grid: { display: false },
-            ticks: { color: textColor, font: { family: 'Inter, sans-serif' } }
+            ticks: { color: textColor, font: { family: 'Inter, sans-serif', size: 12, weight: 'bold' } }
           },
           y: {
             grid: { color: gridColor },
-            ticks: { color: textColor, font: { family: 'Inter, sans-serif' } }
+            ticks: { color: textColor, font: { family: 'Inter, sans-serif', size: 12, weight: 'bold' } }
           }
         }
-      }
+      },
+      plugins: [{
+        id: 'dataLabels',
+        afterDatasetsDraw: (chart) => {
+          const { ctx } = chart;
+          ctx.save();
+          ctx.font = 'bold 11px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+          
+          chart.data.datasets.forEach((dataset, i) => {
+            const meta = chart.getDatasetMeta(i);
+            if (!meta.hidden) {
+              meta.data.forEach((element: any, index) => {
+                const val = dataset.data[index] as number;
+                if (val !== undefined && val !== null) {
+                  const label = `S/ ${val.toLocaleString()}`;
+                  const { x, y } = element.tooltipPosition();
+                  ctx.fillStyle = i === 0 ? '#5b6af0' : (isDark ? '#94a3b8' : '#64748b');
+                  ctx.fillText(label, x, y - 6);
+                }
+              });
+            }
+          });
+          ctx.restore();
+        }
+      }]
     };
 
     this.chart = new Chart(ctx, config);

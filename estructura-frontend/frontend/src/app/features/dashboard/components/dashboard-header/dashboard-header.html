@@ -1,23 +1,30 @@
 <header class="dashboard-header card glass-panel">
   <div class="header-left">
-    <h1 class="dashboard-title">Analítica Financiera</h1>
-    <p class="dashboard-subtitle">Control integral de tu rendimiento financiero con filtros avanzados</p>
+    <h1 class="dashboard-title">Dashboard Financiero</h1>
+    <p class="dashboard-subtitle">Optimiza tu rendimiento financiero y monitorea tus ingresos, gastos, metas y presupuestos en tiempo real mediante analítica avanzada.</p>
   </div>
   
   <div class="header-filters">
-    <!-- Buscador de transacciones / Búsqueda global -->
-    <div class="search-box">
-      <i class="fa-solid fa-magnifying-glass search-icon"></i>
-      <input 
-        type="text" 
-        placeholder="Buscar..." 
-        [(ngModel)]="terminoBusqueda"
-        (ngModelChange)="onFiltroChange()"
-        class="search-input"
-      />
-      <button *ngIf="terminoBusqueda" class="clear-search" (click)="limpiarBusqueda()">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
+    <!-- Rangos Rápidos de Fecha -->
+    <div class="filter-group date-presets-group">
+      <label class="filter-label">Filtros Rápidos</label>
+      <div class="presets-buttons">
+        <button type="button" class="preset-btn" (click)="seleccionarRangoRapido('semana')" [class.active]="esRangoActivo('semana')">
+          Semana
+        </button>
+        <button type="button" class="preset-btn" (click)="seleccionarRangoRapido('mes')" [class.active]="esRangoActivo('mes')">
+          Mes
+        </button>
+        <button type="button" class="preset-btn" (click)="seleccionarRangoRapido('tres_meses')" [class.active]="esRangoActivo('tres_meses')">
+          3 Meses
+        </button>
+        <button type="button" class="preset-btn" (click)="seleccionarRangoRapido('anio')" [class.active]="esRangoActivo('anio')">
+          Este Año
+        </button>
+        <button type="button" *ngIf="fechaInicio || fechaFin" class="preset-btn clear-btn" (click)="limpiarFiltrosFechas()" title="Limpiar fechas">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
     </div>
 
     <!-- Fechas -->

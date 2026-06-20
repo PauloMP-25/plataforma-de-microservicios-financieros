@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, OnDestroy, effect } from '@angular/core';
+import { Component, AfterViewInit, OnDestroy, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Chart, ChartConfiguration } from 'chart.js/auto';
 import { DashboardStateService } from '../../../../core/services/dashboard-state.service';
@@ -13,6 +13,11 @@ import { ServicioTema } from '../../../../core/services/servicio-tema';
 })
 export class ChartGoalsProgressComponent implements AfterViewInit, OnDestroy {
   private chart: Chart | undefined;
+
+  activeMeta = computed(() => {
+    const list = this.stateService.metas();
+    return list && list.length > 0 ? list[0] : null;
+  });
 
   constructor(
     private stateService: DashboardStateService,
@@ -45,23 +50,21 @@ export class ChartGoalsProgressComponent implements AfterViewInit, OnDestroy {
     if (!ctx) return;
 
     const data = this.stateService.metas();
-    if (!data || data.length === 0) return;
-
     const isDark = this.themeService.temaOscuro();
-    const textColor = isDark ? '#94a3b8' : '#64748b';
     const bgRemaining = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
 
-    // Usaremos la primera meta para el radial por simplicidad
-    const meta = data[0];
-    const remaining = meta.objetivo - meta.actual;
+    const meta = data && data.length > 0 ? data[0] : null;
+    const remaining = meta ? meta.objetivo - meta.actual : 0;
+    const actualData = meta ? [meta.actual, remaining > 0 ? remaining : 0] : [];
+    const bgColors = meta ? [meta.color, bgRemaining] : [bgRemaining, bgRemaining];
 
     const config: ChartConfiguration = {
       type: 'doughnut',
       data: {
         labels: ['Completado', 'Restante'],
         datasets: [{
-          data: [meta.actual, remaining > 0 ? remaining : 0],
-          backgroundColor: [meta.color, bgRemaining],
+          data: actualData,
+          backgroundColor: bgColors,
           borderWidth: 0,
           cutout: '80%',
           circumference: 270,
@@ -87,12 +90,16 @@ export class ChartGoalsProgressComponent implements AfterViewInit, OnDestroy {
         beforeDraw: (chart) => {
           const { width, height, ctx } = chart;
           ctx.restore();
-          const fontSize = (height / 120).toFixed(2);
+          
+          const currentMeta = this.activeMeta();
+          if (!currentMeta) return;
+
+          const fontSize = (height / 85).toFixed(2);
           ctx.font = `bold ${fontSize}em Inter, sans-serif`;
           ctx.textBaseline = 'middle';
-          ctx.fillStyle = textColor;
+          ctx.fillStyle = isDark ? '#f8fafc' : '#0f172a';
           
-          const text = `${Math.round(meta.porcentaje)}%`;
+          const text = `${Math.round(currentMeta.porcentaje)}%`;
           const textX = Math.round((width - ctx.measureText(text).width) / 2);
           const textY = height / 2;
           
@@ -106,9 +113,16 @@ export class ChartGoalsProgressComponent implements AfterViewInit, OnDestroy {
   }
 
   private actualizarGrafico(data: any[], isDark: boolean): void {
-    if (!this.chart || !data || data.length === 0) return;
+    if (!this.chart) return;
     
     const bgRemaining = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+    
+    if (!data || data.length === 0) {
+      this.chart.data.datasets[0].data = [];
+      this.chart.update();
+      return;
+    }
+    
     const meta = data[0];
     const remaining = meta.objetivo - meta.actual;
 

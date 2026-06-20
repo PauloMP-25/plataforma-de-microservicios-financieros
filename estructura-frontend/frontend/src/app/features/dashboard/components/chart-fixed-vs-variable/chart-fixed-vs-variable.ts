@@ -65,7 +65,7 @@ export class ChartFixedVsVariableComponent implements AfterViewInit, OnDestroy {
         indexAxis: 'y', // Barras horizontales
         plugins: {
           legend: {
-            labels: { color: textColor, font: { family: 'Inter, sans-serif' } }
+            labels: { color: textColor, font: { family: 'Inter, sans-serif', size: 14, weight: 'bold' } }
           },
           tooltip: {
             backgroundColor: isDark ? 'rgba(30, 41, 59, 0.9)' : 'rgba(255, 255, 255, 0.9)',
@@ -85,7 +85,35 @@ export class ChartFixedVsVariableComponent implements AfterViewInit, OnDestroy {
             display: false // Ocultar eje Y
           }
         }
-      }
+      },
+      plugins: [{
+        id: 'dataLabels',
+        afterDatasetsDraw: (chart) => {
+          const { ctx } = chart;
+          ctx.save();
+          ctx.font = 'bold 12px Inter, sans-serif';
+          ctx.fillStyle = '#ffffff';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          
+          chart.data.datasets.forEach((dataset, i) => {
+            const meta = chart.getDatasetMeta(i);
+            if (!meta.hidden) {
+              meta.data.forEach((element: any, index) => {
+                const val = dataset.data[index] as number;
+                if (val !== undefined && val !== null && val > 0) {
+                  const label = `${dataset.label}: S/ ${val.toLocaleString()}`;
+                  if (typeof element.getCenterPoint === 'function') {
+                    const center = element.getCenterPoint();
+                    ctx.fillText(label, center.x, center.y);
+                  }
+                }
+              });
+            }
+          });
+          ctx.restore();
+        }
+      }]
     };
 
     this.chart = new Chart(ctx, config);

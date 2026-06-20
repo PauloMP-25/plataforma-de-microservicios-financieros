@@ -82,14 +82,40 @@ export class ChartHeatmapComponent implements AfterViewInit, OnDestroy {
         scales: {
           x: {
             grid: { display: false },
-            ticks: { color: textColor, font: { family: 'Inter, sans-serif' } }
+            ticks: { color: textColor, font: { family: 'Inter, sans-serif', size: 12, weight: 'bold' } }
           },
           y: {
             grid: { color: gridColor },
             ticks: { display: false } // No mostrar números para dar efecto heatmap
           }
         }
-      }
+      },
+      plugins: [{
+        id: 'dataLabels',
+        afterDatasetsDraw: (chart) => {
+          const { ctx } = chart;
+          ctx.save();
+          ctx.font = 'bold 11px Inter, sans-serif';
+          ctx.fillStyle = isDark ? '#cbd5e1' : '#475569';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+          
+          chart.data.datasets.forEach((dataset, i) => {
+            const meta = chart.getDatasetMeta(i);
+            if (!meta.hidden) {
+              meta.data.forEach((element: any, index) => {
+                const val = dataset.data[index] as number;
+                if (val !== undefined && val !== null && val > 0) {
+                  const label = `${val}`;
+                  const { x, y } = element.tooltipPosition();
+                  ctx.fillText(label, x, y - 4);
+                }
+              });
+            }
+          });
+          ctx.restore();
+        }
+      }]
     };
 
     this.chart = new Chart(ctx, config);

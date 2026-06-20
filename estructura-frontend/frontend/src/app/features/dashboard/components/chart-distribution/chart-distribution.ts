@@ -68,9 +68,29 @@ export class ChartDistributionComponent implements AfterViewInit, OnDestroy {
             position: 'right',
             labels: {
               color: textColor,
-              font: { family: 'Inter, sans-serif', size: 12 },
+              font: { family: 'Inter, sans-serif', size: 13, weight: 'bold' },
               usePointStyle: true,
-              padding: 20
+              padding: 16,
+              generateLabels: (chart: any) => {
+                const data = chart.data;
+                if (data.labels?.length && data.datasets.length) {
+                  const dataset = data.datasets[0];
+                  const total = (dataset.data as number[]).reduce((acc, curr) => acc + curr, 0);
+                  return data.labels.map((label: string, i: number) => {
+                    const value = dataset.data[i] as number;
+                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                    return {
+                      text: `${label}: S/ ${value.toLocaleString()} (${percentage}%)`,
+                      fillStyle: (dataset.backgroundColor as string[])[i],
+                      strokeStyle: (dataset.backgroundColor as string[])[i],
+                      lineWidth: 0,
+                      hidden: false,
+                      index: i
+                    };
+                  });
+                }
+                return [];
+              }
             }
           },
           tooltip: {
@@ -86,7 +106,7 @@ export class ChartDistributionComponent implements AfterViewInit, OnDestroy {
                 const total = dataset.data.reduce((acc: number, current: number) => acc + current, 0);
                 const value = dataset.data[context.dataIndex];
                 const percentage = Math.round((value / total) * 100);
-                return `${context.label}: ${value} (${percentage}%)`;
+                return `${context.label}: S/ ${value.toLocaleString()} (${percentage}%)`;
               }
             }
           }

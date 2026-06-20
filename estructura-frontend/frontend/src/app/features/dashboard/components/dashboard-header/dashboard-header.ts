@@ -13,7 +13,6 @@ import { DashboardFiltros } from '../../../../core/services/dashboard-state.serv
 export class DashboardHeaderComponent {
   @Output() filtrosCambio = new EventEmitter<DashboardFiltros>();
 
-  terminoBusqueda: string = '';
   fechaInicio: string = '';
   fechaFin: string = '';
   tipoMovimiento: string = '';
@@ -29,8 +28,68 @@ export class DashboardHeaderComponent {
     this.filtrosCambio.emit(filtros);
   }
 
-  limpiarBusqueda(): void {
-    this.terminoBusqueda = '';
+  seleccionarRangoRapido(tipo: 'semana' | 'mes' | 'tres_meses' | 'anio'): void {
+    const hoy = new Date();
+    
+    if (tipo === 'semana') {
+      const inicio = new Date();
+      inicio.setDate(hoy.getDate() - 7);
+      this.fechaInicio = this.formatDate(inicio);
+      this.fechaFin = this.formatDate(hoy);
+    } else if (tipo === 'mes') {
+      const inicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+      this.fechaInicio = this.formatDate(inicio);
+      this.fechaFin = this.formatDate(hoy);
+    } else if (tipo === 'tres_meses') {
+      const inicio = new Date();
+      inicio.setMonth(hoy.getMonth() - 3);
+      this.fechaInicio = this.formatDate(inicio);
+      this.fechaFin = this.formatDate(hoy);
+    } else if (tipo === 'anio') {
+      const inicio = new Date(hoy.getFullYear(), 0, 1);
+      this.fechaInicio = this.formatDate(inicio);
+      this.fechaFin = this.formatDate(hoy);
+    }
+    
     this.onFiltroChange();
+  }
+
+  esRangoActivo(tipo: 'semana' | 'mes' | 'tres_meses' | 'anio'): boolean {
+    if (!this.fechaInicio || !this.fechaFin) return false;
+    
+    const hoy = new Date();
+    const hoyStr = this.formatDate(hoy);
+    if (this.fechaFin !== hoyStr) return false;
+    
+    if (tipo === 'semana') {
+      const inicio = new Date();
+      inicio.setDate(hoy.getDate() - 7);
+      return this.fechaInicio === this.formatDate(inicio);
+    } else if (tipo === 'mes') {
+      const inicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+      return this.fechaInicio === this.formatDate(inicio);
+    } else if (tipo === 'tres_meses') {
+      const inicio = new Date();
+      inicio.setMonth(hoy.getMonth() - 3);
+      return this.fechaInicio === this.formatDate(inicio);
+    } else if (tipo === 'anio') {
+      const inicio = new Date(hoy.getFullYear(), 0, 1);
+      return this.fechaInicio === this.formatDate(inicio);
+    }
+    
+    return false;
+  }
+
+  limpiarFiltrosFechas(): void {
+    this.fechaInicio = '';
+    this.fechaFin = '';
+    this.onFiltroChange();
+  }
+
+  private formatDate(date: Date): string {
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
   }
 }
