@@ -125,7 +125,8 @@ export class DashboardStateService {
    * Invalida los datos y fuerza una recarga.
    */
   invalidarCache(): void {
-    this.cargarAnalitica();
+    this.initialLoadDone = false; // Permitir recarga al ser evento de sincronización
+    this.cargarAnalitica(this.filtrosActuales());
   }
 
   /**
