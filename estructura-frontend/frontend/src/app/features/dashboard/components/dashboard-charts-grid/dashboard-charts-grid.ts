@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DashboardStateService } from '../../../../core/services/dashboard-state.service';
 import { ChartCashflowComponent } from '../chart-cashflow/chart-cashflow';
 import { ChartDistributionComponent } from '../chart-distribution/chart-distribution';
 import { ChartExpenseIncomeRatioComponent } from '../chart-expense-income-ratio/chart-expense-income-ratio';
@@ -22,4 +23,6 @@ import { ChartHistoricalComparisonComponent } from '../chart-historical-comparis
   templateUrl: './dashboard-charts-grid.html',
   styleUrls: ['./dashboard-charts-grid.scss']
 })
-export class DashboardChartsGridComponent {}
+export class DashboardChartsGridComponent {
+  constructor(public stateService: DashboardStateService) {}
+}

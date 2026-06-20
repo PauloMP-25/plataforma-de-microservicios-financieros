@@ -113,6 +113,14 @@ export class DashboardHeaderComponent implements OnInit {
     }
   }
 
+  obtenerNombreMesActual(): string {
+    const meses = [
+      'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
+      'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'
+    ];
+    return meses[new Date().getMonth()];
+  }
+
   private formatDate(date: Date): string {
     const yyyy = date.getFullYear();
     const mm = String(date.getMonth() + 1).padStart(2, '0');
