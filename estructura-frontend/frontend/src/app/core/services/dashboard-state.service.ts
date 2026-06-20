@@ -147,47 +147,143 @@ export class DashboardStateService {
 
   // --- MOCK FALLBACK ---
   private cargarMock(): void {
-    this.resumen.set({
-      desde: new Date().toISOString(),
-      hasta: new Date().toISOString(),
-      tasaAhorro: 15.5,
-      gastoPromedioDiario: 85.50,
-      cumplimientoPresupuesto: 78.2,
-      proyeccionFinDeMes: 1250.00
-    });
-    this.flujoCaja.set([
+    const filtros = this.filtrosActuales();
+    
+    // Base numbers that we can scale or filter
+    let ingresosBase = 3200;
+    let gastosBase = 2500;
+    let ahorroBase = 15.5;
+    let promedioDiario = 85.50;
+    let presupuestoCumplimiento = 78.2;
+    let proyeccionFin = 1250.00;
+    
+    // Adjust based on Movement Type
+    let showIngresos = true;
+    let showGastos = true;
+    
+    if (filtros.tipoMovimiento === 'INGRESO') {
+      showGastos = false;
+      gastosBase = 0;
+      ahorroBase = 100;
+      promedioDiario = 0;
+      presupuestoCumplimiento = 0;
+      proyeccionFin = 0;
+    } else if (filtros.tipoMovimiento === 'EGRESO') {
+      showIngresos = false;
+      ingresosBase = 0;
+      ahorroBase = -100;
+    }
+
+    // Adjust based on Payment Method (just change the data slightly to show it works)
+    let multiplier = 1.0;
+    if (filtros.metodoPago === 'EFECTIVO') multiplier = 0.3;
+    else if (filtros.metodoPago === 'TARJETA') multiplier = 0.55;
+    else if (filtros.metodoPago === 'TRANSFERENCIA') multiplier = 0.75;
+    else if (filtros.metodoPago === 'DIGITAL') multiplier = 0.45;
+
+    ingresosBase *= multiplier;
+    gastosBase *= multiplier;
+    promedioDiario *= multiplier;
+    proyeccionFin *= multiplier;
+
+    // Adjust based on Date Range
+    let cashflowData = [
       { mes: 'Ene', ingresos: 3000, gastos: 2500 },
       { mes: 'Feb', ingresos: 3200, gastos: 2600 },
       { mes: 'Mar', ingresos: 3100, gastos: 2800 },
       { mes: 'Abr', ingresos: 3500, gastos: 2400 }
-    ]);
-    this.distribucionGastos.set([
-      { categoria: 'Alimentación', total: 800, porcentaje: 35, color: '#f59e0b' },
-      { categoria: 'Vivienda', total: 600, porcentaje: 25, color: '#3b82f6' },
-      { categoria: 'Transporte', total: 400, porcentaje: 15, color: '#10b981' },
-      { categoria: 'Entretenimiento', total: 300, porcentaje: 15, color: '#8b5cf6' },
-      { categoria: 'Otros', total: 200, porcentaje: 10, color: '#64748b' }
-    ]);
-    this.fijoVariable.set([
-      { tipo: 'FIJO', monto: 1200, porcentaje: 60 },
-      { tipo: 'VARIABLE', monto: 800, porcentaje: 40 }
-    ]);
-    this.heatmap.set([
-      { dia: 'Lunes', intensidad: 4 },
-      { dia: 'Martes', intensidad: 6 },
-      { dia: 'Miércoles', intensidad: 3 },
-      { dia: 'Jueves', intensidad: 5 },
-      { dia: 'Viernes', intensidad: 9 },
-      { dia: 'Sábado', intensidad: 10 },
-      { dia: 'Domingo', intensidad: 7 }
-    ]);
-    this.metas.set([
-      { nombre: 'Fondo de Emergencia', objetivo: 5000, actual: 3500, porcentaje: 70, color: '#10b981' },
-      { nombre: 'Viaje Fin de Año', objetivo: 2000, actual: 500, porcentaje: 25, color: '#3b82f6' }
-    ]);
-    this.comparativa.set([
+    ];
+
+    let comparativaData = [
       { mes: 'Marzo', actual: 2800, anterior: 2500 },
       { mes: 'Abril', actual: 2400, anterior: 2600 }
+    ];
+
+    if (filtros.fechaInicio || filtros.fechaFin) {
+      // If we filtered by a range, let's change labels or cut data points to reflect filtering
+      const start = filtros.fechaInicio ? new Date(filtros.fechaInicio) : null;
+      const end = filtros.fechaFin ? new Date(filtros.fechaFin) : null;
+      
+      if (start && end) {
+        const diffTime = Math.abs(end.getTime() - start.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays <= 7) {
+          // Weekly: Show only 1 month (or a subset of cashflow)
+          cashflowData = [
+            { mes: 'Sem. Actual', ingresos: ingresosBase, gastos: gastosBase }
+          ];
+          comparativaData = [
+            { mes: 'Período', actual: gastosBase, anterior: gastosBase * 0.85 }
+          ];
+          promedioDiario = gastosBase / 7;
+        } else if (diffDays <= 31) {
+          // Monthly: Show last 2 months
+          cashflowData = [
+            { mes: 'Mar', ingresos: ingresosBase * 0.9, gastos: gastosBase * 1.1 },
+            { mes: 'Abr', ingresos: ingresosBase, gastos: gastosBase }
+          ];
+          comparativaData = [
+            { mes: 'Abril', actual: gastosBase, anterior: gastosBase * 0.95 }
+          ];
+        }
+      }
+    }
+
+    // Apply movement filters to cashflow values
+    cashflowData = cashflowData.map(d => ({
+      mes: d.mes,
+      ingresos: showIngresos ? Math.round(d.ingresos * multiplier) : 0,
+      gastos: showGastos ? Math.round(d.gastos * multiplier) : 0
+    }));
+
+    comparativaData = comparativaData.map(d => ({
+      mes: d.mes,
+      actual: showGastos ? Math.round(d.actual * multiplier) : 0,
+      anterior: showGastos ? Math.round(d.anterior * multiplier) : 0
+    }));
+
+    // Update state signals
+    this.resumen.set({
+      desde: filtros.fechaInicio || new Date().toISOString(),
+      hasta: filtros.fechaFin || new Date().toISOString(),
+      tasaAhorro: showIngresos && showGastos ? ahorroBase : (showIngresos ? 100 : -100),
+      gastoPromedioDiario: Math.round(promedioDiario * 100) / 100,
+      cumplimientoPresupuesto: showGastos ? Math.round(presupuestoCumplimiento * multiplier * 10) / 10 : 0,
+      proyeccionFinDeMes: Math.round(proyeccionFin * 100) / 100
+    });
+
+    this.flujoCaja.set(cashflowData);
+    
+    // Scale distributions
+    this.distribucionGastos.set(showGastos ? [
+      { categoria: 'Alimentación', total: Math.round(800 * multiplier), porcentaje: 35, color: '#f59e0b' },
+      { categoria: 'Vivienda', total: Math.round(600 * multiplier), porcentaje: 25, color: '#3b82f6' },
+      { categoria: 'Transporte', total: Math.round(400 * multiplier), porcentaje: 15, color: '#10b981' },
+      { categoria: 'Entretenimiento', total: Math.round(300 * multiplier), porcentaje: 15, color: '#8b5cf6' },
+      { categoria: 'Otros', total: Math.round(200 * multiplier), porcentaje: 10, color: '#64748b' }
+    ].slice(0, 5) : []);
+
+    this.fijoVariable.set(showGastos ? [
+      { tipo: 'FIJO', monto: Math.round(1200 * multiplier), porcentaje: 60 },
+      { tipo: 'VARIABLE', monto: Math.round(800 * multiplier), porcentaje: 40 }
+    ] : []);
+
+    this.heatmap.set(showGastos ? [
+      { dia: 'Lunes', intensidad: Math.round(4 * multiplier) || 1 },
+      { dia: 'Martes', intensidad: Math.round(6 * multiplier) || 1 },
+      { dia: 'Miércoles', intensidad: Math.round(3 * multiplier) || 1 },
+      { dia: 'Jueves', intensidad: Math.round(5 * multiplier) || 1 },
+      { dia: 'Viernes', intensidad: Math.round(9 * multiplier) || 2 },
+      { dia: 'Sábado', intensidad: Math.round(10 * multiplier) || 2 },
+      { dia: 'Domingo', intensidad: Math.round(7 * multiplier) || 1 }
+    ] : []);
+
+    this.metas.set([
+      { nombre: 'Fondo de Emergencia', objetivo: 5000, actual: Math.round(3500 * (showIngresos ? multiplier : 0.5)), porcentaje: 70, color: '#10b981' },
+      { nombre: 'Viaje Fin de Año', objetivo: 2000, actual: Math.round(500 * (showIngresos ? multiplier : 0.5)), porcentaje: 25, color: '#3b82f6' }
     ]);
+
+    this.comparativa.set(comparativaData);
   }
 }

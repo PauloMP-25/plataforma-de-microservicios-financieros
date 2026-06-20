@@ -92,6 +92,14 @@ export class ChartCashflowComponent implements AfterViewInit, OnDestroy {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        layout: {
+          padding: {
+            left: 20,
+            right: 25,
+            top: 20,
+            bottom: 5
+          }
+        },
         plugins: {
           legend: {
             labels: { color: textColor, font: { family: 'Inter, sans-serif', size: 14, weight: 'bold' } }
@@ -113,6 +121,7 @@ export class ChartCashflowComponent implements AfterViewInit, OnDestroy {
             ticks: { color: textColor, font: { family: 'Inter, sans-serif', size: 12, weight: 'bold' } }
           },
           y: {
+            grace: '15%',
             grid: { color: gridColor },
             ticks: { color: textColor, font: { family: 'Inter, sans-serif', size: 12, weight: 'bold' } }
           }

@@ -71,6 +71,14 @@ export class ChartHistoricalComparisonComponent implements AfterViewInit, OnDest
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        layout: {
+          padding: {
+            left: 15,
+            right: 15,
+            top: 20,
+            bottom: 5
+          }
+        },
         plugins: {
           legend: {
             labels: { color: textColor, font: { family: 'Inter, sans-serif', size: 14, weight: 'bold' } }
@@ -89,6 +97,7 @@ export class ChartHistoricalComparisonComponent implements AfterViewInit, OnDest
             ticks: { color: textColor, font: { family: 'Inter, sans-serif', size: 12, weight: 'bold' } }
           },
           y: {
+            grace: '15%',
             grid: { color: gridColor },
             ticks: { color: textColor, font: { family: 'Inter, sans-serif', size: 12, weight: 'bold' } }
           }

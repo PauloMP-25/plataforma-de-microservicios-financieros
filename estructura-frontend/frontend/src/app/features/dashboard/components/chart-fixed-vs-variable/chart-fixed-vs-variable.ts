@@ -102,10 +102,13 @@ export class ChartFixedVsVariableComponent implements AfterViewInit, OnDestroy {
               meta.data.forEach((element: any, index) => {
                 const val = dataset.data[index] as number;
                 if (val !== undefined && val !== null && val > 0) {
-                  const label = `${dataset.label}: S/ ${val.toLocaleString()}`;
-                  if (typeof element.getCenterPoint === 'function') {
-                    const center = element.getCenterPoint();
-                    ctx.fillText(label, center.x, center.y);
+                  const width = element.width || 0;
+                  if (width > 35) {
+                    const label = width > 95 ? `${dataset.label}: S/ ${val.toLocaleString()}` : `S/ ${val.toLocaleString()}`;
+                    if (typeof element.getCenterPoint === 'function') {
+                      const center = element.getCenterPoint();
+                      ctx.fillText(label, center.x, center.y);
+                    }
                   }
                 }
               });
