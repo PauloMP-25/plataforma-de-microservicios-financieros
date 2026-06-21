@@ -17,12 +17,14 @@ export interface SolicitudRegistro {
 }
 
 export interface RespuestaAutenticacion {
-  tokenAcceso:   string;
-  tipoToken:     string;   
-  expiraEn:      number;
-  idUsuario:     string;   
-  nombreUsuario: string;
-  roles:         string[];
+  tokenAcceso:     string;
+  refreshToken:    string;
+  tipoToken:       string;   
+  expiraEn:        number;
+  refreshExpiraEn: number;
+  idUsuario:       string;   
+  nombreUsuario:   string;
+  roles:           string[];
 }
 
 // ── Usuario en sesión ──
@@ -31,7 +33,12 @@ export interface UsuarioSesion {
   nombreUsuario: string;
   roles:        string[];
   token:        string;
+  refreshToken: string;
   expiraEn:     number;
+}
+
+export interface SolicitudRefreshToken {
+  refreshToken: string;
 }
 
 // ── Recuperación de contraseña ──

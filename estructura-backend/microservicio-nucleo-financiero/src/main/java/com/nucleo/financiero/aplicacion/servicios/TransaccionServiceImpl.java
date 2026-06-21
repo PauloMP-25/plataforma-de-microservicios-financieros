@@ -11,6 +11,7 @@ import com.nucleo.financiero.dominio.entidades.Transaccion;
 import com.nucleo.financiero.dominio.repositorios.CategoriaRepository;
 import com.nucleo.financiero.dominio.repositorios.TransaccionRepository;
 import com.nucleo.financiero.infraestructura.mensajeria.PublicadorAuditoria;
+import com.nucleo.financiero.infraestructura.mensajeria.PublicadorFinanciero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -42,6 +43,7 @@ public class TransaccionServiceImpl implements ITransaccionService {
     private final TransaccionRepository transaccionRepository;
     private final CategoriaRepository categoriaRepository;
     private final PublicadorAuditoria publicadorAuditoria;
+    private final PublicadorFinanciero publicadorFinanciero;
     private final TransaccionMapper transaccionMapper;
 
     @Override
@@ -59,6 +61,13 @@ public class TransaccionServiceImpl implements ITransaccionService {
                 guardada.getId(),
                 guardada.getMonto().toString(),
                 ipCliente
+        );
+        publicadorFinanciero.publicarTransaccionRegistrada(
+                guardada.getId(),
+                guardada.getUsuarioId(),
+                guardada.getMonto(),
+                guardada.getTipo().name(),
+                guardada.getFechaTransaccion().toString()
         );
         return transaccionMapper.aDto(guardada);
     }
@@ -86,6 +95,15 @@ public class TransaccionServiceImpl implements ITransaccionService {
                 "Se registraron " + guardadas.size() + " transacciones exitosamente.",
                 ipCliente
         );
+        for (Transaccion t : guardadas) {
+            publicadorFinanciero.publicarTransaccionRegistrada(
+                    t.getId(),
+                    t.getUsuarioId(),
+                    t.getMonto(),
+                    t.getTipo().name(),
+                    t.getFechaTransaccion().toString()
+            );
+        }
         return guardadas.stream().map(transaccionMapper::aDto).toList();
     }
 

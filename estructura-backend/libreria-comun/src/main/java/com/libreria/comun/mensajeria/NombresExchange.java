@@ -21,6 +21,8 @@ public final class NombresExchange {
     public static final String CLIENTE_ACTUALIZACIONES_DLX = "exchange.cliente.actualizaciones.dlq";
     /** Exchange para eventos de pago y suscripciones */
     public static final String PAGOS = "exchange.pagos";
+    /** Exchange para eventos financieros (transacciones, ingresos, gastos) */
+    public static final String FINANCIERO = "exchange.financiero";
 
     private NombresExchange() {} // Previene instanciación
 }

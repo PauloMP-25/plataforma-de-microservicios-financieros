@@ -206,13 +206,6 @@ public class ConfiguracionRabbitMQ {
                 .with(RoutingKeys.CLIENTE_PERFIL_ACTUALIZADO);
     }
 
-    /**
-     * Vincula la cola de error al DLX de sincronización.
-     *
-     * @param colaSincronizacionError           Bean de la cola de error.
-     * @param exchangeClienteActualizacionesDlx Bean del DLX.
-     * @return {@link Binding} directo a la cola de error.
-     */
     @Bean
     public Binding bindingSincronizacionDlq(
             @Qualifier("colaSincronizacionError") Queue colaSincronizacionError,
@@ -221,5 +214,34 @@ public class ConfiguracionRabbitMQ {
                 .bind(colaSincronizacionError)
                 .to(exchangeClienteActualizacionesDlx)
                 .with(NombresCola.IA_SINCRONIZACION_ERROR);
+    }
+
+    // =========================================================================
+    // FINANCIERO -> CLIENTE (Transacciones)
+    // =========================================================================
+
+    @Bean
+    public TopicExchange exchangeFinanciero() {
+        return ExchangeBuilder
+                .topicExchange(NombresExchange.FINANCIERO)
+                .durable(true)
+                .build();
+    }
+
+    @Bean
+    public Queue colaTransaccionesRegistradas() {
+        return QueueBuilder
+                .durable(NombresCola.FINANCIERO_TRANSACCIONES_CLIENTE)
+                .build();
+    }
+
+    @Bean
+    public Binding bindingTransaccionesRegistradas(
+            @Qualifier("colaTransaccionesRegistradas") Queue colaTransaccionesRegistradas,
+            @Qualifier("exchangeFinanciero") TopicExchange exchangeFinanciero) {
+        return BindingBuilder
+                .bind(colaTransaccionesRegistradas)
+                .to(exchangeFinanciero)
+                .with(RoutingKeys.TRANSACCION_REGISTRADA);
     }
 }

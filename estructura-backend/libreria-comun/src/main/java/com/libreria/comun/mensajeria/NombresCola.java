@@ -36,6 +36,9 @@ public final class NombresCola {
     public static final String PAGOS_EXITOSOS_AUDITORIA = "cola.auditoria.pagos.exitosos";
     public static final String PAGOS_REEMBOLSO = "cola.pagos.reembolso";
 
+    // Financiero -> Cliente
+    public static final String FINANCIERO_TRANSACCIONES_CLIENTE = "cola.cliente.transacciones.registradas";
+
     private NombresCola() {
     }
 }

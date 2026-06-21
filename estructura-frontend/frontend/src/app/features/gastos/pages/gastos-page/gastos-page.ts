@@ -738,6 +738,8 @@ export class GastosPage implements OnDestroy {
     }
     if (!this.monto().trim() || Number(this.monto()) <= 0) {
       out['monto'] = 'Ingresa un monto válido mayor a 0.';
+    } else if (this.saldoActual() - Number(this.monto()) < 0) {
+      out['monto'] = 'El gasto supera tu balance actual. Registra un ingreso primero.';
     }
     if (!this.nombreGasto().trim()) {
       out['nombreGasto'] = 'Ingresa el nombre del gasto.';
