@@ -1,0 +1,60 @@
+<div class="modal-backdrop" (click)="cerrarModal()">
+  
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    
+    <div class="modal-header">
+      <h2>Nueva Suscripción</h2>
+      <button type="button" class="modal-close" (click)="cerrarModal()">×</button>
+    </div>
+
+    <form (ngSubmit)="guardarSuscripcion()" class="modal-form">
+      <div class="form-grid">
+        
+        <div class="form-group col-12">
+          <label class="form-label">Nombre *</label>
+          <input type="text" class="form-input" [ngModel]="nombre()" (ngModelChange)="nombre.set($event)" name="nombre" placeholder="Ej: Netflix, Spotify...">
+        </div>
+
+        <div class="form-group col-12">
+          <label class="form-label">Descripción</label>
+          <textarea class="form-input" [ngModel]="descripcion()" (ngModelChange)="descripcion.set($event)" name="descripcion" rows="2"></textarea>
+        </div>
+
+        <div class="form-group col-6">
+          <label class="form-label">Categoría *</label>
+          <select class="form-input" [ngModel]="categoria()" (ngModelChange)="categoria.set($event)" name="categoria">
+            <option value="">Selecciona</option>
+            @for (cat of categorias; track cat.id) { <option [value]="cat.id">{{cat.nombre}}</option> }
+          </select>
+        </div>
+
+        <div class="form-group col-6">
+          <label class="form-label">Monto (USD) *</label>
+          <input type="number" class="form-input" [ngModel]="monto()" (ngModelChange)="monto.set($event)" name="monto" placeholder="0.00">
+        </div>
+
+        <div class="form-group col-6">
+          <label class="form-label">Frecuencia *</label>
+          <select class="form-input" [ngModel]="frecuencia()" (ngModelChange)="frecuencia.set($event)" name="frecuencia">
+            @for (frec of frecuencias; track frec.id) { <option [value]="frec.id">{{frec.nombre}}</option> }
+          </select>
+        </div>
+
+        <div class="form-group col-6">
+          <label class="form-label">Próximo Pago *</label>
+          <input type="date" class="form-input" [ngModel]="proximoPago()" (ngModelChange)="proximoPago.set($event)" name="proximoPago">
+        </div>
+
+        <div class="form-group col-12">
+          <label class="form-label">Días restantes</label>
+          <input type="text" class="form-input" [value]="diasRestantes() + ' días'" readonly disabled style="opacity: 0.7;">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
+        <button type="submit" class="btn-primary">Guardar Suscripción</button>
+      </div>
+    </form>
+  </div>
+</div>

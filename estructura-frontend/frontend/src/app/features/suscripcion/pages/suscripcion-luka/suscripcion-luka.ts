@@ -1,51 +1,120 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { SuscripcionGastosService } from '../../../../core/services/suscripcion-gastos.service';
+import { SuscripcionDTO } from '../../../../core/models/financiero/suscripcion-gasto.model';
+import { SuscripcionCard } from '../../components/suscripcion-card/suscripcion-card';
+import { ModalNuevaSuscripcion } from '../modal-nueva-suscripcion/modal-nueva-suscripcion';
 
 @Component({
   selector: 'app-suscripcion-luka',
   standalone: true,
-  imports: [CommonModule],
-  template: `
-    <div class="suscripcion-luka-placeholder">
-      <i class="fa-solid fa-crown icon-placeholder"></i>
-      <h2>Membresía Luka</h2>
-      <p>Esta sección aún está en proceso. Pronto podrás gestionar tus planes, revisar tu membresía activa y administrar los beneficios de tu cuenta Luka desde aquí.</p>
-    </div>
-  `,
-  styles: [`
-    .suscripcion-luka-placeholder {
-      padding: 4rem 2rem;
-      text-align: center;
-      border: 2px dashed color-mix(in srgb, var(--border-color) 60%, transparent);
-      border-radius: 16px;
-      margin: 3rem auto;
-      max-width: 650px;
-      background: linear-gradient(135deg, var(--bg-card) 0%, color-mix(in srgb, var(--bg-card) 92%, #000) 100%);
-      color: var(--text-secondary);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-    }
-    .icon-placeholder {
-      font-size: 3rem;
-      color: var(--color-primary);
-      opacity: 0.6;
-      margin-bottom: 0.5rem;
-    }
-    h2 {
-      color: var(--text-primary);
-      font-weight: 800;
-      margin: 0;
-      font-size: 1.5rem;
-    }
-    p {
-      line-height: 1.6;
-      margin: 0;
-      font-size: 0.95rem;
-    }
-  `]
+  imports: [CommonModule, SuscripcionCard, ModalNuevaSuscripcion],
+  templateUrl: './suscripcion-luka.html',
+  styleUrl: './suscripcion-luka.scss'
 })
-export class SuscripcionLuka {}
+export class SuscripcionLuka implements OnInit {
+  private readonly suscripcionService = inject(SuscripcionGastosService);
+
+  // State
+  readonly modalAbierto = signal(false);
+  readonly cargando = signal(false);
+
+  // Computed values from service
+  readonly resumen = computed(() => this.suscripcionService.resumenSuscripciones());
+  readonly suscripcionesProximas = computed(() => this.suscripcionService.suscripcionesProximas());
+  readonly suscripcionesActivas = computed(() => this.suscripcionService.suscripcionesActivas());
+
+  ngOnInit(): void {
+    // Cargar suscripciones al inicializar
+    this.suscripcionService.cargarSuscripciones().subscribe();
+  }
+
+  /**
+   * Abrir modal de nueva suscripción
+   */
+  abrirModal(): void {
+    this.modalAbierto.set(true);
+  }
+
+  /**
+   * Cerrar modal
+   */
+  cerrarModal(): void {
+    this.modalAbierto.set(false);
+  }
+
+  /**
+   * Crear nueva suscripción
+   */
+  onCrearSuscripcion(datosFormulario: any): void {
+    this.cargando.set(true);
+    
+    this.suscripcionService.crearSuscripcion(datosFormulario).subscribe({
+      next: () => {
+        this.cargando.set(false);
+        this.cerrarModal();
+      },
+      error: (err) => {
+        console.error('Error creando suscripción:', err);
+        this.cargando.set(false);
+      }
+    });
+  }
+
+  /**
+   * Editar suscripción
+   */
+  onEditarSuscripcion(suscripcion: SuscripcionDTO): void {
+    console.log('Editar suscripción:', suscripcion);
+    // TODO: Implementar lógica de edición (abrir modal con datos precargados)
+  }
+
+  /**
+   * Eliminar suscripción
+   */
+  onEliminarSuscripcion(id: string): void {
+    if (confirm('¿Estás seguro de que deseas eliminar esta suscripción?')) {
+      this.suscripcionService.eliminarSuscripcion(id).subscribe({
+        next: () => {
+          console.log('Suscripción eliminada');
+        },
+        error: (err) => {
+          console.error('Error eliminando suscripción:', err);
+        }
+      });
+    }
+  }
+
+  /**
+   * Cambiar estado de suscripción
+   */
+  onCambiarEstado(evento: { id: string; estado: 'ACTIVA' | 'PAUSADA' | 'VENCIDA' }): void {
+    this.suscripcionService.cambiarEstado(evento.id, evento.estado).subscribe({
+      next: () => {
+        console.log('Estado actualizado');
+      },
+      error: (err) => {
+        console.error('Error cambiando estado:', err);
+      }
+    });
+  }
+
+  /**
+   * Ver detalle de suscripción
+   */
+  onVerDetalle(suscripcion: SuscripcionDTO): void {
+    console.log('Ver detalle:', suscripcion);
+    // TODO: Navegar a página de detalles o abrir modal
+  }
+
+  /**
+   * Formatear moneda
+   */
+  formatearMoneda(valor: number): string {
+    return new Intl.NumberFormat('en-US', { 
+      style: 'currency', 
+      currency: 'USD' 
+    }).format(valor);
+  }
+}
