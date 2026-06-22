@@ -1450,208 +1450,41 @@ Este documento detalla todos los endpoints expuestos por los microservicios, mos
 
 ---
 
-## 🔔 Microservicio Suscripciones
+## 💬 7. Mensajería y Códigos OTP (`OtpService` → `ms-mensajeria`)
 
-### `POST /api/v1/suscripciones`
-**Descripción:** Crea una nueva suscripción de usuario.
-**Parámetros:** `SolicitudCrearSuscripcion` en el body.
+* **Prefijo en API Gateway:** `/api/v1/mensajeria/otp`
+* **Microservicio destino:** `ms-mensajeria` (Puerto interno: `8084`)
 
-<table width="100%">
-  <tr>
-    <th width="10%">Estado</th>
-    <th width="42.5%">Solicitud (Input JSON)</th>
-    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
-  </tr>
-  <tr>
-    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
-    <td valign="top"><pre><code class="language-json">{
-  "usuarioId": "123e4567-e89b-12d3-a456-426614174000",
-  "nombre": "Netflix Premium",
-  "monto": 45.90,
-  "metodoPago": "TARJETA",
-  "tipoEstrategia": "MENSUAL",
-  "fechaInicio": "2026-06-20",
-  "fechaVencimiento": "2026-07-20"
-}</code></pre></td>
-    <td valign="top"><pre><code class="language-json">{
-  "id": "suscripcion-uuid",
-  "nombre": "Netflix",
-  "monto": 15.99,
-  "estado": "ACTIVA",
-  "metodoPago": "TARJETA_CREDITO",
-  "fechaInicio": "2026-06-20",
-  "fechaVencimiento": "2026-07-20",
-  "fechaUltimoPago": "2026-06-20",
-  "tipoEstrategia": "CALENDARIO"
-}</code></pre></td>
-  </tr>
-</table>
-
-### `GET /api/v1/suscripciones/usuario/{usuarioId}`
-**Descripción:** Obtiene el listado paginado y filtrado de todas las suscripciones de un usuario.
-**Parámetros:** `usuarioId` (UUID en la ruta), `estado`, `metodoPago`, `fechaVencimientoAntes`, `pagina`, `tamanio` (query).
-
-<table width="100%">
-  <tr>
-    <th width="10%">Estado</th>
-    <th width="42.5%">Solicitud (Input JSON)</th>
-    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
-  </tr>
-  <tr>
-    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
-    <td valign="top"><em>(Vacío)</em></td>
-    <td valign="top"><pre><code class="language-json">[
-  {
-    "id": "suscripcion-uuid",
-    "nombre": "Netflix",
-    "monto": 15.99,
-    "estado": "ACTIVA",
-    "metodoPago": "TARJETA_CREDITO",
-    "fechaInicio": "2026-06-20",
-    "fechaVencimiento": "2026-07-20",
-    "fechaUltimoPago": "2026-06-20",
-    "tipoEstrategia": "CALENDARIO"
-  }
-]</code></pre></td>
-  </tr>
-</table>
-
-### `POST /api/v1/suscripciones/{id}/pagar`
-**Descripción:** Registra manualmente el pago de una suscripción.
-**Parámetros:** `id` (UUID en la ruta), `Idempotency-Key` (Header).
-
-<table width="100%">
-  <tr>
-    <th width="10%">Estado</th>
-    <th width="42.5%">Solicitud (Input JSON)</th>
-    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
-  </tr>
-  <tr>
-    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
-    <td valign="top"><pre><code class="language-json">{
-  "monto": 45.90,
-  "metodoPago": "TARJETA",
-  "fechaPago": "2026-06-20"
-}</code></pre></td>
-    <td valign="top"><pre><code class="language-json">{
-  "id": "pago-uuid",
-  "suscripcionId": "suscripcion-uuid",
-  "transaccionId": "transaccion-uuid",
-  "monto": 15.99,
-  "fechaPago": "2026-06-20",
-  "estado": "EXITOSO"
-}</code></pre></td>
-  </tr>
-</table>
+| Método   | Endpoint                                      | Descripción                            | Body / Parámetros               | FUNCIONAL |
+|:-------- |:--------------------------------------------- |:-------------------------------------- |:------------------------------- |:---------:|
+| **POST** | `/api/v1/mensajeria/otp/generar`              | Envía código OTP de validación         | `SolicitudGenerarCodigo` (JSON) | `[x]`     |
+| **POST** | `/api/v1/mensajeria/otp/validar-activacion`   | Valida código de registro de cuenta    | `SolicitudValidarCodigo` (JSON) | `[x]`     |
+| **GET**  | `/api/v1/mensajeria/otp/validar-recuperacion` | Valida código de recuperación de clave | Params: `usuarioId`, `codigo`   | `[ ]`     |
+| **POST** | `/api/v1/mensajeria/otp/validar-limite`       | Valida código por alteración de límite | `SolicitudGenerarCodigo` (JSON) | `[x]`     |
 
 ---
 
-## 🧠 Microservicio IA
+## 📁 8. Auditoría (`AuditoriaService` → `ms-auditoria`)
 
-### `POST /api/v1/ia/gasto-hormiga`
-**Descripción:** Analiza y detecta gastos hormiga y suscripciones olvidadas.
-**Parámetros:** `PeticionConFiltroFecha` en el body.
+* **Prefijo en API Gateway:** `/api/v1/auditoria`
+* **Microservicio destino:** `ms-auditoria` (Puerto interno: `8082`)
 
-<table width="100%">
-  <tr>
-    <th width="10%">Estado</th>
-    <th width="42.5%">Solicitud (Input JSON)</th>
-    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
-  </tr>
-  <tr>
-    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
-    <td valign="top"><pre><code class="language-json">{
-  "usuario_id": "usr-123",
-  "token": "eyJhbG...",
-  "mes": 6,
-  "anio": 2026,
-  "frecuencia": "SEMANAL",
-  "tamanio_pagina": 200
-}</code></pre></td>
-    <td valign="top"><pre><code class="language-json">{
-  "id_respuesta": "123e4567-e89b-12d3-a456-426614174000",
-  "usuario_id": "usr-123",
-  "modulo": "GASTO_HORMIGA",
-  "fecha_generacion": "2026-06-20T10:00:00.000",
-  "consejo": {
-    "pensamiento_interno_ia": "El usuario presenta un aumento en sus gastos de café diarios...",
-    "analisis_ia": "Hola, veo que tus gastos...",
-    "conexion_emocional": "Reducir esto te acercaría a...",
-    "plan_accion_titulo": "Plan Hormiga Cero",
-    "plan_accion_pasos": ["Paso 1", "Paso 2", "Paso 3", "Paso 4", "Paso 5"],
-    "comentario_positivo": "¡Lo estás haciendo genial!"
-  },
-  "estado_coach": "EXITOSO",
-  "usando_fallback": false,
-  "insight": {
-    "modulo": "GASTO_HORMIGA",
-    "total_transacciones_analizadas": 45,
-    "total_ingresos": 5000.0,
-    "total_gastos": 2500.0,
-    "balance_neto": 2500.0,
-    "promedio_gasto_mensual": 1250.0,
-    "promedio_ingreso_mensual": 2500.0,
-    "hallazgos": {},
-    "nivel_alerta": "BAJO",
-    "periodo_analizado": "Junio 2026"
-  },
-  "grafico": null,
-  "kpi": null
-}</code></pre></td>
-  </tr>
-</table>
+| Método   | Endpoint                              | Descripción                              | Body / Parámetros                                               | FUNCIONAL |
+|:-------- |:------------------------------------- |:---------------------------------------- |:--------------------------------------------------------------- |:---------:|
+| **POST** | `/api/v1/auditoria/accesos`           | Guarda registro de login del usuario     | `AuditoriaAccesoRequestDTO` (JSON)                              | `[x]`     |
+| **GET**  | `/api/v1/auditoria/accesos`           | Lista accesos (Administrador)            | Params: `pagina`, `tamanio`                                     | `[x]`     |
+| **GET**  | `/api/v1/auditoria/verificar-ip/{ip}` | Verifica si la IP tiene restricciones    | Ninguno                                                         | `[x]`     |
+| **POST** | `/api/v1/auditoria/transacciones`     | Registra auditoría de cambios monetarios | `AuditoriaTransaccionalRequestDTO` (JSON)                       | `[x]`     |
+| **GET**  | `/api/v1/auditoria/transacciones`     | Lista auditoría de transacciones         | Params: `servicioOrigen`, `desde`, `hasta`, `pagina`, `tamanio` | `[x]`     |
+| **POST** | `/api/v1/auditoria/registrar`         | Registra evento general en el log        | `RegistroAuditoriaRequestDTO` (JSON)                            | `[x]`     |
+| **GET**  | `/api/v1/auditoria/registros`         | Lista logs de eventos de auditoría       | Params: `modulo`, `nivel`, `pagina`, `tamanio`                  | `[x]`     |
 
-### `POST /api/v1/ia/simular-meta`
-**Descripción:** Simula el tiempo estimado y sugiere ajustes para alcanzar una meta de ahorro.
-**Parámetros:** `PeticionSimularMeta` en el body.
+---
 
-<table width="100%">
-  <tr>
-    <th width="10%">Estado</th>
-    <th width="42.5%">Solicitud (Input JSON)</th>
-    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
-  </tr>
-  <tr>
-    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
-    <td valign="top"><pre><code class="language-json">{
-  "usuario_id": "usr-123",
-  "token": "eyJhbG...",
-  "nombre_meta": "Nueva Laptop",
-  "monto_objetivo": 4500.0,
-  "monto_actual_ahorrado": 500.0,
-  "aporte_mensual_deseado": 300.0
-}</code></pre></td>
-    <td valign="top"><pre><code class="language-json">{
-  "id_respuesta": "123e4567-e89b-12d3-a456-426614174000",
-  "usuario_id": "usr-123",
-  "modulo": "SIMULAR_META",
-  "fecha_generacion": "2026-06-20T10:00:00.000",
-  "consejo": null,
-  "estado_coach": "EXITOSO",
-  "usando_fallback": false,
-  "insight": {
-    "modulo": "SIMULAR_META",
-    "total_transacciones_analizadas": 0,
-    "total_ingresos": 0.0,
-    "total_gastos": 0.0,
-    "balance_neto": 0.0,
-    "promedio_gasto_mensual": 0.0,
-    "promedio_ingreso_mensual": 0.0,
-    "hallazgos": {
-      "meses_restantes": 14
-    },
-    "nivel_alerta": "BAJO",
-    "periodo_analizado": "Proyección Futura"
-  },
-  "grafico": null,
-  "kpi": null
-}</code></pre></td>
-  </tr>
-</table>
+## 💳 9. Monetización y Pagos (`SuscripcionPremium` → `ms-pago`)
 
-### `POST /api/v1/ia/clasificar-transaccion`
-**Descripción:** Valida y sugiere automáticamente la categoría correcta de una transacción.
-**Parámetros:** `SolicitudClasificacionDTO` en el body.
+* **Prefijo en API Gateway:** `/api/v1/pagos`
+* **Microservicio destino:** `ms-pago` (Puerto interno: `8087`)
 
 <table width="100%">
   <tr>
@@ -2040,3 +1873,25 @@ Este documento detalla todos los endpoints expuestos por los microservicios, mos
   </tr>
 </table>
 
+
+| Método   | Endpoint                      | Descripción                                    | Body / Parámetros                  | FUNCIONAL |
+|:-------- |:----------------------------- |:---------------------------------------------- |:---------------------------------- |:---------:|
+| **POST** | `/api/v1/pagos/checkout`      | Inicia sesión de checkout Stripe (Plan Premium)| `SolicitudPagoDTO` (JSON)          | `[x]`     |
+| **GET**  | `/api/v1/pagos/mi-suscripcion`| Obtiene estado de la suscripción del cliente   | Ninguno                            | `[x]`     |
+| **POST** | `/api/v1/pagos/webhook`       | Recibe notificaciones asíncronas de Stripe     | Payload bruto de Stripe            | `[x]`     |
+
+---
+
+## 📅 10. Suscripciones y Gastos Recurrentes (`SuscripcionService` → `ms-suscripciones`)
+
+* **Prefijo en API Gateway:** `/api/v1/suscripciones`
+* **Microservicio destino:** `ms-suscripciones` (Puerto interno: `8088`)
+
+| Método   | Endpoint                                   | Descripción                                     | Body / Parámetros                  | FUNCIONAL |
+|:-------- |:------------------------------------------ |:----------------------------------------------- |:---------------------------------- |:---------:|
+| **POST** | `/api/v1/suscripciones`                    | Crea una nueva suscripción de servicios         | `SolicitudCrearSuscripcion` (JSON) | `[x]`     |
+| **GET**  | `/api/v1/suscripciones/{id}`               | Consulta una suscripción por ID                 | Ninguno                            | `[x]`     |
+| **GET**  | `/api/v1/suscripciones/usuario/{usuarioId}`| Lista suscripciones paginadas del usuario       | Params: `pagina`, `tamanio`, etc.  | `[x]`     |
+| **POST** | `/api/v1/suscripciones/{id}/pagar`         | Registra pago manual (Header: Idempotency-Key)  | `SolicitudRegistrarPago` (JSON)    | `[x]`     |
+| **POST** | `/api/v1/suscripciones/{id}/cancelar`      | Cancela suscripción recurrente                  | Ninguno                            | `[x]`     |
+| **PUT**  | `/api/v1/suscripciones/{id}`               | Actualiza detalles de la suscripción            | `SolicitudEditarSuscripcion` (JSON)| `[x]`     |

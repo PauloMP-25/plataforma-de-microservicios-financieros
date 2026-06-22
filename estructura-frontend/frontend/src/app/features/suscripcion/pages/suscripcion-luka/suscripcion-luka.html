@@ -1,0 +1,138 @@
+<!-- ── PÁGINA PRINCIPAL DE SUSCRIPCIONES ── -->
+<div class="suscripcion-luka-page">
+  
+  <!-- HEADER CON TÍTULO Y BOTÓN NUEVA SUSCRIPCIÓN -->
+  <header class="suscripcion-luka-page__header card glass-panel">
+    <div class="suscripcion-luka-page__header-content">
+      <div>
+        <h1 class="suscripcion-luka-page__title">Mis Suscripciones</h1>
+        <p class="suscripcion-luka-page__subtitle">Gestiona tus gastos recurrentes y suscripciones de forma eficiente</p>
+      </div>
+    </div>
+    
+    <button type="button" class="suscripcion-luka-page__btn-new" (click)="abrirModal()">
+      <i class="fa-solid fa-plus"></i>
+      Nueva Suscripción
+    </button>
+  </header>
+
+  <!-- SECCIÓN DE KPIs -->
+  <section class="suscripcion-luka-page__kpis">
+    <!-- KPI: Total Activas -->
+    <article class="kpi-card card glass-card glow-indigo">
+      <div class="kpi-icon-container bg-indigo-soft text-indigo">
+        <i class="fa-solid fa-check-circle"></i>
+      </div>
+      <div class="kpi-details">
+        <span class="kpi-label">Activas</span>
+        <h2 class="kpi-value">{{ resumen().totalActivas }}</h2>
+        <small class="kpi-text">Suscripciones activas</small>
+      </div>
+    </article>
+
+    <!-- KPI: Gasto Mensual Estimado -->
+    <article class="kpi-card card glass-card glow-purple">
+      <div class="kpi-icon-container bg-purple-soft text-purple">
+        <i class="fa-solid fa-dollar-sign"></i>
+      </div>
+      <div class="kpi-details">
+        <span class="kpi-label">Gasto Mensual</span>
+        <h2 class="kpi-value">{{ formatearMoneda(resumen().gastoMensualEstimado) }}</h2>
+        <small class="kpi-text">Estimado mensual</small>
+      </div>
+    </article>
+
+    <!-- KPI: Próximo Pago -->
+    <article class="kpi-card card glass-card glow-cyan">
+      <div class="kpi-icon-container bg-cyan-soft text-cyan">
+        <i class="fa-solid fa-calendar-check"></i>
+      </div>
+      <div class="kpi-details">
+        <span class="kpi-label">Próximo Pago</span>
+        @if (resumen().proximoPago) {
+         <h2 class="kpi-value">{{ resumen().proximoPago?.nombre }}</h2>
+<small class="kpi-text">{{ resumen().proximoPago?.proximoVencimiento | date:'d/MMM/yyyy' }}</small>
+        } @else {
+          <h2 class="kpi-value">—</h2>
+          <small class="kpi-text">Sin pagos pendientes</small>
+        }
+      </div>
+    </article>
+
+    <!-- KPI: Total Suscripciones -->
+    <article class="kpi-card card glass-card glow-green">
+      <div class="kpi-icon-container bg-green-soft text-green">
+        <i class="fa-solid fa-list-check"></i>
+      </div>
+      <div class="kpi-details">
+        <span class="kpi-label">Total</span>
+        <h2 class="kpi-value">{{ resumen().cantidadTotal }}</h2>
+        <small class="kpi-text">Suscripciones registradas</small>
+      </div>
+    </article>
+  </section>
+
+  <!-- SECCIÓN PRÓXIMAS SUSCRIPCIONES -->
+  <section class="suscripcion-luka-page__proximas">
+    <header class="suscripcion-luka-page__section-header">
+      <h2>Próximos Vencimientos</h2>
+      <span class="suscripcion-luka-page__badge">{{ suscripcionesProximas().length }} próximas</span>
+    </header>
+
+    @if (suscripcionesProximas().length === 0) {
+      <div class="suscripcion-luka-page__empty">
+        <i class="fa-solid fa-calendar-xmark"></i>
+        <h3>Sin vencimientos próximos</h3>
+        <p>Todas tus suscripciones están al día</p>
+      </div>
+    } @else {
+      <div class="suscripcion-luka-page__grid">
+        @for (suscripcion of suscripcionesProximas(); track suscripcion.id) {
+          <app-suscripcion-card 
+            [suscripcion]="suscripcion"
+            (editar)="onEditarSuscripcion($event)"
+            (eliminar)="onEliminarSuscripcion($event)"
+            (cambiarEstado)="onCambiarEstado($event)"
+            (verDetalle)="onVerDetalle($event)">
+          </app-suscripcion-card>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- SECCIÓN TODAS LAS SUSCRIPCIONES ACTIVAS -->
+  <section class="suscripcion-luka-page__activas">
+    <header class="suscripcion-luka-page__section-header">
+      <h2>Todas las Activas</h2>
+      <span class="suscripcion-luka-page__badge is-success">{{ suscripcionesActivas().length }} activas</span>
+    </header>
+
+    @if (suscripcionesActivas().length === 0) {
+      <div class="suscripcion-luka-page__empty">
+        <i class="fa-solid fa-inbox"></i>
+        <h3>Sin suscripciones activas</h3>
+        <p>Crear una nueva para comenzar</p>
+      </div>
+    } @else {
+      <div class="suscripcion-luka-page__grid">
+        @for (suscripcion of suscripcionesActivas(); track suscripcion.id) {
+          <app-suscripcion-card 
+            [suscripcion]="suscripcion"
+            (editar)="onEditarSuscripcion($event)"
+            (eliminar)="onEliminarSuscripcion($event)"
+            (cambiarEstado)="onCambiarEstado($event)"
+            (verDetalle)="onVerDetalle($event)">
+          </app-suscripcion-card>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- MODAL NUEVA SUSCRIPCIÓN -->
+  @if (modalAbierto()) {
+    <app-modal-nueva-suscripcion
+      (cerrar)="cerrarModal()"
+      (crear)="onCrearSuscripcion($event)">
+    </app-modal-nueva-suscripcion>
+  }
+</div>

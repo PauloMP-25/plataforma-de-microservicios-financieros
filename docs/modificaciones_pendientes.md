@@ -13,10 +13,10 @@ Este documento centraliza todas las modificaciones, refactorizaciones, pruebas, 
 | Categoría | Descripción | Prioridad | Estado | Fecha de registro | Fecha de cambio |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | Backend | **[B-05] Gastos de Suscripción:** El backend no conecta los gastos pagados y pendientes que vienen de la sección suscripción. | Alta | Pendiente | 12 de junio de 2026 | — |
-| Backend | **[B-06] Dashboard - Sincronización por Eventos:** Verificar que los datos del dashboard se actualicen en tiempo real e inmediatamente después del ingreso de transacciones (gastos e ingresos) a través de eventos. | Alta | Completado | 15 de junio de 2026 | 20 de junio de 2026 |
+| Backend | **[B-06] Dashboard - Sincronización por Eventos:** Verificar que los datos del dashboard se actualicen en tiempo real e inmediatamente después del ingreso de transacciones (gastos e ingresos) a través de eventos. | Alta | Pendiente | 15 de junio de 2026 | — |
 | Integración API | **[F-46] Gastos - Sincronización de Suscripciones:** Integrar las tarjetas de "Pendiente por pagar" y "Próximo vencimiento" con el `microservicio-suscripciones`, extrayendo los datos reales de las suscripciones del usuario asociadas a la tarjeta (aún no integrado en frontend). | Alta | Pendiente | 15 de junio de 2026 | — |
 | Pruebas / QA | **[F-53] Gastos - Verificación End-to-End:** Realizar pruebas integrales en la vista de gastos para asegurar que todo el layout funcione en perfecta armonía con la integración final del backend. | Alta | Pendiente | 15 de junio de 2026 | — |
-| Pruebas / QA | **[F-29] Usuario Mock para Pruebas:** Agregar un usuario mock con correo `prueba@gmail.com` y contraseña `12345` para probar el flujo de ingreso, omitiendo la restricción de contraseña solo por esta vez. | Alta | Completado | 12 de junio de 2026 | 20 de junio de 2026 |
+| Pruebas / QA | **[F-29] Usuario Mock para Pruebas:** Agregar un usuario mock con correo `prueba@gmail.com` y contraseña `12345` para probar el flujo de ingreso, omitiendo la restricción de contraseña solo por esta vez. | Alta | Pendiente | 12 de junio de 2026 | — |
 | Backend / API | **[B-07] API - Filtro de Ingresos:** Garantizar que los endpoints dedicados a la sección de Ingresos devuelvan exclusivamente datos y transacciones de tipo ingreso (excluyendo cualquier gasto). | Alta | Pendiente | 15 de junio de 2026 | — |
 | Arquitectura | **[B-08] API - Streaming de Datos:** Implementar flujos reactivos (como Server-Sent Events - SSE o WebSockets) para el envío de volúmenes pesados de datos. En lugar de procesar peticiones masivas síncronas, el backend debe despachar la información mediante eventos y bloques progresivos al cliente. | Alta | Pendiente | 15 de junio de 2026 | — |
 
@@ -40,27 +40,17 @@ Este documento centraliza todas las modificaciones, refactorizaciones, pruebas, 
 
 | Categoría | Descripción | Prioridad | Estado | Fecha de registro | Fecha de cambio |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| Interactividad | **[F-37] Dashboard - Filtros y Búsqueda:** Hacer funcional los filtros y la barra de búsqueda del dashboard para búsquedas y filtrados en tiempo real. | Alta | Completado | 15 de junio de 2026 | 20 de junio de 2026 |
-| Gráficos | **[F-40] Dashboard - Tendencia de Flujo de Caja:** Incorporar todos los meses al gráfico de flujo de caja y habilitar la capacidad de filtrarlos dinámicamente por año. | Alta | Completado | 15 de junio de 2026 | 20 de junio de 2026 |
-| Rendimiento | **[F-42] Dashboard - Carga Rápida:** Optimizar el BFF y el frontend para asegurar una carga ultra-rápida y renderizado inmediato de los datos consolidados en pantalla. | Alta | Completado | 15 de junio de 2026 | 20 de junio de 2026 |
-| Rendimiento | **[F-44] Dashboard - Renderizado y Lazy Loading:** Modularizar y optimizar el layout utilizando carga diferida (lazy loading) en Angular y estrategias de renderizado óptimas para mejorar los Core Web Vitals. | Alta | Completado | 15 de junio de 2026 | 20 de junio de 2026 |
-| Interactividad | **[F-37] Dashboard - Filtros y Búsqueda:** Hacer funcional los filtros y la barra de búsqueda del dashboard para búsquedas y filtrados en tiempo real. | Alta | ✔ Completado | 15 de junio de 2026 | 20 de junio de 2026 |
-| Gráficos | **[F-40] Dashboard - Tendencia de Flujo de Caja:** Incorporar todos los meses al gráfico de flujo de caja y habilitar la capacidad de filtrarlos dinámicamente por año. | Alta | Completado | 15 de junio de 2026 | 20 de junio de 2026 |
-| Rendimiento | **[F-42] Dashboard - Carga Rápida:** Optimizar el BFF y el frontend para asegurar una carga ultra-rápida y renderizado inmediato de los datos consolidados en pantalla. | Alta | Completado | 15 de junio de 2026 | 20 de junio de 2026 |
-| Rendimiento | **[F-44] Dashboard - Renderizado y Lazy Loading:** Modularizar y optimizar el layout utilizando carga diferida (lazy loading) en Angular y estrategias de renderizado óptimas para mejorar los Core Web Vitals. | Alta | Completado | 15 de junio de 2026 | 20 de junio de 2026 |
-| Interactividad | **[F-21] Dashboard - Filtro de Fechas:** El filtro "Entre fechas" debe permitir desde la fecha que se elige hasta el día de hoy. | Media | Completado | 12 de junio de 2026 | 20 de junio de 2026 |
-| Estructura | **[F-22] Dashboard - Historial:** Eliminar el historial de transacciones del Dashboard. | Media | Completado | 12 de junio de 2026 | 20 de junio de 2026 |
-| Estilos | **[F-38] Dashboard - Coherencia Estética:** Verificar que los estilos de letras para cada componente del layout se encuentren coherentes y legibles en los modos claro y oscuro según el tema activo. | Media | Completado | 15 de junio de 2026 | 20 de junio de 2026 |
-| Gráficos | **[F-39] Dashboard - Distribución de Gastos (Top 5):** Ajustar el gráfico de distribución de gastos para mostrar exclusivamente los 5 gastos de mayor importancia. | Media | Completado | 15 de junio de 2026 | 20 de junio de 2026 |
-| Gráficos | **[F-41] Dashboard - Enriquecimiento Visual:** Añadir gráficos estadísticos complementarios (línea de tiempo de actividad, gráficos de barras comparativos, anillos/donas e histogramas de dispersión) que enriquezcan la UX. | Media | Completado | 15 de junio de 2026 | 20 de junio de 2026 |
-| Rendimiento | **[F-43] Dashboard - Peso de Componentes:** Optimizar el CSS/SCSS del layout y componentes individuales para asegurar que los estilos y el script no excedan el peso de bundle óptimo. | Media | Completado | 15 de junio de 2026 | 20 de junio de 2026 |
-| Estilos | **[F-25] Tema Oscuro - Header y Dashboard:** En modo oscuro las letras del header no se notan claro; definir un color visible para las letras sin afectar el tema claro. En el dashboard (ej. periodo) las letras deben ser blancas con hover más blanco, sin afectar el color principal. | Baja | ✔ Completado | 12 de junio de 2026 | 20 de junio de 2026 |
-| Rendimiento/UX | **[F-102] Dashboard - Responsividad de Gráficos:** Ajuste dinámico del ancho de los gráficos (compactación y expansión a full-width) cuando hay pocos datos, con eliminación total del scroll horizontal. | Alta | Completado | 20 de junio de 2026 | 20 de junio de 2026 |
-| Datos/Mocks | **[F-103] Dashboard - Corrección de Mock Data:** Ajuste en la generación de datos para reportar los 7 días en la vista semanal y nombres dinámicos de meses en el flujo de caja en lugar de estáticos. | Media | Completado | 20 de junio de 2026 | 20 de junio de 2026 |
-| Gráficos | **[F-104] Dashboard - Prevención de Colisiones:** Lógica dinámica en las etiquetas de datos del gráfico de tendencia para evitar solapamientos y choques con las etiquetas de los ejes X e Y usando boundary checks. | Alta | Completado | 20 de junio de 2026 | 20 de junio de 2026 |
-| UX / Layout | **[F-105] Dashboard - Layout Adaptativo (Corto Plazo):** Reorganización dinámica inteligente del orden de los gráficos del grid (2 filas) cuando se detectan rangos de 1 a 3 meses usando CSS `order` y proporciones personalizadas. | Alta | Completado | 20 de junio de 2026 | 20 de junio de 2026 |
-| UI / Gráficos | **[F-106] Dashboard - Leyendas Inferiores en Donas:** Reubicación de las leyendas a la posición inferior (`bottom`) en gráficos circulares (Distribución y Pago) y eliminación del padding asimétrico para maximizar la visibilidad y el centrado del gráfico. | Media | Completado | 20 de junio de 2026 | 20 de junio de 2026 |
-| Bugfix / Gráficos | **[F-107] Dashboard - Corrección de Expansión (Chart.js):** Solución al desbordamiento y retención del tamaño del grid (bug de Chart.js al cambiar de filtros) incorporando `min-width: 0` y `overflow: hidden` a todos los contenedores principales. | Alta | Completado | 20 de junio de 2026 | 20 de junio de 2026 |
+| Interactividad | **[F-37] Dashboard - Filtros y Búsqueda:** Hacer funcional los filtros y la barra de búsqueda del dashboard para búsquedas y filtrados en tiempo real. | Alta | Pendiente | 15 de junio de 2026 | — |
+| Gráficos | **[F-40] Dashboard - Tendencia de Flujo de Caja:** Incorporar todos los meses al gráfico de flujo de caja y habilitar la capacidad de filtrarlos dinámicamente por año. | Alta | Pendiente | 15 de junio de 2026 | — |
+| Rendimiento | **[F-42] Dashboard - Carga Rápida:** Optimizar el BFF y el frontend para asegurar una carga ultra-rápida y renderizado inmediato de los datos consolidados en pantalla. | Alta | Pendiente | 15 de junio de 2026 | — |
+| Rendimiento | **[F-44] Dashboard - Renderizado y Lazy Loading:** Modularizar y optimizar el layout utilizando carga diferida (lazy loading) en Angular y estrategias de renderizado óptimas para mejorar los Core Web Vitals. | Alta | Pendiente | 15 de junio de 2026 | — |
+| Interactividad | **[F-21] Dashboard - Filtro de Fechas:** El filtro "Entre fechas" debe permitir desde la fecha que se elige hasta el día de hoy. | Media | Pendiente | 12 de junio de 2026 | — |
+| Estructura | **[F-22] Dashboard - Historial:** Eliminar el historial de transacciones del Dashboard. | Media | Pendiente | 12 de junio de 2026 | — |
+| Estilos | **[F-38] Dashboard - Coherencia Estética:** Verificar que los estilos de letras para cada componente del layout se encuentren coherentes y legibles en los modos claro y oscuro según el tema activo. | Media | Pendiente | 15 de junio de 2026 | — |
+| Gráficos | **[F-39] Dashboard - Distribución de Gastos (Top 5):** Ajustar el gráfico de distribución de gastos para mostrar exclusivamente los 5 gastos de mayor importancia. | Media | Pendiente | 15 de junio de 2026 | — |
+| Gráficos | **[F-41] Dashboard - Enriquecimiento Visual:** Añadir gráficos estadísticos complementarios (línea de tiempo de actividad, gráficos de barras comparativos, anillos/donas e histogramas de dispersión) que enriquezcan la UX. | Media | Pendiente | 15 de junio de 2026 | — |
+| Rendimiento | **[F-43] Dashboard - Peso de Componentes:** Optimizar el CSS/SCSS del layout y componentes individuales para asegurar que los estilos y el script no excedan el peso de bundle óptimo. | Media | Pendiente | 15 de junio de 2026 | — |
+| Estilos | **[F-25] Tema Oscuro - Header y Dashboard:** En modo oscuro las letras del header no se notan claro; definir un color visible para las letras sin afectar el tema claro. En el dashboard (ej. periodo) las letras deben ser blancas con hover más blanco, sin afectar el color principal. | Baja | Pendiente | 12 de junio de 2026 | — |
 
 ---
 
@@ -118,18 +108,18 @@ Este documento centraliza todas las modificaciones, refactorizaciones, pruebas, 
 
 ---
 
-### 🧠 Layout: Inteligencia Artificial
+### 🧠 Layout: Inteligencia Artificial 
 
 | Categoría | Descripción | Prioridad | Estado | Fecha de registro | Fecha de cambio |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| Integración API | **[F-79] Inteligencia Artificial - Integración de DTOs:** Verificar y mapear correctamente la recepción de los nuevos DTOs expuestos por el `microservicio-ia`. | Alta | Completado | 15 de junio de 2026 | 20 de junio de 2026 |
-| Lógica de Negocio | **[F-80] Inteligencia Artificial - Sincronización en Header:** Actualizar (aumentar/disminuir) dinámicamente el contador de "Consultas IA" (Autoclasificar) mostrado en el header principal cada vez que el usuario utilice un módulo de simulación. | Alta | Completado | 15 de junio de 2026 | 20 de junio de 2026 |
-| Interactividad | **[F-81] Inteligencia Artificial - Filtros Dinámicos:** Hacer completamente dinámicos los filtros dentro de los módulos IA y solventar los bugs visuales menores generados al interactuar con ellos. | Alta | Completado | 15 de junio de 2026 | 20 de junio de 2026 |
-| Pruebas / QA | **[F-82] Inteligencia Artificial - Pruebas ('cesar_test'):** Validar funcionalmente cada módulo del simulador utilizando la cuenta de prueba `cesar_test` para aprovechar su data semilla de 700 registros y comprobar el rendimiento/visualización real. | Alta | Completado | 15 de junio de 2026 | 20 de junio de 2026 |
+| Integración API | **[F-79] Inteligencia Artificial - Integración de DTOs:** Verificar y mapear correctamente la recepción de los nuevos DTOs expuestos por el `microservicio-ia`. | Alta | Pendiente | 15 de junio de 2026 | — |
+| Lógica de Negocio | **[F-80] Inteligencia Artificial - Sincronización en Header:** Actualizar (aumentar/disminuir) dinámicamente el contador de "Consultas IA" (Autoclasificar) mostrado en el header principal cada vez que el usuario utilice un módulo de simulación. | Alta | Pendiente | 15 de junio de 2026 | — |
+| Interactividad | **[F-81] Inteligencia Artificial - Filtros Dinámicos:** Hacer completamente dinámicos los filtros dentro de los módulos IA y solventar los bugs visuales menores generados al interactuar con ellos. | Alta | Pendiente | 15 de junio de 2026 | — |
+| Pruebas / QA | **[F-82] Inteligencia Artificial - Pruebas ('cesar_test'):** Validar funcionalmente cada módulo del simulador utilizando la cuenta de prueba `cesar_test` para aprovechar su data semilla de 700 registros y comprobar el rendimiento/visualización real. | Alta | Pendiente | 15 de junio de 2026 | — |
 | UX / UI | **[F-83] Inteligencia Artificial - Tooltips de Ayuda:** Implementar botones informativos "¿Cómo usar este simulador?" en cada uno de los submódulos, tomando como referencia base el comportamiento actual de "Simular Meta". | Media | Pendiente | 15 de junio de 2026 | — |
 | Estilos | **[F-84] Inteligencia Artificial - Mejora Visual Interna:** Refinar sustancialmente el diseño, márgenes, proporciones y los estilos visuales del interior de cada submódulo interactivo de la vista IA. | Media | Pendiente | 15 de junio de 2026 | — |
 | Estilos | **[F-85] Inteligencia Artificial - Coherencia de Temas:** Asegurar que los componentes, paneles de simulación y textos de IA mantengan una alta legibilidad sin problemas visuales tanto en el tema oscuro como en el tema claro. | Media | Pendiente | 15 de junio de 2026 | — |
-| Estilos / Textos | **[F-23] Texto de Sugerencia IA:** Cambiar el texto a: "Tienes 2 intentos de sugerencia por IA. El contador también es visible en el header como 'Autoclasificar'." | Baja | Completado | 12 de junio de 2026 | 20 de junio de 2026 |
+| Estilos / Textos | **[F-23] Texto de Sugerencia IA:** Cambiar el texto a: "Tienes 2 intentos de sugerencia por IA. El contador también es visible en el header como 'Autoclasificar'." | Baja | Pendiente | 12 de junio de 2026 | — |
 
 ---
 
@@ -137,13 +127,13 @@ Este documento centraliza todas las modificaciones, refactorizaciones, pruebas, 
 
 | Categoría       | Descripción                                                                                                                                                                                                                                                               | Prioridad | Estado    | Fecha de registro   | Fecha de cambio |
 | :-------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :-------- | :-------- | :------------------ | :-------------- |
-| Pruebas / QA    | **[F-86] Perfil - Pruebas Endpoint Contraseña:** Ejecutar pruebas End-to-End sobre el botón de "Actualizar contraseña" (el único endpoint pendiente de esta sección) y registrar la información/resultados en el documento `manual_endpoints`.                            | Alta      | Pendiente | 15 de junio de 2026 | —               |
-| Integración API | **[F-87] Perfil - Sincronización Avatar y Formulario:** Garantizar el guardado correcto del Avatar en la BD, así como el mapeo exacto de todos los campos del formulario con los datos provenientes del backend, actualizando la UI en tiempo real ante cualquier cambio. | Alta      | Pendiente | 15 de junio de 2026 | —               |
-| Validación      | **[F-88] Perfil - Validación Estricta Numérica:** Implementar reglas rígidas en los inputs numéricos para bloquear el ingreso de letras o símbolos, y limitar exactamente los caracteres permitidos según el tipo de dato (ej. máximo 8 dígitos). *(Reemplaza a F-33)*    | Alta      | Pendiente | 15 de junio de 2026 | —               |
-| Estructura      | **[F-89] Perfil - Eliminación de Membresía e Historial:** Remover por completo la sección interna de "Membresía" de esta vista y asegurar que el Historial sea movido de forma independiente al menú principal.                                                           | Media     | Pendiente | 15 de junio de 2026 | —               |
-| Estilos         | **[F-90] Perfil - Coherencia Estética:** Auditar la vista de perfil para garantizar que los *inputs*, *labels* y textos sean completamente legibles y mantengan una alta fidelidad tanto en el tema claro como en el tema oscuro.                                         | Media     | Pendiente | 15 de junio de 2026 | —               |
-| Modularización  | **[F-31] Modularizar Perfil:** Refactorizar y modularizar la sección Perfil.                                                                                                                                                                                              | Media     | Pendiente | 12 de junio de 2026 | —               |
-| Estilos         | **[F-34] Perfil - Etiqueta Sin Verificar:** Cambiar el color de letra de la etiqueta "Sin verificar".                                                                                                                                                                     | Baja      | Pendiente | 12 de junio de 2026 | —               |
+| Pruebas / QA    | **[F-86] Perfil - Pruebas Endpoint Contraseña:** Ejecutar pruebas End-to-End sobre el botón de "Actualizar contraseña" (el único endpoint pendiente de esta sección) y registrar la información/resultados en el documento `manual_endpoints`.                            | Alta      | Realizado | 15 de junio de 2026 | —               |
+| Integración API | **[F-87] Perfil - Sincronización Avatar y Formulario:** Garantizar el guardado correcto del Avatar en la BD, así como el mapeo exacto de todos los campos del formulario con los datos provenientes del backend, actualizando la UI en tiempo real ante cualquier cambio. | Alta      | Realizado | 15 de junio de 2026 | —               |
+| Validación      | **[F-88] Perfil - Validación Estricta Numérica:** Implementar reglas rígidas en los inputs numéricos para bloquear el ingreso de letras o símbolos, y limitar exactamente los caracteres permitidos según el tipo de dato (ej. máximo 8 dígitos). *(Reemplaza a F-33)*    | Alta      | Realizado | 15 de junio de 2026 | —               |
+| Estructura      | **[F-89] Perfil - Eliminación de Membresía e Historial:** Remover por completo la sección interna de "Membresía" de esta vista y asegurar que el Historial sea movido de forma independiente al menú principal.                                                           | Media     | Realizado | 15 de junio de 2026 | —               |
+| Estilos         | **[F-90] Perfil - Coherencia Estética:** Auditar la vista de perfil para garantizar que los *inputs*, *labels* y textos sean completamente legibles y mantengan una alta fidelidad tanto en el tema claro como en el tema oscuro.                                         | Media     | Realizado | 15 de junio de 2026 | —               |
+| Modularización  | **[F-31] Modularizar Perfil:** Refactorizar y modularizar la sección Perfil.                                                                                                                                                                                              | Media     | Realizado | 12 de junio de 2026 | —               |
+| Estilos         | **[F-34] Perfil - Etiqueta Sin Verificar:** Cambiar el color de letra de la etiqueta "Sin verificar".                                                                                                                                                                     | Baja      | Realizado | 12 de junio de 2026 | —               |
 
 ---
 
@@ -169,7 +159,7 @@ Este documento centraliza todas las modificaciones, refactorizaciones, pruebas, 
 | :---------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :-------- | :-------- | :------------------ | :-------------- |
 | Lógica de Negocio | **[F-97] Configuración - Ocultamiento Plan Premium:** Añadir lógica condicional para eliminar/ocultar completamente la sección de "Mejorar a Premium" si se detecta que el usuario ya cuenta con un plan Premium o Pro.                                       | Alta      | Realizado | 15 de junio de 2026 | —               |
 | Pruebas / QA      | **[F-98] Configuración - Flujo de Eliminación de Cuenta:** Probar funcionalmente el botón de desactivar/eliminar cuenta, garantizando que siempre se despliegue un modal de advertencia/confirmación respectivo antes de enviar la solicitud al backend.      | Alta      | Pendiente | 15 de junio de 2026 | —               |
-| Interactividad    | **[F-99] Configuración - Motor de Color Principal:** Implementar la lógica para que los botones selectores de "Color Principal" modifiquen dinámicamente las variables CSS globales, logrando que el color cambie instantáneamente en toda la aplicación web. | Alta      | Realizado | 15 de junio de 2026 | —               |
+| Interactividad    | **[F-99] Configuración - Motor de Color Principal:** Implementar la lógica para que los botones selectores de "Color Principal" modifiquen dinámicamente las variables CSS globales, logrando que el color cambie instantáneamente en toda la aplicación web. | Alta      | Pendiente | 15 de junio de 2026 | —               |
 | Navegación        | **[F-100] Configuración - Redirección a Ayuda:** Ajustar el enlace o botón de la subsección de soporte para que redirija de manera correcta a la vista de "Ayuda" de la plataforma.                                                                           | Media     | Realizado | 15 de junio de 2026 | —               |
 | Estilos           | **[F-101] Configuración - Legibilidad de Textos (Temas):** Verificar de forma exhaustiva que la transición entre el tema claro y oscuro no cause la desaparición de letras, *labels* o textos por falta de contraste con los fondos.                          | Media     | Realizado | 15 de junio de 2026 | —               |
 | Estilos           | **[F-36] Tema Oscuro:** La parte de selección de tema en Configuración debería notarse claramente en color oscuro.                                                                                                                                            | Baja      | Realizado | 12 de junio de 2026 | —               |
@@ -185,63 +175,21 @@ Este documento centraliza todas las modificaciones, refactorizaciones, pruebas, 
 
 ---
 
-
-## ✅ Modificaciones Resueltas (Historial)
-
-# Modificaciones Pendientes Resueltas
-
-Este documento registra el historial de modificaciones y tareas completadas (anteriormente listadas como pendientes) de la Plataforma de Microservicios Financieros.
-
----
-### 🎯 Layout: Metas [Responsable: Paul Bendezu]
-
-| Categoría | Descripción | Prioridad | Estado | Fecha de registro | Fecha de cambio |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| Integración API | **[F-65] Metas - Integración de Campos:** Enlazar y renderizar correctamente todos los campos y atributos de datos que envía el backend para la sección de metas. | Alta | ✔ Completado | 15 de junio de 2026 | 16 de junio de 2026 |
-| Interactividad | **[F-66] Metas - Funcionalidad de Filtros:** Hacer completamente operativos los filtros de visualización de metas, procesando correctamente la selección en el frontend. | Media | ✔ Completado | 15 de junio de 2026 | 16 de junio de 2026 |
-| Estilos | **[F-67] Metas - Coherencia Estética:** Revisar el diseño para garantizar la correcta visualización de colores, jerarquías y textos de los componentes tanto en el tema oscuro como en el tema claro. | Media | ✔ Completado | 15 de junio de 2026 | 16 de junio de 2026 |
-| Modularización | **[F-30] Modularizar Metas:** Refactorizar la sección aislando su lógica y estructura en microcomponentes dedicados. | Media | ✔ Completado | 12 de junio de 2026 | 16 de junio de 2026 |
-| Lógica de Negocio | **[F-30-A] Nuevas Categorías de Metas:** Añadir tres propósitos adicionales (Salud, Inversión, Negocio) con iconos específicos y soporte en el listado y formulario. | Media | ✔ Completado | 15 de junio de 2026 | 16 de junio de 2026 |
-| Arquitectura | **[F-30-B] Servicio Utilitario & Mocks:** Centralizar lógica de categorías, parseo de prefijos y ciclo de vida de almacenamiento mock local en `MetasUtilityService`. | Media | ✔ Completado | 15 de junio de 2026 | 16 de junio de 2026 |
-| Arquitectura | **[F-30-C] Centralización de Datos (`MetasDataService`):** Aislar llamadas HTTP y lógica de fallback a mocks locales en un servicio de datos inyectable. | Alta | ✔ Completado | 16 de junio de 2026 | 16 de junio de 2026 |
-| Interactividad | **[F-66-A] Filtro de Año por Fecha de Creación:** Modificar la lógica de filtros y años disponibles para operar sobre la fecha de creación de la meta. | Media | ✔ Completado | 16 de junio de 2026 | 16 de junio de 2026 |
-| Estilos / Bugfix | **[F-67-A] Corrección de Alineación en Detalles:** Corregir el layout flexbox de "Faltan ahorrar" en la barra lateral de detalles de meta. | Alta | ✔ Completado | 16 de junio de 2026 | 16 de junio de 2026 |
-
----
-
-### 📈 Layout: Perfil Financiero [Responsable: Paul Bendezu]
-
-| Categoría | Descripción | Prioridad | Estado | Fecha de registro | Fecha de cambio |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| Integración API | **[F-91] Perfil Financiero - Integración Completa:** Conectar eficientemente el frontend con el `microservicio-cliente` para el registro, lectura y actualización de los datos del perfil financiero. | Alta | Realizado | 15 de junio de 2026 | 17 de junio de 2026 |
-| Lógica de Negocio | **[F-92] Perfil Financiero - Ingresos Auto-Calculados:** Sincronizar el campo "Ingreso mensual" para que se calcule y autocomplete automáticamente a partir de los registros del cliente, bloqueando la edición manual. | Alta | Realizado | 15 de junio de 2026 | 17 de junio de 2026 |
-| Pruebas / QA | **[F-93] Perfil Financiero - Pruebas de Auto-Relleno:** Mapear y probar que campos como `tono-ia`, `ocupación`, `objetivo_principal`, etc., se precarguen correctamente en el formulario si el backend detecta que ya existen. | Alta | Realizado | 15 de junio de 2026 | 17 de junio de 2026 |
-| UX / Diseño | **[F-94] Perfil Financiero - Formulario de Registro (UI):** Diseñar una interfaz moderna para el registro de perfil. *Idea: Implementar un "Wizard" (formulario multi-pasos) que use sliders para "Tolerancia al riesgo" y tarjetas visuales (cards seleccionables) para escoger el "Tono IA", en lugar de inputs clásicos aburridos.* | Alta | Realizado | 15 de junio de 2026 | 17 de junio de 2026 |
-| Estructura | **[F-95] Perfil Financiero - Eliminación de Gráficos:** Eliminar definitivamente los gráficos circulares de la parte inferior de la vista ("Gastos por composición de ingresos" y "Gastos por categoría"). | Media | Realizado | 15 de junio de 2026 | 17 de junio de 2026 |
-| Estilos | **[F-96] Perfil Financiero - Coherencia Estética:** Garantizar que todos los nuevos componentes, sliders y tarjetas del formulario funcionen visualmente de forma perfecta tanto en el tema oscuro como en el tema claro. | Media | Realizado | 15 de junio de 2026 | 17 de junio de 2026 |
-| Interactividad | **[F-35] Perfil Financiero - Filtros:** La parte de filtro de fechas debería separarse entre mes y año. | Baja | Realizado | 12 de junio de 2026 | 17 de junio de 2026 |
-| Lógica de Negocio | **[F-97] Perfil Financiero - Catálogo Ampliado de Logros:** Expandir el número de logros a 16 con condiciones de progreso específicas conectadas con datos del resumen financiero. | Alta | Realizado | 16 de junio de 2026 | 17 de junio de 2026 |
-| UX / Paginación | **[F-98] Perfil Financiero - Subruta y Paginación de Logros:** Registrar la subruta `financiero/logros`, y diseñar un grid responsivo con controles de paginación reactivos (8 elementos por página). | Alta | Realizado | 16 de junio de 2026 | 17 de junio de 2026 |
-| Estructura | **[F-99] Perfil Financiero - Modularización de Servicios:** Dividir el service original gigante en 4 servicios específicos (`Financiero`, `Logros`, `Wizard`, `Reporte`) para mayor separación de responsabilidades y evitar dependencias circulares. | Alta | Realizado | 17 de junio de 2026 | 17 de junio de 2026 |
-| Navegación | **[F-100] Perfil Financiero - Navegación Programática de Logros:** Implementar redirección programática mediante Angular `Router` para prevenir bloqueos de navegación en HMR. | Media | Realizado | 16 de junio de 2026 | 17 de junio de 2026 |
-| Estilos | **[F-101] Perfil Financiero - Encapsulación de Estilos SCSS:** Corregir el anidamiento incorrecto de selectores bajo `:host` en los componentes mediante contenedores envolventes o directivas de host binding. | Media | Realizado | 16 de junio de 2026 | 17 de junio de 2026 |
-
-
 ## 🛡️ Auditoría Pre-Producción (Roadmap 4 Semanas)
 
 Esta sección agrupa 20 requerimientos críticos de arquitectura, seguridad y rendimiento exigidos para el pase a producción final.
 
 | Categoría | Descripción | Capa | Prioridad | Estado |
 | :--- | :--- | :--- | :--- | :--- |
-| Seguridad | **[S-01] Guards de Rutas (Autenticación):** Implementar `AuthGuard` y `RoleGuard` en Angular para bloquear totalmente el acceso mediante URL directa a vistas privadas (Dashboard, Perfil, etc.) si no hay sesión activa. | Frontend | Alta | Completado |
+| Seguridad | **[S-01] Guards de Rutas (Autenticación):** Implementar `AuthGuard` y `RoleGuard` en Angular para bloquear totalmente el acceso mediante URL directa a vistas privadas (Dashboard, Perfil, etc.) si no hay sesión activa. | Frontend | Alta | Pendiente |
 | Seguridad | **[S-02] Validación Estricta JWT:** El API Gateway o microservicios deben validar rigurosamente la firma, expiración y emisor del Token JWT en cada petición HTTP, rechazando con HTTP 401 si es inválido. | Backend | Alta | Completado |
-| Seguridad | **[S-03] Protección CSRF & XSS:** Desinfectar (*sanitize*) sistemáticamente todos los inputs de texto en Angular y habilitar cabeceras HTTP de seguridad (Helmet, CORS estrictos) en el backend. | Fullstack | Alta | Completado |
+| Seguridad | **[S-03] Protección CSRF & XSS:** Desinfectar (*sanitize*) sistemáticamente todos los inputs de texto en Angular y habilitar cabeceras HTTP de seguridad (Helmet, CORS estrictos) en el backend. | Fullstack | Alta | Pendiente |
 | Seguridad | **[S-04] Rate Limiting:** Implementar un límite de peticiones (Rate Limiting) en endpoints críticos (Login, IA, Registro) para frustrar ataques de fuerza bruta o de denegación de servicio (DDoS). | Backend | Alta | Completado |
-| Seguridad | **[S-05] Cifrado de BD:** Asegurar que datos sensibles como contraseñas, documentos de identidad o tokens de integraciones estén debidamente encriptados o hasheados (BCrypt) en PostgreSQL. | Backend | Alta | Completado |
+| Seguridad | **[S-05] Cifrado de BD:** Asegurar que datos sensibles como contraseñas, documentos de identidad o tokens de integraciones estén debidamente encriptados o hasheados (BCrypt) en PostgreSQL. | Backend | Alta | Pendiente |
 | Rendimiento | **[P-01] Caché Distribuido (Redis):** Implementar Redis en el backend para almacenar en caché consultas pesadas o catálogos estáticos (ej. listas de categorías) que no cambian constantemente, aliviando la BD. | Backend | Alta | Completado |
 | Rendimiento | **[P-02] Paginación Real en Base de Datos:** Garantizar que los endpoints que retornan grandes volúmenes de datos utilicen paginación a nivel de SQL (`LIMIT`/`OFFSET`) y no carguen toda la tabla a memoria. | Backend | Alta | Completado |
 | Rendimiento | **[P-03] Optimización de Assets (Imágenes):** Convertir avatares y recursos gráficos a formatos de nueva generación (WebP) y aplicar estrategias de *Lazy Loading* nativo en todas las etiquetas de imagen de la app. | Frontend | Media | Pendiente |
-| Rendimiento | **[P-04] Tree Shaking & Bundle Size:** Auditar el bundle de Angular (ej. con *webpack-bundle-analyzer*), removiendo dependencias no utilizadas para reducir drásticamente el peso inicial de la aplicación. | Frontend | Alta | Completado |
+| Rendimiento | **[P-04] Tree Shaking & Bundle Size:** Auditar el bundle de Angular (ej. con *webpack-bundle-analyzer*), removiendo dependencias no utilizadas para reducir drásticamente el peso inicial de la aplicación. | Frontend | Alta | Pendiente |
 | Rendimiento | **[P-05] Compresión HTTP:** Habilitar compresión GZIP o Brotli en el Ingress/BFF/Servidor para reducir el peso en la transferencia de los JSON de respuesta. | Backend | Media | Pendiente |
 | Lógica | **[L-01] Transacciones ACID (Rollback):** Envolver los procesos críticos de guardado en transacciones de Spring Boot (`@Transactional`) para asegurar que si algo falla, ocurra un *rollback* y los datos no queden inconsistentes. | Backend | Alta | Completado |
 | Lógica | **[L-02] Manejo Global de Excepciones:** Estandarizar las respuestas de error usando `@ControllerAdvice` para retornar siempre el modelo `ResultadoApi<T>`, evitando la fuga de trazas internas (stacktraces) de Java al cliente. | Backend | Alta | Completado |
@@ -251,7 +199,7 @@ Esta sección agrupa 20 requerimientos críticos de arquitectura, seguridad y re
 | UX / UI | **[U-01] Esqueletos de Carga (Skeleton Loaders):** Reemplazar los *spinners* clásicos por *Skeleton Loaders* en gráficos y tablas, mejorando psicológicamente la percepción de velocidad para el usuario. | Frontend | Media | Pendiente |
 | Navegación | **[U-02] Breadcrumbs Dinámicos:** Construir un sistema de migas de pan automáticas en el Header que permita al usuario saber rápidamente en qué sub-módulo está y navegar hacia arriba fácilmente. | Frontend | Baja | Completado |
 | UX / UI | **[U-03] Control de Cambios no Guardados:** Activar un `CanDeactivate Guard` que lance un modal de advertencia ("Tienes cambios sin guardar") si el usuario intenta cambiar de vista mientras rellena un formulario importante. | Frontend | Alta | Pendiente |
-| UX / UI | **[U-04] Feedback de Acciones (Toasts Globales):** Asegurar que el 100% de las transacciones (guardar, eliminar, actualizar) disparen un mensaje flotante (*Toast* o *Snackbar*) informando éxito o error para mantener tranquilo al usuario. | Frontend | Alta | Completado |
+| UX / UI | **[U-04] Feedback de Acciones (Toasts Globales):** Asegurar que el 100% de las transacciones (guardar, eliminar, actualizar) disparen un mensaje flotante (*Toast* o *Snackbar*) informando éxito o error para mantener tranquilo al usuario. | Frontend | Alta | Pendiente |
 | Estructura | **[U-05] Entorno de Pruebas "Staging":** Orquestar mediante Docker Compose un entorno espejo de Staging completo (BBDD + Backend empaquetado + Frontend servido con Nginx) idéntico a producción para el QA final. | DevOps | Alta | Pendiente |
 
 ---
@@ -263,3 +211,6 @@ Esta sección agrupa 20 requerimientos críticos de arquitectura, seguridad y re
 | **Backend / DevOps** | 17 |
 | **Frontend** | 78 |
 | **Total General** | **95** |
+
+> [!NOTE]
+> La sección de Dashboard está explícitamente asignada a Paulo Moron. El resto de las áreas no cuentan con un responsable asignado aún.

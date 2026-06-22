@@ -211,6 +211,21 @@ spring:
           metadata:
             requiere-autenticacion: false
 
+        - id: servicio-mensajeria-soporte
+          uri: ${URL_PROD_MENSAJERIA:https://luka-mensajeria.onrender.com}
+          predicates:
+            - Path=/api/v1/mensajeria/soporte/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - PreserveHostHeader
+            - name: CircuitBreaker
+              args:
+                name: mensajeriaCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: true
+
         - id: servicio-nucleo-financiero
           uri: ${URL_PROD_FINANCIERO:https://luka-financiero.onrender.com}
           predicates:

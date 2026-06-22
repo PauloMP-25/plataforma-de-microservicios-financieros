@@ -2,25 +2,12 @@ import { Routes } from '@angular/router';
 
 export const SUSCRIPCION_ROUTES: Routes = [
   {
-    path: 'exito',
-    data: {
-      title: '¡Éxito de Suscripción!',
-      breadcrumbs: [
-        { label: 'Suscripción', route: '/suscripcion/luka' },
-        { label: 'Pago Exitoso' }
-      ]
-    },
-    loadComponent: () =>
-      import('./pages/suscripcion-exito/suscripcion-exito')
-        .then(m => m.SuscripcionExito)
-  },
-  {
     path: 'luka',
     data: {
-      title: 'Membresía',
+      title: 'Mi Suscripción',
       breadcrumbs: [
         { label: 'Inicio', route: '/dashboard' },
-        { label: 'Membresía' }
+        { label: 'Mi Suscripción' }
       ]
     },
     loadComponent: () =>
@@ -30,7 +17,7 @@ export const SUSCRIPCION_ROUTES: Routes = [
   {
     path: 'pagos',
     data: {
-      title: 'Suscripciones',
+      title: 'Todas las Suscripciones',
       breadcrumbs: [
         { label: 'Inicio', route: '/dashboard' },
         { label: 'Suscripciones' }
@@ -39,5 +26,18 @@ export const SUSCRIPCION_ROUTES: Routes = [
     loadComponent: () =>
       import('./pages/suscripciones-pagos/suscripciones-pagos')
         .then(m => m.SuscripcionesPagos)
+  },
+  {
+    path: 'exito',
+    data: {
+      title: '¡Suscripción Creada!',
+      breadcrumbs: [
+        { label: 'Mi Suscripción', route: '/suscripcion/luka' },
+        { label: 'Confirmación' }
+      ]
+    },
+    loadComponent: () =>
+      import('./pages/suscripcion-exito/suscripcion-exito')
+        .then(m => m.SuscripcionExito)
   }
 ];

@@ -165,3 +165,13 @@ twilio:
     token: ${TWILIO_AUTH_TOKEN:}
   account:
     sid: ${TWILIO_ACCOUNT_SID}
+
+# ---------------------------------------------------------------------------------------------------------------------
+#                                  EMAIL: Configuración de origen y destino de correo institucional
+# ---------------------------------------------------------------------------------------------------------------------
+email:
+  from: ${SPRING_MAIL_USERNAME:noreply@luka.pe}
+  soporte: ${EMAIL_SOPORTE:soporte@luka.pe}
+  nombre:
+    empresa: SAAS FINANCIERO
+

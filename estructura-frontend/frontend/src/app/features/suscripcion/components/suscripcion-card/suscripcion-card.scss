@@ -1,209 +1,195 @@
-.success-card {
-  max-width: 500px;
-  width: 100%;
-  margin: 2rem auto;
-  border-radius: 24px;
-  padding: 2.5rem;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+/* ── [F-78] ESTILO BENTO GRID PREMIUM ── */
+.bento-card {
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
-  text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 20px; /* Bordes más redondeados para estilo moderno */
+  background: linear-gradient(145deg, var(--bg-card), var(--brand-bg));
+  border: 1px solid var(--brand-border);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow: hidden;
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.12);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px var(--brand-bg);
+    border-color: var(--brand-color);
+  }
+}
+
+/* ── HEADER ── */
+.suscripcion-card__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.suscripcion-card__logo-box {
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  background: var(--brand-bg);
+  color: var(--brand-color);
+  border: 1px solid var(--brand-border);
+  flex-shrink: 0;
+}
+
+.suscripcion-card__title-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.suscripcion-card__name {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary); /* [F-77] Mantiene legibilidad en modo oscuro/claro */
+  margin: 0 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suscripcion-card__description {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ── BADGES ── */
+.suscripcion-card__badge {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+  background: var(--bg-body);
+
+  &.is-success { color: var(--color-success); border: 1px solid var(--color-success-soft); }
+  &.is-warning { color: var(--color-warning); border: 1px solid var(--color-warning-soft); }
+  &.is-danger { color: var(--color-danger); border: 1px solid var(--color-danger-soft); }
+}
+
+/* ── BENTO GRID INTERNO ── */
+.suscripcion-card__bento-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.bento-box {
+  background: var(--bg-body);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  &--monto {
+    grid-column: span 1;
   }
 
-  &__header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  &__icon-wrap {
-    width: 70px;
-    height: 70px;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.2rem;
-    margin-bottom: 0.5rem;
-    background: var(--color-primary-soft);
-    color: var(--color-primary);
-    box-shadow: 0 8px 16px var(--color-primary-soft);
-    animation: pulseIcon 2s infinite;
-  }
-
-  &__title {
-    font-size: 1.8rem;
-    font-weight: 800;
-    margin: 0;
-    color: var(--text-primary);
-  }
-
-  &__subtitle {
-    font-size: 0.95rem;
-    margin: 0;
-    color: var(--text-secondary);
-    line-height: 1.4;
-  }
-
-  &__details {
-    background: var(--bg-surface-soft);
-    border-radius: 16px;
-    padding: 1.25rem;
-    border: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
-  }
-
-  .detail-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.9rem;
-  }
-
-  .detail-label {
-    color: var(--text-secondary);
-    font-weight: 500;
-  }
-
-  .detail-value {
-    color: var(--text-primary);
-    font-weight: 700;
-
-    i {
-      margin-right: 4px;
-      color: var(--text-secondary);
-    }
-  }
-
-  .text-accent {
-    color: var(--color-primary);
-  }
-
-  &__message {
-    display: flex;
-    gap: 12px;
-    padding: 1rem;
-    border-radius: 12px;
-    font-size: 0.85rem;
-    text-align: left;
-    line-height: 1.5;
-    background: rgba(109, 74, 255, 0.08);
-    border: 1px solid rgba(109, 74, 255, 0.15);
-    color: var(--text-primary);
-
-    i {
-      font-size: 1.1rem;
-      color: var(--color-primary);
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-
-    strong {
-      display: block;
-      margin-bottom: 2px;
-    }
-  }
-
-  &__footer {
-    display: flex;
-    justify-content: center;
-  }
-
-  .btn-success {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-    padding: 0.9rem 1.5rem;
-    font-size: 0.95rem;
-    font-weight: 700;
-    border-radius: 14px;
-    border: none;
-    cursor: pointer;
-    background: var(--color-primary);
-    color: #ffffff;
-    box-shadow: 0 4px 14px rgba(109, 74, 255, 0.4);
-    transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
-
-    &:hover {
-      background: var(--color-primary-dark);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(109, 74, 255, 0.5);
-    }
-
-    &:active {
-      transform: translateY(0);
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
+  &--alert {
+    background: var(--color-warning-soft);
+    border-color: rgba(245, 158, 11, 0.3);
+    
+    .bento-value, .bento-subtext {
+      color: var(--color-warning);
     }
   }
 }
 
-// Themes
-.pro-theme {
-  --color-primary: #4361ee;
-  --color-primary-dark: #3f37c9;
-  --color-primary-soft: rgba(67, 97, 238, 0.15);
+.bento-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 4px;
 }
 
-.premium-theme {
-  --color-primary: #8b5cf6;
-  --color-primary-dark: #7c3aed;
-  --color-primary-soft: rgba(139, 92, 246, 0.15);
-}
+.bento-value {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.1;
 
-@keyframes pulseIcon {
-  0% {
-    transform: scale(1);
-    box-shadow: 0 8px 16px var(--color-primary-soft);
-  }
-  50% {
-    transform: scale(1.05);
-    box-shadow: 0 8px 24px rgba(109, 74, 255, 0.3);
-  }
-  100% {
-    transform: scale(1);
-    box-shadow: 0 8px 16px var(--color-primary-soft);
+  &.text-brand {
+    color: var(--brand-color); /* El monto toma el color de la marca */
   }
 }
 
-// Dark Mode Enhancements
-body.theme-dark {
-  .success-card {
-    background: rgba(15, 23, 42, 0.4);
-    backdrop-filter: blur(20px);
-    border-color: rgba(255, 255, 255, 0.08);
+.bento-subtext {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  font-weight: 600;
+}
 
-    &__icon-wrap {
-      box-shadow: 0 0 15px var(--color-primary);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
+/* ── FOOTER & ACCIONES ── */
+.suscripcion-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
 
-    &__details {
-      background: rgba(255, 255, 255, 0.03);
-      border-color: rgba(255, 255, 255, 0.05);
-    }
+.action-buttons {
+  display: flex;
+  gap: 6px;
+}
 
-    &__message {
-      background: rgba(139, 92, 246, 0.12);
-      border-color: rgba(139, 92, 246, 0.2);
-    }
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-body);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    color: var(--brand-color);
+    border-color: var(--brand-border);
+    background: var(--brand-bg);
+  }
+
+  &--danger:hover {
+    color: var(--color-danger);
+    border-color: rgba(239, 68, 68, 0.3);
+    background: var(--color-danger-soft);
+  }
+}
+
+.status-toggle {
+  display: flex;
+}
+
+.btn-toggle {
+  padding: 6px 14px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &--success {
+    background: var(--color-success-soft);
+    color: var(--color-success);
+    &:hover { background: var(--color-success); color: white; }
+  }
+
+  &--warning {
+    background: var(--color-warning-soft);
+    color: var(--color-warning);
+    &:hover { background: var(--color-warning); color: white; }
   }
 }
