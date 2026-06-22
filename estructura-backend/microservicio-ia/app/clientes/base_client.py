@@ -3,13 +3,15 @@ import logging
 from typing import Optional, Any, Dict
 from app.libreria_comun.seguridad.contexto import get_correlation_id
 from app.libreria_comun.excepciones.base import ServicioExternoError
+from app.configuracion import obtener_configuracion
 
 logger = logging.getLogger(__name__)
+config = obtener_configuracion()
 
 class BaseLukaClient:
     """
     Cliente base asíncrono para la red de microservicios LUKA.
-    Inyecta automáticamente X-Correlation-ID y Authorization.
+    Inyecta automáticamente X-Correlation-ID, Authorization y X-Internal-Token.
     """
     def __init__(self, base_url: str, service_name: str):
         self.base_url = base_url.rstrip("/")
@@ -35,6 +37,9 @@ class BaseLukaClient:
         headers = kwargs.get("headers", {})
         headers["X-Correlation-ID"] = get_correlation_id()
         headers["X-Gateway-Source"] = "api-gateway"
+        
+        if config.luka_internal_token:
+            headers["X-Internal-Token"] = config.luka_internal_token
         
         if token:
             headers["Authorization"] = f"Bearer {token}"

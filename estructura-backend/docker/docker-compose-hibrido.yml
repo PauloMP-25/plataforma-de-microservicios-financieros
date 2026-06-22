@@ -85,6 +85,7 @@ services:
       WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
       WHATSAPP_API_VERSION: ${WHATSAPP_API_VERSION}
       URL_PROD_FINANCIERO: http://ms-nucleo-financiero:8085
+      LUKA_INTERNAL_TOKEN: ${LUKA_INTERNAL_TOKEN}
     deploy:
       resources:
         limits:
@@ -163,6 +164,8 @@ services:
       URL_PROD_FINANCIERO: http://ms-nucleo-financiero:8085
       URL_PROD_AUDITORIA: http://ms-auditoria:8082
       URL_PROD_CLIENTE: http://ms-cliente:8083
+      LUKA_INTERNAL_TOKEN: ${LUKA_INTERNAL_TOKEN}
+
     deploy:
       resources:
         limits:

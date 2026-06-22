@@ -127,7 +127,7 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
     @Override
     @Transactional(readOnly = true)
     public Paginacion<RespuestaMetaAhorro> listarActivas(UUID usuarioIdToken, Pageable pageable) {
-        Page<RespuestaMetaAhorro> page = repositorio.findMetasActivasOrdenadas(usuarioIdToken, pageable)
+        Page<RespuestaMetaAhorro> page = repositorio.findByUsuarioIdAndCompletadaFalseAndActivaTrue(usuarioIdToken, pageable)
                 .map(this::convertirADTO);
         return Paginacion.desde(page);
     }

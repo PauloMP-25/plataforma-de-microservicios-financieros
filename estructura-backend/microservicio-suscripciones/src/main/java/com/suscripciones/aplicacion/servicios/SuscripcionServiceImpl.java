@@ -286,6 +286,7 @@ public class SuscripcionServiceImpl implements ISuscripcionService {
     private RespuestaSuscripcion mapearARespuesta(Suscripcion suscripcion) {
         return new RespuestaSuscripcion(
                 suscripcion.getId(),
+                suscripcion.getUsuarioId(),
                 suscripcion.getNombre(),
                 suscripcion.getMonto().setScale(2, RoundingMode.HALF_UP),
                 suscripcion.getEstado(),

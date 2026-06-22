@@ -355,6 +355,7 @@ services:
       URL_PROD_FINANCIERO: http://ms-nucleo-financiero:8085
       # JWT
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      LUKA_INTERNAL_TOKEN: ${LUKA_INTERNAL_TOKEN}
       JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8083/actuator/health" ]
@@ -586,6 +587,7 @@ services:
       JWT_CLAVE_SECRETA: ${JWT_SECRET_KEY}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       JWT_ALGORITMO: HS256
+      LUKA_INTERNAL_TOKEN: ${LUKA_INTERNAL_TOKEN}
 
       # ── Parámetros de análisis IA ─────────────────────────────────────────
       MESES_HISTORIAL: 6

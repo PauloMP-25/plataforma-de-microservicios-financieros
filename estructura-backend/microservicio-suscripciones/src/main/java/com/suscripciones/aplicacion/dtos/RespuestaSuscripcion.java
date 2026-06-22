@@ -8,6 +8,7 @@ import java.util.UUID;
  */
 public record RespuestaSuscripcion(
         UUID id,
+        UUID usuarioId,
         String nombre,
         BigDecimal monto,
         String estado,

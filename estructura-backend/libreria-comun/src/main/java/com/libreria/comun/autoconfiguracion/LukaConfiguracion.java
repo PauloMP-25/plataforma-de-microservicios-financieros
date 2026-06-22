@@ -10,6 +10,9 @@ import com.libreria.comun.seguridad.FiltroAutenticacionInterna;
 import com.libreria.comun.seguridad.InterceptorFeignSeguridad;
 import com.libreria.comun.utilidades.CalculadorFechasStrategy;
 import com.libreria.comun.utilidades.CalculadorFechasCalendario;
+import com.libreria.comun.utilidades.CalculadorFechasSemanal;
+import com.libreria.comun.utilidades.CalculadorFechasQuincenal;
+import com.libreria.comun.utilidades.CalculadorFechasAnual;
 import com.libreria.comun.utilidades.CalculadorFechasDiasHabiles;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -131,13 +134,31 @@ public class LukaConfiguracion {
         }
 
         @Bean
-        @ConditionalOnMissingBean
+        @ConditionalOnMissingBean(name = "calculadorFechasCalendario")
         public CalculadorFechasStrategy calculadorFechasCalendario() {
             return new CalculadorFechasCalendario();
         }
 
         @Bean
-        @ConditionalOnMissingBean
+        @ConditionalOnMissingBean(name = "calculadorFechasSemanal")
+        public CalculadorFechasStrategy calculadorFechasSemanal() {
+            return new CalculadorFechasSemanal();
+        }
+
+        @Bean
+        @ConditionalOnMissingBean(name = "calculadorFechasQuincenal")
+        public CalculadorFechasStrategy calculadorFechasQuincenal() {
+            return new CalculadorFechasQuincenal();
+        }
+
+        @Bean
+        @ConditionalOnMissingBean(name = "calculadorFechasAnual")
+        public CalculadorFechasStrategy calculadorFechasAnual() {
+            return new CalculadorFechasAnual();
+        }
+
+        @Bean
+        @ConditionalOnMissingBean(name = "calculadorFechasDiasHabiles")
         public CalculadorFechasStrategy calculadorFechasDiasHabiles() {
             return new CalculadorFechasDiasHabiles();
         }
