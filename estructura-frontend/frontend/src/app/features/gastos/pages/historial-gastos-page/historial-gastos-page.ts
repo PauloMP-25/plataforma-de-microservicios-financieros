@@ -48,7 +48,73 @@ export class HistorialGastosPage implements OnDestroy {
     estado: 'Pagado' | 'Pendiente';
     icono: string;
     colorCategoria: 'comida' | 'hogar' | 'transporte' | 'servicios' | 'entretenimiento' | 'salud';
-  }>>([]);
+  }>>([
+    {
+      id: 'mock-g1',
+      nombre: 'Pizza Hut',
+      detalle: 'Cena familiar de fin de semana',
+      categoria: 'Restaurantes',
+      fecha: new Date(Date.now() - 86400000).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }),
+      hora: '20:15',
+      monto: 85.00,
+      metodo: 'TARJETA',
+      estado: 'Pagado',
+      icono: 'utensils',
+      colorCategoria: 'comida'
+    },
+    {
+      id: 'mock-g2',
+      nombre: 'Uber',
+      detalle: 'Traslado a la oficina',
+      categoria: 'Transporte',
+      fecha: new Date().toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }),
+      hora: '08:30',
+      monto: 18.50,
+      metodo: 'DIGITAL',
+      estado: 'Pagado',
+      icono: 'bus',
+      colorCategoria: 'transporte'
+    },
+    {
+      id: 'mock-g3',
+      nombre: 'Netflix',
+      detalle: 'Suscripción mensual estándar',
+      categoria: 'Entretenimiento',
+      fecha: new Date(Date.now() - 86400000 * 3).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }),
+      hora: '00:05',
+      monto: 44.90,
+      metodo: 'TARJETA',
+      estado: 'Pagado',
+      icono: 'film',
+      colorCategoria: 'entretenimiento'
+    },
+    {
+      id: 'mock-g4',
+      nombre: 'Luz del Sur',
+      detalle: 'Recibo de luz del mes',
+      categoria: 'Servicios',
+      fecha: new Date(Date.now() - 86400000 * 5).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }),
+      hora: '14:20',
+      monto: 120.00,
+      metodo: 'TRANSFERENCIA',
+      estado: 'Pagado',
+      icono: 'bolt',
+      colorCategoria: 'servicios'
+    },
+    {
+      id: 'mock-g5',
+      nombre: 'Plaza Vea',
+      detalle: 'Compras de víveres para la semana',
+      categoria: 'Alimentos',
+      fecha: new Date(Date.now() - 86400000 * 7).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }),
+      hora: '11:00',
+      monto: 250.00,
+      metodo: 'TARJETA',
+      estado: 'Pagado',
+      icono: 'utensils',
+      colorCategoria: 'comida'
+    }
+  ]);
 
   readonly filasPagadas = computed(() => {
     const eliminados = new Set(this.eliminadosIds());
@@ -57,7 +123,8 @@ export class HistorialGastosPage implements OnDestroy {
       : this.gastos().map((g) => {
           const fecha = new Date(g.fechaTransaccion);
           const categoria = g.categoria || 'Otros';
-          const { nombre, detalle } = this.parseNotas(g.notas, categoria);
+          const nombre = g.nombreCliente || categoria;
+          const detalle = g.descripcion || 'Gasto registrado';
 
           return {
             id: g.id,

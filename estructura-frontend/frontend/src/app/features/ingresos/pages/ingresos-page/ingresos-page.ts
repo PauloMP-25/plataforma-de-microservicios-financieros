@@ -32,12 +32,46 @@ export class IngresosPage {
   private readonly stateService = inject(IngresosStateService);
   private readonly eventBus = inject(AppEventBus);
 
-  // â”€â”€ Signals computados para transformar el estado a la interfaz de Ingresos â”€â”€
+  private readonly ingresosMock = [
+    {
+      id: 'mock-i1',
+      fechaTransaccion: new Date(Date.now() - 86400000).toISOString(),
+      monto: 3500.00,
+      categoria: 'Salario',
+      categoriaId: 'salario',
+      metodoPago: 'TRANSFERENCIA',
+      descripcion: 'Sueldo mensual LUKA Corp',
+      notas: ''
+    },
+    {
+      id: 'mock-i2',
+      fechaTransaccion: new Date().toISOString(),
+      monto: 450.00,
+      categoria: 'Freelance',
+      categoriaId: 'freelance',
+      metodoPago: 'DIGITAL',
+      descripcion: 'Desarrollo Landing Page cliente',
+      notas: ''
+    },
+    {
+      id: 'mock-i3',
+      fechaTransaccion: new Date(Date.now() - 86400000 * 3).toISOString(),
+      monto: 150.00,
+      categoria: 'Otros',
+      categoriaId: 'otros',
+      metodoPago: 'EFECTIVO',
+      descripcion: 'Venta de audífonos antiguos',
+      notas: ''
+    }
+  ];
+
+  // —— Signals computados para transformar el estado a la interfaz de Ingresos ——
   readonly kpisSignal = computed<IngresoKpi[]>(() => {
+    const transacciones = this.stateService.ingresos();
     const resumen = this.stateService.resumenActual();
 
-    const total = resumen?.totalIngresos ?? 0;
-    const cantidad = resumen?.cantidadIngresos ?? 0;
+    const total = transacciones.length > 0 ? (resumen?.totalIngresos ?? 0) : 4100.00;
+    const cantidad = transacciones.length > 0 ? (resumen?.cantidadIngresos ?? 0) : 3;
     const cats = this.distribucionSignal();
     const primaryCatName = cats[0]?.categoria ?? 'Ninguna';
     const primaryCatPorc = cats[0]?.porcentaje ? `${cats[0].porcentaje.toFixed(0)}% del total` : '0% del total';
@@ -49,8 +83,10 @@ export class IngresosPage {
   });
 
   readonly distribucionSignal = computed<DistribucionCategoria[]>(() => {
-    const transacciones = this.stateService.ingresos();
-    if (!transacciones.length) return [];
+    let transacciones = this.stateService.ingresos();
+    if (!transacciones.length) {
+      transacciones = this.ingresosMock as any[];
+    }
 
     const map = new Map<string, number>();
     let total = 0;
@@ -73,7 +109,10 @@ export class IngresosPage {
   });
 
   readonly tendenciaSignal = computed<IngresoTendenciaPunto[]>(() => {
-    const transacciones = this.stateService.ingresos();
+    let transacciones = this.stateService.ingresos();
+    if (!transacciones.length) {
+      transacciones = this.ingresosMock as any[];
+    }
     const meses = new Map<string, { periodo: string; monto: number }>();
 
     for (const t of transacciones) {
@@ -100,7 +139,10 @@ export class IngresosPage {
   });
 
   readonly recientesSignal = computed<IngresoReciente[]>(() => {
-    const transacciones = this.stateService.ingresos();
+    let transacciones = this.stateService.ingresos();
+    if (!transacciones.length) {
+      transacciones = this.ingresosMock as any[];
+    }
     return transacciones.slice(0, 5).map(t => {
       const fecha = new Date(t.fechaTransaccion);
       return {
@@ -112,7 +154,7 @@ export class IngresosPage {
     });
   });
 
-  // Getters para compatibilidad de enlace directo en plantilla HTML sin alterar bindings bÃ¡sicos
+  // Getters para compatibilidad de enlace directo en plantilla HTML sin alterar bindings básicos
   get kpis(): IngresoKpi[] { return this.kpisSignal(); }
   get distribucion(): DistribucionCategoria[] { return this.distribucionSignal(); }
   get tendencia(): IngresoTendenciaPunto[] { return this.tendenciaSignal(); }
@@ -131,11 +173,19 @@ export class IngresosPage {
   }
 
   get totalIngresosActual(): number {
-    return this.stateService.resumenActual()?.totalIngresos ?? 0;
+    const real = this.stateService.resumenActual()?.totalIngresos ?? 0;
+    if (real === 0 && this.stateService.ingresos().length === 0) {
+      return 4100.00;
+    }
+    return real;
   }
 
   get totalIngresosAnterior(): number {
-    return this.stateService.resumenAnterior()?.totalIngresos ?? 0;
+    const real = this.stateService.resumenAnterior()?.totalIngresos ?? 0;
+    if (real === 0 && this.stateService.ingresos().length === 0) {
+      return 3800.00;
+    }
+    return real;
   }
 
   get variacionIngresos(): number {
