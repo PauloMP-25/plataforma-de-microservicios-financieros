@@ -104,6 +104,7 @@ management:
 # ---------------------------------------------------------------------------------------------------------------------
 email:
   from: noreply@utp.com
+  soporte: soporte@luka.pe
   nombre:
     empresa: SAAS FINANCIERO
 

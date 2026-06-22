@@ -17,7 +17,7 @@ Este manual sirve como referencia técnica para mapear las rutas llamadas desde 
 | **POST** | `/api/v1/auth/solicitar-otp`          | Solicita reenvío de OTP              | `email`, `tipo` ('EMAIL'/'SMS'/'WHATSAPP')     | `[x]`     |
 | **POST** | `/api/v1/auth/recuperar-solicitar`    | Solicita link/código de recuperación | `{ email }` (JSON)                             | `[ ]`     |
 | **POST** | `/api/v1/auth/recuperar-confirmar`    | Confirma OTP y cambia password       | Params: `registroId`, `codigoOtp`. Body: `dto` | `[ ]`     |
-| **PUT**  | `/api/v1/auth/cambiar-password`       | Cambia la contraseña (autenticado)   | `SolicitudCambioPassword` (JSON)               | `[ ]`     |
+| **PUT**  | `/api/v1/auth/cambiar-password`       | Cambia la contraseña (autenticado)   | `SolicitudCambioPassword` (JSON)               | `[x]`     |
 | **POST** | `/api/v1/auth/logout`                 | Cierra la sesión en el backend       | Ninguno                                        | `[x]`     |
 | **PUT**  | `/api/v1/datos-personales/telefono/{u}`| Sincroniza teléfono verificado       | Path: `usuarioId`. Param: `telefono`           | `[x]`     |
 
@@ -171,3 +171,41 @@ Este manual sirve como referencia técnica para mapear las rutas llamadas desde 
 | **POST** | `/api/v1/suscripciones/{id}/pagar`         | Registra pago manual (Header: Idempotency-Key)  | `SolicitudRegistrarPago` (JSON)    | `[x]`     |
 | **POST** | `/api/v1/suscripciones/{id}/cancelar`      | Cancela suscripción recurrente                  | Ninguno                            | `[x]`     |
 | **PUT**  | `/api/v1/suscripciones/{id}`               | Actualiza detalles de la suscripción            | `SolicitudEditarSuscripcion` (JSON)| `[x]`     |
+
+---
+
+## 🧪 Resultados de Pruebas Manuales
+
+### PUT `/api/v1/auth/cambiar-password` — Actualizar Contraseña (Autenticado)
+
+**Fecha:** 2026-06-18  
+**Componente:** `PerfilCliente` → método `guardarPassword()`  
+**Servicio:** `AuthService.cambiarPassword(solicitud: SolicitudCambioPassword)`  
+**URL completa:** `${environment.gatewayUrl}/api/v1/auth/cambiar-password`  
+**Método HTTP:** `PUT`
+
+#### DTO enviado (`SolicitudCambioPassword`)
+```json
+{
+  "passwordActual": "<contraseña actual del usuario>",
+  "nuevoPassword": "<nueva contraseña>",
+  "confirmarPassword": "<repetición de nueva contraseña>"
+}
+```
+
+#### Flujo implementado
+1. El signal `cambioPassword` acumula los valores ingresados en el formulario vía `actualizarCampoPassword()`.
+2. Al presionar "Actualizar contraseña", `guardarPassword()` valida que `nuevoPassword === confirmarPassword`.
+3. Si la validación falla → `mensajeError` muestra `'La confirmación de contraseña no coincide.'`.
+4. Si pasa → activa `guardandoPassword = true`, llama a `authService.cambiarPassword(this.cambioPassword())`.
+5. **Éxito:** resetea el signal `cambioPassword` a vacío, muestra `'Contraseña actualizada correctamente.'` en `mensajeExito` (se limpia a los 2.5 s).
+6. **Error HTTP:** desactiva `guardandoPassword`, muestra `'No se pudo actualizar la contraseña.'` en `mensajeError`.
+
+#### Resultados
+| Caso                                    | Resultado esperado                                       | Estado  |
+|:----------------------------------------|:---------------------------------------------------------|:-------:|
+| Contraseñas no coinciden                | Error local, no llama al backend                         | `[x]`   |
+| Credenciales correctas, 200 OK          | Signal limpio, mensaje de éxito 2.5 s                    | `[x]`   |
+| Password actual incorrecto, 400/401     | `mensajeError` = 'No se pudo actualizar la contraseña.'  | `[x]`   |
+| Token expirado / no autenticado, 401    | `mensajeError` = 'No se pudo actualizar la contraseña.'  | `[x]`   |
+| Estado `guardandoPassword` durante call | Botón deshabilitado / spinner activo mientras dura el PUT | `[x]`   |

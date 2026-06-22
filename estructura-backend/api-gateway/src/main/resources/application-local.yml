@@ -173,6 +173,21 @@ spring:
           metadata:
             requiere-autenticacion: false
 
+        - id: servicio-mensajeria-soporte
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/v1/mensajeria/soporte/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - PreserveHostHeader
+            - name: CircuitBreaker
+              args:
+                name: mensajeriaCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: true
+
         - id: servicio-pagos
           uri: http://localhost:8087
           predicates:

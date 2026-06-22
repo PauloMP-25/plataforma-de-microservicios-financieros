@@ -11,8 +11,15 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "email")
 @Data
 public class PropiedadesEmail {
-    
+
     private String from;
+
+    /**
+     * Dirección de destino para los correos de soporte al cliente.
+     * Configurable via {@code email.soporte} en application.yml o variable de entorno {@code EMAIL_SOPORTE}.
+     */
+    private String soporte;
+
     private Nombre nombre = new Nombre();
 
     @Data
