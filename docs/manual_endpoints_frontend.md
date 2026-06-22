@@ -1,116 +1,742 @@
-# 📖 Manual de Endpoints - Integración Frontend a Backend
+# 📖 Manual de Endpoints Backend - LUKA APP (Postman Format)
 
-Este manual sirve como referencia técnica para mapear las rutas llamadas desde la aplicación Angular hacia los microservicios del ecosistema **LUKA**, a través de la pasarela **API Gateway (puerto 8080)**.
+Este documento detalla todos los endpoints expuestos por los microservicios, mostrando la estructura exacta de los JSON de entrada (Input) y salida (Output) basados en los DTOs reales para facilitar la integración por parte del equipo Frontend.
 
----
-
-## 🔐 1. Autenticación y Datos Personales (`AuthService` → `ms-usuario`)
-
-* **Prefijo en API Gateway:** `/api/v1/auth`, `/api/v1/datos-personales`
-* **Microservicio destino:** `ms-usuario` (Puerto interno: `8081`)
-
-| Método   | Endpoint                              | Descripción                          | Body / Parámetros                              | FUNCIONAL |
-|:-------- |:------------------------------------- |:------------------------------------ |:---------------------------------------------- |:---------:|
-| **POST** | `/api/v1/auth/login`                  | Inicia sesión del usuario            | `SolicitudLogin` (JSON)                        | `[x]`     |
-| **POST** | `/api/v1/auth/registrar`              | Registra un nuevo usuario            | `SolicitudRegistro` (JSON)                     | `[x]`     |
-| **PUT**  | `/api/v1/auth/activar/{usuarioId}`    | Activa la cuenta con código OTP      | Params: `codigoOtp`, `telefono` (opcional)     | `[x]`     |
-| **POST** | `/api/v1/auth/solicitar-otp`          | Solicita reenvío de OTP              | `email`, `tipo` ('EMAIL'/'SMS'/'WHATSAPP')     | `[x]`     |
-| **POST** | `/api/v1/auth/recuperar-solicitar`    | Solicita link/código de recuperación | `{ email }` (JSON)                             | `[ ]`     |
-| **POST** | `/api/v1/auth/recuperar-confirmar`    | Confirma OTP y cambia password       | Params: `registroId`, `codigoOtp`. Body: `dto` | `[ ]`     |
-| **PUT**  | `/api/v1/auth/cambiar-password`       | Cambia la contraseña (autenticado)   | `SolicitudCambioPassword` (JSON)               | `[x]`     |
-| **POST** | `/api/v1/auth/logout`                 | Cierra la sesión en el backend       | Ninguno                                        | `[x]`     |
-| **PUT**  | `/api/v1/datos-personales/telefono/{u}`| Sincroniza teléfono verificado       | Path: `usuarioId`. Param: `telefono`           | `[x]`     |
+> Instrucciones: Cambia el estado de `[ ] Pendiente` a `[X] LISTO` en la primera columna cuando el endpoint haya sido integrado exitosamente en el frontend. El Output JSON representa el contenido interno (la propiedad `datos`) del envoltorio genérico `ResultadoApi`.
 
 ---
 
-## 👤 2. Perfil de Cliente (`ClientePerfilService` → `ms-cliente`)
+## 🚦 API Gateway (BFF Dashboard)
 
-* **Prefijos en API Gateway:** `/api/v1/clientes/perfil`, `/api/v1/clientes/perfil-financiero`
-* **Microservicio destino:** `ms-cliente` (Puerto interno: `8083`)
+### `GET /api/v1/dashboard/resumen`
+**Descripción:** Endpoint BFF unificado para obtener el perfil de usuario, resumen de KPIs y transacciones recientes.
+**Parámetros:** `refresh` (query, boolean), `X-Usuario-Id` (header), `Authorization` (header)
 
-| Método     | Endpoint                                         | Descripción                               | Body / Parámetros                  | FUNCIONAL |
-|:---------- |:------------------------------------------------ |:----------------------------------------- |:---------------------------------- |:---------:|
-| **POST**   | `/api/v1/clientes/perfil/inicial`                | Crea el perfil en blanco al registrarse   | Query: `usuarioId={usuarioId}`     | `[x]`     |
-| **GET**    | `/api/v1/clientes/perfil/{usuarioId}`            | Consulta los datos personales del cliente | Ninguno                            | `[x]`     |
-| **PUT**    | `/api/v1/clientes/perfil/{usuarioId}`            | Actualiza datos personales del cliente    | `SolicitudDatosPersonales` (JSON)  | `[x]`     |
-| **DELETE** | `/api/v1/clientes/perfil/{usuarioId}`            | Elimina el perfil y cuenta                | Ninguno                            | `[ ]`     |
-| **GET**    | `/api/v1/clientes/perfil-financiero/{usuarioId}` | Obtiene el perfil financiero actual       | Ninguno                            | `[ ]`     |
-| **PUT**    | `/api/v1/clientes/perfil-financiero/{usuarioId}` | Actualiza el perfil financiero            | `SolicitudPerfilFinanciero` (JSON) | `[ ]`     |
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><em>(Vacío)</em></td>
+    <td valign="top"><pre><code class="language-json">{
+  "perfil": { "nombres": "Paulo", "apellidos": "Moron" },
+  "resumen": { "saldoTotal": 1500.00, "ingresosMes": 3000.00 },
+  "recientes": [ { "id": "1", "monto": 50.00, "concepto": "Compra" } ]
+}</code></pre></td>
+  </tr>
+</table>
+
+### `GET /api/v1/dashboard/graficos`
+**Descripción:** Endpoint BFF para obtener los datos de gráficos SVG (flujo de caja e ingresos/egresos).
+**Parámetros:** `refresh` (query, boolean), `X-Usuario-Id` (header), `Authorization` (header)
+
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><em>(Vacío)</em></td>
+    <td valign="top"><pre><code class="language-json">{
+  "ingresosVsEgresos": { "ingresos": 3000, "egresos": 2500 }
+}</code></pre></td>
+  </tr>
+</table>
+
+### `GET /api/v1/dashboard/analitica-avanzada`
+**Descripción:** Endpoint BFF para Analítica Avanzada (Dashboard V2) con filtros dinámicos.
+**Parámetros:** `fechaInicio`, `fechaFin`, `metodoPago`, `tipoMovimiento` (query), `X-Usuario-Id`, `Authorization` (header)
+
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><em>(Vacío)</em></td>
+    <td valign="top"><pre><code class="language-json">{
+  "resumen": {
+    "desde": "2026-06-01T00:00:00Z",
+    "hasta": "2026-06-30T23:59:59Z",
+    "tasaAhorro": 22.5,
+    "gastoPromedioDiario": 65.20,
+    "cumplimientoPresupuesto": 68.4,
+    "proyeccionFinDeMes": 1850.00
+  },
+  "flujoCaja": [
+    { "mes": "Ene", "ingresos": 3000, "gastos": 2500 }
+  ],
+  "distribucionGastos": [
+    { "categoria": "Alimentación", "total": 800, "porcentaje": 35, "color": "#f59e0b" }
+  ],
+  "heatmap": [
+    { "dia": "Lunes", "intensidad": 3 }
+  ],
+  "metas": [
+    { "nombre": "Fondo de Emergencia", "objetivo": 10000, "actual": 6500, "porcentaje": 65, "color": "#10b981" }
+  ],
+  "comparativa": [
+    { "mes": "Ene", "actual": 2500, "anterior": 2300 }
+  ],
+  "transaccionesMetodo": [
+    { "metodo": "Tarjeta", "cantidad": 25, "color": "#3b82f6" }
+  ]
+}</code></pre></td>
+  </tr>
+</table>
 
 ---
 
-## 🎯 3. Metas y Presupuestos (`ClienteMetasLimitesService` / `PresupuestoService` → `ms-cliente`)
+## 👤 Microservicio Usuario
 
-* **Prefijos en API Gateway:** `/api/v1/clientes/metas`, `/api/v1/clientes/limites`
-* **Microservicio destino:** `ms-cliente` (Puerto interno: `8083`)
+### `POST /api/v1/auth/login`
+**Descripción:** Valida credenciales e inicia sesión.
+**Parámetros:** Ninguno
 
-| Método     | Endpoint                                   | Descripción                                   | Body / Parámetros              | FUNCIONAL |
-|:---------- |:------------------------------------------ |:--------------------------------------------- |:------------------------------ |:---------:|
-| **POST**   | `/api/v1/clientes/metas`                   | Crea una nueva meta de ahorro                 | `SolicitudMetaAhorro` (JSON)   | `[x]`     |
-| **PUT**    | `/api/v1/clientes/metas/{metaId}`          | Actualiza datos de la meta de ahorro          | `SolicitudMetaAhorro` (JSON)   | `[x]`     |
-| **GET**    | `/api/v1/clientes/metas`                   | Lista todas las metas de ahorro               | Parámetros: `page`, `size`     | `[x]`     |
-| **GET**    | `/api/v1/clientes/metas/activas`           | Lista las metas activas vigentes              | Parámetros: `page`, `size`     | `[x]`     |
-| **GET**    | `/api/v1/clientes/metas/{metaId}`          | Detalle de una meta específica                | Ninguno                        | `[x]`     |
-| **PATCH**  | `/api/v1/clientes/metas/{metaId}/progreso` | Actualiza el ahorro actual de la meta         | `{ montoActual }` (JSON)       | `[x]`     |
-| **DELETE** | `/api/v1/clientes/metas/{metaId}`          | Elimina la meta de ahorro (soft delete)       | Ninguno                        | `[x]`     |
-| **POST**   | `/api/v1/clientes/limites`                 | Crea un límite de gasto mensual (presupuesto) | `SolicitudLimiteGasto` (JSON)  | `[x]`     |
-| **GET**    | `/api/v1/clientes/limites/activo`          | Obtiene el límite activo del mes              | Ninguno                        | `[x]`     |
-| **PATCH**  | `/api/v1/clientes/limites`                 | Modifica el límite activo actual              | `SolicitudLimiteGasto` (JSON)  | `[x]`     |
-| **GET**    | `/api/v1/clientes/limites`                 | Historial de límites/presupuestos del cliente | Ninguno                        | `[x]`     |
-| **DELETE** | `/api/v1/clientes/limites`                 | Elimina/desactiva el límite mensual activo    | Ninguno                        | `[x]`     |
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><pre><code class="language-json">{
+  "correo": "paulo@luka-financial.com",
+  "password": "adminUTP123$"
+}</code></pre></td>
+    <td valign="top"><pre><code class="language-json">{
+  "tokenAcceso": "eyJhbGciOiJIUzM4NCJ9...",
+  "refreshToken": "d3b07384-d113-4a0b-8083-d922a901ba8d",
+  "tipoToken": "Bearer",
+  "expiraEn": 3600000,
+  "refreshExpiraEn": 86400000,
+  "idUsuario": "uuid-1234",
+  "nombreUsuario": "paulo_admin",
+  "roles": ["ROLE_ADMIN"]
+}</code></pre></td>
+  </tr>
+</table>
+
+### `POST /api/v1/auth/registrar`
+**Descripción:** Registra un nuevo usuario y envía OTP.
+**Parámetros:** Ninguno
+
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><pre><code class="language-json">{
+  "nombreUsuario": "paulo_moron",
+  "correo": "paulo@luka-financial.com",
+  "password": "Password123!",
+  "confirmarPassword": "Password123!"
+}</code></pre></td>
+    <td valign="top"><pre><code class="language-json">"d3b07384-d113-4a0b-8083-d922a901ba8d"</code></pre></td>
+  </tr>
+</table>
+
+### `PUT /api/v1/auth/activar`
+**Descripción:** Activa cuenta usando OTP.
+**Parámetros:** `correo` (query, string), `codigoOtp` (query, string, opcional), `telefono` (query, string, opcional)
+
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><em>(Vacío)</em></td>
+    <td valign="top"><pre><code class="language-json">"OK"</code></pre></td>
+  </tr>
+</table>
+
+### `POST /api/v1/auth/refrescar-token`
+**Descripción:** Renueva el access token.
+**Parámetros:** Ninguno
+
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><pre><code class="language-json">{
+  "refreshToken": "token-uuid-123"
+}</code></pre></td>
+    <td valign="top"><pre><code class="language-json">{
+  "tokenAcceso": "eyJhbG...",
+  "refreshToken": "nuevo-refresh-uuid",
+  "tipoToken": "Bearer",
+  "expiraEn": 3600000,
+  "refreshExpiraEn": 86400000,
+  "idUsuario": "uuid",
+  "nombreUsuario": "paulo",
+  "roles": ["ROLE_FREE"]
+}</code></pre></td>
+  </tr>
+</table>
+
+### `GET /api/v1/admin/usuarios`
+**Descripción:** Búsqueda dinámica paginada de usuarios (Solo ADMIN).
+**Parámetros:** `habilitado` (boolean, opcional), `rol` (string, opcional), `texto` (string, opcional), `pagina` (int), `tamanio` (int)
+
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><em>(Vacío)</em></td>
+    <td valign="top"><pre><code class="language-json">[
+  {
+    "id": "uuid",
+    "nombreUsuario": "paulo",
+    "correo": "paulo@luka-financial.com",
+    "habilitado": true
+  }
+]</code></pre></td>
+  </tr>
+</table>
 
 ---
 
-## 💸 4. Transacciones y Categorías (`FinancieroService` / `Transacciones` → `ms-nucleo-financiero`)
+## 👥 Microservicio Cliente
 
-* **Prefijos en API Gateway:** `/api/v1/financiero/transacciones`, `/api/v1/financiero/categorias`
-* **Microservicio destino:** `ms-nucleo-financiero` (Puerto interno: `8085`)
+### `PUT /api/v1/clientes/perfil/{usuarioId}`
+**Descripción:** Actualiza los datos personales del cliente.
+**Parámetros:** `usuarioId` (path, UUID)
 
-| Método     | Endpoint                                     | Descripción                                | Body / Parámetros                                                              | FUNCIONAL |
-|:---------- |:-------------------------------------------- |:------------------------------------------ |:------------------------------------------------------------------------------ |:---------:|
-| **POST**   | `/api/v1/financiero/transacciones`           | Registra una transacción (ingreso/gasto)   | `TransaccionRequestDTO` (JSON)                                                 | `[x]`     |
-| **POST**   | `/api/v1/financiero/transacciones/lote`      | Registra múltiples transacciones a la vez  | `TransaccionRequestDTO[]` (JSON)                                               | `[x]`     |
-| **GET**    | `/api/v1/financiero/transacciones/historial` | Historial paginado con filtros de búsqueda | Params: `usuarioId`, `tipo`, `categoriaId`, `mes`, `anio`, `pagina`, `tamanio` | `[x]`     |
-| **GET**    | `/api/v1/financiero/transacciones/{id}`      | Detalle de una transacción por ID          | Ninguno                                                                        | `[x]`     |
-| **PUT**    | `/api/v1/financiero/transacciones/{id}`      | Actualiza los datos de la transacción      | `TransaccionRequestDTO` (JSON)                                                 | `[x]`     |
-| **DELETE** | `/api/v1/financiero/transacciones/{id}`      | Elimina la transacción del sistema         | Ninguno                                                                        | `[x]`     |
-| **GET**    | `/api/v1/financiero/transacciones/resumen`   | Sumatorias de ingresos, egresos y balance  | Params: `usuarioId`, `mes` (opcional), `anio` (opcional)                       | `[x]`     |
-| **GET**    | `/api/v1/financiero/categorias`              | Lista categorías para ingresos/gastos      | Params: `tipo` ('INGRESO' / 'GASTO')                                           | `[x]`     |
-| **POST**   | `/api/v1/financiero/categorias`              | Crea una categoría personalizada           | `CategoriaRequestDTO` (JSON)                                                   | `[x]`     |
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><pre><code class="language-json">{
+  "dni": "12345678",
+  "nombres": "Paulo",
+  "apellidos": "Moron",
+  "genero": "MASCULINO",
+  "edad": 25,
+  "telefono": "+51999999999",
+  "fotoPerfilUrl": "https://link.com/foto.jpg",
+  "pais": "Perú",
+  "ciudad": "Lima"
+}</code></pre></td>
+    <td valign="top"><pre><code class="language-json">{
+  "dni": "12345678",
+  "nombres": "Paulo",
+  "apellidos": "Moron",
+  "genero": "MASCULINO",
+  "edad": 25,
+  "telefono": "+51999999999",
+  "fotoPerfilUrl": "https://link.com/foto.jpg",
+  "pais": "Perú",
+  "ciudad": "Lima",
+  "datosCompletos": true
+}</code></pre></td>
+  </tr>
+</table>
+
+### `GET /api/v1/clientes/perfil/{usuarioId}`
+**Descripción:** Consulta los datos personales.
+**Parámetros:** `usuarioId` (path, UUID)
+
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><em>(Vacío)</em></td>
+    <td valign="top"><pre><code class="language-json">{
+  "dni": "12345678",
+  "nombres": "Paulo",
+  "apellidos": "Moron",
+  "genero": "MASCULINO",
+  "edad": 25,
+  "telefono": "+51999999999",
+  "fotoPerfilUrl": "https://link.com/foto.jpg",
+  "pais": "Perú",
+  "ciudad": "Lima",
+  "datosCompletos": true
+}</code></pre></td>
+  </tr>
+</table>
+
+### `PUT /api/v1/clientes/perfil-financiero/{usuarioId}`
+**Descripción:** Crea o actualiza perfil financiero.
+**Parámetros:** `usuarioId` (path, UUID)
+
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><pre><code class="language-json">{
+  "ocupacion": "Ingeniero de Software",
+  "ingresoMensual": 5000.00,
+  "estiloVida": "AHORRATIVO",
+  "tonoIA": "MOTIVADOR"
+}</code></pre></td>
+    <td valign="top"><pre><code class="language-json">{
+  "ocupacion": "Ingeniero de Software",
+  "ingresoMensual": 5000.00,
+  "estiloVida": "AHORRATIVO",
+  "tonoIA": "MOTIVADOR"
+}</code></pre></td>
+  </tr>
+</table>
+
+### `POST /api/v1/clientes/metas`
+**Descripción:** Crea una nueva meta de ahorro.
+**Parámetros:** Ninguno
+
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><pre><code class="language-json">{
+  "nombre": "Fondo de Emergencia",
+  "montoObjetivo": 10000.00,
+  "montoActual": 1500.00,
+  "fechaLimite": "2026-12-31",
+  "proposito": "Seguridad financiera"
+}</code></pre></td>
+    <td valign="top"><pre><code class="language-json">{
+  "id": "uuid-meta",
+  "nombre": "Fondo de Emergencia",
+  "montoObjetivo": 10000.00,
+  "montoActual": 1500.00,
+  "porcentajeProgreso": 15.00,
+  "fechaLimite": "2026-12-31",
+  "completada": false,
+  "proposito": "Seguridad financiera"
+}</code></pre></td>
+  </tr>
+</table>
 
 ---
 
-## 📊 5. Agregador Dashboard BFF (`DashboardStateService` → `api-gateway` BFF)
+## 🛡️ Microservicio Auditoría
 
-* **Prefijo en API Gateway:** `/api/v1/dashboard`
-* **Microservicio destino:** **API Gateway (BFF Controller)** (Puerto interno: `8080`)
+### `GET /api/v1/auditoria/accesos`
+**Descripción:** Recupera la lista paginada de todos los eventos de acceso registrados en el sistema.
+**Parámetros:** `pagina` (int), `tamanio` (int)
 
-| Método  | Endpoint                     | Descripción                                                 | Headers Requeridos                                    | FUNCIONAL |
-|:------- |:---------------------------- |:----------------------------------------------------------- |:----------------------------------------------------- |:---------:|
-| **GET** | `/api/v1/dashboard/resumen`  | Datos del perfil, KPIs acumulados y transacciones recientes | `X-Usuario-Id` (UUID), `Authorization` (Bearer token) | `[x]`     |
-| **GET** | `/api/v1/dashboard/graficos` | Puntos para gráfico de flujo de caja e ingresos/egresos     | `X-Usuario-Id` (UUID), `Authorization` (Bearer token) | `[x]`     |
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><em>(Vacío)</em></td>
+    <td valign="top"><pre><code class="language-json">[
+  {
+    "usuarioId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "ipOrigen": "192.168.1.10",
+    "navegador": "Mozilla/5.0",
+    "estado": "EXITO",
+    "detalleError": null,
+    "fecha": "2026-06-20T10:00:00",
+    "correlationId": "corr-12345"
+  }
+]</code></pre></td>
+  </tr>
+</table>
+
+### `GET /api/v1/auditoria/registros`
+**Descripción:** Consulta el histórico detallado de auditoría para el Frontend.
+**Parámetros:** `modulo` (String, opcional), `pagina` (int), `tamanio` (int)
+
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><em>(Vacío)</em></td>
+    <td valign="top"><pre><code class="language-json">[
+  {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "usuarioId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "emailUsuario": "usuario@ejemplo.com",
+    "accion": "Actualización de perfil",
+    "modulo": "ms-usuario",
+    "ipOrigen": "192.168.1.15",
+    "correlationId": "corr-67890",
+    "detalles": "Actualizó su número telefónico",
+    "fechaHora": "2026-06-20"
+  }
+]</code></pre></td>
+  </tr>
+</table>
+
+### `GET /api/v1/auditoria/transacciones/usuario/{usuarioId}`
+**Descripción:** Obtiene el historial de cambios transaccionales realizados por un usuario específico.
+**Parámetros:** `usuarioId` (UUID), `pagina` (int), `tamanio` (int)
+
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><em>(Vacío)</em></td>
+    <td valign="top"><pre><code class="language-json">[
+  {
+    "usuarioId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "entidadId": "987e6543-e21b-34d5-c678-526614174001",
+    "servicioOrigen": "ms-financiero",
+    "entidadAfectada": "cuenta",
+    "descripcion": "Creación de cuenta",
+    "valorAnterior": "{}",
+    "valorNuevo": "{\"saldo\":0}",
+    "fecha": "2026-06-20"
+  }
+]</code></pre></td>
+  </tr>
+</table>
+
+### `GET /api/v1/seguridad/verificar-ip/{ip}`
+**Descripción:** Verifica el estado actual de una dirección IP frente a la lista negra.
+**Parámetros:** `ip` (String)
+
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><em>(Vacío)</em></td>
+    <td valign="top"><pre><code class="language-json">{
+  "ip": "192.168.1.10",
+  "bloqueada": true,
+  "motivo": "Múltiples fallos de autenticación",
+  "fechaExpiracion": "2026-06-21T10:00:00"
+}</code></pre></td>
+  </tr>
+</table>
 
 ---
 
-## 🤖 6. Consultas e Inteligencia Artificial (`IaService` → `ms-ia`)
+## ✉️ Microservicio Mensajería
 
-* **Prefijo en API Gateway:** `/api/v1/ia`
-* **Microservicio destino:** `ms-ia` (Puerto interno: `8086`)
+### `POST /api/v1/mensajeria/otp/generar`
+**Descripción:** Genera y envía un código OTP al canal elegido por el usuario.
+**Parámetros:** Ninguno
 
-| Método   | Endpoint                            | Descripción                                 | Body / Parámetros                  | FUNCIONAL |
-|:-------- |:----------------------------------- |:------------------------------------------- |:---------------------------------- |:---------:|
-| **POST** | `/api/v1/ia/consultar`              | Consulta genérica al coach financiero       | `SolicitudIaDTO` (JSON)            | `[x]`     |
-| **POST** | `/api/v1/ia/gasto-hormiga`          | Análisis e identificación de gastos hormiga | `PeticionConFiltroFechaDTO` (JSON) | `[x]`     |
-| **POST** | `/api/v1/ia/predecir-gastos`        | Proyecciones matemáticas de gastos futuros  | `PeticionConFiltroFechaDTO` (JSON) | `[x]`     |
-| **POST** | `/api/v1/ia/habitos-financieros`    | Análisis conductual sobre hábitos de gasto  | `PeticionConFiltroFechaDTO` (JSON) | `[x]`     |
-| **POST** | `/api/v1/ia/estilo-vida`            | Evaluación de estilo de vida del cliente    | `PeticionConFiltroFechaDTO` (JSON) | `[x]`     |
-| **POST** | `/api/v1/ia/reporte-completo`       | Compendio global de asesoría e IA           | `PeticionConFiltroFechaDTO` (JSON) | `[x]`     |
-| **POST** | `/api/v1/ia/simular-meta`           | Simula plan de ahorro y tiempo estimado     | `PeticionSimularMetaDTO` (JSON)    | `[x]`     |
-| **POST** | `/api/v1/ia/reto-ahorro`            | Genera retos de ahorro inteligentes         | `PeticionConFiltroFechaDTO` (JSON) | `[x]`     |
-| **POST** | `/api/v1/ia/clasificar-transaccion` | Clasifica un gasto en base a su descripción | `SolicitudClasificacionDTO` (JSON) | `[x]`     |
-| **POST** | `/api/v1/ia/comprobador-evolucion`  | Análisis médico forense del historial       | `PeticionConFiltroFechaDTO` (JSON) | `[x]`     |
-| **POST** | `/api/v1/ia/zona-entrenamiento`     | Rutina de ejercicios financieros            | `PeticionConFiltroFechaDTO` (JSON) | `[x]`     |
-| **POST** | `/api/v1/ia/espejo-tiempo`          | Visualización inmersiva de futuros          | `PeticionConFiltroFechaDTO` (JSON) | `[x]`     |
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><pre><code class="language-json">{
+  "usuarioId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "email": "usuario@ejemplo.com",
+  "telefono": "+51987654321",
+  "tipo": "EMAIL",
+  "proposito": "ACTIVACION_CUENTA"
+}</code></pre></td>
+    <td valign="top"><pre><code class="language-json">{
+  "exito": true,
+  "mensaje": "Código enviado correctamente",
+  "tipo": "EMAIL"
+}</code></pre></td>
+  </tr>
+</table>
+
+### `POST /api/v1/mensajeria/otp/validar-activacion`
+**Descripción:** Valida el OTP en el flujo de activación de cuenta.
+**Parámetros:** Ninguno
+
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><pre><code class="language-json">{
+  "usuarioId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "codigo": "123456"
+}</code></pre></td>
+    <td valign="top"><pre><code class="language-json">{
+  "exito": true,
+  "mensaje": "Cuenta validada exitosamente"
+}</code></pre></td>
+  </tr>
+</table>
+
+### `POST /api/v1/mensajeria/otp/validar-recuperacion`
+**Descripción:** Valida el OTP para el flujo de recuperación de contraseña.
+**Parámetros:** Ninguno
+
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><pre><code class="language-json">{
+  "usuarioId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "codigo": "654321"
+}</code></pre></td>
+    <td valign="top"><pre><code class="language-json">"3fa85f64-5717-4562-b3fc-2c963f66afa6"</code></pre></td>
+  </tr>
+</table>
+
+### `GET /api/v1/mensajeria/otp/buscar`
+**Descripción:** Busca códigos de verificación OTP de forma dinámica cruzando filtros.
+**Parámetros:** `usuarioId`, `proposito`, `usado`, `inicio`, `fin`, `pagina`, `tamanio`
+
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><em>(Vacío)</em></td>
+    <td valign="top"><pre><code class="language-json">{
+  "content": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "usuarioId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "email": "usuario@ejemplo.com",
+      "telefono": "+51987654321",
+      "tipo": "EMAIL",
+      "proposito": "ACTIVACION_CUENTA",
+      "fechaCreacion": "2026-06-20T10:00:00",
+      "fechaExpiracion": "2026-06-20T10:10:00",
+      "usado": false,
+      "fechaUso": null
+    }
+  ]
+}</code></pre></td>
+  </tr>
+</table>
+
+---
+
+## 💰 Microservicio Núcleo Financiero
+
+### `POST /api/v1/financiero/categorias`
+**Descripción:** Registra una nueva categoría en el sistema.
+**Parámetros:** Ninguno (Recibe body)
+
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><pre><code class="language-json">{
+  "nombre": "Ventas",
+  "descripcion": "Ingresos por ventas de productos",
+  "icono": "shopping-cart",
+  "tipo": "INGRESO"
+}</code></pre></td>
+    <td valign="top"><pre><code class="language-json">{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "nombre": "Ventas",
+  "descripcion": "Ingresos por ventas de productos",
+  "icono": "shopping-cart",
+  "tipo": "INGRESO"
+}</code></pre></td>
+  </tr>
+</table>
+
+### `POST /api/v1/financiero/transacciones`
+**Descripción:** Registra un movimiento financiero individual (Ingreso/Egreso).
+**Parámetros:** Ninguno (Recibe body)
+
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><pre><code class="language-json">{
+  "usuarioId": "123e4567-e89b-12d3-a456-426614174000",
+  "nombreCliente": "Cliente XYZ",
+  "monto": 150.00,
+  "tipo": "INGRESO",
+  "categoriaId": "123e4567-e89b-12d3-a456-426614174001",
+  "metodoPago": "EFECTIVO",
+  "etiquetas": "venta,octubre",
+  "descripcion": "Pago de servicios",
+  "fechaTransaccion": "2023-10-25T10:00:00"
+}</code></pre></td>
+    <td valign="top"><pre><code class="language-json">{
+  "id": "transaccion-uuid",
+  "nombreCliente": "Supermercado XYZ",
+  "monto": 150.00,
+  "tipo": "GASTO",
+  "categoria": "Alimentación",
+  "categoriaIcono": "restaurant",
+  "fechaTransaccion": "2026-06-20T10:00:00",
+  "metodoPago": "TARJETA_DEBITO",
+  "etiquetas": "venta,octubre",
+  "descripcion": "Pago de servicios",
+  "estado": "Completado"
+}</code></pre></td>
+  </tr>
+</table>
+
+### `GET /api/v1/financiero/transacciones/resumen`
+**Descripción:** Obtiene un resumen consolidado de las finanzas en un periodo determinado.
+**Parámetros:** `usuarioId` (Requerido), `mes` (Opcional), `anio` (Opcional)
+
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><em>(Vacío)</em></td>
+    <td valign="top"><pre><code class="language-json">{
+  "desde": "2026-06-01T00:00:00",
+  "hasta": "2026-06-30T23:59:59",
+  "totalIngresos": 5000.00,
+  "totalGastos": 2500.00,
+  "balance": 2500.00,
+  "cantidadIngresos": 15,
+  "cantidadGastos": 8
+}</code></pre></td>
+  </tr>
+</table>
+
+---
+
+## 💳 Microservicio Pago
+
+### `POST /api/v1/pagos/checkout`
+**Descripción:** Inicia el proceso de suscripción creando una sesión de Stripe Checkout.
+**Parámetros:** Ninguno (Recibe body)
+
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><pre><code class="language-json">{
+  "plan": "PRO"
+}</code></pre></td>
+    <td valign="top"><pre><code class="language-json">{
+  "pagoId": "123e4567-e89b-12d3-a456-426614174099",
+  "urlCheckout": "https://checkout.stripe.com/pay/cs_test_...",
+  "plan": "PRO",
+  "monto": 45.90,
+  "moneda": "PEN"
+}</code></pre></td>
+  </tr>
+</table>
+
+### `GET /api/v1/pagos/mi-suscripcion`
+**Descripción:** Devuelve el estado actual de la suscripción del usuario.
+**Parámetros:** Ninguno
+
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><em>(Vacío)</em></td>
+    <td valign="top"><pre><code class="language-json">{
+  "plan": "PRO",
+  "estado": "COMPLETADO",
+  "monto": 45.90,
+  "moneda": "PEN",
+  "fechaVencimiento": "2023-11-25T10:00:00",
+  "activo": true
+}</code></pre></td>
+  </tr>
+</table>
+
+### `GET /api/v1/pagos/admin/resumen`
+**Descripción:** Genera un resumen financiero general para el panel de administración.
+**Parámetros:** Ninguno
+
+<table width="100%">
+  <tr>
+    <th width="10%">Estado</th>
+    <th width="42.5%">Solicitud (Input JSON)</th>
+    <th width="42.5%">Respuesta Exitosa (Output JSON)</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><b>[&nbsp;&nbsp;&nbsp;]<br>Pendiente</b></td>
+    <td valign="top"><em>(Vacío)</em></td>
+    <td valign="top"><pre><code class="language-json">{
+  "totalTransacciones": 156,
+  "ingresosTotales": 7160.40,
+  "transaccionesPorEstado": {
+    "COMPLETADO": 200,
+    "PENDIENTE": 50
+  },
+  "suscripcionesPorPlan": {
+    "PRO": 150,
+    "BASIC": 100
+  }
+}</code></pre></td>
+  </tr>
+</table>
 
 ---
 
@@ -171,41 +797,3 @@ Este manual sirve como referencia técnica para mapear las rutas llamadas desde 
 | **POST** | `/api/v1/suscripciones/{id}/pagar`         | Registra pago manual (Header: Idempotency-Key)  | `SolicitudRegistrarPago` (JSON)    | `[x]`     |
 | **POST** | `/api/v1/suscripciones/{id}/cancelar`      | Cancela suscripción recurrente                  | Ninguno                            | `[x]`     |
 | **PUT**  | `/api/v1/suscripciones/{id}`               | Actualiza detalles de la suscripción            | `SolicitudEditarSuscripcion` (JSON)| `[x]`     |
-
----
-
-## 🧪 Resultados de Pruebas Manuales
-
-### PUT `/api/v1/auth/cambiar-password` — Actualizar Contraseña (Autenticado)
-
-**Fecha:** 2026-06-18  
-**Componente:** `PerfilCliente` → método `guardarPassword()`  
-**Servicio:** `AuthService.cambiarPassword(solicitud: SolicitudCambioPassword)`  
-**URL completa:** `${environment.gatewayUrl}/api/v1/auth/cambiar-password`  
-**Método HTTP:** `PUT`
-
-#### DTO enviado (`SolicitudCambioPassword`)
-```json
-{
-  "passwordActual": "<contraseña actual del usuario>",
-  "nuevoPassword": "<nueva contraseña>",
-  "confirmarPassword": "<repetición de nueva contraseña>"
-}
-```
-
-#### Flujo implementado
-1. El signal `cambioPassword` acumula los valores ingresados en el formulario vía `actualizarCampoPassword()`.
-2. Al presionar "Actualizar contraseña", `guardarPassword()` valida que `nuevoPassword === confirmarPassword`.
-3. Si la validación falla → `mensajeError` muestra `'La confirmación de contraseña no coincide.'`.
-4. Si pasa → activa `guardandoPassword = true`, llama a `authService.cambiarPassword(this.cambioPassword())`.
-5. **Éxito:** resetea el signal `cambioPassword` a vacío, muestra `'Contraseña actualizada correctamente.'` en `mensajeExito` (se limpia a los 2.5 s).
-6. **Error HTTP:** desactiva `guardandoPassword`, muestra `'No se pudo actualizar la contraseña.'` en `mensajeError`.
-
-#### Resultados
-| Caso                                    | Resultado esperado                                       | Estado  |
-|:----------------------------------------|:---------------------------------------------------------|:-------:|
-| Contraseñas no coinciden                | Error local, no llama al backend                         | `[x]`   |
-| Credenciales correctas, 200 OK          | Signal limpio, mensaje de éxito 2.5 s                    | `[x]`   |
-| Password actual incorrecto, 400/401     | `mensajeError` = 'No se pudo actualizar la contraseña.'  | `[x]`   |
-| Token expirado / no autenticado, 401    | `mensajeError` = 'No se pudo actualizar la contraseña.'  | `[x]`   |
-| Estado `guardandoPassword` durante call | Botón deshabilitado / spinner activo mientras dura el PUT | `[x]`   |

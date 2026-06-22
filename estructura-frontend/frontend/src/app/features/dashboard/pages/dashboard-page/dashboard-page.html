@@ -1,73 +1,42 @@
 <div class="dashboard-container anim-fade-up">
 
-  @if (stateService.loadingResumen() && stateService.resumen() === null) {
-    <!-- ── ESTADO DE CARGA GLOBAL ── -->
+  <!-- ── CABECERA Y FILTROS MODULARIZADOS ── -->
+  <app-dashboard-header (filtrosCambio)="onFiltrosCambio($event)"></app-dashboard-header>
+
+  @if (stateService.loading() && stateService.resumen() === null) {
+    <!-- ── ESTADO DE CARGA GLOBAL INICIAL ── -->
     <div class="global-loading flex flex-col items-center justify-center p-12 text-center" style="min-height: 400px; color: var(--text-muted); gap: 1rem;">
       <i class="fa-solid fa-spinner fa-spin-pulse" style="font-size: 3rem; color: var(--color-primary);"></i>
       <h2 style="font-size: 1.2rem; font-weight: 500; margin-top: 1rem;">Cargando tu información financiera...</h2>
-      <p style="font-size: 0.9rem; opacity: 0.7;">Calculando balances y preparando gráficos interactivos</p>
+      <p style="font-size: 0.9rem; opacity: 0.7;">Analizando tendencias y preparando gráficos con Chart.js</p>
     </div>
   } @else {
-
-    <!-- ── FILTROS SUPERIORES Y CONTROL ── -->
-    <header class="dashboard-header card glass-panel">
-      <div class="header-left">
-        <h1 class="dashboard-title">Resumen de Cuenta</h1>
-        <p class="dashboard-subtitle">Control integral de tu rendimiento financiero y transacciones</p>
-      </div>
+    <!-- Contenedor general que se difumina si estamos recargando por filtros -->
+    <div [style.opacity]="stateService.loading() ? '0.6' : '1'" style="transition: opacity 0.3s; display: flex; flex-direction: column; gap: 24px;">
       
-      <div class="header-filters">
-        <!-- Buscador de transacciones -->
-        <div class="search-box">
-          <i class="fa-solid fa-magnifying-glass search-icon"></i>
-          <input 
-            type="text" 
-            placeholder="Buscar descripción o categoría..." 
-            [(ngModel)]="terminoBusqueda"
-            class="search-input"
-          />
-          <button *ngIf="terminoBusqueda" class="clear-search" (click)="terminoBusqueda = ''">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
+      <!-- ── FILA DE KPIs (NUEVOS INDICADORES) ── -->
+      @defer (on viewport) {
+        <app-dashboard-kpi-grid 
+          [tasaAhorro]="tasaAhorro"
+          [gastoPromedioDiario]="gastoPromedioDiario"
+          [cumplimientoPresupuesto]="cumplimientoPresupuesto"
+          [proyeccionFinDeMes]="proyeccionFinDeMes">
+        </app-dashboard-kpi-grid>
+      } @placeholder {
+        <div class="card glass-panel flex items-center justify-center p-4 text-center" style="min-height: 120px; color: var(--text-muted);">
+          <i class="fa-solid fa-spinner fa-spin"></i> Cargando métricas clave...
         </div>
+      }
 
-        <!-- Selector de periodo -->
-        <div class="filter-group">
-          <label class="filter-label">Periodo</label>
-          <div class="period-selector">
-            <button [class.active]="filtroTiempo === '7'" (click)="filtroTiempo = '7'">7D</button>
-            <button [class.active]="filtroTiempo === '30'" (click)="filtroTiempo = '30'">30D</button>
-            <button [class.active]="filtroTiempo === 'todos'" (click)="filtroTiempo = 'todos'">Todos</button>
-          </div>
+      <!-- ── SECCIÓN DE GRÁFICOS (ORQUESTADOR) ── -->
+      @defer (on viewport) {
+        <app-dashboard-charts-grid></app-dashboard-charts-grid>
+      } @placeholder {
+        <div class="card glass-panel flex items-center justify-center p-8 text-center" style="min-height: 400px; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <i class="fa-solid fa-spinner fa-spin"></i> Cargando paneles interactivos...
         </div>
-      </div>
-    </header>
-
-    <!-- ── FILA DE KPIs (INDICADORES CLAVE) ── -->
-    @defer (on viewport) {
-      <app-balances-card 
-        [totalBalance]="totalBalance" 
-        [totalIngresos]="totalIngresos" 
-        [totalGastos]="totalGastos" 
-        [tasaAhorro]="tasaAhorro">
-      </app-balances-card>
-    } @placeholder {
-      <div class="card glass-panel flex items-center justify-center p-4 text-center" style="min-height: 120px; color: var(--text-muted);">
-        <i class="fa-solid fa-spinner fa-spin"></i> Cargando balances...
-      </div>
-    }
-
-    <!-- ── SECCIÓN DE GRÁFICOS ANALÍTICOS (DOS COLUMNAS) ── -->
-    @defer (on viewport) {
-      <app-chart 
-        [flujoCaja]="flujoCajaPuntos" 
-        [distribucion]="distribucionCategorias">
-      </app-chart>
-    } @placeholder {
-      <div class="card glass-panel flex items-center justify-center p-8 text-center" style="min-height: 250px; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 8px;">
-        <i class="fa-solid fa-spinner fa-spin"></i> Cargando gráficos analíticos y cálculos SVG...
-      </div>
-    }
+      }
+    </div>
   }
 
 </div>

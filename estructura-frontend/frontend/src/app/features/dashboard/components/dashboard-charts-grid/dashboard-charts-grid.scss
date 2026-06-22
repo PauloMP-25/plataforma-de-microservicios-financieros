@@ -1,0 +1,101 @@
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  overflow: hidden;
+  max-width: 100%;
+
+  &.compact-mode {
+    grid-template-columns: 1.5fr 1fr 0.8fr;
+  }
+
+  &.short-period-layout {
+    .cashflow-card { order: 1; }
+    .heatmap-card { order: 2; }
+    .distribution-card { order: 3; }
+    .historical-card { order: 4; }
+    .ratio-card { order: 5; }
+    .payment-card { order: 6; }
+  }
+}
+
+.chart-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  min-height: 310px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+
+  &.cashflow-card {
+    min-height: 420px;
+  }
+
+  app-chart-cashflow,
+  app-chart-distribution,
+  app-chart-expense-income-ratio,
+  app-chart-heatmap,
+  app-chart-payment-methods,
+  app-chart-historical-comparison {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    width: 100%;
+    overflow: hidden;
+  }
+}
+
+.chart-title {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.chart-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+.full-width {
+  grid-column: span 3;
+}
+
+@media (max-width: 1024px) {
+  .charts-grid {
+    grid-template-columns: repeat(2, 1fr);
+
+    &.compact-mode {
+      grid-template-columns: 1.4fr 1fr;
+    }
+  }
+  .full-width {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+
+    &.compact-mode {
+      grid-template-columns: 1fr;
+    }
+  }
+  .full-width {
+    grid-column: span 1;
+  }
+}

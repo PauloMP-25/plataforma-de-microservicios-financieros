@@ -3,6 +3,7 @@ package com.nucleo.financiero.aplicacion.dtos.respuestas;
 import lombok.Builder;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.math.RoundingMode;
 
 /**
  * DTO que consolida la información financiera de un periodo específico.
@@ -41,15 +42,15 @@ public record ResumenFinancieroDTO(
             BigDecimal totalIngresos, BigDecimal totalGastos,
             long cantidadIngresos, long cantidadGastos) {
         
-        BigDecimal ingresos = totalIngresos != null ? totalIngresos : BigDecimal.ZERO;
-        BigDecimal gastos = totalGastos != null ? totalGastos : BigDecimal.ZERO;
+        BigDecimal ingresos = totalIngresos != null ? totalIngresos.setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        BigDecimal gastos = totalGastos != null ? totalGastos.setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
 
         return ResumenFinancieroDTO.builder()
                 .desde(desde)
                 .hasta(hasta)
                 .totalIngresos(ingresos)
                 .totalGastos(gastos)
-                .balance(ingresos.subtract(gastos))
+                .balance(ingresos.subtract(gastos).setScale(2, RoundingMode.HALF_UP))
                 .cantidadIngresos(cantidadIngresos)
                 .cantidadGastos(cantidadGastos)
                 .build();

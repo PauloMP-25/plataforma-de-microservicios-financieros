@@ -9,8 +9,7 @@ export const DASHBOARD_ROUTES: Routes = [
     data: {
         title: 'dashboard',
         breadcrumbs: [
-            {label: 'Inicio', route: '/dashboard'},
-            {label: 'Sección'}
+            {label: 'Inicio'}
         ]
     }
 }

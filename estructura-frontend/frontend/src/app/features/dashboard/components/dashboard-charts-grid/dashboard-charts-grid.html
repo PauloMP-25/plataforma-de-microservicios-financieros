@@ -1,0 +1,55 @@
+<div class="charts-grid" [class.compact-mode]="stateService.flujoCaja().length >= 2 && stateService.flujoCaja().length <= 4" [class.short-period-layout]="stateService.flujoCaja().length <= 4 && stateService.flujoCaja().length > 0">
+  <!-- Gráfico de Líneas: Flujo de Caja -->
+  <div class="chart-card cashflow-card" [class.full-width]="stateService.flujoCaja().length > 4">
+    @defer (on viewport) {
+      <app-chart-cashflow></app-chart-cashflow>
+    } @placeholder {
+      <div class="chart-loader"><i class="fa-solid fa-spinner fa-spin"></i> Cargando Flujo de Caja...</div>
+    }
+  </div>
+
+  <!-- Gráfico Circular: Distribución de Gastos -->
+  <div class="chart-card distribution-card">
+    @defer (on viewport) {
+      <app-chart-distribution></app-chart-distribution>
+    } @placeholder {
+      <div class="chart-loader"><i class="fa-solid fa-spinner fa-spin"></i> Cargando Distribución...</div>
+    }
+  </div>
+
+  <!-- Gráfico de Mapa de Calor: Gastos por Día -->
+  <div class="chart-card heatmap-card">
+    @defer (on viewport) {
+      <app-chart-heatmap></app-chart-heatmap>
+    } @placeholder {
+      <div class="chart-loader"><i class="fa-solid fa-spinner fa-spin"></i> Cargando Mapa de Calor...</div>
+    }
+  </div>
+
+  <!-- Gráfico: Uso de Métodos de Pago -->
+  <div class="chart-card payment-card">
+    @defer (on viewport) {
+      <app-chart-payment-methods></app-chart-payment-methods>
+    } @placeholder {
+      <div class="chart-loader"><i class="fa-solid fa-spinner fa-spin"></i> Cargando Métodos de Pago...</div>
+    }
+  </div>
+
+  <!-- Gráfico Barras Agrupadas: Comparativa Histórica -->
+  <div class="chart-card historical-card" [class.full-width]="stateService.comparativa().length > 4">
+    @defer (on viewport) {
+      <app-chart-historical-comparison></app-chart-historical-comparison>
+    } @placeholder {
+      <div class="chart-loader"><i class="fa-solid fa-spinner fa-spin"></i> Cargando Comparativa Histórica...</div>
+    }
+  </div>
+
+  <!-- Gráfico: Relación Gasto-Ingreso -->
+  <div class="chart-card ratio-card" [class.full-width]="stateService.flujoCaja().length > 4">
+    @defer (on viewport) {
+      <app-chart-expense-income-ratio></app-chart-expense-income-ratio>
+    } @placeholder {
+      <div class="chart-loader"><i class="fa-solid fa-spinner fa-spin"></i> Cargando Relación Gasto-Ingreso...</div>
+    }
+  </div>
+</div>

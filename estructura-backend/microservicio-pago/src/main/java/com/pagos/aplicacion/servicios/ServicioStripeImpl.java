@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -112,7 +113,7 @@ public class ServicioStripeImpl implements IServicioStripe {
                     pagoGuardado.getId().toString(),
                     sesion.getUrl(),
                     plan.name(),
-                    plan.getPrecio(),
+                    plan.getPrecio().setScale(2, RoundingMode.HALF_UP),
                     "PEN");
 
         } catch (StripeException e) {
@@ -137,7 +138,7 @@ public class ServicioStripeImpl implements IServicioStripe {
                     return new RespuestaSuscripcionDTO(
                             detalle.getPlanSolicitado(),
                             pago.getEstado(),
-                            detalle.getMonto(),
+                            detalle.getMonto().setScale(2, RoundingMode.HALF_UP),
                             detalle.getMoneda(),
                             pago.getFechaFinPlan(),
                             activo);
@@ -145,7 +146,7 @@ public class ServicioStripeImpl implements IServicioStripe {
                 .orElse(new RespuestaSuscripcionDTO(
                         PlanSuscripcion.FREE,
                         EstadoPago.COMPLETADO,
-                        BigDecimal.ZERO,
+                        BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
                         "PEN",
                         null,
                         true));

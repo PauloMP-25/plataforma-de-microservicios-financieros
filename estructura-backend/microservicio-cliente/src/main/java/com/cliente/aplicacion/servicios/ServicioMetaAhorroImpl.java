@@ -183,7 +183,6 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
                 m.getMontoObjetivo(), m.getMontoActual(),
                 m.calcularPorcentajeProgreso(),
                 m.getFechaLimite(), m.getCompletada(),
-                m.getProposito(),
-                m.getFechaCreacion(), m.getFechaActualizacion());
+                m.getProposito());
     }
 }

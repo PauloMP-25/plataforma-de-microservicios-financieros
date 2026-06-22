@@ -3,6 +3,7 @@ package com.nucleo.financiero.aplicacion.mappers;
 import com.nucleo.financiero.aplicacion.dtos.respuestas.RespuestaTransaccion;
 import com.nucleo.financiero.dominio.entidades.Transaccion;
 import org.springframework.stereotype.Component;
+import java.math.RoundingMode;
 
 /**
  * Mapper dedicado para la conversión de entidades {@link Transaccion} a su DTO de salida {@link RespuestaTransaccion}.
@@ -28,14 +29,12 @@ public class TransaccionMapper {
         }
         return RespuestaTransaccion.builder()
                 .id(entidad.getId())
-                .usuarioId(entidad.getUsuarioId())
                 .nombreCliente(entidad.getNombreCliente())
-                .monto(entidad.getMonto())
+                .monto(entidad.getMonto().setScale(2, RoundingMode.HALF_UP))
                 .tipo(entidad.getTipo().name())
                 .categoria(entidad.getCategoria().getNombre())
                 .categoriaIcono(entidad.getCategoria().getIcono())
                 .fechaTransaccion(entidad.getFechaTransaccion())
-                .fechaRegistro(entidad.getFechaRegistro())
                 .metodoPago(entidad.getMetodoPago().name())
                 .etiquetas(entidad.getEtiquetas())
                 .descripcion(entidad.getDescripcion())

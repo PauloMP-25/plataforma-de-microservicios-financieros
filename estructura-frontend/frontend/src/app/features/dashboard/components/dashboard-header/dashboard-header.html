@@ -1,0 +1,63 @@
+<header class="dashboard-header card glass-panel">
+  <div class="header-left">
+    <h1 class="dashboard-title">{{ getTituloConFecha() }}</h1>
+    <p class="dashboard-subtitle">Optimiza tu rendimiento financiero y monitorea tus ingresos, gastos, metas y presupuestos en tiempo real mediante analítica avanzada.</p>
+  </div>
+  
+  <div class="header-filters">
+    <!-- Rangos Rápidos de Fecha -->
+    <div class="filter-group date-presets-group">
+      <label class="filter-label">Filtros Rápidos</label>
+      <div class="presets-buttons">
+        <button type="button" class="preset-btn" (click)="seleccionarRangoRapido('anio')" [class.active]="esRangoActivo('anio')">
+          ESTE AÑO
+        </button>
+        <button type="button" class="preset-btn" (click)="seleccionarRangoRapido('mes')" [class.active]="esRangoActivo('mes')">
+          ÚLTIMO MES
+        </button>
+        <button type="button" class="preset-btn" (click)="seleccionarRangoRapido('tres_meses')" [class.active]="esRangoActivo('tres_meses')">
+          ÚLTIMOS 3 MESES
+        </button>
+        <button type="button" class="preset-btn" (click)="seleccionarRangoRapido('semana')" [class.active]="esRangoActivo('semana')">
+          ÚLTIMA SEMANA
+        </button>
+        <button type="button" *ngIf="fechaInicio || fechaFin" class="preset-btn clear-btn" (click)="limpiarFiltrosFechas()" title="Limpiar fechas">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Fechas -->
+    <div class="filter-group">
+      <label class="filter-label">Desde</label>
+      <input type="date" class="date-input" [(ngModel)]="fechaInicio" (ngModelChange)="onFiltroChange()" />
+    </div>
+    
+    <div class="filter-group">
+      <label class="filter-label">Hasta</label>
+      <input type="date" class="date-input" [(ngModel)]="fechaFin" (ngModelChange)="onFiltroChange()" />
+    </div>
+
+    <!-- Tipo de Movimiento -->
+    <div class="filter-group">
+      <label class="filter-label">Tipo</label>
+      <select class="period-selector-select" [(ngModel)]="tipoMovimiento" (ngModelChange)="onFiltroChange()">
+        <option value="">Todos</option>
+        <option value="INGRESO">Solo Ingresos</option>
+        <option value="EGRESO">Solo Egresos</option>
+      </select>
+    </div>
+
+    <!-- Método de pago -->
+    <div class="filter-group">
+      <label class="filter-label">Método</label>
+      <select class="period-selector-select" [(ngModel)]="metodoPago" (ngModelChange)="onFiltroChange()">
+        <option value="">Todos</option>
+        <option value="EFECTIVO">Efectivo</option>
+        <option value="TARJETA">Tarjeta</option>
+        <option value="TRANSFERENCIA">Transferencia</option>
+        <option value="DIGITAL">Digital</option>
+      </select>
+    </div>
+  </div>
+</header>

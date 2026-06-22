@@ -17,6 +17,7 @@ Cambios respecto a v3:
 
 import logging
 import threading
+import os
 import asyncio
 from contextlib import asynccontextmanager
 from datetime import datetime
@@ -253,6 +254,17 @@ app = FastAPI(
 )
 
 # ── MIDDLEWARES ───────────────────────────────────────────────────────────────
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Content-Security-Policy"] = "default-src 'self'"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
+
 app.add_middleware(TraceabilityMiddleware)
 
 app.description = """
@@ -283,11 +295,20 @@ El sistema separa claramente dos responsabilidades:
 """
 
 # ══════════════════════════════════════════════════════════════════════════════
-# CORS: Permitir todas las orígenes en desarrollo, restringir en producción
+# CORS: Permitir orígenes configurados en desarrollo, restringir en producción
 # ══════════════════════════════════════════════════════════════════════════════
+allow_origins = [
+    "http://localhost:3000",
+    "http://localhost:4200",
+    "http://localhost:5173",
+]
+if config.es_produccion:
+    frontend_url = os.getenv("FRONTEND_URL", "https://ikaza-import.es")
+    allow_origins = [frontend_url]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if not config.es_produccion else [],
+    allow_origins=allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

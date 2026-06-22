@@ -7,6 +7,7 @@ import com.mensajeria.aplicacion.dtos.solicitudes.SolicitudGenerarCodigo;
 import com.mensajeria.aplicacion.dtos.solicitudes.SolicitudValidarCodigo;
 import com.mensajeria.aplicacion.dtos.respuestas.RespuestaGeneracion;
 import com.mensajeria.aplicacion.dtos.respuestas.RespuestaValidacion;
+import com.mensajeria.aplicacion.dtos.respuestas.RespuestaCodigoAuditoria;
 import com.mensajeria.aplicacion.excepciones.*;
 import com.mensajeria.dominio.entidades.CodigoVerificacion;
 import com.mensajeria.dominio.entidades.IntentoValidacion;
@@ -327,7 +328,7 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
      */
     @Override
     @Transactional(readOnly = true)
-    public Page<CodigoVerificacion> buscarCodigos(UUID usuarioId, PropositoCodigo proposito,
+    public Page<RespuestaCodigoAuditoria> buscarCodigos(UUID usuarioId, PropositoCodigo proposito,
             Boolean usado, LocalDateTime inicio,
             LocalDateTime fin, Pageable pageable) {
         Specification<CodigoVerificacion> spec = Specification.where(MensajeriaSpecs.porUsuario(usuarioId))
@@ -335,7 +336,12 @@ public class MensajeriaServiceImpl implements IMensajeriaService {
                 .and(MensajeriaSpecs.estaUsado(usado))
                 .and(MensajeriaSpecs.creadoEntre(inicio, fin));
 
-        return codigoRepository.findAll(spec, pageable);
+        return codigoRepository.findAll(spec, pageable)
+                .map(cv -> new RespuestaCodigoAuditoria(
+                        cv.getId(), cv.getUsuarioId(), cv.getEmail(), cv.getTelefono(),
+                        cv.getTipo(), cv.getProposito(), cv.getFechaCreacion(),
+                        cv.getFechaExpiracion(), cv.getUsado(), cv.getFechaUso()
+                ));
     }
 
     /**

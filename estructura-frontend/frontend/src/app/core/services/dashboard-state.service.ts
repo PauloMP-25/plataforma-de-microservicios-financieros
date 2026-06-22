@@ -1,14 +1,24 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../enviroments/environment';
 import { ResultadoApi } from '../models/auth/user.model';
 import { 
   DashboardResumenDTO, 
   CashflowPointDTO, 
-  CategoriaDistribucionDTO 
+  CategoriaDistribucionDTO,
+  HeatmapPointDTO,
+  MetaProgressDTO,
+  ComparativaMensualDTO,
+  DashboardAnaliticaDTO
 } from '../models/dashboard/dashboard.model';
-import { TransaccionDTO } from '../models/financiero/transaccion.model';
+
+export interface DashboardFiltros {
+  fechaInicio?: string;
+  fechaFin?: string;
+  metodoPago?: string;
+  tipoMovimiento?: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -17,142 +27,315 @@ export class DashboardStateService {
   private base = `${environment.gatewayUrl}/api/v1/dashboard`;
 
   // ── Angular Signals de Estado ──
-  readonly perfil = signal<any>(null);
   readonly resumen = signal<DashboardResumenDTO | null>(null);
-  readonly recientes = signal<TransaccionDTO[]>([]);
   readonly flujoCaja = signal<CashflowPointDTO[]>([]);
   readonly distribucionGastos = signal<CategoriaDistribucionDTO[]>([]);
+  readonly heatmap = signal<HeatmapPointDTO[]>([]);
+  readonly metas = signal<MetaProgressDTO[]>([]);
+  readonly comparativa = signal<ComparativaMensualDTO[]>([]);
+  readonly transaccionesMetodo = signal<{ metodo: string, cantidad: number, color: string }[]>([]);
+
+  // ── Filtros Actuales ──
+  readonly filtrosActuales = signal<DashboardFiltros>({});
 
   // ── Estados Auxiliares ──
-  readonly loadingResumen = signal<boolean>(false);
-  readonly loadingGraficos = signal<boolean>(false);
+  readonly loading = signal<boolean>(false);
   readonly error = signal<string | null>(null);
-
-  // Timestamp de la última actualización exitosa de los KPIs
-  private ultimoRefrescoKPIs = 0;
-  // Duración de caché local en ms (15 minutos)
-  private readonly CACHE_DURATION_MS = 15 * 60 * 1000;
-
-  // Bandera para forzar actualización del backend al iniciar sesión
-  private forzarProximoRefresco = false;
 
   constructor(private http: HttpClient) {}
 
   marcarForzarRefresco(): void {
-    this.forzarProximoRefresco = true;
+    // Deprecated o ignorado para V2, retenido por compatibilidad con Auth
   }
 
+  private initialLoadDone = false;
+
   /**
-   * Carga el perfil del usuario, los KPIs (resumen) y las transacciones recientes.
-   * Utiliza caché en memoria de 15 minutos a menos que se fuerce el refresco.
+   * Carga los datos analíticos enriquecidos pasando los filtros al backend.
    */
-  cargarResumen(forzar: boolean = false): void {
-    const ahora = Date.now();
-    const forzarFinal = forzar || this.forzarProximoRefresco;
-    if (!forzarFinal && this.resumen() && (ahora - this.ultimoRefrescoKPIs < this.CACHE_DURATION_MS)) {
-      // Retener estado local (caché cliente activa)
+  cargarAnalitica(filtros?: DashboardFiltros): void {
+    // Si ya cargó y no se enviaron filtros nuevos, evitamos múltiples llamadas innecesarias
+    if (this.initialLoadDone && !filtros) {
       return;
     }
 
-    this.loadingResumen.set(true);
+    this.loading.set(true);
     this.error.set(null);
 
-    const url = forzarFinal ? `${this.base}/resumen?refresh=true` : `${this.base}/resumen`;
-    this.http.get<ResultadoApi<any>>(url).subscribe({
-      next: (resp) => {
-        if (resp.exito && resp.datos) {
-          this.perfil.set(resp.datos.perfil);
-          this.resumen.set(resp.datos.resumen);
-          this.recientes.set(resp.datos.recientes || []);
-          this.ultimoRefrescoKPIs = Date.now();
-        } else {
-          this.error.set(resp.mensaje || 'Error al cargar resumen');
-        }
-        this.loadingResumen.set(false);
-        this.limpiarBanderaRefresco();
-      },
-      error: (err) => {
-        // Fallback a mock si falla el BFF
-        console.warn('[DashboardStateService] Fallback a mock de resumen:', err);
-        const hoy = new Date();
-        const factorMes = (hoy.getMonth() + 1) * 230;
-        const totalIngresos = 3800 + (factorMes % 1500);
-        const totalGastos = 2200 + (factorMes % 900);
-        const balance = totalIngresos - totalGastos;
-        
-        this.resumen.set({
-          desde: new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString(),
-          hasta: new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).toISOString(),
-          totalIngresos,
-          totalGastos,
-          balance,
-          cantidadIngresos: 4,
-          cantidadGastos: 15,
-          tasaAhorro: totalIngresos > 0 ? (balance / totalIngresos) * 100 : 0
-        });
-        this.recientes.set([]);
-        this.error.set(null);
-        this.loadingResumen.set(false);
-        this.limpiarBanderaRefresco();
+    // Actualizamos el signal de filtros si vienen nuevos
+    if (filtros) {
+      // Comparar si son iguales (simplificado) para evitar re-fetch si no cambiaron
+      const actuales = this.filtrosActuales();
+      if (
+        actuales.fechaInicio === filtros.fechaInicio &&
+        actuales.fechaFin === filtros.fechaFin &&
+        actuales.metodoPago === filtros.metodoPago &&
+        actuales.tipoMovimiento === filtros.tipoMovimiento &&
+        this.initialLoadDone
+      ) {
+        this.loading.set(false);
+        return;
       }
-    });
-  }
-
-  /**
-   * Carga los datos analíticos para renderizar los gráficos SVG.
-   */
-  cargarGraficos(forzar: boolean = false): void {
-    this.loadingGraficos.set(true);
-
-    const forzarFinal = forzar || this.forzarProximoRefresco;
-    const url = forzarFinal ? `${this.base}/graficos?refresh=true` : `${this.base}/graficos`;
-    this.http.get<ResultadoApi<any>>(url).subscribe({
-      next: (resp) => {
-        if (resp.exito && resp.datos) {
-          this.flujoCaja.set(resp.datos.flujoCaja || []);
-          this.distribucionGastos.set(resp.datos.distribucionGastos || []);
-        }
-        this.loadingGraficos.set(false);
-        this.limpiarBanderaRefresco();
-      },
-      error: (err) => {
-        console.error('[DashboardStateService] Error cargando gráficos:', err);
-        this.loadingGraficos.set(false);
-        this.limpiarBanderaRefresco();
-      }
-    });
-  }
-
-  private limpiarBanderaRefresco(): void {
-    if (this.forzarProximoRefresco) {
-      setTimeout(() => {
-        this.forzarProximoRefresco = false;
-      }, 0);
+      this.filtrosActuales.set(filtros);
     }
+
+    let params = new HttpParams();
+    const currentFilters = this.filtrosActuales();
+    
+    if (currentFilters.fechaInicio) params = params.set('fechaInicio', currentFilters.fechaInicio);
+    if (currentFilters.fechaFin) params = params.set('fechaFin', currentFilters.fechaFin);
+    if (currentFilters.metodoPago) params = params.set('metodoPago', currentFilters.metodoPago);
+    if (currentFilters.tipoMovimiento) params = params.set('tipoMovimiento', currentFilters.tipoMovimiento);
+
+    this.http.get<ResultadoApi<DashboardAnaliticaDTO>>(`${this.base}/analitica-avanzada`, { params }).subscribe({
+      next: (resp) => {
+        if (resp.exito && resp.datos) {
+          const d = resp.datos;
+          this.resumen.set(d.resumen);
+          this.flujoCaja.set(d.flujoCaja || []);
+          
+          // Tomar solo los 5 gastos más importantes (ordenados)
+          const dist = (d.distribucionGastos || [])
+            .sort((a, b) => b.total - a.total)
+            .slice(0, 5);
+          this.distribucionGastos.set(dist);
+
+          this.heatmap.set(d.heatmap || []);
+          this.metas.set(d.metas || []);
+          this.comparativa.set(d.comparativa || []);
+          this.transaccionesMetodo.set(d.transaccionesMetodo || []);
+        } else {
+          this.error.set(resp.mensaje || 'Error al cargar analítica avanzada');
+        }
+        this.loading.set(false);
+        this.initialLoadDone = true;
+      },
+      error: (err) => {
+        console.warn('[DashboardStateService] Fallback a mock de analítica avanzada:', err);
+        // Mock fallback temporal para frontend dev
+        this.cargarMock();
+        this.loading.set(false);
+        this.initialLoadDone = true;
+      }
+    });
   }
 
   /**
-   * Invalida los datos y la fecha del último refresco local, forzando una recarga limpia.
+   * Invalida los datos y fuerza una recarga.
    */
   invalidarCache(): void {
-    this.ultimoRefrescoKPIs = 0;
-    this.cargarResumen(true);
-    this.cargarGraficos(true);
+    this.initialLoadDone = false; // Permitir recarga al ser evento de sincronización
+    this.cargarAnalitica(this.filtrosActuales());
   }
 
   /**
-   * Limpia completamente el estado de las signals.
-   * Útil para cuando un usuario cierra sesión.
+   * Limpia el estado.
    */
   limpiarEstado(): void {
-    this.ultimoRefrescoKPIs = 0;
-    this.perfil.set(null);
     this.resumen.set(null);
-    this.recientes.set([]);
     this.flujoCaja.set([]);
     this.distribucionGastos.set([]);
-    this.loadingResumen.set(false);
-    this.loadingGraficos.set(false);
+    this.heatmap.set([]);
+    this.metas.set([]);
+    this.comparativa.set([]);
+    this.transaccionesMetodo.set([]);
+    this.filtrosActuales.set({});
+    this.loading.set(false);
     this.error.set(null);
+  }
+
+  // --- MOCK FALLBACK ---
+  private cargarMock(): void {
+    const filtros = this.filtrosActuales();
+    
+    // Base numbers that we can scale or filter
+    let ingresosBase = 3200;
+    let gastosBase = 2500;
+    let ahorroBase = 15.5;
+    let promedioDiario = 85.50;
+    let presupuestoCumplimiento = 78.2;
+    let proyeccionFin = 1250.00;
+    
+    // Adjust based on Movement Type
+    let showIngresos = true;
+    let showGastos = true;
+    
+    if (filtros.tipoMovimiento === 'INGRESO') {
+      showGastos = false;
+      gastosBase = 0;
+      ahorroBase = 100;
+      promedioDiario = 0;
+      presupuestoCumplimiento = 0;
+      proyeccionFin = 0;
+    } else if (filtros.tipoMovimiento === 'EGRESO') {
+      showIngresos = false;
+      ingresosBase = 0;
+      ahorroBase = -100;
+    }
+
+    // Adjust based on Payment Method (just change the data slightly to show it works)
+    let multiplier = 1.0;
+    if (filtros.metodoPago === 'EFECTIVO') multiplier = 0.3;
+    else if (filtros.metodoPago === 'TARJETA') multiplier = 0.55;
+    else if (filtros.metodoPago === 'TRANSFERENCIA') multiplier = 0.75;
+    else if (filtros.metodoPago === 'DIGITAL') multiplier = 0.45;
+
+    ingresosBase *= multiplier;
+    gastosBase *= multiplier;
+    promedioDiario *= multiplier;
+    proyeccionFin *= multiplier;
+
+    // Adjust based on Date Range
+    let cashflowData = [
+      { mes: 'Ene', ingresos: 3000, gastos: 2500 },
+      { mes: 'Feb', ingresos: 3200, gastos: 2600 },
+      { mes: 'Mar', ingresos: 3100, gastos: 2800 },
+      { mes: 'Abr', ingresos: 3500, gastos: 2400 },
+      { mes: 'May', ingresos: 3400, gastos: 2700 },
+      { mes: 'Jun', ingresos: 3600, gastos: 2900 },
+      { mes: 'Jul', ingresos: 3800, gastos: 3100 },
+      { mes: 'Ago', ingresos: 3700, gastos: 3000 },
+      { mes: 'Sep', ingresos: 3900, gastos: 3200 },
+      { mes: 'Oct', ingresos: 4000, gastos: 3300 },
+      { mes: 'Nov', ingresos: 4200, gastos: 3400 },
+      { mes: 'Dic', ingresos: 4500, gastos: 3600 }
+    ];
+
+    let comparativaData = [
+      { mes: 'Ene', actual: 3000, anterior: 2800 },
+      { mes: 'Feb', actual: 3200, anterior: 2900 },
+      { mes: 'Mar', actual: 3100, anterior: 3000 },
+      { mes: 'Abr', actual: 3500, anterior: 3200 },
+      { mes: 'May', actual: 3400, anterior: 3100 },
+      { mes: 'Jun', actual: 3600, anterior: 3300 },
+      { mes: 'Jul', actual: 3800, anterior: 3500 },
+      { mes: 'Ago', actual: 3700, anterior: 3400 },
+      { mes: 'Sep', actual: 3900, anterior: 3600 },
+      { mes: 'Oct', actual: 4000, anterior: 3700 },
+      { mes: 'Nov', actual: 4200, anterior: 3800 },
+      { mes: 'Dic', actual: 4500, anterior: 4000 }
+    ];
+
+    if (filtros.fechaInicio || filtros.fechaFin) {
+      // If we filtered by a range, let's change labels or cut data points to reflect filtering
+      const start = filtros.fechaInicio ? new Date(filtros.fechaInicio) : null;
+      const end = filtros.fechaFin ? new Date(filtros.fechaFin) : null;
+      
+      if (start && end) {
+        const diffTime = Math.abs(end.getTime() - start.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays <= 7) {
+          // Weekly: Show daily cashflow points for each day of the week
+          cashflowData = [
+            { mes: 'Lun', ingresos: Math.round(450 * multiplier), gastos: Math.round(380 * multiplier) },
+            { mes: 'Mar', ingresos: Math.round(520 * multiplier), gastos: Math.round(410 * multiplier) },
+            { mes: 'Mié', ingresos: Math.round(380 * multiplier), gastos: Math.round(350 * multiplier) },
+            { mes: 'Jue', ingresos: Math.round(610 * multiplier), gastos: Math.round(490 * multiplier) },
+            { mes: 'Vie', ingresos: Math.round(700 * multiplier), gastos: Math.round(650 * multiplier) },
+            { mes: 'Sáb', ingresos: Math.round(550 * multiplier), gastos: Math.round(720 * multiplier) },
+            { mes: 'Dom', ingresos: Math.round(300 * multiplier), gastos: Math.round(250 * multiplier) }
+          ];
+          comparativaData = [
+            { mes: 'Lun', actual: Math.round(120 * multiplier), anterior: Math.round(100 * multiplier) },
+            { mes: 'Mar', actual: Math.round(150 * multiplier), anterior: Math.round(130 * multiplier) },
+            { mes: 'Mié', actual: Math.round(80 * multiplier),  anterior: Math.round(95 * multiplier) },
+            { mes: 'Jue', actual: Math.round(200 * multiplier), anterior: Math.round(150 * multiplier) },
+            { mes: 'Vie', actual: Math.round(350 * multiplier), anterior: Math.round(300 * multiplier) },
+            { mes: 'Sáb', actual: Math.round(400 * multiplier), anterior: Math.round(380 * multiplier) },
+            { mes: 'Dom', actual: Math.round(180 * multiplier), anterior: Math.round(200 * multiplier) }
+          ];
+          promedioDiario = gastosBase / 7;
+        } else if (diffDays <= 31) {
+          // Monthly: Show current month + previous month with dynamic names
+          const mesesNombres = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+          const mesActual = end.getMonth();
+          const mesAnterior = mesActual === 0 ? 11 : mesActual - 1;
+          cashflowData = [
+            { mes: mesesNombres[mesAnterior], ingresos: ingresosBase * 0.9, gastos: gastosBase * 1.1 },
+            { mes: mesesNombres[mesActual], ingresos: ingresosBase, gastos: gastosBase }
+          ];
+          comparativaData = [
+            { mes: mesesNombres[mesAnterior], actual: gastosBase * 0.9, anterior: gastosBase * 0.95 },
+            { mes: mesesNombres[mesActual], actual: gastosBase, anterior: gastosBase * 0.9 }
+          ];
+        } else if (diffDays <= 100) {
+          // ~3 months: Show 3 months
+          const mesesNombres = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+          const mesActual = end.getMonth();
+          const mes1 = mesActual >= 2 ? mesActual - 2 : mesActual + 10;
+          const mes2 = mesActual >= 1 ? mesActual - 1 : 11;
+          cashflowData = [
+            { mes: mesesNombres[mes1], ingresos: ingresosBase * 0.85, gastos: gastosBase * 1.05 },
+            { mes: mesesNombres[mes2], ingresos: ingresosBase * 0.95, gastos: gastosBase * 0.95 },
+            { mes: mesesNombres[mesActual], ingresos: ingresosBase, gastos: gastosBase }
+          ];
+          comparativaData = [
+            { mes: mesesNombres[mes1], actual: gastosBase * 0.85, anterior: gastosBase * 0.8 },
+            { mes: mesesNombres[mes2], actual: gastosBase * 0.95, anterior: gastosBase * 0.9 },
+            { mes: mesesNombres[mesActual], actual: gastosBase, anterior: gastosBase * 0.95 }
+          ];
+        }
+      }
+    }
+
+    // Apply movement filters to cashflow values
+    cashflowData = cashflowData.map(d => ({
+      mes: d.mes,
+      ingresos: showIngresos ? Math.round(d.ingresos * multiplier) : 0,
+      gastos: showGastos ? Math.round(d.gastos * multiplier) : 0
+    }));
+
+    comparativaData = comparativaData.map(d => ({
+      mes: d.mes,
+      actual: showGastos ? Math.round(d.actual * multiplier) : 0,
+      anterior: showGastos ? Math.round(d.anterior * multiplier) : 0
+    }));
+
+    // Update state signals
+    this.resumen.set({
+      desde: filtros.fechaInicio || new Date().toISOString(),
+      hasta: filtros.fechaFin || new Date().toISOString(),
+      tasaAhorro: showIngresos && showGastos ? ahorroBase : (showIngresos ? 100 : -100),
+      gastoPromedioDiario: Math.round(promedioDiario * 100) / 100,
+      cumplimientoPresupuesto: showGastos ? Math.round(presupuestoCumplimiento * multiplier * 10) / 10 : 0,
+      proyeccionFinDeMes: Math.round(proyeccionFin * 100) / 100
+    });
+
+    this.flujoCaja.set(cashflowData);
+    
+    // Scale distributions
+    this.distribucionGastos.set(showGastos ? [
+      { categoria: 'Alimentación', total: Math.round(800 * multiplier), porcentaje: 35, color: '#f59e0b' },
+      { categoria: 'Vivienda', total: Math.round(600 * multiplier), porcentaje: 25, color: '#3b82f6' },
+      { categoria: 'Transporte', total: Math.round(400 * multiplier), porcentaje: 15, color: '#10b981' },
+      { categoria: 'Entretenimiento', total: Math.round(300 * multiplier), porcentaje: 15, color: '#8b5cf6' },
+      { categoria: 'Otros', total: Math.round(200 * multiplier), porcentaje: 10, color: '#64748b' }
+    ].slice(0, 5) : []);
+
+
+    this.heatmap.set(showGastos ? [
+      { dia: 'Lunes', intensidad: Math.round(4 * multiplier) || 1 },
+      { dia: 'Martes', intensidad: Math.round(6 * multiplier) || 1 },
+      { dia: 'Miércoles', intensidad: Math.round(3 * multiplier) || 1 },
+      { dia: 'Jueves', intensidad: Math.round(5 * multiplier) || 1 },
+      { dia: 'Viernes', intensidad: Math.round(9 * multiplier) || 2 },
+      { dia: 'Sábado', intensidad: Math.round(10 * multiplier) || 2 },
+      { dia: 'Domingo', intensidad: Math.round(7 * multiplier) || 1 }
+    ] : []);
+
+    this.metas.set([
+      { nombre: 'Fondo de Emergencia', objetivo: 5000, actual: Math.round(3500 * (showIngresos ? multiplier : 0.5)), porcentaje: 70, color: '#10b981' },
+      { nombre: 'Viaje Fin de Año', objetivo: 2000, actual: Math.round(500 * (showIngresos ? multiplier : 0.5)), porcentaje: 25, color: '#3b82f6' }
+    ]);
+
+    this.transaccionesMetodo.set([
+      { metodo: 'Tarjeta', cantidad: Math.round(25 * multiplier) || 2, color: '#3b82f6' },
+      { metodo: 'Efectivo', cantidad: Math.round(15 * multiplier) || 1, color: '#10b981' },
+      { metodo: 'Transferencia', cantidad: Math.round(18 * multiplier) || 1, color: '#a855f7' },
+      { metodo: 'Digital', cantidad: Math.round(12 * multiplier) || 1, color: '#f59e0b' }
+    ]);
+
+    this.comparativa.set(comparativaData);
   }
 }
