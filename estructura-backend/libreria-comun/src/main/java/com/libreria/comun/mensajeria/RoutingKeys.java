@@ -30,6 +30,9 @@ public final class RoutingKeys {
     public static final String PAGO_REEMBOLSO = "pago.suscripcion.reembolso";
     public static final String PAGO_FALLIDO = "pago.suscripcion.fallido";
 
+    // Financiero
+    public static final String TRANSACCION_REGISTRADA = "financiero.transaccion.registrada";
+
     private RoutingKeys() {
     }
 }

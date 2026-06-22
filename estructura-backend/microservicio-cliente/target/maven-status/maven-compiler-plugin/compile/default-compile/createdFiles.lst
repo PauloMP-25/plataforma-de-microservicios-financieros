@@ -24,6 +24,7 @@ com/cliente/presentacion/controladores/ControladorLimiteGasto.class
 com/cliente/aplicacion/dtos/solicitudes/SolicitudPerfilFinanciero.class
 com/cliente/dominio/repositorios/LimiteGastoRepositorio.class
 com/cliente/aplicacion/puertos/ServicioDatosPersonales.class
+com/cliente/infraestructura/mensajeria/ConsumidorTransacciones.class
 com/cliente/aplicacion/excepciones/DniDuplicadoException.class
 com/cliente/dominio/entidades/LimiteGasto$LimiteGastoBuilder.class
 com/cliente/aplicacion/dtos/respuestas/RespuestaPerfilFinanciero.class

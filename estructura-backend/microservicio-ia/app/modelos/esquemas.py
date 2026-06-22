@@ -327,7 +327,7 @@ class FiltroDeFecha(BaseModel):
         return self
 
 class PeticionConFiltroFecha(PeticionBase, FiltroDeFecha):
-    token: str = Field(..., min_length=10)
+    token: Optional[str] = Field(default=None, min_length=10)
     tamanio_pagina: int = Field(default=200, ge=10, le=1000)
     frecuencia: Optional[str] = Field(default="SEMANAL")
  
@@ -342,7 +342,7 @@ class PeticionConFiltroFecha(PeticionBase, FiltroDeFecha):
 
 
 class PeticionComparacionDTO(PeticionBase):
-    token: str = Field(..., min_length=10)
+    token: Optional[str] = Field(default=None, min_length=10)
     tamanio_pagina: int = Field(default=200, ge=10, le=1000)
     rango_a_inicio: datetime = Field(...)
     rango_a_fin: datetime = Field(...)
@@ -376,7 +376,7 @@ class PeticionClasificar(PeticionBase):
 
 
 class PeticionSimularMeta(PeticionBase):
-    token: str = Field(..., min_length=10)
+    token: Optional[str] = Field(default=None, min_length=10)
     nombre_meta: str = Field(..., min_length=1, max_length=80)
     monto_objetivo: float = Field(..., gt=0)
     monto_actual_ahorrado: float = Field(default=0.0, ge=0)
@@ -629,9 +629,6 @@ class RespuestaModulo(BaseModel):
     usando_fallback: bool = Field(default=False)
  
     insight: InsightAnalitico = Field(...)
- 
-    grafico: Optional[MetadataGrafico] = Field(default=None)
-    kpi: Optional[KpiWidget] = Field(default=None)
  
     def a_dict_serializable(self) -> dict:
         datos = self.model_dump()

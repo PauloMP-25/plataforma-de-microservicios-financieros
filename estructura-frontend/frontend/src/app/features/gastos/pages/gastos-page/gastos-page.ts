@@ -97,7 +97,73 @@ export class GastosPage implements OnDestroy {
     estado: 'Pagado' | 'Pendiente';
     icono: string;
     colorCategoria: 'comida' | 'hogar' | 'transporte' | 'servicios' | 'entretenimiento' | 'salud';
-  }>>([]);
+  }>>([
+    {
+      id: 'mock-g1',
+      nombre: 'Pizza Hut',
+      detalle: 'Cena familiar de fin de semana',
+      categoria: 'Restaurantes',
+      fecha: new Date(Date.now() - 86400000).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }),
+      hora: '20:15',
+      monto: 85.00,
+      metodo: 'TARJETA',
+      estado: 'Pagado',
+      icono: 'utensils',
+      colorCategoria: 'comida'
+    },
+    {
+      id: 'mock-g2',
+      nombre: 'Uber',
+      detalle: 'Traslado a la oficina',
+      categoria: 'Transporte',
+      fecha: new Date().toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }),
+      hora: '08:30',
+      monto: 18.50,
+      metodo: 'DIGITAL',
+      estado: 'Pagado',
+      icono: 'bus',
+      colorCategoria: 'transporte'
+    },
+    {
+      id: 'mock-g3',
+      nombre: 'Netflix',
+      detalle: 'Suscripción mensual estándar',
+      categoria: 'Entretenimiento',
+      fecha: new Date(Date.now() - 86400000 * 3).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }),
+      hora: '00:05',
+      monto: 44.90,
+      metodo: 'TARJETA',
+      estado: 'Pagado',
+      icono: 'film',
+      colorCategoria: 'entretenimiento'
+    },
+    {
+      id: 'mock-g4',
+      nombre: 'Luz del Sur',
+      detalle: 'Recibo de luz del mes',
+      categoria: 'Servicios',
+      fecha: new Date(Date.now() - 86400000 * 5).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }),
+      hora: '14:20',
+      monto: 120.00,
+      metodo: 'TRANSFERENCIA',
+      estado: 'Pagado',
+      icono: 'bolt',
+      colorCategoria: 'servicios'
+    },
+    {
+      id: 'mock-g5',
+      nombre: 'Plaza Vea',
+      detalle: 'Compras de víveres para la semana',
+      categoria: 'Alimentos',
+      fecha: new Date(Date.now() - 86400000 * 7).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }),
+      hora: '11:00',
+      monto: 250.00,
+      metodo: 'TARJETA',
+      estado: 'Pagado',
+      icono: 'utensils',
+      colorCategoria: 'comida'
+    }
+  ]);
 
   readonly usarMockVisualPagados = signal(true);
 
@@ -310,7 +376,8 @@ export class GastosPage implements OnDestroy {
           return data.map((g) => {
             const fecha = new Date(g.fechaTransaccion);
             const categoria = g.categoria || 'Otros';
-            const { nombre, detalle } = this.parseNotas(g.notas, categoria);
+            const nombre = g.nombreCliente || categoria;
+            const detalle = g.descripcion || 'Gasto registrado';
 
             return {
               id: g.id,
@@ -453,7 +520,7 @@ export class GastosPage implements OnDestroy {
     if (!pendiente) return;
     const id = pendiente.id;
 
-    if (id.startsWith('g') || id.startsWith('mock-')) {
+    if (id.startsWith('g') || id.startsWith('mock-') || this.usarMockVisualPagados()) {
       this.eliminadosIds.update((ids) => Array.from(new Set([...ids, id])));
       this.pagadosMock.update((items) => items.filter((i) => i.id !== id));
       this.usarMockVisualPagados.set(true);
@@ -519,7 +586,7 @@ export class GastosPage implements OnDestroy {
       this.guardandoGasto.set(true);
       const editId = this.gastoEditandoId();
       if (editId) {
-        if (editId.startsWith('g') || editId.startsWith('mock-')) {
+        if (editId.startsWith('g') || editId.startsWith('mock-') || this.usarMockVisualPagados()) {
           this.pagadosMock.update((items) =>
             items.map((i) =>
               i.id !== editId
@@ -533,6 +600,9 @@ export class GastosPage implements OnDestroy {
                     fecha: this.fecha()
                       ? new Date(this.fecha()).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
                       : i.fecha,
+                    categoria: this.nombreCategoriaPorId(catId),
+                    icono: this.iconoCategoria(this.nombreCategoriaPorId(catId)),
+                    colorCategoria: this.colorCategoria(this.nombreCategoriaPorId(catId))
                   }
             )
           );
@@ -546,13 +616,12 @@ export class GastosPage implements OnDestroy {
 
         const requestEdit: TransaccionRequestDTO = {
           usuarioId,
-          nombreCliente: this.authService.usuario()?.nombreUsuario ?? 'Cliente',
+          nombreCliente: this.nombreGasto().trim(),
           monto: Number(this.monto()),
           tipo: 'GASTO',
           categoriaId: catId || 'otros',
           fechaTransaccion: getLocalIsoString(this.fecha()),
           metodoPago: this.metodoPago(),
-          notas: `${this.nombreGasto().trim()}|${this.descripcion().trim()}`,
           descripcion: this.descripcion().trim(),
           etiquetas: this.etiquetas().join(','),
         };
@@ -572,15 +641,42 @@ export class GastosPage implements OnDestroy {
           },
         });
       } else {
+        if (this.usarMockVisualPagados()) {
+          const mockId = `mock-${Date.now()}`;
+          this.pagadosMock.update((items) => [
+            {
+              id: mockId,
+              nombre: this.nombreGasto().trim(),
+              detalle: this.descripcion().trim(),
+              categoria: this.nombreCategoriaPorId(catId),
+              fecha: this.fecha()
+                ? new Date(this.fecha()).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
+                : 'Hoy',
+              hora: new Date().toLocaleTimeString('es-PE', { hour: 'numeric', minute: '2-digit' }),
+              monto: Number(this.monto()),
+              metodo: this.metodoPago(),
+              estado: 'Pagado',
+              icono: this.iconoCategoria(this.nombreCategoriaPorId(catId)),
+              colorCategoria: this.colorCategoria(this.nombreCategoriaPorId(catId))
+            },
+            ...items
+          ]);
+          this.usarMockVisualPagados.set(true);
+          this.modalAbierto.set(false);
+          this.resetFormulario();
+          this.guardandoGasto.set(false);
+          this.notificacionService.mostrarGastoRegistrado(Number(this.monto()), this.nombreCategoriaPorId(catId));
+          return;
+        }
+
         const request: TransaccionRequestDTO = {
           usuarioId,
-          nombreCliente: this.authService.usuario()?.nombreUsuario ?? 'Cliente',
+          nombreCliente: this.nombreGasto().trim(),
           monto: Number(this.monto()),
           tipo: 'GASTO',
           categoriaId: catId,
           fechaTransaccion: getLocalIsoString(this.fecha()),
           metodoPago: this.metodoPago(),
-          notas: `${this.nombreGasto().trim()}|${this.descripcion().trim()}`,
           descripcion: this.descripcion().trim(),
           etiquetas: this.etiquetas().join(','),
         };
@@ -738,6 +834,8 @@ export class GastosPage implements OnDestroy {
     }
     if (!this.monto().trim() || Number(this.monto()) <= 0) {
       out['monto'] = 'Ingresa un monto válido mayor a 0.';
+    } else if (this.saldoActual() - Number(this.monto()) < 0) {
+      out['monto'] = 'El gasto supera tu balance actual. Registra un ingreso primero.';
     }
     if (!this.nombreGasto().trim()) {
       out['nombreGasto'] = 'Ingresa el nombre del gasto.';

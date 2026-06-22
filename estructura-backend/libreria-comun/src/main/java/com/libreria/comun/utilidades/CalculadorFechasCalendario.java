@@ -18,6 +18,6 @@ public class CalculadorFechasCalendario implements CalculadorFechasStrategy {
 
     @Override
     public boolean soporta(String tipoEstrategia) {
-        return "CALENDARIO".equalsIgnoreCase(tipoEstrategia);
+        return "CALENDARIO".equalsIgnoreCase(tipoEstrategia) || "MENSUAL".equalsIgnoreCase(tipoEstrategia);
     }
 }

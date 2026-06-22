@@ -1,26 +1,66 @@
-<div class="exito-page">
-  <div class="exito-page__container">
-    <div *ngIf="cargando()" class="exito-page__loading">
-      <div class="spinner"></div>
-      <p>Sincronizando tu pago con LUKA APP...</p>
-      <small>Esperando confirmación segura de Stripe Checkout</small>
+<!-- ── PÁGINA DE ÉXITO ── -->
+<div class="suscripcion-exito-page">
+  <article class="success-card glass-panel">
+    
+    <!-- HEADER CON ÍCONO Y TÍTULO -->
+    <div class="success-card__header">
+      <div class="success-card__icon-wrap">
+        <i class="fa-solid fa-check-circle"></i>
+      </div>
+      <h1 class="success-card__title">¡Suscripción Creada!</h1>
+      <p class="success-card__subtitle">Tu suscripción ha sido registrada correctamente</p>
     </div>
 
-    <div *ngIf="!cargando() && error()" class="exito-page__error glass-panel">
-      <i class="fa-solid fa-circle-exclamation error-icon"></i>
-      <h2>Estado de Suscripción</h2>
-      <p>{{ error() }}</p>
-      <button class="btn-primary" (click)="navegarAlDashboard()">Ir al Dashboard</button>
+    <!-- RESUMEN DE SUSCRIPCIÓN -->
+    <section class="success-card__summary">
+      @if (suscripcion()) {
+        <div class="summary-item">
+          <span class="summary-label">Servicio</span>
+          <strong class="summary-value">{{ suscripcion()?.nombre }}</strong>
+        </div>
+
+        <div class="summary-item">
+          <span class="summary-label">Monto</span>
+          <strong class="summary-value text-currency">{{ formatearMoneda(suscripcion()!.monto) }}</strong>
+        </div>
+
+        <div class="summary-item">
+          <span class="summary-label">Frecuencia</span>
+          <strong class="summary-value">{{ suscripcion()?.frecuencia }}</strong>
+        </div>
+
+        <div class="summary-item">
+          <span class="summary-label">Próximo Pago</span>
+          <strong class="summary-value">{{ suscripcion()?.proximoVencimiento | date:'d/MMM/yyyy' }}</strong>
+        </div>
+      } @else {
+        <p class="summary-placeholder">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          Cargando datos de la suscripción...
+        </p>
+      }
+    </section>
+
+    <!-- MENSAJE DE CONFIRMACIÓN -->
+    <div class="success-card__message">
+      <i class="fa-solid fa-circle-info"></i>
+      <span>
+        <strong>Tu suscripción está activa.</strong>
+        Puedes verla en tu dashboard de suscripciones y administrarla en cualquier momento.
+      </span>
     </div>
 
-    <app-suscripcion-card
-      *ngIf="!cargando() && !error()"
-      [plan]="plan()"
-      [monto]="monto()"
-      [moneda]="moneda()"
-      [fechaVencimiento]="fechaVencimiento()"
-      [cargando]="cargando()"
-      (irAlDashboard)="navegarAlDashboard()">
-    </app-suscripcion-card>
-  </div>
+    <!-- BOTONES DE ACCIÓN -->
+    <div class="success-card__actions">
+      <button type="button" class="btn-success" (click)="volverAlDashboard()">
+        <i class="fa-solid fa-chart-line"></i>
+        Ver Dashboard
+      </button>
+      <button type="button" class="btn-secondary" (click)="volverASuscripciones()">
+        <i class="fa-solid fa-list"></i>
+        Ver Todas las Suscripciones
+      </button>
+    </div>
+  </article>
 </div>
+

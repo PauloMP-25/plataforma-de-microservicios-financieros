@@ -1,45 +1,56 @@
-<article class="success-card glass-panel" [class.pro-theme]="plan === 'PRO'" [class.premium-theme]="plan === 'PREMIUM'">
-  <header class="success-card__header">
-    <div class="success-card__icon-wrap">
-      <i class="fa-solid" [ngClass]="iconClass"></i>
+<article class="suscripcion-card bento-card" 
+  [ngStyle]="{
+    '--brand-bg': estiloMarca.bg, 
+    '--brand-color': estiloMarca.color, 
+    '--brand-border': estiloMarca.border
+  }">
+  
+  <div class="suscripcion-card__header">
+    <div class="suscripcion-card__logo-box">
+      <i class="fa-solid" [ngClass]="'fa-' + obtenerCategoriaInfo()?.icon"></i>
     </div>
-    <h1 class="success-card__title">¡Suscripción Activada!</h1>
-    <p class="success-card__subtitle">Gracias por adquirir {{ planLabel }} en LUKA APP.</p>
-  </header>
-
-  <section class="success-card__details">
-    <div class="detail-row">
-      <span class="detail-label">Plan contratado</span>
-      <strong class="detail-value text-accent">{{ planLabel }}</strong>
-    </div>
-
-    <div class="detail-row">
-      <span class="detail-label">Monto facturado</span>
-      <strong class="detail-value">{{ moneda }} {{ monto | number:'1.2-2' }} / mes</strong>
+    
+    <div class="suscripcion-card__title-wrap">
+      <h3 class="suscripcion-card__name">{{ suscripcion.nombre }}</h3>
+      <p class="suscripcion-card__description">{{ suscripcion.descripcion || obtenerCategoriaInfo()?.nombre }}</p>
     </div>
 
-    <div class="detail-row" *ngIf="fechaVencimiento">
-      <span class="detail-label">Próximo cobro</span>
-      <strong class="detail-value">{{ fechaVencimiento | date:'dd/MM/yyyy' }}</strong>
-    </div>
-
-    <div class="detail-row">
-      <span class="detail-label">Medio de pago</span>
-      <strong class="detail-value"><i class="fa-solid fa-credit-card"></i> STRIPE Checkout</strong>
-    </div>
-  </section>
-
-  <div class="success-card__message alert-info">
-    <i class="fa-solid fa-wand-magic-sparkles"></i>
-    <span>
-      <strong>Tus nuevas cuotas de IA están listas en tu cabecera.</strong>
-      Comienza a usar el Reporte Ejecutivo y las clasificaciones automáticas.
+    <span class="suscripcion-card__badge" [ngClass]="obtenerClaseEstado(suscripcion.estado)">
+      {{ suscripcion.estado }}
     </span>
   </div>
 
-  <footer class="success-card__footer">
-    <button type="button" class="btn-success" (click)="emitirClick()" [disabled]="cargando">
-      <i class="fa-solid fa-house-chimney"></i> Ir al Dashboard
-    </button>
-  </footer>
+  <div class="suscripcion-card__bento-grid">
+    
+    <div class="bento-box bento-box--monto">
+      <span class="bento-label">Monto a pagar</span>
+      <strong class="bento-value text-brand">{{ formatearMoneda(suscripcion.monto) }}</strong>
+      <span class="bento-subtext">{{ suscripcion.frecuencia }}</span>
+    </div>
+
+    <div class="bento-box" [class.bento-box--alert]="suscripcion.vencePronto">
+      <span class="bento-label">Próximo Pago</span>
+      <strong class="bento-value">{{ suscripcion.proximoVencimiento | date:'d/MMM' }}</strong>
+      <span class="bento-subtext">Faltan {{ suscripcion.diasParaVencimiento }} días</span>
+    </div>
+  </div>
+
+  <div class="suscripcion-card__footer">
+    <div class="action-buttons">
+      <button class="btn-icon" (click)="onEditar()" title="Editar"><i class="fa-solid fa-pen"></i></button>
+      <button class="btn-icon" (click)="onVerDetalle()" title="Detalle"><i class="fa-solid fa-eye"></i></button>
+      <button class="btn-icon btn-icon--danger" (click)="onEliminar()" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+    </div>
+
+    @if (suscripcion.estado !== 'VENCIDA') {
+      <div class="status-toggle">
+        @if (suscripcion.estado !== 'ACTIVA') {
+          <button class="btn-toggle btn-toggle--success" (click)="onCambiarEstado('ACTIVA')">Activar</button>
+        }
+        @if (suscripcion.estado !== 'PAUSADA') {
+          <button class="btn-toggle btn-toggle--warning" (click)="onCambiarEstado('PAUSADA')">Pausar</button>
+        }
+      </div>
+    }
+  </div>
 </article>

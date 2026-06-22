@@ -1,0 +1,224 @@
+/* ── 1. REGLAS DE ORO ANTIDESBORDAMIENTO (NUEVO) ── */
+:host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* ── 2. CONTENEDOR PRINCIPAL ── */
+.historial-wrapper {
+  padding: 32px;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0; /* CLAVE: Obliga al contenedor flex a encogerse si es necesario */
+}
+
+.page-header {
+  h1 { font-size: 1.8rem; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
+  p { color: var(--text-secondary); font-size: 0.95rem; }
+}
+
+/* ── 3. GRID ESTILO BENTO ── */
+.bento-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr; 
+  gap: 24px;
+  width: 100%;
+  min-width: 0; /* CLAVE */
+}
+
+/* ── 4. TARJETAS SUPERIORES ── */
+.balance-card {
+  background: linear-gradient(135deg, var(--color-primary, #6366f1) 0%, #a855f7 100%);
+  color: white;
+  padding: 32px 24px;
+  border-radius: 24px;
+  box-shadow: 0 15px 30px -10px rgba(99, 102, 241, 0.4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+
+  span { font-size: 0.9rem; font-weight: 600; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.05em; }
+  h2 { font-size: 2.2rem; font-weight: 800; margin-top: 8px; }
+  
+  .balance-icon {
+    font-size: 3rem; opacity: 0.2; position: absolute;
+    right: -10px; bottom: -15px; transform: rotate(-15deg);
+  }
+}
+
+.filters-card {
+  background: var(--bg-card);
+  padding: 24px;
+  border-radius: 24px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03);
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap; 
+  width: 100%;
+}
+
+.search-box {
+  flex: 1;
+  position: relative; 
+  min-width: 200px; /* Evita que el buscador desaparezca si no hay espacio */
+  
+  i {
+    position: absolute; left: 16px; top: 50%;
+    transform: translateY(-50%); color: var(--text-secondary);
+  }
+
+  input {
+    width: 100%;
+    padding: 14px 16px 14px 44px; 
+    border-radius: 16px; border: 2px solid var(--border-color);
+    background: var(--bg-body); font-size: 0.95rem; transition: 0.3s;
+    &:focus { border-color: var(--color-primary); outline: none; background: var(--bg-card); }
+  }
+}
+
+.filter-select {
+  padding: 14px 20px;
+  border-radius: 16px; border: 2px solid var(--border-color);
+  background: var(--bg-body); font-weight: 600; cursor: pointer; transition: 0.3s;
+  max-width: 100%; /* Evita que los select rompan el layout */
+  &:focus { border-color: var(--color-primary); outline: none; }
+}
+
+/* ── 5. TARJETA DE TABLA (LA REBELDE) ── */
+.table-card {
+  background: var(--bg-card);
+  border-radius: 24px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03);
+  
+  width: 100%;
+  max-width: 100%;
+  min-width: 0; /* CLAVE ABSOLUTA: Rompe la terquedad del flexbox */
+  overflow-x: auto; /* Permite deslizar la tabla lateralmente */
+  -webkit-overflow-scrolling: touch; 
+  
+  table { width: 100%; border-collapse: collapse; min-width: 600px; /* Fuerza un ancho mínimo interno para que no se aplasten las letras */ }
+  
+  th { 
+    text-align: left; padding: 20px 24px; 
+    color: var(--text-secondary); font-size: 0.8rem; 
+    text-transform: uppercase; letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.01);
+  }
+  
+  td { padding: 20px 24px; border-bottom: 1px solid var(--border-color); }
+  tr:last-child td { border-bottom: none; }
+  .transaction-row:hover { background: rgba(91, 106, 240, 0.02); }
+}
+
+/* ── 6. ELEMENTOS VISUALES ── */
+.transaction-info { display: flex; align-items: center; gap: 16px; }
+.fw-bold { font-weight: 700; color: var(--text-primary); }
+.text-muted { color: var(--text-secondary); font-size: 0.9rem; }
+
+.icon-circle {
+  width: 44px; height: 44px; border-radius: 50%; min-width: 44px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(239, 68, 68, 0.1); color: #ef4444; font-size: 1.1rem;
+  &.is-income { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+}
+
+.tag { 
+  padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;
+  background: var(--bg-body); color: var(--text-secondary);
+}
+
+.text-right { text-align: right; }
+.amount-positive { color: #22c55e; font-weight: 800; font-size: 1.05rem; }
+.amount-negative { color: #ef4444; font-weight: 800; font-size: 1.05rem; }
+.empty-state { padding: 40px; text-align: center; color: var(--text-secondary); }
+/* ── 7. RESPONSIVE (MÓVILES) ── */
+/* ── 7. RESPONSIVE (MÓVILES) ── */
+/* ── 7. RESPONSIVE (MÓVILES) ── */
+@media (max-width: 768px) {
+  /* 1. Ajuste del contenedor: 100% en lugar de 100vw */
+  .historial-wrapper { 
+    padding: 16px 0; /* Quitamos el padding lateral porque tu página Layout ya tiene el suyo */
+    width: 100%; /* LA CLAVE: 100% del contenedor padre, no de la pantalla */
+    max-width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+    overflow-x: hidden; 
+  }
+  
+  /* 2. Aseguramos que la grilla y tarjetas no se expandan */
+  .bento-grid { 
+    grid-template-columns: 1fr; 
+    gap: 16px; 
+    width: 100%; 
+  }
+
+  .balance-card, .filters-card, .table-card {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Filtros */
+  .filters-card { flex-direction: column; align-items: stretch; }
+  .search-box, .filter-select { width: 100%; max-width: 100%; }
+  
+  /* Balance */
+  .balance-card { padding: 24px 20px; }
+  .balance-card h2 { font-size: 1.8rem; }
+
+  /* ── TRANSFORMACIÓN DE TABLA A LISTA MÓVIL ── */
+  .table-card { overflow-x: hidden; border-radius: 16px; }
+
+  .table-card table, .table-card tbody, .table-card tr, .table-card td {
+    display: block; 
+    width: 100%;
+    min-width: 0 !important;
+    box-sizing: border-box;
+  }
+
+  .table-card thead { display: none; }
+
+  .transaction-row {
+    position: relative;
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .table-card td { padding: 0; border: none; }
+
+  /* 1. Icono y Nombre */
+  .table-card td:nth-child(1) { padding-right: 90px; }
+
+  /* 2. Categoría (Etiqueta) */
+  .table-card td:nth-child(2) {
+    display: inline-block; width: auto;
+    padding-left: 60px; margin-top: 8px;
+  }
+
+  /* 3. Fecha */
+  .table-card td:nth-child(3) {
+    display: inline-block; width: auto;
+    padding-left: 8px; margin-top: 8px;
+  }
+
+  /* 4. Monto (Flotando a la derecha) */
+  .table-card td:nth-child(4) {
+    position: absolute; top: 24px; right: 16px;
+    width: auto; text-align: right;
+  }
+}

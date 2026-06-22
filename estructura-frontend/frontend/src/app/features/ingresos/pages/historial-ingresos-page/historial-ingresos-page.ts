@@ -38,6 +38,37 @@ export class HistorialIngresosPage {
 
   readonly tablaSignal = computed<IngresoRegistro[]>(() => {
     const transacciones = this.stateService.ingresos();
+    if (transacciones.length === 0) {
+      return [
+        {
+          id: 'mock-i1',
+          fecha: new Date(Date.now() - 86400000).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+          monto: 3500.00,
+          categoria: 'Salario',
+          metodoPago: 'TRANSFERENCIA',
+          etiquetas: ['Trabajo', 'Fijo'],
+          nota: 'Sueldo mensual LUKA Corp'
+        },
+        {
+          id: 'mock-i2',
+          fecha: new Date().toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+          monto: 450.00,
+          categoria: 'Freelance',
+          metodoPago: 'DIGITAL',
+          etiquetas: ['Proyecto', 'Extra'],
+          nota: 'Desarrollo Landing Page cliente'
+        },
+        {
+          id: 'mock-i3',
+          fecha: new Date(Date.now() - 86400000 * 3).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+          monto: 150.00,
+          categoria: 'Otros',
+          metodoPago: 'EFECTIVO',
+          etiquetas: ['Venta'],
+          nota: 'Venta de audífonos antiguos'
+        }
+      ];
+    }
     return transacciones.map(t => {
       const fecha = new Date(t.fechaTransaccion);
       return {

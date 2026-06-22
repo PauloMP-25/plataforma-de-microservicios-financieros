@@ -102,7 +102,8 @@ class ClienteContexto:
         )
         headers = {
             "Authorization": f"Bearer {token}",
-            "X-Gateway-Source": "api-gateway"
+            "X-Gateway-Source": "api-gateway",
+            "X-Internal-Token": config.luka_internal_token
         }
 
         try:

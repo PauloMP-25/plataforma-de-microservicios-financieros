@@ -207,14 +207,14 @@ export class Configuracion {
     this.eliminandoCuenta.set(true);
     this.mensajeCuenta.set('');
 
-    this.clientePerfilService
-      .eliminarCuenta(usuarioId)
+    this.authService
+      .eliminarMiCuenta()
       .pipe(finalize(() => this.eliminandoCuenta.set(false)))
       .subscribe({
         next: () => {
           this.modalEliminarCuentaAbierto.set(false);
           this.confirmacionEliminarCuenta.set('');
-          this.mensajeCuenta.set('Solicitud de eliminación registrada. Nuestro equipo validará el proceso.');
+          this.authService.logout();
         },
         error: () => {
           this.mensajeCuenta.set('No se pudo procesar la solicitud de eliminación. Inténtalo nuevamente.');

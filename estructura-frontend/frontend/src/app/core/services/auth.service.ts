@@ -24,6 +24,7 @@ import {
 } from '../models/auth/user.model';
 
 const TOKEN_KEY = 'luka_token';
+const REFRESH_TOKEN_KEY = 'luka_refresh_token';
 const USUARIO_KEY = 'luka_usuario';
 
 @Injectable({ providedIn: 'root' })
@@ -88,9 +89,13 @@ export class AuthService {
       nombreUsuario: resp.nombreUsuario,
       roles: resp.roles,
       token: resp.tokenAcceso,
+      refreshToken: resp.refreshToken,
       expiraEn: resp.expiraEn
     };
     localStorage.setItem(TOKEN_KEY, resp.tokenAcceso);
+    if (resp.refreshToken) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, resp.refreshToken);
+    }
     localStorage.setItem(USUARIO_KEY, JSON.stringify(sesion));
     this._usuario.set(sesion);
     this.dashboardState.marcarForzarRefresco();
@@ -144,8 +149,14 @@ export class AuthService {
     return this.http.post(`${this.base}/logout`, {})
   };
 
+  // ── Eliminar cuenta (usuario autenticado) ──
+  eliminarMiCuenta(): Observable<any> {
+    return this.http.delete(`${this.base}/mi-cuenta`);
+  }
+
   logout(): void {
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USUARIO_KEY);
     this._usuario.set(null);
     this.dashboardState.limpiarEstado();
@@ -157,6 +168,20 @@ export class AuthService {
     return localStorage.getItem(TOKEN_KEY);
   }
 
+  getRefreshToken(): string | null {
+    return localStorage.getItem(REFRESH_TOKEN_KEY);
+  }
+
+  refrescarToken(refreshToken: string): Observable<ResultadoApi<RespuestaAutenticacion>> {
+    return this.http.post<ResultadoApi<RespuestaAutenticacion>>(`${this.base}/refrescar-token`, { refreshToken }).pipe(
+      tap(resp => {
+        if (resp.exito) {
+          this.actualizarSesion(resp.datos);
+        }
+      })
+    );
+  }
+
   // ── Privados ──
   private guardarSesion(resp: RespuestaAutenticacion): void {
     const sesion: UsuarioSesion = {
@@ -164,9 +189,13 @@ export class AuthService {
       nombreUsuario: resp.nombreUsuario,
       roles: resp.roles,
       token: resp.tokenAcceso,
+      refreshToken: resp.refreshToken,
       expiraEn: resp.expiraEn
     };
     localStorage.setItem(TOKEN_KEY, resp.tokenAcceso);
+    if (resp.refreshToken) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, resp.refreshToken);
+    }
     localStorage.setItem(USUARIO_KEY, JSON.stringify(sesion));
     this._usuario.set(sesion);
     // Forzar refresco limpio del dashboard tras login

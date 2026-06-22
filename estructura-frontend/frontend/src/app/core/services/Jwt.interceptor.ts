@@ -1,17 +1,74 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { AuthService } from '../services/auth.service';
- 
+import { AuthService } from './auth.service';
+import { catchError, filter, switchMap, take } from 'rxjs/operators';
+import { throwError, BehaviorSubject, Observable } from 'rxjs';
+
+let isRefreshing = false;
+let refreshTokenSubject = new BehaviorSubject<string | null>(null);
+
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
-  const auth  = inject(AuthService);
+  const auth = inject(AuthService);
   const token = auth.getToken();
- 
+
+  let authReq = req;
   if (token) {
-    const authReq = req.clone({
+    authReq = req.clone({
       setHeaders: { Authorization: `Bearer ${token}` }
     });
-    return next(authReq);
   }
- 
-  return next(req);
+
+  return next(authReq).pipe(
+    catchError((error: HttpErrorResponse) => {
+      if (error.status === 401 && !req.url.includes('/auth/login') && !req.url.includes('/auth/refrescar-token')) {
+        return handle401Error(authReq, next, auth);
+      }
+      return throwError(() => error);
+    })
+  );
+};
+
+const handle401Error = (req: any, next: any, auth: AuthService): Observable<any> => {
+  if (!isRefreshing) {
+    isRefreshing = true;
+    refreshTokenSubject.next(null);
+
+    const refreshToken = auth.getRefreshToken();
+
+    if (refreshToken) {
+      return auth.refrescarToken(refreshToken).pipe(
+        switchMap((respuesta) => {
+          isRefreshing = false;
+          if (respuesta && respuesta.exito) {
+            const newToken = respuesta.datos.tokenAcceso;
+            refreshTokenSubject.next(newToken);
+            return next(req.clone({
+              setHeaders: { Authorization: `Bearer ${newToken}` }
+            }));
+          }
+          auth.logout();
+          return throwError(() => new Error('No se pudo refrescar la sesión'));
+        }),
+        catchError((err) => {
+          isRefreshing = false;
+          auth.logout();
+          return throwError(() => err);
+        })
+      );
+    } else {
+      isRefreshing = false;
+      auth.logout();
+      return throwError(() => new Error('No hay token de refresco disponible'));
+    }
+  } else {
+    return refreshTokenSubject.pipe(
+      filter(token => token !== null),
+      take(1),
+      switchMap(jwt => {
+        return next(req.clone({
+          setHeaders: { Authorization: `Bearer ${jwt}` }
+        }));
+      })
+    );
+  }
 };

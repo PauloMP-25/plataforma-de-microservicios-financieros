@@ -1,57 +1,179 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { SuscripcionGastosService } from '../../../../core/services/suscripcion-gastos.service';
+import { SuscripcionDTO, CATEGORIAS_SUSCRIPCION, FRECUENCIAS_SUSCRIPCION, ESTADOS_SUSCRIPCION } from '../../../../core/models/financiero/suscripcion-gasto.model';
+import { SuscripcionCard } from '../../components/suscripcion-card/suscripcion-card';
+// 👇 1. IMPORTAMOS EL MODAL AQUÍ
+import { ModalNuevaSuscripcion } from '../modal-nueva-suscripcion/modal-nueva-suscripcion';
 
 @Component({
   selector: 'app-suscripciones-pagos',
   standalone: true,
-  imports: [CommonModule],
-  template: `
-    <div class="suscripciones-pagos-placeholder">
-      <i class="fa-solid fa-receipt icon-placeholder"></i>
-      <h2>Suscripciones y pagos mensuales</h2>
-      <p>Esta sección aún está en proceso. Aquí podrás organizar los pagos recurrentes de servicios y plataformas como streaming, internet, gimnasio u otros cobros mensuales.</p>
-      <small>Muy pronto podrás registrar vencimientos, montos y recordatorios para mantener tus suscripciones al día.</small>
-    </div>
-  `,
-  styles: [`
-    .suscripciones-pagos-placeholder {
-      padding: 4rem 2rem;
-      text-align: center;
-      border: 2px dashed color-mix(in srgb, var(--border-color) 60%, transparent);
-      border-radius: 16px;
-      margin: 3rem auto;
-      max-width: 650px;
-      background: linear-gradient(135deg, var(--bg-card) 0%, color-mix(in srgb, var(--bg-card) 92%, #000) 100%);
-      color: var(--text-secondary);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-    }
-    .icon-placeholder {
-      font-size: 3rem;
-      color: var(--color-primary);
-      opacity: 0.7;
-      margin-bottom: 0.5rem;
-    }
-    h2 {
-      color: var(--text-primary);
-      font-weight: 800;
-      margin: 0;
-      font-size: 1.5rem;
-    }
-    p {
-      line-height: 1.6;
-      margin: 0;
-      font-size: 0.95rem;
-    }
-    small {
-      color: var(--text-muted);
-      line-height: 1.5;
-      font-size: 0.85rem;
-    }
-  `]
+  // 👇 2. LO AGREGAMOS AL ARREGLO DE IMPORTS
+  imports: [CommonModule, FormsModule, SuscripcionCard, ModalNuevaSuscripcion],
+  templateUrl: './suscripciones-pagos.html',
+  styleUrl: './suscripciones-pagos.scss'
 })
-export class SuscripcionesPagos {}
+export class SuscripcionesPagos implements OnInit {
+  private readonly suscripcionService = inject(SuscripcionGastosService);
+
+  // 👇 3. AGREGAMOS LA SEÑAL DEL MODAL
+  readonly modalAbierto = signal(false);
+
+  // Filtros
+  readonly busqueda = signal('');
+  readonly categoriaFiltro = signal('');
+  readonly frecuenciaFiltro = signal('');
+  readonly estadoFiltro = signal('');
+  readonly montoMin = signal('');
+  readonly montoMax = signal('');
+
+  // Ordenamiento
+  readonly ordenarPor = signal<'nombre' | 'monto' | 'vencimiento'>('nombre');
+  readonly ordenAscendente = signal(true);
+
+  // Datos
+  readonly suscripciones = computed(() => {
+    let resultado = this.suscripcionService.filtrarSuscripciones({
+      busqueda: this.busqueda(),
+      categoria: this.categoriaFiltro(),
+      frecuencia: this.frecuenciaFiltro() as any,
+      estado: this.estadoFiltro(),
+      montoMin: this.montoMin() ? parseFloat(this.montoMin()) : undefined,
+      montoMax: this.montoMax() ? parseFloat(this.montoMax()) : undefined
+    });
+
+    // Ordenar
+    resultado = this.ordenarSuscripciones(resultado);
+    return resultado;
+  });
+
+  readonly totalResultados = computed(() => this.suscripciones().length);
+
+  // Data para selects
+  readonly categorias = CATEGORIAS_SUSCRIPCION;
+  readonly frecuencias = FRECUENCIAS_SUSCRIPCION;
+  readonly estados = ESTADOS_SUSCRIPCION;
+
+  ngOnInit(): void {
+    // Cargar suscripciones
+  }
+
+  // 👇 4. AGREGAMOS LAS FUNCIONES PARA CONTROLAR EL MODAL
+  abrirModal(): void {
+    this.modalAbierto.set(true);
+  }
+
+  cerrarModal(): void {
+    this.modalAbierto.set(false);
+  }
+
+  onCrearSuscripcion(datosFormulario: any): void {
+    this.suscripcionService.crearSuscripcion(datosFormulario).subscribe({
+      next: () => {
+        this.cerrarModal(); // Cerramos el modal cuando se crea con éxito
+      },
+      error: (err) => {
+        console.error('Error creando suscripción:', err);
+      }
+    });
+  }
+
+  /**
+   * Limpiar todos los filtros
+   */
+  limpiarFiltros(): void {
+    this.busqueda.set('');
+    this.categoriaFiltro.set('');
+    this.frecuenciaFiltro.set('');
+    this.estadoFiltro.set('');
+    this.montoMin.set('');
+    this.montoMax.set('');
+  }
+
+  /**
+   * Cambiar orden
+   */
+  cambiarOrden(campo: 'nombre' | 'monto' | 'vencimiento'): void {
+    if (this.ordenarPor() === campo) {
+      this.ordenAscendente.set(!this.ordenAscendente());
+    } else {
+      this.ordenarPor.set(campo);
+      this.ordenAscendente.set(true);
+    }
+  }
+
+  /**
+   * Ordenar suscripciones
+   */
+  private ordenarSuscripciones(suscripciones: SuscripcionDTO[]): SuscripcionDTO[] {
+    const copia = [...suscripciones];
+    const ascendente = this.ordenAscendente();
+
+    copia.sort((a, b) => {
+      let comparacion = 0;
+
+      switch (this.ordenarPor()) {
+        case 'nombre':
+          comparacion = a.nombre.localeCompare(b.nombre);
+          break;
+        case 'monto':
+          comparacion = a.monto - b.monto;
+          break;
+        case 'vencimiento':
+          comparacion = new Date(a.proximoVencimiento).getTime() - new Date(b.proximoVencimiento).getTime();
+          break;
+      }
+
+      return ascendente ? comparacion : -comparacion;
+    });
+
+    return copia;
+  }
+
+  /**
+   * Obtener categoría por ID
+   */
+  obtenerCategoria(id: string) {
+    return this.categorias.find(c => c.id === id);
+  }
+
+  /**
+   * Obtener estado por ID
+   */
+  obtenerEstado(id: string) {
+    return this.estados.find(e => e.id === id);
+  }
+
+  /**
+   * Eventos de tarjeta
+   */
+  onEditarSuscripcion(suscripcion: SuscripcionDTO): void {
+    console.log('Editar:', suscripcion);
+  }
+
+  onEliminarSuscripcion(id: string): void {
+    if (confirm('¿Eliminar esta suscripción?')) {
+      this.suscripcionService.eliminarSuscripcion(id).subscribe();
+    }
+  }
+
+  onCambiarEstado(evento: { id: string; estado: 'ACTIVA' | 'PAUSADA' | 'VENCIDA' }): void {
+    this.suscripcionService.cambiarEstado(evento.id, evento.estado).subscribe();
+  }
+
+  onVerDetalle(suscripcion: SuscripcionDTO): void {
+    console.log('Ver detalle:', suscripcion);
+  }
+
+  /**
+   * Formatear moneda
+   */
+  formatearMoneda(valor: number): string {
+    return new Intl.NumberFormat('en-US', { 
+      style: 'currency', 
+      currency: 'USD' 
+    }).format(valor);
+  }
+}

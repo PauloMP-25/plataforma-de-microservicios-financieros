@@ -26,6 +26,5 @@ public interface MetaAhorroRepositorio extends JpaRepository<MetaAhorro, UUID>, 
 
     long countByUsuarioIdAndCompletadaAndActivaTrue(UUID usuarioId, Boolean completada);
 
-    @Query("SELECT m FROM MetaAhorro m WHERE m.usuarioId = :usuarioId AND m.completada = false AND m.activa = true ORDER BY m.fechaLimite ASC NULLS LAST")
-    Page<MetaAhorro> findMetasActivasOrdenadas(@Param("usuarioId") UUID usuarioId, Pageable pageable);
+    Page<MetaAhorro> findByUsuarioIdAndCompletadaFalseAndActivaTrue(UUID usuarioId, Pageable pageable);
 }
