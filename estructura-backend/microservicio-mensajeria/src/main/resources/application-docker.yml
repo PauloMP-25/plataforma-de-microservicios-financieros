@@ -152,7 +152,7 @@ twilio:
   api-key-sid: ${TWILIO_API_KEY_SID}
   api-key-secret: ${TWILIO_API_KEY_SECRET}
   messaging-service-sid: ${TWILIO_MESSAGING_SERVICE_SID}
-  sandbox-whatsapp-from: ${TWILIO_SANDBOX_WHATSAPP_FROM}
+  sandbox-whatsapp-from: ${TWILIO_SANDBOX_WHATSAPP_FROM:}
   phone:
     number: ${TWILIO_SMS_FROM:}
   whatsapp:

@@ -95,7 +95,7 @@ public class MensajeriaServiceAuditoriaDecorator implements IMensajeriaService {
      * No requiere auditoría al ser una operación de solo lectura administrativa.
      */
     @Override
-    public org.springframework.data.domain.Page<com.mensajeria.dominio.entidades.CodigoVerificacion> buscarCodigos(
+    public org.springframework.data.domain.Page<com.mensajeria.aplicacion.dtos.respuestas.RespuestaCodigoAuditoria> buscarCodigos(
             UUID usuarioId, PropositoCodigo proposito, Boolean usado,
             java.time.LocalDateTime inicio, java.time.LocalDateTime fin,
             org.springframework.data.domain.Pageable pageable) {

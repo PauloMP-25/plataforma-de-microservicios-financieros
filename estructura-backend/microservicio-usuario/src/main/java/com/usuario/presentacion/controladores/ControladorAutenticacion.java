@@ -146,8 +146,9 @@ public class ControladorAutenticacion {
         String authHeader = request.getHeader("Authorization");
         String token = (authHeader != null && authHeader.startsWith("Bearer ")) ? authHeader.substring(7) : null;
 
-        if (authentication != null && authentication.getPrincipal() instanceof Usuario usuario) {
-            servicioAuth.registrarLogout(usuario.getId(), token, request.getRemoteAddr());
+        if (authentication != null) {
+            UUID usuarioId = com.libreria.comun.utilidades.UtilidadSeguridad.obtenerUsuarioId();
+            servicioAuth.registrarLogout(usuarioId, token, request.getRemoteAddr());
         }
         return ResponseEntity.ok(ResultadoApi.exito("Sesión cerrada", "Sesión cerrada correctamente. El token ha sido invalidado."));
     }
@@ -224,7 +225,7 @@ public class ControladorAutenticacion {
             Authentication authentication,
             HttpServletRequest request) {
 
-        UUID usuarioId = ((Usuario) authentication.getPrincipal()).getId();
+        UUID usuarioId = com.libreria.comun.utilidades.UtilidadSeguridad.obtenerUsuarioId();
         servicioAuth.cambiarPassword(usuarioId, solicitud, request.getRemoteAddr());
 
         return ResponseEntity.ok(ResultadoApi.exito("PASSWORD_ACTUALIZADO", "La contraseña ha sido actualizada correctamente."));
@@ -243,8 +244,8 @@ public class ControladorAutenticacion {
             Authentication authentication,
             HttpServletRequest request) {
 
-        Usuario usuario = (Usuario) authentication.getPrincipal();
-        servicioAuth.eliminarCuenta(usuario.getId(), request.getRemoteAddr());
+        UUID usuarioId = com.libreria.comun.utilidades.UtilidadSeguridad.obtenerUsuarioId();
+        servicioAuth.eliminarCuenta(usuarioId, request.getRemoteAddr());
 
         return ResponseEntity.ok(ResultadoApi.exito("CUENTA_ELIMINADA", "Su cuenta ha sido desactivada exitosamente."));
     }
