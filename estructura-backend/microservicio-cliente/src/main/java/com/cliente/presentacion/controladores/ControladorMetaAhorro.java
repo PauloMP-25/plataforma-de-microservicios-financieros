@@ -89,7 +89,10 @@ public class ControladorMetaAhorro {
             HttpServletRequest request) {
         
         UUID usuarioID = UtilidadSeguridad.obtenerUsuarioId();
-        Pageable pageable = PageRequest.of(page, size);
+        org.springframework.data.domain.Sort sort = org.springframework.data.domain.Sort.by(
+                org.springframework.data.domain.Sort.Order.asc("fechaLimite")
+        );
+        Pageable pageable = PageRequest.of(page, size, sort);
         Paginacion<RespuestaMetaAhorro> respuesta = servicio.listarActivas(usuarioID, pageable);
         return ResponseEntity.ok(ResultadoApi.exito(respuesta, "Metas de ahorro activas recuperadas.", null));
     }
