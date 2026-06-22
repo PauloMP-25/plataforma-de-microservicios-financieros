@@ -313,6 +313,7 @@ services:
       URL_PROD_MENSAJERIA: http://ms-mensajeria:8084
       URL_PROD_IA: http://ms-ia:8086
       URL_PROD_PAGO: http://ms-pagos:8087
+      URL_PROD_SUSCRIPCIONES: http://ms-suscripciones:8088
     deploy:
       resources:
         limits:
