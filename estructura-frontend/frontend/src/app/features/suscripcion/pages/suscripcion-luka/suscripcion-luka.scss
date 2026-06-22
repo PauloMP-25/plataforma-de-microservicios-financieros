@@ -1,0 +1,293 @@
+/* ── PÁGINA PRINCIPAL DE SUSCRIPCIONES ── */
+
+.suscripcion-luka-page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  animation: fadeInUp 0.5s ease-out;
+
+  /* ── HEADER ── */
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 24px;
+    border-radius: var(--radius-lg);
+  }
+
+  &__header-content {
+    flex: 1;
+  }
+
+  &__title {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+    letter-spacing: -0.03em;
+  }
+
+  &__subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  &__btn-new {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: var(--radius-md);
+    border: none;
+    background: var(--color-primary);
+    color: white;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: var(--transition-bounce);
+    white-space: nowrap;
+
+    &:hover {
+      background: var(--color-primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(91, 106, 240, 0.3);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  /* ── SECCIÓN KPIs ── */
+  &__kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+  }
+
+  /* ── SECCIONES PRINCIPALES ── */
+  &__proximas,
+  &__activas {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* ── HEADER DE SECCIÓN ── */
+  &__section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    h2 {
+      font-family: var(--font-heading);
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0;
+    }
+  }
+
+  /* ── BADGE ── */
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    background: var(--color-info-soft);
+    color: var(--color-info);
+    font-size: 0.85rem;
+    font-weight: 700;
+
+    &.is-success {
+      background: var(--color-success-soft);
+      color: var(--color-success);
+    }
+  }
+
+  /* ── GRID DE TARJETAS ── */
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  /* ── ESTADO VACÍO ── */
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    border-radius: var(--radius-lg);
+    border: 2px dashed var(--border-color);
+    background: linear-gradient(135deg, var(--bg-surface-soft), transparent);
+    color: var(--text-secondary);
+
+    i {
+      font-size: 3rem;
+      color: var(--text-muted);
+      opacity: 0.5;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    p {
+      font-size: 0.9rem;
+      margin: 0;
+    }
+  }
+}
+
+/* ── GLOWS TEMÁTICOS (DASHBOARD) ── */
+.glow-indigo:hover {
+  box-shadow: 0 12px 40px 0 rgba(91, 106, 240, 0.15);
+  border-color: rgba(91, 106, 240, 0.3);
+}
+
+.glow-purple:hover {
+  box-shadow: 0 12px 40px 0 rgba(171, 71, 188, 0.15);
+  border-color: rgba(171, 71, 188, 0.3);
+}
+
+.glow-cyan:hover {
+  box-shadow: 0 12px 40px 0 rgba(34, 211, 238, 0.15);
+  border-color: rgba(34, 211, 238, 0.3);
+}
+
+.glow-green:hover {
+  box-shadow: 0 12px 40px 0 rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+/* ── KPI CARD (REUTILIZABLE DEL DASHBOARD) ── */
+.kpi-card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 150px;
+
+  .kpi-icon-container {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 16px;
+  }
+
+  .kpi-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .kpi-value {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin: 4px 0 8px;
+    line-height: 1.2;
+  }
+
+  .kpi-text {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .suscripcion-luka-page {
+    gap: 20px;
+
+    &__header {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    &__title {
+      font-size: 1.5rem;
+    }
+
+    &__kpis {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    &__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .suscripcion-luka-page {
+    &__kpis {
+      grid-template-columns: 1fr;
+    }
+
+    &__btn-new {
+      width: 100%;
+      padding: 12px 16px;
+    }
+
+    .kpi-card {
+      min-height: 130px;
+      padding: 16px;
+
+      .kpi-icon-container {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+      }
+
+      .kpi-value {
+        font-size: 1.5rem;
+      }
+    }
+  }
+}
+
+/* ── ANIMACIÓN ── */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── COLORES DE CATEGORÍAS ── */
+.bg-indigo-soft { background: var(--color-primary-soft); }
+.text-indigo { color: var(--color-primary); }
+
+.bg-purple-soft { background: rgba(171, 71, 188, 0.15); }
+.text-purple { color: #AB47BC; }
+
+.bg-cyan-soft { background: var(--color-info-soft); }
+.text-cyan { color: var(--color-info); }
+
+.bg-green-soft { background: var(--color-success-soft); }
+.text-green { color: var(--color-success); }

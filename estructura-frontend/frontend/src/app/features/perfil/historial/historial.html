@@ -1,1 +1,90 @@
-<p>historial works!</p>
+<div class="historial-wrapper">
+  <div class="page-header">
+    <h1>Historial de Movimientos</h1>
+    <p>Revisa y filtra tus transacciones recientes.</p>
+  </div>
+
+  <div class="bento-grid">
+    <div class="balance-card">
+      <div class="balance-info">
+        <span>Balance del periodo</span>
+        <h2>{{ balance() | currency }}</h2>
+      </div>
+      <div class="balance-icon">
+        <i class="fa-solid fa-wallet"></i>
+      </div>
+    </div>
+
+    <!-- 2. Tarjeta de Filtros -->
+    <div class="filters-card">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" [(ngModel)]="busqueda" placeholder="Buscar movimientos...">
+      </div>
+      
+      <!-- Select de Categorías actualizado -->
+      <select [(ngModel)]="filtroCategoria" class="filter-select">
+        <option value="TODOS">Categorías</option>
+        <option value="Comida">Comida</option>
+        <option value="Entretenimiento">Entretenimiento</option>
+        <option value="Trabajo">Trabajo</option>
+        <option value="Transporte">Transporte</option>
+      </select>
+
+      <!-- NUEVO: Select de Ordenamiento -->
+     <select [(ngModel)]="orden" class="filter-select">
+        <optgroup label="Por Fecha (Muestra todo)">
+          <option value="fecha_desc">Más recientes</option>
+          <option value="fecha_asc">Más antiguos</option>
+        </optgroup>
+        <optgroup label="Gastos (Oculta ingresos)">
+          <option value="mayor_gasto">Mayor gasto primero</option>
+          <option value="menor_gasto">Menor gasto primero</option>
+        </optgroup>
+        <optgroup label="Ingresos (Oculta gastos)">
+          <option value="mayor_ingreso">Mayor ingreso primero</option>
+          <option value="menor_ingreso">Menor ingreso primero</option>
+        </optgroup>
+      </select>
+    </div>
+  </div> <!-- ✔️ ESTE ES EL DIV QUE FALTABA PARA CERRAR EL BENTO-GRID ✔️ -->
+
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Detalle</th>
+          <th>Categoría</th>
+          <th>Fecha</th>
+          <th class="text-right">Monto</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of historialFiltrado(); track item.id) {
+          <tr class="transaction-row">
+            <td>
+              <div class="transaction-info">
+                <div class="icon-circle" [class.is-income]="item.tipo === 'ingreso'">
+                  <!-- Flecha arriba para ingreso, abajo para gasto -->
+                  <i class="fa-solid" [class.fa-arrow-up]="item.tipo === 'ingreso'" [class.fa-arrow-down]="item.tipo === 'gasto'"></i>
+                </div>
+                <span class="fw-bold">{{ item.nombre }}</span>
+              </div>
+            </td>
+            <td><span class="tag">{{ item.categoria }}</span></td>
+            <td><span class="text-muted">{{ item.fecha | date:'dd MMM, yyyy' }}</span></td>
+            <td class="text-right" [class.amount-positive]="item.tipo === 'ingreso'" [class.amount-negative]="item.tipo === 'gasto'">
+              {{ item.monto | currency }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    
+    @if (historialFiltrado().length === 0) {
+      <div class="empty-state">
+        <p>No se encontraron movimientos.</p>
+      </div>
+    }
+  </div>
+</div>

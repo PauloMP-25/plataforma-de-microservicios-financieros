@@ -1,0 +1,60 @@
+/* ── MODAL NUEVA SUSCRIPCIÓN - ESTILO BENTO PREMIUM ── */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 1000;
+}
+
+.modal-container {
+  width: 100%; max-width: 520px; background: var(--bg-card);
+  border-radius: 32px; /* Más redondeado para un look más orgánico */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.6); /* Sombra pesada para dar profundidad */
+  display: flex; flex-direction: column; overflow: hidden;
+}
+
+.modal-header {
+  padding: 32px 32px 16px;
+  h2 { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.04em; color: var(--text-primary); margin: 0; }
+}
+
+.modal-form { padding: 8px 32px 32px; display: flex; flex-direction: column; gap: 20px; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+.col-12 { grid-column: span 2; }
+
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+
+.form-label { font-size: 0.7rem; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; }
+
+.form-input {
+  width: 100%; padding: 16px; border-radius: 20px; 
+  border: 2px solid var(--border-color);
+  background: var(--bg-body); font-size: 1rem; font-weight: 600;
+  box-sizing: border-box; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:focus { 
+    border-color: var(--color-primary); 
+    outline: none; 
+    box-shadow: 0 0 0 6px rgba(91, 106, 240, 0.15); /* Resplandor suave al hacer click */
+  }
+}
+
+/* El campo calculado resaltado */
+#diasRestantes {
+  background: var(--color-primary-soft);
+  border-color: transparent;
+  color: var(--color-primary);
+  font-size: 1.1rem;
+}
+
+.modal-footer { display: flex; gap: 16px; margin-top: 10px; }
+
+.btn-primary, .btn-secondary {
+  flex: 1; padding: 16px; border-radius: 20px; border: none; font-weight: 800; cursor: pointer; transition: 0.3s;
+  &:hover { transform: translateY(-2px); }
+}
+
+.btn-primary { background: var(--color-primary); color: white; box-shadow: 0 8px 16px rgba(91, 106, 240, 0.3); }
+.btn-secondary { background: var(--bg-body); color: var(--text-primary); border: 1px solid var(--border-color); }
+
