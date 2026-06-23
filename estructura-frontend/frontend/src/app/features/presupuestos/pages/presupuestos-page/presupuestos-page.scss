@@ -895,7 +895,131 @@
   }
 }
 
+/* ---------- Evolución de Consumo Histórico (Premium) ---------- */
+.lk-evolucion-card {
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+}
+
+.evolucion-chart-wrap {
+  height: 300px;
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-surface);
+  padding: 8px;
+  margin-bottom: 12px;
+
+  canvas {
+    width: 100% !important;
+    height: 100% !important;
+  }
+}
+
+.evolucion-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  margin-bottom: 14px;
+  padding: 0 4px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-dash {
+  display: inline-block;
+  width: 22px;
+  height: 0;
+  border-top: 2px solid;
+  flex-shrink: 0;
+}
+
+.evolucion-stats-footer {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.evol-stat {
+  text-align: center;
+
+  &-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 3px;
+  }
+
+  &-value {
+    font-family: var(--font-heading);
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: var(--text-primary);
+
+    &.danger { color: var(--color-danger); }
+  }
+
+  &-sub {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+}
+
+.evolucion-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px 16px;
+  color: var(--text-muted);
+  text-align: center;
+
+  i {
+    font-size: 2rem;
+    color: var(--color-primary-soft);
+    opacity: 0.6;
+  }
+
+  p {
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1.5;
+    max-width: 260px;
+  }
+}
+
+:host-context(body.theme-dark) {
+  .evolucion-chart-wrap {
+    background: #0D1117;
+  }
+
+  .evolucion-stats-footer {
+    border-top-color: var(--border-color);
+  }
+}
+
 /* ---------- Bottom Data Section ---------- */
+
 .lk-bottom-grid {
   display: grid;
   grid-template-columns: 1fr 1.4fr;

@@ -1,10 +1,16 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, effect, ElementRef, ViewChild, AfterViewInit, OnDestroy, Injector } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl } from '@angular/forms';
 import { PresupuestoService } from '../../../../core/services/presupuesto.service';
 import { FinancieroService } from '../../../../core/services/Financiero.service';
 import { PresupuestoDTO } from '../../../../core/models/financiero/presupuesto.model';
+
 import { NotificacionService } from '../../../../core/services/notificacion.service';
+
+
+import { GastosStateService } from '../../../../core/services/gastos-state.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import Chart from 'chart.js/auto';
 
 
 @Component({
@@ -15,37 +21,114 @@ import { NotificacionService } from '../../../../core/services/notificacion.serv
   templateUrl: './presupuestos-page.html',
   styleUrls: ['./presupuestos-page.scss']
 })
-export class PresupuestosPage implements OnInit {
+export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('evolucionCanvas') evolucionCanvasRef?: ElementRef<HTMLCanvasElement>;
+
   private fb = inject(FormBuilder);
   private presupuestoService = inject(PresupuestoService);
   private financieroService = inject(FinancieroService);
+  private gastosState = inject(GastosStateService);
   private datePipe = inject(DatePipe);
+
   private notificacionService = inject(NotificacionService);
+
+  authService = inject(AuthService);
+
+  // Chart instance
+  private evolucionChartInstance: Chart | null = null;
+  private injector = inject(Injector);
+
+  constructor() {
+    effect(() => {
+      const hist = this.historialPresupuestos();
+      const activo = this.presupuestoActivo();
+      if (this.esPremiumOPro() && this.evolucionChartInstance && hist.length) {
+        this._actualizarChart(this.evolucionChartInstance, hist, activo?.montoLimite ?? 1000, activo?.porcentajeAlerta ?? 80);
+      }
+    });
+  }
+
 
 
   // --- SIGNALS DE ESTADO ---
   formulario!: FormGroup;
   cargando = signal<boolean>(false);
   temaOscuro = signal<boolean>(false);
-  
+
   // Datos del Negocio
   presupuestoActivo = signal<PresupuestoDTO | null>(null);
   gastoTotalMes = signal<number>(0);
   historialPresupuestos = signal<any[]>([]);
-  
+
   // UI States
   mostrarConfirmEliminar = signal<boolean>(false);
   mostrarTodoHistorial = signal<boolean>(false);
   exitoMensaje = signal<string | null>(null);
   errorMensaje = signal<string | null>(null);
 
-  // Mock de Categorías
-  categorias = [
-    { nombre: 'Alimentos y Bebidas', porcentaje: 42, monto: 504, icono: 'fa-utensils', bg: 'rgba(245, 158, 11, 0.1)', color: '#F59E0B' },
-    { nombre: 'Transporte', porcentaje: 25, monto: 300, icono: 'fa-car', bg: 'rgba(6, 182, 212, 0.1)', color: '#06B6D4' },
-    { nombre: 'Servicios', porcentaje: 18, monto: 216, icono: 'fa-bolt', bg: 'rgba(91, 106, 240, 0.1)', color: '#5B6AF0' },
-    { nombre: 'Entretenimiento', porcentaje: 15, monto: 180, icono: 'fa-gamepad', bg: 'rgba(239, 68, 68, 0.1)', color: '#EF4444' }
-  ];
+  paginaHistorial = signal<number>(1);
+
+  // Categorías filtradas y top 5
+  categorias = computed(() => {
+    const activo = this.presupuestoActivo();
+    if (!activo) return [];
+
+    const gastos = this.gastosState.gastos();
+    const fIni = new Date(activo.fechaInicio).getTime();
+    const fFin = new Date(activo.fechaFin).getTime() + 86400000 - 1;
+
+    const filtrados = gastos.filter(g => {
+      const t = new Date(g.fechaTransaccion).getTime();
+      return t >= fIni && t <= fFin;
+    });
+
+    const mapa = new Map<string, number>();
+    let total = 0;
+    for (const g of filtrados) {
+      const cat = g.categoria || 'Otros';
+      const m = Number(g.monto) || 0;
+      mapa.set(cat, (mapa.get(cat) || 0) + m);
+      total += m;
+    }
+
+    const arr = Array.from(mapa.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+
+    const bgColors = ['rgba(91, 106, 240, 0.1)', 'rgba(6, 182, 212, 0.1)', 'rgba(34, 197, 94, 0.1)', 'rgba(245, 158, 11, 0.1)', 'rgba(239, 68, 68, 0.1)'];
+    const colors = ['#5B6AF0', '#06B6D4', '#22C55E', '#F59E0B', '#EF4444'];
+    const icons = ['fa-tag', 'fa-tag', 'fa-tag', 'fa-tag', 'fa-tag'];
+
+    return arr.map(([nombre, monto], i) => ({
+      nombre,
+      monto,
+      porcentaje: total > 0 ? Math.round((monto / total) * 100) : 0,
+      icono: icons[i % icons.length],
+      bg: bgColors[i % bgColors.length],
+      color: colors[i % colors.length]
+    }));
+  });
+
+  // --- STATS DE EVOLUCIÓN ---
+  mesMasAlto = computed(() => {
+    const hist = this.historialPresupuestos();
+    if (!hist.length) return null;
+    return hist.reduce((prev: any, curr: any) => curr.montoConsumido > prev.montoConsumido ? curr : prev);
+  });
+
+  mesMasBajo = computed(() => {
+    const hist = this.historialPresupuestos();
+    if (!hist.length) return null;
+    return hist.reduce((prev: any, curr: any) => curr.montoConsumido < prev.montoConsumido ? curr : prev);
+  });
+
+  conteoExcedidos = computed(() => {
+    return this.historialPresupuestos().filter((h: any) =>
+      h.montoLimite > 0 && h.montoConsumido > h.montoLimite
+    ).length;
+  });
+
+  esPremiumOPro = computed(() => this.authService.esPremium() || this.authService.esPro());
 
   // --- SIGNALS COMPUTADOS ---
   porcentajeConsumo = computed(() => {
@@ -100,13 +183,161 @@ export class PresupuestosPage implements OnInit {
 
   historialVisible = computed(() => {
     const lista = this.historialPresupuestos();
-    return this.mostrarTodoHistorial() ? lista : lista.slice(0, 3);
+    const pag = this.paginaHistorial();
+    const start = (pag - 1) * 5;
+    return lista.slice(start, start + 5);
   });
+
+  totalPaginasHistorial = computed(() => {
+    return Math.ceil(this.historialPresupuestos().length / 5);
+  });
+
+  cambiarPagina(delta: number): void {
+    const nueva = this.paginaHistorial() + delta;
+    if (nueva >= 1 && nueva <= this.totalPaginasHistorial()) {
+      this.paginaHistorial.set(nueva);
+    }
+  }
 
   ngOnInit(): void {
     this.inicializarFormulario();
     this.cargarDatosDashboard();
+    this.gastosState.cargarDatos();
     this.detectarTemaActual();
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => this._initChart(), 0);
+  }
+
+  ngOnDestroy(): void {
+    this.evolucionChartInstance?.destroy();
+    this.evolucionChartInstance = null;
+  }
+
+  private _pointColors(data: number[], limit: number): string[] {
+    return data.map(v =>
+      v > limit ? '#EF4444' : v > limit * 0.8 ? '#F59E0B' : '#818CF8'
+    );
+  }
+
+  private _pointSizes(data: number[], limit: number): number[] {
+    return data.map(v =>
+      v > limit ? 8 : v > limit * 0.8 ? 6 : 5
+    );
+  }
+
+  private _buildChartConfig(hist: any[], limit: number, alertPct: number): any {
+    const labels = hist.map(h => h.periodo || h.nombre || '—');
+    const consumed = hist.map(h => Number(h.montoConsumido) || 0);
+    const alertaLimite = limit * (alertPct / 100);
+    const isDark = document.body.classList.contains('theme-dark');
+    const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+    const textColor = isDark ? '#A1AABF' : '#6B7280';
+
+    return {
+      type: 'line' as const,
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Consumido',
+            data: consumed,
+            borderColor: '#818CF8',
+            borderWidth: 2.5,
+            pointBackgroundColor: this._pointColors(consumed, limit),
+            pointBorderColor: isDark ? '#161B27' : '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: this._pointSizes(consumed, limit),
+            pointHoverRadius: 10,
+            fill: true,
+            backgroundColor: isDark ? 'rgba(129,140,248,0.08)' : 'rgba(129,140,248,0.06)',
+            tension: 0.4,
+            segment: {
+              borderColor: (ctx: any) => {
+                const v = consumed[ctx.p1DataIndex];
+                if (v > limit) return '#EF4444';
+                if (v > limit * 0.8) return '#F59E0B';
+                return '#818CF8';
+              }
+            }
+          },
+          {
+            label: 'Límite',
+            data: Array(labels.length).fill(limit),
+            borderColor: '#10B981',
+            borderDash: [7, 4],
+            borderWidth: 1.5,
+            pointRadius: 0,
+            fill: false,
+            tension: 0
+          },
+          {
+            label: `Alerta ${alertPct}%`,
+            data: Array(labels.length).fill(alertaLimite),
+            borderColor: '#F59E0B',
+            borderDash: [3, 5],
+            borderWidth: 1,
+            pointRadius: 0,
+            fill: false,
+            tension: 0
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index' as const, intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              afterBody: (items: any[]) => {
+                const idx = items[0]?.dataIndex;
+                if (idx === undefined) return '';
+                const v = consumed[idx];
+                const pct = limit > 0 ? Math.round((v / limit) * 100) : 0;
+                const estado = v > limit ? '🔴 Excedido' : v > limit * 0.8 ? '🟡 Alerta' : '🟢 Normal';
+                return [`${pct}% del límite`, estado];
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: textColor, font: { size: 11 } },
+            grid: { color: gridColor }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { color: textColor, font: { size: 11 }, callback: (v: any) => `S/ ${v}` },
+            grid: { color: gridColor }
+          }
+        }
+      }
+    };
+  }
+
+  private _initChart(): void {
+    if (!this.esPremiumOPro() || !this.evolucionCanvasRef) return;
+    const hist = this.historialPresupuestos();
+    if (!hist.length) return;
+    const activo = this.presupuestoActivo();
+    const limit = activo?.montoLimite ?? 1000;
+    const alertPct = activo?.porcentajeAlerta ?? 80;
+    const ctx = this.evolucionCanvasRef.nativeElement.getContext('2d')!;
+    this.evolucionChartInstance?.destroy();
+    this.evolucionChartInstance = new Chart(ctx, this._buildChartConfig(hist, limit, alertPct));
+  }
+
+  private _actualizarChart(chart: Chart, hist: any[], limit: number, alertPct: number): void {
+    const config = this._buildChartConfig(hist, limit, alertPct);
+    chart.data = config.data;
+    chart.update('active');
+  }
+
+  initChartDeferred(): void {
+    setTimeout(() => this._initChart(), 50);
   }
 
   private inicializarFormulario(): void {
@@ -139,7 +370,7 @@ export class PresupuestosPage implements OnInit {
 
   private cargarDatosDashboard(): void {
     this.cargando.set(true);
-    
+
     this.financieroService.getResumen().subscribe({
       next: (resumen) => this.gastoTotalMes.set(resumen.totalGastos || 0),
       error: () => this.mostrarToast('Error al recuperar balance de gastos.', 'danger')
@@ -170,7 +401,15 @@ export class PresupuestosPage implements OnInit {
     });
 
     this.presupuestoService.listarHistorial().subscribe({
-      next: (historial) => this.historialPresupuestos.set(historial || []),
+      next: (historial) => {
+        const hMapeado = (historial || []).map(h => ({
+          ...h,
+          montoLimite: Number(h.montoLimite) || 0,
+          montoConsumido: Number((h as any).montoConsumido) || 0,
+          porcentajeAlerta: Number(h.porcentajeAlerta) || 80
+        }));
+        this.historialPresupuestos.set(hMapeado);
+      },
       error: () => console.error('Error silencioso al listar historial.')
     });
   }
@@ -186,7 +425,7 @@ export class PresupuestosPage implements OnInit {
     const activoActual = this.presupuestoActivo();
 
     // Si hay un presupuesto activo, le metemos su ID al payload para enviar un solo argumento
-    const request$ = activoActual 
+    const request$ = activoActual
       ? this.presupuestoService.actualizar({ ...payload, id: activoActual.id })
       : this.presupuestoService.crear(payload);
 
