@@ -48,9 +48,12 @@
   </div>
 
   <!-- [F-29] Botón Mock para Pruebas -->
-  <div style="margin-bottom: 1.5rem; text-align: center;">
-    <button type="button" (click)="usarMock()" style="background: rgba(138, 43, 226, 0.1); border: 1px dashed var(--luka-color-primario, #8a2be2); color: var(--luka-color-primario, #8a2be2); padding: 0.6rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 500; transition: all 0.3s ease;">
-      <i class="fas fa-vial"></i> Ingresar con Usuario de Prueba (Mock)
+  <div style="margin-bottom: 1.5rem; display: flex; gap: 10px; justify-content: space-between;">
+    <button type="button" (click)="usarMock()" style="flex: 1; background: rgba(138, 43, 226, 0.1); border: 1px dashed var(--luka-color-primario, #8a2be2); color: var(--luka-color-primario, #8a2be2); padding: 0.6rem; border-radius: 8px; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 500; transition: all 0.3s ease;">
+      <i class="fas fa-vial"></i> Mock Cliente
+    </button>
+    <button type="button" (click)="usarMockAdmin()" style="flex: 1; background: rgba(220, 38, 38, 0.1); border: 1px dashed #dc2626; color: #dc2626; padding: 0.6rem; border-radius: 8px; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 500; transition: all 0.3s ease;">
+      <i class="fas fa-user-shield"></i> Mock Admin
     </button>
   </div>
 

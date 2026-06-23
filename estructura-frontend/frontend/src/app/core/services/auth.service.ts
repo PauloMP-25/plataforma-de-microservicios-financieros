@@ -38,6 +38,7 @@ export class AuthService {
   logueado = computed(() => !!this._usuario());
   esPremium = computed(() => this._usuario()?.roles?.some(r => r === 'PREMIUM' || r === 'ROLE_PREMIUM') ?? false);
   esPro = computed(() => this._usuario()?.roles?.some(r => r === 'PRO' || r === 'ROLE_PRO') ?? false);
+  esAdmin = computed(() => this._usuario()?.roles?.some(r => r === 'ADMIN' || r === 'ROLE_ADMIN') ?? false);
 
   private dashboardState = inject(DashboardStateService);
 

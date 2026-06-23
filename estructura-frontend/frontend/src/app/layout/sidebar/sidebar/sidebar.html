@@ -30,7 +30,6 @@
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: !!item.exact }"
         [title]="sidebarState.collapsed() ? item.label : ''"
-        [title]="sidebarState.collapsed() ? item.label : ''"
         class="nav-link"
         (click)="onNavClick()"
       >
@@ -39,6 +38,21 @@
         <span class="nav-badge" *ngIf="item.badge && sidebarState.expanded()">
           {{ item.badge }}
         </span>
+      </a>
+    </li>
+
+    <!-- Enlace exclusivo para Administradores -->
+    <li *ngIf="auth.esAdmin()">
+      <a
+        routerLink="/admin"
+        routerLinkActive="active"
+        [title]="sidebarState.collapsed() ? 'Administración' : ''"
+        class="nav-link nav-link--admin"
+        (click)="onNavClick()"
+        style="border-left: 3px solid #dc2626;"
+      >
+        <i class="fa-solid fa-user-shield nav-icon" style="color: #dc2626;"></i>
+        <span class="nav-text" *ngIf="sidebarState.expanded()" style="color: #dc2626; font-weight: 600;">Administración</span>
       </a>
     </li>
   </ul>
