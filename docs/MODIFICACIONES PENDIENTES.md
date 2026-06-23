@@ -73,12 +73,12 @@ Este documento centraliza todas las modificaciones, refactorizaciones, pruebas, 
 
 | Categoría | Descripción | Prioridad | Estado | Fecha de registro | Fecha de cambio |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| Estructura | **[F-57] Ingresos - Botón de Historial:** Eliminar el botón de "Historial" de la parte inferior del layout, dejando exclusivamente el superior para mantener consistencia con la vista de gastos. | Media | Pendiente | 19 de junio de 2026 | X |
-| UX / UI | **[F-58] Ingresos - Tarjetas KPI:** Añadir dos tarjetas KPI estratégicas junto a "Ingresos registrados" y "Categoría principal" (por ejemplo: "Comparación mes anterior (%)" e "Ingreso Promedio" o "Progreso de Meta"). | Media | Pendiente | 19 de junio de 2026 | X |
-| Gráficos | **[F-59] Ingresos - Gráfico de Categoría:** Limitar el gráfico de "Ingresos por Categoría" para que renderice exclusivamente el Top 5 de fuentes de ingreso más relevantes. | Media | Pendiente | 15 de junio de 2026 | — |
-| Interactividad | **[F-60] Ingresos - Paginación de Recientes:** Ajustar la tabla de "Ingresos recientes" para mostrar únicamente los 6 primeros registros, incorporando controles de paginación funcionales para navegar por el resto de datos. | Media | Pendiente | 15 de junio de 2026 | — |
-| Interactividad | **[F-61] Ingresos - Filtros Independientes:** Asegurar que cada gráfico dentro de este layout tenga sus propios selectores o filtros, de forma que cambiar el filtro de un gráfico no afecte inadvertidamente a los demás. | Media | Pendiente | 15 de junio de 2026 | — |
-| Gráficos | **[F-62] Ingresos - Nuevos Gráficos:** Agregar dos gráficos funcionales adicionales que aporten valor a la experiencia de usuario (por ejemplo: "Evolución Mensual de Ingresos" y "Proporción de Ingreso Fijo vs Variable"). | Media | Pendiente | 15 de junio de 2026 | — |
+| Estructura | **[F-57] Ingresos - Botón de Historial:** Eliminar el botón de "Historial" de la parte inferior del layout, dejando exclusivamente el superior para mantener consistencia con la vista de gastos. | Media | Completado | 19 de junio de 2026 | 23 de junio de 2026 |
+| UX / UI | **[F-58] Ingresos - Tarjetas KPI:** Añadir dos tarjetas KPI estratégicas junto a "Ingresos registrados" y "Categoría principal" (por ejemplo: "Comparación mes anterior (%)" e "Ingreso Promedio" o "Progreso de Meta"). | Media | Completado | 19 de junio de 2026 | 23 de junio de 2026 |
+| Gráficos | **[F-59] Ingresos - Gráfico de Categoría:** Limitar el gráfico de "Ingresos por Categoría" para que renderice exclusivamente el Top 5 de fuentes de ingreso más relevantes. | Media | Completado | 15 de junio de 2026 | 23 de junio de 2026 |
+| Interactividad | **[F-60] Ingresos - Paginación de Recientes:** Ajustar la tabla de "Ingresos recientes" para mostrar únicamente los 6 primeros registros, incorporando controles de paginación funcionales para navegar por el resto de datos. | Media | Completado | 15 de junio de 2026 | 23 de junio de 2026 |
+| Interactividad | **[F-61] Ingresos - Filtros Independientes:** Asegurar que cada gráfico dentro de este layout tenga sus propios selectores o filtros, de forma que cambiar el filtro de un gráfico no afecte inadvertidamente a los demás. | Media | Completado | 15 de junio de 2026 | 23 de junio de 2026 |
+| Gráficos | **[F-62] Ingresos - Nuevos Gráficos:** Agregar dos gráficos funcionales adicionales que aporten valor a la experiencia de usuario (por ejemplo: "Evolución Mensual de Ingresos" y "Proporción de Ingreso Fijo vs Variable"). | Media | Completado | 15 de junio de 2026 | 23 de junio de 2026 |
 
 ---
 
@@ -86,10 +86,10 @@ Este documento centraliza todas las modificaciones, refactorizaciones, pruebas, 
 
 | Categoría | Descripción | Prioridad | Estado | Fecha de registro | Fecha de cambio |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| Integración API | **[F-65] Metas - Integración de Campos:** Enlazar y renderizar correctamente todos los campos y atributos de datos que envía el backend para la sección de metas. | Alta | Pendiente | 15 de junio de 2026 | — |
-| Interactividad | **[F-66] Metas - Funcionalidad de Filtros:** Hacer completamente operativos los filtros de visualización de metas, procesando correctamente la selección en el frontend. | Media | Pendiente | 15 de junio de 2026 | — |
-| Estilos | **[F-67] Metas - Coherencia Estética:** Revisar el diseño para garantizar la correcta visualización de colores, jerarquías y textos de los componentes tanto en el tema oscuro como en el tema claro. | Media | Pendiente | 15 de junio de 2026 | — |
-| Modularización | **[F-30] Modularizar Metas:** Refactorizar la sección aislando su lógica y estructura en microcomponentes dedicados. | Media | Pendiente | 12 de junio de 2026 | — |
+| Integración API | **[F-65] Metas - Integración de Campos:** Enlazar y renderizar correctamente todos los campos y atributos de datos que envía el backend para la sección de metas. | Alta | Realizado | 15 de junio de 2026 | — |
+| Interactividad | **[F-66] Metas - Funcionalidad de Filtros:** Hacer completamente operativos los filtros de visualización de metas, procesando correctamente la selección en el frontend. | Media | Realizado | 15 de junio de 2026 | — |
+| Estilos | **[F-67] Metas - Coherencia Estética:** Revisar el diseño para garantizar la correcta visualización de colores, jerarquías y textos de los componentes tanto en el tema oscuro como en el tema claro. | Media | Realizado | 15 de junio de 2026 | — |
+| Modularización | **[F-30] Modularizar Metas:** Refactorizar la sección aislando su lógica y estructura en microcomponentes dedicados. | Media | Realizado | 12 de junio de 2026 | — |
 
 ---
 
@@ -97,11 +97,11 @@ Este documento centraliza todas las modificaciones, refactorizaciones, pruebas, 
 
 | Categoría | Descripción | Prioridad | Estado | Fecha de registro | Fecha de cambio |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| Integración API | **[F-68] Presupuestos - Integración Completa:** Integrar de manera correcta y completa todo el layout de presupuestos con su respectivo endpoint en el backend. | Alta | Pendiente | 15 de junio de 2026 | — |
-| Integración API | **[F-69] Presupuestos - Corrección de Mapeo (NaN):** Mapear correctamente los campos del "Historial de límites" recibidos del backend para corregir el bug actual donde se renderizan campos vacíos o valores `NaN`. | Alta | Pendiente | 15 de junio de 2026 | — |
-| Lógica de Negocio | **[F-70] Presupuestos - Desglose por Categorías:** Ajustar la sección de desglose para mostrar exclusivamente las 5 categorías principales (Top 5). Estos datos deben calcularse y filtrarse estrictamente según la fecha de inicio y fin del presupuesto. | Media | Pendiente | 15 de junio de 2026 | — |
-| Interactividad | **[F-71] Presupuestos - Paginación de Historial:** Modificar la tabla de "Historial de límites" para que muestre únicamente los primeros 5 registros por defecto, implementando controles de paginación para visualizar los siguientes. | Media | Pendiente | 15 de junio de 2026 | — |
-| Estilos | **[F-72] Presupuestos - Coherencia Estética:** Auditar y garantizar la correcta visualización de colores, contraste y textos de todo el layout tanto en el tema oscuro como en el claro. | Media | Pendiente | 15 de junio de 2026 | — |
+| Integración API | **[F-68] Presupuestos - Integración Completa:** Integrar de manera correcta y completa todo el layout de presupuestos con su respectivo endpoint en el backend. | Alta | Realizado | 15 de junio de 2026 | — |
+| Integración API | **[F-69] Presupuestos - Corrección de Mapeo (NaN):** Mapear correctamente los campos del "Historial de límites" recibidos del backend para corregir el bug actual donde se renderizan campos vacíos o valores `NaN`. | Alta | Realizado | 15 de junio de 2026 | — |
+| Lógica de Negocio | **[F-70] Presupuestos - Desglose por Categorías:** Ajustar la sección de desglose para mostrar exclusivamente las 5 categorías principales (Top 5). Estos datos deben calcularse y filtrarse estrictamente según la fecha de inicio y fin del presupuesto. | Media | Realizado | 15 de junio de 2026 | — |
+| Interactividad | **[F-71] Presupuestos - Paginación de Historial:** Modificar la tabla de "Historial de límites" para que muestre únicamente los primeros 5 registros por defecto, implementando controles de paginación para visualizar los siguientes. | Media | Realizado | 15 de junio de 2026 | — |
+| Estilos | **[F-72] Presupuestos - Coherencia Estética:** Auditar y garantizar la correcta visualización de colores, contraste y textos de todo el layout tanto en el tema oscuro como en el claro. | Media | Realizado | 15 de junio de 2026 | — |
 
 ---
 
@@ -111,7 +111,7 @@ Este documento centraliza todas las modificaciones, refactorizaciones, pruebas, 
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | Estructura | **[F-73] Suscripciones - Creación de Layout Modular:** Diseñar y construir el nuevo layout de Suscripciones desde cero utilizando Standalone Components, asegurando que sea completamente modular e independiente. | Alta | Pendiente | 15 de junio de 2026 | — |
 | Integración API | **[F-74] Suscripciones - Integración Completa:** Conectar y mapear correctamente todos los endpoints del backend para renderizar la lista de suscripciones activas, inactivas y vencidas. | Alta | Pendiente | 15 de junio de 2026 | — |
-| Navegación | **[F-07] El sidebar se reinicia al navegar a "Suscripción":** Al entrar a la pantalla de suscripción, el sidebar cambia a las secciones principales (Dashboard, Gastos, etc.) en lugar de mantenerse en la subsección de usuario (Perfil, Perfil Financiero, Configuración). *(Nota: Relacionado con Sidebar / Navegación)* | Alta | Pendiente | 12 de junio de 2026 | — |
+| Navegación | **[F-07] El sidebar se reinicia al navegar a "Suscripción":** Al entrar a la pantalla de suscripción, el sidebar cambia a las secciones principales (Dashboard, Gastos, etc.) en lugar de mantenerse en la subsección de usuario (Perfil, Perfil Financiero, Configuración). *(Nota: Relacionado con Sidebar / Navegación)* | Alta | Completado | 12 de junio de 2026 | 23 de junio de 2026 |
 | Lógica de Negocio | **[F-75] Suscripciones - Destacar Plan Luka:** Sincronizar el módulo para identificar si el usuario cuenta con el "Plan de Luka" (nuestra plataforma) y fijarlo dinámicamente como la suscripción principal y más destacada en la parte superior. | Media | Pendiente | 15 de junio de 2026 | — |
 | UI / Estilos | **[F-76] Suscripciones - Tarjetas Temáticas (Brand Styles):** Estilizar las *cards* de suscripción aplicando paletas de colores representativas (Ej: Netflix, Spotify, YouTube, Twitch, Amazon Prime, Disney+, Max/HBO, Apple Music, Xbox Game Pass, PS Plus, Canva, ChatGPT, GitHub Copilot, Adobe CC). | Media | Pendiente | 15 de junio de 2026 | — |
 | Estilos | **[F-77] Suscripciones - Coherencia de Temas:** Garantizar que los textos de las tarjetas (a pesar de tener colores temáticos de marca) mantengan un contraste perfecto y legibilidad tanto en el tema oscuro como en el tema claro de la app. | Media | Pendiente | 15 de junio de 2026 | — |

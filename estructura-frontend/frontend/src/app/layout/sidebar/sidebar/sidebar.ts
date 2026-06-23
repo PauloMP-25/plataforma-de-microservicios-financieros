@@ -102,7 +102,7 @@ readonly perfilNavItems = [
     this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe((e: any) => {
-        this.isPerfilSection = e.url.startsWith('/perfil') || e.url.startsWith('/suscripcion/luka');
+        this.isPerfilSection = e.url.startsWith('/perfil') || e.url.startsWith('/suscripcion');
       });
   }
 

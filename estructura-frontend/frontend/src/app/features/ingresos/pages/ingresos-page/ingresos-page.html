@@ -14,9 +14,6 @@
           </span>
           Nuevo ingreso
         </a>
-        <a routerLink="/ingresos/historial"
-          class="text-center rounded-xl border border-emerald-300 bg-white px-6 py-3 text-base font-extrabold text-emerald-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-emerald-50 dark:border-emerald-500/40 dark:bg-slate-900 dark:text-emerald-300 dark:hover:bg-emerald-500/10">Ver
-          historial</a>
       </div>
     </header>
 
@@ -51,17 +48,274 @@
       </div>
     </article>
 
-    <div class="pt-2">
-      <app-ingreso-kpis [items]="kpis"></app-ingreso-kpis>
+    <!-- ═══ KPI CARDS ═══ -->
+    <div class="kpi-grid mt-6">
+      <div class="kpi-card purple">
+        <div class="kpi-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6C63FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        </div>
+        <p class="kpi-label">Ingresos registrados</p>
+        <p class="kpi-value">{{ kpis[0]?.valor }}</p>
+        <p class="kpi-sub">{{ kpis[0]?.subtitulo }}</p>
+      </div>
+
+      <div class="kpi-card teal">
+        <div class="kpi-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0DB884" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+          </svg>
+        </div>
+        <p class="kpi-label">Categoría principal</p>
+        <p class="kpi-value" style="font-size:16px;padding-top:4px;">{{ kpis[1]?.valor }}</p>
+        <p class="kpi-sub">{{ kpis[1]?.subtitulo }}</p>
+      </div>
+
+      <div class="kpi-card coral">
+        <div class="kpi-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF6B6B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+          </svg>
+        </div>
+        <p class="kpi-label">Comparación mes anterior</p>
+        <p class="kpi-value" style="color:#0DB884">{{ kpis[2]?.valor }}</p>
+        <p class="kpi-sub">{{ kpis[2]?.subtitulo }}</p>
+      </div>
+
+      <div class="kpi-card amber">
+        <div class="kpi-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <p class="kpi-label">Ingreso promedio</p>
+        <p class="kpi-value">{{ kpis[3]?.valor }}</p>
+        <p class="kpi-sub">{{ kpis[3]?.subtitulo }}</p>
+      </div>
+
+      <div class="kpi-card blue">
+        <div class="kpi-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <p class="kpi-label">Progreso meta</p>
+        <p class="kpi-value">{{ kpis[4]?.valor }}</p>
+        <div class="progress-wrap">
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width]="kpis[4]?.valor"></div>
+          </div>
+        </div>
+        <p class="kpi-sub" style="margin-top:4px;">{{ kpis[4]?.subtitulo }}</p>
+      </div>
     </div>
 
-    <section class="grid grid-cols-1 items-stretch gap-5 xl:grid-cols-3">
-      <div class="h-full xl:col-span-2">
-        <app-ingreso-chart [distribucion]="distribucion" [tendencia]="tendencia"
-          totalLabel="S/ 3,850"></app-ingreso-chart>
-      </div>
-      <app-ingreso-recent-list class="block h-full" [items]="recientes"></app-ingreso-recent-list>
-    </section>
+    <!-- ═══ FILA 1 ═══ -->
+    <div class="section-header">
+      <span class="section-label">Categorías</span>
+    </div>
 
+    <div class="charts-grid">
+      <!-- Evolución Mensual (6M) -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <p class="card-title">Evolución Mensual (6M)</p>
+            <p class="card-sub">Distribución de tus ingresos en el período</p>
+          </div>
+          <span class="card-badge">Top ↑</span>
+        </div>
+        
+        <div class="chart-wrap tall">
+          <svg viewBox="0 0 300 150" class="w-full h-full">
+            <defs>
+              <linearGradient id="areaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="var(--purple)" stop-opacity="0.2"/>
+                <stop offset="100%" stop-color="var(--purple)" stop-opacity="0.0"/>
+              </linearGradient>
+            </defs>
+            <line x1="20" y1="20" x2="280" y2="20" stroke="var(--border)" stroke-width="1"/>
+            <line x1="20" y1="75" x2="280" y2="75" stroke="var(--border)" stroke-width="1"/>
+            <line x1="20" y1="130" x2="280" y2="130" stroke="var(--border)" stroke-width="1"/>
+            
+            <path [attr.d]="lineChartAreaPath" fill="url(#areaGrad)" />
+            <path [attr.d]="lineChartPath" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            
+            <circle *ngFor="let point of lineChartPoints" [attr.cx]="point.x" [attr.cy]="point.y" r="4" fill="var(--purple)"/>
+            
+            <text *ngFor="let d of evolucionMensual; let idx = index" [attr.x]="20 + idx * 52" y="145" text-anchor="middle" font-size="9" fill="#9CA3AF">{{ d.categoria }}</text>
+          </svg>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-item"><p class="stat-label">Categorías</p><p class="stat-value">{{ evolucionMensual.length }}</p></div>
+          <div class="stat-item"><p class="stat-label">Principal</p><p class="stat-value">{{ evolucionMensual[0]?.categoria || '—' }}</p></div>
+          <div class="stat-item"><p class="stat-label">Promedio</p><p class="stat-value">S/ {{ (totalIngresosActual / (evolucionMensual.length || 1)) | number:'1.0-0' }}</p></div>
+        </div>
+      </div>
+
+      <!-- Ingresos por categoría -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <p class="card-title">Ingresos por categoría</p>
+            <p class="card-sub">Distribución de tus ingresos en el período</p>
+          </div>
+          <span class="card-badge">Top ↑</span>
+        </div>
+        
+        <div class="donut-container" style="margin-top:.5rem;">
+          <div class="donut-wrap" [style]="getDonutStyle(distribucion)">
+            <div class="donut-label">
+              <span>S/ {{ totalIngresosActual | number:'1.0-0' }}</span>
+              <span>Total</span>
+            </div>
+          </div>
+          <ul class="legend">
+            <li *ngFor="let item of distribucion">
+              <span class="legend-dot" [style.background]="item.color"></span>
+              <span class="legend-name">{{ item.categoria }}</span>
+              <span class="legend-pct">{{ item.porcentaje }}%</span>
+            </li>
+            <li *ngIf="!distribucion.length">
+              <span class="legend-dot" style="background:#E8EAF2"></span>
+              <span class="legend-name">Sin datos</span>
+              <span class="legend-pct">—</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-item"><p class="stat-label">Categorías</p><p class="stat-value">{{ distribucion.length }}</p></div>
+          <div class="stat-item"><p class="stat-label">Principal</p><p class="stat-value">{{ distribucion[0]?.porcentaje || 0 }}%</p></div>
+        </div>
+      </div>
+
+      <!-- Progreso meta -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <p class="card-title">Progreso meta</p>
+            <p class="card-sub">Meta de S/ 8,000.00</p>
+          </div>
+        </div>
+        
+        <div class="gauge-wrap">
+          <svg width="180" height="110" viewBox="0 0 180 110">
+            <defs>
+              <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#A89CFF"/>
+                <stop offset="100%" stop-color="#6C63FF"/>
+              </linearGradient>
+            </defs>
+            <path d="M20,100 A70,70 0 0,1 160,100" fill="none" stroke="var(--border)" stroke-width="14" stroke-linecap="round"/>
+            <path id="gaugeFill" d="M20,100 A70,70 0 0,1 160,100" fill="none" stroke="url(#gaugeGrad)" stroke-width="14" stroke-linecap="round"
+                  stroke-dasharray="220" [attr.stroke-dashoffset]="metaDashOffset"/>
+            <circle id="gaugeNeedle" [attr.cx]="needleX" [attr.cy]="needleY" r="5" fill="#6C63FF"/>
+            <text x="16" y="108" font-size="9" fill="#9CA3AF">0%</text>
+            <text x="85" y="22" text-anchor="middle" font-size="9" fill="#9CA3AF">50%</text>
+            <text x="156" y="108" text-anchor="end" font-size="9" fill="#9CA3AF">100%</text>
+          </svg>
+          <p class="gauge-number">{{ kpis[4]?.valor }}</p>
+          <p class="gauge-label">S/ {{ totalIngresosActual | number:'1.0-0' }} de S/ 8,000</p>
+        </div>
+
+        <div class="trend-grid">
+          <div class="trend-chip"><p class="tc-val">S/ {{ totalIngresosActual | number:'1.0-0' }}</p><p class="tc-lbl">Acumulado</p></div>
+          <div class="trend-chip"><p class="tc-val">S/ {{ (8000 - totalIngresosActual) > 0 ? ((8000 - totalIngresosActual) | number:'1.0-0') : 0 }}</p><p class="tc-lbl">Faltante</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ FILA 2 ═══ -->
+    <div class="section-header">
+      <span class="section-label">Tipo de ingreso</span>
+    </div>
+
+    <div class="charts-grid-bottom">
+      <!-- Tipo de Ingreso -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <p class="card-title">Tipo de Ingreso</p>
+            <p class="card-sub">Distribución de tus ingresos en el período</p>
+          </div>
+          <span class="card-badge">Top: {{ (proporcionIngreso[0]?.monto ?? 0) >= (proporcionIngreso[1]?.monto ?? 0) ? 'Fijo' : 'Variable' }}</span>
+        </div>
+        
+        <div class="donut-container" style="margin-top:.5rem;">
+          <div class="donut-wrap" [style]="getDonutStyle(proporcionIngreso)">
+            <div class="donut-label">
+              <span>S/ {{ totalIngresosActual | number:'1.0-0' }}</span>
+              <span>Total</span>
+            </div>
+          </div>
+          <ul class="legend">
+            <li *ngFor="let item of proporcionIngreso">
+              <span class="legend-dot" [style.background]="item.color"></span>
+              <span class="legend-name">{{ item.categoria }}</span>
+              <span class="legend-pct">{{ item.porcentaje }}%</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-item"><p class="stat-label">Categorías</p><p class="stat-value">2</p></div>
+          <div class="stat-item"><p class="stat-label">Principal</p><p class="stat-value">{{ proporcionIngreso[0]?.porcentaje || 0 }}%</p></div>
+        </div>
+      </div>
+
+      <!-- Por fuente de ingreso -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <p class="card-title">Por fuente de ingreso</p>
+            <p class="card-sub">Comparación relativa</p>
+          </div>
+        </div>
+        
+        <ul class="hbar-list" style="margin-top:.5rem;">
+          <li class="hbar-item" *ngFor="let item of distribucion">
+            <div class="hbar-row"><span class="hbar-name">{{ item.categoria }}</span><span class="hbar-val">S/ {{ item.monto | number:'1.0-0' }}</span></div>
+            <div class="hbar-bg"><div class="hbar-fill" [style.width.%]="item.porcentaje" [style.background]="item.color"></div></div>
+          </li>
+          <li *ngIf="!distribucion.length" class="empty-state">
+            <p>Sin datos en el período</p>
+          </li>
+        </ul>
+
+        <div class="stats-row">
+          <div class="stat-item"><p class="stat-label">Total fuentes</p><p class="stat-value">{{ distribucion.length }}</p></div>
+          <div class="stat-item"><p class="stat-label">Principal</p><p class="stat-value">{{ distribucion[0]?.categoria || '—' }}</p></div>
+        </div>
+      </div>
+
+      <!-- Ingresos recientes -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <p class="card-title">Ingresos recientes</p>
+            <p class="card-sub">Últimas transacciones registradas</p>
+          </div>
+        </div>
+        
+        <ul class="recent-list">
+          <li class="recent-item" *ngFor="let item of recientes">
+            <div class="recent-icon" [style.background]="getRecentIconBg(item.categoria)">
+              <i [class]="getRecentIconClass(item.categoria)"></i>
+            </div>
+            <div class="recent-desc">
+              <p class="recent-name">{{ item.descripcion }}</p>
+              <p class="recent-cat">{{ item.fecha }} · {{ item.categoria }}</p>
+            </div>
+            <span class="recent-amount">+S/ {{ item.monto | number:'1.0-0' }}</span>
+          </li>
+          <li *ngIf="!recientes.length" class="empty-state">
+            <p>No hay ingresos recientes</p>
+          </li>
+        </ul>
+      </div>
+    </div>
   </section>
 </main>

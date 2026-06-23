@@ -1,10 +1,7 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { IngresoKpisComponent } from '../../components/ingreso-kpis/ingreso-kpis';
-import { IngresoChartComponent } from '../../components/ingreso-chart/ingreso-chart';
-import { IngresoRecentListComponent } from '../../components/ingreso-recent-list/ingreso-recent-list';
 import { IngresosStateService } from '../../../../core/services/ingresos-state.service';
 import { AppEventBus } from '../../../../core/services/app-event-bus.service';
 import {
@@ -15,15 +12,12 @@ import {
 } from '../../types/ingresos.interfaces';
 
 @Component({
-  selector: 'app-app-ingresos-page',
+  selector: 'app-ingresos-page',
   standalone: true,
   imports: [
     CommonModule,
     FormsModule,
-    RouterLink,
-    IngresoKpisComponent,
-    IngresoChartComponent,
-    IngresoRecentListComponent
+    RouterLink
   ],
   templateUrl: './ingresos-page.html',
   styleUrl: './ingresos-page.scss',
@@ -31,6 +25,11 @@ import {
 export class IngresosPage {
   private readonly stateService = inject(IngresosStateService);
   private readonly eventBus = inject(AppEventBus);
+
+  // Signals de filtro específicos por gráfico
+  readonly filtroFechaDistribucion = signal<string>('todos');
+  readonly filtroFechaEvolucion = signal<string>('todos');
+  readonly filtroFechaProporcion = signal<string>('todos');
 
   // ── Signals computados para transformar el estado a la interfaz de Ingresos ──
   readonly kpisSignal = computed<IngresoKpi[]>(() => {
@@ -76,7 +75,8 @@ export class IngresosPage {
   });
 
   readonly distribucionSignal = computed<DistribucionCategoria[]>(() => {
-    const transacciones = this.stateService.ingresos();
+    const rawTransacciones = this.stateService.ingresos();
+    const transacciones = this.filtrarTransacciones(rawTransacciones, this.filtroFechaDistribucion());
     if (!transacciones.length) return [];
 
     const map = new Map<string, number>();
@@ -89,8 +89,10 @@ export class IngresosPage {
     }
 
     const colores = ['#22c55e', '#7c3aed', '#f59e0b', '#06b6d4', '#ec4899', '#64748b'];
+
     return Array.from(map.entries())
       .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
       .map(([categoria, monto], idx) => ({
         categoria,
         monto,
@@ -98,6 +100,7 @@ export class IngresosPage {
         color: colores[idx % colores.length]
       }));
   });
+
 
   readonly tendenciaSignal = computed<IngresoTendenciaPunto[]>(() => {
     const transacciones = this.stateService.ingresos();
@@ -126,6 +129,65 @@ export class IngresosPage {
     ];
   });
 
+  readonly evolucionMensualSignal = computed<DistribucionCategoria[]>(() => {
+    const rawTransacciones = this.stateService.ingresos();
+    const transacciones = this.filtrarTransacciones(rawTransacciones, this.filtroFechaEvolucion());
+    const meses = new Map<string, { key: string; mesNombre: string; monto: number }>();
+    
+    for (const t of transacciones) {
+      const fecha = new Date(t.fechaTransaccion);
+      const key = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
+      const mesNombre = fecha.toLocaleDateString('es-PE', { month: 'short' });
+      const m = t.monto || 0;
+      const prev = meses.get(key);
+      meses.set(key, { key, mesNombre, monto: (prev?.monto ?? 0) + m });
+    }
+    
+    const ultimos6 = Array.from(meses.values())
+      .sort((a, b) => a.key.localeCompare(b.key))
+      .slice(-6);
+      
+    const total = ultimos6.reduce((acc, v) => acc + v.monto, 0);
+    const colores = ['#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef'];
+    
+    return ultimos6.map((item, idx) => ({
+      categoria: item.mesNombre,
+      monto: item.monto,
+      porcentaje: total > 0 ? Math.round((item.monto / total) * 100) : 0,
+      color: colores[idx % colores.length]
+    }));
+  });
+
+  readonly proporcionIngresoSignal = computed<DistribucionCategoria[]>(() => {
+    const rawTransacciones = this.stateService.ingresos();
+    const transacciones = this.filtrarTransacciones(rawTransacciones, this.filtroFechaProporcion());
+    let fijo = 0;
+    let variable = 0;
+    for (const t of transacciones) {
+      const etiq = (t.etiquetas || '').toLowerCase();
+      if (etiq.includes('fijo')) {
+        fijo += t.monto || 0;
+      } else {
+        variable += t.monto || 0;
+      }
+    }
+    const total = fijo + variable;
+    return [
+      {
+        categoria: 'Fijo',
+        monto: fijo,
+        porcentaje: total > 0 ? Math.round((fijo / total) * 100) : 0,
+        color: '#22c55e'
+      },
+      {
+        categoria: 'Variable',
+        monto: variable,
+        porcentaje: total > 0 ? Math.round((variable / total) * 100) : 0,
+        color: '#7c3aed'
+      }
+    ];
+  });
+
   readonly recientesSignal = computed<IngresoReciente[]>(() => {
     const transacciones = this.stateService.ingresos();
     return transacciones.slice(0, 5).map(t => {
@@ -144,6 +206,80 @@ export class IngresosPage {
   get distribucion(): DistribucionCategoria[] { return this.distribucionSignal(); }
   get tendencia(): IngresoTendenciaPunto[] { return this.tendenciaSignal(); }
   get recientes(): IngresoReciente[] { return this.recientesSignal(); }
+  get evolucionMensual(): DistribucionCategoria[] { return this.evolucionMensualSignal(); }
+  get proporcionIngreso(): DistribucionCategoria[] { return this.proporcionIngresoSignal(); }
+
+  getDonutStyle(data: DistribucionCategoria[]): string {
+    if (!data || !data.length) {
+      return 'background: conic-gradient(#E8EAF2 0% 100%);';
+    }
+    const stops: string[] = [];
+    let prev = 0;
+    for (const item of data) {
+      const end = prev + item.porcentaje;
+      stops.push(`${item.color} ${prev}% ${end}%`);
+      prev = end;
+    }
+    return `background: conic-gradient(${stops.join(', ')});`;
+  }
+
+  get lineChartPoints(): { x: number, y: number }[] {
+    const data = this.evolucionMensual;
+    if (!data.length) return [];
+    const maxVal = Math.max(...data.map(d => d.monto), 1000);
+    return data.map((d, idx) => ({
+      x: 20 + idx * 52,
+      y: 130 - (d.monto / maxVal) * 110
+    }));
+  }
+
+  get lineChartPath(): string {
+    const points = this.lineChartPoints;
+    if (!points.length) return '';
+    return `M ${points.map(p => `${p.x},${p.y}`).join(' L ')}`;
+  }
+
+  get lineChartAreaPath(): string {
+    const points = this.lineChartPoints;
+    if (!points.length) return '';
+    const lastX = points[points.length - 1].x;
+    return `M 20,130 L ${points.map(p => `${p.x},${p.y}`).join(' L ')} L ${lastX},130 Z`;
+  }
+
+  get metaPercentage(): number {
+    const total = this.totalIngresosActual;
+    return total > 0 ? Math.min(total / 8000, 1.0) : 0;
+  }
+
+  get metaDashOffset(): number {
+    return 220 * (1 - this.metaPercentage);
+  }
+
+  get needleX(): number {
+    const angle = Math.PI * this.metaPercentage;
+    return 90 + 70 * Math.cos(Math.PI - angle);
+  }
+
+  get needleY(): number {
+    const angle = Math.PI * this.metaPercentage;
+    return 100 - 70 * Math.sin(Math.PI - angle);
+  }
+
+  getRecentIconBg(categoria: string): string {
+    const c = categoria.toLowerCase();
+    if (c.includes('salario')) return 'var(--purple-light)';
+    if (c.includes('freelance')) return 'var(--teal-light)';
+    if (c.includes('invers')) return 'var(--amber-light)';
+    return 'var(--coral-light)';
+  }
+
+  getRecentIconClass(categoria: string): string {
+    const c = categoria.toLowerCase();
+    if (c.includes('salario')) return 'fa-solid fa-briefcase icon-purple';
+    if (c.includes('freelance')) return 'fa-regular fa-user icon-teal';
+    if (c.includes('invers')) return 'fa-solid fa-arrow-trend-up icon-amber';
+    return 'fa-solid fa-coins icon-coral';
+  }
 
   // Resumen del panel superior
   get nombreMesActual(): string {
@@ -178,6 +314,30 @@ export class IngresosPage {
 
   constructor() {
     this.stateService.cargarDatos();
+  }
+
+  private filtrarTransacciones(transacciones: any[], filtro: string): any[] {
+    if (filtro === 'todos') return transacciones;
+
+    const ahora = new Date();
+    const unDiaMs = 24 * 60 * 60 * 1000;
+
+    return transacciones.filter(t => {
+      const fecha = new Date(t.fechaTransaccion);
+      const diffMs = ahora.getTime() - fecha.getTime();
+      const diffDias = diffMs / unDiaMs;
+
+      if (filtro === 'semana') {
+        return diffDias >= 0 && diffDias <= 7;
+      }
+      if (filtro === 'quincena') {
+        return diffDias >= 0 && diffDias <= 15;
+      }
+      if (filtro === 'mes') {
+        return diffDias >= 0 && diffDias <= 30;
+      }
+      return true;
+    });
   }
 
   private nombreCategoria(categoria?: string | null, categoriaId?: string | null): string {
