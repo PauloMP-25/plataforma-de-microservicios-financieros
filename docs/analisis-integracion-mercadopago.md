@@ -124,3 +124,45 @@ La coexistencia permite implementar reglas de negocio inteligentes (*Dynamic Rou
 
 ### 5.4. Mitigación de Riesgos Corporativos (Vendor Lock-in)
 La dependencia absoluta de una sola pasarela de pagos representa un riesgo estratégico. Si el proveedor congela de forma unilateral la cuenta por "actividad inusual", rescinde el contrato o aumenta las tarifas, la empresa queda vulnerable. Poseer una arquitectura multi-pasarela permite mitigar este riesgo y negociar mejores tasas basándose en volúmenes transaccionales alternos.
+
+---
+
+## 6. Integración y Optimización del Frontend (Angular 17/18)
+
+La integración del lado del cliente se diseñó bajo los estándares establecidos de **componentes standalone**, **lazy loading**, y de acuerdo a las directrices de UX/UI coordinadas con Cristina Astocaza (QA & Frontend Lead):
+
+### 6.1. Modificación de Servicio de Suscripciones
+* **[suscripcion.service.ts](file:///media/paulo/datos/proyecto-desarrollo-web-integrado/estructura-frontend/frontend/src/app/core/services/suscripcion.service.ts)**:
+  Se actualizó el método `crearSesionCheckout` para recibir tanto el plan (`'PRO'` o `'PREMIUM'`) como el proveedor (`'STRIPE'` o `'MERCADOPAGO'`). Este proveedor se propaga en el cuerpo JSON de la petición HTTP POST hacia el API Gateway.
+
+### 6.2. Componente Standalone Unificado `ModalPlanes`
+Para evitar la duplicación de código e inconsistencia de interfaz, se creó el componente standalone **[ModalPlanes](file:///media/paulo/datos/proyecto-desarrollo-web-integrado/estructura-frontend/frontend/src/app/features/suscripcion/components/modal-planes/)** (`src/app/features/suscripcion/components/modal-planes/`):
+* **[modal-planes.ts](file:///media/paulo/datos/proyecto-desarrollo-web-integrado/estructura-frontend/frontend/src/app/features/suscripcion/components/modal-planes/modal-planes.ts)**: Expone las señales de control `@Input() comprando` y los disparadores de eventos `@Output() close` y `@Output() checkout`.
+* **[modal-planes.html](file:///media/paulo/datos/proyecto-desarrollo-web-integrado/estructura-frontend/frontend/src/app/features/suscripcion/components/modal-planes/modal-planes.html)**: Define la estructura HTML semántica de la cuadrícula de planes Pro (`S/ 14.90`) y Premium (`S/ 25.90`). Cada tarjeta expone botones individuales y limpios para redirigir a Stripe o Mercado Pago. Todos los precios están definidos en Soles (`S/`).
+* **[modal-planes.scss](file:///media/paulo/datos/proyecto-desarrollo-web-integrado/estructura-frontend/frontend/src/app/features/suscripcion/components/modal-planes/modal-planes.scss)**: Estilizado con Vanilla CSS/Sass modularizado usando tokens/variables de CSS globales de la aplicación para heredar dinámicamente el tema claro/oscuro (ej. `var(--bg-card)`, `var(--text-color)`). Incluye además media-queries responsivas para garantizar una experiencia óptima en móviles.
+
+### 6.3. Refactorización de Vistas Duplicadas
+El modal de selección de planes se encontraba duplicado de forma idéntica tanto en la pantalla de **Configuración** como en el **Sidebar**. Se refactorizaron ambas secciones:
+* **[Configuracion](file:///media/paulo/datos/proyecto-desarrollo-web-integrado/estructura-frontend/frontend/src/app/features/perfil/configuracion/)** (`configuracion.ts`, `.html`, `.scss`): Se removió todo el código HTML/Sass repetido, se importó `ModalPlanes` en los metadatos standalone y se incrustó mediante la directiva `<app-modal-planes>`.
+* **[Sidebar](file:///media/paulo/datos/proyecto-desarrollo-web-integrado/estructura-frontend/frontend/src/app/layout/sidebar/sidebar/)** (`sidebar.ts`, `.html`, `.scss`): Se realizó el mismo proceso de eliminación de duplicaciones e incrustación de la etiqueta del componente.
+
+Esta refactorización redujo más de 400 líneas redundantes del bundle inicial del frontend, mejorando la mantenibilidad a largo plazo.
+
+---
+
+## 7. Pruebas de Compilación y Verificación
+
+### 7.1. Compilación del Frontend (Angular)
+Se ejecutó la compilación de producción y desarrollo local del frontend en Angular para verificar la sanidad de TypeScript e inyección de imports:
+* **Comando ejecutado**: `npm run build`
+* **Resultado**: **Compilación Exitosa** (`Application bundle generation complete.`). El bundle de salida se generó satisfactoriamente y las referencias circulares o dependencias ausentes fueron descartadas.
+
+### 7.2. Compilación del Backend (Java/Spring Boot)
+Se verificaron los builds de los módulos afectados por la integración multi-pasarela en el backend:
+1. **`libreria-comun`**: `mvn clean install -DskipTests` ──> **BUILD SUCCESS**
+2. **`microservicio-pago`**: `mvn clean compile` ──> **BUILD SUCCESS**
+3. **`microservicio-suscripciones`**: `mvn clean compile` ──> **BUILD SUCCESS**
+4. **`api-gateway`**: `mvn clean compile` ──> **BUILD SUCCESS**
+
+---
+
