@@ -182,7 +182,7 @@ export class PresupuestosPage implements OnInit {
     }
 
     this.cargando.set(true);
-    const payload = this.formulario.value;
+    const payload = this.formulario.getRawValue();
     const activoActual = this.presupuestoActivo();
 
     // Si hay un presupuesto activo, le metemos su ID al payload para enviar un solo argumento

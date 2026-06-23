@@ -42,7 +42,7 @@ public class PublicadorPagosImpl implements IPublicadorPagos {
             pago.getDetalles().get(0).getMoneda(),
             pago.getFechaInicioPlan(),
             pago.getFechaFinPlan(),
-            pago.getStripeSessionId()
+            pago.getStripeSessionId()  // Referencia genérica de pasarela: Stripe cs_xxx o MP preapproval_id
         );
 
         // Paso 1: Persistir en la Bandeja de Salida (Misma transacción que el negocio)

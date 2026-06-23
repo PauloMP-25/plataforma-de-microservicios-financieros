@@ -11,7 +11,7 @@
     <div class="mx-auto flex w-full max-w-[280px] flex-col items-center">
       <div class="relative flex h-56 w-56 items-center justify-center rounded-full shadow-[inset_0_0_0_1px_rgba(148,163,184,.18)]" [attr.style]="donutStyle">
         <div class="flex h-36 w-36 flex-col items-center justify-center rounded-full bg-white text-center shadow-sm dark:bg-slate-800">
-          <span class="text-4xl font-extrabold text-slate-900 dark:text-slate-100">S/ {{ totalMonto | number:'1.0-0' }}</span>
+          <span class="text-4xl font-extrabold text-slate-900 dark:text-slate-100">S/ {{ totalMonto | number:'1.2-2' }}</span>
           <span class="text-sm text-slate-500">Total</span>
         </div>
       </div>
@@ -23,7 +23,7 @@
         </div>
         <div class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-center dark:border-slate-700 dark:bg-slate-900">
           <p class="text-xs text-slate-500">Principal</p>
-          <p class="text-lg font-bold text-emerald-600">{{ distribucion[0]?.porcentaje || 0 }}%</p>
+          <p class="text-lg font-bold text-emerald-600">{{ (distribucion[0]?.porcentaje || 0) | number:'1.2-2' }}%</p>
         </div>
       </div>
     </div>
@@ -35,11 +35,11 @@
             <span class="h-3 w-3 rounded-full" [style.background]="item.color"></span>
             {{ item.categoria }}
           </span>
-          <span class="text-lg font-bold text-slate-700 dark:text-slate-200">{{ item.porcentaje }}%</span>
+          <span class="text-lg font-bold text-slate-700 dark:text-slate-200">{{ item.porcentaje | number:'1.2-2' }}%</span>
         </div>
         <div class="mt-2 flex items-center justify-between text-sm text-slate-500">
           <span>Monto estimado</span>
-          <span class="font-semibold text-slate-700 dark:text-slate-300">S/ {{ item.monto | number:'1.0-0' }}</span>
+          <span class="font-semibold text-slate-700 dark:text-slate-300">S/ {{ item.monto | number:'1.2-2' }}</span>
         </div>
         <div class="mt-2 h-2 rounded-full bg-slate-200 dark:bg-slate-700">
           <div class="h-2 rounded-full" [style.width.%]="item.porcentaje" [style.background]="item.color"></div>

@@ -70,6 +70,15 @@ stripe:
   price-pro-id: ${STRIPE_PRICE_PRO_ID:price_1TYXhuE4AqR3mWxPEqEN8HmA}
 
 # ---------------------------------------------------------------------------------------------------------------------
+#                            MERCADO PAGO: Credenciales e integración de suscripciones recurrentes (PEN - Perú)
+# ---------------------------------------------------------------------------------------------------------------------
+mercadopago:
+  access-token: ${MERCADOPAGO_ACCESS_TOKEN:TEST-coloca-tu-access-token-de-sandbox}
+  webhook-secret: ${MERCADOPAGO_WEBHOOK_SECRET:coloca-tu-webhook-secret-de-sandbox}
+  success-url: ${FRONTEND_URL:http://localhost:4200}/suscripcion/exito
+  cancel-url: ${FRONTEND_URL:http://localhost:4200}/suscripcion/cancelado
+
+# ---------------------------------------------------------------------------------------------------------------------
 #                                  LOGGING: Configuración y patrón de trazas log
 # ---------------------------------------------------------------------------------------------------------------------
 logging:
