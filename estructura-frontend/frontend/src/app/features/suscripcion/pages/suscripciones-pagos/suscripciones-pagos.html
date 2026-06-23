@@ -150,6 +150,21 @@
       </button>
     </div>
   } @else {
+    @if (authService.esPremium() || authService.esPro()) {
+      <div class="bento-card glass-panel" style="margin-bottom: 24px; padding: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(168, 85, 247, 0.3);">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div style="font-size: 24px; color: #a855f7; display: flex; align-items: center;">
+            <i class="fa-solid fa-crown"></i>
+          </div>
+          <div>
+            <h3 style="margin: 0; color: var(--text-primary); font-weight: 700;">Plan Luka Activo</h3>
+            <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-secondary);">Tu suscripción a la plataforma está vigente.</p>
+          </div>
+        </div>
+        <span class="suscripcion-card__badge is-success">ACTIVA</span>
+      </div>
+    }
+
     <section class="suscripciones-pagos-page__grid">
       @for (suscripcion of suscripciones(); track suscripcion.id) {
         <app-suscripcion-card 
