@@ -8,12 +8,13 @@ import { RespuestaDatosPersonales, SolicitudDatosPersonales } from '../../../cor
 import { AvatarService } from '../../../core/services/avatar.service';
 import { ServicioTema } from '../../../core/services/servicio-tema';
 import { SuscripcionService } from '../../../core/services/suscripcion.service';
+import { ModalPlanes } from '../../suscripcion/components/modal-planes/modal-planes';
 import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-configuracion',
   standalone:true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, ModalPlanes],
   templateUrl: './configuracion.html',
   styleUrls: ['./configuracion.scss'],
 })
@@ -30,22 +31,22 @@ export class Configuracion {
     this.modalPlanesAbierto.set(false);
   }
 
-  comprarPlan(plan: 'PRO' | 'PREMIUM'): void {
+  comprarPlan(plan: 'PRO' | 'PREMIUM', proveedor: 'STRIPE' | 'MERCADOPAGO' = 'STRIPE'): void {
     if (this.comprandoPlan()) return;
     this.comprandoPlan.set(true);
 
-    this.suscripcionService.crearSesionCheckout(plan)
+    this.suscripcionService.crearSesionCheckout(plan, proveedor)
       .pipe(finalize(() => this.comprandoPlan.set(false)))
       .subscribe({
         next: (sesion) => {
           if (sesion && sesion.urlCheckout) {
             window.location.href = sesion.urlCheckout;
           } else {
-            console.error('No se recibió la URL de Stripe Checkout');
+            console.error('No se recibió la URL de redirección del checkout');
           }
         },
         error: (err) => {
-          console.error('Error al iniciar Checkout de Stripe:', err);
+          console.error(`Error al iniciar Checkout de ${proveedor}:`, err);
         }
       });
   }

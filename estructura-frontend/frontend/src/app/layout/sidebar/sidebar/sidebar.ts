@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { NavigationEnd } from '@angular/router';
 import { SuscripcionService } from '../../../core/services/suscripcion.service';
+import { ModalPlanes } from '../../../features/suscripcion/components/modal-planes/modal-planes';
 
 
 // TODO: reemplazar con MascotaService.getMensajeDiario()
@@ -26,7 +27,7 @@ const MASCOT_MSGS = [
 @Component({
   selector:    'app-sidebar',
   standalone:  true,
-  imports:     [CommonModule, RouterModule],
+  imports:     [CommonModule, RouterModule, ModalPlanes],
   templateUrl: './sidebar.html',
   styleUrl:    './sidebar.scss'
 })
@@ -43,23 +44,23 @@ cerrarModalPlanes(): void {
   this.modalPlanesAbierto.set(false);
 }
 
-comprarPlan(plan: 'PRO' | 'PREMIUM'): void {
+comprarPlan(plan: 'PRO' | 'PREMIUM', proveedor: 'STRIPE' | 'MERCADOPAGO' = 'STRIPE'): void {
   if (this.comprandoPlan()) return;
   this.comprandoPlan.set(true);
 
-  this.suscripcionService.crearSesionCheckout(plan)
+  this.suscripcionService.crearSesionCheckout(plan, proveedor)
     .subscribe({
       next: (sesion) => {
         this.comprandoPlan.set(false);
         if (sesion && sesion.urlCheckout) {
           window.location.href = sesion.urlCheckout;
         } else {
-          console.error('No se recibió la URL de Stripe Checkout');
+          console.error('No se recibió la URL de redirección del checkout');
         }
       },
       error: (err) => {
         this.comprandoPlan.set(false);
-        console.error('Error al iniciar Checkout de Stripe:', err);
+        console.error(`Error al iniciar Checkout de ${proveedor}:`, err);
       }
     });
 }
