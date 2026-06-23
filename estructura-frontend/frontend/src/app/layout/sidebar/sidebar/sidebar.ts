@@ -2,8 +2,8 @@
 // LUKA — Sidebar Component
 // =============================================
 import { Component, OnInit, signal } from '@angular/core';
-import { CommonModule }               from '@angular/common';
-import { RouterModule }               from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { SidebarStateService } from '../../../core/services/sidebar-state.service';
 import { NAV_ITEMS, BOTTOM_NAV_ITEMS } from '../../../config/navigation.config';
@@ -25,45 +25,45 @@ const MASCOT_MSGS = [
 ];
 
 @Component({
-  selector:    'app-sidebar',
-  standalone:  true,
-  imports:     [CommonModule, RouterModule, ModalPlanes],
+  selector: 'app-sidebar',
+  standalone: true,
+  imports: [CommonModule, RouterModule, ModalPlanes],
   templateUrl: './sidebar.html',
-  styleUrl:    './sidebar.scss'
+  styleUrl: './sidebar.scss'
 })
 export class Sidebar implements OnInit {
 
-modalPlanesAbierto = signal(false);
-comprandoPlan = signal(false);
+  modalPlanesAbierto = signal(false);
+  comprandoPlan = signal(false);
 
-abrirModalPlanes(): void {
-  this.modalPlanesAbierto.set(true);
-}
+  abrirModalPlanes(): void {
+    this.modalPlanesAbierto.set(true);
+  }
 
-cerrarModalPlanes(): void {
-  this.modalPlanesAbierto.set(false);
-}
+  cerrarModalPlanes(): void {
+    this.modalPlanesAbierto.set(false);
+  }
 
-comprarPlan(plan: 'PRO' | 'PREMIUM', proveedor: 'STRIPE' | 'MERCADOPAGO' = 'STRIPE'): void {
-  if (this.comprandoPlan()) return;
-  this.comprandoPlan.set(true);
+  comprarPlan(plan: 'PRO' | 'PREMIUM', proveedor: 'STRIPE' | 'MERCADOPAGO' = 'STRIPE'): void {
+    if (this.comprandoPlan()) return;
+    this.comprandoPlan.set(true);
 
-  this.suscripcionService.crearSesionCheckout(plan, proveedor)
-    .subscribe({
-      next: (sesion) => {
-        this.comprandoPlan.set(false);
-        if (sesion && sesion.urlCheckout) {
-          window.location.href = sesion.urlCheckout;
-        } else {
-          console.error('No se recibió la URL de redirección del checkout');
+    this.suscripcionService.crearSesionCheckout(plan, proveedor)
+      .subscribe({
+        next: (sesion) => {
+          this.comprandoPlan.set(false);
+          if (sesion && sesion.urlCheckout) {
+            window.location.href = sesion.urlCheckout;
+          } else {
+            console.error('No se recibió la URL de redirección del checkout');
+          }
+        },
+        error: (err) => {
+          this.comprandoPlan.set(false);
+          console.error(`Error al iniciar Checkout de ${proveedor}:`, err);
         }
-      },
-      error: (err) => {
-        this.comprandoPlan.set(false);
-        console.error(`Error al iniciar Checkout de ${proveedor}:`, err);
-      }
-    });
-}
+      });
+  }
 
 
 
@@ -78,26 +78,26 @@ comprarPlan(plan: 'PRO' | 'PREMIUM', proveedor: 'STRIPE' | 'MERCADOPAGO' = 'STRI
 
   // ── Mascota —  usar showMascotMsg() y mascotMsg() ──
   showMascotMsg = signal(false);
-  mascotMsg     = signal('');
+  mascotMsg = signal('');
 
   // TODO: obtener desde GamificacionService
 
   rachaActual = 14;   // mock
-  metaRacha   = 30;   // mock
+  metaRacha = 30;   // mock
 
-// dentro de la clase, agrega:
-isPerfilSection = false;
+  // dentro de la clase, agrega:
+  isPerfilSection = false;
 
-readonly perfilNavItems = [
-  { route: '/perfil/cliente',       label: 'Perfil Cliente',    icon: 'fa-solid fa-user' },
-  { route: '/perfil/financiero',    label: 'Perfil Financiero', icon: 'fa-solid fa-chart-pie' },
-  { route: '/perfil/configuracion', label: 'Configuración',     icon: 'fa-solid fa-gear' },
-  { route: '/ayuda',               label: 'Ayuda',             icon: 'fa-solid fa-circle-question' },
-];
+  readonly perfilNavItems = [
+    { route: '/perfil/cliente', label: 'Perfil Cliente', icon: 'fa-solid fa-user' },
+    { route: '/perfil/financiero', label: 'Perfil Financiero', icon: 'fa-solid fa-chart-pie' },
+    { route: '/perfil/configuracion', label: 'Configuración', icon: 'fa-solid fa-gear' },
+    { route: '/ayuda', label: 'Ayuda', icon: 'fa-solid fa-circle-question' },
+  ];
 
   constructor(
     private router: Router,
-    public auth:         AuthService,
+    public auth: AuthService,
     public sidebarState: SidebarStateService,
     private suscripcionService: SuscripcionService
   ) {

@@ -218,29 +218,90 @@
         </div>
       </div>
 
-      <div class="lk-card lk-premium-card">
-        <div class="premium-header">
-          <span class="premium-badge"><i class="fa-solid fa-crown"></i> Premium</span>
-          <button class="btn btn-primary btn-sm">Desbloquear con Premium</button>
+      @if (esPremiumOPro()) {
+        <div class="lk-card lk-evolucion-card">
+          <div class="card-header">
+            <h3 class="card-title">Evolución de consumo histórico</h3>
+            <span class="premium-badge"><i class="fa-solid fa-crown"></i> Premium</span>
+          </div>
+
+          @if (presupuestoActivo(); as pres) {
+            <div class="evolucion-chart-wrap">
+              <canvas #evolucionCanvas id="evolucionCanvas"></canvas>
+            </div>
+
+            <div class="evolucion-legend">
+              <div class="legend-item">
+                <span class="legend-dot" style="background:#818CF8"></span>
+                <span>Normal</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot" style="background:#F59E0B"></span>
+                <span>Alerta</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot" style="background:#EF4444"></span>
+                <span>Excedido</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dash" style="border-color:#10B981"></span>
+                <span>Límite</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dash" style="border-color:#F59E0B; border-style:dotted"></span>
+                <span>Alerta {{ pres.porcentajeAlerta }}%</span>
+              </div>
+            </div>
+
+            <div class="evolucion-stats-footer">
+              <div class="evol-stat">
+                <div class="evol-stat-label">Mes más alto</div>
+                <div class="evol-stat-value">{{ mesMasAlto() ? formatearMonto(mesMasAlto()!.montoConsumido) : '—' }}</div>
+                <div class="evol-stat-sub">{{ mesMasAlto()?.periodo || '—' }}</div>
+              </div>
+              <div class="evol-stat">
+                <div class="evol-stat-label">Mes más bajo</div>
+                <div class="evol-stat-value">{{ mesMasBajo() ? formatearMonto(mesMasBajo()!.montoConsumido) : '—' }}</div>
+                <div class="evol-stat-sub">{{ mesMasBajo()?.periodo || '—' }}</div>
+              </div>
+              <div class="evol-stat">
+                <div class="evol-stat-label">Meses excedidos</div>
+                <div class="evol-stat-value" [ngClass]="{ 'danger': conteoExcedidos() > 0 }">{{ conteoExcedidos() }}</div>
+                <div class="evol-stat-sub">de {{ historialPresupuestos().length }} registros</div>
+              </div>
+            </div>
+          } @else {
+            <div class="evolucion-empty">
+              <i class="fa-solid fa-chart-line"></i>
+              <p>Define un límite mensual para ver tu evolución de consumo</p>
+            </div>
+          }
         </div>
-        <div class="premium-body">
-          <div class="premium-title">Proyección de consumo</div>
-          <div class="premium-sub">Descubre si excederás tu límite antes de que termine el mes.</div>
-          <ul class="premium-features">
-            <li><i class="fa-solid fa-check"></i> Proyección de gasto diario</li>
-            <li><i class="fa-solid fa-check"></i> Fecha estimada de exceder el límite</li>
-            <li><i class="fa-solid fa-check"></i> Recomendaciones personalizadas</li>
-            <li><i class="fa-solid fa-check"></i> Predicción de excedente de gasto</li>
-          </ul>
-          <div class="premium-blur-overlay">
-            <div class="premium-lock">
-              <i class="fa-solid fa-lock"></i>
-              <p>Contenido exclusivo para usuarios Premium</p>
-              <button class="btn btn-primary btn-sm">Ver planes <i class="fa-solid fa-arrow-right"></i></button>
+      } @else {
+        <div class="lk-card lk-premium-card">
+          <div class="premium-header">
+            <span class="premium-badge"><i class="fa-solid fa-crown"></i> Premium</span>
+            <button class="btn btn-primary btn-sm">Desbloquear con Premium</button>
+          </div>
+          <div class="premium-body">
+            <div class="premium-title">Evolución de consumo histórico</div>
+            <div class="premium-sub">Visualiza mes a mes cómo evolucionó tu gasto frente al límite definido.</div>
+            <ul class="premium-features">
+              <li><i class="fa-solid fa-check"></i> Gráfico de línea con segmentos de color</li>
+              <li><i class="fa-solid fa-check"></i> Líneas de límite y alerta</li>
+              <li><i class="fa-solid fa-check"></i> Estadísticas de mes más alto/bajo</li>
+              <li><i class="fa-solid fa-check"></i> Conteo de meses excedidos</li>
+            </ul>
+            <div class="premium-blur-overlay">
+              <div class="premium-lock">
+                <i class="fa-solid fa-lock"></i>
+                <p>Contenido exclusivo para usuarios Premium</p>
+                <button class="btn btn-primary btn-sm">Ver planes <i class="fa-solid fa-arrow-right"></i></button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      }
 
       <div class="lk-bottom-grid">
 
@@ -249,7 +310,7 @@
             <h3 class="card-title">Desglose por categorías</h3>
           </div>
           <div class="breakdown-list">
-            <div class="breakdown-item" *ngFor="let cat of categorias">
+            <div class="breakdown-item" *ngFor="let cat of categorias()">
               <div class="bd-icon" [style.background]="cat.bg" [style.color]="cat.color">
                 <i class="fa-solid" [ngClass]="cat.icono"></i>
               </div>
@@ -276,9 +337,17 @@
         <div class="lk-card">
           <div class="card-header">
             <h3 class="card-title">Historial de límites</h3>
-            <button class="btn-link" (click)="toggleHistorial()">
-              {{ mostrarTodoHistorial() ? 'Ver menos' : 'Ver historial completo →' }}
-            </button>
+            <div class="hist-pagination" style="display: flex; gap: 8px; align-items: center;">
+              <button class="btn btn-icon btn-sm" (click)="cambiarPagina(-1)" [disabled]="paginaHistorial() === 1">
+                <i class="fa-solid fa-chevron-left"></i>
+              </button>
+              <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">
+                Pág {{ paginaHistorial() }} de {{ totalPaginasHistorial() || 1 }}
+              </span>
+              <button class="btn btn-icon btn-sm" (click)="cambiarPagina(1)" [disabled]="paginaHistorial() >= totalPaginasHistorial() || totalPaginasHistorial() === 0">
+                <i class="fa-solid fa-chevron-right"></i>
+              </button>
+            </div>
           </div>
           <div class="hist-table-wrap">
             <table class="hist-table">

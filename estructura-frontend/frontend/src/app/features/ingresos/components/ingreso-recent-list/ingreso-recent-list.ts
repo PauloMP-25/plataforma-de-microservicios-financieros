@@ -11,6 +11,29 @@ import { IngresoReciente } from '../../types/ingresos.interfaces';
 export class IngresoRecentListComponent {
   @Input() items: IngresoReciente[] = [];
 
+  // ── [F-60] Lógica de Paginación ──
+  paginaActual = 1;
+  limitePorPagina = 6;
+
+  // Corta el arreglo original para devolver solo los 6 correspondientes
+  get itemsPaginados(): IngresoReciente[] {
+    const inicio = (this.paginaActual - 1) * this.limitePorPagina;
+    const fin = inicio + this.limitePorPagina;
+    return this.items.slice(inicio, fin);
+  }
+
+  get totalPaginas(): number {
+    return Math.ceil(this.items.length / this.limitePorPagina) || 1;
+  }
+
+  cambiarPagina(direccion: number): void {
+    const nuevaPagina = this.paginaActual + direccion;
+    if (nuevaPagina >= 1 && nuevaPagina <= this.totalPaginas) {
+      this.paginaActual = nuevaPagina;
+    }
+  }
+
+  // Mantiene tus funciones de iconos intactas
   iconClass(categoria: string): string {
     const c = categoria.toLowerCase();
     if (c.includes('salario')) return 'fa-solid fa-briefcase text-emerald-600';
@@ -31,4 +54,3 @@ export class IngresoRecentListComponent {
     return 'bg-slate-100 dark:bg-slate-600';
   }
 }
-
