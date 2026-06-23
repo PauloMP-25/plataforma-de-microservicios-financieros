@@ -31,8 +31,14 @@ public class ConsumidorEventoPago {
     @RabbitListener(queues = ConfiguracionRabbitMQ.COLA_SUSCRIPCIONES_PAGOS)
     @Transactional
     public void procesarPagoPlanSaaS(EventoPagoExitosoDTO evento) {
-        log.info("[SUSCRIPCIONES-CONSUMER] Recibido pago exitoso de plan Stripe para usuario: {} - Plan: {}", 
-                evento.usuarioId(), evento.planNuevo());
+        // Detectar dinámicamente la pasarela: Stripe usa prefijo "cs_"; MP usa preapproval_id
+        String metodoPago = (evento.referenciaPasarela() != null
+                && evento.referenciaPasarela().startsWith("cs_"))
+                ? "STRIPE"
+                : "MERCADOPAGO";
+
+        log.info("[SUSCRIPCIONES-CONSUMER] Recibido pago exitoso via {} para usuario: {} - Plan: {}",
+                metodoPago, evento.usuarioId(), evento.planNuevo());
 
         try {
             String nombreSuscripcion = "Luka App " + evento.planNuevo();
@@ -49,7 +55,7 @@ public class ConsumidorEventoPago {
                 suscripcion.setNombre(nombreSuscripcion);
                 suscripcion.setMonto(evento.monto());
                 suscripcion.setEstado("ACTIVA");
-                suscripcion.setMetodoPago("STRIPE");
+                suscripcion.setMetodoPago(metodoPago);
                 suscripcion.setFechaInicio(evento.fechaInicioPlan().toLocalDate());
                 suscripcion.setFechaVencimiento(evento.fechaFinPlan().toLocalDate());
                 suscripcion.setFechaUltimoPago(evento.fechaInicioPlan().toLocalDate());
@@ -59,7 +65,7 @@ public class ConsumidorEventoPago {
                         .nombre(nombreSuscripcion)
                         .monto(evento.monto())
                         .estado("ACTIVA")
-                        .metodoPago("STRIPE")
+                        .metodoPago(metodoPago)
                         .fechaInicio(evento.fechaInicioPlan().toLocalDate())
                         .fechaVencimiento(evento.fechaFinPlan().toLocalDate())
                         .fechaUltimoPago(evento.fechaInicioPlan().toLocalDate())

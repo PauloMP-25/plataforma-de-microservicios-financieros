@@ -220,6 +220,14 @@ $transition: all 0.2s ease-in-out;
 
 /* ── Dark mode: pills fosforescentes/neón ── */
 body.theme-dark {
+  .luka-header {
+    background: rgba(18, 27, 46, 0.8) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.35);
+  }
+
   .metric-pill {
     border-width: 1.5px;
     background: color-mix(in srgb, var(--bg-card) 86%, #0b1220 14%);

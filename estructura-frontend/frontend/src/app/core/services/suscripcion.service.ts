@@ -28,8 +28,8 @@ export class SuscripcionService {
 
   constructor(private http: HttpClient) {}
 
-  crearSesionCheckout(plan: 'PRO' | 'PREMIUM'): Observable<RespuestaCheckoutDTO> {
-    return this.http.post<ResultadoApi<RespuestaCheckoutDTO>>(`${this.base}/checkout`, { plan }).pipe(
+  crearSesionCheckout(plan: 'PRO' | 'PREMIUM', proveedor: 'STRIPE' | 'MERCADOPAGO' = 'STRIPE'): Observable<RespuestaCheckoutDTO> {
+    return this.http.post<ResultadoApi<RespuestaCheckoutDTO>>(`${this.base}/checkout`, { plan, proveedor }).pipe(
       map(res => res.datos)
     );
   }

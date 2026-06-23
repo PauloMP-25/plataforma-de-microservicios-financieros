@@ -320,7 +320,7 @@ app:
   security:
     jwt:
       secret-key: ${JWT_SECRET_KEY:}
-    rutas-publicas: "/auth/,/api/v1/mensajeria/otp/,/api/v1/pagos/webhook,/v3/api-docs,/swagger-ui,/actuator/,/error/,/interno/,/api/v1/clientes/perfil/inicial"
+    rutas-publicas: "/auth/,/api/v1/mensajeria/otp/,/api/v1/pagos/webhook,/api/v1/pagos/webhook/mercadopago,/v3/api-docs,/swagger-ui,/actuator/,/error/,/interno/,/api/v1/clientes/perfil/inicial"
 
 # ---------------------------------------------------------------------------------------------------------------------
 #                        MANAGEMENT: Redirecciones de Actuator Health

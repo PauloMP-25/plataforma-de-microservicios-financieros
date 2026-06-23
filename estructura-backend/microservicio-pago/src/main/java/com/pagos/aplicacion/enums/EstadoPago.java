@@ -5,6 +5,7 @@ package com.pagos.aplicacion.enums;
  */
 public enum EstadoPago {
     PENDIENTE,
+    AUTORIZADO,   // Preapproval autorizado por el usuario (Mercado Pago) — cobro recurrente pendiente
     COMPLETADO,
     FALLIDO,
     REEMBOLSADO,

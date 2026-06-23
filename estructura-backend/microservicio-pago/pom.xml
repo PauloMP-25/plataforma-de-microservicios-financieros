@@ -55,6 +55,13 @@
             <version>${stripe.version}</version>
         </dependency>
 
+        <!-- Mercado Pago SDK — compatible con Java 21 y Spring Boot 3.x -->
+        <dependency>
+            <groupId>com.mercadopago</groupId>
+            <artifactId>sdk-java</artifactId>
+            <version>2.1.27</version>
+        </dependency>
+
 
         <!-- OpenFeign para comunicación síncrona -->
         <dependency>

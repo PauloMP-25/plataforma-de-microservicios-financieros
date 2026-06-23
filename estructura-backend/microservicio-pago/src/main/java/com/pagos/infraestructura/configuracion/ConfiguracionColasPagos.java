@@ -79,4 +79,27 @@ public class ConfiguracionColasPagos {
             .to(exchangePagos)
             .with(RoutingKeys.PAGO_EXITOSO);
     }
+
+    // ── Suscripciones — duplicado explícito para visibilidad completa de topología ──────────────
+
+    /**
+     * Cola de ms-suscripciones. Se declara también aquí para que la topología de
+     * fan-out sea completamente visible desde el lado publicador (ms-pago).
+     * RabbitMQ es idempotente en la declaración de colas: si ya existe con los
+     * mismos parámetros, no genera conflicto.
+     */
+    @Bean
+    public Queue colaSuscripcionesPagosExitosos() {
+        return QueueBuilder.durable("cola.suscripciones.pagos.exitosos").build();
+    }
+
+    @Bean
+    public Binding bindingSuscripcionesPagoExitoso(
+            @Qualifier("colaSuscripcionesPagosExitosos") Queue colaSuscripcionesPagosExitosos,
+            @Qualifier("exchangePagos") TopicExchange exchangePagos) {
+        return BindingBuilder
+            .bind(colaSuscripcionesPagosExitosos)
+            .to(exchangePagos)
+            .with(RoutingKeys.PAGO_EXITOSO);
+    }
 }

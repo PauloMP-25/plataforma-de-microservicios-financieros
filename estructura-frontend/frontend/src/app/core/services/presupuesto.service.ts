@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../enviroments/environment';
 import { PresupuestoDTO, SolicitudPresupuesto } from '../models/financiero/presupuesto.model';
@@ -18,9 +18,15 @@ export class PresupuestoService {
     );
   }
 
-  obtenerActivo(): Observable<PresupuestoDTO> {
+  obtenerActivo(): Observable<PresupuestoDTO | null> {
     return this.http.get<ResultadoApi<PresupuestoDTO>>(`${this.base}/activo`).pipe(
-      map(res => res.datos)
+      map(res => res.datos),
+      catchError(err => {
+        if (err.status === 404) {
+          return of(null);
+        }
+        return throwError(() => err);
+      })
     );
   }
 
