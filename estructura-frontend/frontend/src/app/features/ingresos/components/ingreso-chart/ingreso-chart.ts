@@ -14,10 +14,38 @@ export class IngresoChartComponent {
   @Input() distribucion: DistribucionCategoria[] = [];
   @Input() tendencia: IngresoTendenciaPunto[] = [];
 
+  // ── [F-59] Lógica para segmentar el gráfico exclusivamente al Top 5 ──
+  get topDistribucion(): DistribucionCategoria[] {
+    if (this.distribucion.length <= 5) {
+      return this.distribucion;
+    }
+
+    const top4 = this.distribucion.slice(0, 4);
+    const elResto = this.distribucion.slice(4);
+
+    const montoOtros = elResto.reduce((acc, d) => acc + d.monto, 0);
+    const totalGlobal = this.totalMonto;
+    const porcentajeOtros = totalGlobal > 0 ? (montoOtros / totalGlobal) * 100 : 0;
+
+    return [
+      ...top4,
+      {
+        categoria: 'Otros',
+        monto: montoOtros,
+        porcentaje: parseFloat(porcentajeOtros.toFixed(0)), // Mantiene el formato sin decimales de tu diseño original
+        color: '#94a6b8' // Color neutro para la agrupación
+      }
+    ];
+  }
+
   get donutStyle(): string {
-    const stops = this.distribucion
+    // Cambiado para que el gráfico de dona use el arreglo del Top 5
+    const datosGrafico = this.topDistribucion;
+    if (!datosGrafico.length) return 'background: conic-gradient(#e2e8f0 0% 100%);';
+
+    const stops = datosGrafico
       .map((d, i) => {
-        const prev = this.distribucion.slice(0, i).reduce((a, b) => a + b.porcentaje, 0);
+        const prev = datosGrafico.slice(0, i).reduce((a, b) => a + b.porcentaje, 0);
         const end = prev + d.porcentaje;
         return `${d.color} ${prev}% ${end}%`;
       })
@@ -33,4 +61,3 @@ export class IngresoChartComponent {
     return this.distribucion.length ? this.distribucion[0].categoria : '-';
   }
 }
-

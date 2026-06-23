@@ -36,6 +36,12 @@ export class IngresoKpisComponent {
     if (t.includes('registrados')) return 'fa-regular fa-folder-open';
     if (t.includes('racha')) return 'fa-solid fa-fire-flame-curved';
     if (t.includes('categoria')) return 'fa-solid fa-wallet';
+
+    // ── Nuevos Acoples de Iconos ──
+    if (t.includes('comparacion') || t.includes('mes anterior')) return 'fa-solid fa-chart-line';
+    if (t.includes('promedio')) return 'fa-solid fa-calculator';
+    if (t.includes('meta') || t.includes('progreso')) return 'fa-solid fa-bullseye';
+
     return 'fa-solid fa-chart-line';
   }
 
@@ -63,4 +69,3 @@ export class IngresoKpisComponent {
     }
   }
 }
-
