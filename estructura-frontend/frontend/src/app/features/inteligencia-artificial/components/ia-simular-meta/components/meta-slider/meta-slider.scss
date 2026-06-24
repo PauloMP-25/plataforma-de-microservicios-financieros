@@ -27,6 +27,15 @@
       }
     }
   }
+
+  :host-context(body.tema-claro) & {
+    background: rgba(91, 106, 240, 0.03);
+    border-color: rgba(91, 106, 240, 0.08);
+    
+    .slider-info .info-group .info-valor {
+      color: var(--text-primary, #0f172a);
+    }
+  }
 }
 
 .interactive-range-slider {
@@ -52,6 +61,10 @@
     &:hover {
       transform: scale(1.15);
     }
+  }
+
+  :host-context(body.tema-claro) & {
+    background: rgba(0, 0, 0, 0.08);
   }
 }
 

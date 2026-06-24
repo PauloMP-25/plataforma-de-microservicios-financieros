@@ -50,6 +50,12 @@
     background: rgba(255, 255, 255, 0.1);
     border-radius: 3px;
   }
+
+  :host-context(body.tema-claro) & {
+    background: rgba(91, 106, 240, 0.04);
+    border-color: rgba(91, 106, 240, 0.08);
+    scrollbar-color: rgba(91, 106, 240, 0.2) transparent;
+  }
 }
 
 .timeline-container {
@@ -141,6 +147,36 @@
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
     }
   }
+
+  :host-context(body.tema-claro) & {
+    .node-bullet {
+      background: #f1f5f9;
+      border-color: rgba(91, 106, 240, 0.25);
+      color: #64748b;
+    }
+    .node-card {
+      background: #ffffff;
+      border-color: rgba(91, 106, 240, 0.15);
+      
+      .node-title {
+        color: #64748b;
+      }
+      .node-subtitle {
+        color: #0f172a;
+      }
+    }
+    &.active {
+      .node-bullet {
+        background: var(--sim-primary);
+        border-color: #fff;
+        color: #fff;
+      }
+      .node-card {
+        border-color: var(--sim-primary);
+        background: #ffffff;
+      }
+    }
+  }
 }
 
 // Nodo Hoy Especial
@@ -178,6 +214,19 @@
       border-color: var(--sim-primary);
       box-shadow: var(--sim-glow);
       background: rgba(16, 185, 129, 0.08);
+    }
+  }
+
+  :host-context(body.tema-claro) & {
+    .target-image-wrapper {
+      background: rgba(91, 106, 240, 0.04);
+      border-color: rgba(91, 106, 240, 0.15);
+    }
+    &.active {
+      .target-image-wrapper {
+        background: rgba(16, 185, 129, 0.08);
+        border-color: var(--sim-primary);
+      }
     }
   }
 }

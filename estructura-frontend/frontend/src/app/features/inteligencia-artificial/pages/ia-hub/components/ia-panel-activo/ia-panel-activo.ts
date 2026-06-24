@@ -95,18 +95,24 @@ export class IaPanelActivoComponent implements OnInit, OnChanges {
       };
     } else {
       // Filtros de fecha estándar mapeados al formato PeticionConFiltroFecha del backend
-      const partsInicio = this.fechaInicio.split('-');
-      const partsFin = this.fechaFin.split('-');
-      
-      payload = {
-        anio_inicio: parseInt(partsInicio[0], 10),
-        mes_inicio: parseInt(partsInicio[1], 10),
-        dia_inicio: parseInt(partsInicio[2], 10),
-        anio_fin: parseInt(partsFin[0], 10),
-        mes_fin: parseInt(partsFin[1], 10),
-        dia_fin: parseInt(partsFin[2], 10),
-        frecuencia: this.frecuenciaSelect
-      };
+      if (this.modulo.filtroFecha && this.fechaInicio && this.fechaFin) {
+        const partsInicio = this.fechaInicio.split('-');
+        const partsFin = this.fechaFin.split('-');
+        
+        payload = {
+          anio_inicio: parseInt(partsInicio[0], 10),
+          mes_inicio: parseInt(partsInicio[1], 10),
+          dia_inicio: parseInt(partsInicio[2], 10),
+          anio_fin: parseInt(partsFin[0], 10),
+          mes_fin: parseInt(partsFin[1], 10),
+          dia_fin: parseInt(partsFin[2], 10),
+          frecuencia: this.frecuenciaSelect
+        };
+      } else {
+        payload = {
+          frecuencia: this.frecuenciaSelect
+        };
+      }
     }
 
     this.ejecutar.emit(payload);

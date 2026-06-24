@@ -1,0 +1,106 @@
+<!-- Overlay oscurecedor de fondo -->
+<div class="receta-overlay"
+     [class.is-open]="isOpen"
+     (click)="close()">
+</div>
+
+<!-- Panel lateral (Receta Médica) -->
+<div class="receta-panel"
+     [class.is-open]="isOpen">
+  
+  <!-- Cabecera de la receta -->
+  <div class="receta-header">
+    <div class="receta-header-title">
+      <h4>RECETA DE OPTIMIZACIÓN</h4>
+      <p class="receta-subtitle">Luka Medical Labs & Gemini Pro</p>
+    </div>
+    <button (click)="close()" class="receta-close-btn">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+
+  <!-- Contenido de la Receta (Scrollable) -->
+  <div class="receta-body">
+    
+    <!-- Paciente & Categoría -->
+    <div class="receta-row receta-patient-info">
+      <div class="receta-col">
+        <span class="receta-meta-label">Paciente:</span>
+        <span class="receta-meta-val">Paulo Moron</span>
+      </div>
+      <div class="receta-col">
+        <span class="receta-meta-label">Diagnóstico en:</span>
+        <span class="receta-meta-val-italic">{{ categoria?.nombre || 'General' }}</span>
+      </div>
+    </div>
+
+    <!-- Indicadores Clínicos -->
+    <div class="receta-section">
+      <h5 class="receta-section-title">Indicadores Clínicos</h5>
+      <div class="receta-kpi-grid">
+        <div class="receta-kpi-card">
+          <span class="kpi-card-label">Gasto A (Base)</span>
+          <span class="kpi-card-val">S/ {{ (categoria?.gastoPeriodoA ?? 0).toFixed(2) }}</span>
+        </div>
+        <div class="receta-kpi-card">
+          <span class="kpi-card-label">Gasto B (Evol)</span>
+          <span class="kpi-card-val">S/ {{ (categoria?.gastoPeriodoB ?? 0).toFixed(2) }}</span>
+        </div>
+        <div class="receta-kpi-card is-deviation">
+          <span class="kpi-card-label-alert">Desviación</span>
+          <span class="kpi-card-val-alert">+{{ (categoria?.desviacion ?? 0).toFixed(1) }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Posología de Gemini -->
+    <div class="receta-section">
+      <h5 class="receta-section-title">Tratamiento & Posología</h5>
+      
+      <div class="receta-treatment-list">
+        <div class="treatment-item">
+          <span class="treatment-num">01.</span>
+          <p class="treatment-desc">
+            <span class="treatment-highlight">Reducción Directa de Micro-gastos:</span> Aplicar un tope drástico de consumo diario a la categoría <span class="treatment-cat">"{{ categoria?.nombre }}"</span>. Evitar las compras impulsivas tras las 6:00 PM los fines de semana.
+          </p>
+        </div>
+
+        <div class="treatment-item">
+          <span class="treatment-num">02.</span>
+          <p class="treatment-desc">
+            <span class="treatment-highlight">Pre-aprobación del Gasto:</span> Antes de realizar cualquier desembolso, transferir el 20% del valor planeado al monedero de ahorro seguro de Luka.
+          </p>
+        </div>
+
+        <div class="treatment-item">
+          <span class="treatment-num">03.</span>
+          <p class="treatment-desc">
+            <span class="treatment-highlight">Sustitución de Hábitos Nocivos:</span> Buscar alternativas de ocio gratuitas que no comprometan tus cuotas semanales de Pichanga o tu Laptop Gamer.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pronóstico Financiero -->
+    <div class="receta-forecast-box">
+      <span class="forecast-title">Pronóstico a 3 Meses</span>
+      <p class="forecast-desc">
+        Si completas con éxito esta prescripción médica, se estima un retorno económico neto de <span class="forecast-amount">S/ 360.00</span> en ahorros directos para tus objetivos activos.
+      </p>
+    </div>
+
+  </div>
+
+  <!-- Firma del Especialista -->
+  <div class="receta-footer">
+    <div class="receta-auth-info">
+      <p class="auth-label">AUTORIZADO POR:</p>
+      <p class="auth-name">Luka AI Medical Staff</p>
+    </div>
+    <!-- Firma de Gemini -->
+    <div class="receta-signature">
+      Gemini Pro MD
+    </div>
+  </div>
+
+</div>
