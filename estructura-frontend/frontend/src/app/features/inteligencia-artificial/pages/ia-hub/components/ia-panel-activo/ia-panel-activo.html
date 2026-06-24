@@ -71,8 +71,8 @@
       </div>
     </ng-container>
 
-    <!-- 3. Caso general: Filtros por fecha (excluyendo simular-meta, clasificar-transaccion y comprobador-evolucion) -->
-    <ng-container *ngIf="modulo.id !== 'simular-meta' && modulo.id !== 'clasificar-transaccion' && modulo.id !== 'comprobador-evolucion'">
+    <!-- 3. Caso general: Filtros por fecha (solo si el módulo lo requiere) -->
+    <ng-container *ngIf="modulo.filtroFecha">
       <div class="input-group">
         <label>Fecha Inicio</label>
         <input type="date" [(ngModel)]="fechaInicio" class="app-input" />
@@ -83,7 +83,7 @@
         <input type="date" [(ngModel)]="fechaFin" class="app-input" />
       </div>
 
-      <div class="input-group" *ngIf="modulo.filtroFecha">
+      <div class="input-group">
         <label>Frecuencia de análisis</label>
         <select [(ngModel)]="frecuenciaSelect" class="app-input select">
           <option value="SEMANAL">Semanal</option>
@@ -91,35 +91,35 @@
           <option value="MENSUAL">Mensual</option>
         </select>
       </div>
-
-      <!-- Selector Temporal de Hitos para Espejo del Tiempo (Solo si tiene resultado) -->
-      <div class="input-group" *ngIf="modulo.id === 'espejo-temporal' && tieneResultado" style="min-width: 140px; flex: 0.8;">
-        <label>Horizonte</label>
-        <div class="temporal-selector-bar-inline">
-          <button 
-            type="button" 
-            class="btn-temp-inline" 
-            [class.active]="hitoSeleccionado === 3" 
-            (click)="setHitoInline(3)">
-            3m
-          </button>
-          <button 
-            type="button" 
-            class="btn-temp-inline" 
-            [class.active]="hitoSeleccionado === 6" 
-            (click)="setHitoInline(6)">
-            6m
-          </button>
-          <button 
-            type="button" 
-            class="btn-temp-inline" 
-            [class.active]="hitoSeleccionado === 12" 
-            (click)="setHitoInline(12)">
-            12m
-          </button>
-        </div>
-      </div>
     </ng-container>
+
+    <!-- Selector Temporal de Hitos para Espejo del Tiempo (Solo si tiene resultado) -->
+    <div class="input-group" *ngIf="modulo.id === 'espejo-temporal' && tieneResultado" style="min-width: 140px; flex: 0.8;">
+      <label>Horizonte</label>
+      <div class="temporal-selector-bar-inline">
+        <button 
+          type="button" 
+          class="btn-temp-inline" 
+          [class.active]="hitoSeleccionado === 3" 
+          (click)="setHitoInline(3)">
+          3m
+        </button>
+        <button 
+          type="button" 
+          class="btn-temp-inline" 
+          [class.active]="hitoSeleccionado === 6" 
+          (click)="setHitoInline(6)">
+          6m
+        </button>
+        <button 
+          type="button" 
+          class="btn-temp-inline" 
+          [class.active]="hitoSeleccionado === 12" 
+          (click)="setHitoInline(12)">
+          12m
+        </button>
+      </div>
+    </div>
 
     <!-- 4. Caso: Comprobador de Evolución -->
     <ng-container *ngIf="modulo.id === 'comprobador-evolucion'">
