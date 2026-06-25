@@ -33,6 +33,15 @@
       margin: 0;
     }
   }
+
+  :host-context(body.tema-claro) & {
+    background: rgba(91, 106, 240, 0.05);
+    border-color: rgba(91, 106, 240, 0.12);
+    
+    .consejo-content {
+      color: var(--text-primary, #0f172a);
+    }
+  }
 }
 
 .animate-bounce-slow {

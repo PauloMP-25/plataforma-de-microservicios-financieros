@@ -405,6 +405,7 @@ export class IaHubComponent implements OnInit, OnDestroy {
           this.errorMsg.set('Conexión con la clínica financiera falló (' + err.message + '). Mostrando datos de simulación estática (Mockup).');
           const mockRes = this._generarRespuestaMock(mod, payload);
           this.resultado.set(mockRes);
+          this.iaService.descontarConsulta();
           this.cargando.set(false);
         }
       });
@@ -416,6 +417,7 @@ export class IaHubComponent implements OnInit, OnDestroy {
       try {
         const mockRes = this._generarRespuestaMock(mod, payload);
         this.resultado.set(mockRes);
+        this.iaService.descontarConsulta();
         this.cargando.set(false);
       } catch (err: any) {
         this.cargando.set(false);

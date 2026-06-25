@@ -31,6 +31,12 @@ export interface PeticionConFiltroFechaDTO {
   token?: string; // Autocompletado del JWT
   mes?: number; // 1-12
   anio?: number; // 2020-2100
+  dia_inicio?: number;
+  mes_inicio?: number;
+  anio_inicio?: number;
+  dia_fin?: number;
+  mes_fin?: number;
+  anio_fin?: number;
   tamanio_pagina?: number; // 10-1000
   frecuencia?: 'SEMANAL' | 'QUINCENAL' | 'MENSUAL';
 }
@@ -44,10 +50,13 @@ export interface PeticionSimularMetaDTO {
 }
 
 export interface PeticionComparacionDTO {
-  rangoA_inicio: string;
-  rangoA_fin: string;
-  rangoB_inicio: string;
-  rangoB_fin: string;
+  usuario_id?: string;
+  token?: string;
+  rango_a_inicio: string;
+  rango_a_fin: string;
+  rango_b_inicio: string;
+  rango_b_fin: string;
+  tamanio_pagina?: number;
 }
 
 export interface SolicitudClasificacionDTO {

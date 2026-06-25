@@ -29,14 +29,27 @@ class PublicadorAuditoria:
         if self._conexion is None or self._conexion.is_closed:
             from app.configuracion import obtener_configuracion
             import urllib.parse
+            import os
+            import ssl
             
             config = obtener_configuracion()
             user_escaped = urllib.parse.quote_plus(config.rabbitmq_usuario)
             pass_escaped = urllib.parse.quote_plus(config.rabbitmq_password)
             vhost_escaped = urllib.parse.quote(config.rabbitmq_vhost, safe='')
             
-            url = f"amqp://{user_escaped}:{pass_escaped}@{config.rabbitmq_host}:{config.rabbitmq_puerto}/{vhost_escaped}"
-            self._conexion = await aio_pika.connect_robust(url)
+            es_ssl = os.getenv("RABBITMQ_SSL_ENABLED", "true").lower() == "true"
+            scheme = "amqps" if es_ssl else "amqp"
+            puerto = os.getenv("RABBITMQ_PUERTO", str(config.rabbitmq_puerto))
+            
+            url = f"{scheme}://{user_escaped}:{pass_escaped}@{config.rabbitmq_host}:{puerto}/{vhost_escaped}"
+            
+            ssl_context = None
+            if es_ssl:
+                ssl_context = ssl.create_default_context()
+                ssl_context.check_hostname = False
+                ssl_context.verify_mode = ssl.CERT_NONE
+                
+            self._conexion = await aio_pika.connect_robust(url, ssl_context=ssl_context)
             self._canal = await self._conexion.channel()
             logger.info("[AMQP] Conexión establecida con RabbitMQ para auditoría.")
 

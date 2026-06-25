@@ -97,11 +97,15 @@ export class IniciarSesion {
 
     this.authService.login(solicitudLogin).subscribe({
       next: (resp) => {
-        this.cargando = false;
         if (resp.exito) {
           this.notificacionService.mostrarLoginExitoso(resp.datos?.nombreUsuario || 'Usuario');
-          this.router.navigate(['/dashboard']);
+          // Añadimos un pequeño retraso para permitir que el Header/Dashboard inicialicen sin parpadeo
+          setTimeout(() => {
+            this.cargando = false;
+            this.router.navigate(['/dashboard']);
+          }, 1000);
         } else {
+          this.cargando = false;
           this.errorMensaje = resp.mensaje || 'Error al iniciar sesión';
         }
       },

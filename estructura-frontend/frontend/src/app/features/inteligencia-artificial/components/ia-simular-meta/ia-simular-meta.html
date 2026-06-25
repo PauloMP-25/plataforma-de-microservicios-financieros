@@ -18,17 +18,17 @@
     <div class="simulador-kpis-grid">
       <div class="kpi-card">
         <span class="kpi-label">Tiempo Estimado</span>
-        <span class="kpi-valor" [class.text-green-400]="esViableSimulado()" [class.text-red-500]="!esViableSimulado()">
+        <span class="kpi-valor" [class.viable]="esViableSimulado()" [class.no-viable]="!esViableSimulado()">
           {{ mesesProyectados() }} meses
         </span>
       </div>
       <div class="kpi-card">
         <span class="kpi-label">Fecha Proyectada</span>
-        <span class="kpi-valor text-slate-100">{{ fechaProyectadaStr() }}</span>
+        <span class="kpi-valor">{{ fechaProyectadaStr() }}</span>
       </div>
       <div class="kpi-card">
         <span class="kpi-label">Falta Ahorrar</span>
-        <span class="kpi-valor text-amber-500">S/. {{ montoObjetivo() - ahorroPrevio() }}</span>
+        <span class="kpi-valor warning">S/. {{ montoObjetivo() - ahorroPrevio() }}</span>
       </div>
     </div>
   </div>

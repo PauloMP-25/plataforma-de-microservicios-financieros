@@ -1,108 +1,644 @@
+// Variables
 $neon-emerald: #10b981;
 $neon-red: #ef4444;
 $neon-amber: #f59e0b;
 $neon-cyan: #06b6d4;
-$glass-bg: rgba(15, 23, 42, 0.6);
+$glass-bg: rgba(15, 23, 42, 0.65);
 $glass-border: rgba(255, 255, 255, 0.05);
 
+// Contenedor principal
+.gym-container {
+  font-family: 'Outfit', sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  animation: fadeIn 0.4s ease-out;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(16px);
+  padding: 1.25rem;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s ease-in-out;
+  min-height: 600px;
+
+  @media (min-width: 768px) {
+    padding: 2rem;
+  }
+
+  &.loading-active {
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    box-shadow: 0 0 35px rgba(16, 185, 129, 0.15);
+  }
+
+  // Accents
+  .gym-accent {
+    position: absolute;
+    width: 384px;
+    height: 384px;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+
+    &.accent-top-right {
+      top: 0;
+      right: 0;
+      background: rgba(16, 185, 129, 0.05);
+    }
+    &.accent-bottom-left {
+      bottom: 0;
+      left: 0;
+      background: rgba(239, 68, 68, 0.05);
+    }
+  }
+
+  // Header
+  .gym-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 10;
+
+    .gym-title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, $neon-emerald, $neon-cyan);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      i {
+        color: $neon-emerald;
+        filter: drop-shadow(0 0 8px rgba($neon-emerald, 0.6));
+      }
+    }
+
+    .gym-subtitle {
+      margin: 4px 0 0 0;
+      font-size: 0.9rem;
+      color: #94a3b8;
+    }
+  }
+}
+
+// Grid Layout
+.gym-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  position: relative;
+  z-index: 10;
+  width: 100%;
+
+  @media (min-width: 992px) {
+    grid-template-columns: 4fr 8fr;
+  }
+}
+
+.gym-col-left {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.gym-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+// Estilos globales de componentes del gym (para None encapsulation)
 .glass-panel {
   background: $glass-bg;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid $glass-border;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
 }
 
-.btn-cyberpunk {
+// Componente: app-ia-zona-avatar
+.gym-avatar-card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   position: relative;
-  background: transparent;
-  color: #f8fafc;
-  padding: 0.75rem 1.5rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  border: 1px solid $neon-cyan;
-  border-radius: 8px;
   overflow: hidden;
-  transition: all 0.3s ease;
-  
-  &::before {
-    content: '';
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+
+  .status-top-bar {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
-    background: linear-gradient(45deg, transparent, rgba($neon-cyan, 0.2), transparent);
-    transform: translateX(-100%);
-    transition: 0.5s;
+    height: 4px;
+
+    &.is-critico {
+      background: $neon-red;
+      box-shadow: 0 0 10px rgba($neon-red, 0.8);
+    }
+    &.is-excelente {
+      background: $neon-emerald;
+      box-shadow: 0 0 10px rgba($neon-emerald, 0.8);
+    }
+    &.is-alerta {
+      background: $neon-amber;
+      box-shadow: 0 0 10px rgba($neon-amber, 0.8);
+    }
   }
-  
-  &:hover {
-    box-shadow: 0 0 15px rgba($neon-cyan, 0.4);
-    text-shadow: 0 0 5px rgba($neon-cyan, 0.8);
-    background: rgba($neon-cyan, 0.1);
-    
-    &::before {
-      transform: translateX(100%);
+
+  .avatar-circle-wrapper {
+    position: relative;
+    width: 128px;
+    height: 128px;
+    margin-bottom: 16px;
+
+    .dashed-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 4px dashed transparent;
+      animation: spin 10s linear infinite;
+
+      &.is-critico { border-color: rgba($neon-red, 0.4); }
+      &.is-excelente { border-color: rgba($neon-emerald, 0.4); }
+      &.is-alerta { border-color: rgba($neon-amber, 0.4); }
+    }
+
+    .avatar-icon-box {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0f172a;
+      border: 2px solid transparent;
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+
+      &.is-critico {
+        border-color: $neon-red;
+        color: $neon-red;
+        filter: drop-shadow(0 0 8px rgba($neon-red, 0.5));
+      }
+      &.is-excelente {
+        border-color: $neon-emerald;
+        color: $neon-emerald;
+        filter: drop-shadow(0 0 8px rgba($neon-emerald, 0.5));
+      }
+      &.is-alerta {
+        border-color: $neon-amber;
+        color: $neon-amber;
+        filter: drop-shadow(0 0 8px rgba($neon-amber, 0.5));
+      }
+
+      i {
+        font-size: 3rem;
+      }
+    }
+  }
+
+  .athlete-name {
+    font-size: 1.4rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #f8fafc;
+    margin: 0;
+  }
+
+  .athlete-subtitle {
+    margin: 8px 0 0 0;
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 500;
+  }
+}
+
+// Componente: app-ia-zona-score-bar
+.gym-score-card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  width: 100%;
+  box-sizing: border-box;
+
+  .score-card-title {
+    margin: 0 0 20px 0;
+    font-size: 0.7rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+  }
+
+  .barbell-container {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+
+    .barbell-shaft {
+      position: absolute;
+      width: 90%;
+      height: 14px;
+      background: linear-gradient(180deg, #e2e8f0, #94a3b8, #475569);
+      border-radius: 4px;
+      z-index: 0;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .barbell-plates {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      z-index: 10;
+      position: absolute;
+
+      &.is-left {
+        left: 5%;
+      }
+      &.is-right {
+        right: 5%;
+        flex-direction: row-reverse;
+      }
+
+      .plate {
+        border-radius: 6px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+
+        &.plate-large {
+          height: 90px;
+          width: 18px;
+          background: $neon-emerald;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          box-shadow: 0 0 15px rgba($neon-emerald, 0.25);
+        }
+        &.plate-medium {
+          height: 70px;
+          width: 15px;
+          background: $neon-amber;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          box-shadow: 0 0 10px rgba($neon-amber, 0.25);
+        }
+        &.plate-small {
+          height: 50px;
+          width: 12px;
+          background: #475569;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+      }
+    }
+
+    .barbell-score-display {
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      border: 4px solid #334155;
+      background: #0f172a;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.8), inset 0 2px 10px rgba(0,0,0,0.6);
+      position: relative;
+
+      .score-inner-border {
+        position: absolute;
+        inset: 4px;
+        border-radius: 50%;
+        border: 1px dashed rgba(255, 255, 255, 0.15);
+      }
+
+      .score-value {
+        font-size: 2.2rem;
+        font-weight: 900;
+        z-index: 2;
+
+        &.is-critico {
+          color: $neon-red;
+          filter: drop-shadow(0 0 8px rgba($neon-red, 0.6));
+        }
+        &.is-alerta {
+          color: $neon-amber;
+          filter: drop-shadow(0 0 8px rgba($neon-amber, 0.6));
+        }
+        &.is-excelente {
+          color: $neon-emerald;
+          filter: drop-shadow(0 0 8px rgba($neon-emerald, 0.6));
+        }
+      }
     }
   }
 }
 
-.ekg-line {
-  stroke-dasharray: 200;
-  stroke-dashoffset: 200;
-  animation: ekg-draw 3s linear infinite;
-  
-  &.fast-pulse {
-    animation: ekg-draw 1.5s linear infinite;
+// Componente: app-ia-zona-vitales
+.vitales-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (min-width: 576px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .vital-card {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 125px;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    border-width: 1px;
+    border-style: solid;
+    transition: all 0.3s ease;
+
+    &.border-red-500\/50 {
+      border-color: rgba($neon-red, 0.3) !important;
+      background: rgba($neon-red, 0.04) !important;
+      box-shadow: 0 0 15px rgba($neon-red, 0.08) !important;
+    }
+    &.border-amber-500\/50 {
+      border-color: rgba($neon-amber, 0.3) !important;
+      background: rgba($neon-amber, 0.04) !important;
+      box-shadow: 0 0 15px rgba($neon-amber, 0.08) !important;
+    }
+    &.border-emerald-500\/30 {
+      border-color: rgba($neon-emerald, 0.15) !important;
+      background: rgba($neon-emerald, 0.02) !important;
+    }
+
+    .vital-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+
+      .vital-label {
+        font-size: 0.65rem;
+        font-family: monospace;
+        color: #94a3b8;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      i {
+        font-size: 0.85rem;
+        
+        &.text-red-500 { color: $neon-red; }
+        &.text-amber-500 { color: $neon-amber; }
+        &.text-emerald-500 { color: $neon-emerald; }
+      }
+    }
+
+    .vital-value {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: #f1f5f9;
+      z-index: 10;
+      margin-top: 8px;
+
+      .vital-unit {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: #475569;
+        margin-left: 4px;
+      }
+    }
+
+    .vital-ekg-svg {
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 100%;
+      height: 48px;
+      opacity: 0.45;
+      z-index: 0;
+      pointer-events: none;
+
+      svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      .ekg-line {
+        fill: none;
+        stroke-width: 2;
+        stroke-dasharray: 200;
+        stroke-dashoffset: 200;
+        animation: ekg-draw 3s linear infinite;
+
+        &.fast-pulse {
+          animation: ekg-draw 1.3s linear infinite;
+        }
+
+        &.stroke-red-500 { stroke: $neon-red; }
+        &.stroke-amber-500 { stroke: $neon-amber; }
+        &.stroke-emerald-500 { stroke: $neon-emerald; }
+      }
+    }
   }
 }
 
-@keyframes ekg-draw {
-  0% { stroke-dashoffset: 200; }
-  50% { stroke-dashoffset: 0; }
-  100% { stroke-dashoffset: -200; }
+// Componente: app-ia-zona-rutina
+.gym-routine-card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+
+  .routine-card-title {
+    margin: 0 0 20px 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    i {
+      color: $neon-cyan;
+    }
+  }
+
+  .exercise-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    .exercise-card {
+      position: relative;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+
+      &.is-active {
+        border-color: #334155;
+        background: rgba(30, 41, 59, 0.25);
+
+        &:hover {
+          border-color: rgba($neon-cyan, 0.35);
+        }
+      }
+
+      &.is-completed {
+        border-color: rgba($neon-emerald, 0.15);
+        background: rgba($neon-emerald, 0.03);
+        opacity: 0.75;
+      }
+
+      .stamp-logrado {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-8deg);
+        font-size: 2.2rem;
+        font-weight: 900;
+        color: rgba($neon-emerald, 0.08);
+        border: 3px solid rgba($neon-emerald, 0.08);
+        padding: 4px 16px;
+        border-radius: 8px;
+        letter-spacing: 0.15em;
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      .exercise-content {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        position: relative;
+        z-index: 10;
+
+        .checkbox-col {
+          padding-top: 4px;
+        }
+
+        .details-col {
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
+
+          .details-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+
+            .exercise-name {
+              margin: 0;
+              font-size: 1rem;
+              font-weight: 700;
+              color: #f1f5f9;
+              transition: all 0.2s ease;
+
+              &.is-done {
+                color: #64748b;
+                text-decoration: line-through;
+              }
+            }
+
+            .badge-muscle {
+              font-size: 0.65rem;
+              font-family: monospace;
+              color: $neon-cyan;
+              background: rgba($neon-cyan, 0.06);
+              border: 1px solid rgba($neon-cyan, 0.15);
+              padding: 2px 8px;
+              border-radius: 4px;
+              display: flex;
+              align-items: center;
+              gap: 4px;
+              white-space: nowrap;
+            }
+          }
+
+          .exercise-desc {
+            margin: 6px 0 0 0;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            line-height: 1.5;
+
+            &.is-done {
+              color: #475569;
+            }
+          }
+
+          .exercise-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            font-family: monospace;
+
+            .meta-item {
+              display: flex;
+              align-items: center;
+              gap: 4px;
+
+              &.is-series {
+                color: #d97706; // amber-600
+              }
+
+              &.is-goal {
+                color: #34d399; // emerald-400
+              }
+
+              &.is-done {
+                color: #475569;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
-.fade-in-up {
-  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.plate {
-  border-radius: 4px;
-  height: 60px;
-  width: 15px;
-  
-  &-large {
-    height: 80px;
-    width: 20px;
-  }
-  
-  &-medium {
-    height: 60px;
-    width: 15px;
-  }
-}
-
+// Checkbox Cyberpunk
 .cyber-checkbox {
   display: block;
   position: relative;
-  padding-left: 30px;
-  margin-bottom: 20px;
   cursor: pointer;
-  font-size: 22px;
   user-select: none;
+  width: 22px;
+  height: 22px;
+  box-sizing: border-box;
   
   input {
     position: absolute;
@@ -114,7 +650,7 @@ $glass-border: rgba(255, 255, 255, 0.05);
     &:checked ~ .checkmark {
       background-color: transparent;
       border-color: $neon-emerald;
-      box-shadow: 0 0 10px rgba($neon-emerald, 0.5);
+      box-shadow: 0 0 8px rgba($neon-emerald, 0.5);
       
       &:after {
         display: block;
@@ -126,21 +662,22 @@ $glass-border: rgba(255, 255, 255, 0.05);
     position: absolute;
     top: 0;
     left: 0;
-    height: 24px;
-    width: 24px;
+    height: 22px;
+    width: 22px;
     background-color: rgba(15, 23, 42, 0.8);
     border: 2px solid #475569;
     border-radius: 6px;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
+    box-sizing: border-box;
     
     &:after {
       content: "";
       position: absolute;
       display: none;
-      left: 7px;
-      top: 3px;
-      width: 6px;
-      height: 12px;
+      left: 6px;
+      top: 2px;
+      width: 5px;
+      height: 10px;
       border: solid $neon-emerald;
       border-width: 0 2px 2px 0;
       transform: rotate(45deg);
@@ -148,18 +685,190 @@ $glass-border: rgba(255, 255, 255, 0.05);
   }
 }
 
-.stamp-logrado {
-  font-size: 3rem;
-  font-weight: 900;
-  color: rgba($neon-emerald, 0.1);
-  border: 4px solid rgba($neon-emerald, 0.1);
-  padding: 0.5rem 2rem;
-  border-radius: 12px;
-  letter-spacing: 0.2em;
-  animation: stampIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+// Empty State
+.gym-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 350px;
+  width: 100%;
+  text-align: center;
+  opacity: 0.65;
+  z-index: 10;
+  position: relative;
+
+  .empty-icon {
+    font-size: 3.5rem;
+    color: #475569;
+    margin-bottom: 16px;
+    animation: pulse 3s ease-in-out infinite;
+  }
+
+  .empty-text {
+    font-size: 1rem;
+    color: #64748b;
+    margin: 0;
+  }
 }
 
-@keyframes stampIn {
-  0% { transform: translate(-50%, -50%) rotate(12deg) scale(3); opacity: 0; }
-  100% { transform: translate(-50%, -50%) rotate(12deg) scale(1); opacity: 1; }
+// Light theme overrides (LUKA GYM)
+:host-context(body.tema-claro) {
+  .gym-container {
+    background: #ffffff;
+    border-color: rgba(91, 106, 240, 0.12);
+    box-shadow: 0 10px 30px rgba(91, 106, 240, 0.05);
+
+    .gym-header {
+      .gym-subtitle {
+        color: #475569;
+      }
+    }
+
+    .gym-accent {
+      &.accent-top-right {
+        background: rgba(16, 185, 129, 0.02);
+      }
+      &.accent-bottom-left {
+        background: rgba(239, 68, 68, 0.02);
+      }
+    }
+  }
+
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.65);
+    border-color: rgba(91, 106, 240, 0.15);
+    box-shadow: 0 4px 15px rgba(91, 106, 240, 0.05);
+  }
+
+  // Avatar
+  .gym-avatar-card {
+    .athlete-name {
+      color: #0f172a;
+    }
+    .athlete-subtitle {
+      color: #475569;
+    }
+    .avatar-circle-wrapper .avatar-icon-box {
+      background: #f8fafc;
+    }
+  }
+
+  // Score Bar
+  .gym-score-card {
+    .score-card-title {
+      color: #475569;
+    }
+    .barbell-container {
+      .barbell-shaft {
+        background: linear-gradient(180deg, #cbd5e1, #94a3b8, #64748b);
+        border-color: rgba(0, 0, 0, 0.1);
+      }
+      .barbell-score-display {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        
+        .score-inner-border {
+          border-color: rgba(0, 0, 0, 0.05);
+        }
+      }
+      .barbell-plates .plate.plate-small {
+        background: #94a3b8;
+        border-color: rgba(0, 0, 0, 0.1);
+      }
+    }
+  }
+
+  // Vitales
+  .vitales-grid .vital-card {
+    &.border-red-500\/50 {
+      background: rgba($neon-red, 0.05) !important;
+    }
+    &.border-amber-500\/50 {
+      background: rgba($neon-amber, 0.05) !important;
+    }
+    &.border-emerald-500\/30 {
+      background: rgba($neon-emerald, 0.03) !important;
+    }
+
+    .vital-card-header .vital-label {
+      color: #475569;
+    }
+
+    .vital-value {
+      color: #0f172a;
+
+      .vital-unit {
+        color: #64748b;
+      }
+    }
+  }
+
+  // Routine
+  .gym-routine-card {
+    .routine-card-title {
+      color: #0f172a;
+    }
+
+    .exercise-list .exercise-card {
+      &.is-active {
+        border-color: rgba(91, 106, 240, 0.15);
+        background: rgba(91, 106, 240, 0.02);
+
+        &:hover {
+          border-color: $neon-cyan;
+        }
+      }
+
+      &.is-completed {
+        border-color: rgba($neon-emerald, 0.2);
+        background: rgba($neon-emerald, 0.05);
+      }
+
+      .exercise-content .details-col {
+        .details-header .exercise-name {
+          color: #0f172a;
+
+          &.is-done {
+            color: #94a3b8;
+          }
+        }
+
+        .exercise-desc {
+          color: #475569;
+
+          &.is-done {
+            color: #94a3b8;
+          }
+        }
+      }
+    }
+  }
+
+  .cyber-checkbox .checkmark {
+    background-color: #ffffff;
+    border-color: #cbd5e1;
+  }
+}
+
+// Keyframes
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes ekg-draw {
+  0% { stroke-dashoffset: 200; }
+  50% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -200; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }

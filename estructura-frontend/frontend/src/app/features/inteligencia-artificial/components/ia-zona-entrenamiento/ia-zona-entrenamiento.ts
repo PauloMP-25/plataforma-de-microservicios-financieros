@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, signal, Input, OnChanges, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RespuestaModuloDTO, ConsejoEstructuradoEntrenamiento } from '../../../../core/models/ia_coach/ia-base.model';
@@ -45,7 +45,8 @@ export interface EstadoAtleta {
     IaZonaRutinaComponent
   ],
   templateUrl: './ia-zona-entrenamiento.html',
-  styleUrl: './ia-zona-entrenamiento.scss'
+  styleUrl: './ia-zona-entrenamiento.scss',
+  encapsulation: ViewEncapsulation.None
 })
 export class IaZonaEntrenamientoComponent implements OnInit, OnChanges {
   

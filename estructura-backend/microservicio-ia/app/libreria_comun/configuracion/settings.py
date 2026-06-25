@@ -20,7 +20,10 @@ class Settings(BaseSettings):
     @property
     def rabbit_url(self) -> str:
         """Retorna la URL de conexión para RabbitMQ."""
-        return f"amqp://{self.rabbit_user}:{self.rabbit_pass}@{self.rabbit_host}:{self.rabbit_port}/"
+        import os
+        es_ssl = os.getenv("RABBITMQ_SSL_ENABLED", "true").lower() == "true"
+        scheme = "amqps" if es_ssl else "amqp"
+        return f"{scheme}://{self.rabbit_user}:{self.rabbit_pass}@{self.rabbit_host}:{self.rabbit_port}/"
 
     model_config = SettingsConfigDict(
         env_file=["../../.env", "../.env", ".env"],  # .env centralizado del backend, con fallbacks
