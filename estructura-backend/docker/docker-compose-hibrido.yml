@@ -145,21 +145,23 @@ services:
     - luka-network
     environment:
       GEMINI_API_KEY: ${GEMINI_API_KEY}
-      REDIS_HOST: host.docker.internal
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: ""
-      REDIS_SSL: 'false'
-      RABBITMQ_HOST: host.docker.internal
-      RABBITMQ_PUERTO: 5672
-      RABBITMQ_USUARIO: guest
-      RABBITMQ_PASSWORD: guest
-      RABBITMQ_VHOST: /
+      REDIS_HOST: ${SPRING_DATA_REDIS_HOST:-host.docker.internal}
+      REDIS_PORT: ${SPRING_DATA_REDIS_PORT:-6379}
+      REDIS_PASSWORD: ${SPRING_REDIS_PASSWORD:-}
+      REDIS_SSL: ${REDIS_SSL:-false}
+      RABBITMQ_HOST: ${SPRING_RABBITMQ_HOST:-host.docker.internal}
+      RABBITMQ_PUERTO: ${SPRING_RABBITMQ_PORT:-5672}
+      RABBITMQ_USUARIO: ${SPRING_RABBITMQ_USERNAME:-guest}
+      RABBITMQ_PASSWORD: ${SPRING_RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_VHOST: ${SPRING_RABBITMQ_VIRTUAL_HOST:-/}
+      RABBITMQ_SSL_ENABLED: ${RABBITMQ_SSL_ENABLED:-false}
+      SPRING_RABBITMQ_SSL_ENABLED: ${SPRING_RABBITMQ_SSL_ENABLED:-false}
       JWT_CLAVE_SECRETA: ${JWT_SECRET_KEY}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       DB_HOST: host.docker.internal
       DB_PORT: 5432
-      DB_USUARIO: null
-      DB_PASSWORD: null
+      DB_USUARIO: ${SPRING_DATASOURCE_USERNAME}
+      DB_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       DB_NOMBRE: db_microservicio_ia
       URL_PROD_FINANCIERO: http://ms-nucleo-financiero:8085
       URL_PROD_AUDITORIA: http://ms-auditoria:8082

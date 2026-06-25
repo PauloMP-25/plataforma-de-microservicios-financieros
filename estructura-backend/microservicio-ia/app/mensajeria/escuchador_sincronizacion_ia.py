@@ -27,6 +27,8 @@ import time
 from decimal import Decimal
 from typing import Optional
 
+import os
+import ssl as ssl_lib
 import pika
 import pika.exceptions
 from pika.adapters.blocking_connection import BlockingChannel
@@ -160,11 +162,22 @@ class EscuchadorSincronizacionIA:
             self._config.rabbitmq_usuario,
             self._config.rabbitmq_password,
         )
+        
+        ssl_options = None
+        if os.getenv("RABBITMQ_SSL_ENABLED", "true").lower() == "true":
+            ssl_context = ssl_lib.create_default_context()
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl_lib.CERT_NONE
+            ssl_options = pika.SSLOptions(ssl_context)
+            
+        puerto = int(os.getenv("RABBITMQ_PUERTO", str(self._config.rabbitmq_puerto)))
+        
         parametros = pika.ConnectionParameters(
             host=self._config.rabbitmq_host,
-            port=self._config.rabbitmq_puerto,
+            port=puerto,
             virtual_host=self._config.rabbitmq_vhost,
             credentials=credenciales,
+            ssl_options=ssl_options,
             client_properties={"connection_name": "ms-ia-sync-contexto"},
             heartbeat=self._config.rabbitmq_heartbeat,
             blocked_connection_timeout=self._config.rabbitmq_timeout,

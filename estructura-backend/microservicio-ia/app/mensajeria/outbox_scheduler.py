@@ -23,6 +23,8 @@ import time
 from datetime import datetime
 from typing import Optional
 
+import os
+import ssl as ssl_lib
 import pika
 import pika.exceptions
 from pika import BasicProperties
@@ -156,11 +158,21 @@ class OutboxScheduler:
         try:
             cfg = self._config
             credenciales = pika.PlainCredentials(cfg.rabbitmq_usuario, cfg.rabbitmq_password)
+            ssl_options = None
+            if os.getenv("RABBITMQ_SSL_ENABLED", "true").lower() == "true":
+                ssl_context = ssl_lib.create_default_context()
+                ssl_context.check_hostname = False
+                ssl_context.verify_mode = ssl_lib.CERT_NONE
+                ssl_options = pika.SSLOptions(ssl_context)
+                
+            puerto = int(os.getenv("RABBITMQ_PUERTO", str(cfg.rabbitmq_puerto)))
+            
             parametros   = pika.ConnectionParameters(
                 host=cfg.rabbitmq_host,
-                port=cfg.rabbitmq_puerto,
+                port=puerto,
                 virtual_host=cfg.rabbitmq_vhost,
                 credentials=credenciales,
+                ssl_options=ssl_options,
                 client_properties={"connection_name": "outbox-scheduler"},
                 heartbeat=60,
                 blocked_connection_timeout=10,

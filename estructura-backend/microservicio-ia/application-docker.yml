@@ -1,0 +1,41 @@
+# Archivo de referencia de variables de entorno para producción (Railway/Koyeb/Render)
+# El microservicio de IA (Python) lee estas variables directamente del entorno.
+# Usar este archivo como checklist al configurar los secretos en la plataforma cloud.
+
+# --- CORS ---
+# Orígenes permitidos (frontend y otros microservicios que lo consuman directamente)
+CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+FRONTEND_URL: ${FRONTEND_URL}
+
+# --- REDIS (Upstash u otro proveedor) ---
+REDIS_HOST: ${SPRING_DATA_REDIS_HOST}
+REDIS_PORT: ${SPRING_DATA_REDIS_PORT}
+REDIS_PASSWORD: ${SPRING_REDIS_PASSWORD}
+REDIS_SSL: "true"
+
+# --- RABBITMQ (CloudAMQP u otro proveedor) ---
+RABBITMQ_HOST: ${SPRING_RABBITMQ_HOST}
+RABBITMQ_PUERTO: ${SPRING_RABBITMQ_PORT}
+RABBITMQ_USUARIO: ${SPRING_RABBITMQ_USERNAME}
+RABBITMQ_PASSWORD: ${SPRING_RABBITMQ_PASSWORD}
+RABBITMQ_VHOST: ${SPRING_RABBITMQ_VIRTUAL_HOST}
+RABBITMQ_SSL_ENABLED: "true"
+
+# --- BASE DE DATOS (NeonDB) ---
+DB_HOST: ${SPRING_DATASOURCE_HOST}
+DB_PORT: ${SPRING_DATASOURCE_PORT:5432}
+DB_USUARIO: ${SPRING_DATASOURCE_USERNAME}
+DB_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+DB_NOMBRE: db_microservicio_ia
+
+# --- GEMINI IA ---
+GEMINI_API_KEY: ${GEMINI_API_KEY}
+
+# --- SEGURIDAD ---
+JWT_CLAVE_SECRETA: ${JWT_SECRET_KEY}
+LUKA_INTERNAL_TOKEN: ${LUKA_INTERNAL_TOKEN}
+
+# --- URLs INTER-SERVICIO ---
+URL_PROD_FINANCIERO: ${URL_PROD_FINANCIERO}
+URL_PROD_AUDITORIA: ${URL_PROD_AUDITORIA}
+URL_PROD_CLIENTE: ${URL_PROD_CLIENTE}

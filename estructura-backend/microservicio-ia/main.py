@@ -113,12 +113,15 @@ def _iniciar_escuchadores_adicionales() -> None:
     try:
         import redis
         try:
+            redis_ssl = os.getenv("REDIS_SSL", "true").lower() == "true"
             redis_client = redis.Redis(
                 host=config.redis_host,
                 port=config.redis_port,
                 db=config.redis_db,
                 password=config.redis_password or None,
                 decode_responses=True,
+                ssl=redis_ssl,
+                ssl_cert_reqs=None,
             )
             redis_client.ping()
         except Exception as conn_err:
@@ -131,6 +134,8 @@ def _iniciar_escuchadores_adicionales() -> None:
                     db=config.redis_db,
                     password=None,
                     decode_responses=True,
+                    ssl=redis_ssl,
+                    ssl_cert_reqs=None,
                 )
                 redis_client.ping()
             else:
@@ -303,8 +308,12 @@ allow_origins = [
     "http://localhost:5173",
 ]
 if config.es_produccion:
-    frontend_url = os.getenv("FRONTEND_URL", "https://ikaza-import.es")
-    allow_origins = [frontend_url]
+    frontend_url = os.getenv("FRONTEND_URL", "")
+    cors_extra = os.getenv("CORS_ALLOWED_ORIGINS", "")
+    origins_list = [o.strip() for o in cors_extra.split(",") if o.strip()]
+    if frontend_url:
+        origins_list.append(frontend_url)
+    allow_origins = origins_list if origins_list else ["*"]
 
 app.add_middleware(
     CORSMiddleware,

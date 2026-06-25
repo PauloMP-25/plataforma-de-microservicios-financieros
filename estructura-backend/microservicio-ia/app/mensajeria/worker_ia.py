@@ -67,7 +67,17 @@ class WorkerIA:
     async def iniciar(self):
         """Inicia el bucle de consumo de RabbitMQ."""
         try:
-            conexion = await aio_pika.connect_robust(settings.rabbit_url)
+            import os
+            import ssl
+            
+            es_ssl = os.getenv("RABBITMQ_SSL_ENABLED", "true").lower() == "true"
+            ssl_context = None
+            if es_ssl:
+                ssl_context = ssl.create_default_context()
+                ssl_context.check_hostname = False
+                ssl_context.verify_mode = ssl.CERT_NONE
+
+            conexion = await aio_pika.connect_robust(settings.rabbit_url, ssl_context=ssl_context)
             canal = await conexion.channel()
             
             # Prefetch=1 para no saturar el worker con análisis pesados
