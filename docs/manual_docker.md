@@ -43,10 +43,11 @@ Una vez que la infraestructura de la Fase 1 esté corriendo exitosamente, proced
    cd estructura-backend/docker
    ```
 
-2. Ejecuta el comando de Docker Compose para levantar los microservicios en segundo plano:
+2. Ejecuta el comando de Docker Compose para construir las imágenes de los contenedores (si no existen o si hubo cambios en el código) y levantarlos en segundo plano:
    ```bash
-   docker-compose -f docker-compose-hibrido.yml up -d
+   docker-compose -f docker-compose-hibrido.yml up -d --build
    ```
+   *(Nota: El flag `--build` fuerza a Docker a compilar tu código Java/Python y crear las imágenes frescas antes de iniciar).*
 
 3. **Verificar el estado:**
    Puedes abrir **Docker Desktop** y observar cómo todos los contenedores con el prefijo `luka-` se van poniendo en verde. Dado que los servicios de Java (Spring Boot) toman cerca de 1 minuto en arrancar por completo, espera un momento.
