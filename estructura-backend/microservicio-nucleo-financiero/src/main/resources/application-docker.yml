@@ -22,16 +22,17 @@ spring:
 #                              DATASOURCE: Conexión y credenciales de PostgreSQL local
 # ---------------------------------------------------------------------------------------------------------------------
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL_FINANCIERO:jdbc:postgresql://localhost:5432/db_microservicio_financiero}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 3
       minimum-idle: 1
-      connection-timeout: 30000
+      connection-timeout: 60000
       idle-timeout: 600000
       max-lifetime: 1800000
+      initialization-fail-timeout: 120000
       pool-name: LukaHikariCP
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -56,10 +57,13 @@ spring:
 # ---------------------------------------------------------------------------------------------------------------------
   rabbitmq:
     host: ${SPRING_RABBITMQ_HOST:rabbitmq}
-    port: ${SPRING_RABBITMQ_PORT:5672}
+    port: ${SPRING_RABBITMQ_PORT:5671}
     username: ${SPRING_RABBITMQ_USERNAME:guest}
     password: ${SPRING_RABBITMQ_PASSWORD}
     virtual-host: ${SPRING_RABBITMQ_VIRTUAL_HOST:/}
+    ssl:
+      enabled: ${SPRING_RABBITMQ_SSL_ENABLED:false}
+      algorithm: ${SPRING_RABBITMQ_SSL_ALGORITHM:TLSv1.2}
     listener:
       simple:
         acknowledge-mode: manual
