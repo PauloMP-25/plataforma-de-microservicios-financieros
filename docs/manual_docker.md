@@ -79,3 +79,19 @@ Cuando termines tu jornada de trabajo o desees apagar todo para liberar recursos
    docker stop luka-postgres luka-rabbitmq luka-redis
    ```
    *(Nota: Puedes encenderlos nuevamente otro día usando `docker start luka-postgres luka-rabbitmq luka-redis` en lugar de crear unos nuevos).*
+
+## 🛑 Troubleshooting (Solución de Problemas Frecuentes)
+
+### 1. Error de conexión a PostgreSQL (`FATAL: password authentication failed for user "postgres"`)
+**Observación:** Si al levantar los microservicios, estos fallan indicando que la contraseña de base de datos es incorrecta (pero tú estás seguro de que el archivo `.env.local` tiene la clave correcta, por ejemplo `12345`), es muy probable que `docker-compose-hibrido.yml` esté sobreescribiendo las variables.
+**Solución Aplicada:** 
+- En el archivo `docker-compose-hibrido.yml`, **NO deben existir variables hardcodeadas** bajo la etiqueta `environment:` para credenciales si ya existe la directiva `env_file: - ../.env.local`. 
+- Se eliminaron las entradas `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` y `JWT_SECRET_KEY` (entre otras) de la sección `environment` en el compose, obligando a los contenedores a usar el archivo `.env.local` limpiamente.
+
+### 2. Error en variables al usar variables interpoladas (`${VARIABLE}`) en el compose
+**Observación:** Docker Compose en tu terminal host no carga el archivo `../.env.local` por defecto para hacer interpolaciones de texto en el propio YAML.
+**Consecuencia:** Si colocas `JWT_SECRET_KEY: ${JWT_SECRET_KEY}` en el YAML, Docker Compose inyectará un **string vacío `""`** en el contenedor, destruyendo el valor correcto que el contenedor iba a leer del `.env.local`.
+**Solución Aplicada:**
+- Dejar que el contenedor lea directamente las variables usando `env_file`. Si una variable está definida en el `.env.local`, no es necesario mapearla de forma redundante en el bloque `environment:` de Docker Compose.
+
+
