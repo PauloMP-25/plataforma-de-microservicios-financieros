@@ -68,22 +68,20 @@ ENV PYTHONUNBUFFERED=1 \
 
 USER lukaapp
 
-EXPOSE 8086
+# Puerto por defecto. Railway/Render sobreescriben esta variable con la suya propia.
+ENV PORT=8086
+EXPOSE ${PORT}
 
 # Health check: verifica el endpoint de salud de FastAPI
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8086/health || exit 1
+    CMD curl -f http://localhost:${PORT}/health || exit 1
 
 # dumb-init para manejo correcto de señales en PID 1
 ENTRYPOINT ["dumb-init", "--"]
 
 # Uvicorn en modo producción:
 #   --host 0.0.0.0     → acepta conexiones externas al contenedor
-#   --port 8086        → puerto del microservicio IA
-#   --workers 1        → 1 proceso worker (Render free tier: 512MB; 2 workers provoca OOM)
+#   --port $PORT       → Railway/Render inyectan el puerto dinámicamente
+#   --workers 1        → 1 proceso worker (free tier: 512MB; 2 workers provoca OOM)
 #   --log-level info   → nivel de log adecuado para producción
-CMD ["uvicorn", "main:app", \
-     "--host", "0.0.0.0", \
-     "--port", "8086", \
-     "--workers", "1", \
-     "--log-level", "info"]
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT} --workers 1 --log-level info"]
