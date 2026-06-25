@@ -42,14 +42,14 @@ public class PublicadorEventosBase {
 
     /**
      * Publica otros tipos de eventos (Recuperacion, Pagos, Descargas) de forma asíncrona.
-     * Enruta a: exchange.auditoria -> auditoria.evento.[accion]
-     * 
-     * @param dto    Contrato de datos de acceso.
-     * @param accion Etiqueta de la acción (ej: "login", "fallo", "logout").
+     * Enruta a: exchange.auditoria -&gt; auditoria.evento.[accion]
+     *
+     * @param dto    Contrato de datos del evento.
+     * @param accion Etiqueta de la acción (ej: "recuperacion", "descarga", "pago").
      */
     @Async
     public void publicarEvento(Object dto, String accion) {
-        String rk = "auditoria.evento" + accion.toLowerCase();
+        String rk = "auditoria.evento." + accion.toLowerCase();
         enviar(NombresExchange.AUDITORIA, rk, dto);
     }
 
