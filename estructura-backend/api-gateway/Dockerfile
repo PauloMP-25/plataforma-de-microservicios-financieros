@@ -12,18 +12,18 @@ WORKDIR /build
 ENV MAVEN_OPTS="-Xmx256m -XX:MaxMetaspaceSize=128m"
 
 # 1. Primero instalamos la librería común localmente en el contenedor
-COPY libreria-comun ./libreria-comun
+COPY estructura-backend/libreria-comun ./libreria-comun
 RUN cd libreria-comun && mvn install -DskipTests -B
 
 # 2. Ahora preparamos el api-gateway
 WORKDIR /build/api-gateway
-COPY api-gateway/pom.xml .
+COPY estructura-backend/api-gateway/pom.xml .
 
 # Descargamos dependencias (esta capa se cachea)
 RUN mvn dependency:go-offline -B
 
 # Copiamos el código fuente y compilamos
-COPY api-gateway/src ./src
+COPY estructura-backend/api-gateway/src ./src
 RUN mvn package -DskipTests -B
 
 # Extraemos las capas (esta parte sigue igual)
