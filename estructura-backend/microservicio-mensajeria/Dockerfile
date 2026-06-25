@@ -62,26 +62,28 @@ COPY --from=builder --chown=lukaapp:lukaapp /build/extracted/application/ ./
 
 USER lukaapp
 
+# Variables de entorno JVM globales:
+# UseContainerSupport → respeta los límites cgroup del contenedor
+# MaxRAMPercentage=75 → JVM usa máx 75% de los 512 MB de Render (≈384 MB)
+# Xss256k           → reduce el tamaño de stack por hilo
+ENV JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Xss256k"
+
 # Render inyecta dinámicamente la variable $PORT. Por defecto usamos 8084.
 ENV PORT=8084
 EXPOSE ${PORT}
 
 # Health check interno del contenedor
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
     CMD curl -f http://localhost:${PORT}/actuator/health || exit 1
 
 # dumb-init maneja señales del SO correctamente (SIGTERM para graceful shutdown)
 ENTRYPOINT ["dumb-init", "--"]
 
-# JVM optimizada para contenedores:
-# Usamos 'sh -c' y 'exec java' para que la shell expanda $PORT pero java reciba las señales
+# JAVA_TOOL_OPTIONS ya inyecta las flags de memoria globalmente.
+# Solo añadimos las flags de comportamiento que no están en JAVA_TOOL_OPTIONS.
 CMD ["sh", "-c", "exec java \
-    -XX:+UseContainerSupport \
-    -XX:MaxRAMPercentage=50.0 \
-    -XX:MaxMetaspaceSize=128m \
-    -Xss512k \
     -XX:+UseG1GC \
     -Djava.security.egd=file:/dev/./urandom \
-    -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:docker} \
+    -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:-docker} \
     -Dserver.port=${PORT} \
     org.springframework.boot.loader.launch.JarLauncher"]

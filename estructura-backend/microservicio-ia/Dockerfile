@@ -71,8 +71,8 @@ USER lukaapp
 EXPOSE 8086
 
 # Health check: verifica el endpoint de salud de FastAPI
-HEALTHCHECK --interval=30s --timeout=10s --start-period=45s --retries=3 \
-    CMD curl -f http://localhost:8086/actuator/health || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8086/health || exit 1
 
 # dumb-init para manejo correcto de señales en PID 1
 ENTRYPOINT ["dumb-init", "--"]
@@ -80,10 +80,10 @@ ENTRYPOINT ["dumb-init", "--"]
 # Uvicorn en modo producción:
 #   --host 0.0.0.0     → acepta conexiones externas al contenedor
 #   --port 8086        → puerto del microservicio IA
-#   --workers 2        → 2 procesos worker (ajustar según RAM disponible)
+#   --workers 1        → 1 proceso worker (Render free tier: 512MB; 2 workers provoca OOM)
 #   --log-level info   → nivel de log adecuado para producción
 CMD ["uvicorn", "main:app", \
      "--host", "0.0.0.0", \
      "--port", "8086", \
-     "--workers", "2", \
+     "--workers", "1", \
      "--log-level", "info"]

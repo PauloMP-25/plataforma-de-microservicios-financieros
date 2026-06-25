@@ -8,6 +8,8 @@ FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
 
 WORKDIR /build
 
+ENV MAVEN_OPTS="-Xmx256m -XX:MaxMetaspaceSize=128m"
+
 # 1. Primero instalamos la librería común localmente en el contenedor
 COPY estructura-backend/libreria-comun ./libreria-comun
 RUN cd libreria-comun && mvn install -DskipTests -B
@@ -55,23 +57,23 @@ COPY --from=builder --chown=lukaapp:lukaapp /build/extracted/application/ ./
 
 USER lukaapp
 
+ENV JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Xss256k"
+
 # Puerto expuesto
 ENV PORT=8088
 EXPOSE ${PORT}
 
-# Health check interno
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:${PORT}/actuator/health || exit 1
+# Health check: ms-suscripciones mapea /actuator/health → /health-internal
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
+    CMD curl -f http://localhost:${PORT}/health-internal || exit 1
 
 # dumb-init maneja señales del SO correctamente
 ENTRYPOINT ["dumb-init", "--"]
 
-# JVM optimizada para contenedores
+# JAVA_TOOL_OPTIONS ya inyecta las flags de memoria globalmente.
 CMD ["sh", "-c", "exec java \
-    -XX:+UseContainerSupport \
-    -XX:MaxRAMPercentage=75.0 \
     -XX:+UseG1GC \
     -Djava.security.egd=file:/dev/./urandom \
-    -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:docker} \
+    -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:-docker} \
     -Dserver.port=${PORT} \
     org.springframework.boot.loader.launch.JarLauncher"]
