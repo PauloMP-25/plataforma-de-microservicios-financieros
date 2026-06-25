@@ -1,3 +1,54 @@
+# 🗺️ DISTRIBUCIÓN DE MICROSERVICIOS POR PLATAFORMA
+
+> Esta distribución define dónde vive cada microservicio en producción.
+> Los dominios exactos se confirman al crear cada servicio en el panel de la plataforma.
+
+## Railway — api-gateway · ms-usuario · ms-nucleo-financiero · ms-ia
+
+| Microservicio | Puerto | Patrón de dominio Railway |
+|---|---|---|
+| `api-gateway` | 8080 | `https://luka-gateway-production-<hash>.up.railway.app` |
+| `ms-usuario` | 8081 | `https://luka-usuario-production-<hash>.up.railway.app` |
+| `ms-nucleo-financiero` | 8085 | `https://luka-financiero-production-<hash>.up.railway.app` |
+| `ms-ia` | 8086 | `https://luka-ia-production-<hash>.up.railway.app` |
+
+- Variable `PORT` inyectada dinámicamente por Railway ✅
+- RAM free tier: ~512 MB por servicio
+- `JAVA_TOOL_OPTIONS` con `MaxRAMPercentage=75.0` aplica directamente
+
+---
+
+## Koyeb — ms-mensajeria · ms-pagos · ms-suscripciones · ms-cliente
+
+| Microservicio | Puerto | Patrón de dominio Koyeb |
+|---|---|---|
+| `ms-mensajeria` | 8084 | `https://luka-mensajeria-<org>.koyeb.app` |
+| `ms-pagos` | 8087 | `https://luka-pagos-<org>.koyeb.app` |
+| `ms-suscripciones` | 8088 | `https://luka-suscripciones-<org>.koyeb.app` |
+| `ms-cliente` | 8083 | `https://luka-cliente-<org>.koyeb.app` |
+
+- Variable `PORT` inyectada dinámicamente por Koyeb ✅
+- RAM free tier: 512 MB por servicio
+- Health check configurado en Koyeb apuntando a `/actuator/health`
+
+---
+
+## Render — ms-auditoria
+
+| Microservicio | Puerto | Patrón de dominio Render |
+|---|---|---|
+| `ms-auditoria` | 8082 | `https://luka-auditoria.onrender.com` |
+
+- Variable `PORT` inyectada dinámicamente por Render ✅
+- RAM free tier: 512 MB
+- Cold start: instancias se apagan tras 15 min de inactividad (tier gratuito)
+
+---
+
+> **⚠️ TODO al desplegar:** Reemplazar los dominios placeholder en `.env` (`URL_PROD_*` y `CORS_ALLOWED_ORIGINS`) con las URLs reales asignadas por cada plataforma. No olvidar añadir el dominio del frontend Angular.
+
+---
+
 # 📋 FASE 0 — INVENTARIO Y PREREQUISITOS
 
 Antes de tocar código, debes tener en mano las siguientes credenciales de tus servicios cloud.
