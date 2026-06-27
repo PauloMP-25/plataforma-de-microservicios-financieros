@@ -35,6 +35,7 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
 
         // 2. Reglas de autorización específicas
         http.authorizeHttpRequests(auth -> auth
+                .requestMatchers("/", "/favicon.ico").permitAll()
                 // INFRAESTRUCTURA: Monitoreo y Documentación
                 .requestMatchers("/actuator/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
