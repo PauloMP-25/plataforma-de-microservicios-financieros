@@ -398,6 +398,7 @@ resilience4j:
       suscripcionCB:
         base-config: default
 
+---
 # Desactivar discovery y eureka
 spring:
   cloud:

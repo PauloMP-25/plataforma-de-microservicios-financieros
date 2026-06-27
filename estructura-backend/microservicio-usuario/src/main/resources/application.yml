@@ -145,6 +145,7 @@ management:
         health: health-internal
 
 
+---
 # Desactivar discovery y eureka
 spring:
   cloud:
