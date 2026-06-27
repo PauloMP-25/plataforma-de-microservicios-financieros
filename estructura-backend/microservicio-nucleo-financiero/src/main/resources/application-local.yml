@@ -15,7 +15,7 @@ spring:
 #    DATASOURCE: Conexión y credenciales de PostgreSQL local
 # ---------------------------------------------------------------------------------------------------------------------
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_FINANCIERO_NAME:db_luka_financiero}
+    url: ${SPRING_DATASOURCE_URL_FINANCIERO:jdbc:postgresql://localhost:5432/db_microservicio_financiero}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:adminUTP}
 
@@ -23,6 +23,7 @@ spring:
 #    RABBITMQ: Broker de mensajería asíncrona y topologías
 # ---------------------------------------------------------------------------------------------------------------------
   rabbitmq:
+    connection-name: ${spring.application.name}
     host: ${SPRING_RABBITMQ_HOST:localhost}
     port: ${SPRING_RABBITMQ_PORT:5672}
     username: ${SPRING_RABBITMQ_USERNAME:guest}

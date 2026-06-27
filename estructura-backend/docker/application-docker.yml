@@ -40,6 +40,7 @@ spring:
 
   # ── RabbitMQ ─────────────────────────────────────────────────────────────────
   rabbitmq:
+    connection-name: ${spring.application.name}
     host: ${SPRING_RABBITMQ_HOST:rabbitmq}
     port: ${SPRING_RABBITMQ_PORT:5672}
     username: ${SPRING_RABBITMQ_USERNAME:guest}
@@ -74,6 +75,7 @@ management:
         enabled: true   # /actuator/health/liveness y /readiness para K8s
   health:
     rabbitmq:
+      connection-name: ${spring.application.name}
       enabled: true
     db:
       enabled: true
