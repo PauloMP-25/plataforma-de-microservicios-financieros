@@ -49,6 +49,7 @@ luka:
     expiracion-ms: 86400000
 
 
+---
 # Desactivar discovery y eureka
 spring:
   cloud:

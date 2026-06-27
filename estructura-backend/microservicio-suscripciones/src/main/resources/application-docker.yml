@@ -95,6 +95,7 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
 
 
+---
 # Desactivar discovery y eureka
 spring:
   cloud:
