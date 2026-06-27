@@ -62,6 +62,7 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
         // 2. Definimos las reglas de este microservicio (De lo más específico a lo
         // general)
         http.authorizeHttpRequests(auth -> auth
+                .requestMatchers("/", "/favicon.ico").permitAll()
                 // Rutas públicas comunicacion interna
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers("/api/v1/datos-personales/**").permitAll()
