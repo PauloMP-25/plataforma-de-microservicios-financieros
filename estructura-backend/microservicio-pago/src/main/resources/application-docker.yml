@@ -85,6 +85,7 @@ stripe:
   cancel-url: ${FRONTEND_URL:http://localhost:3000}/suscripcion/cancelado
 
 
+---
 # Desactivar discovery y eureka
 spring:
   cloud:

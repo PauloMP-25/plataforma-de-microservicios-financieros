@@ -188,6 +188,7 @@ resilience4j:
         timeoutDuration: 30s
 
 
+---
 # Desactivar discovery y eureka
 spring:
   cloud:

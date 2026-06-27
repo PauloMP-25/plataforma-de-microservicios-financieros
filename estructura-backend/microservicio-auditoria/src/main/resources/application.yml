@@ -152,6 +152,7 @@ logging:
     name: logs/microservicio-auditoria.log
 
 
+---
 # Desactivar discovery y eureka
 spring:
   cloud:

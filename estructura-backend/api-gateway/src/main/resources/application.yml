@@ -6,6 +6,7 @@ spring:
     active: local
 
 
+---
 # Desactivar discovery y eureka
 spring:
   cloud:
