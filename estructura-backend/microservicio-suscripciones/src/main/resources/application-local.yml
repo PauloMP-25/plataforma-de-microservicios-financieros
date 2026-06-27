@@ -41,3 +41,15 @@ spring:
 url:
   prod:
     financiero: ${URL_PROD_FINANCIERO:http://localhost:8085}
+
+
+# Desactivar discovery y eureka
+spring:
+  cloud:
+    discovery:
+      enabled: false
+
+management:
+  health:
+    discovery:
+      enabled: false
