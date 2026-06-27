@@ -21,7 +21,7 @@ spring:
       connect-timeout: ${SPRING_DATA_REDIS_CONNECT_TIMEOUT:5s}
       timeout: ${SPRING_DATA_REDIS_TIMEOUT:5s}
       ssl:
-        enabled: ${SPRING_DATA_REDIS_SSL_ENABLED:false}
+        enabled: true
 
 # ---------------------------------------------------------------------------------------------------------------------
 #                              DATASOURCE: Conexión y credenciales de PostgreSQL local
