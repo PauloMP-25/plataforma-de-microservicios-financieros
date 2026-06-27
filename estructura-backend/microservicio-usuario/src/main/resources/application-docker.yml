@@ -129,6 +129,7 @@ luka:
   jwt:
     clave-secreta: ${JWT_SECRET_KEY}
 
+---
 # Desactivar discovery y eureka
 spring:
   cloud:

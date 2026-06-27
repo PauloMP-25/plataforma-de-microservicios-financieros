@@ -54,6 +54,7 @@ luka:
     clave-secreta: ${JWT_SECRET_KEY:}
     expiracion-ms: 86400000
 
+---
 # Desactivar discovery y eureka
 spring:
   cloud:

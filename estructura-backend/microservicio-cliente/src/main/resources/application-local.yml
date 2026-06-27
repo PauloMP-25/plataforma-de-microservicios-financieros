@@ -47,6 +47,7 @@ spring:
     type: none
 
 
+---
 # Desactivar discovery y eureka
 spring:
   cloud:
