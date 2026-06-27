@@ -32,10 +32,6 @@ spring:
       httpclient:
         connect-timeout: 30000
         response-timeout: ${GATEWAY_RESPONSE_TIMEOUT:60s}
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
 

@@ -8,7 +8,6 @@ Cambios v5 (alineación con ecosystem):
   - Variables de RabbitMQ renombradas a SPRING_RABBITMQ_* (estándar compartido)
   - Variables de Redis mapeadas desde SPRING_DATA_REDIS_* / REDIS_*
   - Variables de BD mapeadas desde SPRING_DATASOURCE_* (usuario/password)
-  - Eureka controlado por EUREKA_CLIENT_ENABLED (mismo que los ms Java)
   - Entorno controlado por SPRING_PROFILES_ACTIVE
 ══════════════════════════════════════════════════════════════════════════════
 """

@@ -38,7 +38,7 @@ public class SeguridadClient {
                            @org.springframework.beans.factory.annotation.Value("${URL_PROD_AUDITORIA:https://luka-auditoria.onrender.com}") String urlProdAuditoria) {
         this.redisTemplate = redisTemplate;
         
-        // Determinar si usamos Eureka (LoadBalancer) o conexión directa (Render)
+        // Determinar si usamos conexión por nombre de servicio (LoadBalancer interno) o conexión directa (Render)
         if (urlProdAuditoria.startsWith("lb://") || urlProdAuditoria.contains("microservicio-auditoria")) {
             this.webClient = webClientBuilder.build();
             this.urlBaseAuditoria = "http://microservicio-auditoria/api/v1/seguridad/verificar-ip/";
