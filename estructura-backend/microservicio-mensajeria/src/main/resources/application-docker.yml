@@ -183,3 +183,15 @@ email:
   nombre:
     empresa: SAAS FINANCIERO
 
+
+
+# Desactivar discovery y eureka
+spring:
+  cloud:
+    discovery:
+      enabled: false
+
+management:
+  health:
+    discovery:
+      enabled: false
