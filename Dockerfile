@@ -61,13 +61,13 @@ COPY --from=builder --chown=lukaapp:lukaapp /build/extracted/application/ ./
 
 USER lukaapp
 
-ENV JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Xss256k"
+ENV JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Xss256k -XX:+UseSerialGC -XX:TieredStopAtLevel=1"
 
-# Render inyecta dinámicamente la variable $PORT. Por defecto usamos 8083.
+# Back4App inyecta dinámicamente la variable $PORT. Por defecto usamos 8083.
 ENV PORT=8083
 EXPOSE ${PORT}
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
     CMD curl -f http://localhost:${PORT}/actuator/health || exit 1
 
 # dumb-init maneja señales del SO correctamente (SIGTERM para graceful shutdown)
@@ -75,7 +75,6 @@ ENTRYPOINT ["dumb-init", "--"]
 
 # JAVA_TOOL_OPTIONS ya inyecta las flags de memoria globalmente.
 CMD ["sh", "-c", "exec java \
-    -XX:+UseG1GC \
     -Djava.security.egd=file:/dev/./urandom \
     -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:-docker} \
     -Dserver.port=${PORT} \
