@@ -5,8 +5,8 @@
 .PHONY: help local-up local-down local-infra local-ms local-ia prod-up prod-down ps logs clean
 
 # ── Variables ─────────────────────────────────────────────────────────────────
-COMPOSE_LOCAL = docker compose -f docker-compose-hibrido.yml
-COMPOSE_PROD  = docker compose -f docker-compose.yml
+COMPOSE_LOCAL = docker-compose -f docker-compose-hibrido.yml
+COMPOSE_PROD  = docker-compose -f docker-compose.yml
 
 # Colores
 CYAN  = \033[0;36m

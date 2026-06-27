@@ -68,7 +68,7 @@ public class MetaAhorro {
     @Builder.Default
     private Boolean completada = false;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "boolean default true")
     @Builder.Default
     private Boolean activa = true;
 

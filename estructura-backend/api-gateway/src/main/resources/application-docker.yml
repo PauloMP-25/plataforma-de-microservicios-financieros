@@ -16,9 +16,9 @@ spring:
 # ---------------------------------------------------------------------------------------------------------------------
   data:
     redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD}
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      password: ${SPRING_REDIS_PASSWORD:}
       connect-timeout: 5s
       timeout: 3s
       ssl:
@@ -32,10 +32,6 @@ spring:
       httpclient:
         connect-timeout: 30000
         response-timeout: ${GATEWAY_RESPONSE_TIMEOUT:60s}
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
 

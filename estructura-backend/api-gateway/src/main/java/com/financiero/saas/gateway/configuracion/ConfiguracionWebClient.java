@@ -8,8 +8,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 /**
  * Configuración del cliente HTTP reactivo para el API Gateway.
  * <p>
- * Define un constructor de WebClient balanceado por carga (Eureka),
- * necesario para la comunicación interna no bloqueante entre microservicios.
+ * Define un constructor de WebClient,
+ * utilizado para la comunicación HTTP asíncrona entre microservicios.
  * </p>
  * 
  * @author Paulo Moron
@@ -20,10 +20,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class ConfiguracionWebClient {
 
     /**
-     * Proporciona un {@link WebClient.Builder} que soporta resolución de nombres
-     * de servicio (ej: http://microservicio-auditoria) mediante Eureka.
-     * 
-     * @return Constructor de WebClient con soporte de balanceo de carga.
+     * Crea un WebClient.Builder.
+     * Este builder permite invocar a otros microservicios por su nombre
+     * de servicio (ej: http://microservicio-auditoria).
+     *
+     * @return builder configurado para cliente HTTP
      */
     @Bean
     @LoadBalanced

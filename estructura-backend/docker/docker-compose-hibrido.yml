@@ -22,11 +22,11 @@ services:
     networks: *id001
     container_name: luka-ms-usuario
     env_file:
-      - ../.env.local
+    - ../.env.local
     ports:
     - 8081:8081
     build:
-      context: ..
+      context: ../..
       dockerfile: microservicio-usuario/Dockerfile.local
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -43,7 +43,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: adminUTP
       SPRING_DATA_REDIS_HOST: host.docker.internal
       SPRING_DATA_REDIS_PORT: 6379
-      SPRING_REDIS_PASSWORD: ""
+      SPRING_REDIS_PASSWORD: ''
       SPRING_DATA_REDIS_SSL_ENABLED: 'false'
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       URL_PROD_CLIENTE: http://ms-cliente:8083
@@ -59,11 +59,11 @@ services:
     networks: *id001
     container_name: luka-ms-cliente
     env_file:
-      - ../.env.local
+    - ../.env.local
     ports:
     - 8083:8083
     build:
-      context: ..
+      context: ../..
       dockerfile: microservicio-cliente/Dockerfile.local
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -81,9 +81,6 @@ services:
       SPRING_DATA_REDIS_HOST: host.docker.internal
       SPRING_DATA_REDIS_PORT: 6379
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      WHATSAPP_TOKEN: ${WHATSAPP_TOKEN}
-      WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
-      WHATSAPP_API_VERSION: ${WHATSAPP_API_VERSION}
       URL_PROD_FINANCIERO: http://ms-nucleo-financiero:8085
       LUKA_INTERNAL_TOKEN: ${LUKA_INTERNAL_TOKEN}
     deploy:
@@ -97,11 +94,11 @@ services:
     networks: *id001
     container_name: luka-ms-mensajeria
     env_file:
-      - ../.env.local
+    - ../.env.local
     ports:
     - 8084:8084
     build:
-      context: ..
+      context: ../..
       dockerfile: microservicio-mensajeria/Dockerfile.local
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -118,10 +115,12 @@ services:
       SPRING_DATASOURCE_PASSWORD: adminUTP
       SPRING_DATA_REDIS_HOST: host.docker.internal
       SPRING_DATA_REDIS_PORT: 6379
+      TWILIO_API_KEY_SECRET: ${TWILIO_API_KEY_SECRET}
+      TWILIO_USE_API_KEY: ${TWILIO_USE_API_KEY}
+      TWILIO_SMS_FROM: ${TWILIO_SMS_FROM}
+      TWILIO_WHATSAPP_FROM: ${TWILIO_WHATSAPP_FROM}
+      TWILIO_SANDBOX_WHATSAPP_FROM: ${TWILIO_SANDBOX_WHATSAPP_FROM}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      WHATSAPP_TOKEN: ${WHATSAPP_TOKEN}
-      WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
-      WHATSAPP_API_VERSION: ${WHATSAPP_API_VERSION}
       SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME}
       SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
       URL_PROD_USUARIO: http://ms-usuario:8081
@@ -135,11 +134,11 @@ services:
   ms-ia:
     container_name: luka-ms-ia
     env_file:
-      - ../.env.local
+    - ../.env.local
     ports:
     - 8086:8086
     build:
-      context: ..
+      context: ../..
       dockerfile: microservicio-ia/Dockerfile.local
     networks:
     - luka-network
@@ -167,7 +166,6 @@ services:
       URL_PROD_AUDITORIA: http://ms-auditoria:8082
       URL_PROD_CLIENTE: http://ms-cliente:8083
       LUKA_INTERNAL_TOKEN: ${LUKA_INTERNAL_TOKEN}
-
     deploy:
       resources:
         limits:
@@ -179,11 +177,11 @@ services:
     networks: *id001
     container_name: luka-ms-auditoria
     env_file:
-      - ../.env.local
+    - ../.env.local
     ports:
     - 8082:8082
     build:
-      context: ..
+      context: ../..
       dockerfile: microservicio-auditoria/Dockerfile.local
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -212,11 +210,11 @@ services:
     networks: *id001
     container_name: luka-ms-nucleo-financiero
     env_file:
-      - ../.env.local
+    - ../.env.local
     ports:
     - 8085:8085
     build:
-      context: ..
+      context: ../..
       dockerfile: microservicio-nucleo-financiero/Dockerfile.local
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -234,9 +232,6 @@ services:
       SPRING_DATA_REDIS_HOST: host.docker.internal
       SPRING_DATA_REDIS_PORT: 6379
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      WHATSAPP_TOKEN: ${WHATSAPP_TOKEN}
-      WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID}
-      WHATSAPP_API_VERSION: ${WHATSAPP_API_VERSION}
       URL_MICROSERVICIO_CLIENTE: http://ms-cliente:8083
       URL_PROD_CLIENTE: http://ms-cliente:8083
       URL_PROD_IA: http://ms-ia:8086
@@ -251,11 +246,11 @@ services:
     networks: *id001
     container_name: luka-ms-pago
     env_file:
-      - ../.env.local
+    - ../.env.local
     ports:
     - 8087:8087
     build:
-      context: ..
+      context: ../..
       dockerfile: microservicio-pago/Dockerfile.local
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -289,9 +284,9 @@ services:
     networks: *id001
     container_name: luka-gateway
     env_file:
-      - ../.env.local
+    - ../.env.local
     build:
-      context: ..
+      context: ../..
       dockerfile: api-gateway/Dockerfile.local
     ports:
     - ${GATEWAY_PORT:-8080}:8080
@@ -307,7 +302,7 @@ services:
         -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1
       REDIS_HOST: host.docker.internal
       REDIS_PORT: 6379
-      REDIS_PASSWORD: ""
+      REDIS_PASSWORD: ''
       REDIS_SSL_ENABLED: 'false'
       SPRING_DATA_REDIS_SSL_ENABLED: 'false'
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
@@ -330,11 +325,11 @@ services:
     networks: *id001
     container_name: luka-ms-suscripciones
     env_file:
-      - ../.env.local
+    - ../.env.local
     ports:
     - 8088:8088
     build:
-      context: ..
+      context: ../..
       dockerfile: microservicio-suscripciones/Dockerfile.local
     environment:
       SPRING_PROFILES_ACTIVE: docker
