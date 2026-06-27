@@ -54,6 +54,7 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
         // 2. Definimos las reglas de este microservicio (De lo más específico a lo
         // general)
         http.authorizeHttpRequests(auth -> auth
+                .requestMatchers("/", "/favicon.ico").permitAll()
                 // Endpoints internos y creación inicial de perfil (comunicación inter-microservicio)
                 .requestMatchers("/api/v1/clientes/interno/**").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/v1/clientes/perfil/inicial").authenticated()
