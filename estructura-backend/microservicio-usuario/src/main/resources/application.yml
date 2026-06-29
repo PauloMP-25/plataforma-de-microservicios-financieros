@@ -18,9 +18,10 @@ spring:
 # ---------------------------------------------------------------------------------------------------------------------
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      username: ${SPRING_DATA_REDIS_USERNAME:default}
+      password: ${SPRING_DATA_REDIS_PASSWORD:}
       ssl:
         enabled: true
 
@@ -28,7 +29,7 @@ spring:
 #                              DATASOURCE: Conexión y credenciales de PostgreSQL local
 # ---------------------------------------------------------------------------------------------------------------------
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:db_luka_usuario}
+    url: ${SPRING_DATASOURCE_URL_USUARIO:jdbc:postgresql://localhost:5432/db_microservicio_usuario}
     username: ${DB_USER:postgres}
     password: ${DB_PASS:adminUTP}
     driver-class-name: org.postgresql.Driver
@@ -142,3 +143,16 @@ management:
     web:
       path-mapping:
         health: health-internal
+
+
+---
+# Desactivar discovery y eureka
+spring:
+  cloud:
+    discovery:
+      enabled: false
+
+management:
+  health:
+    discovery:
+      enabled: false

@@ -1,0 +1,250 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+#  LUKA APP — Docker Compose PRODUCCIÓN
+#  Solo levanta los microservicios conectándolos a NeonDB, Upstash y CloudAMQP
+# ═══════════════════════════════════════════════════════════════════════════════
+
+networks:
+  backend-network:
+    driver: bridge
+    name: luka-backend
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+x-spring-common: &spring-common
+  restart: unless-stopped
+  env_file:
+    - ../.env
+  networks:
+    - backend-network
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  ms-usuario:
+    <<: *spring-common
+    container_name: luka-ms-usuario
+    hostname: ms-usuario
+    build:
+      context: ..
+      dockerfile: microservicio-usuario/Dockerfile
+      args:
+        APP_PORT: 8081
+    image: luka/ms-usuario:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8081
+      SPRING_APPLICATION_NAME: microservicio-usuario
+      URL_PROD_CLIENTE: http://ms-cliente:8083
+      URL_PROD_MENSAJERIA: http://ms-mensajeria:8084
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  ms-cliente:
+    <<: *spring-common
+    container_name: luka-ms-cliente
+    hostname: ms-cliente
+    build:
+      context: ..
+      dockerfile: microservicio-cliente/Dockerfile
+      args:
+        APP_PORT: 8083
+    image: luka/ms-cliente:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8083
+      SPRING_APPLICATION_NAME: microservicio-cliente
+      URL_PROD_FINANCIERO: http://ms-nucleo-financiero:8085
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8083/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  ms-auditoria:
+    <<: *spring-common
+    container_name: luka-ms-auditoria
+    hostname: ms-auditoria
+    build:
+      context: ..
+      dockerfile: microservicio-auditoria/Dockerfile
+      args:
+        APP_PORT: 8082
+    image: luka/ms-auditoria:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8082
+      SPRING_APPLICATION_NAME: microservicio-auditoria
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8082/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  ms-mensajeria:
+    <<: *spring-common
+    container_name: luka-ms-mensajeria
+    hostname: ms-mensajeria
+    build:
+      context: ..
+      dockerfile: microservicio-mensajeria/Dockerfile
+      args:
+        APP_PORT: 8084
+    image: luka/ms-mensajeria:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8084
+      SPRING_APPLICATION_NAME: microservicio-mensajeria
+      URL_PROD_USUARIO: http://ms-usuario:8081
+      URL_PROD_CLIENTE: http://ms-cliente:8083
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8084/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  ms-nucleo-financiero:
+    <<: *spring-common
+    container_name: luka-ms-nucleo-financiero
+    hostname: ms-nucleo-financiero
+    build:
+      context: ..
+      dockerfile: microservicio-nucleo-financiero/Dockerfile
+      args:
+        APP_PORT: 8085
+    image: luka/ms-nucleo-financiero:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8085
+      SPRING_APPLICATION_NAME: microservicio-nucleo-financiero
+      URL_MICROSERVICIO_CLIENTE: http://ms-cliente:8083
+      URL_PROD_CLIENTE: http://ms-cliente:8083
+      URL_PROD_IA: http://ms-ia:8086
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8085/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  ms-ia:
+    container_name: luka-ms-ia
+    hostname: ms-ia
+    build:
+      context: ../microservicio-ia
+      dockerfile: Dockerfile
+      args:
+        APP_PORT: 8086
+    image: luka/ms-ia:latest
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    networks:
+      - backend-network
+    environment:
+      URL_PROD_FINANCIERO: http://ms-nucleo-financiero:8085
+      URL_PROD_AUDITORIA: http://ms-auditoria:8082
+      URL_PROD_CLIENTE: http://ms-cliente:8083
+      PYTHONUNBUFFERED: "1"
+      TZ: America/Lima
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8086/actuator/health" ]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  ms-pagos:
+    <<: *spring-common
+    container_name: luka-ms-pago
+    hostname: ms-pagos
+    build:
+      context: ..
+      dockerfile: microservicio-pago/Dockerfile
+      args:
+        APP_PORT: 8087
+    image: luka/ms-pago:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8087
+      SPRING_APPLICATION_NAME: ms-pagos
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8087/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  ms-suscripciones:
+    <<: *spring-common
+    container_name: luka-ms-suscripciones
+    hostname: ms-suscripciones
+    build:
+      context: ..
+      dockerfile: microservicio-suscripciones/Dockerfile
+      args:
+        APP_PORT: 8088
+    image: luka/ms-suscripciones:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8088
+      SPRING_APPLICATION_NAME: ms-suscripciones
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8088/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  api-gateway:
+    <<: *spring-common
+    container_name: luka-api-gateway
+    hostname: api-gateway
+    build:
+      context: ..
+      dockerfile: api-gateway/Dockerfile
+      args:
+        APP_PORT: 8080
+    image: luka/api-gateway:latest
+    ports:
+      - "${GATEWAY_PORT:-8080}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8080
+      SPRING_APPLICATION_NAME: api-gateway
+      SPRING_MAIN_WEB_APPLICATION_TYPE: reactive
+      SPRING_CLOUD_GATEWAY_GLOBALCORS_CORSCONFIGURATIONS_[/**]_ALLOWEDORIGINS: "*"
+      SPRING_CLOUD_GATEWAY_GLOBALCORS_CORSCONFIGURATIONS_[/**]_ALLOWEDMETHODS: "GET,POST,PUT,DELETE,OPTIONS,PATCH"
+      SPRING_CLOUD_GATEWAY_GLOBALCORS_CORSCONFIGURATIONS_[/**]_ALLOWEDHEADERS: "*"
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+

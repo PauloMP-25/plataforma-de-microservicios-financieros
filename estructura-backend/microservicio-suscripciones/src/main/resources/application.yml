@@ -16,7 +16,7 @@ spring:
 #                              DATASOURCE: Conexión y credenciales de PostgreSQL local
 # ---------------------------------------------------------------------------------------------------------------------
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:db_luka_suscripciones}
+    url: ${SPRING_DATASOURCE_URL_SUSCRIPCIONES:jdbc:postgresql://localhost:5432/db_microservicio_suscripciones}
     username: ${DB_USER:postgres}
     password: ${DB_PASS:adminUTP}
     driver-class-name: org.postgresql.Driver
@@ -111,3 +111,16 @@ management:
     web:
       path-mapping:
         health: health-internal
+
+
+---
+# Desactivar discovery y eureka
+spring:
+  cloud:
+    discovery:
+      enabled: false
+
+management:
+  health:
+    discovery:
+      enabled: false

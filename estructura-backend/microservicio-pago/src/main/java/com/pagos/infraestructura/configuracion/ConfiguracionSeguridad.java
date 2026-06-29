@@ -38,6 +38,7 @@ public class ConfiguracionSeguridad extends ConfiguracionSeguridadBase {
 
         // 2. Reglas de autorización específicas
         http.authorizeHttpRequests(auth -> auth
+                .requestMatchers("/", "/favicon.ico").permitAll()
                 // WEBHOOK: Debe ser público para que Stripe pueda enviar notificaciones
                 .requestMatchers(HttpMethod.POST, "/api/v1/pagos/webhook/**").permitAll()
 

@@ -15,7 +15,7 @@ spring:
 #                              DATASOURCE: Conexión y credenciales de PostgreSQL local
 # ---------------------------------------------------------------------------------------------------------------------
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_AUDITORIA_NAME:db_luka_auditoria}
+    url: ${SPRING_DATASOURCE_URL_AUDITORIA:jdbc:postgresql://localhost:5432/db_microservicio_auditoria}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:adminUTP}
 
@@ -23,6 +23,7 @@ spring:
 #                              RABBITMQ: Broker de mensajería asíncrona y topologías
 # ---------------------------------------------------------------------------------------------------------------------
   rabbitmq:
+    connection-name: ${spring.application.name}
     host: ${SPRING_RABBITMQ_HOST:localhost}
     port: ${SPRING_RABBITMQ_PORT:5672}
     username: ${SPRING_RABBITMQ_USERNAME:guest}
@@ -36,9 +37,10 @@ spring:
     redis:
       host: ${SPRING_DATA_REDIS_HOST:localhost}
       port: ${SPRING_DATA_REDIS_PORT:6379}
-      password: ${SPRING_REDIS_PASSWORD:}
+      username: ${SPRING_DATA_REDIS_USERNAME:default}
+      password: ${SPRING_DATA_REDIS_PASSWORD:}
       ssl:
-        enabled: ${SPRING_DATA_REDIS_SSL_ENABLED:false}
+        enabled: true
   cache:
     type: none
 
@@ -48,3 +50,15 @@ spring:
 luka:
   jwt:
     clave-secreta: ${JWT_SECRET_KEY:}
+
+---
+# Desactivar discovery y eureka
+spring:
+  cloud:
+    discovery:
+      enabled: false
+
+management:
+  health:
+    discovery:
+      enabled: false

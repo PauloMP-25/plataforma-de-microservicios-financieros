@@ -16,11 +16,12 @@ spring:
     redis:
       host: ${SPRING_DATA_REDIS_HOST:redis}
       port: ${SPRING_DATA_REDIS_PORT:6379}
-      password: ${SPRING_REDIS_PASSWORD:}
-      connect-timeout: 2s
-      timeout: 1s
+      username: ${SPRING_DATA_REDIS_USERNAME:default}
+      password: ${SPRING_DATA_REDIS_PASSWORD:}
+      connect-timeout: ${SPRING_DATA_REDIS_CONNECT_TIMEOUT:5s}
+      timeout: ${SPRING_DATA_REDIS_TIMEOUT:5s}
       ssl:
-        enabled: ${SPRING_DATA_REDIS_SSL_ENABLED:false}
+        enabled: true
 
 # ---------------------------------------------------------------------------------------------------------------------
 #                              DATASOURCE: Conexión y credenciales de PostgreSQL local
@@ -60,6 +61,7 @@ spring:
 #                              RABBITMQ: Broker de mensajería asíncrona y topologías
 # ---------------------------------------------------------------------------------------------------------------------
   rabbitmq:
+    connection-name: ${spring.application.name}
     host: ${SPRING_RABBITMQ_HOST:rabbitmq}
     port: ${SPRING_RABBITMQ_PORT:5671}
     username: ${SPRING_RABBITMQ_USERNAME:guest}
@@ -124,6 +126,7 @@ management:
         enabled: true
   health:
     rabbitmq:
+      connection-name: ${spring.application.name}
       enabled: true
     db:
       enabled: true
@@ -181,3 +184,16 @@ email:
   nombre:
     empresa: SAAS FINANCIERO
 
+
+
+---
+# Desactivar discovery y eureka
+spring:
+  cloud:
+    discovery:
+      enabled: false
+
+management:
+  health:
+    discovery:
+      enabled: false

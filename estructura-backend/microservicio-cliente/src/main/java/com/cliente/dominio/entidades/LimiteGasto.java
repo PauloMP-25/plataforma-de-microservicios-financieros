@@ -48,7 +48,7 @@ public class LimiteGasto {
     /**
      * Nombre descriptivo del presupuesto
      */
-    @Column(name = "nombre", nullable = false, length = 150)
+    @Column(name = "nombre", nullable = false, length = 150, columnDefinition = "varchar(150) default 'Presupuesto Mensual'")
     @Builder.Default
     private String nombre = "Presupuesto Mensual";
 
