@@ -5,9 +5,9 @@ import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../enviroments/environment';
 import { AuthService } from './auth.service';
 import { ResultadoApi } from '../models/auth/user.model';
-import { 
-  SuscripcionDTO, 
-  SuscripcionGasto, 
+import {
+  SuscripcionDTO,
+  SuscripcionGasto,
   CrearSuscripcionRequest,
   ActualizarSuscripcionRequest,
   ResumenSuscripciones,
@@ -40,7 +40,7 @@ export class SuscripcionGastosService {
   readonly suscripcionesProximas = computed(() => {
     const hoy = new Date();
     const proximas30 = new Date(hoy.getTime() + 30 * 24 * 60 * 60 * 1000);
-    
+
     return this.suscripciones()
       .filter(s => {
         const vencimiento = new Date(s.proximoVencimiento);
@@ -78,27 +78,14 @@ export class SuscripcionGastosService {
   cargarSuscripciones(): Observable<SuscripcionDTO[]> {
     this.cargando.set(true);
     this.error.set(null);
-    const usuarioId = this.auth.usuario()?.id;
-    if (!usuarioId) {
-      this.cargando.set(false);
-      return of(this.suscripciones());
-    }
+    const usuarioId = this.auth.usuario()?.id ?? '';
 
     return this.http.get<ResultadoApi<any[]>>(`${this.baseUrl}/usuario/${usuarioId}`).pipe(
       map(res => {
-        const backendData = res.datos || [];
-        const mapped = backendData.map(s => this.mapearDesdeBackend(s));
-        this.suscripciones.set(mapped);
+        const list = (res.datos || []).map(item => this.mapToDTO(item));
+        this.suscripciones.set(list);
         this.cargando.set(false);
-        return mapped;
-      }),
-      catchError(err => {
-        console.warn('[SuscripcionService] Error cargando suscripciones desde el backend, usando fallback local:', err);
-        this.cargando.set(false);
-        if (this.suscripciones().length === 0) {
-          this.cargarSuscripcionesMock();
-        }
-        return of(this.suscripciones());
+        return list;
       })
     );
   }
@@ -107,7 +94,7 @@ export class SuscripcionGastosService {
    * Obtener suscripción por ID
    */
   obtenerSuscripcion(id: string): Observable<SuscripcionDTO | undefined> {
-    return this.http.get<ResultadoApi<any>>(`${this.baseUrl}/${id}`).pipe(
+    return this.http.get<ResultadoApi<any>>(`${environment.gatewayUrl}/api/v1/suscripciones/${id}`).pipe(
       map(res => this.mapearDesdeBackend(res.datos)),
       catchError(err => {
         console.warn(`[SuscripcionService] Error cargando suscripción ${id} desde el backend, buscando en local:`, err);
@@ -120,32 +107,21 @@ export class SuscripcionGastosService {
    * Crear nueva suscripción
    */
   crearSuscripcion(request: CrearSuscripcionRequest): Observable<SuscripcionDTO> {
-    const usuarioId = this.auth.usuario()?.id;
-    const proximoVencimiento = this.calcularProximoVencimiento(request.fechaInicio, request.frecuencia);
-    
-    if (!usuarioId) {
-      return this.crearSuscripcionMock(request);
-    }
-
+    const usuarioId = this.auth.usuario()?.id ?? '';
     const body = {
       usuarioId,
       nombre: request.nombre,
       monto: request.monto,
       metodoPago: 'MANUAL',
       tipoEstrategia: request.frecuencia === 'MENSUAL' ? 'CALENDARIO' : request.frecuencia,
-      fechaInicio: request.fechaInicio,
-      fechaVencimiento: proximoVencimiento
+      fechaInicio: request.fechaInicio
     };
 
-    return this.http.post<ResultadoApi<any>>(`${this.baseUrl}`, body).pipe(
+    return this.http.post<ResultadoApi<any>>(this.baseUrl, body).pipe(
       map(res => {
-        const creada = this.mapearDesdeBackend(res.datos);
-        this.suscripciones.update(sus => [...sus, creada]);
-        return creada;
-      }),
-      catchError(err => {
-        console.warn('[SuscripcionService] Error al crear en backend, usando mock:', err);
-        return this.crearSuscripcionMock(request);
+        const dto = this.mapToDTO(res.datos);
+        this.suscripciones.update(sus => [...sus, dto]);
+        return dto;
       })
     );
   }
@@ -154,11 +130,6 @@ export class SuscripcionGastosService {
    * Actualizar suscripción existente
    */
   actualizarSuscripcion(request: ActualizarSuscripcionRequest): Observable<SuscripcionDTO> {
-    const usuarioId = this.auth.usuario()?.id;
-    if (!usuarioId) {
-      return this.actualizarSuscripcionMock(request);
-    }
-
     const body = {
       monto: request.monto,
       metodoPago: 'MANUAL',
@@ -167,37 +138,11 @@ export class SuscripcionGastosService {
 
     return this.http.put<ResultadoApi<any>>(`${this.baseUrl}/${request.id}`, body).pipe(
       map(res => {
-        const actualizadaBackend = this.mapearDesdeBackend(res.datos);
-        
+        const dto = this.mapToDTO(res.datos);
         this.suscripciones.update(sus =>
-          sus.map(s => {
-            if (s.id === request.id) {
-              const proximoVencimiento = this.calcularProximoVencimiento(
-                request.fechaInicio,
-                request.frecuencia
-              );
-              return {
-                ...actualizadaBackend,
-                nombre: request.nombre,
-                descripcion: request.descripcion,
-                categoria: request.categoria,
-                frecuencia: request.frecuencia,
-                fechaInicio: request.fechaInicio,
-                proximoVencimiento,
-                estado: request.estado || actualizadaBackend.estado,
-                diasParaVencimiento: this.calcularDiasAlVencimiento(proximoVencimiento),
-                vencePronto: this.calcularDiasAlVencimiento(proximoVencimiento) <= 5
-              };
-            }
-            return s;
-          })
+          sus.map(s => s.id === dto.id ? dto : s)
         );
-        
-        return this.suscripciones().find(s => s.id === request.id)!;
-      }),
-      catchError(err => {
-        console.warn('[SuscripcionService] Error al actualizar en backend, usando mock:', err);
-        return this.actualizarSuscripcionMock(request);
+        return dto;
       })
     );
   }
@@ -206,19 +151,10 @@ export class SuscripcionGastosService {
    * Eliminar suscripción
    */
   eliminarSuscripcion(id: string): Observable<boolean> {
-    const usuarioId = this.auth.usuario()?.id;
-    if (!usuarioId) {
-      return this.eliminarSuscripcionMock(id);
-    }
-
     return this.http.delete<ResultadoApi<void>>(`${this.baseUrl}/${id}`).pipe(
       map(() => {
         this.suscripciones.update(sus => sus.filter(s => s.id !== id));
         return true;
-      }),
-      catchError(err => {
-        console.warn(`[SuscripcionService] Error al eliminar suscripción ${id} en backend, usando mock:`, err);
-        return this.eliminarSuscripcionMock(id);
       })
     );
   }
@@ -227,47 +163,30 @@ export class SuscripcionGastosService {
    * Cambiar estado de suscripción
    */
   cambiarEstado(id: string, estado: 'ACTIVA' | 'PAUSADA' | 'VENCIDA'): Observable<SuscripcionDTO> {
-    const usuarioId = this.auth.usuario()?.id;
-    if (!usuarioId) {
-      return this.cambiarEstadoMock(id, estado);
-    }
-
     if (estado === 'ACTIVA') {
       return this.http.post<ResultadoApi<any>>(`${this.baseUrl}/${id}/pagar`, {}).pipe(
         map(() => {
           this.suscripciones.update(sus =>
-            sus.map(s => s.id === id ? { ...s, estado: 'ACTIVA', ultimaActualizacion: new Date().toISOString() } : s)
+            sus.map(s => s.id === id ? { ...s, estado: 'ACTIVA' } : s)
           );
           return this.suscripciones().find(s => s.id === id)!;
-        }),
-        catchError(err => {
-          console.warn(`[SuscripcionService] Error al cambiar estado a ACTIVA en backend, usando mock:`, err);
-          return this.cambiarEstadoMock(id, estado);
         })
       );
     } else if (estado === 'PAUSADA') {
       return this.http.post<ResultadoApi<any>>(`${this.baseUrl}/${id}/cancelar`, {}).pipe(
         map(res => {
-          const dto = this.mapearDesdeBackend(res.datos);
+          const dto = this.mapToDTO(res.datos);
           this.suscripciones.update(sus =>
             sus.map(s => s.id === id ? dto : s)
           );
           return dto;
-        }),
-        catchError(err => {
-          console.warn(`[SuscripcionService] Error al cambiar estado a PAUSADA en backend, usando mock:`, err);
-          return this.cambiarEstadoMock(id, estado);
         })
       );
     } else {
       this.suscripciones.update(sus =>
-        sus.map(s => s.id === id ? { ...s, estado: 'VENCIDA', ultimaActualizacion: new Date().toISOString() } : s)
+        sus.map(s => s.id === id ? { ...s, estado: 'VENCIDA' } : s)
       );
-      return of(this.suscripciones().find(s => s.id === id)!).pipe(
-        catchError(err => {
-          return this.cambiarEstadoMock(id, estado);
-        })
-      );
+      return of(this.suscripciones().find(s => s.id === id)!);
     }
   }
 
@@ -318,26 +237,25 @@ export class SuscripcionGastosService {
   /**
    * ── MÉTODOS PRIVADOS ──
    */
-  private mapearDesdeBackend(s: any): SuscripcionDTO {
-    const frecuencia = (s.tipoEstrategia === 'CALENDARIO' ? 'MENSUAL' : s.tipoEstrategia) as FrecuenciaSuscripcion;
-    const proximoVencimiento = s.fechaVencimiento || new Date().toISOString().split('T')[0];
+  private mapToDTO(res: any): SuscripcionDTO {
+    const frecuencia = (res.tipoEstrategia === 'CALENDARIO' ? 'MENSUAL' : res.tipoEstrategia) as FrecuenciaSuscripcion;
+    const proximoVencimiento = res.fechaVencimiento;
     const diasParaVencimiento = this.calcularDiasAlVencimiento(proximoVencimiento);
-    const vencePronto = diasParaVencimiento <= 5;
-    
+
     return {
-      id: s.id,
-      nombre: s.nombre,
-      descripcion: s.descripcion || `Suscripción de ${s.nombre} (${s.metodoPago || 'Manual'})`,
-      categoria: this.determinarCategoria(s.nombre),
-      monto: s.monto,
+      id: res.id,
+      nombre: res.nombre,
+      descripcion: `Pago con ${res.metodoPago || 'tarjeta'}`,
+      categoria: this.determinarCategoria(res.nombre),
+      monto: res.monto,
       frecuencia: frecuencia || 'MENSUAL',
-      fechaInicio: s.fechaInicio || new Date().toISOString().split('T')[0],
-      proximoVencimiento,
-      estado: s.estado === 'CANCELADA' ? 'PAUSADA' : (s.estado as EstadoSuscripcion),
-      fechaCreacion: s.fechaCreacion || s.fechaInicio || new Date().toISOString(),
-      ultimaActualizacion: s.fechaActualizacion || s.fechaInicio || new Date().toISOString(),
+      fechaInicio: res.fechaInicio,
+      proximoVencimiento: proximoVencimiento,
+      estado: res.estado === 'CANCELADA' ? 'PAUSADA' : (res.estado as EstadoSuscripcion),
+      fechaCreacion: res.fechaInicio,
+      ultimaActualizacion: res.fechaInicio,
       diasParaVencimiento,
-      vencePronto
+      vencePronto: diasParaVencimiento <= 5
     };
   }
 
@@ -373,7 +291,7 @@ export class SuscripcionGastosService {
 
   private calcularProximoVencimiento(fechaInicio: string, frecuencia: FrecuenciaSuscripcion): string {
     const fecha = new Date(fechaInicio);
-    
+
     switch (frecuencia) {
       case 'DIARIO':
         fecha.setDate(fecha.getDate() + 1);
@@ -397,7 +315,7 @@ export class SuscripcionGastosService {
         fecha.setFullYear(fecha.getFullYear() + 1);
         break;
     }
-    
+
     return fecha.toISOString().split('T')[0];
   }
 
@@ -424,170 +342,5 @@ export class SuscripcionGastosService {
 
   private generarId(): string {
     return 'sus_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-  }
-
-  private cargarSuscripcionesMock(): void {
-    const mockData: SuscripcionDTO[] = [
-      {
-        id: '1',
-        nombre: 'Netflix',
-        descripcion: 'Servicio de streaming de películas y series',
-        categoria: 'leisure',
-        monto: 99,
-        frecuencia: 'MENSUAL',
-        fechaInicio: '2026-06-15',
-        proximoVencimiento: '2026-07-15',
-        estado: 'ACTIVA',
-        fechaCreacion: '2026-01-15T00:00:00Z',
-        ultimaActualizacion: '2026-01-15T00:00:00Z',
-        diasParaVencimiento: this.calcularDiasAlVencimiento('2026-07-15'),
-        vencePronto: this.calcularDiasAlVencimiento('2026-07-15') <= 5
-      },
-      {
-        id: '2',
-        nombre: 'Spotify',
-        descripcion: 'Servicio de streaming de música',
-        categoria: 'leisure',
-        monto: 119,
-        frecuencia: 'MENSUAL',
-        fechaInicio: '2026-06-20',
-        proximoVencimiento: '2026-07-20',
-        estado: 'ACTIVA',
-        fechaCreacion: '2026-02-20T00:00:00Z',
-        ultimaActualizacion: '2026-02-20T00:00:00Z',
-        diasParaVencimiento: this.calcularDiasAlVencimiento('2026-07-20'),
-        vencePronto: this.calcularDiasAlVencimiento('2026-07-20') <= 5
-      },
-      {
-        id: '3',
-        nombre: 'Internet Fibra Óptica',
-        descripcion: 'Servicio de internet residencial',
-        categoria: 'home',
-        monto: 149,
-        frecuencia: 'MENSUAL',
-        fechaInicio: '2026-06-01',
-        proximoVencimiento: '2026-07-01',
-        estado: 'ACTIVA',
-        fechaCreacion: '2025-12-01T00:00:00Z',
-        ultimaActualizacion: '2025-12-01T00:00:00Z',
-        diasParaVencimiento: this.calcularDiasAlVencimiento('2026-07-01'),
-        vencePronto: this.calcularDiasAlVencimiento('2026-07-01') <= 5
-      },
-      {
-        id: '4',
-        nombre: 'Gimnasio PowerFit',
-        descripcion: 'Membresía mensual al gimnasio',
-        categoria: 'health',
-        monto: 89,
-        frecuencia: 'MENSUAL',
-        fechaInicio: '2026-06-10',
-        proximoVencimiento: '2026-07-10',
-        estado: 'ACTIVA',
-        fechaCreacion: '2026-03-10T00:00:00Z',
-        ultimaActualizacion: '2026-03-10T00:00:00Z',
-        diasParaVencimiento: this.calcularDiasAlVencimiento('2026-07-10'),
-        vencePronto: this.calcularDiasAlVencimiento('2026-07-10') <= 5
-      },
-      {
-        id: '5',
-        nombre: 'Seguro de Auto',
-        descripcion: 'Póliza anual de seguros',
-        categoria: 'transport',
-        monto: 599,
-        frecuencia: 'ANUAL',
-        fechaInicio: '2026-06-15',
-        proximoVencimiento: '2027-06-15',
-        estado: 'ACTIVA',
-        fechaCreacion: '2025-06-15T00:00:00Z',
-        ultimaActualizacion: '2025-06-15T00:00:00Z',
-        diasParaVencimiento: this.calcularDiasAlVencimiento('2027-06-15'),
-        vencePronto: this.calcularDiasAlVencimiento('2027-06-15') <= 5
-      },
-      {
-        id: '6',
-        nombre: 'Software Adobe',
-        descripcion: 'Suscripción Creative Cloud',
-        categoria: 'study',
-        monto: 299,
-        frecuencia: 'MENSUAL',
-        fechaInicio: '2026-06-01',
-        proximoVencimiento: '2026-07-01',
-        estado: 'PAUSADA',
-        fechaCreacion: '2026-04-01T00:00:00Z',
-        ultimaActualizacion: '2026-05-10T00:00:00Z',
-        diasParaVencimiento: this.calcularDiasAlVencimiento('2026-07-01'),
-        vencePronto: false
-      }
-    ];
-
-    this.suscripciones.set(mockData);
-  }
-
-  private crearSuscripcionMock(request: CrearSuscripcionRequest): Observable<SuscripcionDTO> {
-    const ahora = new Date().toISOString();
-    const proximoVencimiento = this.calcularProximoVencimiento(request.fechaInicio, request.frecuencia);
-    
-    const nuevaSuscripcion: SuscripcionDTO = {
-      id: this.generarId(),
-      ...request,
-      proximoVencimiento,
-      estado: 'ACTIVA',
-      fechaCreacion: ahora,
-      ultimaActualizacion: ahora,
-      diasParaVencimiento: this.calcularDiasAlVencimiento(proximoVencimiento),
-      vencePronto: this.calcularDiasAlVencimiento(proximoVencimiento) <= 5
-    };
-
-    this.suscripciones.update(sus => [...sus, nuevaSuscripcion]);
-    return of(nuevaSuscripcion);
-  }
-
-  private actualizarSuscripcionMock(request: ActualizarSuscripcionRequest): Observable<SuscripcionDTO> {
-    const ahora = new Date().toISOString();
-    
-    this.suscripciones.update(sus =>
-      sus.map(s => {
-        if (s.id === request.id) {
-          const proximoVencimiento = this.calcularProximoVencimiento(
-            request.fechaInicio,
-            request.frecuencia
-          );
-          return {
-            ...s,
-            nombre: request.nombre,
-            descripcion: request.descripcion,
-            categoria: request.categoria,
-            monto: request.monto,
-            frecuencia: request.frecuencia,
-            fechaInicio: request.fechaInicio,
-            proximoVencimiento,
-            estado: request.estado || s.estado,
-            ultimaActualizacion: ahora,
-            diasParaVencimiento: this.calcularDiasAlVencimiento(proximoVencimiento),
-            vencePronto: this.calcularDiasAlVencimiento(proximoVencimiento) <= 5
-          };
-        }
-        return s;
-      })
-    );
-
-    const actualizada = this.suscripciones().find(s => s.id === request.id)!;
-    return of(actualizada);
-  }
-
-  private eliminarSuscripcionMock(id: string): Observable<boolean> {
-    this.suscripciones.update(sus => sus.filter(s => s.id !== id));
-    return of(true);
-  }
-
-  private cambiarEstadoMock(id: string, estado: 'ACTIVA' | 'PAUSADA' | 'VENCIDA'): Observable<SuscripcionDTO> {
-    const ahora = new Date().toISOString();
-    
-    this.suscripciones.update(sus =>
-      sus.map(s => s.id === id ? { ...s, estado, ultimaActualizacion: ahora } : s)
-    );
-
-    const actualizada = this.suscripciones().find(s => s.id === id)!;
-    return of(actualizada);
   }
 }
