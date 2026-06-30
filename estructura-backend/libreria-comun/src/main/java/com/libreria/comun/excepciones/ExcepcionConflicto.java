@@ -10,7 +10,6 @@ import java.util.Map;
  * correo ya registrado). Mapea a un estado HTTP 409 Conflict.
  * </p>
  * 
- * @author Paulo Moron
  */
 public class ExcepcionConflicto extends ExcepcionGlobal {
     

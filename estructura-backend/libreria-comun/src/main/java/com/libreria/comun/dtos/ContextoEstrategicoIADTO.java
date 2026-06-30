@@ -19,7 +19,6 @@ import java.math.BigDecimal;
  * @param nombreMetaPrincipal Nombre de dicha meta de ahorro (ej: "Viaje a París").
  * @param porcentajeAlertaGasto Umbral porcentual actual del límite de gasto para emitir advertencias.
  * 
- * @author Paulo Moron
  * @version 1.1.0
  * @since 2026-05-10
  */

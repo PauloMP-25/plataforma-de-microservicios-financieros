@@ -18,7 +18,6 @@ import com.libreria.comun.enums.EstadoEvento;
  * asegurando que se respete la topología de Topic Exchange.
  * </p>
  * 
- * @author Paulo Moron
  */
 @Slf4j
 @Service

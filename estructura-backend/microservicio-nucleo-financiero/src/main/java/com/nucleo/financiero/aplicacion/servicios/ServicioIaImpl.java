@@ -23,7 +23,6 @@ import org.springframework.stereotype.Service;
  * analítica en el sistema de auditoría.
  * </p>
  *
- * @author Luka-Dev-Backend
  * @version 1.3.0
  */
 @Service

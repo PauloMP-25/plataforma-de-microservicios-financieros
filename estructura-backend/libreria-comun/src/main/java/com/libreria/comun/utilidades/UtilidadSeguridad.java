@@ -7,7 +7,6 @@ import java.util.UUID;
 /**
  * Utilidad para acceder de forma simplificada a la información del usuario autenticado.
  * 
- * @author Paulo Moron
  */
 public final class UtilidadSeguridad {
 

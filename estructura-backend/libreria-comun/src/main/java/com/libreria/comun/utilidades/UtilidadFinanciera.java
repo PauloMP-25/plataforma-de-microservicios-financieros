@@ -10,7 +10,6 @@ import java.util.Locale;
  * Utilidad transversal para el formateo consistente de datos financieros y
  * temporales.
  * 
- * @author Paulo Moron
  */
 public final class UtilidadFinanciera {
 

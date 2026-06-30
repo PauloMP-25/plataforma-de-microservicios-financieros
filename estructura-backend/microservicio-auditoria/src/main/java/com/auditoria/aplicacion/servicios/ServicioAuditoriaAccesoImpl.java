@@ -25,7 +25,6 @@ import java.util.UUID;
  * servicio de seguridad para la detección de anomalías.
  * </p>
  * 
- * @author Paulo Moron
  */
 @Slf4j
 @Service

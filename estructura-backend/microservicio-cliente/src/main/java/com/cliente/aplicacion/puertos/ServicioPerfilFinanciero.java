@@ -7,7 +7,6 @@ import java.util.UUID;
 /**
  * Interfaz de puerto para el perfil financiero del cliente.
  *
- * @author Paulo Moron
  * @version 1.1.0
  */
 public interface ServicioPerfilFinanciero {

@@ -12,7 +12,6 @@ import com.libreria.comun.respuesta.Paginacion;
 /**
  * Interfaz de puerto para la gestión de metas de ahorro.
  *
- * @author Paulo Moron
  * @version 1.1.0
  */
 public interface ServicioMetaAhorro {

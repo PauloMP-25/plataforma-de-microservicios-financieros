@@ -20,7 +20,6 @@ import java.util.UUID;
  * a los consumidores del frontend y otros microservicios.
  * </p>
  *
- * @author Luka-Dev-Backend
  * @version 1.2.1
  */
 @RestController

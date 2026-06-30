@@ -8,7 +8,6 @@ package com.pagos.infraestructura.excepciones;
  * El {@code ManejadorGlobalExcepciones} la mapea al {@code CodigoError.ACCESO_DENEGADO}
  * (HTTP 403).</p>
  *
- * @author LUKA APP Team
  */
 public class ExcepcionFirmaWebhookInvalida extends RuntimeException {
 

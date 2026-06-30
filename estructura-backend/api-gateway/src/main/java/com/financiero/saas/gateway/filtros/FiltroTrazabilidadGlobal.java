@@ -20,7 +20,6 @@ import java.util.UUID;
  * propaga hacia todos los microservicios aguas abajo.
  * </p>
  * 
- * @author Paulo Moron
  * @version 1.0.0
  */
 @Component

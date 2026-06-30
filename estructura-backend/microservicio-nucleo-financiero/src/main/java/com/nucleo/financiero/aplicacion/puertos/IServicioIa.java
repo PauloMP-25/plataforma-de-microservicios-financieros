@@ -10,7 +10,6 @@ import com.libreria.comun.dtos.SolicitudIaDTO;
  * en el comportamiento del usuario.
  * </p>
  *
- * @author Luka-Dev-Backend
  * @version 1.2.0
  */
 public interface IServicioIa {

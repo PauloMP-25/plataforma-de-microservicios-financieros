@@ -15,7 +15,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
  * dentro del ecosistema LUKA APP.
  * </p>
  * 
- * @author Luka-Dev-Backend
  * @version 1.0.0
  */
 @SpringBootApplication(scanBasePackages = {"com.pagos", "com.libreria.comun"})

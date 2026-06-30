@@ -42,7 +42,6 @@ import java.util.UUID;
  * con el ms-usuario mediante Feign con fallback de Resilience4j.
  * </p>
  *
- * @author Paulo Moron
  * @version 1.1.0
  */
 @Service("mensajeriaServiceImpl")

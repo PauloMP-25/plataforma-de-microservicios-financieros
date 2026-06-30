@@ -28,7 +28,6 @@ import org.springframework.stereotype.Service;
  * Python) mediante el uso de una clave secreta compartida.
  * </p>
  *
- * @author Paulo Moron
  * @version 1.1.0
  */
 @Slf4j

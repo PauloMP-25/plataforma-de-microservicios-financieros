@@ -7,7 +7,6 @@ import java.util.UUID;
 /**
  * Interfaz de puerto para compartir los datos personales y financieros del cliente.
  *
- * @author Paulo Moron
  * @since 2026-05
  */
 public interface ServicioContexto {

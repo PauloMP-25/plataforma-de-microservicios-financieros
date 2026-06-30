@@ -17,7 +17,6 @@ import java.util.List;
  * Esto asegura que el sistema tenga una base operativa mínima al iniciar.
  * </p>
  * 
- * @author Luka-Dev-Backend
  */
 @Component
 @RequiredArgsConstructor

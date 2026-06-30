@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Configuration;
  * Utiliza la infraestructura de conexión y serialización JSON provista por ConfiguracionRabbitBase.
  * </p>
  *
- * @author Luka-Dev-Backend
  * @version 1.3.0
  */
 @Configuration

@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 /**
  * Lógica de negocio para la gestión del limite de gasto global.
  *
- * @author Paulo Moron
  * @since 2026-05
  */
 @Service

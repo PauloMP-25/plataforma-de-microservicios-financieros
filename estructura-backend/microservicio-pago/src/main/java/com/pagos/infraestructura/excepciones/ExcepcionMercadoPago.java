@@ -9,7 +9,6 @@ import com.libreria.comun.excepciones.ExcepcionServicioExterno;
  * automáticamente con el manejador global de excepciones ({@code ManejadorGlobalExcepcionesBase})
  * y ser mapeada al {@code CodigoError.ERROR_SERVICIO_EXTERNO} (HTTP 502).</p>
  *
- * @author LUKA APP Team
  */
 public class ExcepcionMercadoPago extends ExcepcionServicioExterno {
 

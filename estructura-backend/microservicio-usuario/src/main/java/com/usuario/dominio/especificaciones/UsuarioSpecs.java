@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
  * Especificaciones dinámicas para la búsqueda y filtrado de Usuarios.
  * Implementa el Specification Pattern para desacoplar la lógica de consulta del repositorio.
  * 
- * @author Paulo
  * @version 1.0.0
  */
 public class UsuarioSpecs {

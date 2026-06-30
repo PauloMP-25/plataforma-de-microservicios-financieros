@@ -7,7 +7,6 @@ package com.mensajeria.aplicacion.puertos;
  * y futura migración de proveedor sin impacto en el resto del servicio.
  * </p>
  *
- * @author Paulo Moron
  * @version 1.1.0
  */
 public interface ISmsService {

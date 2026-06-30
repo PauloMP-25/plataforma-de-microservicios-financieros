@@ -8,7 +8,6 @@ package com.pagos.aplicacion.enums;
  * {@code IPasarelaPagoEstrategia} correspondiente.
  * </p>
  *
- * @author LUKA APP Team
  */
 public enum ProveedorPago {
 

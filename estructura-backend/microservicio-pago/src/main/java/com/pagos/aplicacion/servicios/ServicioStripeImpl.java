@@ -31,7 +31,6 @@ import java.util.UUID;
  * Implementa {@link IPasarelaPagoEstrategia} como parte del Strategy Pattern y
  * {@link IServicioStripe} para compatibilidad con el código existente.
  *
- * @author LUKA APP Team
  */
 @Slf4j
 @Service

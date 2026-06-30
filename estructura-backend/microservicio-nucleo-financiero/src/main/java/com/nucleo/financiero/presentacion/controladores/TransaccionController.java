@@ -32,7 +32,6 @@ import org.springframework.format.annotation.DateTimeFormat;
  * {@link ITransaccionService}.
  * </p>
  *
- * @author Luka-Dev-Backend
  * @version 1.2.2
  */
 @RestController

@@ -22,7 +22,6 @@ import java.util.UUID;
  * permitiendo auditorías técnicas y de negocio.
  * </p>
  * 
- * @author Paulo Moron
  */
 @RestController
 @RequestMapping("/api/v1/auditoria/transacciones")

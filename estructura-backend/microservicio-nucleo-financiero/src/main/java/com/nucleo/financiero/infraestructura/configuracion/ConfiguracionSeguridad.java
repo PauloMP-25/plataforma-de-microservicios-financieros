@@ -16,7 +16,6 @@ import org.springframework.security.web.SecurityFilterChain;
  * autenticación JWT.
  * Define reglas de autorización específicas para este microservicio.
  *
- * @author Luka-Dev-Backend
  * @version 1.1.0
  */
 @Configuration

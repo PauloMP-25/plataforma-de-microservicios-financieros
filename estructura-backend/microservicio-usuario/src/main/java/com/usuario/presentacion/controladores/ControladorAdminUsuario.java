@@ -52,7 +52,7 @@ public class ControladorAdminUsuario {
     public ResponseEntity<ResultadoApi<List<Usuario>>> buscarUsuarios(
             @RequestParam(required = false) @Parameter(description = "Filtro de estado: true para habilitados, false para deshabilitados.") Boolean habilitado,
             @RequestParam(required = false) @Parameter(description = "Filtrar por rol exacto.", example = "ROLE_FREE") String rol,
-            @RequestParam(required = false) @Parameter(description = "Texto parcial para buscar coincidencias en nombre de usuario o correo electrónico.", example = "paulo") String texto,
+            @RequestParam(required = false) @Parameter(description = "Texto parcial para buscar coincidencias en nombre de usuario o correo electrónico.", example = "USUARIO") String texto,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) @Parameter(description = "Fecha y hora inicial del rango de creación (ISO 8601).", example = "2026-01-01T00:00:00") LocalDateTime desde,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) @Parameter(description = "Fecha y hora final del rango de creación (ISO 8601).", example = "2026-12-31T23:59:59") LocalDateTime hasta,
             @RequestParam(defaultValue = "0") @Parameter(description = "Índice de la página a recuperar (0-indexed).", example = "0") int pagina,

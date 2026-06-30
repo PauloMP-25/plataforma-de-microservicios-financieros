@@ -18,7 +18,6 @@ import java.util.UUID;
  * y el cálculo de agregados financieros (sumas y conteos) por periodos de tiempo.
  * </p>
  * 
- * @author Luka-Dev-Backend
  * @version 1.1.0
  */
 @Repository

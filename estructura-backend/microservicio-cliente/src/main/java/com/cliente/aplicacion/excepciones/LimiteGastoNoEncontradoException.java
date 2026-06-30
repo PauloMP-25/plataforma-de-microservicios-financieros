@@ -6,7 +6,6 @@ import com.libreria.comun.excepciones.ExcepcionRecursoNoEncontrado;
 /**
  * Excepción lanzada cuando no se encuentra un límite de gasto.
  * 
- * @author Paulo Moron
  * @version 1.1.0
  */
 public class LimiteGastoNoEncontradoException extends ExcepcionRecursoNoEncontrado {

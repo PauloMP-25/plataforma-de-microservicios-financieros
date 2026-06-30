@@ -12,7 +12,6 @@ import java.util.UUID;
  * Permite reconstruir el historial de cambios en las entidades de negocio del
  * sistema.
  * 
- * @author Paulo Moron
  * @version 1.2.0
  */
 public interface AuditoriaTransaccionalRepository extends JpaRepository<AuditoriaTransaccional, UUID>, JpaSpecificationExecutor<AuditoriaTransaccional> {

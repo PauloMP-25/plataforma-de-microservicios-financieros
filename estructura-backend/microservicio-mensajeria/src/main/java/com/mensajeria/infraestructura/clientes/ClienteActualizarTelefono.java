@@ -28,7 +28,6 @@ import com.libreria.comun.respuesta.ResultadoApi;
  * Responsable: equipo de ms-usuario. Referencia: ADR-MENSAJERIA-001.
  * </p>
  *
- * @author Paulo Moron
  * @version 1.1.0
  */
 @FeignClient(name = "microservicio-usuario", contextId = "clienteActualizarTelefono", url = "${URL_PROD_USUARIO:http://localhost:8081}", fallback = ClienteActualizarTelefonoFallback.class)

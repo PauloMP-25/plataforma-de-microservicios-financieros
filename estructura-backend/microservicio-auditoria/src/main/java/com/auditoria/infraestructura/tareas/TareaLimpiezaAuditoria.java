@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
  * respectivos servicios.
  * </p>
  * 
- * @author Paulo Moron
  */
 @Component
 @Slf4j

@@ -24,7 +24,6 @@ import java.util.Objects;
  * configurables para determinar el bloqueo automático de atacantes.
  * </p>
  * 
- * @author Paulo Moron
  */
 @Slf4j
 @Service

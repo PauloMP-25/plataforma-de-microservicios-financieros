@@ -7,7 +7,6 @@ import com.libreria.comun.enums.CodigoError;
  * del cual no es propietario o no tiene permisos suficientes.
  * <p>Mapea a un estado HTTP 403 Forbidden.</p>
  * 
- * @author Paulo Moron
  */
 public class ExcepcionAccesoDenegado extends ExcepcionGlobal {
 

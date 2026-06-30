@@ -8,11 +8,11 @@ import jakarta.validation.constraints.NotBlank;
 public record SolicitudLogin(
         @NotBlank(message = "El correo es obligatorio")
         @Email(message = "El correo debe tener un formato válido")
-        @Schema(description = "Correo electrónico registrado del usuario.", example = "paulo@luka-financial.com", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Correo electrónico registrado del usuario.", example = "usuario@dominio.com", requiredMode = Schema.RequiredMode.REQUIRED)
         String correo,
         
         @NotBlank(message = "La contraseña es obligatoria")
-        @Schema(description = "Contraseña de la cuenta del usuario.", example = "adminUTP123$", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Contraseña de la cuenta del usuario.", example = "PasswordUsuario1$", requiredMode = Schema.RequiredMode.REQUIRED)
         String password) {
 
 }

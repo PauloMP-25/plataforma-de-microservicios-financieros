@@ -18,7 +18,6 @@ import java.util.UUID;
  * compatibilidad con el ms-auditoria.
  * </p>
  *
- * @author Luka-Dev-Backend
  * @version 1.2.1
  */
 @Component

@@ -8,7 +8,6 @@ import java.util.Map;
  * o su token JWT ha expirado/es inválido.
  * <p>Mapea a un estado HTTP 401 Unauthorized.</p>
  * 
- * @author Paulo Moron
  */
 public class ExcepcionNoAutorizado extends ExcepcionGlobal {
 

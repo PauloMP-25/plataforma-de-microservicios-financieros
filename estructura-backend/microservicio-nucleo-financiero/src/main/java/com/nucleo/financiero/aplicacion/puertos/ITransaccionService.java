@@ -17,7 +17,6 @@ import java.util.UUID;
  * financieros (Ingresos y Egresos).
  * </p>
  *
- * @author Luka-Dev-Backend
  * @version 1.2.0
  */
 public interface ITransaccionService {

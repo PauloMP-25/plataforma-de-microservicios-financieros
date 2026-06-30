@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
  * @param motivo          Motivo del bloqueo (intentos fallidos, spam, protocolo, etc).
  * @param fechaExpiracion Fecha de desbloqueo de la IP bloqueada (null si es permanente o no esta bloqueada).
  * 
- * @author Paulo Moron
  * @since 2026-05
  */
 public record RespuestaVerificacionIpDTO(

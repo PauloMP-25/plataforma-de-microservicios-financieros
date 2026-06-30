@@ -6,7 +6,6 @@ import java.util.UUID;
 /**
  * Excepción lanzada cuando no se encuentra un cliente.
  * 
- * @author Paulo Moron
  * @version 1.1.0
  */
 public class ClienteNoEncontradoException extends ExcepcionRecursoNoEncontrado {

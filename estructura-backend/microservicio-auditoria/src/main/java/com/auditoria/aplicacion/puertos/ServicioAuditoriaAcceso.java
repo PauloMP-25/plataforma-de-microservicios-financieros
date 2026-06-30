@@ -12,7 +12,6 @@ import java.util.UUID;
  * de los registros de inicio de sesión y actividad de usuarios.
  * </p>
  * 
- * @author Paulo Moron
  * @since 2026-05
  */
 public interface ServicioAuditoriaAcceso {

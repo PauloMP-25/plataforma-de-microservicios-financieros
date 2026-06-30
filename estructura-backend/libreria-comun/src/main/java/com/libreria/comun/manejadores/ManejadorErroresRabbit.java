@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
  * enviado a una Dead Letter Queue.
  * </p>
  *
- * @author Paulo Moron
  */
 @Slf4j
 @Component

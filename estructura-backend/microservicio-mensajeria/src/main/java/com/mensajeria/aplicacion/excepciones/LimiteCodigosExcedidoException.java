@@ -9,7 +9,6 @@ import com.libreria.comun.excepciones.ExcepcionGlobal;
  * la captura y devuelve un HTTP 429 con el código semántico
  * {@code LIMITE_DIARIO_EXCEDIDO}.
  *
- * @author Paulo Moron
  * @version 1.1.0
  */
 public class LimiteCodigosExcedidoException extends ExcepcionGlobal {

@@ -24,7 +24,6 @@ import org.springframework.stereotype.Component;
  * especializados.
  * </p>
  * 
- * @author Paulo Moron
  * @version 2.0
  * @since 2026-05
  */

@@ -103,7 +103,7 @@ export class IaRetoAhorroComponent implements OnInit, OnChanges {
        consejoActual = {
          pensamiento_interno_ia: 'El usuario suele gastar en restaurantes los fines de semana. Reducir este gasto aceleraría su meta.',
          titulo_mision: 'Operación Cocina en Casa 🏆',
-         diagnostico: 'Paulo, he detectado que tu "Enemigo Final" de esta semana son los Restaurantes. Ese es tu principal punto de fuga actual.',
+         diagnostico: 'Usuario, he detectado que tu "Enemigo Final" de esta semana son los Restaurantes. Ese es tu principal punto de fuga actual.',
          estrategia: 'Tu misión, si decides aceptarla, es evitar comer fuera por los próximos 7 días. Prepara tus comidas el domingo.',
          mensaje_motivacional: 'Si lo logras, habrás salvado S/ 85.00 para tu fondo de la "Laptop Gamer". ¿Aceptas el reto, Jugador 1?'
        };

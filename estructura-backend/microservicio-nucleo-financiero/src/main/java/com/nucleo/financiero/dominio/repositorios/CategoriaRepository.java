@@ -12,7 +12,6 @@ import java.util.UUID;
  * Repositorio para la persistencia de categorías.
  * Proporciona métodos para búsqueda por nombre (case-insensitive) y filtrado por tipo.
  * 
- * @author Luka-Dev-Backend
  */
 @Repository
 public interface CategoriaRepository extends JpaRepository<Categoria, UUID> {

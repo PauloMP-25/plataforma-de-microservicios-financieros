@@ -6,7 +6,6 @@ import java.util.UUID;
 /**
  * Excepción lanzada cuando no se encuentra una meta de ahorro.
  * 
- * @author Paulo Moron
  * @version 1.1.0
  */
 public class MetaNoEncontradaException extends ExcepcionRecursoNoEncontrado {

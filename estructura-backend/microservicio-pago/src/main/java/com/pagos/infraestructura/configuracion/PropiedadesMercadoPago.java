@@ -16,7 +16,6 @@ import org.springframework.validation.annotation.Validated;
  *
  * <p>Aplica el mismo patrón que {@link PropiedadesStripe} para consistencia.</p>
  *
- * @author LUKA APP Team
  */
 @Getter
 @Setter

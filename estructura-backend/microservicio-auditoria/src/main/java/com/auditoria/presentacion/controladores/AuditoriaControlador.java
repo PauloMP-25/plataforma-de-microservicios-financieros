@@ -21,7 +21,6 @@ import java.util.List;
  * administrativa.
  * </p>
  * 
- * @author Paulo Moron
  * @version 1.2
  * @since 2026-05
  */

@@ -10,7 +10,6 @@ import jakarta.servlet.http.HttpServletRequest;
  * recupere la IP del cliente original y no la del proxy.
  * </p>
  * 
- * @author Paulo Moron
  */
 public final class UtilidadIp {
 

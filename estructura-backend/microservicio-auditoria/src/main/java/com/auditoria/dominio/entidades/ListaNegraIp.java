@@ -13,7 +13,6 @@ import java.util.UUID;
  * petición entrante a <b>Luka App</b>.
  * </p>
  *
- * @author Paulo Moron
  * @version 1.2.0
  * @since 2026-05-10
  */

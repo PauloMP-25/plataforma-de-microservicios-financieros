@@ -11,7 +11,6 @@ import com.libreria.comun.excepciones.ExcepcionGlobal;
  * HTTP 429 con el código semántico {@code LIMITE_DIARIO_EXCEDIDO}.
  * </p>
  *
- * @author Paulo Moron
  * @version 1.1.0
  */
 public class LimiteIntentosExcedidoException extends ExcepcionGlobal {
