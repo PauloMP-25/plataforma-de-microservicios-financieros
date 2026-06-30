@@ -113,6 +113,7 @@
 
   &--range {
     grid-column: span 1;
+    min-width: 220px;
   }
 }
 
@@ -152,6 +153,7 @@
 
   .filter-input {
     flex: 1;
+    min-width: 80px;
   }
 }
 
@@ -176,6 +178,7 @@
   justify-content: center;
   gap: 6px;
   align-self: flex-end;
+  min-width: 100px;
 
   &:hover {
     background: var(--bg-body);

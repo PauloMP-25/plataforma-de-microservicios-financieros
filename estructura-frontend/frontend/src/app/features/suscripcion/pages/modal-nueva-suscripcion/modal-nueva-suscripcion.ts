@@ -24,11 +24,11 @@ export class ModalNuevaSuscripcion {
   readonly categoria = signal('');
   readonly monto = signal('');
   readonly frecuencia = signal('MENSUAL');
-  readonly proximoPago = signal(this.obtenerFechaHoy()); // Reemplaza a fechaInicio
+  readonly fechaInicio = signal(this.obtenerFechaHoy());
 
-  // 👇 LA MAGIA: Calculamos los días automáticamente cuando cambia proximoPago
+  // 👇 Calculamos los días automáticamente cuando cambia fechaInicio
   readonly diasRestantes = computed(() => {
-    const fechaStr = this.proximoPago();
+    const fechaStr = this.fechaInicio();
     if (!fechaStr) return 0;
 
     // Fecha actual a la medianoche para evitar desajustes de horas
@@ -47,6 +47,26 @@ export class ModalNuevaSuscripcion {
     const dias = Math.ceil(diferenciaMilisegundos / (1000 * 3600 * 24));
 
     return dias;
+  });
+
+  // 👇 Computed signal para el preview de ícono
+  readonly iconoPreview = computed(() => {
+    const name = this.nombre().toLowerCase();
+    
+    if (name.includes('netflix')) return 'fa-brands fa-netflix';
+    if (name.includes('spotify')) return 'fa-brands fa-spotify';
+    if (name.includes('youtube')) return 'fa-brands fa-youtube';
+    if (name.includes('prime') || name.includes('amazon')) return 'fa-brands fa-amazon';
+    if (name.includes('apple')) return 'fa-brands fa-apple';
+    if (name.includes('github')) return 'fa-brands fa-github';
+    if (name.includes('google')) return 'fa-brands fa-google';
+    if (name.includes('playstation') || name.includes('ps plus')) return 'fa-brands fa-playstation';
+    if (name.includes('xbox')) return 'fa-brands fa-xbox';
+    
+    // Si no es una marca conocida, buscar el ícono de la categoría
+    const catId = this.categoria();
+    const cat = this.categorias.find(c => c.id === catId);
+    return cat ? `fa-solid ${cat.icon}` : 'fa-solid fa-circle-question';
   });
 
   // UI
@@ -81,7 +101,7 @@ export class ModalNuevaSuscripcion {
       categoria: this.categoria(),
       monto: parseFloat(this.monto()),
       frecuencia: this.frecuencia() as any,
-      fechaInicio: this.proximoPago() // Lo mandamos como fechaInicio si tu API lo espera así
+      fechaInicio: this.fechaInicio()
     };
 
     // Simular delay de envío
@@ -110,8 +130,8 @@ export class ModalNuevaSuscripcion {
     if (!this.frecuencia()) {
       nuevosErrores['frecuencia'] = 'La frecuencia es requerida';
     }
-    if (!this.proximoPago()) {
-      nuevosErrores['proximoPago'] = 'La fecha de próximo pago es requerida';
+    if (!this.fechaInicio()) {
+      nuevosErrores['fechaInicio'] = 'La fecha de inicio es requerida';
     }
 
     this.errores.set(nuevosErrores);
@@ -127,7 +147,7 @@ export class ModalNuevaSuscripcion {
     this.categoria.set('');
     this.monto.set('');
     this.frecuencia.set('MENSUAL');
-    this.proximoPago.set(this.obtenerFechaHoy());
+    this.fechaInicio.set(this.obtenerFechaHoy());
     this.errores.set({});
   }
 

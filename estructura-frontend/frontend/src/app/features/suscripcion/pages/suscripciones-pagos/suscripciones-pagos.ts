@@ -4,21 +4,20 @@ import { FormsModule } from '@angular/forms';
 import { SuscripcionGastosService } from '../../../../core/services/suscripcion-gastos.service';
 import { SuscripcionDTO, CATEGORIAS_SUSCRIPCION, FRECUENCIAS_SUSCRIPCION, ESTADOS_SUSCRIPCION } from '../../../../core/models/financiero/suscripcion-gasto.model';
 import { SuscripcionCard } from '../../components/suscripcion-card/suscripcion-card';
-// 👇 1. IMPORTAMOS EL MODAL AQUÍ
 import { ModalNuevaSuscripcion } from '../modal-nueva-suscripcion/modal-nueva-suscripcion';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-suscripciones-pagos',
   standalone: true,
-  // 👇 2. LO AGREGAMOS AL ARREGLO DE IMPORTS
   imports: [CommonModule, FormsModule, SuscripcionCard, ModalNuevaSuscripcion],
   templateUrl: './suscripciones-pagos.html',
   styleUrl: './suscripciones-pagos.scss'
 })
 export class SuscripcionesPagos implements OnInit {
   private readonly suscripcionService = inject(SuscripcionGastosService);
+  public readonly authService = inject(AuthService);
 
-  // 👇 3. AGREGAMOS LA SEÑAL DEL MODAL
   readonly modalAbierto = signal(false);
 
   // Filtros

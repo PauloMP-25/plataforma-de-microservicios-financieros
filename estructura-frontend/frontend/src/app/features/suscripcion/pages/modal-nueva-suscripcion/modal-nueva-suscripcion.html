@@ -12,7 +12,12 @@
         
         <div class="form-group col-12">
           <label class="form-label">Nombre *</label>
-          <input type="text" class="form-input" [ngModel]="nombre()" (ngModelChange)="nombre.set($event)" name="nombre" placeholder="Ej: Netflix, Spotify...">
+          <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+            <div class="icon-preview-box" style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; min-width: 44px; border-radius: 12px; background: var(--bg-body); border: 2px solid var(--border-color); font-size: 20px; color: var(--color-primary);">
+              <i [className]="iconoPreview()"></i>
+            </div>
+            <input type="text" class="form-input" style="flex: 1;" [ngModel]="nombre()" (ngModelChange)="nombre.set($event)" name="nombre" placeholder="Ej: Netflix, Spotify...">
+          </div>
         </div>
 
         <div class="form-group col-12">
@@ -29,7 +34,7 @@
         </div>
 
         <div class="form-group col-6">
-          <label class="form-label">Monto (USD) *</label>
+          <label class="form-label">MONTO (S/) *</label>
           <input type="number" class="form-input" [ngModel]="monto()" (ngModelChange)="monto.set($event)" name="monto" placeholder="0.00">
         </div>
 
@@ -42,12 +47,12 @@
 
         <div class="form-group col-6">
           <label class="form-label">Próximo Pago *</label>
-          <input type="date" class="form-input" [ngModel]="proximoPago()" (ngModelChange)="proximoPago.set($event)" name="proximoPago">
+          <input type="date" class="form-input" [ngModel]="fechaInicio()" (ngModelChange)="fechaInicio.set($event)" name="fechaInicio">
         </div>
 
-        <div class="form-group col-12">
-          <label class="form-label">Días restantes</label>
-          <input type="text" class="form-input" [value]="diasRestantes() + ' días'" readonly disabled style="opacity: 0.7;">
+        <div class="form-group col-12" style="opacity: 0.75; transform: scale(0.95); margin-top: -4px;">
+          <label class="form-label" style="font-size: 0.65rem; color: var(--text-muted);">Días restantes (calculado)</label>
+          <input type="text" class="form-input" [value]="diasRestantes() + ' días'" readonly style="background: transparent; border-color: transparent; padding: 4px 8px; font-size: 0.9rem; pointer-events: none;">
         </div>
       </div>
 
