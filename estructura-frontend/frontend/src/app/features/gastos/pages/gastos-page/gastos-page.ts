@@ -1,27 +1,47 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, effect, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { Transacciones } from '../../../../core/services/transacciones';
 import { MetodoPago, TransaccionDTO, TransaccionRequestDTO } from '../../../../core/models/financiero/transaccion.model';
 import { AuthService } from '../../../../core/services/auth.service';
 import { FinancieroService } from '../../../../core/services/Financiero.service';
 import { forkJoin } from 'rxjs';
+import { AppEventBus } from '../../../../core/services/app-event-bus.service';
+import { GastosStateService } from '../../../../core/services/gastos-state.service';
+import { IaService } from '../../../../core/services/ia.service';
+import { CategoriaSugerida } from '../../../../core/models/ia_coach/ia-base.model';
+import { NotificacionService } from '../../../../core/services/notificacion.service';
 
 @Component({
   selector: 'app-gastos-page',
   standalone:true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './gastos-page.html',
   styleUrl: './gastos-page.scss',
 })
-export class GastosPage {
+export class GastosPage implements OnDestroy {
   private readonly transaccionesService = inject(Transacciones);
   private readonly authService = inject(AuthService);
   private readonly financieroService = inject(FinancieroService);
+  private readonly eventBus = inject(AppEventBus);
+  private readonly stateService = inject(GastosStateService);
+  private readonly iaService = inject(IaService);
+  private readonly notificacionService = inject(NotificacionService);
+  readonly iaSugeridaConfirmada = signal<boolean>(false);
 
-  readonly cargando = signal(false);
+  readonly sugerenciasIa = signal<CategoriaSugerida[]>([]);
+  readonly sugerenciaSeleccionada = signal<CategoriaSugerida | null>(null);
+  readonly categoriaIAPendiente = signal<{ nombre: string; icono: string } | null>(null);
+  readonly clasificandoIa = signal(false);
+  readonly intentosIaRestantes = computed(() => this.iaService.clasificacionesRestantes());
+  readonly intentosIaMaximos = computed(() => this.iaService.clasificacionesMaximas());
+  readonly puedeSugerirCategoriaIa = computed(() =>
+    this.descripcion().trim().length >= 4 && !this.clasificandoIa() && this.intentosIaRestantes() > 0 && this.sugerenciasIa().length === 0
+  );
+  readonly cargando = computed(() => this.stateService.cargando());
   readonly terminoBusqueda = signal('');
   readonly tabActiva = signal<'todos' | 'pagados' | 'pendientes' | 'recurrentes'>('todos');
-  readonly gastos = signal<TransaccionDTO[]>([]);
+  readonly gastos = computed(() => this.stateService.gastos());
   readonly modalAbierto = signal(false);
   readonly guardandoGasto = signal(false);
   readonly mensajeFormulario = signal('');
@@ -34,14 +54,19 @@ export class GastosPage {
   readonly descripcion = signal('');
   readonly fecha = signal('');
   readonly metodoPago = signal<MetodoPago>('DIGITAL');
-  readonly tipoFrecuencia = signal<'DIARIO' | 'RECURRENTE'>('DIARIO');
+  readonly etiquetas = signal<string[]>([]);
+  readonly nuevaEtiqueta = signal('');
   readonly filtroTendencia = signal<'7d' | '30d' | '90d'>('30d');
   readonly errores = signal<Record<string, string>>({});
   readonly eliminadosIds = signal<string[]>([]);
 
-  readonly saldoActual = signal(0);
-  readonly variacionGastado = signal(0);
-  readonly variacionSaldo = signal(0);
+  readonly saldoActual = computed(() => Number(this.stateService.resumenActual()?.balance ?? 0));
+  readonly totalGastadoActual = computed(() => Number(this.stateService.resumenActual()?.totalGastos ?? 0));
+  readonly totalGastosAnterior = computed(() => Number(this.stateService.resumenAnterior()?.totalGastos ?? 0));
+  readonly saldoAnterior = computed(() => Number(this.stateService.resumenAnterior()?.balance ?? 0));
+
+  readonly variacionGastado = computed(() => this.calcularVariacion(this.totalGastadoActual(), this.totalGastosAnterior()));
+  readonly variacionSaldo = computed(() => this.calcularVariacion(this.saldoActual(), this.saldoAnterior()));
   readonly variacionPendiente = signal(0);
   readonly bannerIntegracion = signal(
     'Integración en curso: historial de gastos (OK). Pendientes/Recurrentes dependen de Suscripciones (falta implementar backend).'
@@ -72,17 +97,101 @@ export class GastosPage {
     estado: 'Pagado' | 'Pendiente';
     icono: string;
     colorCategoria: 'comida' | 'hogar' | 'transporte' | 'servicios' | 'entretenimiento' | 'salud';
-  }>>([]);
+  }>>([
+    {
+      id: 'mock-g1',
+      nombre: 'Pizza Hut',
+      detalle: 'Cena familiar de fin de semana',
+      categoria: 'Restaurantes',
+      fecha: new Date(Date.now() - 86400000).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }),
+      hora: '20:15',
+      monto: 85.00,
+      metodo: 'TARJETA',
+      estado: 'Pagado',
+      icono: 'utensils',
+      colorCategoria: 'comida'
+    },
+    {
+      id: 'mock-g2',
+      nombre: 'Uber',
+      detalle: 'Traslado a la oficina',
+      categoria: 'Transporte',
+      fecha: new Date().toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }),
+      hora: '08:30',
+      monto: 18.50,
+      metodo: 'DIGITAL',
+      estado: 'Pagado',
+      icono: 'bus',
+      colorCategoria: 'transporte'
+    },
+    {
+      id: 'mock-g3',
+      nombre: 'Netflix',
+      detalle: 'Suscripción mensual estándar',
+      categoria: 'Entretenimiento',
+      fecha: new Date(Date.now() - 86400000 * 3).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }),
+      hora: '00:05',
+      monto: 44.90,
+      metodo: 'TARJETA',
+      estado: 'Pagado',
+      icono: 'film',
+      colorCategoria: 'entretenimiento'
+    },
+    {
+      id: 'mock-g4',
+      nombre: 'Luz del Sur',
+      detalle: 'Recibo de luz del mes',
+      categoria: 'Servicios',
+      fecha: new Date(Date.now() - 86400000 * 5).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }),
+      hora: '14:20',
+      monto: 120.00,
+      metodo: 'TRANSFERENCIA',
+      estado: 'Pagado',
+      icono: 'bolt',
+      colorCategoria: 'servicios'
+    },
+    {
+      id: 'mock-g5',
+      nombre: 'Plaza Vea',
+      detalle: 'Compras de víveres para la semana',
+      categoria: 'Alimentos',
+      fecha: new Date(Date.now() - 86400000 * 7).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }),
+      hora: '11:00',
+      monto: 250.00,
+      metodo: 'TARJETA',
+      estado: 'Pagado',
+      icono: 'utensils',
+      colorCategoria: 'comida'
+    }
+  ]);
 
-  readonly usarMockVisualPagados = signal(false);
+  readonly usarMockVisualPagados = signal(true);
 
-  readonly categoriasDisponibles = [
-    { id: 'alimentos', nombre: 'Alimentos' },
-    { id: 'transporte', nombre: 'Transporte' },
-    { id: 'servicios', nombre: 'Servicios' },
-    { id: 'hogar', nombre: 'Hogar' },
-    { id: 'otros', nombre: 'Otros' },
-  ];
+  get categoriasDisponibles(): any[] {
+    return this.stateService.categorias().length > 0
+      ? this.stateService.categorias()
+      : [
+          { id: 'alimentos', nombre: 'Alimentos' },
+          { id: 'transporte', nombre: 'Transporte' },
+          { id: 'servicios', nombre: 'Servicios' },
+          { id: 'hogar', nombre: 'Hogar' },
+          { id: 'otros', nombre: 'Otros' },
+        ];
+  }
+
+  get categoriasConCrear(): any[] {
+    const base = [...this.categoriasDisponibles];
+    const pending = this.categoriaIAPendiente();
+    if (pending) {
+      if (!base.some(c => c.nombre.toLowerCase() === pending.nombre.toLowerCase())) {
+        base.push({ id: 'PENDIENTE_IA', nombre: pending.nombre });
+      }
+    }
+    return [
+      ...base,
+      { id: 'CREAR_NUEVA', nombre: '＋ Crear nueva categoría...' }
+    ];
+  }
 
   readonly metodosPagoDisponibles: Array<{ id: MetodoPago; nombre: string }> = [
     { id: 'DIGITAL', nombre: 'Digital (Yape/Plin)' },
@@ -266,20 +375,22 @@ export class GastosPage {
 
           return data.map((g) => {
             const fecha = new Date(g.fechaTransaccion);
-            const categoria = g.categoriaNombre || 'Otros';
-            const { nombre, detalle } = this.parseNotas(g.notas, categoria);
+            const categoria = g.categoria || 'Otros';
+            const nombre = g.nombreCliente || categoria;
+            const detalle = g.descripcion || 'Gasto registrado';
 
             return {
               id: g.id,
               nombre,
               detalle,
               categoria,
+              categoriaId: g.categoriaId,
               fecha: fecha.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }),
               hora: fecha.toLocaleTimeString('es-PE', { hour: 'numeric', minute: '2-digit' }),
               monto: Number(g.monto || 0),
               metodo: g.metodoPago || 'DIGITAL',
               estado: 'Pagado' as const,
-              icono: this.iconoCategoria(categoria),
+              icono: g.categoriaIcono || this.iconoCategoria(categoria),
               colorCategoria: this.colorCategoria(categoria),
             };
           });
@@ -313,8 +424,27 @@ export class GastosPage {
     });
   });
 
+  private txSub?: any;
+
   constructor() {
-    this.cargarGastos();
+    this.stateService.cargarDatos();
+    effect(() => {
+      if (this.stateService.gastos().length > 0) {
+        this.usarMockVisualPagados.set(false);
+      } else {
+        this.usarMockVisualPagados.set(true);
+      }
+    });
+
+    this.txSub = this.eventBus.on('TRANSACTION_MODIFIED').subscribe(() => {
+      this.stateService.invalidarCache();
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.txSub) {
+      this.txSub.unsubscribe();
+    }
   }
 
   seleccionarTab(tab: 'todos' | 'pagados' | 'pendientes' | 'recurrentes'): void {
@@ -366,6 +496,17 @@ export class GastosPage {
     this.monto.set(String(gasto.monto));
     this.fecha.set(this.fechaIsoDesdeTexto(gasto.fecha));
     this.metodoPago.set(this.normalizarMetodoPago(gasto.metodo));
+
+    // Encontrar ID de categoría a partir de filas o por nombre como fallback
+    let catId = (gasto as any).categoriaId || '';
+    if (!catId) {
+      const match = this.categoriasDisponibles.find(
+        (c) => c.nombre.toLowerCase() === gasto.categoria.toLowerCase()
+      );
+      catId = match ? match.id : '';
+    }
+    this.categoria.set(catId);
+
     this.modalAbierto.set(true);
   }
 
@@ -379,7 +520,7 @@ export class GastosPage {
     if (!pendiente) return;
     const id = pendiente.id;
 
-    if (id.startsWith('g') || id.startsWith('mock-')) {
+    if (id.startsWith('g') || id.startsWith('mock-') || this.usarMockVisualPagados()) {
       this.eliminadosIds.update((ids) => Array.from(new Set([...ids, id])));
       this.pagadosMock.update((items) => items.filter((i) => i.id !== id));
       this.usarMockVisualPagados.set(true);
@@ -390,7 +531,8 @@ export class GastosPage {
     this.transaccionesService.eliminar(id).subscribe({
       next: () => {
         this.gastoPendienteEliminar.set(null);
-        this.cargarGastos();
+        this.stateService.invalidarCache();
+        this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
       },
       error: () => this.mensajeFormulario.set('No se pudo eliminar el gasto.'),
     });
@@ -404,6 +546,11 @@ export class GastosPage {
     this.modalAbierto.set(false);
   }
 
+  private nombreCategoriaPorId(id: string): string {
+    const match = this.categoriasDisponibles.find(c => c.id === id);
+    return match ? match.nombre : 'Gastos';
+  }
+
   guardarGasto(): void {
     const errores = this.validarFormulario();
     this.errores.set(errores);
@@ -413,63 +560,21 @@ export class GastosPage {
       return;
     }
 
-    const editId = this.gastoEditandoId();
-    if (editId) {
-      if (editId.startsWith('g') || editId.startsWith('mock-')) {
-        this.pagadosMock.update((items) =>
-          items.map((i) =>
-            i.id !== editId
-              ? i
-              : {
-                  ...i,
-                  nombre: this.nombreGasto().trim(),
-                  detalle: this.descripcion().trim(),
-                  monto: Number(this.monto()),
-                  metodo: this.metodoPago(),
-                  fecha: this.fecha()
-                    ? new Date(this.fecha()).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
-                    : i.fecha,
-                }
-          )
-        );
-        this.usarMockVisualPagados.set(true);
-        this.modalAbierto.set(false);
-        this.resetFormulario();
-        return;
+    const getLocalIsoString = (dateString: string): string => {
+      let localDate = new Date();
+      if (dateString) {
+        const parts = dateString.split('-');
+        if (parts.length === 3) {
+          localDate = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        } else {
+          localDate = new Date(dateString);
+        }
       }
-
-      const usuarioIdEdit = this.authService.usuario()?.id;
-      if (!usuarioIdEdit) {
-        this.mensajeFormulario.set('No se encontró sesión activa.');
-        return;
-      }
-
-      const requestEdit: TransaccionRequestDTO = {
-        usuarioId: usuarioIdEdit,
-        nombreCliente: this.authService.usuario()?.nombreUsuario ?? 'Cliente',
-        monto: Number(this.monto()),
-        tipo: 'GASTO',
-        categoriaId: this.categoria() || 'otros',
-        fechaTransaccion: new Date(this.fecha()).toISOString(),
-        metodoPago: this.metodoPago(),
-        notas: `${this.nombreGasto().trim()}|${this.descripcion().trim()}|${this.tipoFrecuencia()}`,
-      };
-
-      this.guardandoGasto.set(true);
-      this.transaccionesService.actualizar(editId, requestEdit).subscribe({
-        next: () => {
-          this.guardandoGasto.set(false);
-          this.modalAbierto.set(false);
-          this.resetFormulario();
-          this.cargarGastos();
-        },
-        error: () => {
-          this.guardandoGasto.set(false);
-          this.mensajeFormulario.set('No se pudo actualizar el gasto.');
-        },
-      });
-      return;
-    }
+      const now = new Date();
+      localDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+      const tzOffset = localDate.getTimezoneOffset() * 60000;
+      return new Date(localDate.getTime() - tzOffset).toISOString().slice(0, 19);
+    };
 
     const usuarioId = this.authService.usuario()?.id;
     if (!usuarioId) {
@@ -477,30 +582,249 @@ export class GastosPage {
       return;
     }
 
-    const request: TransaccionRequestDTO = {
-      usuarioId,
-      nombreCliente: this.authService.usuario()?.nombreUsuario ?? 'Cliente',
-      monto: Number(this.monto()),
-      tipo: 'GASTO',
-      categoriaId: this.categoria(),
-      fechaTransaccion: new Date(this.fecha()).toISOString(),
-      metodoPago: this.metodoPago(),
-      notas: `${this.nombreGasto().trim()}|${this.descripcion().trim()}|${this.tipoFrecuencia()}`,
+    const registrarTransaccionFinal = (catId: string) => {
+      this.guardandoGasto.set(true);
+      const editId = this.gastoEditandoId();
+      if (editId) {
+        if (editId.startsWith('g') || editId.startsWith('mock-') || this.usarMockVisualPagados()) {
+          this.pagadosMock.update((items) =>
+            items.map((i) =>
+              i.id !== editId
+                ? i
+                : {
+                    ...i,
+                    nombre: this.nombreGasto().trim(),
+                    detalle: this.descripcion().trim(),
+                    monto: Number(this.monto()),
+                    metodo: this.metodoPago(),
+                    fecha: this.fecha()
+                      ? new Date(this.fecha()).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
+                      : i.fecha,
+                    categoria: this.nombreCategoriaPorId(catId),
+                    icono: this.iconoCategoria(this.nombreCategoriaPorId(catId)),
+                    colorCategoria: this.colorCategoria(this.nombreCategoriaPorId(catId))
+                  }
+            )
+          );
+          this.usarMockVisualPagados.set(true);
+          this.modalAbierto.set(false);
+          this.resetFormulario();
+          this.guardandoGasto.set(false);
+          this.notificacionService.mostrarGastoRegistrado(Number(this.monto()), this.nombreCategoriaPorId(catId));
+          return;
+        }
+
+        const requestEdit: TransaccionRequestDTO = {
+          usuarioId,
+          nombreCliente: this.nombreGasto().trim(),
+          monto: Number(this.monto()),
+          tipo: 'GASTO',
+          categoriaId: catId || 'otros',
+          fechaTransaccion: getLocalIsoString(this.fecha()),
+          metodoPago: this.metodoPago(),
+          descripcion: this.descripcion().trim(),
+          etiquetas: this.etiquetas().join(','),
+        };
+
+        this.transaccionesService.actualizar(editId, requestEdit).subscribe({
+          next: () => {
+            this.guardandoGasto.set(false);
+            this.modalAbierto.set(false);
+            this.resetFormulario();
+            this.stateService.invalidarCache();
+            this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
+            this.notificacionService.mostrarGastoRegistrado(Number(this.monto()), this.nombreCategoriaPorId(catId));
+          },
+          error: () => {
+            this.guardandoGasto.set(false);
+            this.mensajeFormulario.set('No se pudo actualizar el gasto.');
+          },
+        });
+      } else {
+        if (this.usarMockVisualPagados()) {
+          const mockId = `mock-${Date.now()}`;
+          this.pagadosMock.update((items) => [
+            {
+              id: mockId,
+              nombre: this.nombreGasto().trim(),
+              detalle: this.descripcion().trim(),
+              categoria: this.nombreCategoriaPorId(catId),
+              fecha: this.fecha()
+                ? new Date(this.fecha()).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
+                : 'Hoy',
+              hora: new Date().toLocaleTimeString('es-PE', { hour: 'numeric', minute: '2-digit' }),
+              monto: Number(this.monto()),
+              metodo: this.metodoPago(),
+              estado: 'Pagado',
+              icono: this.iconoCategoria(this.nombreCategoriaPorId(catId)),
+              colorCategoria: this.colorCategoria(this.nombreCategoriaPorId(catId))
+            },
+            ...items
+          ]);
+          this.usarMockVisualPagados.set(true);
+          this.modalAbierto.set(false);
+          this.resetFormulario();
+          this.guardandoGasto.set(false);
+          this.notificacionService.mostrarGastoRegistrado(Number(this.monto()), this.nombreCategoriaPorId(catId));
+          return;
+        }
+
+        const request: TransaccionRequestDTO = {
+          usuarioId,
+          nombreCliente: this.nombreGasto().trim(),
+          monto: Number(this.monto()),
+          tipo: 'GASTO',
+          categoriaId: catId,
+          fechaTransaccion: getLocalIsoString(this.fecha()),
+          metodoPago: this.metodoPago(),
+          descripcion: this.descripcion().trim(),
+          etiquetas: this.etiquetas().join(','),
+        };
+
+        this.transaccionesService.registrar(request).subscribe({
+          next: () => {
+            this.guardandoGasto.set(false);
+            this.modalAbierto.set(false);
+            this.resetFormulario();
+            this.stateService.invalidarCache();
+            this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
+            this.notificacionService.mostrarGastoRegistrado(Number(this.monto()), this.nombreCategoriaPorId(catId));
+          },
+          error: () => {
+            this.guardandoGasto.set(false);
+            this.mensajeFormulario.set('No se pudo registrar el gasto.');
+          },
+        });
+      }
     };
 
-    this.guardandoGasto.set(true);
-    this.transaccionesService.registrar(request).subscribe({
-      next: () => {
-        this.guardandoGasto.set(false);
-        this.modalAbierto.set(false);
-        this.cargarGastos();
+    const pendingCat = this.categoriaIAPendiente();
+    if (this.categoria() === 'PENDIENTE_IA' && pendingCat) {
+      this.guardandoGasto.set(true);
+      this.financieroService.crearCategoria({
+        nombre: pendingCat.nombre,
+        descripcion: 'Categoría personalizada de gastos recomendada por IA',
+        icono: pendingCat.icono,
+        tipo: 'GASTO'
+      }).subscribe({
+        next: (cat) => {
+          this.stateService.categorias.update(cats => [...cats, cat]);
+          this.categoria.set(cat.id);
+          registrarTransaccionFinal(cat.id);
+        },
+        error: (err) => {
+          this.guardandoGasto.set(false);
+          this.mensajeFormulario.set('No se pudo crear la categoría recomendada por IA.');
+          console.error(err);
+        }
+      });
+    } else {
+      registrarTransaccionFinal(this.categoria());
+    }
+  }
+
+
+  clasificarConIa(): void {
+    const d = this.descripcion().trim();
+    if (!d || d.length < 4) {
+      this.sugerenciasIa.set([]);
+      return;
+    }
+    if (this.clasificandoIa() || this.intentosIaRestantes() <= 0) return;
+    this.clasificandoIa.set(true);
+
+    this.iaService.getClasificarTransaccion({
+      id_temporal: 'nuevo-gasto',
+      tipo_movimiento: 'GASTO',
+      descripcion: d,
+      etiquetas: this.etiquetas().join(',')
+    }).subscribe({
+      next: (res) => {
+        this.clasificandoIa.set(false);
+        if (res.datos) {
+          const sugerencias = res.datos.sugerencias;
+          if (sugerencias) {
+            this.sugerenciasIa.set(sugerencias);
+          }
+        }
       },
       error: () => {
-        this.guardandoGasto.set(false);
-        this.mensajeFormulario.set('No se pudo registrar el gasto.');
-      },
+        this.clasificandoIa.set(false);
+        const matched = ['Alimentos', 'Transporte', 'Servicios', 'Hogar', 'Salud', 'Educación', 'Entretenimiento'].filter(c =>
+          c.toLowerCase().includes(d.toLowerCase())
+        );
+        const fallbackList: CategoriaSugerida[] = (matched.length > 0 ? matched : ['Alimentos', 'Transporte', 'Servicios', 'Hogar', 'Otros']).slice(0, 5).map(c => ({
+          categoria: c,
+          icono: this.iconoCategoria(c)
+        }));
+        this.sugerenciasIa.set(fallbackList);
+      }
     });
   }
+
+  agregarEtiqueta(): void {
+    const raw = this.nuevaEtiqueta().trim();
+    if (!raw) return;
+    const tag = raw.split(' ')[0];
+    if (!this.etiquetas().includes(tag)) {
+      this.etiquetas.update(tags => [...tags, tag]);
+    }
+    this.nuevaEtiqueta.set('');
+  }
+
+  eliminarEtiqueta(tag: string): void {
+    this.etiquetas.update(tags => tags.filter(t => t !== tag));
+  }
+
+  confirmarCrearCategoriaGasto(nombre: string, icono?: string): void {
+    const nameTrim = nombre.trim();
+    if (!nameTrim) return;
+
+    const match = this.categoriasDisponibles.find(
+      c => c.nombre.toLowerCase() === nameTrim.toLowerCase()
+    );
+    if (match) {
+      this.categoria.set(match.id);
+      return;
+    }
+
+    this.financieroService.crearCategoria({
+      nombre: nameTrim,
+      descripcion: 'Categoría personalizada de gastos',
+      icono: icono || this.iconoCategoria(nameTrim),
+      tipo: 'GASTO'
+    }).subscribe({
+      next: (cat) => {
+        this.stateService.categorias.update(cats => [...cats, cat]);
+        this.categoria.set(cat.id);
+      },
+      error: (err) => {
+        console.error('Error al crear categoría de gasto:', err);
+      }
+    });
+  }
+
+  seleccionarSugerenciaGasto(sug: CategoriaSugerida): void {
+    this.sugerenciaSeleccionada.set(sug);
+  }
+
+  confirmarSugerenciaGasto(): void {
+    const sug = this.sugerenciaSeleccionada();
+    if (!sug) return;
+
+    const match = this.categoriasDisponibles.find(
+      c => c.nombre.toLowerCase() === sug.categoria.toLowerCase()
+    );
+    if (match) {
+      this.categoria.set(match.id);
+      this.categoriaIAPendiente.set(null);
+    } else {
+      this.categoriaIAPendiente.set({ nombre: sug.categoria, icono: sug.icono });
+      this.categoria.set('PENDIENTE_IA');
+    }
+    this.sugerenciaSeleccionada.set(null);
+  }
+
 
   private validarFormulario(): Record<string, string> {
     const out: Record<string, string> = {};
@@ -510,6 +834,8 @@ export class GastosPage {
     }
     if (!this.monto().trim() || Number(this.monto()) <= 0) {
       out['monto'] = 'Ingresa un monto válido mayor a 0.';
+    } else if (this.saldoActual() - Number(this.monto()) < 0) {
+      out['monto'] = 'El gasto supera tu balance actual. Registra un ingreso primero.';
     }
     if (!this.nombreGasto().trim()) {
       out['nombreGasto'] = 'Ingresa el nombre del gasto.';
@@ -532,9 +858,11 @@ export class GastosPage {
     this.descripcion.set('');
     this.fecha.set('');
     this.metodoPago.set('DIGITAL');
-    this.tipoFrecuencia.set('DIARIO');
+    this.etiquetas.set([]);
+    this.nuevaEtiqueta.set('');
     this.errores.set({});
     this.mensajeFormulario.set('');
+    this.sugerenciasIa.set([]);
   }
 
   private parseNotas(notas: string | null, fallbackCategoria: string): { nombre: string; detalle: string } {
@@ -579,58 +907,7 @@ export class GastosPage {
   }
 
   private cargarGastos(): void {
-    this.cargando.set(true);
-
-    this.transaccionesService.listarHistorial({ tipo: 'GASTO', pagina: 0, tamanio: 20 }).subscribe({
-      next: (pagina) => {
-        this.gastos.set(pagina?.content ?? []);
-        this.usarMockVisualPagados.set(false);
-        this.cargarIndicadoresFrontend();
-        this.cargando.set(false);
-      },
-      error: () => {
-        // TODO(backend): Mantener mock visual si falla endpoint real de historial
-        this.gastos.set([]);
-        this.usarMockVisualPagados.set(true);
-        this.saldoActual.set(0);
-        this.variacionGastado.set(0);
-        this.variacionSaldo.set(0);
-        this.variacionPendiente.set(0);
-        this.cargando.set(false);
-      },
-    });
-  }
-
-  private cargarIndicadoresFrontend(): void {
-    const hoy = new Date();
-    const mesActual = hoy.getMonth() + 1;
-    const anioActual = hoy.getFullYear();
-    const anterior = new Date(anioActual, hoy.getMonth() - 1, 1);
-    const mesAnterior = anterior.getMonth() + 1;
-    const anioAnterior = anterior.getFullYear();
-
-    forkJoin({
-      actual: this.financieroService.getResumen(mesActual, anioActual),
-      anterior: this.financieroService.getResumen(mesAnterior, anioAnterior),
-    }).subscribe({
-      next: ({ actual, anterior }) => {
-        const totalGastosActual = Number(actual?.totalGastos ?? 0);
-        const totalGastosAnterior = Number(anterior?.totalGastos ?? 0);
-        const saldoActual = Number(actual?.balance ?? 0);
-        const saldoAnterior = Number(anterior?.balance ?? 0);
-
-        this.saldoActual.set(saldoActual);
-        this.variacionGastado.set(this.calcularVariacion(totalGastosActual, totalGastosAnterior));
-        this.variacionSaldo.set(this.calcularVariacion(saldoActual, saldoAnterior));
-        this.variacionPendiente.set(0);
-      },
-      error: () => {
-        this.saldoActual.set(0);
-        this.variacionGastado.set(0);
-        this.variacionSaldo.set(0);
-        this.variacionPendiente.set(0);
-      },
-    });
+    this.stateService.cargarDatos();
   }
 
   private calcularVariacion(actual: number, previo: number): number {
