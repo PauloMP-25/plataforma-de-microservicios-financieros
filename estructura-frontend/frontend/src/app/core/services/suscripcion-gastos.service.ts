@@ -67,9 +67,14 @@ export class SuscripcionGastosService {
   }));
 
   constructor(private http: HttpClient, private auth: AuthService) {
-    if (this.auth.usuario()?.id) {
-      this.cargarSuscripciones().subscribe();
-    }
+    effect(() => {
+      const user = this.auth.usuario();
+      if (user?.id) {
+        this.cargarSuscripciones().subscribe();
+      } else {
+        this.suscripciones.set([]);
+      }
+    });
   }
 
   /**
@@ -94,8 +99,8 @@ export class SuscripcionGastosService {
    * Obtener suscripción por ID
    */
   obtenerSuscripcion(id: string): Observable<SuscripcionDTO | undefined> {
-    return this.http.get<ResultadoApi<any>>(`${environment.gatewayUrl}/api/v1/suscripciones/${id}`).pipe(
-      map(res => this.mapearDesdeBackend(res.datos)),
+    return this.http.get<ResultadoApi<any>>(`${this.baseUrl}/${id}`).pipe(
+      map(res => this.mapToDTO(res.datos)),
       catchError(err => {
         console.warn(`[SuscripcionService] Error cargando suscripción ${id} desde el backend, buscando en local:`, err);
         return of(this.suscripciones().find(s => s.id === id));

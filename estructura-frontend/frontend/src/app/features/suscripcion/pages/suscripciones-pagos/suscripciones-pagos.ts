@@ -56,7 +56,9 @@ export class SuscripcionesPagos implements OnInit {
   readonly estados = ESTADOS_SUSCRIPCION;
 
   ngOnInit(): void {
-    // Cargar suscripciones
+    this.suscripcionService.cargarSuscripciones().subscribe({
+      error: (err) => console.error('Error al cargar suscripciones:', err)
+    });
   }
 
   // 👇 4. AGREGAMOS LAS FUNCIONES PARA CONTROLAR EL MODAL
