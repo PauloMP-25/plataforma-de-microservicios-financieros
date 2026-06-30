@@ -15,7 +15,6 @@ import java.util.UUID;
  * Repositorio para la gestión de IPs bloqueadas por seguridad.
  * Utilizado por el Gateway para filtrar peticiones maliciosas en tiempo real.
  * 
- * @author Paulo Moron
  * @version 1.2.0
  * @since 2026-05-10
  */

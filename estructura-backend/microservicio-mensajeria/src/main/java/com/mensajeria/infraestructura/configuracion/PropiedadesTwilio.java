@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Configuration;
  * La autenticación se realiza con API Key Restringida (sid + secret) en lugar
  * del Auth Token maestro.</p>
  *
- * @author Paulo Moron
  * @version 1.2.0
  */
 @Configuration

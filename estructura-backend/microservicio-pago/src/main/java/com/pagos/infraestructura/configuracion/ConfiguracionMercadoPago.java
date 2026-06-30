@@ -17,7 +17,6 @@ import org.springframework.context.annotation.Configuration;
  * <p>El SDK es compatible con Java 21 y Spring Boot 3.x, tanto en entorno
  * local (sandbox) como desplegado en producción (access token de producción).</p>
  *
- * @author LUKA APP Team
  * @see PropiedadesMercadoPago
  */
 @Slf4j

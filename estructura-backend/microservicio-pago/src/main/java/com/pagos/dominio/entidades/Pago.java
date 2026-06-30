@@ -14,7 +14,6 @@ import java.util.UUID;
  * Entidad principal que representa un intento o transacción de pago en LUKA APP.
  * Mapea a la tabla 'pagos' en la base de datos exclusiva del microservicio.
  *
- * @author LUKA APP Team
  */
 @Entity
 @Table(name = "pagos", indexes = {

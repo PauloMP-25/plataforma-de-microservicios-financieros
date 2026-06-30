@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
  * de mensajería asíncrona de la librería común, facilitando el reporte de accesos y trazabilidad transaccional.
  * </p>
  * 
- * @author Paulo Moron
  * @version 1.5
  * @since 2026-05
  */

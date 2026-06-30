@@ -9,7 +9,6 @@ import com.auditoria.aplicacion.dtos.RespuestaVerificacionIpDTO;
  * de IPs y verificar el estado de las mismas frente a la lista negra.
  * </p>
  * 
- * @author Paulo Moron
  */
 public interface ServicioSeguridadAuditoria {
 

@@ -22,7 +22,6 @@ import java.util.UUID;
  * integrando el estándar de respuestas {@link ResultadoApi} y metadatos de {@link Paginacion}.
  * </p>
  * 
- * @author Paulo Moron
  * @version 1.3
  * @since 2026-05
  */

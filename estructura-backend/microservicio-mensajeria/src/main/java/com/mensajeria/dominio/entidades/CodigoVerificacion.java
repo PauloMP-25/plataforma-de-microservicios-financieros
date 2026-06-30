@@ -12,7 +12,6 @@ import java.util.UUID;
  * asociados a un usuario específico. Vigencia por defecto: 10 minutos
  * (configurable).
  *
- * @author Paulo — ampliado desde CodigoVerificacion de Ikaza
  */
 @Entity
 @Table(

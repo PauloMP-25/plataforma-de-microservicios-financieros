@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
  * y mapear los resultados a DTOs detallados.
  * </p>
  * 
- * @author Paulo Moron
  * @version 1.3
  */
 @Slf4j

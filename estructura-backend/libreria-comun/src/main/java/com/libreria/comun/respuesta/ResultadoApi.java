@@ -26,7 +26,6 @@ import java.util.List;
  * @param ruta        URI del endpoint que originó la respuesta.
  * @param marcaTiempo Momento exacto en que se generó la respuesta.
  *
- * @author Paulo Moron
  * @version 1.1.0
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)

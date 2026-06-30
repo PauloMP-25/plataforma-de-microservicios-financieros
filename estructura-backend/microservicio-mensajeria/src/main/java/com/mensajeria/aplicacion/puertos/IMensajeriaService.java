@@ -13,7 +13,6 @@ import com.mensajeria.aplicacion.dtos.respuestas.RespuestaValidacion;
  * de un solo uso (OTP), diferenciando flujos de activación y recuperación.
  * </p>
  *
- * @author Paulo Moron
  * @version 1.1.0
  */
 public interface IMensajeriaService {

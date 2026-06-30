@@ -7,7 +7,6 @@ package com.mensajeria.aplicacion.puertos;
  * que la implementación concreta en Redis sea intercambiable en testing.
  * </p>
  *
- * @author Paulo Moron
  * @version 1.1.0
  */
 public interface IThrottlingService {

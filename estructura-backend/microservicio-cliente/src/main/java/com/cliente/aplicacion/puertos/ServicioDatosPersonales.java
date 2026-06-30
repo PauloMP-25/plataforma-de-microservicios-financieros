@@ -8,7 +8,6 @@ import java.util.UUID;
 /**
  * Interfaz de puerto para la gestión de datos personales del cliente.
  * 
- * @author Paulo Moron
  * @since 2026-05
  */
 public interface ServicioDatosPersonales {

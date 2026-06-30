@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 /**
  * Lógica de negocio para la gestión de metas de ahorro.
  * 
- * @author Paulo Moron
  * @version 1.2.0
  */
 @Service

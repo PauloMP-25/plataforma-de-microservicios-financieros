@@ -649,8 +649,8 @@ export class IaHubComponent implements OnInit, OnDestroy {
           }
         },
         narrativasGemini: {
-          cartaContinuidad: 'Hola Paulo del futuro. Veo que sigues gastando sin un objetivo claro. Hoy, después de un año, tu ahorro acumulado apenas llega a S/ 100. No tienes metas activas, y tu dinero se diluye mes a mes sin construir patrimonio.',
-          cartaTransformacion: 'Hola Paulo. Qué gran decisión de ahorro tomaste al reducir esos gastos hormiga de transporte y antojos de fin de semana. Tras 12 meses de constancia, has acumulado S/ 1,550 en ahorros. Aunque actualmente no tienes metas configuradas, estás construyendo un fondo de emergencia sólido.'
+          cartaContinuidad: 'Hola Usuario del futuro. Veo que sigues gastando sin un objetivo claro. Hoy, después de un año, tu ahorro acumulado apenas llega a S/ 100. No tienes metas activas, y tu dinero se diluye mes a mes sin construir patrimonio.',
+          cartaTransformacion: 'Hola Usuario. Qué gran decisión de ahorro tomaste al reducir esos gastos hormiga de transporte y antojos de fin de semana. Tras 12 meses de constancia, has acumulado S/ 1,550 en ahorros. Aunque actualmente no tienes metas configuradas, estás construyendo un fondo de emergencia sólido.'
         }
       },
       'comprobador-evolucion': {
@@ -714,7 +714,7 @@ export class IaHubComponent implements OnInit, OnDestroy {
           alertas: ['Gasto Ocio Desmedido (+75%)', 'Frecuencia de antojos en alza']
         },
         imf: 64,
-        narrativaGemini: 'Paulo, el diagnóstico revela que estás ganando estabilidad en tus bases, pero la falta de metas claras hace que tus excedentes se disipen en ocio. El Índice de Volatilidad es Caótico. Define una meta pronto para orientar este esfuerzo.'
+        narrativaGemini: 'Usuario, el diagnóstico revela que estás ganando estabilidad en tus bases, pero la falta de metas claras hace que tus excedentes se disipen en ocio. El Índice de Volatilidad es Caótico. Define una meta pronto para orientar este esfuerzo.'
       },
       'clasificar-transaccion': {
         descripcion: payload?.descripcion || 'Rappi Alimentos',
@@ -777,7 +777,7 @@ export class IaHubComponent implements OnInit, OnDestroy {
         analisis_score: 'Tu Score LUKA es 78/100. Has mantenido un crecimiento constante en tus ahorros desde el 1 de enero. Tu balance anual positivo de S/ 2,450.00 indica una gestión responsable.',
         impacto_meta: 'Eres un Ahorrador Estratégico. Mantén este ritmo y cerrarás el año con la solvencia necesaria.',
         veredicto_final: 'Aprobado',
-        mensaje_motivacional: '¡Gran trabajo, Paulo!'
+        mensaje_motivacional: '¡Gran trabajo, Usuario!'
       },
       'simular-meta': {
         pensamiento_interno_ia: "El monto faltante para la Laptop Gamer es S/ 5000.0. La capacidad de ahorro mensual detectada es S/ 14145.66. Dado que la capacidad de ahorro excede significativamente el monto faltante, la meta es altamente viable y se puede alcanzar en menos de un mes (0.4 meses).",
@@ -789,14 +789,14 @@ export class IaHubComponent implements OnInit, OnDestroy {
       'reto-ahorro': {
         pensamiento_interno_ia: 'El usuario gasta en restaurantes. Cortar este gasto genera ahorro rápido.',
         titulo_mision: 'Operación Cocina en Casa 🏆',
-        diagnostico: 'Paulo, he detectado que tu Enemigo Final de esta semana son los Restaurantes.',
+        diagnostico: 'Usuario, he detectado que tu Enemigo Final de esta semana son los Restaurantes.',
         estrategia: 'Tu misión, si decides aceptarla, es evitar comer fuera por los próximos 7 días.',
         mensaje_motivacional: 'Si lo logras, habrás salvado S/ 85.00 para tus fondos. ¿Aceptas el reto, Jugador 1?'
       },
-      'espejo-temporal': '¡Hola Paulo! Soy tu coach financiero Luka. Tras proyectar tus finanzas a 12 meses, la diferencia neta de ahorro acumulado proyectado entre tus dos futuros es de S/ 1,450.00. Si continúas con tus hábitos del pasado, el dinero se diluirá sin una meta. Sin embargo, al activar tu plan de transformación lograrás capitalizar tus ahorros a S/ 1,550.00, creando un sólido fondo de emergencia.',
+      'espejo-temporal': '¡Hola Usuario! Soy tu coach financiero Luka. Tras proyectar tus finanzas a 12 meses, la diferencia neta de ahorro acumulado proyectado entre tus dos futuros es de S/ 1,450.00. Si continúas con tus hábitos del pasado, el dinero se diluirá sin una meta. Sin embargo, al activar tu plan de transformación lograrás capitalizar tus ahorros a S/ 1,550.00, creando un sólido fondo de emergencia.',
       'comprobador-evolucion': {
         pensamiento_interno_ia: 'No hay metas activas, diagnosticando estado base.',
-        veredicto_narrativo: 'Paulo, el diagnóstico revela que estás ganando estabilidad en tus bases, pero la falta de metas claras hace que tus excedentes se disipen en ocio. El Índice de Volatilidad es Caótico. Define una meta pronto para orientar este esfuerzo.',
+        veredicto_narrativo: 'Usuario, el diagnóstico revela que estás ganando estabilidad en tus bases, pero la falta de metas claras hace que tus excedentes se disipen en ocio. El Índice de Volatilidad es Caótico. Define una meta pronto para orientar este esfuerzo.',
         recetas_medicas: [
           { categoria: 'Ocio', diagnostico: 'Sin metas que protejan el excedente, el ocio absorbe la liquidez.', posologia: 'Definir una meta a corto plazo.', pronostico: 'Reservas estancadas.' }
         ]

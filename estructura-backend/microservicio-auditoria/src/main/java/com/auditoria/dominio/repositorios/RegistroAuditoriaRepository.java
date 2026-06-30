@@ -16,7 +16,6 @@ import java.util.UUID;
  * dinámico y paginación sobre los eventos registrados.
  * </p>
  * 
- * @author Paulo Moron
  * @version 1.1.0
  * @since 2026-05-10
  */

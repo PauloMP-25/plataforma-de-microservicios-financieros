@@ -24,7 +24,6 @@ import java.time.ZoneId;
  * del día siguiente.
  * </p>
  *
- * @author Paulo Moron
  * @version 1.1.0
  */
 @Service

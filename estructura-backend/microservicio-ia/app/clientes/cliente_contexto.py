@@ -11,7 +11,6 @@ caché antes de responder.
 Endpoint:
     GET {url_cliente}/api/v1/clientes/interno/contexto-financiero/{usuarioId}
 
-@author Paulo Moron
 @version 1.1.0
 @since 2026-05-10
 ══════════════════════════════════════════════════════════════════════════════

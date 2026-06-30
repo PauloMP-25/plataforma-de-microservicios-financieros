@@ -11,7 +11,6 @@ import java.util.UUID;
  * Especificaciones dinámicas para la búsqueda de códigos de verificación.
  * Implementa el Specification Pattern para auditoría y gestión de OTPs.
  * 
- * @author Paulo Moron
  * @version 1.0.0
  */
 public class MensajeriaSpecs {

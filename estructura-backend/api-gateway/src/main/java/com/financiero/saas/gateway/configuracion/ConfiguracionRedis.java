@@ -17,7 +17,6 @@ import org.springframework.lang.NonNull;
  * garantizando la serialización correcta de claves y valores.
  * </p>
  * 
- * @author Paulo Moron
  * @version 1.1.0
  * @since 2026-05-10
  */

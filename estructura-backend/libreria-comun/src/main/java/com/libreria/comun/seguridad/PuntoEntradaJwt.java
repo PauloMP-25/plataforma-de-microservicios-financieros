@@ -22,7 +22,6 @@ import java.io.IOException;
  * durante la fase de filtrado.
  * </p>
  * 
- * @author Paulo Moron
  * @version 1.0.0
  */
 @Slf4j

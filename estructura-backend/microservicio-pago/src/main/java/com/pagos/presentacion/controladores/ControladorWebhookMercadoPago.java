@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
  * <p>El endpoint retorna {@code 200 OK} en cuanto confirma la recepción (incluso si el
  * estado no requiere acción), para evitar reintentos innecesarios de Mercado Pago.</p>
  *
- * @author LUKA APP Team
  * @see MercadoPagoEstrategiaImpl#procesarNotificacion
  */
 @Slf4j

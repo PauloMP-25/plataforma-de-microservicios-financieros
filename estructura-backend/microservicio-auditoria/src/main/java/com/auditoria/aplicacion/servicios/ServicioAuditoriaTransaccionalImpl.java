@@ -20,7 +20,6 @@ import java.util.UUID;
  * librería común.
  * </p>
  * 
- * @author Paulo Moron
  */
 @Service
 @RequiredArgsConstructor

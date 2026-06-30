@@ -27,7 +27,6 @@ import java.util.UUID;
  *     → Redis (ia:contexto:{usuarioId})
  * </pre>
  *
- * @author Paulo Moron
  * @version 1.1.0
  * @since 2026-05-10
  */

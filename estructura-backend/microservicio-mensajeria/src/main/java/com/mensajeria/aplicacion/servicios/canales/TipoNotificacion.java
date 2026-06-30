@@ -8,7 +8,6 @@ package com.mensajeria.aplicacion.servicios.canales;
  * (SMTP, Twilio, etc.) según el tipo recibido.
  * </p>
  *
- * @author Paulo Moron
  * @version 1.1.0
  */
 public enum TipoNotificacion {

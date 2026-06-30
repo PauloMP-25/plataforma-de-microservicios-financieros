@@ -24,7 +24,6 @@ import java.util.UUID;
 /**
  * Lógica de negocio para la gestión de datos personales del cliente.
  * 
- * @author Paulo Moron
  * @since 2026-05
  */
 @Service

@@ -8,7 +8,6 @@ import java.util.List;
  * o las restricciones de validación (@Valid).
  * <p>Mapea a un estado HTTP 400 Bad Request.</p>
  * 
- * @author Paulo Moron
  */
 public class ExcepcionValidacion extends ExcepcionGlobal {
 

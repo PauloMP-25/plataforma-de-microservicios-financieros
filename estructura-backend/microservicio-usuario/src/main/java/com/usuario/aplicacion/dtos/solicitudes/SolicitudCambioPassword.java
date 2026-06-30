@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 
 /**
  *
- * @author user
  */
 // En com.usuario.aplicacion.dtos
 public record SolicitudCambioPassword(

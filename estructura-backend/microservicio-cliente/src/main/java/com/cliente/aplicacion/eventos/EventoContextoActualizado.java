@@ -12,7 +12,6 @@ import java.util.UUID;
  * base de datos confirmó los cambios exitosamente.
  * </p>
  *
- * @author Paulo Moron
  * @version 1.1.0
  * @since 2026-05-10
  */

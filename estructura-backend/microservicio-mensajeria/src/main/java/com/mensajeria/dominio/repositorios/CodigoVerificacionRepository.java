@@ -20,7 +20,6 @@ import java.util.UUID;
  * permitiendo auditorías y limpiezas dinámicas.
  * </p>
  * 
- * @author Paulo Moron
  * @version 1.2.0
  */
 @Repository

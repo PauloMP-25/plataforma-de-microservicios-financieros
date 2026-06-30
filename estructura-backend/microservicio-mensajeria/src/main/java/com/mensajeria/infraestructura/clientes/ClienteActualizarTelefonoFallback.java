@@ -14,7 +14,6 @@ import com.libreria.comun.respuesta.ResultadoApi;
  * teléfono se registra en logs para reintento manual o eventual reconciliación.
  * </p>
  *
- * @author Paulo Moron
  * @version 1.1.0
  */
 @Component

@@ -21,7 +21,6 @@ import java.util.UUID;
  * No requiere autenticación JWT del usuario final ya que es comunicación
  * interna de confianza.
  *
- * @author Paulo Moron
  * @version 1.2.0
  * @since 2026-05-10
  */

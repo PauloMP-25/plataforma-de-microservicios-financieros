@@ -25,7 +25,6 @@ import java.io.IOException;
  * adicionales a la base de datos.
  * </p>
  *
- * @author Paulo Moron
  */
 @Slf4j
 @Component

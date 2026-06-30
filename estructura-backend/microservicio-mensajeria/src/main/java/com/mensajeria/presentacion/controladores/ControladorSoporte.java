@@ -25,7 +25,6 @@ import org.springframework.web.multipart.MultipartFile;
  * los flujos de OTP, activación de cuenta o recuperación de contraseña.
  * </p>
  *
- * @author Paulo Moron
  * @version 1.0.0
  */
 @RestController

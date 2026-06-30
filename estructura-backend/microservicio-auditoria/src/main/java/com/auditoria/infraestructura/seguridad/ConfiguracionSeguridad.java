@@ -19,7 +19,6 @@ import org.springframework.security.web.SecurityFilterChain;
  * y define los permisos de acceso a los endpoints de auditoría.
  * </p>
  * 
- * @author Paulo Moron
  * @version 1.2.0
  */
 @Configuration

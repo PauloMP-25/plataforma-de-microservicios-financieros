@@ -10,7 +10,6 @@ import java.util.UUID;
  * Interfaz de servicio para la gestión de categorías financieras.
  * Define el contrato de negocio para el registro y consulta de categorías.
  *
- * @author Luka-Dev-Backend
  * @version 1.2.0
  */
 public interface ICategoriaService {

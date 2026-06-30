@@ -19,7 +19,6 @@ import java.util.Map;
  * en tiempo de ejecución.
  * </p>
  * 
- * @author Paulo Moron
  * @version 1.5.0
  */
 import com.mensajeria.aplicacion.servicios.canales.NotificacionAdminService;

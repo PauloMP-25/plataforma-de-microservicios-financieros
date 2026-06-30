@@ -10,7 +10,6 @@ import com.cliente.aplicacion.dtos.solicitudes.SolicitudLimiteGasto;
 /**
  * Interfaz de puerto para la gestión del límite de gasto global.
  *
- * @author Paulo Moron
  * @since 2026-05
  */
 public interface ServicioLimiteGasto {

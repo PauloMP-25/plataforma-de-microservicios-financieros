@@ -15,7 +15,6 @@ Flujo:
         → cola.ia.sincronizacion.contexto → EscuchadorSincronizacionIA
         → Redis (ia:contexto:{usuarioId})
 
-@author Paulo Moron
 @version 2.0.0
 @since 2026-05-10
 ══════════════════════════════════════════════════════════════════════════════

@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
  * <p>La resolución de la estrategia correcta se realiza en tiempo de ejecución según
  * el proveedor indicado en la solicitud de checkout ({@code SolicitudPagoDTO.proveedor}).</p>
  *
- * @author LUKA APP Team
  * @see IPasarelaPagoEstrategia
  */
 @Slf4j

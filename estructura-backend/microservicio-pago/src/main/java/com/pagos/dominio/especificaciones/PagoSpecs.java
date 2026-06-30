@@ -11,7 +11,6 @@ import java.util.UUID;
  * Especificaciones dinámicas para la búsqueda y filtrado de Pagos.
  * Implementa el Specification Pattern para desacoplar la lógica de consulta del repositorio.
  * 
- * @author LUKA APP Team
  * @version 1.0.0
  */
 public class PagoSpecs {

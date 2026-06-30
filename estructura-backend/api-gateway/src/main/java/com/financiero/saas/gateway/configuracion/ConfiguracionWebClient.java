@@ -12,7 +12,6 @@ import org.springframework.web.reactive.function.client.WebClient;
  * utilizado para la comunicación HTTP asíncrona entre microservicios.
  * </p>
  * 
- * @author Paulo Moron
  * @version 1.1.0
  * @since 2026-05-10
  */

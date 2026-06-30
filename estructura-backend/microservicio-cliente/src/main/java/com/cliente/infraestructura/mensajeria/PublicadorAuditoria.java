@@ -19,7 +19,6 @@ import java.util.UUID;
  * Publicador especializado de eventos para el Microservicio de Cliente.
  * Implementa el patrón Outbox para garantizar la entrega confiable de eventos.
  * 
- * @author Paulo Moron
  * @version 1.6
  */
 @Component

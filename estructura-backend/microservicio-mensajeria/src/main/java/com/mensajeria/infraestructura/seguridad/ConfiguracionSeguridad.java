@@ -19,7 +19,6 @@ import org.springframework.security.web.SecurityFilterChain;
  * microservicio (endpoints OTP).
  * </p>
  *
- * @author Paulo Moron
  * @version 1.1.0
  */
 @Configuration

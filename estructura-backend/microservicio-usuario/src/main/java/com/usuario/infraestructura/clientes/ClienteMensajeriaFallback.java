@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 /**
  * Fallback para el cliente Feign de Mensajería.
  *
- * @author user
  */
 @Component
 @Slf4j

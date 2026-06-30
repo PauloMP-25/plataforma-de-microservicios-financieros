@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * Devuelve un estado HTTP 429 (Too Many Requests) al cliente o Gateway.
  * </p>
  * 
- * @author Paulo Moron
  */
 @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
 public class IpBloqueadaException extends RuntimeException {

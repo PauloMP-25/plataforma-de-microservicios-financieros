@@ -19,7 +19,6 @@ import org.springframework.security.web.SecurityFilterChain;
  * y define los permisos de acceso a los endpoints de cliente.
  * </p>
  * 
- * @author Paulo Moron
  * @since 2026-09
  */
 @Configuration

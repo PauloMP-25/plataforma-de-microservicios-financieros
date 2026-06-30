@@ -25,7 +25,6 @@ import org.springframework.context.annotation.Configuration;
  * </ul>
  * </p>
  *
- * @author Paulo Moron
  * @version 1.1.0
  * @since 2026-09
  */

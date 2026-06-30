@@ -21,7 +21,7 @@ export const CLUSTERS_INFO: Record<ClusterType, ClusterInfo> = {
     nombreDisplay: 'FOODIE',
     color: '#f59e0b', // Amber
     rasgos: ['Gastrónomo', 'Social', 'Delivery Lover'],
-    descripcion: 'Paulo, tras analizar tus movimientos, te he bautizado como **\'El Foodie Explorador\'**. Tienes un paladar exigente: el 65% de tus gastos no fijos se van en descubrir nuevos sabores en restaurantes y barras de café.\n\n**Valor de Salud:** Como tu perfil es gastronómico, podrías ahorrar un **15%** mensual si aprovechas los días de promociones bancarias en tus locales favoritos o si te pones un presupuesto semanal de \'salidas\' fijo. Ese ahorro extra de S/ 120.00 aceleraría tu meta de la **Laptop Gamer** en casi un mes. ¡Sigue explorando, pero con estrategia!',
+    descripcion: 'Usuario, tras analizar tus movimientos, te he bautizado como **\'El Foodie Explorador\'**. Tienes un paladar exigente: el 65% de tus gastos no fijos se van en descubrir nuevos sabores en restaurantes y barras de café.\n\n**Valor de Salud:** Como tu perfil es gastronómico, podrías ahorrar un **15%** mensual si aprovechas los días de promociones bancarias en tus locales favoritos o si te pones un presupuesto semanal de \'salidas\' fijo. Ese ahorro extra de S/ 120.00 aceleraría tu meta de la **Laptop Gamer** en casi un mes. ¡Sigue explorando, pero con estrategia!',
     descripcionCorta: 'Gastos enfocados en salidas a restaurantes, cafeterías y servicios de delivery.',
     porcentajePredeterminado: 65,
     categorias: ['Restaurantes', 'Cafeterías', 'Delivery', 'Supermercados']

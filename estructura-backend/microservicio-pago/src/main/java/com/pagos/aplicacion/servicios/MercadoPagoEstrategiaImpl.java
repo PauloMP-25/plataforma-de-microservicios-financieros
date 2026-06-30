@@ -59,7 +59,6 @@ import java.util.UUID;
  * <p>Soporte de planes: {@link PlanSuscripcion#PRO} (S/15.00) y
  * {@link PlanSuscripcion#PREMIUM} (S/25.00), moneda PEN (Perú).</p>
  *
- * @author LUKA APP Team
  */
 @Slf4j
 @Service

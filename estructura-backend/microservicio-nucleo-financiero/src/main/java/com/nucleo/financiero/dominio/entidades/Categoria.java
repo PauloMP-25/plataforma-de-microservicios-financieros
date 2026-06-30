@@ -11,7 +11,6 @@ import java.util.UUID;
  * Sueldo, Entretenimiento) para facilitar el análisis por parte de la IA.
  * </p>
  * 
- * @author Luka-Dev-Backend
  * @version 1.1.0
  */
 @Entity

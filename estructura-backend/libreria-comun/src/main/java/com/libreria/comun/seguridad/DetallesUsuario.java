@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
  * en cualquier microservicio.
  * </p>
  * 
- * @author Paulo Moron
  * @version 1.0.0
  */
 @Getter

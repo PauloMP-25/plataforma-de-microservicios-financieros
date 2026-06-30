@@ -30,7 +30,6 @@ import com.cliente.infraestructura.mensajeria.PublicadorSincronizacionIA;
  * Servicio que consolida la información del cliente mediante el patrón Facade
  * orquestando llamadas a otros servicios.
  * 
- * @author Paulo Moron
  * @version 1.3.0
  */
 @Service

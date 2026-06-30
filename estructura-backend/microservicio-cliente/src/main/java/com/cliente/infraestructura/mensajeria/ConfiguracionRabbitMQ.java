@@ -15,7 +15,6 @@ import org.springframework.context.annotation.Configuration;
  * de la librería común.
  * </p>
  * 
- * @author Paulo Moron
  * @version 1.4
  * @since 2026-09
  */
