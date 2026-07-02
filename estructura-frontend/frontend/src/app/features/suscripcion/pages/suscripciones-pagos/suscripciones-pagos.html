@@ -5,13 +5,15 @@
       <h1 class="suscripciones-pagos-page__title">Todas las Suscripciones</h1>
       <p class="suscripciones-pagos-page__subtitle">Visualiza y administra todas tus suscripciones en una sola vista</p>
     </div>
-    <button type="button" class="btn-primary" (click)="abrirModal()" style="padding: 10px 20px; border-radius: var(--radius-md); font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-      <i class="fa-solid fa-plus"></i>
-      Nueva Suscripción
-    </button>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <button type="button" id="btn-nueva-suscripcion" class="btn-primary" (click)="abrirModal()" style="padding: 10px 20px; border-radius: var(--radius-md); font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-plus"></i>
+        Nueva Suscripción
+      </button>
+    </div>
   </header>
 
-  <section class="suscripciones-pagos-page__filters">
+  <section class="suscripciones-pagos-page__filters" id="tour-filtros">
     <div class="filters-container">
       
       <div class="filter-group">
@@ -71,7 +73,7 @@
       </div>
 
       <div class="filter-group filter-group--range">
-        <label class="filter-label">Monto (USD)</label>
+        <label class="filter-label">Monto (S/)</label>
         <div class="filter-range">
           <input 
             type="number" 
@@ -140,7 +142,7 @@
   </section>
 
   @if (suscripciones().length === 0) {
-    <div class="suscripciones-pagos-page__empty">
+    <div class="suscripciones-pagos-page__empty" id="tour-suscripciones-grid">
       <i class="fa-solid fa-inbox"></i>
       <h2>No hay resultados</h2>
       <p>Intenta ajustar tus filtros para encontrar lo que buscas</p>
@@ -150,22 +152,7 @@
       </button>
     </div>
   } @else {
-    @if (authService.esPremium() || authService.esPro()) {
-      <div class="bento-card glass-panel" style="margin-bottom: 24px; padding: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(168, 85, 247, 0.3);">
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <div style="font-size: 24px; color: #a855f7; display: flex; align-items: center;">
-            <i class="fa-solid fa-crown"></i>
-          </div>
-          <div>
-            <h3 style="margin: 0; color: var(--text-primary); font-weight: 700;">Plan Luka Activo</h3>
-            <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-secondary);">Tu suscripción a la plataforma está vigente.</p>
-          </div>
-        </div>
-        <span class="suscripcion-card__badge is-success">ACTIVA</span>
-      </div>
-    }
-
-    <section class="suscripciones-pagos-page__grid">
+    <section class="suscripciones-pagos-page__grid" id="tour-suscripciones-grid">
       @for (suscripcion of suscripciones(); track suscripcion.id) {
         <app-suscripcion-card 
           [suscripcion]="suscripcion"
@@ -184,4 +171,15 @@
       (crear)="onCrearSuscripcion($event)">
     </app-modal-nueva-suscripcion>
   }
+
+  @if (mostrarTour()) {
+    <app-onboarding-tour
+      [steps]="stepsTour"
+      (cerrar)="completarTour()">
+    </app-onboarding-tour>
+  }
+
+  <button type="button" class="floating-help-btn" (click)="iniciarTourManualmente()" title="Ver guía de ayuda">
+    <i class="fa-solid fa-circle-question"></i>
+  </button>
 </div>
