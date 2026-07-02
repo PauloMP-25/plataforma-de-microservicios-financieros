@@ -143,7 +143,7 @@ export class PerfilCliente implements HasUnsavedChanges {
   readonly nombreMostrado = computed(() => {
     const f = this.form();
     const full = `${f.nombres} ${f.apellidos}`.trim();
-    return full || 'Usuario Luka';
+    return full || this.authService.usuario()?.nombreUsuario || 'Usuario Luka';
   });
 
   readonly estadoVerificacion = computed(() => this.form().correo ? 'Verificación pendiente' : 'Sin verificar');

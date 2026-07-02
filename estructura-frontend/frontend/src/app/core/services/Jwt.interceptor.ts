@@ -12,7 +12,10 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   const token = auth.getToken();
 
   let authReq = req;
-  if (token) {
+  // Solo agregar token a las peticiones internas, evitar enviarlo a API Peru u otras APIs externas
+  const isExternalApi = req.url.includes('apiperu.dev');
+  
+  if (token && !isExternalApi) {
     authReq = req.clone({
       setHeaders: { Authorization: `Bearer ${token}` }
     });
@@ -20,7 +23,7 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401 && !req.url.includes('/auth/login') && !req.url.includes('/auth/refrescar-token')) {
+      if (error.status === 401 && !req.url.includes('/auth/login') && !req.url.includes('/auth/refrescar-token') && !isExternalApi) {
         return handle401Error(authReq, next, auth);
       }
       return throwError(() => error);
