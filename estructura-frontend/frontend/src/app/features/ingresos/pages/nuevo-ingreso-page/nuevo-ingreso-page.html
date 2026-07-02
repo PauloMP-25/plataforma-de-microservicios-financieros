@@ -7,8 +7,8 @@
       <p class="text-sm text-slate-500 dark:text-slate-400">Registra un nuevo ingreso de forma rápida y inteligente.</p>
     </header>
 
-    <section class="grid grid-cols-1 gap-5 xl:grid-cols-3 xl:items-start">
-      <article class="relative overflow-hidden rounded-2xl border border-violet-200/70 bg-gradient-to-br from-white via-violet-50/40 to-cyan-50/30 p-4 shadow-[0_16px_38px_rgba(76,29,149,.16)] ring-1 ring-violet-100/70 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_52px_rgba(76,29,149,.24)] dark:border-violet-500/30 dark:bg-gradient-to-br dark:from-slate-800 dark:via-slate-800 dark:to-slate-900 dark:ring-violet-500/20 xl:col-span-2">
+    <section class="grid grid-cols-1 gap-5 xl:grid-cols-3 xl:items-stretch">
+      <article class="relative overflow-hidden rounded-2xl border border-violet-200/70 bg-gradient-to-br from-white via-violet-50/40 to-cyan-50/30 p-4 shadow-[0_16px_38px_rgba(76,29,149,.16)] ring-1 ring-violet-100/70 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_52px_rgba(76,29,149,.24)] dark:border-violet-500/30 dark:bg-gradient-to-br dark:from-slate-800 dark:via-slate-800 dark:to-slate-900 dark:ring-violet-500/20 xl:col-span-2 h-full flex flex-col justify-between">
         <div class="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-cyan-500"></div>
         <div class="mb-4 inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-violet-700 dark:border-violet-500/40 dark:bg-violet-500/15 dark:text-violet-300">
           <i class="fa-solid fa-sparkles"></i>
@@ -34,10 +34,56 @@
       </article>
 
       <aside class="grid grid-cols-1 gap-4 xl:sticky xl:top-4">
+        <!-- Requisitos del Formulario -->
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          <h3 class="mb-4 text-sm font-bold text-slate-800 dark:text-slate-200">
+            <i class="fa-solid fa-list-check mr-2 text-violet-500"></i> Pasos para registrar
+          </h3>
+          <div class="relative space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-all duration-300"
+                   [ngClass]="form.descripcion ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'">
+                <i class="fa-solid" [ngClass]="form.descripcion ? 'fa-circle-check' : 'fa-circle'"></i>
+              </div>
+              <div>
+                <p class="text-sm font-semibold transition-all duration-300" [class.line-through]="form.descripcion" [class.text-slate-400]="form.descripcion">Concepto / Descripción ingresada</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-all duration-300"
+                   [ngClass]="form.monto > 0 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'">
+                <i class="fa-solid" [ngClass]="form.monto > 0 ? 'fa-circle-check' : 'fa-circle'"></i>
+              </div>
+              <div>
+                <p class="text-sm font-semibold transition-all duration-300" [class.line-through]="form.monto > 0" [class.text-slate-400]="form.monto > 0">Monto superior a S/ 0</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-all duration-300"
+                   [ngClass]="form.categoria ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'">
+                <i class="fa-solid" [ngClass]="form.categoria ? 'fa-circle-check' : 'fa-circle'"></i>
+              </div>
+              <div>
+                <p class="text-sm font-semibold transition-all duration-300" [class.line-through]="form.categoria" [class.text-slate-400]="form.categoria">Categoría seleccionada</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <app-ingreso-preview [data]="form"></app-ingreso-preview>
         <app-ingreso-recent-list class="block" [items]="recientes"></app-ingreso-recent-list>
       </aside>
     </section>
   </section>
+
+  <app-onboarding-tour 
+    *ngIf="mostrarTour()" 
+    [steps]="stepsTour" 
+    (cerrar)="completarTour()"
+  ></app-onboarding-tour>
+
+  <button type="button" class="floating-help-btn" (click)="iniciarTourManualmente()" title="Ver guía de ayuda">
+    <i class="fa-solid fa-circle-question"></i>
+  </button>
 </main>
 

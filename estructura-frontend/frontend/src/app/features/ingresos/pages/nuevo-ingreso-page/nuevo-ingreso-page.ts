@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { HasUnsavedChanges } from '../../../../core/guards/pending-changes.guard';
+import { OnboardingTour, TourStep } from '../../../../shared/components/onboarding-tour/onboarding-tour';
 import { IngresoFormComponent } from '../../components/ingreso-form/ingreso-form';
 import { IngresoPreviewComponent } from '../../components/ingreso-preview/ingreso-preview';
 import { IngresoRecentListComponent } from '../../components/ingreso-recent-list/ingreso-recent-list';
@@ -19,11 +20,11 @@ import { DistribucionCategoria, IngresoFormData, IngresoReciente, OptionItem } f
 @Component({
   selector: 'app-nuevo-ingreso-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, IngresoFormComponent, IngresoPreviewComponent, IngresoRecentListComponent],
+  imports: [CommonModule, RouterLink, IngresoFormComponent, IngresoPreviewComponent, IngresoRecentListComponent, OnboardingTour],
   templateUrl: './nuevo-ingreso-page.html',
   styleUrl: './nuevo-ingreso-page.scss',
 })
-export class NuevoIngresoPage implements HasUnsavedChanges {
+export class NuevoIngresoPage implements HasUnsavedChanges, OnInit {
   private readonly stateService = inject(IngresosStateService);
   private readonly authService = inject(AuthService);
   private readonly transaccionesService = inject(Transacciones);
@@ -52,12 +53,12 @@ export class NuevoIngresoPage implements HasUnsavedChanges {
   ];
 
   form: IngresoFormData = {
-    monto: 1500,
+    monto: 0,
     fechaTransaccion: new Date().toLocaleDateString('es-PE'), // dd/mm/yyyy
-    descripcion: 'Pago mensual de la empresa ABC',
-    categoria: 'Salario',
+    descripcion: '',
+    categoria: '',
     metodoPago: 'TRANSFERENCIA',
-    etiquetas: ['Trabajo', 'Mensual'],
+    etiquetas: [],
   };
 
   readonly sugerenciasSignal = signal<CategoriaSugerida[]>([]);
@@ -135,6 +136,46 @@ export class NuevoIngresoPage implements HasUnsavedChanges {
   get categorias(): OptionItem[] { return this.categoriasSignal(); }
   get distribucion(): DistribucionCategoria[] { return this.distribucionSignal(); }
   get recientes(): IngresoReciente[] { return this.recientesSignal(); }
+
+  readonly mostrarTour = signal(false);
+  readonly stepsTour: TourStep[] = [
+    {
+      targetSelector: 'input[name="monto"]',
+      title: 'Monto del Ingreso',
+      description: 'Ingresa la cantidad recibida en Soles (S/).',
+      position: 'bottom'
+    },
+    {
+      targetSelector: 'textarea[name="descripcion"]',
+      title: 'Descripción del Ingreso',
+      description: 'Describe brevemente de dónde proviene este dinero (ej: Salario, Venta, Freelance).',
+      position: 'bottom'
+    },
+    {
+      targetSelector: 'select[name="categoria"]',
+      title: 'Categoría de Ingreso',
+      description: 'Clasifica tu ingreso para organizar mejor el origen de tus flujos.',
+      position: 'top'
+    }
+  ];
+
+  ngOnInit(): void {
+    const tourVisto = localStorage.getItem('luka_tour_nuevo_ingreso_visto');
+    if (!tourVisto) {
+      setTimeout(() => {
+        this.mostrarTour.set(true);
+      }, 600);
+    }
+  }
+
+  completarTour(): void {
+    localStorage.setItem('luka_tour_nuevo_ingreso_visto', 'true');
+    this.mostrarTour.set(false);
+  }
+
+  iniciarTourManualmente(): void {
+    this.mostrarTour.set(true);
+  }
 
   constructor() {
     this.stateService.cargarDatos();
