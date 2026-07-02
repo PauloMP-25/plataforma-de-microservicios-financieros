@@ -218,177 +218,83 @@ $transition: all 0.2s ease-in-out;
   }
 }
 
-/* ── Dark mode: pills fosforescentes/neón ── */
+/* ── Dark mode: pills alto contraste ── */
 body.theme-dark {
   .luka-header {
-    background: rgba(18, 27, 46, 0.8) !important;
+    background: rgba(10, 15, 30, 0.97) !important;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.35);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.55);
   }
 
+  // BASE: garantiza que ningún pill quede invisible
   .metric-pill {
-    border-width: 1.5px;
-    background: color-mix(in srgb, var(--bg-card) 86%, #0b1220 14%);
-    box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.03) inset,
-      0 0 18px rgba(56, 189, 248, 0.18);
+    border-width: 2px !important;
 
     .metric-label {
-      color: #e2e8f0;
-      text-shadow: none;
+      color: #f1f5f9 !important;
+      font-weight: 800;
     }
 
     .metric-value {
-      color: #f8fafc;
+      color: #ffffff !important;
       font-weight: 900;
-      text-shadow: none;
     }
   }
 
   .metric-pill--income {
-    background: linear-gradient(120deg, rgba(16, 185, 129, 0.32) 0%, rgba(34, 197, 94, 0.22) 100%);
-    border-color: rgba(52, 211, 153, 0.55);
-    box-shadow:
-      0 0 20px rgba(16, 185, 129, 0.35),
-      0 0 40px rgba(16, 185, 129, 0.16);
+    background: #065f46 !important;
+    border-color: #34d399 !important;
 
-    .metric-icon {
-      background: rgba(16, 185, 129, 0.28);
-      color: #86efac;
-    }
-
-    .metric-label {
-      color: #a7f3d0 !important;
-      font-weight: 800;
-      text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
-    }
-    .metric-value {
-      color: #34d399 !important;
-      font-weight: 900;
-      text-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
-    }
+    .metric-icon { background: rgba(52, 211, 153, 0.22); color: #6ee7b7; }
+    .metric-label { color: #a7f3d0 !important; }
+    .metric-value { color: #6ee7b7 !important; }
   }
 
   .metric-pill--expense {
-    background: linear-gradient(120deg, rgba(244, 63, 94, 0.28) 0%, rgba(251, 113, 133, 0.2) 100%);
-    border-color: rgba(251, 113, 133, 0.52);
-    box-shadow:
-      0 0 20px rgba(244, 63, 94, 0.34),
-      0 0 38px rgba(244, 63, 94, 0.14);
+    background: #7f1d1d !important;
+    border-color: #f87171 !important;
 
-    .metric-icon {
-      background: rgba(244, 63, 94, 0.26);
-      color: #fecdd3;
-    }
-
-    .metric-label {
-      color: #fecdd3 !important;
-      font-weight: 800;
-      text-shadow: 0 0 8px rgba(244, 63, 94, 0.4);
-    }
-    .metric-value {
-      color: #fb7185 !important;
-      font-weight: 900;
-      text-shadow: 0 0 8px rgba(244, 63, 94, 0.5);
-    }
+    .metric-icon { background: rgba(248, 113, 113, 0.22); color: #fca5a5; }
+    .metric-label { color: #fecaca !important; }
+    .metric-value { color: #fca5a5 !important; }
   }
 
   .metric-pill--balance {
-    background: linear-gradient(120deg, rgba(56, 189, 248, 0.26) 0%, rgba(129, 140, 248, 0.24) 100%);
-    border-color: rgba(125, 211, 252, 0.55);
-    box-shadow:
-      0 0 20px rgba(56, 189, 248, 0.34),
-      0 0 42px rgba(99, 102, 241, 0.18);
+    background: #1e3a5f !important;
+    border-color: #60a5fa !important;
 
-    .metric-icon {
-      background: rgba(56, 189, 248, 0.25);
-      color: #bae6fd;
-    }
-
-    .metric-label {
-      color: #bae6fd !important;
-      font-weight: 800;
-      text-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
-    }
-    .metric-value {
-      color: #38bdf8 !important;
-      font-weight: 900;
-      text-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
-    }
+    .metric-icon { background: rgba(96, 165, 250, 0.22); color: #93c5fd; }
+    .metric-label { color: #bfdbfe !important; }
+    .metric-value { color: #93c5fd !important; }
   }
 
   .metric-pill--streak {
-    background: linear-gradient(120deg, rgba(249, 115, 22, 0.28) 0%, rgba(239, 68, 68, 0.18) 100%);
-    border-color: rgba(251, 146, 60, 0.52);
-    box-shadow:
-      0 0 20px rgba(249, 115, 22, 0.34),
-      0 0 38px rgba(249, 115, 22, 0.14);
+    background: #7c2d12 !important;
+    border-color: #fb923c !important;
 
-    .metric-icon {
-      background: rgba(249, 115, 22, 0.26);
-      color: #ffedd5;
-    }
-
-    .metric-label {
-      color: #fed7aa !important;
-      font-weight: 800;
-      text-shadow: 0 0 8px rgba(249, 115, 22, 0.4);
-    }
-    .metric-value {
-      color: #fb923c !important;
-      font-weight: 900;
-      text-shadow: 0 0 8px rgba(249, 115, 22, 0.5);
-    }
+    .metric-icon { background: rgba(251, 146, 60, 0.22); color: #fdba74; }
+    .metric-label { color: #fed7aa !important; }
+    .metric-value { color: #fdba74 !important; }
   }
 
   .metric-pill--ia-analitica {
-    background: linear-gradient(120deg, rgba(139, 92, 246, 0.28) 0%, rgba(219, 39, 119, 0.18) 100%);
-    border-color: rgba(167, 139, 250, 0.52);
-    box-shadow:
-      0 0 20px rgba(139, 92, 246, 0.34),
-      0 0 38px rgba(139, 92, 246, 0.14);
+    background: #4c1d95 !important;
+    border-color: #a78bfa !important;
 
-    .metric-icon {
-      background: rgba(139, 92, 246, 0.26);
-      color: #ddd6fe;
-    }
-
-    .metric-label {
-      color: #ddd6fe !important;
-      font-weight: 800;
-      text-shadow: 0 0 8px rgba(139, 92, 246, 0.4);
-    }
-    .metric-value {
-      color: #a78bfa !important;
-      font-weight: 900;
-      text-shadow: 0 0 8px rgba(139, 92, 246, 0.5);
-    }
+    .metric-icon { background: rgba(167, 139, 250, 0.22); color: #c4b5fd; }
+    .metric-label { color: #ddd6fe !important; }
+    .metric-value { color: #c4b5fd !important; }
   }
 
   .metric-pill--ia-clasificar {
-    background: linear-gradient(120deg, rgba(20, 184, 166, 0.28) 0%, rgba(16, 185, 129, 0.18) 100%);
-    border-color: rgba(45, 212, 191, 0.52);
-    box-shadow:
-      0 0 20px rgba(20, 184, 166, 0.34),
-      0 0 38px rgba(20, 184, 166, 0.14);
+    background: #134e4a !important;
+    border-color: #2dd4bf !important;
 
-    .metric-icon {
-      background: rgba(20, 184, 166, 0.26);
-      color: #ccfbf1;
-    }
-
-    .metric-label {
-      color: #ccfbf1 !important;
-      font-weight: 800;
-      text-shadow: 0 0 8px rgba(20, 184, 166, 0.4);
-    }
-    .metric-value {
-      color: #2dd4bf !important;
-      font-weight: 900;
-      text-shadow: 0 0 8px rgba(20, 184, 166, 0.5);
-    }
+    .metric-icon { background: rgba(45, 212, 191, 0.22); color: #5eead4; }
+    .metric-label { color: #ccfbf1 !important; }
+    .metric-value { color: #5eead4 !important; }
   }
 }
 

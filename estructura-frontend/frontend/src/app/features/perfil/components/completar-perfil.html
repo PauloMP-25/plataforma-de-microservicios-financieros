@@ -8,13 +8,13 @@
                 @if (pasoActual() === 1) {
                     <p>¡Hola! Para comenzar a usar <strong>LUKA APP</strong>, primero debemos verificar tu cuenta. Por favor, completa el código de validación.</p>
                 } @else if (pasoActual() === 2) {
-                    <p>¡Excelente! Ahora ingresa tu <strong>DNI</strong> para buscarte en el padrón y tu <strong>Edad</strong> para confirmar que eres mayor de edad.</p>
+                    <p>¡Excelente! Ahora ingresa tu <strong>DNI</strong> para buscarte en el padrón y tu <strong>Cumpleaños</strong> para calcular tu edad de forma automática.</p>
                 } @else {
                     <p>¡Ya casi terminamos! Solo indícanos tu <strong>País</strong> y <strong>Ciudad</strong> para activar tu cuenta por completo.</p>
                 }
             </div>
             <div class="panda-image-container">
-                <img src="assets/avatares/figuras/panda-solo.png" alt="Luka Panda Mascot"
+                <img [src]="imagenMascota()" alt="Luka Panda Mascot"
                     class="panda-mascot-img-large" />
             </div>
         </div>
@@ -166,7 +166,7 @@
                             <i class="fa-solid fa-address-card mr-1.5 text-violet-600"></i> Datos de Identificación Personal
                         </h3>
 
-                        <div class="form-grid">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <!-- DNI -->
                             <div class="form-group">
                                 <label for="dni">
@@ -185,51 +185,104 @@
                                 }
                             </div>
 
-                            <!-- Edad -->
+                            <!-- Cumpleaños: Selector Premium de 3 Columnas -->
                             <div class="form-group">
-                                <label for="edad">Edad (Años)</label>
-                                <input type="number" id="edad" formControlName="edad" placeholder="Ej: 25"
-                                    class="form-control" min="18" max="120"
-                                    [class.is-invalid]="perfilForm.get('edad')?.touched && perfilForm.get('edad')?.invalid" />
-                                @if (perfilForm.get('edad')?.touched && perfilForm.get('edad')?.invalid) {
-                                    <span class="invalid-feedback">Debes ser mayor de 18 años.</span>
+                                <label>
+                                    <i class="fa-solid fa-cake-candles mr-1 text-violet-500"></i>
+                                    Fecha de Nacimiento
+                                </label>
+                                <div class="birthday-selector-grid">
+                                    <div class="birthday-select-wrap">
+                                        <span class="birthday-select-label">Día</span>
+                                        <select class="birthday-select"
+                                            (change)="diaNacimiento.set(+$any($event.target).value); onBirthdayChange()">
+                                            <option value="">--</option>
+                                            @for (d of diasDisponibles; track d) {
+                                                <option [value]="d">{{ d }}</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="birthday-select-wrap">
+                                        <span class="birthday-select-label">Mes</span>
+                                        <select class="birthday-select"
+                                            (change)="mesNacimiento.set(+$any($event.target).value); onBirthdayChange()">
+                                            <option value="">---</option>
+                                            @for (nombre of mesesNombres; track $index) {
+                                                <option [value]="$index + 1">{{ nombre }}</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="birthday-select-wrap">
+                                        <span class="birthday-select-label">Año</span>
+                                        <select class="birthday-select"
+                                            (change)="anioNacimiento.set(+$any($event.target).value); onBirthdayChange()">
+                                            <option value="">----</option>
+                                            @for (a of aniosDisponibles; track a) {
+                                                <option [value]="a">{{ a }}</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <input type="hidden" formControlName="fechaNacimiento" />
+                                @if (perfilForm.get('fechaNacimiento')?.touched && perfilForm.get('fechaNacimiento')?.invalid) {
+                                    <span class="invalid-feedback">El cumpleaños es obligatorio.</span>
                                 }
                             </div>
                         </div>
 
-                        <!-- Cuadro de Visualización Previa de Nombres y Apellidos -->
-                        @if (perfilForm.get('nombres')?.value || perfilForm.get('apellidos')?.value) {
+                        <!-- Cuadro de Visualización Previa Enmascarada (Solo nombres y apellidos no editables) -->
+                        @if (dniNombres() || dniApellidos()) {
                             <div class="rounded-2xl border border-dashed border-violet-200 bg-violet-50/20 p-4 mt-2 dark:border-violet-500/25 dark:bg-violet-950/10">
                                 <span class="text-[11px] font-extrabold uppercase tracking-wider text-violet-600 dark:text-violet-400">
-                                    <i class="fa-solid fa-fingerprint mr-1"></i> Previsualización DNI (RENIEC / API PERÚ):
+                                    <i class="fa-solid fa-fingerprint mr-1"></i> Previsualización de Identidad Segura (RENIEC):
                                 </span>
                                 <div class="grid grid-cols-2 gap-4 mt-2">
                                     <div>
-                                        <small class="text-xs text-slate-500 dark:text-slate-400">Nombres Completos</small>
-                                        <p class="text-sm font-bold text-slate-800 dark:text-slate-200 mt-0.5">{{ perfilForm.get('nombres')?.value }}</p>
+                                        <small class="text-xs text-slate-500 dark:text-slate-400">Nombres</small>
+                                        <p class="text-sm font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+                                            {{ enmascararTexto(dniNombres()) }}
+                                        </p>
                                     </div>
                                     <div>
-                                        <small class="text-xs text-slate-500 dark:text-slate-400">Apellidos Paterno y Materno</small>
-                                        <p class="text-sm font-bold text-slate-800 dark:text-slate-200 mt-0.5">{{ perfilForm.get('apellidos')?.value }}</p>
+                                        <small class="text-xs text-slate-500 dark:text-slate-400">Apellidos</small>
+                                        <p class="text-sm font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+                                            {{ enmascararTexto(dniApellidos()) }}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
                         }
 
-                        <!-- Género -->
-                        <div class="form-group mt-3">
-                            <label for="genero">Género</label>
-                            <select id="genero" formControlName="genero" class="form-control"
-                                [class.is-invalid]="perfilForm.get('genero')?.touched && perfilForm.get('genero')?.invalid">
-                                <option value="" disabled selected>Selecciona tu género</option>
-                                <option value="MASCULINO">Masculino</option>
-                                <option value="FEMENINO">Femenino</option>
-                                <option value="OTRO">Otro</option>
-                                <option value="PREFIERO_NO_DECIR">Prefiero no decirlo</option>
-                            </select>
-                            @if (perfilForm.get('genero')?.touched && perfilForm.get('genero')?.invalid) {
-                            <span class="invalid-feedback">Selecciona un género de la lista.</span>
-                            }
+                        <!-- Género y Edad Calculada -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                            <div class="form-group">
+                                <label for="genero">Género</label>
+                                <select id="genero" formControlName="genero" class="form-control"
+                                    [class.is-invalid]="perfilForm.get('genero')?.touched && perfilForm.get('genero')?.invalid">
+                                    <option value="" disabled selected>Selecciona tu género</option>
+                                    <option value="MASCULINO">Masculino</option>
+                                    <option value="FEMENINO">Femenino</option>
+                                    <option value="OTRO">Otro</option>
+                                    <option value="PREFIERO_NO_DECIR">Prefiero no decirlo</option>
+                                </select>
+                                @if (perfilForm.get('genero')?.touched && perfilForm.get('genero')?.invalid) {
+                                <span class="invalid-feedback">Selecciona un género de la lista.</span>
+                                }
+                            </div>
+
+                            <div class="form-group">
+                                <label>Edad Calculada</label>
+                                <div class="form-control-static">
+                                    @if (perfilForm.get('edad')?.value) {
+                                        <span class="age-badge" [class.age-badge--valid]="perfilForm.get('edad')?.value >= 18">
+                                            {{ perfilForm.get('edad')?.value }} años
+                                            @if (perfilForm.get('edad')?.value < 18) { (Menor de edad) }
+                                        </span>
+                                    } @else {
+                                        <span class="text-muted">Calculando edad...</span>
+                                    }
+                                </div>
+                            </div>
                         </div>
                     </div>
                 }
@@ -294,7 +347,7 @@
                         </button>
                     } @else {
                         <button type="submit" class="btn-primary btn-submit-profile px-6 py-2.5 rounded-xl text-sm font-extrabold flex items-center justify-center gap-1.5 shadow-[0_10px_24px_rgba(91,106,240,.35)]"
-                            [disabled]="perfilForm.invalid || !correoVerificado() || !telefonoVerificado() || guardando()">
+                            [disabled]="perfilForm.invalid || !correoVerificado() || !telefonoVerificado() || guardando() || (perfilForm.get('edad')?.value < 18)">
                             @if (guardando()) {
                                 <i class="fa-solid fa-spinner fa-spin"></i> Activando...
                             } @else {

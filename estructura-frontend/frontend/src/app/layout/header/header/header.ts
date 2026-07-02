@@ -6,6 +6,8 @@ import { RouterModule, Router,
 import { filter, map }                      from 'rxjs/operators';
 import { Subscription }                     from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
+import { AvatarService } from '../../../core/services/avatar.service';
+import { AvatarDisplay } from '../../../features/perfil/perfil-cliente/components/avatar-display/avatar-display';
 import { SidebarStateService } from '../../../core/services/sidebar-state.service';
 import { FinancieroService } from '../../../core/services/Financiero.service';
 import { AppEventBus } from '../../../core/services/app-event-bus.service';
@@ -38,12 +40,13 @@ const FLOAT_MSGS = [
 @Component({
   selector:    'app-header',
   standalone:  true,
-  imports:     [CommonModule, RouterModule],
+  imports:     [CommonModule, RouterModule, AvatarDisplay],
   templateUrl: './header.html',
   styleUrl:    './header.scss'
 })
 export class Header implements OnInit, OnDestroy {
   public readonly iaService = inject(IaService);
+  public readonly avatarService = inject(AvatarService);
 
 
   pageTitle   = 'Resumen';

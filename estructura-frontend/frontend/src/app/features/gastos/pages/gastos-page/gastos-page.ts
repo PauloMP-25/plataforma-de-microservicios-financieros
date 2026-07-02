@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal, effect, OnDestroy } from '@angular/core';
+import { Component, computed, inject, signal, effect, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Transacciones } from '../../../../core/services/transacciones';
@@ -11,15 +11,16 @@ import { GastosStateService } from '../../../../core/services/gastos-state.servi
 import { IaService } from '../../../../core/services/ia.service';
 import { CategoriaSugerida } from '../../../../core/models/ia_coach/ia-base.model';
 import { NotificacionService } from '../../../../core/services/notificacion.service';
+import { OnboardingTour, TourStep } from '../../../../shared/components/onboarding-tour/onboarding-tour';
 
 @Component({
   selector: 'app-gastos-page',
   standalone:true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, OnboardingTour],
   templateUrl: './gastos-page.html',
   styleUrl: './gastos-page.scss',
 })
-export class GastosPage implements OnDestroy {
+export class GastosPage implements OnInit, OnDestroy {
   private readonly transaccionesService = inject(Transacciones);
   private readonly authService = inject(AuthService);
   private readonly financieroService = inject(FinancieroService);
@@ -59,6 +60,73 @@ export class GastosPage implements OnDestroy {
   readonly filtroTendencia = signal<'7d' | '30d' | '90d'>('30d');
   readonly errores = signal<Record<string, string>>({});
   readonly eliminadosIds = signal<string[]>([]);
+
+  readonly gastosRecientes = computed(() => {
+    return [...this.stateService.gastos()]
+      .sort((a, b) => new Date(b.fechaTransaccion).getTime() - new Date(a.fechaTransaccion).getTime())
+      .slice(0, 5);
+  });
+
+  colorCategoriaGasto(cat: string): string {
+    const colores: Record<string, string> = {
+      'food': '#FF7043',
+      'transport': '#42A5F5',
+      'health': '#26C6DA',
+      'home': '#FFA726',
+      'leisure': '#AB47BC',
+      'study': '#66BB6A',
+      'comida': '#FF7043',
+      'transporte': '#42A5F5',
+      'salud': '#26C6DA',
+      'hogar': '#FFA726',
+      'entretenimiento': '#AB47BC',
+      'educación': '#66BB6A',
+      'otros': '#78909C'
+    };
+    return colores[cat?.toLowerCase()] || '#5B6AF0';
+  }
+
+  readonly mostrarTour = signal(false);
+  readonly stepsTour: TourStep[] = [
+    {
+      targetSelector: '#btn-registrar-gasto',
+      title: 'Registrar Gasto',
+      description: 'Presiona aquí para registrar tus egresos diarios. Podrás ingresar el monto, clasificarlo con categorías inteligentes y asignarle métodos de pago.',
+      position: 'bottom'
+    },
+    {
+      targetSelector: '#tour-kpis',
+      title: 'Métricas Financieras',
+      description: 'Visualiza tus deudas y gastos promedio del mes, el saldo acumulado pendiente por pagar, y el próximo vencimiento más cercano.',
+      position: 'bottom'
+    },
+    {
+      targetSelector: '#tour-pending',
+      title: 'Próximos Cargos y Recurrentes',
+      description: 'Lleva el control de tus deudas pendientes y cargos recurrentes de suscripciones que vencen pronto. Puedes marcarlos como pagados aquí.',
+      position: 'top'
+    },
+    {
+      targetSelector: '#tour-summary-note',
+      title: 'Acceso al Historial Completo',
+      description: 'Entra a la vista ampliada de tu historial para revisar, buscar y administrar detalladamente todas tus transacciones de ingresos y gastos.',
+      position: 'top'
+    }
+  ];
+
+  ngOnInit(): void {
+    const tourVisto = localStorage.getItem('luka_tour_gastos_visto');
+    if (!tourVisto) {
+      setTimeout(() => {
+        this.mostrarTour.set(true);
+      }, 600);
+    }
+  }
+
+  completarTour(): void {
+    localStorage.setItem('luka_tour_gastos_visto', 'true');
+    this.mostrarTour.set(false);
+  }
 
   readonly saldoActual = computed(() => Number(this.stateService.resumenActual()?.balance ?? 0));
   readonly totalGastadoActual = computed(() => Number(this.stateService.resumenActual()?.totalGastos ?? 0));

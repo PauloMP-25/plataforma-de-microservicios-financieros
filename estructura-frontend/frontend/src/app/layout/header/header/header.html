@@ -85,10 +85,7 @@
     <div class="header-action">
 
       <button class="avatar-btn" (click)="toggleUserMenu()">
-
-        <div class="avatar-letter">
-          {{ auth.usuario()?.nombreUsuario?.charAt(0)?.toUpperCase() ?? 'U' }}
-        </div>
+        <app-avatar-display [avatarConfig]="avatarService.avatarConfig()" [size]="36" class="avatar-header-display"></app-avatar-display>
 
         <div class="avatar-meta">
           <span class="avatar-name">
@@ -112,9 +109,7 @@
         <!-- HERO -->
         <div class="user-panel-hero">
 
-          <div class="hero-avatar">
-            {{ auth.usuario()?.nombreUsuario?.charAt(0)?.toUpperCase() ?? 'U' }}
-          </div>
+          <app-avatar-display [avatarConfig]="avatarService.avatarConfig()" [size]="44" class="avatar-header-display"></app-avatar-display>
 
           <div class="hero-info">
 
@@ -145,15 +140,7 @@
             </a>
           </li>
 
-          <li>
-            <a routerLink="/suscripcion/luka" class="menu-item">
-              <i class="fa-solid fa-crown menu-item-icon" style="color: #f59e0b;"></i>
-              <div>
-                <p>Membresía</p>
-                <small>Gestionar plan Luka</small>
-              </div>
-            </a>
-          </li>
+
 
           <li>
             <a routerLink="/perfil/configuracion" class="menu-item">

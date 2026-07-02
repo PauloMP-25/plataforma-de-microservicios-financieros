@@ -1,9 +1,11 @@
 <div class="modal-backdrop" (click)="cerrarModal()">
   
   <div class="modal-container" (click)="$event.stopPropagation()">
+    <!-- Top accent bar tied to brand color preview -->
+    <div class="modal-top-accent-bar" [style.background]="colorPreview()"></div>
     
     <div class="modal-header">
-      <h2>Nueva Suscripción</h2>
+      <h2><i class="fa-solid fa-sparkles text-amber-500 mr-1.5"></i> Nueva Suscripción</h2>
       <button type="button" class="modal-close" (click)="cerrarModal()">×</button>
     </div>
 
@@ -11,22 +13,23 @@
       <div class="form-grid">
         
         <div class="form-group col-12">
-          <label class="form-label">Nombre *</label>
+          <label class="form-label"><i class="fa-solid fa-signature"></i> Nombre *</label>
           <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
-            <div class="icon-preview-box" style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; min-width: 44px; border-radius: 12px; background: var(--bg-body); border: 2px solid var(--border-color); font-size: 20px; color: var(--color-primary);">
+            <!-- Interactive color and icon preview -->
+            <div class="icon-preview-box" [style.background]="colorPreview() + '15'" [style.color]="colorPreview()" [style.borderColor]="colorPreview() + '35'">
               <i [className]="iconoPreview()"></i>
             </div>
-            <input type="text" class="form-input" style="flex: 1;" [ngModel]="nombre()" (ngModelChange)="nombre.set($event)" name="nombre" placeholder="Ej: Netflix, Spotify...">
+            <input type="text" class="form-input" style="flex: 1;" [ngModel]="nombre()" (ngModelChange)="nombre.set($event)" name="nombre" placeholder="Ej: Netflix, Spotify, Prime...">
           </div>
         </div>
 
         <div class="form-group col-12">
-          <label class="form-label">Descripción</label>
-          <textarea class="form-input" [ngModel]="descripcion()" (ngModelChange)="descripcion.set($event)" name="descripcion" rows="2"></textarea>
+          <label class="form-label"><i class="fa-solid fa-align-left"></i> Descripción</label>
+          <textarea class="form-input" [ngModel]="descripcion()" (ngModelChange)="descripcion.set($event)" name="descripcion" placeholder="Detalles de la membresía (opcional)..." rows="2"></textarea>
         </div>
 
         <div class="form-group col-6">
-          <label class="form-label">Categoría *</label>
+          <label class="form-label"><i class="fa-solid fa-tags"></i> Categoría *</label>
           <select class="form-input" [ngModel]="categoria()" (ngModelChange)="categoria.set($event)" name="categoria">
             <option value="">Selecciona</option>
             @for (cat of categorias; track cat.id) { <option [value]="cat.id">{{cat.nombre}}</option> }
@@ -34,31 +37,33 @@
         </div>
 
         <div class="form-group col-6">
-          <label class="form-label">MONTO (S/) *</label>
+          <label class="form-label"><i class="fa-solid fa-coins"></i> MONTO (S/) *</label>
           <input type="number" class="form-input" [ngModel]="monto()" (ngModelChange)="monto.set($event)" name="monto" placeholder="0.00">
         </div>
 
         <div class="form-group col-6">
-          <label class="form-label">Frecuencia *</label>
+          <label class="form-label"><i class="fa-solid fa-arrows-spin"></i> Frecuencia *</label>
           <select class="form-input" [ngModel]="frecuencia()" (ngModelChange)="frecuencia.set($event)" name="frecuencia">
             @for (frec of frecuencias; track frec.id) { <option [value]="frec.id">{{frec.nombre}}</option> }
           </select>
         </div>
 
         <div class="form-group col-6">
-          <label class="form-label">Próximo Pago *</label>
+          <label class="form-label"><i class="fa-solid fa-calendar-day"></i> Próximo Pago *</label>
           <input type="date" class="form-input" [ngModel]="fechaInicio()" (ngModelChange)="fechaInicio.set($event)" name="fechaInicio">
         </div>
 
-        <div class="form-group col-12" style="opacity: 0.75; transform: scale(0.95); margin-top: -4px;">
-          <label class="form-label" style="font-size: 0.65rem; color: var(--text-muted);">Días restantes (calculado)</label>
-          <input type="text" class="form-input" [value]="diasRestantes() + ' días'" readonly style="background: transparent; border-color: transparent; padding: 4px 8px; font-size: 0.9rem; pointer-events: none;">
+        <div class="form-group col-12 calculated-hint" *ngIf="diasRestantes() !== null" style="opacity: 0.85; margin-top: -2px;">
+          <div class="alert-box" [style.background]="colorPreview() + '10'" [style.borderColor]="colorPreview() + '20'">
+            <i class="fa-solid fa-circle-info" [style.color]="colorPreview()"></i>
+            <span>Cobro programado en <strong>{{ diasRestantes() }} días</strong></span>
+          </div>
         </div>
       </div>
 
       <div class="modal-footer">
         <button type="button" class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
-        <button type="submit" class="btn-primary">Guardar Suscripción</button>
+        <button type="submit" class="btn-primary" [style.background]="colorPreview()" [style.boxShadow]="'0 8px 20px ' + colorPreview() + '40'">Guardar Suscripción</button>
       </div>
     </form>
   </div>

@@ -1,62 +1,80 @@
 <div class="historial-wrapper">
-  <div class="page-header">
+  <div class="page-header animate-fade-in">
     <h1>Historial de Movimientos</h1>
-    <p>Revisa y filtra tus transacciones recientes.</p>
+    <p>Revisa y administra de forma consolidada todos tus ingresos y gastos.</p>
   </div>
 
-  <div class="bento-grid">
+  <div class="bento-grid animate-fade-in">
+    <!-- Tarjeta de Balance del Periodo -->
     <div class="balance-card">
       <div class="balance-info">
-        <span>Balance del periodo</span>
-        <h2>{{ balance() | currency }}</h2>
+        <span>Balance neto filtrado</span>
+        <h2>S/ {{ balance() | number:'1.2-2' }}</h2>
+        <small class="balance-breakdown">
+          Ingresos: +S/ {{ sumaIngresos() | number:'1.2-2' }} | Gastos: -S/ {{ sumaGastos() | number:'1.2-2' }}
+        </small>
       </div>
       <div class="balance-icon">
-        <i class="fa-solid fa-wallet"></i>
+        <i class="fa-solid fa-scale-balanced"></i>
       </div>
     </div>
 
-    <!-- 2. Tarjeta de Filtros -->
+    <!-- Tarjeta de Filtros -->
     <div class="filters-card">
       <div class="search-box">
         <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" [(ngModel)]="busqueda" placeholder="Buscar movimientos...">
+        <input 
+          type="text" 
+          [ngModel]="busqueda()" 
+          (ngModelChange)="busqueda.set($event)" 
+          placeholder="Buscar descripción, categoría o método..."
+        >
       </div>
       
-      <!-- Select de Categorías actualizado -->
-      <select [(ngModel)]="filtroCategoria" class="filter-select">
-        <option value="TODOS">Categorías</option>
-        <option value="Comida">Comida</option>
-        <option value="Entretenimiento">Entretenimiento</option>
-        <option value="Trabajo">Trabajo</option>
-        <option value="Transporte">Transporte</option>
+      <!-- Filtro Tipo/Estado -->
+      <select [ngModel]="filtroEstado()" (ngModelChange)="filtroEstado.set($event)" class="filter-select">
+        <option value="TODOS">Todos los movimientos</option>
+        <option value="INGRESO">Solo Ingresos</option>
+        <option value="GASTO">Solo Gastos</option>
+        <option value="Pagado">Gastos Pagados</option>
+        <option value="Pendiente">Gastos Pendientes</option>
       </select>
 
-      <!-- NUEVO: Select de Ordenamiento -->
-     <select [(ngModel)]="orden" class="filter-select">
-        <optgroup label="Por Fecha (Muestra todo)">
-          <option value="fecha_desc">Más recientes</option>
-          <option value="fecha_asc">Más antiguos</option>
-        </optgroup>
-        <optgroup label="Gastos (Oculta ingresos)">
-          <option value="mayor_gasto">Mayor gasto primero</option>
-          <option value="menor_gasto">Menor gasto primero</option>
-        </optgroup>
-        <optgroup label="Ingresos (Oculta gastos)">
-          <option value="mayor_ingreso">Mayor ingreso primero</option>
-          <option value="menor_ingreso">Menor ingreso primero</option>
-        </optgroup>
+      <!-- Filtro Periodo (Mes) -->
+      <select [ngModel]="filtroMes()" (ngModelChange)="filtroMes.set($event)" class="filter-select">
+        <option *ngFor="let mes of meses" [value]="mes.value">{{ mes.label }}</option>
+      </select>
+
+      <!-- Filtro Categoría Dinámica -->
+      <select [ngModel]="filtroCategoria()" (ngModelChange)="filtroCategoria.set($event)" class="filter-select">
+        <option value="TODOS">Todas las categorías</option>
+        <option *ngFor="let cat of categoriasDisponibles()" [value]="cat">{{ cat }}</option>
+      </select>
+
+      <!-- Ordenamiento -->
+      <select [ngModel]="orden()" (ngModelChange)="orden.set($event)" class="filter-select">
+        <option value="fecha_desc">Más recientes</option>
+        <option value="fecha_asc">Más antiguos</option>
+        <option value="mayor_gasto">Mayor gasto</option>
+        <option value="menor_gasto">Menor gasto</option>
+        <option value="mayor_ingreso">Mayor ingreso</option>
+        <option value="menor_ingreso">Menor ingreso</option>
       </select>
     </div>
-  </div> <!-- ✔️ ESTE ES EL DIV QUE FALTABA PARA CERRAR EL BENTO-GRID ✔️ -->
+  </div>
 
-  <div class="table-card">
+  <!-- Tabla de Transacciones -->
+  <div class="table-card animate-fade-in">
     <table>
       <thead>
         <tr>
-          <th>Detalle</th>
+          <th>Detalle / Nombre</th>
           <th>Categoría</th>
           <th>Fecha</th>
-          <th class="text-right">Monto</th>
+          <th>Monto</th>
+          <th>Estado</th>
+          <th>Método de pago</th>
+          <th class="text-center">Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -65,16 +83,47 @@
             <td>
               <div class="transaction-info">
                 <div class="icon-circle" [class.is-income]="item.tipo === 'ingreso'">
-                  <!-- Flecha arriba para ingreso, abajo para gasto -->
-                  <i class="fa-solid" [class.fa-arrow-up]="item.tipo === 'ingreso'" [class.fa-arrow-down]="item.tipo === 'gasto'"></i>
+                  <i class="fa-solid" [class.fa-arrow-trend-up]="item.tipo === 'ingreso'" [class.fa-arrow-trend-down]="item.tipo === 'gasto'"></i>
                 </div>
-                <span class="fw-bold">{{ item.nombre }}</span>
+                <div class="details-wrap">
+                  <strong class="fw-bold">{{ item.nombre }}</strong>
+                  <span class="text-muted block text-xs">{{ item.detalle }}</span>
+                </div>
               </div>
             </td>
-            <td><span class="tag">{{ item.categoria }}</span></td>
-            <td><span class="text-muted">{{ item.fecha | date:'dd MMM, yyyy' }}</span></td>
-            <td class="text-right" [class.amount-positive]="item.tipo === 'ingreso'" [class.amount-negative]="item.tipo === 'gasto'">
-              {{ item.monto | currency }}
+            <td>
+              <span class="tag-cat" [class]="'tag-cat--' + item.colorCategoria">
+                {{ item.categoria }}
+              </span>
+            </td>
+            <td><span class="text-muted">{{ item.fecha | date:'dd MMM, yyyy':'UTC' }}</span></td>
+            <td class="text-bold" [class.amount-positive]="item.tipo === 'ingreso'" [class.amount-negative]="item.tipo === 'gasto'">
+              {{ item.tipo === 'ingreso' ? '+' : '-' }}S/ {{ (item.monto < 0 ? -item.monto : item.monto) | number:'1.2-2' }}
+            </td>
+            <td>
+              <span class="tag-status" [class.is-paid]="item.estado === 'Pagado' || item.estado === 'Recibido'" [class.is-warning]="item.estado === 'Pendiente'">
+                <i class="fa-solid" [ngClass]="(item.estado === 'Pagado' || item.estado === 'Recibido') ? 'fa-circle-check' : 'fa-clock'"></i>
+                {{ item.estado }}
+              </span>
+            </td>
+            <td>
+              <span class="text-muted text-sm">
+                <i class="fa-solid fa-credit-card mr-1" *ngIf="item.metodo === 'TARJETA'"></i>
+                <i class="fa-solid fa-mobile-screen-button mr-1" *ngIf="item.metodo === 'DIGITAL'"></i>
+                <i class="fa-solid fa-money-bill-transfer mr-1" *ngIf="item.metodo === 'TRANSFERENCIA'"></i>
+                <i class="fa-solid fa-money-bill-wave mr-1" *ngIf="item.metodo === 'EFECTIVO'"></i>
+                {{ item.metodo }}
+              </span>
+            </td>
+            <td>
+              <div class="row-actions">
+                <button type="button" class="action-btn edit" (click)="abrirEditarMovimiento(item)" title="Editar">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+                <button type="button" class="action-btn delete" (click)="solicitarEliminarMovimiento(item)" title="Eliminar">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
             </td>
           </tr>
         }
@@ -83,8 +132,80 @@
     
     @if (historialFiltrado().length === 0) {
       <div class="empty-state">
-        <p>No se encontraron movimientos.</p>
+        <i class="fa-solid fa-folder-open empty-icon"></i>
+        <p>No se encontraron movimientos registrados en este periodo con los filtros seleccionados.</p>
       </div>
     }
   </div>
 </div>
+
+<!-- Modal de Confirmación de Eliminación -->
+@if (movimientoAEliminar(); as confirmacion) {
+  <div class="modal-overlay">
+    <div class="confirm-box animate-scale-up">
+      <div class="confirm-icon warning"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <h3>¿Eliminar movimiento?</h3>
+      <p>¿Estás seguro de que deseas eliminar <strong>{{ confirmacion.nombre }}</strong>? Esta acción es irreversible.</p>
+      <div class="confirm-actions">
+        <button class="btn-cancel" (click)="cancelarEliminar()">Cancelar</button>
+        <button class="btn-danger" (click)="confirmarEliminar()">Eliminar</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal de Edición Rápida -->
+@if (modalEdicionAbierto()) {
+  <div class="modal-overlay">
+    <div class="edit-modal animate-scale-up">
+      <header class="modal-header">
+        <h3>Editar {{ editandoMovimientoTipo() === 'gasto' ? 'Gasto' : 'Ingreso' }}</h3>
+        <button type="button" class="close-btn" (click)="cerrarModalEdicion()">&times;</button>
+      </header>
+
+      <div class="edit-form">
+        <label class="form-field">
+          <span>Concepto / Nombre *</span>
+          <input type="text" [ngModel]="nombreEdit()" (ngModelChange)="nombreEdit.set($event)" placeholder="Ej. Uber, Netflix, Salario..." />
+        </label>
+
+        <label class="form-field">
+          <span>Monto (S/) *</span>
+          <input type="number" min="0.01" step="0.01" [ngModel]="montoEdit()" (ngModelChange)="montoEdit.set($event)" />
+        </label>
+
+        <label class="form-field">
+          <span>Categoría *</span>
+          <select [ngModel]="categoriaEdit()" (ngModelChange)="categoriaEdit.set($event)" class="form-select">
+            <option *ngFor="let cat of categoriasEdicion()" [value]="cat">{{ cat }}</option>
+          </select>
+        </label>
+
+        <label class="form-field">
+          <span>Fecha *</span>
+          <input type="date" [ngModel]="fechaEdit()" (ngModelChange)="fechaEdit.set($event)" />
+        </label>
+
+        <label class="form-field">
+          <span>Método de pago</span>
+          <select [ngModel]="metodoPagoEdit()" (ngModelChange)="metodoPagoEdit.set($event)" class="form-select">
+            <option value="DIGITAL">Digital (Yape/Plin)</option>
+            <option value="TARJETA">Tarjeta</option>
+            <option value="TRANSFERENCIA">Transferencia</option>
+            <option value="EFECTIVO">Efectivo</option>
+          </select>
+        </label>
+
+        <label class="form-field col-full">
+          <span>Detalle / Descripción</span>
+          <textarea rows="3" [ngModel]="descripcionEdit()" (ngModelChange)="descripcionEdit.set($event)" placeholder="Escribe notas adicionales..."></textarea>
+        </label>
+      </div>
+
+      <footer class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="cerrarModalEdicion()">Cancelar</button>
+        <button type="button" class="btn-save" (click)="guardarEdicion()">Guardar cambios</button>
+      </footer>
+    </div>
+  </div>
+}

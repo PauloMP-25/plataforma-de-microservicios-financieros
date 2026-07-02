@@ -13,10 +13,13 @@ import { AuthService } from '../../../../core/services/auth.service';
 import Chart from 'chart.js/auto';
 
 
+import { OnboardingTour, TourStep } from '../../../../shared/components/onboarding-tour/onboarding-tour';
+
+
 @Component({
   selector: 'app-presupuestos-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, OnboardingTour],
   providers: [DatePipe],
   templateUrl: './presupuestos-page.html',
   styleUrls: ['./presupuestos-page.scss']
@@ -54,6 +57,39 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
   formulario!: FormGroup;
   cargando = signal<boolean>(false);
   temaOscuro = signal<boolean>(false);
+
+  readonly mostrarTour = signal(false);
+  readonly stepsTour: TourStep[] = [
+    {
+      targetSelector: '.lk-sidebar',
+      title: 'Configuración de Límite',
+      description: 'Establece el monto límite mensual, define alertas en base a porcentajes y especifica las fechas de inicio/fin del período de evaluación.',
+      position: 'right'
+    },
+    {
+      targetSelector: '.lk-gauge-card',
+      title: 'Gauge de Consumo',
+      description: 'Visualiza de forma gráfica el porcentaje consumido de tu límite de presupuesto, la cantidad gastada y el monto de dinero disponible.',
+      position: 'bottom'
+    },
+    {
+      targetSelector: '.lk-evolucion-card, .lk-premium-card',
+      title: 'Evolución Histórica',
+      description: 'Revisa de forma comparativa tus presupuestos y consumo real a lo largo de periodos anteriores (Exclusivo en Luka Premium).',
+      position: 'bottom'
+    },
+    {
+      targetSelector: '.lk-bottom-grid',
+      title: 'Desglose y Registro de Historial',
+      description: 'Consulta un resumen detallado del dinero gastado por cada categoría y la lista histórica de límites inactivos del sistema.',
+      position: 'top'
+    }
+  ];
+
+  completarTour(): void {
+    localStorage.setItem('luka_tour_presupuestos_visto', 'true');
+    this.mostrarTour.set(false);
+  }
 
   // Datos del Negocio
   presupuestoActivo = signal<PresupuestoDTO | null>(null);
@@ -204,6 +240,13 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
     this.cargarDatosDashboard();
     this.gastosState.cargarDatos();
     this.detectarTemaActual();
+
+    const tourVisto = localStorage.getItem('luka_tour_presupuestos_visto');
+    if (!tourVisto) {
+      setTimeout(() => {
+        this.mostrarTour.set(true);
+      }, 600);
+    }
   }
 
   ngAfterViewInit(): void {
