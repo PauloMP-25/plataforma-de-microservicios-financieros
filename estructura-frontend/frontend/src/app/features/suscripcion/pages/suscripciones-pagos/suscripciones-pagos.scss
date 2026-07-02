@@ -6,6 +6,20 @@
   gap: 24px;
   animation: fadeInUp 0.5s ease-out;
 
+  .btn-primary {
+    background: var(--color-primary) !important;
+    color: white !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(91, 106, 240, 0.25);
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--color-primary-dark) !important;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(91, 106, 240, 0.35);
+    }
+  }
+
   /* ── HEADER ── */
   &__header {
     padding: 24px;
@@ -100,9 +114,18 @@
 /* ── CONTENEDOR DE FILTROS ── */
 .filters-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr 1.8fr auto;
+  gap: 16px;
   align-items: flex-end;
+}
+
+@media (max-width: 1100px) {
+  .filters-container {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .filter-group--range {
+    grid-column: span 2;
+  }
 }
 
 /* ── GRUPO DE FILTRO ── */
@@ -113,7 +136,6 @@
 
   &--range {
     grid-column: span 1;
-    min-width: 220px;
   }
 }
 
@@ -153,7 +175,6 @@
 
   .filter-input {
     flex: 1;
-    min-width: 80px;
   }
 }
 
@@ -178,7 +199,6 @@
   justify-content: center;
   gap: 6px;
   align-self: flex-end;
-  min-width: 100px;
 
   &:hover {
     background: var(--bg-body);

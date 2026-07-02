@@ -12,7 +12,7 @@
       </div>
 
       <div class="configuracion__apariencia-grid">
-        <section class="configuracion__panel" [style.--accent-color]="colorPrincipal()">
+        <section id="tour-apariencia" class="configuracion__panel" [style.--accent-color]="colorPrincipal()">
           <h3>Tema</h3>
           <div class="configuracion__segmentado">
             <button
@@ -36,7 +36,7 @@
           </div>
         </section>
 
-        <section class="configuracion__panel">
+        <section id="tour-color-principal" class="configuracion__panel">
           <h3>Color principal</h3>
           <div class="configuracion__colores">
             @for (color of coloresDisponibles; track color) {
@@ -62,7 +62,7 @@
 
     @if (esPlanPremiumOPro()) {
       <!-- Banner IA — visible para usuarios PREMIUM y PRO -->
-      <article class="configuracion__card">
+      <article id="tour-ia-premium" class="configuracion__card">
         <section class="configuracion__panel configuracion__panel--ia" [style.--accent-color]="colorPrincipal()">
 
           <div class="configuracion__ia-top">
@@ -114,7 +114,7 @@
       </article>
     } @else {
       <!-- Banner Upgrade — visible para usuarios FREE -->
-      <article class="configuracion__card">
+      <article id="tour-ia-premium" class="configuracion__card">
         <section class="configuracion__panel configuracion__panel--premium" [style.--accent-color]="colorPrincipal()">
           <div class="configuracion__premium-top">
             <span class="configuracion__premium-pill"><i class="fa-solid fa-star"></i> PREMIUM</span>
@@ -177,7 +177,7 @@
       </section>
     </article>
 
-    <article class="configuracion__card configuracion__card--danger">
+    <article id="tour-zona-peligro" class="configuracion__card configuracion__card--danger">
       <div class="configuracion__card-header">
         <h2>Zona de cuenta</h2>
         <p>Acciones sensibles para tu cuenta.</p>
@@ -265,4 +265,14 @@
       </app-modal-planes>
     }
   </div>
+
+  <app-onboarding-tour 
+    *ngIf="mostrarTour()" 
+    [steps]="stepsTour" 
+    (cerrar)="completarTour()"
+  ></app-onboarding-tour>
+
+  <button type="button" class="floating-help-btn" (click)="mostrarTour.set(true)" title="Ver guía de ayuda">
+    <i class="fa-solid fa-circle-question"></i>
+  </button>
 </section>

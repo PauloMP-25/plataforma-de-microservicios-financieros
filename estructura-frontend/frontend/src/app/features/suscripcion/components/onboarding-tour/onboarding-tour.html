@@ -1,0 +1,78 @@
+<div class="tour-container">
+  <!-- Dynamic Backdrop overlay to block interactions -->
+  <div class="tour-backdrop" [class.tour-backdrop--dark]="activePosition() === 'center'" (click)="cerrarTour()"></div>
+
+  <!-- Dynamic Spotlight highlight -->
+  <div class="tour-spotlight" [ngStyle]="spotlightStyle()"></div>
+
+  <!-- Interactive Tooltip Card -->
+  <div 
+    #tooltipCard 
+    class="tour-tooltip card glass-panel" 
+    [class.tour-tooltip--pos-top]="activePosition() === 'top'"
+    [class.tour-tooltip--pos-bottom]="activePosition() === 'bottom'"
+    [class.tour-tooltip--pos-left]="activePosition() === 'left'"
+    [class.tour-tooltip--pos-right]="activePosition() === 'right'"
+    [class.tour-tooltip--pos-center]="activePosition() === 'center'"
+    [ngStyle]="tooltipStyle()"
+  >
+    <div class="tour-tooltip__header">
+      <span class="tour-tooltip__badge">
+        Guía • {{ currentStepIndex() + 1 }} de {{ totalSteps() }}
+      </span>
+      <button 
+        type="button" 
+        class="tour-tooltip__close" 
+        (click)="cerrarTour()" 
+        aria-label="Cerrar tour"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="tour-tooltip__body">
+      <h3 class="tour-tooltip__title">{{ currentStep().title }}</h3>
+      <p class="tour-tooltip__description">{{ currentStep().description }}</p>
+    </div>
+
+    <!-- Step indicators (dots) -->
+    <div class="tour-tooltip__progress">
+      @for (step of steps; track $index) {
+        <span 
+          class="tour-tooltip__dot"
+          [class.active]="$index === currentStepIndex()"
+        ></span>
+      }
+    </div>
+
+    <div class="tour-tooltip__footer">
+      <button 
+        type="button" 
+        class="btn-text btn-skip" 
+        *ngIf="currentStepIndex() < totalSteps() - 1" 
+        (click)="cerrarTour()"
+      >
+        Saltar
+      </button>
+      <div class="tour-tooltip__actions">
+        <button 
+          type="button" 
+          class="btn-secondary btn-back" 
+          [disabled]="currentStepIndex() === 0" 
+          (click)="atras()"
+          *ngIf="currentStepIndex() > 0"
+        >
+          <i class="fa-solid fa-arrow-left"></i> Atrás
+        </button>
+        <button 
+          type="button" 
+          class="btn-primary btn-next" 
+          (click)="siguiente()"
+        >
+          {{ currentStepIndex() === totalSteps() - 1 ? 'Entendido' : 'Siguiente' }} 
+          <i class="fa-solid fa-arrow-right" *ngIf="currentStepIndex() < totalSteps() - 1"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

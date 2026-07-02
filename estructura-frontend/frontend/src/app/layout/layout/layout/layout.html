@@ -13,4 +13,5 @@
     </main>
   </div>
 
+  <app-modal-completar-perfil *ngIf="mostrarCompletarPerfil()" (completado)="mostrarCompletarPerfil.set(false)"></app-modal-completar-perfil>
 </div>

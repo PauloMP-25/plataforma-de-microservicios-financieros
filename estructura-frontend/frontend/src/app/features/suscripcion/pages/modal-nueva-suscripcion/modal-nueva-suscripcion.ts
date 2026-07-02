@@ -75,7 +75,24 @@ export class ModalNuevaSuscripcion {
 
   // Data para selects
   readonly categorias = CATEGORIAS_SUSCRIPCION;
-  readonly frecuencias = FRECUENCIAS_SUSCRIPCION;
+  readonly frecuencias = FRECUENCIAS_SUSCRIPCION.filter(f => ['MENSUAL', 'ANUAL', 'QUINCENAL'].includes(f.id));
+
+  readonly colorPreview = computed(() => {
+    const name = this.nombre().toLowerCase();
+    if (name.includes('netflix')) return '#e50914';
+    if (name.includes('spotify')) return '#1db954';
+    if (name.includes('youtube')) return '#ff0000';
+    if (name.includes('prime') || name.includes('amazon')) return '#ff9900';
+    if (name.includes('apple')) return '#a3aaae';
+    if (name.includes('github')) return '#24292e';
+    if (name.includes('google')) return '#4285f4';
+    if (name.includes('playstation')) return '#003087';
+    if (name.includes('xbox')) return '#107c10';
+
+    const catId = this.categoria();
+    const cat = this.categorias.find(c => c.id === catId);
+    return cat ? cat.color : '#5B6AF0';
+  });
 
   /**
    * Cerrar modal

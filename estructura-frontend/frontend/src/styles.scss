@@ -246,3 +246,30 @@ body.tema-claro {
   /* Scrollbar claro */
   &::-webkit-scrollbar-thumb { background: #D1D5E8; }
 }
+
+/* Botón de ayuda flotante */
+.floating-help-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-primary, #5b6af0);
+  color: white;
+  border: none;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(91,106,240,0.3);
+  z-index: 99;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    transform: scale(1.1) translateY(-2px);
+    box-shadow: 0 6px 16px rgba(91,106,240,0.4);
+    background: var(--color-primary-light, #7b89f5);
+  }
+}

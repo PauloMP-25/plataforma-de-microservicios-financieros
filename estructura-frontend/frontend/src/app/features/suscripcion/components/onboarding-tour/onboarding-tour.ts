@@ -80,11 +80,23 @@ export class OnboardingTour implements OnInit, AfterViewInit {
 
     // Fallback if target element is not found
     if (!targetEl) {
-      // Try to find common layout selectors or fallback to body
-      targetEl = (document.querySelector('.lk-main') || 
-                  document.querySelector('main') || 
-                  document.querySelector('.page-container') || 
-                  document.body) as HTMLElement;
+      // Try to find the page body or main page class as fallback
+      targetEl = document.querySelector('.suscripciones-pagos-page') as HTMLElement;
+      if (!targetEl) {
+        // Absolute fallback to center modal
+        this.spotlightStyle.set({
+          opacity: '0',
+          display: 'none'
+        });
+        this.tooltipStyle.set({
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          position: 'fixed',
+          opacity: '1'
+        });
+        return;
+      }
     }
 
     // Scroll target into view if needed

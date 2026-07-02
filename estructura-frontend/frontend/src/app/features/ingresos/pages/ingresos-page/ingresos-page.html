@@ -318,4 +318,14 @@
       </div>
     </div>
   </section>
+  
+  <app-onboarding-tour 
+    *ngIf="mostrarTour()" 
+    [steps]="stepsTour" 
+    (cerrar)="completarTour()"
+  ></app-onboarding-tour>
+
+  <button type="button" class="floating-help-btn" (click)="mostrarTour.set(true)" title="Ver guía de ayuda">
+    <i class="fa-solid fa-circle-question"></i>
+  </button>
 </main>

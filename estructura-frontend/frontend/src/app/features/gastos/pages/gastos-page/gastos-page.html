@@ -7,17 +7,14 @@
       </p>
     </div>
     <div class="gastos-page__hero-actions">
-      <button type="button" class="gastos-page__btn-secondary" routerLink="/gastos/historial">
-        <i class="fa-solid fa-table-list"></i> Ver historial
-      </button>
-      <button type="button" class="gastos-page__btn-main" (click)="abrirModal()">
+      <button type="button" id="btn-registrar-gasto" class="gastos-page__btn-main" routerLink="/gastos/nuevo">
         <span aria-hidden="true">＋</span>
         Registrar gasto
       </button>
     </div>
   </header>
 
-  <section class="gastos-page__kpis">
+  <section id="tour-kpis" class="gastos-page__kpis">
     <article class="gastos-page__kpi gastos-page__kpi--salida">
       <div class="gastos-page__kpi-head">
         <span class="gastos-page__icon" aria-hidden="true"><i class="fa-solid fa-file-invoice-dollar"></i></span>
@@ -25,7 +22,6 @@
       </div>
       <strong>S/ {{ gastoPromedioMensual().toFixed(2) }}</strong>
       <small>Promedio mensual</small>
-      <em class="gastos-page__trend is-up">↑ {{ variacionPromedioMensual().toFixed(0) }}% del presupuesto utilizado</em>
     </article>
 
 
@@ -36,7 +32,6 @@
       </div>
       <strong>S/ {{ totalPendiente().toFixed(2) }}</strong>
       <small>{{ pendientesFiltrados().length }} pendientes</small>
-      <em class="gastos-page__trend is-up">↑ {{ variacionPendiente() }}% vs mes anterior</em>
     </article>
 
     <article class="gastos-page__kpi gastos-page__kpi--vencimiento">
@@ -61,12 +56,8 @@
     </article>
   </section>
 
-  <div class="gastos-page__integration-note" role="note">
-    {{ bannerIntegracion() }}
-  </div>
-
   <section class="gastos-page__content-grid">
-    <section class="gastos-page__panel gastos-page__panel--left gastos-page__panel--pending">
+    <section id="tour-pending" class="gastos-page__panel gastos-page__panel--left gastos-page__panel--pending">
       <header class="gastos-page__panel-header">
         <div>
           <h3>Pendientes y recurrentes</h3>
@@ -118,7 +109,7 @@
       }
     </section>
 
-    <section class="gastos-page__panel gastos-page__panel--right gastos-page__panel--summary-note">
+    <section id="tour-summary-note" class="gastos-page__panel gastos-page__panel--right gastos-page__panel--summary-note">
       <header class="gastos-page__panel-header">
         <div>
           <h3>Historial organizado</h3>
@@ -135,13 +126,13 @@
           <strong>Ver todos mis gastos</strong>
           <p>Entra al historial para revisar, buscar y administrar tus gastos con más espacio.</p>
         </div>
-        <button type="button" class="gastos-page__btn-main" routerLink="/gastos/historial">Abrir historial</button>
+        <button type="button" class="gastos-page__btn-main" routerLink="/perfil/historial">Abrir historial</button>
       </div>
     </section>
   </section>
 
   <section class="gastos-page__analytics">
-    <article class="gastos-page__widget">
+    <article class="gastos-page__widget gastos-page__widget--double">
       <header><h4>Gastos por categoría</h4><span>Últimos 30 días</span></header>
       <div class="gastos-page__donut-layout">
         <div class="gastos-page__donut-wrap">
@@ -198,191 +189,41 @@
         }
       </div>
     </article>
+
+    <article class="gastos-page__widget">
+      <header>
+        <h4>Gastos recientes</h4>
+        <span>Últimas transacciones</span>
+      </header>
+      <div class="gastos-page__recent-list">
+        @for (item of gastosRecientes(); track item.id) {
+          <div class="gastos-page__recent-item">
+            <div class="gastos-page__recent-icon" [style.background]="colorCategoriaGasto(item.categoria) + '15'" [style.color]="colorCategoriaGasto(item.categoria)">
+              <i class="fa-solid fa-file-invoice-dollar"></i>
+            </div>
+            <div class="gastos-page__recent-desc">
+              <strong>{{ item.descripcion || item.notas || 'Gasto registrado' }}</strong>
+              <small>{{ item.fechaTransaccion | date:'dd/MM/yyyy' }} · {{ item.categoria }}</small>
+            </div>
+            <span class="gastos-page__recent-amount">-S/ {{ item.monto.toFixed(2) }}</span>
+          </div>
+        }
+        @if (gastosRecientes().length === 0) {
+          <div class="gastos-page__empty-compact" style="display:flex; justify-content:center; align-items:center; height:120px; color:var(--text-muted);">
+            <p>No hay gastos recientes</p>
+          </div>
+        }
+      </div>
+    </article>
   </section>
 
-  <button type="button" class="gastos-page__fab" (click)="abrirModal()" aria-label="Agregar gasto">+</button>
+  <app-onboarding-tour 
+    *ngIf="mostrarTour()" 
+    [steps]="stepsTour" 
+    (cerrar)="completarTour()"
+  ></app-onboarding-tour>
 
-  @if (modalAbierto()) {
-    <div class="gastos-page__overlay" (click)="cerrarModal()">
-      <div class="gastos-page__modal" (click)="$event.stopPropagation()">
-        <header class="gastos-page__modal-header">
-          <h2>{{ gastoEditandoId() ? 'Editar gasto' : 'Registrar gasto' }}</h2>
-          <button type="button" class="gastos-page__close" (click)="cerrarModal()">×</button>
-        </header>
-
-        <div class="gastos-page__form-grid gastos-page__form-grid--premium">
-          <label>
-            <span><i class="fa-solid fa-receipt"></i> Nombre del gasto</span>
-            <input
-              type="text"
-              [value]="nombreGasto()"
-              (input)="nombreGasto.set($any($event.target).value)"
-              placeholder="Ej. Almuerzo, Internet, Taxi"
-            />
-            @if (errores()['nombreGasto']) { <small class="gastos-page__error">{{ errores()['nombreGasto'] }}</small> }
-          </label>
-
-          <label>
-            <span><i class="fa-solid fa-tags"></i> Categoría</span>
-            <select [value]="categoria()" (change)="categoria.set($any($event.target).value)">
-              <option value="">Selecciona una categoría</option>
-              @for (cat of categoriasConCrear; track cat.id) {
-                <option [value]="cat.id">{{ cat.nombre }}</option>
-              }
-            </select>
-            @if (errores()['categoria']) { <small class="gastos-page__error">{{ errores()['categoria'] }}</small> }
-          </label>
-
-          <!-- Creación en línea de categoría en Gastos -->
-          @if (categoria() === 'CREAR_NUEVA') {
-            <div class="gastos-page__form-col-full mt-1.5 p-2.5 rounded-xl border border-dashed border-violet-300 bg-violet-50/30 dark:border-violet-500/30">
-              <span class="text-xs font-bold text-violet-700 dark:text-violet-300">Nombre de la nueva categoría</span>
-              <div class="flex gap-2">
-                <input
-                  type="text"
-                  #nuevaCatInput
-                  placeholder="Ej: Mascotas, Regalos..."
-                  class="w-full rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-900"
-                />
-                <button
-                  type="button"
-                  class="rounded-lg bg-violet-600 px-3 py-1 text-xs font-bold text-white shadow-sm hover:bg-violet-500"
-                  (click)="confirmarCrearCategoriaGasto(nuevaCatInput.value); nuevaCatInput.value = ''">
-                  Crear
-                </button>
-              </div>
-            </div>
-          }
-
-          <label>
-            <span><i class="fa-solid fa-wallet"></i> Monto</span>
-            <input type="number" min="0" step="0.01" [value]="monto()" (input)="monto.set($any($event.target).value)" />
-            @if (errores()['monto']) { <small class="gastos-page__error">{{ errores()['monto'] }}</small> }
-          </label>
-
-          <label class="gastos-page__form-col-full">
-            <span><i class="fa-solid fa-note-sticky"></i> Descripción</span>
-            <textarea rows="3" [value]="descripcion()" (input)="descripcion.set($any($event.target).value)"></textarea>
-            @if (errores()['descripcion']) { <small class="gastos-page__error">{{ errores()['descripcion'] }}</small> }
-          </label>
-
-          <div class="gastos-page__form-col-full gastos-page__ia-btn-row">
-            <div class="gastos-page__ia-helper">
-              <div>
-                <p class="gastos-page__ia-helper-title">
-                  <i class="fa-solid fa-wand-magic-sparkles"></i>
-                  Sugerencia inteligente de categoría
-                </p>
-                <p class="gastos-page__ia-helper-copy">
-                  Tienes {{ intentosIaMaximos() }} intentos de sugerencia por IA. El contador también es visible en el header como 'Autoclasificar'.
-                  @if (intentosIaRestantes() <= 0) {
-                    <strong> Ya agotaste tus intentos disponibles.</strong>
-                  }
-                </p>
-              </div>
-              <button
-                type="button"
-                class="gastos-page__btn-ia"
-                [disabled]="!puedeSugerirCategoriaIa()"
-                (click)="clasificarConIa()">
-                <i class="fa-solid" [ngClass]="clasificandoIa() ? 'fa-spinner fa-spin' : 'fa-wand-magic-sparkles'"></i>
-                {{ clasificandoIa() ? 'Analizando...' : 'Sugerir categoría' }}
-                <span>{{ intentosIaRestantes() }}/{{ intentosIaMaximos() }}</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Sugerencias IA en Gastos -->
-          @if (sugerenciasIa().length > 0) {
-            <div class="gastos-page__form-col-full rounded-xl border border-violet-200 bg-violet-50/20 p-3">
-              <p class="text-xs font-bold text-violet-700 dark:text-violet-300 mb-2">✨ Categorías sugeridas por IA (selecciona una y presiona Confirmar):</p>
-              <div class="flex flex-wrap items-center justify-between gap-3">
-                <div class="flex flex-wrap gap-2">
-                  @for (sug of sugerenciasIa(); track sug.categoria) {
-                    <button
-                      type="button"
-                      class="inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-extrabold shadow-sm transition-all duration-150"
-                      [ngClass]="sugerenciaSeleccionada()?.categoria === sug.categoria ? 'border-violet-600 bg-violet-100 text-violet-700 dark:border-violet-400 dark:bg-violet-950/40 dark:text-violet-300' : 'border-indigo-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-indigo-950/40'"
-                      (click)="seleccionarSugerenciaGasto(sug)">
-                      <i class="fa-solid" [ngClass]="'fa-' + sug.icono" [style.color]="sugerenciaSeleccionada()?.categoria === sug.categoria ? '#7c3aed' : '#6366f1'"></i>
-                      {{ sug.categoria }}
-                    </button>
-                  }
-                </div>
-                
-                @if (sugerenciaSeleccionada()) {
-                  <button
-                    type="button"
-                    class="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-emerald-500 flex items-center gap-1"
-                    (click)="confirmarSugerenciaGasto()">
-                    <i class="fa-solid fa-check"></i> Confirmar
-                  </button>
-                }
-              </div>
-            </div>
-          }
-
-          <label>
-            <span><i class="fa-solid fa-calendar-days"></i> Fecha</span>
-            <input type="date" [value]="fecha()" (input)="fecha.set($any($event.target).value)" />
-            @if (errores()['fecha']) { <small class="gastos-page__error">{{ errores()['fecha'] }}</small> }
-          </label>
-
-          <label>
-            <span><i class="fa-solid fa-credit-card"></i> Método de pago</span>
-            <select [value]="metodoPago()" (change)="metodoPago.set($any($event.target).value)">
-              @for (metodo of metodosPagoDisponibles; track metodo.id) {
-                <option [value]="metodo.id">{{ metodo.nombre }}</option>
-              }
-            </select>
-          </label>
-
-          <div class="gastos-page__form-col-full gastos-page__tags-section">
-            <span class="gastos-page__tags-label"><i class="fa-solid fa-tags"></i> Etiquetas</span>
-            <div class="gastos-page__tags-chips">
-              @for (tag of etiquetas(); track tag) {
-                <span class="gastos-page__tag-chip">
-                  {{ tag }}
-                  <button type="button" class="gastos-page__tag-remove" (click)="eliminarEtiqueta(tag)">✕</button>
-                </span>
-              }
-            </div>
-            <div class="gastos-page__tag-input-row">
-              <input
-                type="text"
-                maxlength="20"
-                placeholder="Ej: Fijo, Urgente, Necesario"
-                [value]="nuevaEtiqueta()"
-                (input)="nuevaEtiqueta.set($any($event.target).value)"
-                (keydown.enter)="$event.preventDefault(); agregarEtiqueta()"
-              />
-              <button type="button" class="gastos-page__btn-add-tag" (click)="agregarEtiqueta()">Agregar</button>
-            </div>
-            <small class="gastos-page__tags-hint">Solo una palabra por etiqueta.</small>
-          </div>
-        </div>
-
-        @if (mensajeFormulario()) {
-          <p class="gastos-page__error gastos-page__error--global">{{ mensajeFormulario() }}</p>
-        }
-
-        <footer class="gastos-page__modal-actions">
-          <button type="button" class="gastos-page__btn-cancel" (click)="cerrarModal()">Cancelar</button>
-          <button type="button" class="gastos-page__btn-save" [disabled]="guardandoGasto()" (click)="guardarGasto()">
-            {{ guardandoGasto() ? 'Guardando...' : (gastoEditandoId() ? 'Actualizar' : 'Guardar') }}
-          </button>
-        </footer>
-      </div>
-    </div>
-  }
-
-  @if (gastoPendienteEliminar(); as confirmacion) {
-    <div class="gastos-page__confirm-float" role="alertdialog" aria-modal="false">
-      <p>¿Seguro que deseas eliminar <strong>{{ confirmacion.nombre }}</strong>?</p>
-      <div class="gastos-page__confirm-actions">
-        <button type="button" class="gastos-page__confirm-cancel" (click)="cancelarEliminarGasto()">Cancelar</button>
-        <button type="button" class="gastos-page__confirm-delete" (click)="confirmarEliminarGasto()">Eliminar</button>
-      </div>
-    </div>
-  }
+  <button type="button" class="floating-help-btn" (click)="mostrarTour.set(true)" title="Ver guía de ayuda">
+    <i class="fa-solid fa-circle-question"></i>
+  </button>
 </section>

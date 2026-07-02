@@ -53,15 +53,27 @@ export class NuevoGastoPage implements OnInit, HasUnsavedChanges {
   readonly mostrarTour = signal(false);
   readonly stepsTour: TourStep[] = [
     {
-      targetSelector: '#tour-form-gasto',
-      title: 'Registrar Nuevo Gasto',
-      description: 'Completa los detalles de tu nuevo gasto para mantener tus finanzas bajo control.',
+      targetSelector: '#gasto-nombre',
+      title: 'Nombre del Gasto',
+      description: 'Ingresa el nombre o concepto de la compra (ej: Spotify, Almuerzo).',
       position: 'bottom'
     },
     {
+      targetSelector: '#gasto-monto',
+      title: 'Monto del Gasto',
+      description: 'Digita el importe de la transacción en soles.',
+      position: 'bottom'
+    },
+    {
+      targetSelector: '#gasto-categoria',
+      title: 'Categoría',
+      description: 'Elige el rubro correspondiente para clasificar tu presupuesto.',
+      position: 'top'
+    },
+    {
       targetSelector: '#tour-ia-gasto',
-      title: 'Clasificación por IA',
-      description: 'Usa la Inteligencia Artificial para que Luka te sugiera automáticamente la mejor categoría.',
+      title: 'Sugerencia Inteligente',
+      description: 'Haz clic aquí para que nuestra IA analice la descripción y te recomiende la mejor categoría.',
       position: 'top'
     }
   ];

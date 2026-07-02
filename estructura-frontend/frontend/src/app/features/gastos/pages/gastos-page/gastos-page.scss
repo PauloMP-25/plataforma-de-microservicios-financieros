@@ -1145,6 +1145,68 @@
   }
 }
 
+.gastos-page__widget--double {
+  grid-column: span 2;
+}
+
+.gastos-page__recent-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.gastos-page__recent-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-body);
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    background: var(--bg-card);
+  }
+}
+
+.gastos-page__recent-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.gastos-page__recent-desc {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+
+  strong {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  small {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+  }
+}
+
+.gastos-page__recent-amount {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--status-danger);
+}
+
 .gastos-page__chart-list {
   display: grid;
   gap: 10px;
@@ -1752,6 +1814,10 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .gastos-page__widget--double {
+    grid-column: span 2;
+  }
+
   .gastos-page__form-grid {
     grid-template-columns: 1fr;
   }
@@ -1770,6 +1836,10 @@
   .gastos-page__kpis,
   .gastos-page__analytics {
     grid-template-columns: 1fr;
+  }
+
+  .gastos-page__widget--double {
+    grid-column: span 1;
   }
 
   .gastos-page__tab,

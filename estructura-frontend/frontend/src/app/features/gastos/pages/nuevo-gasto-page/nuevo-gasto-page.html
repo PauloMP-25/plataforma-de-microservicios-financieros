@@ -25,7 +25,7 @@
           <!-- Nombre -->
           <div class="col-span-1">
             <label class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-300">Nombre del gasto</label>
-            <input type="text" [value]="nombreGasto()" (input)="nombreGasto.set($any($event.target).value)" placeholder="Ej. Almuerzo, Internet, Taxi" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-900 transition-colors focus:border-rose-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-white dark:focus:border-rose-500" [ngClass]="{'border-red-500': errores()['nombreGasto']}"/>
+            <input type="text" id="gasto-nombre" [ngModel]="nombreGasto()" (ngModelChange)="nombreGasto.set($event)" placeholder="Ej. Almuerzo, Internet, Taxi" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-900 transition-colors focus:border-rose-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-white dark:focus:border-rose-500" [ngClass]="{'border-red-500': errores()['nombreGasto']}"/>
             @if (errores()['nombreGasto']) { <p class="mt-1 text-xs font-medium text-red-500">{{ errores()['nombreGasto'] }}</p> }
           </div>
 
@@ -34,7 +34,7 @@
             <label class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-300">Monto</label>
             <div class="relative">
               <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">S/</span>
-              <input type="number" min="0" step="0.01" [value]="monto()" (input)="monto.set($any($event.target).value)" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-8 pr-3 py-2 text-sm font-bold text-slate-900 transition-colors focus:border-rose-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-white dark:focus:border-rose-500" [ngClass]="{'border-red-500': errores()['monto']}"/>
+              <input type="number" min="0" step="0.01" id="gasto-monto" [ngModel]="monto()" (ngModelChange)="monto.set(+$event)" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-8 pr-3 py-2 text-sm font-bold text-slate-900 transition-colors focus:border-rose-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-white dark:focus:border-rose-500" [ngClass]="{'border-red-500': errores()['monto']}"/>
             </div>
             @if (errores()['monto']) { <p class="mt-1 text-xs font-medium text-red-500">{{ errores()['monto'] }}</p> }
           </div>
@@ -42,7 +42,7 @@
           <!-- Categoría -->
           <div class="col-span-1">
             <label class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-300">Categoría</label>
-            <select [value]="categoria()" (change)="categoria.set($any($event.target).value)" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-900 transition-colors focus:border-rose-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-white dark:focus:border-rose-500" [ngClass]="{'border-red-500': errores()['categoria']}">
+            <select id="gasto-categoria" [ngModel]="categoria()" (ngModelChange)="categoria.set($event)" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-900 transition-colors focus:border-rose-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-white dark:focus:border-rose-500" [ngClass]="{'border-red-500': errores()['categoria']}">
               <option value="">Selecciona una categoría</option>
               @for (cat of categoriasConCrear(); track cat.id) {
                 <option [value]="cat.id">{{ cat.nombre }}</option>
@@ -64,14 +64,14 @@
           <!-- Fecha -->
           <div class="col-span-1">
             <label class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-300">Fecha</label>
-            <input type="date" [value]="fecha()" (input)="fecha.set($any($event.target).value)" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-900 transition-colors focus:border-rose-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-white dark:focus:border-rose-500" [ngClass]="{'border-red-500': errores()['fecha']}"/>
+            <input type="date" [ngModel]="fecha()" (ngModelChange)="fecha.set($event)" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-900 transition-colors focus:border-rose-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-white dark:focus:border-rose-500" [ngClass]="{'border-red-500': errores()['fecha']}"/>
             @if (errores()['fecha']) { <p class="mt-1 text-xs font-medium text-red-500">{{ errores()['fecha'] }}</p> }
           </div>
 
           <!-- Método de Pago -->
           <div class="col-span-1">
             <label class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-300">Método de pago</label>
-            <select [value]="metodoPago()" (change)="metodoPago.set($any($event.target).value)" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-900 transition-colors focus:border-rose-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-white dark:focus:border-rose-500">
+            <select [ngModel]="metodoPago()" (ngModelChange)="metodoPago.set($event)" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-900 transition-colors focus:border-rose-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-white dark:focus:border-rose-500">
               @for (metodo of metodosPagoDisponibles; track metodo.id) {
                 <option [value]="metodo.id">{{ metodo.nombre }}</option>
               }
@@ -81,7 +81,7 @@
           <!-- Descripción -->
           <div class="col-span-1 md:col-span-2">
             <label class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-300">Descripción (Opcional)</label>
-            <textarea rows="2" [value]="descripcion()" (input)="descripcion.set($any($event.target).value)" placeholder="Agrega un detalle adicional..." class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-900 transition-colors focus:border-rose-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-white dark:focus:border-rose-500"></textarea>
+            <textarea rows="2" [ngModel]="descripcion()" (ngModelChange)="descripcion.set($event)" placeholder="Agrega un detalle adicional..." class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-900 transition-colors focus:border-rose-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-white dark:focus:border-rose-500"></textarea>
           </div>
 
           <!-- IA Section -->
@@ -133,7 +133,7 @@
               }
             </div>
             <div class="flex gap-2">
-              <input type="text" maxlength="20" placeholder="Ej: Fijo, Urgente, Necesario" [value]="nuevaEtiqueta()" (input)="nuevaEtiqueta.set($any($event.target).value)" (keydown.enter)="$event.preventDefault(); agregarEtiqueta()" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-900 transition-colors focus:border-rose-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-white dark:focus:border-rose-500"/>
+              <input type="text" id="gasto-etiqueta-input" maxlength="20" placeholder="Ej: Fijo, Urgente, Necesario" [ngModel]="nuevaEtiqueta()" (ngModelChange)="nuevaEtiqueta.set($event)" (keydown.enter)="$event.preventDefault(); agregarEtiqueta()" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-900 transition-colors focus:border-rose-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-white dark:focus:border-rose-500"/>
               <button type="button" class="shrink-0 rounded-xl bg-slate-200 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600" (click)="agregarEtiqueta()">Agregar</button>
             </div>
           </div>
@@ -148,7 +148,7 @@
         <hr class="my-6 border-slate-100 dark:border-slate-800"/>
         <div class="flex items-center justify-end gap-3">
           <button type="button" class="rounded-xl px-5 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800" (click)="cancelar()">Cancelar</button>
-          <button type="button" class="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-6 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-rose-500 disabled:opacity-50" [disabled]="guardandoGasto()" (click)="guardarGasto()">
+          <button type="button" id="gasto-guardar" class="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-6 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-rose-500 disabled:opacity-50" [disabled]="guardandoGasto()" (click)="guardarGasto()">
             @if (guardandoGasto()) { <i class="fa-solid fa-spinner fa-spin"></i> Guardando... } @else { Guardar gasto }
           </button>
         </div>
@@ -156,38 +156,46 @@
 
       <!-- SIDEBAR -->
       <aside class="grid grid-cols-1 gap-4 xl:sticky xl:top-4">
-        <!-- Asistente Visual -->
+        <!-- Requisitos del Formulario -->
         <div class="rounded-2xl border border-rose-100 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
           <h3 class="mb-4 text-sm font-bold text-slate-800 dark:text-slate-200">
-            <i class="fa-solid fa-list-ol mr-2 text-rose-500"></i> Pasos para registrar
+            <i class="fa-solid fa-list-check mr-2 text-rose-500"></i> Pasos para registrar
           </h3>
-          <div class="relative space-y-4 before:absolute before:inset-y-2 before:left-[11px] before:w-[2px] before:bg-rose-100 dark:before:bg-slate-700">
-            <div class="relative flex gap-3">
-              <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-rose-100 text-xs font-bold text-rose-700 ring-4 ring-white dark:bg-rose-500/20 dark:text-rose-300 dark:ring-slate-800">1</div>
+          <div class="relative space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-all duration-300"
+                   [ngClass]="nombreGasto() ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'">
+                <i class="fa-solid" [ngClass]="nombreGasto() ? 'fa-circle-check' : 'fa-circle'"></i>
+              </div>
               <div>
-                <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Completa la información</p>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Ingresa el nombre, monto y fecha de tu gasto.</p>
+                <p class="text-sm font-semibold transition-all duration-300" [class.line-through]="nombreGasto()" [class.text-slate-400]="nombreGasto()">Concepto ingresado</p>
               </div>
             </div>
-            <div class="relative flex gap-3">
-              <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-rose-100 text-xs font-bold text-rose-700 ring-4 ring-white dark:bg-rose-500/20 dark:text-rose-300 dark:ring-slate-800">2</div>
+            <div class="flex items-center gap-3">
+              <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-all duration-300"
+                   [ngClass]="monto() > 0 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'">
+                <i class="fa-solid" [ngClass]="monto() > 0 ? 'fa-circle-check' : 'fa-circle'"></i>
+              </div>
               <div>
-                <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Selecciona la categoría</p>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Elígela de la lista o usa la IA para categorizar.</p>
+                <p class="text-sm font-semibold transition-all duration-300" [class.line-through]="monto() > 0" [class.text-slate-400]="monto() > 0">Monto superior a S/ 0</p>
               </div>
             </div>
-            <div class="relative flex gap-3">
-              <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-rose-100 text-xs font-bold text-rose-700 ring-4 ring-white dark:bg-rose-500/20 dark:text-rose-300 dark:ring-slate-800">3</div>
+            <div class="flex items-center gap-3">
+              <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-all duration-300"
+                   [ngClass]="categoria() ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'">
+                <i class="fa-solid" [ngClass]="categoria() ? 'fa-circle-check' : 'fa-circle'"></i>
+              </div>
               <div>
-                <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Método de pago</p>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Indica con qué pagaste.</p>
+                <p class="text-sm font-semibold transition-all duration-300" [class.line-through]="categoria()" [class.text-slate-400]="categoria()">Categoría seleccionada</p>
               </div>
             </div>
-            <div class="relative flex gap-3">
-              <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-rose-100 text-xs font-bold text-rose-700 ring-4 ring-white dark:bg-rose-500/20 dark:text-rose-300 dark:ring-slate-800">4</div>
+            <div class="flex items-center gap-3">
+              <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-all duration-300"
+                   [ngClass]="descripcion().trim() ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'">
+                <i class="fa-solid" [ngClass]="descripcion().trim() ? 'fa-circle-check' : 'fa-circle'"></i>
+              </div>
               <div>
-                <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Guarda el registro</p>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Verifica los datos y presiona Guardar.</p>
+                <p class="text-sm font-semibold transition-all duration-300" [class.line-through]="descripcion().trim()" [class.text-slate-400]="descripcion().trim()">Descripción detallada</p>
               </div>
             </div>
           </div>
