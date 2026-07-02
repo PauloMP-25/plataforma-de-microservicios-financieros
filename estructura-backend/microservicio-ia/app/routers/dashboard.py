@@ -3,6 +3,7 @@ from datetime import datetime
 import json
 import logging
 from typing import Optional, List, Dict, Any
+import pandas as pd
 
 from fastapi import APIRouter, Request, Depends, Security
 from pydantic import BaseModel, Field
@@ -263,56 +264,159 @@ MOCK_TRANSACCIONES = [
 ]
 
 
+# ── Helper para Obtención Optimizada (Caché YTD) ───────────────────────────────
+
+async def obtener_transacciones_YTD_optimizadas(
+    usuario_id: str,
+    token: str,
+    fecha_inicio_str: Optional[str] = None,
+    fecha_fin_str: Optional[str] = None,
+) -> List[Dict[str, Any]]:
+    """
+    Obtiene las transacciones aplicando la estrategia de Caché Superset (YTD):
+    - Carga por defecto todo el año actual (1 de Enero hasta Hoy) de ms-financiero.
+    - Almacena en Redis con TTL de 3 horas (10800 segundos).
+    - Si el rango solicitado está dentro del año actual, reutiliza la caché YTD.
+    - Si está fuera, hace una consulta específica y la cachea por separado.
+    """
+    hoy = datetime.now()
+    anio_actual = hoy.year
+    ytd_inicio = datetime(anio_actual, 1, 1)
+    ytd_fin = hoy
+
+    # Parsear fechas de solicitud
+    try:
+        dt_inicio = datetime.strptime(fecha_inicio_str, "%Y-%m-%d") if fecha_inicio_str else ytd_inicio
+    except Exception:
+        dt_inicio = ytd_inicio
+
+    try:
+        dt_fin = datetime.strptime(fecha_fin_str, "%Y-%m-%d") if fecha_fin_str else ytd_fin
+        dt_fin = dt_fin.replace(hour=23, minute=59, second=59)
+    except Exception:
+        dt_fin = ytd_fin
+
+    # Determinar si el rango solicitado está dentro del YTD del año actual
+    # (inicio >= 1 de enero y fin <= fin del día de hoy)
+    dentro_ytd = (dt_inicio >= ytd_inicio) and (dt_fin <= ytd_fin.replace(hour=23, minute=59, second=59))
+
+    cache = CacheRedis()
+
+    if dentro_ytd:
+        key_cache = f"ia:raw_tx:{usuario_id}:YTD_{anio_actual}"
+        desde_query = ytd_inicio.isoformat()
+        hasta_query = ytd_fin.isoformat()
+        logger.info(f"[DASHBOARD-IA] Solicitud dentro de rango YTD. Clave de caché maestra: {key_cache}")
+    else:
+        inicio_fmt = dt_inicio.strftime("%Y-%m-%d")
+        fin_fmt = dt_fin.strftime("%Y-%m-%d")
+        key_cache = f"ia:raw_tx:{usuario_id}:{inicio_fmt}_{fin_fmt}"
+        desde_query = dt_inicio.isoformat()
+        hasta_query = dt_fin.isoformat()
+        logger.info(f"[DASHBOARD-IA] Solicitud fuera de rango YTD. Clave de caché específica: {key_cache}")
+
+    cached_data = cache.obtener(key_cache)
+    if cached_data:
+        try:
+            logger.info(f"[DASHBOARD-IA] Cache HIT para transacciones crudas ({key_cache})")
+            return json.loads(cached_data)
+        except Exception as e:
+            logger.error(f"[DASHBOARD-IA] Error parseando cache de transacciones crudas: {e}")
+
+    logger.info(f"[DASHBOARD-IA] Cache MISS. Consultando ms-financiero desde {desde_query} hasta {hasta_query}...")
+    
+    error_conexion = False
+    cliente = obtener_cliente_financiero()
+    try:
+        resp = await cliente.obtener_historial_transacciones_async(
+            usuario_id=usuario_id,
+            token=token,
+            tamanio=10000,
+            desde_exacto=desde_query,
+            hasta_exacto=hasta_query
+        )
+        datos_raw = resp.get("datos", []) if resp else []
+    except Exception as e:
+        logger.error(f"[DASHBOARD-IA] Error consultando transacciones de ms-financiero: {e}")
+        datos_raw = []
+        error_conexion = True
+
+    if error_conexion:
+        logger.warning("[DASHBOARD-IA] Retornando MOCK_TRANSACCIONES debido a fallo en conexión")
+        datos_raw = MOCK_TRANSACCIONES
+
+    # Guardar en Redis con TTL de 3 horas (10800 segundos)
+    try:
+        cache.guardar(key_cache, json.dumps(datos_raw), ex=10800)
+        logger.info(f"[DASHBOARD-IA] Transacciones crudas guardadas en caché Redis ({key_cache}) por 3 horas.")
+    except Exception as e:
+        logger.warning(f"[DASHBOARD-IA] No se pudo guardar en Redis: {e}")
+
+    return datos_raw
+
+
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.get("/kpis", response_model=ResultadoApi[RespuestaKPIs])
 async def get_dashboard_kpis(
     request: Request,
+    fechaInicio: Optional[str] = None,
+    fechaFin: Optional[str] = None,
+    metodoPago: Optional[str] = None,
+    tipoMovimiento: Optional[str] = None,
     payload: dict = Security(validar_token),
 ):
     """
     Obtiene y calcula dinámicamente los KPIs principales y las últimas 10 transacciones.
-    Almacena el resultado en Redis (TTL 15 min) antes de responder.
+    Usa caché YTD e implementa filtrado en memoria.
     """
     usuario_id = obtener_usuario_id(payload)
-    
-    # Extraer el token crudo de los cabeceras de request
     auth_header = request.headers.get("Authorization", "")
     token = auth_header.replace("Bearer ", "") if auth_header.startswith("Bearer ") else ""
 
-    cache = CacheRedis()
-    key_resumen = f"dashboard:resumen:{usuario_id}"
-    
-    # Intentar obtener de caché (si por alguna razón se llama directamente, aunque Gateway lee primero)
-    cached_data = cache.obtener(key_resumen)
-    if cached_data:
-        try:
-            parsed = json.loads(cached_data)
-            logger.info(f"[DASHBOARD-IA] Cache HIT para resumen de usuario_id={usuario_id}")
-            return ResultadoApi.exito_res(datos=parsed, mensaje="KPIs recuperados de la caché.", ruta=request.url.path)
-        except Exception as e:
-            logger.error(f"[DASHBOARD-IA] Error parseando cache de resumen: {e}")
+    # 1. Obtener bolsa de transacciones crudas
+    datos_raw = await obtener_transacciones_YTD_optimizadas(
+        usuario_id=usuario_id,
+        token=token,
+        fecha_inicio_str=fechaInicio,
+        fecha_fin_str=fechaFin
+    )
 
-    logger.info(f"[DASHBOARD-IA] Cache MISS para resumen de usuario_id={usuario_id}. Calculando...")
-
-    # Consultar transacciones de ms-nucleo-financiero
-    error_conexion = False
-    cliente = obtener_cliente_financiero()
-    try:
-        resp = await cliente.obtener_historial_transacciones_async(usuario_id, token, tamanio=200)
-        datos_raw = resp.get("datos", []) if resp else []
-    except Exception as e:
-        logger.error(f"[DASHBOARD-IA] Error consultando transacciones: {e}")
-        datos_raw = []
-        error_conexion = True
-
-    if error_conexion:
-        logger.info(f"[DASHBOARD-IA] Cargando datos fallback mockups en KPIs para usuario_id={usuario_id}")
-        datos_raw = MOCK_TRANSACCIONES
-
+    # 2. Cargar en Pandas y aplicar filtros locales
     df = json_a_dataframe(datos_raw)
 
-    # Filtrar transacciones y calcular métricas
+    # Parsear fechas de filtro
+    hoy = datetime.now()
+    anio_actual = hoy.year
+    ytd_inicio = datetime(anio_actual, 1, 1)
+    ytd_fin = hoy
+
+    try:
+        dt_inicio = datetime.strptime(fechaInicio, "%Y-%m-%d") if fechaInicio else ytd_inicio
+    except Exception:
+        dt_inicio = ytd_inicio
+
+    try:
+        dt_fin = datetime.strptime(fechaFin, "%Y-%m-%d") if fechaFin else ytd_fin
+        dt_fin = dt_fin.replace(hour=23, minute=59, second=59)
+    except Exception:
+        dt_fin = ytd_fin
+
+    if not df.empty:
+        # A. Filtrar por Rango de Fecha Solicitado (en memoria)
+        # La columna 'fecha' en el df ya está formateada como datetime por json_a_dataframe
+        df = df[(df['fecha'] >= pd.to_datetime(dt_inicio)) & (df['fecha'] <= pd.to_datetime(dt_fin))]
+
+        # B. Filtrar por metodoPago si se especifica
+        if metodoPago:
+            df = df[df['metodo_pago'].astype(str).str.upper() == metodoPago.upper()]
+
+        # C. Filtrar por tipoMovimiento si se especifica
+        if tipoMovimiento:
+            tipo_map = "GASTO" if tipoMovimiento.upper() == "EGRESO" else tipoMovimiento.upper()
+            df = df[df['tipo'].astype(str).str.upper() == tipo_map]
+
+    # 3. Calcular KPIs sobre el DataFrame filtrado
     if df.empty:
         total_ing = 0.0
         total_gas = 0.0
@@ -321,8 +425,8 @@ async def get_dashboard_kpis(
         cant_gas = 0
         tasa_ahorro = 0.0
         recientes = []
-        desde_str = datetime.now().isoformat()
-        hasta_str = datetime.now().isoformat()
+        desde_str = dt_inicio.isoformat()
+        hasta_str = dt_fin.isoformat()
     else:
         df_ing = df[(df['tipo'] == 'INGRESO') & (df['estado'].astype(str).str.upper() == 'COMPLETED')]
         df_gas = df[(df['tipo'] == 'GASTO') & (df['estado'].astype(str).str.upper() != 'FAILED')]
@@ -334,20 +438,39 @@ async def get_dashboard_kpis(
         cant_gas = len(df_gas)
         tasa_ahorro = ((total_ing - total_gas) / total_ing) * 100 if total_ing > 0 else 0.0
 
-        # Sort original raw records by transaction date descending for the recent table
+        # Para las recientes, filtramos de la lista cruda original (camelCase) para preservar la interfaz del frontend
+        recientes_filtradas = []
+        for tx in datos_raw:
+            try:
+                tx_fecha = datetime.fromisoformat(tx.get("fechaTransaccion", "").replace("Z", ""))
+            except Exception:
+                continue
+            
+            if not (dt_inicio <= tx_fecha <= dt_fin):
+                continue
+            
+            if metodoPago and tx.get("metodoPago", "").upper() != metodoPago.upper():
+                continue
+                
+            if tipoMovimiento:
+                tipo_map = "GASTO" if tipoMovimiento.upper() == "EGRESO" else tipoMovimiento.upper()
+                if tx.get("tipo", "").upper() != tipo_map:
+                    continue
+            
+            recientes_filtradas.append(tx)
+        
         try:
-            datos_raw.sort(key=lambda x: x.get("fechaTransaccion", ""), reverse=True)
+            recientes_filtradas.sort(key=lambda x: x.get("fechaTransaccion", ""), reverse=True)
         except Exception:
             pass
-        recientes = datos_raw[:10]
+        recientes = recientes_filtradas[:10]
 
-        # Fechas extremas
         if 'fecha_transaccion' in df.columns:
             desde_str = df['fecha_transaccion'].min().isoformat()
             hasta_str = df['fecha_transaccion'].max().isoformat()
         else:
-            desde_str = datetime.now().isoformat()
-            hasta_str = datetime.now().isoformat()
+            desde_str = dt_inicio.isoformat()
+            hasta_str = dt_fin.isoformat()
 
     kpis = {
         "resumen": {
@@ -363,62 +486,68 @@ async def get_dashboard_kpis(
         "recientes": recientes
     }
 
-    # Guardar en Redis (TTL 15 min / 900 segundos)
-    try:
-        cache.guardar(key_resumen, json.dumps(kpis), ex=900)
-        logger.info(f"[DASHBOARD-IA] Resumen cacheado en Redis para usuario_id={usuario_id}")
-    except Exception as e:
-        logger.warning(f"[DASHBOARD-IA] No se pudo guardar resumen en Redis: {e}")
-
     return ResultadoApi.exito_res(datos=kpis, mensaje="KPIs calculados con éxito.", ruta=request.url.path)
 
 
 @router.get("/graficos", response_model=ResultadoApi[RespuestaGraficos])
 async def get_dashboard_graficos(
     request: Request,
+    fechaInicio: Optional[str] = None,
+    fechaFin: Optional[str] = None,
+    metodoPago: Optional[str] = None,
+    tipoMovimiento: Optional[str] = None,
     payload: dict = Security(validar_token),
 ):
     """
-    Obtiene y calcula dinámicamente los datos de gráficos SVG (flujo de caja e ingresos/egresos).
-    Almacena el resultado en Redis (TTL 15 min) antes de responder.
+    Obtiene y calcula dinámicamente los datos de gráficos.
+    Usa caché YTD e implementa filtrado en memoria.
     """
     usuario_id = obtener_usuario_id(payload)
-    
     auth_header = request.headers.get("Authorization", "")
     token = auth_header.replace("Bearer ", "") if auth_header.startswith("Bearer ") else ""
 
-    cache = CacheRedis()
-    key_graficos = f"dashboard:graficos:{usuario_id}"
-    
-    cached_data = cache.obtener(key_graficos)
-    if cached_data:
-        try:
-            parsed = json.loads(cached_data)
-            logger.info(f"[DASHBOARD-IA] Cache HIT para graficos de usuario_id={usuario_id}")
-            return ResultadoApi.exito_res(datos=parsed, mensaje="Gráficos recuperados de la caché.", ruta=request.url.path)
-        except Exception as e:
-            logger.error(f"[DASHBOARD-IA] Error parseando cache de gráficos: {e}")
+    # 1. Obtener bolsa de transacciones crudas
+    datos_raw = await obtener_transacciones_YTD_optimizadas(
+        usuario_id=usuario_id,
+        token=token,
+        fecha_inicio_str=fechaInicio,
+        fecha_fin_str=fechaFin
+    )
 
-    logger.info(f"[DASHBOARD-IA] Cache MISS para graficos de usuario_id={usuario_id}. Calculando...")
-
-    # Consultar transacciones
-    error_conexion = False
-    cliente = obtener_cliente_financiero()
-    try:
-        resp = await cliente.obtener_historial_transacciones_async(usuario_id, token, tamanio=200)
-        datos_raw = resp.get("datos", []) if resp else []
-    except Exception as e:
-        logger.error(f"[DASHBOARD-IA] Error consultando transacciones para gráficos: {e}")
-        datos_raw = []
-        error_conexion = True
-
-    if error_conexion:
-        logger.info(f"[DASHBOARD-IA] Cargando datos fallback mockups en Gráficos para usuario_id={usuario_id}")
-        datos_raw = MOCK_TRANSACCIONES
-
+    # 2. Cargar en Pandas y aplicar filtros locales
     df = json_a_dataframe(datos_raw)
 
-    # 1. Flujo de Caja (últimos 5 meses)
+    # Parsear fechas de filtro
+    hoy = datetime.now()
+    anio_actual = hoy.year
+    ytd_inicio = datetime(anio_actual, 1, 1)
+    ytd_fin = hoy
+
+    try:
+        dt_inicio = datetime.strptime(fechaInicio, "%Y-%m-%d") if fechaInicio else ytd_inicio
+    except Exception:
+        dt_inicio = ytd_inicio
+
+    try:
+        dt_fin = datetime.strptime(fechaFin, "%Y-%m-%d") if fechaFin else ytd_fin
+        dt_fin = dt_fin.replace(hour=23, minute=59, second=59)
+    except Exception:
+        dt_fin = ytd_fin
+
+    if not df.empty:
+        # A. Filtrar por Rango de Fecha Solicitado (en memoria)
+        df = df[(df['fecha'] >= pd.to_datetime(dt_inicio)) & (df['fecha'] <= pd.to_datetime(dt_fin))]
+
+        # B. Filtrar por metodoPago si se especifica
+        if metodoPago:
+            df = df[df['metodo_pago'].astype(str).str.upper() == metodoPago.upper()]
+
+        # C. Filtrar por tipoMovimiento si se especifica
+        if tipoMovimiento:
+            tipo_map = "GASTO" if tipoMovimiento.upper() == "EGRESO" else tipoMovimiento.upper()
+            df = df[df['tipo'].astype(str).str.upper() == tipo_map]
+
+    # 3. Flujo de Caja (últimos 5 meses)
     ahora = datetime.now()
     meses_lista = []
     for i in range(4, -1, -1):
@@ -453,7 +582,7 @@ async def get_dashboard_graficos(
                 "gastos": round(gas_mes, 2)
             })
 
-    # 2. Distribución de Gastos
+    # 4. Distribución de Gastos
     distribucion = []
     colores_default = {
         "food": "#FF7043",
@@ -498,11 +627,5 @@ async def get_dashboard_graficos(
         "distribucionGastos": distribucion
     }
 
-    # Guardar en Redis (TTL 15 min / 900 segundos)
-    try:
-        cache.guardar(key_graficos, json.dumps(graficos), ex=900)
-        logger.info(f"[DASHBOARD-IA] Gráficos cacheados en Redis para usuario_id={usuario_id}")
-    except Exception as e:
-        logger.warning(f"[DASHBOARD-IA] No se pudo guardar gráficos en Redis: {e}")
-
     return ResultadoApi.exito_res(datos=graficos, mensaje="Gráficos calculados con éxito.", ruta=request.url.path)
+

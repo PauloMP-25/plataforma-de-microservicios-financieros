@@ -19,7 +19,7 @@ class ClienteFinanciero(BaseLukaClient):
         self, 
         usuario_id: str, 
         token: str, 
-        tamanio: int = 200,
+        tamanio: int = 10000,
         mes: Optional[int] = None,
         anio: Optional[int] = None,
         dia_inicio: Optional[int] = None,
