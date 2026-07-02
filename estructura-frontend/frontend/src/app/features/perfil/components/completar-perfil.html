@@ -1,253 +1,307 @@
 <div class="profile-modal-overlay">
     <div class="profile-modal-card card glass-panel">
 
-        <!-- Columna Izquierda (30%): Panda Mascota + Globo de Texto -->
+        <!-- Columna Izquierda (35%): Panda Mascota + Globo de Texto -->
         <div class="modal-left-column">
             <div class="panda-speech-bubble-left">
-                <p>¡Hola! Bienvenido a <strong>LUKA APP</strong>. Como un buen amigo, te aconsejo llenar estos datos.
-                    Son súper importantes para validar tu perfil y que puedas usar todas nuestras herramientas sin
-                    problemas.</p>
+                <!-- Mensajes adaptados por pasos -->
+                @if (pasoActual() === 1) {
+                    <p>¡Hola! Para comenzar a usar <strong>LUKA APP</strong>, primero debemos verificar tu cuenta. Por favor, completa el código de validación.</p>
+                } @else if (pasoActual() === 2) {
+                    <p>¡Excelente! Ahora ingresa tu <strong>DNI</strong> para buscarte en el padrón y tu <strong>Edad</strong> para confirmar que eres mayor de edad.</p>
+                } @else {
+                    <p>¡Ya casi terminamos! Solo indícanos tu <strong>País</strong> y <strong>Ciudad</strong> para activar tu cuenta por completo.</p>
+                }
             </div>
             <div class="panda-image-container">
-                <img src="assets/avatares/figuras/panda de perfil/panda-solo.png.png" alt="Luka Panda Mascot"
+                <img src="assets/avatares/figuras/panda-solo.png" alt="Luka Panda Mascot"
                     class="panda-mascot-img-large" />
             </div>
         </div>
 
-        <!-- Columna Derecha (70%): Título del Formulario + Formulario -->
+        <!-- Columna Derecha (65%): Título del Formulario + Formulario por pasos -->
         <div class="modal-right-column">
             <div class="profile-modal-header-right">
-                <h2 class="profile-modal-title">Completa tu Perfil Obligatorio</h2>
+                <div class="flex justify-between items-center">
+                    <h2 class="profile-modal-title">Completa tu Perfil</h2>
+                    <span class="text-xs font-extrabold uppercase px-2.5 py-1 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300">
+                        Paso {{ pasoActual() }} de 3
+                    </span>
+                </div>
+                <div class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                    <div class="bg-violet-600 h-full transition-all duration-300" [style.width.%]="(pasoActual() / 3) * 100"></div>
+                </div>
             </div>
 
             @if (errorMsg()) {
-            <div class="profile-modal-error">
+            <div class="profile-modal-error mt-2">
                 <i class="fa-solid fa-triangle-exclamation"></i>
                 <span>{{ errorMsg() }}</span>
             </div>
             }
 
-            <form [formGroup]="perfilForm" (ngSubmit)="onSubmit()" class="profile-modal-form">
-                <div class="form-grid">
+            <form [formGroup]="perfilForm" (ngSubmit)="onSubmit()" class="profile-modal-form mt-2">
+                
+                <!-- ── PASO 1: VERIFICACIÓN ── -->
+                @if (pasoActual() === 1) {
+                    <div class="space-y-4">
+                        <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200">
+                            <i class="fa-solid fa-shield-halved mr-1.5 text-violet-600"></i> Verificación de contacto de registro
+                        </h3>
 
-                    <!-- Correo Electrónico -->
-                    <div class="form-group">
-                        <label for="correo">
-                            Correo Electrónico
-                            @if (correoVerificado()) {
-                            <span class="phone-verified-badge">
-                                <i class="fa-solid fa-circle-check"></i> Verificado
-                            </span>
-                            }
-                        </label>
-                        <div class="phone-input-wrapper">
-                            <input type="email" id="correo" formControlName="correo" class="form-control"
-                                [readonly]="correoVerificado() || metodoRegistro() === 'CORREO'" />
-                            @if (metodoRegistro() === 'CELULAR') {
-                            <button type="button" class="btn-verify-phone"
-                                [disabled]="correoVerificado() || cargandoOtpCorreo() || perfilForm.get('correo')?.invalid"
-                                (click)="solicitarVerificacionCorreo()">
-                                @if (cargandoOtpCorreo()) {
-                                <i class="fa-solid fa-circle-notch fa-spin"></i>
-                                } @else if (correoVerificado()) {
-                                <i class="fa-solid fa-check"></i>
-                                } @else {
-                                Verificar
-                                }
-                            </button>
-                            }
-                        </div>
-                        @if (perfilForm.get('correo')?.touched && perfilForm.get('correo')?.invalid) {
-                        <span class="invalid-feedback">Ingresa un correo electrónico válido.</span>
-                        }
-                        @if (metodoRegistro() === 'CELULAR' && !correoVerificado() && !correoEnviado()) {
-                        <small class="help-text">Valida tu correo antes de guardar.</small>
-                        }
-
-                        <!-- Entrada para código OTP de correo -->
-                        @if (correoEnviado() && !correoVerificado()) {
-                        <div class="otp-verification-container">
-                            <label for="codigoOtpCorreo">Ingresar código de verificación</label>
-                            <input type="text" id="codigoOtpCorreo" placeholder="Ingrese el código (Ej: 1234)"
-                                class="form-control" #otpCorreoInput (input)="validarCodigoCorreo(otpCorreoInput.value)"
-                                maxlength="4" />
-                            <small class="help-text">Digite el código enviado (código de prueba: 1234).</small>
-                            @if (errorOtpCorreo()) {
-                            <span class="invalid-feedback block">{{ errorOtpCorreo() }}</span>
-                            }
-                        </div>
-                        }
-                    </div>
-
-                    <!-- DNI -->
-                    <div class="form-group">
-                        <label for="dni">
-                            DNI (8 dígitos)
-                            @if (cargandoDni()) {
-                            <span class="loading-spinner-inline">
-                                <i class="fa-solid fa-circle-notch fa-spin"></i> Consultando...
-                            </span>
-                            }
-                        </label>
-                        <input type="text" id="dni" formControlName="dni" maxlength="8" placeholder="Ingresa tu DNI"
-                            class="form-control"
-                            [class.is-invalid]="perfilForm.get('dni')?.touched && perfilForm.get('dni')?.invalid" />
-                        @if (perfilForm.get('dni')?.touched && perfilForm.get('dni')?.invalid) {
-                        <span class="invalid-feedback">Ingresa un DNI válido de 8 dígitos.</span>
-                        } @else {
-                        <small class="help-text">Autocompleta tus nombres con el DNI.</small>
-                        }
-                    </div>
-
-                    <!-- Nombres -->
-                    <div class="form-group">
-                        <label for="nombres">Nombres</label>
-                        <input type="text" id="nombres" formControlName="nombres" placeholder="Nombres completos"
-                            class="form-control"
-                            [class.is-invalid]="perfilForm.get('nombres')?.touched && perfilForm.get('nombres')?.invalid" />
-                        @if (perfilForm.get('nombres')?.touched && perfilForm.get('nombres')?.invalid) {
-                        <span class="invalid-feedback">Los nombres son obligatorios.</span>
-                        }
-                    </div>
-
-                    <!-- Apellidos -->
-                    <div class="form-group">
-                        <label for="apellidos">Apellidos</label>
-                        <input type="text" id="apellidos" formControlName="apellidos" placeholder="Apellidos completos"
-                            class="form-control"
-                            [class.is-invalid]="perfilForm.get('apellidos')?.touched && perfilForm.get('apellidos')?.invalid" />
-                        @if (perfilForm.get('apellidos')?.touched && perfilForm.get('apellidos')?.invalid) {
-                        <span class="invalid-feedback">Los apellidos son obligatorios.</span>
-                        }
-                    </div>
-
-                    <!-- Teléfono -->
-                    <div class="form-group">
-                        <label for="telefono">
-                            Teléfono / Celular
-                            @if (telefonoVerificado()) {
-                            <span class="phone-verified-badge">
-                                <i class="fa-solid fa-circle-check"></i> Verificado
-                            </span>
-                            }
-                        </label>
-                        <div class="phone-input-wrapper">
-                            <input type="tel" id="telefono" formControlName="telefono" placeholder="Ej: 987654321"
-                                class="form-control"
-                                [class.is-invalid]="(perfilForm.get('telefono')?.touched && perfilForm.get('telefono')?.invalid) || perfilForm.get('telefono')?.hasError('invalidPeruPhone')"
-                                [readonly]="telefonoVerificado() || metodoRegistro() === 'CELULAR'" />
-                            @if (metodoRegistro() === 'CORREO') {
-                            <button type="button" class="btn-verify-phone"
-                                [disabled]="telefonoVerificado() || cargandoOtp() || perfilForm.get('telefono')?.invalid"
-                                (click)="solicitarVerificacionTelefono()">
-                                @if (cargandoOtp()) {
-                                <i class="fa-solid fa-circle-notch fa-spin"></i>
-                                } @else if (telefonoVerificado()) {
-                                <i class="fa-solid fa-check"></i>
-                                } @else {
-                                Verificar
-                                }
-                            </button>
-                            }
-                        </div>
-                        @if (perfilForm.get('telefono')?.touched && perfilForm.get('telefono')?.invalid) {
-                        <span class="invalid-feedback">Ingresa un número telefónico válido.</span>
-                        }
-                        @if (perfilForm.get('telefono')?.hasError('invalidPeruPhone')) {
-                        <span class="invalid-feedback">Debe tener exactamente 9 dígitos.</span>
-                        } @else if (metodoRegistro() === 'CORREO' && !telefonoVerificado() && !telefonoEnviado()) {
-                        <small class="help-text">Valida tu número antes de guardar.</small>
-                        }
-
-                        <!-- Entrada para código OTP -->
-                        @if (telefonoEnviado() && !telefonoVerificado()) {
-                        <div class="otp-verification-container">
-                            <label for="codigoOtp">Ingresar código de verificación</label>
-                            <input type="text" id="codigoOtp" placeholder="Ingrese el código (Ej: 1234)"
-                                class="form-control" #otpInput (input)="validarCodigoTelefono(otpInput.value)"
-                                maxlength="4" />
-                            <small class="help-text">Digite el código enviado (código de prueba: 1234).</small>
-                            @if (errorOtp()) {
-                            <span class="invalid-feedback block">{{ errorOtp() }}</span>
-                            }
-                        </div>
-                        }
-                    </div>
-
-                    <!-- Género -->
-                    <div class="form-group">
-                        <label for="genero">Género</label>
-                        <select id="genero" formControlName="genero" class="form-control"
-                            [class.is-invalid]="perfilForm.get('genero')?.touched && perfilForm.get('genero')?.invalid">
-                            <option value="" disabled selected>Selecciona tu género</option>
-                            <option value="MASCULINO">Masculino</option>
-                            <option value="FEMENINO">Femenino</option>
-                            <option value="OTRO">Otro</option>
-                            <option value="PREFIERO_NO_DECIR">Prefiero no decirlo</option>
-                        </select>
-                        @if (perfilForm.get('genero')?.touched && perfilForm.get('genero')?.invalid) {
-                        <span class="invalid-feedback">Selecciona un género de la lista.</span>
-                        }
-                    </div>
-
-                    <!-- Fecha de Nacimiento -->
-                    <div class="form-group">
-                        <label for="fechaNacimiento">Fecha de Nacimiento</label>
-                        <input type="date" id="fechaNacimiento" formControlName="fechaNacimiento"
-                            [max]="maxFechaNacimiento" class="form-control"
-                            [class.is-invalid]="perfilForm.get('fechaNacimiento')?.touched && perfilForm.get('fechaNacimiento')?.invalid" />
-                        @if (perfilForm.get('fechaNacimiento')?.touched && perfilForm.get('fechaNacimiento')?.invalid) {
-                        <span class="invalid-feedback">La fecha de nacimiento es obligatoria.</span>
-                        }
-                    </div>
-
-                    <!-- Edad Calculada (Sólo lectura) -->
-                    <div class="form-group">
-                        <label>Edad Calculada</label>
-                        <div class="form-control-static">
-                            @if (edadCalculada() !== null) {
-                            <span class="age-badge" [class.age-badge--valid]="edadCalculada()! >= 18">
-                                {{ edadCalculada() }} años
-                                @if (edadCalculada()! < 18) { (Menor de edad) } </span>
-                                    } @else {
-                                    <span class="text-muted">Calculando...</span>
+                        <!-- Correo Electrónico (para validar si se logueó con teléfono) -->
+                        @if (metodoRegistro() === 'CELULAR') {
+                            <div class="form-group">
+                                <label for="correo">
+                                    Validar Correo Electrónico
+                                    @if (correoVerificado()) {
+                                    <span class="phone-verified-badge">
+                                        <i class="fa-solid fa-circle-check"></i> Verificado
+                                    </span>
                                     }
+                                </label>
+                                <div class="phone-input-wrapper">
+                                    <input type="email" id="correo" formControlName="correo" class="form-control"
+                                        [readonly]="correoVerificado()" placeholder="Ej: usuario@correo.com" />
+                                    <button type="button" class="btn-verify-phone"
+                                        [disabled]="correoVerificado() || cargandoOtpCorreo() || perfilForm.get('correo')?.invalid"
+                                        (click)="solicitarVerificacionCorreo()">
+                                        @if (cargandoOtpCorreo()) {
+                                        <i class="fa-solid fa-circle-notch fa-spin"></i>
+                                        } @else if (correoVerificado()) {
+                                        <i class="fa-solid fa-check"></i>
+                                        } @else {
+                                        Verificar
+                                        }
+                                    </button>
+                                </div>
+                                @if (perfilForm.get('correo')?.touched && perfilForm.get('correo')?.invalid) {
+                                <span class="invalid-feedback">Ingresa un correo electrónico válido.</span>
+                                }
+                                @if (!correoVerificado() && !correoEnviado()) {
+                                <small class="help-text">Valida tu correo antes de continuar.</small>
+                                }
+
+                                <!-- OTP Correo -->
+                                @if (correoEnviado() && !correoVerificado()) {
+                                <div class="otp-verification-container">
+                                    <label for="codigoOtpCorreo">Ingresar código de verificación</label>
+                                    <input type="text" id="codigoOtpCorreo" placeholder="Ingrese el código (Ej: 1234)"
+                                        class="form-control" #otpCorreoInput (input)="validarCodigoCorreo(otpCorreoInput.value)"
+                                        maxlength="4" />
+                                    <small class="help-text">Digite el código enviado (código de prueba: 1234).</small>
+                                    @if (errorOtpCorreo()) {
+                                    <span class="invalid-feedback block">{{ errorOtpCorreo() }}</span>
+                                    }
+                                </div>
+                                }
+                            </div>
+                        }
+
+                        <!-- Teléfono / Celular (para validar si se logueó con correo) -->
+                        @if (metodoRegistro() === 'CORREO') {
+                            <div class="form-group">
+                                <label for="telefono">
+                                    Validar Teléfono / Celular
+                                    @if (telefonoVerificado()) {
+                                    <span class="phone-verified-badge">
+                                        <i class="fa-solid fa-circle-check"></i> Verificado
+                                    </span>
+                                    }
+                                </label>
+                                <div class="phone-input-wrapper">
+                                    <input type="tel" id="telefono" formControlName="telefono" placeholder="Ej: 987654321"
+                                        class="form-control"
+                                        [class.is-invalid]="(perfilForm.get('telefono')?.touched && perfilForm.get('telefono')?.invalid) || perfilForm.get('telefono')?.hasError('invalidPeruPhone')"
+                                        [readonly]="telefonoVerificado()" />
+                                    <button type="button" class="btn-verify-phone"
+                                        [disabled]="telefonoVerificado() || cargandoOtp() || perfilForm.get('telefono')?.invalid"
+                                        (click)="solicitarVerificacionTelefono()">
+                                        @if (cargandoOtp()) {
+                                        <i class="fa-solid fa-circle-notch fa-spin"></i>
+                                        } @else if (telefonoVerificado()) {
+                                        <i class="fa-solid fa-check"></i>
+                                        } @else {
+                                        Verificar
+                                        }
+                                    </button>
+                                </div>
+                                @if (perfilForm.get('telefono')?.touched && perfilForm.get('telefono')?.invalid) {
+                                <span class="invalid-feedback">Ingresa un número telefónico válido.</span>
+                                }
+                                @if (perfilForm.get('telefono')?.hasError('invalidPeruPhone')) {
+                                <span class="invalid-feedback">Debe tener exactamente 9 dígitos.</span>
+                                } @else if (!telefonoVerificado() && !telefonoEnviado()) {
+                                <small class="help-text">Valida tu número antes de continuar.</small>
+                                }
+
+                                <!-- OTP Celular -->
+                                @if (telefonoEnviado() && !telefonoVerificado()) {
+                                <div class="otp-verification-container">
+                                    <label for="codigoOtp">Ingresar código de verificación</label>
+                                    <input type="text" id="codigoOtp" placeholder="Ingrese el código (Ej: 1234)"
+                                        class="form-control" #otpInput (input)="validarCodigoTelefono(otpInput.value)"
+                                        maxlength="4" />
+                                    <small class="help-text">Digite el código enviado (código de prueba: 1234).</small>
+                                    @if (errorOtp()) {
+                                    <span class="invalid-feedback block">{{ errorOtp() }}</span>
+                                    }
+                                </div>
+                                }
+                            </div>
+                        }
+
+                        <!-- Info del registro inicial -->
+                        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 dark:bg-slate-800/40 dark:border-slate-700/60 mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                            <i class="fa-solid fa-info-circle text-violet-500 mr-1.5"></i>
+                            Dado que te registraste usando tu {{ metodoRegistro() === 'CORREO' ? 'correo electrónico' : 'celular' }}, necesitamos que valides tu segundo método de contacto como medida de seguridad para activar tu perfil.
                         </div>
                     </div>
+                }
 
-                    <!-- País -->
-                    <div class="form-group">
-                        <label for="pais">País</label>
-                        <input type="text" id="pais" formControlName="pais" placeholder="Ej: Perú, Colombia"
-                            class="form-control" maxlength="20"
-                            [class.is-invalid]="perfilForm.get('pais')?.touched && perfilForm.get('pais')?.invalid" />
-                        @if (perfilForm.get('pais')?.touched && perfilForm.get('pais')?.invalid) {
-                        <span class="invalid-feedback">El país es obligatorio.</span>
+                <!-- ── PASO 2: DATOS DE IDENTIDAD ── -->
+                @if (pasoActual() === 2) {
+                    <div class="space-y-4">
+                        <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200">
+                            <i class="fa-solid fa-address-card mr-1.5 text-violet-600"></i> Datos de Identificación Personal
+                        </h3>
+
+                        <div class="form-grid">
+                            <!-- DNI -->
+                            <div class="form-group">
+                                <label for="dni">
+                                    DNI (8 dígitos)
+                                    @if (cargandoDni()) {
+                                    <span class="loading-spinner-inline">
+                                        <i class="fa-solid fa-circle-notch fa-spin"></i> Consultando...
+                                    </span>
+                                    }
+                                </label>
+                                <input type="text" id="dni" formControlName="dni" maxlength="8" placeholder="Ingresa tu DNI"
+                                    class="form-control"
+                                    [class.is-invalid]="perfilForm.get('dni')?.touched && perfilForm.get('dni')?.invalid" />
+                                @if (perfilForm.get('dni')?.touched && perfilForm.get('dni')?.invalid) {
+                                <span class="invalid-feedback">Ingresa un DNI válido de 8 dígitos.</span>
+                                }
+                            </div>
+
+                            <!-- Edad -->
+                            <div class="form-group">
+                                <label for="edad">Edad (Años)</label>
+                                <input type="number" id="edad" formControlName="edad" placeholder="Ej: 25"
+                                    class="form-control" min="18" max="120"
+                                    [class.is-invalid]="perfilForm.get('edad')?.touched && perfilForm.get('edad')?.invalid" />
+                                @if (perfilForm.get('edad')?.touched && perfilForm.get('edad')?.invalid) {
+                                    <span class="invalid-feedback">Debes ser mayor de 18 años.</span>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Cuadro de Visualización Previa de Nombres y Apellidos -->
+                        @if (perfilForm.get('nombres')?.value || perfilForm.get('apellidos')?.value) {
+                            <div class="rounded-2xl border border-dashed border-violet-200 bg-violet-50/20 p-4 mt-2 dark:border-violet-500/25 dark:bg-violet-950/10">
+                                <span class="text-[11px] font-extrabold uppercase tracking-wider text-violet-600 dark:text-violet-400">
+                                    <i class="fa-solid fa-fingerprint mr-1"></i> Previsualización DNI (RENIEC / API PERÚ):
+                                </span>
+                                <div class="grid grid-cols-2 gap-4 mt-2">
+                                    <div>
+                                        <small class="text-xs text-slate-500 dark:text-slate-400">Nombres Completos</small>
+                                        <p class="text-sm font-bold text-slate-800 dark:text-slate-200 mt-0.5">{{ perfilForm.get('nombres')?.value }}</p>
+                                    </div>
+                                    <div>
+                                        <small class="text-xs text-slate-500 dark:text-slate-400">Apellidos Paterno y Materno</small>
+                                        <p class="text-sm font-bold text-slate-800 dark:text-slate-200 mt-0.5">{{ perfilForm.get('apellidos')?.value }}</p>
+                                    </div>
+                                </div>
+                            </div>
                         }
+
+                        <!-- Género -->
+                        <div class="form-group mt-3">
+                            <label for="genero">Género</label>
+                            <select id="genero" formControlName="genero" class="form-control"
+                                [class.is-invalid]="perfilForm.get('genero')?.touched && perfilForm.get('genero')?.invalid">
+                                <option value="" disabled selected>Selecciona tu género</option>
+                                <option value="MASCULINO">Masculino</option>
+                                <option value="FEMENINO">Femenino</option>
+                                <option value="OTRO">Otro</option>
+                                <option value="PREFIERO_NO_DECIR">Prefiero no decirlo</option>
+                            </select>
+                            @if (perfilForm.get('genero')?.touched && perfilForm.get('genero')?.invalid) {
+                            <span class="invalid-feedback">Selecciona un género de la lista.</span>
+                            }
+                        </div>
                     </div>
+                }
 
-                    <!-- Ciudad -->
-                    <div class="form-group">
-                        <label for="ciudad">Ciudad</label>
-                        <input type="text" id="ciudad" formControlName="ciudad" placeholder="Ej: Lima, Bogotá"
-                            class="form-control" maxlength="100"
-                            [class.is-invalid]="perfilForm.get('ciudad')?.touched && perfilForm.get('ciudad')?.invalid" />
-                        @if (perfilForm.get('ciudad')?.touched && perfilForm.get('ciudad')?.invalid) {
-                        <span class="invalid-feedback">La ciudad es obligatoria.</span>
-                        }
+                <!-- ── PASO 3: UBICACIÓN Y ENVÍO ── -->
+                @if (pasoActual() === 3) {
+                    <div class="space-y-4">
+                        <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200">
+                            <i class="fa-solid fa-map-location-dot mr-1.5 text-violet-600"></i> Datos de Ubicación Geográfica
+                        </h3>
+
+                        <div class="form-grid">
+                            <!-- País -->
+                            <div class="form-group">
+                                <label for="pais">País</label>
+                                <input type="text" id="pais" formControlName="pais" placeholder="Ej: Perú, Colombia"
+                                    class="form-control" maxlength="20"
+                                    [class.is-invalid]="perfilForm.get('pais')?.touched && perfilForm.get('pais')?.invalid" />
+                                @if (perfilForm.get('pais')?.touched && perfilForm.get('pais')?.invalid) {
+                                <span class="invalid-feedback">El país es obligatorio.</span>
+                                }
+                            </div>
+
+                            <!-- Ciudad -->
+                            <div class="form-group">
+                                <label for="ciudad">Ciudad</label>
+                                <input type="text" id="ciudad" formControlName="ciudad" placeholder="Ej: Lima, Bogotá"
+                                    class="form-control" maxlength="100"
+                                    [class.is-invalid]="perfilForm.get('ciudad')?.touched && perfilForm.get('ciudad')?.invalid" />
+                                @if (perfilForm.get('ciudad')?.touched && perfilForm.get('ciudad')?.invalid) {
+                                <span class="invalid-feedback">La ciudad es obligatoria.</span>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Resumen final -->
+                        <div class="p-3.5 rounded-xl border border-emerald-100 bg-emerald-50/20 dark:border-emerald-500/20 dark:bg-emerald-950/10 mt-3 text-xs leading-relaxed text-emerald-800 dark:text-emerald-300">
+                            <i class="fa-solid fa-circle-check text-emerald-600 dark:text-emerald-400 mr-1.5"></i>
+                            ¡Listo! Todos los campos del paso 1 y paso 2 están validados correctamente. Presiona "Activar y Guardar Perfil" para registrar tus datos.
+                        </div>
                     </div>
+                }
 
-                </div>
+                <!-- Botones de Navegación del Wizard -->
+                <div class="profile-modal-actions flex justify-between items-center gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    
+                    <!-- Botón de ir Atrás -->
+                    @if (pasoActual() > 1) {
+                        <button type="button" class="px-5 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800 text-sm font-semibold flex items-center gap-1.5" (click)="irAtras()">
+                            <i class="fa-solid fa-arrow-left"></i> Atrás
+                        </button>
+                    } @else {
+                        <div></div> <!-- Espaciador -->
+                    }
 
-                <div class="profile-modal-actions">
-                    <button type="submit" class="btn-primary btn-submit-profile"
-                        [disabled]="perfilForm.invalid || !correoVerificado() || !telefonoVerificado() || guardando() || (edadCalculada() !== null && edadCalculada()! < 18)">
-                        @if (guardando()) {
-                        <i class="fa-solid fa-spinner fa-spin"></i> Guardando...
-                        } @else {
-                        <i class="fa-solid fa-check"></i> Activar y Guardar Perfil
-                        }
-                    </button>
+                    <!-- Botón de ir Adelante / Guardar final -->
+                    @if (pasoActual() < 3) {
+                        <button type="button" class="btn-primary px-6 py-2 rounded-xl text-sm font-extrabold flex items-center gap-1.5"
+                            [disabled]="pasoActual() === 1 ? !paso1Valido() : !paso2Valido()"
+                            (click)="irSiguiente()">
+                            Siguiente <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    } @else {
+                        <button type="submit" class="btn-primary btn-submit-profile px-6 py-2.5 rounded-xl text-sm font-extrabold flex items-center justify-center gap-1.5 shadow-[0_10px_24px_rgba(91,106,240,.35)]"
+                            [disabled]="perfilForm.invalid || !correoVerificado() || !telefonoVerificado() || guardando()">
+                            @if (guardando()) {
+                                <i class="fa-solid fa-spinner fa-spin"></i> Activando...
+                            } @else {
+                                <i class="fa-solid fa-check-double"></i> Activar y Guardar Perfil
+                            }
+                        </button>
+                    }
                 </div>
 
             </form>

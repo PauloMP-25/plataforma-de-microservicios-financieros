@@ -25,10 +25,12 @@ export class ModalCompletarPerfil implements OnInit {
 
     perfilForm!: FormGroup;
 
+    // Wizard Step state (1: Verification, 2: Identity, 3: Location)
+    readonly pasoActual = signal(1);
+
     // States
     readonly cargandoDni = signal(false);
     readonly guardando = signal(false);
-    readonly edadCalculada = signal<number | null>(null);
     readonly errorMsg = signal<string | null>(null);
     readonly correoUsuario = signal<string>('');
 
@@ -46,6 +48,30 @@ export class ModalCompletarPerfil implements OnInit {
     readonly correoEnviado = signal(false);
     readonly correoVerificado = signal(false);
     readonly errorOtpCorreo = signal('');
+
+    // Helper validation checks for each step
+    readonly paso1Valido = computed(() => {
+        if (this.metodoRegistro() === 'CORREO') {
+            return this.telefonoVerificado() && this.perfilForm.get('telefono')?.valid;
+        } else {
+            return this.correoVerificado() && this.perfilForm.get('correo')?.valid;
+        }
+    });
+
+    readonly paso2Valido = computed(() => {
+        const dniVal = this.perfilForm.get('dni')?.valid;
+        const nombresVal = this.perfilForm.get('nombres')?.valid;
+        const apellidosVal = this.perfilForm.get('apellidos')?.valid;
+        const generoVal = this.perfilForm.get('genero')?.valid;
+        const edadVal = this.perfilForm.get('edad')?.valid;
+        return !!(dniVal && nombresVal && apellidosVal && generoVal && edadVal);
+    });
+
+    readonly paso3Valido = computed(() => {
+        const paisVal = this.perfilForm.get('pais')?.valid;
+        const ciudadVal = this.perfilForm.get('ciudad')?.valid;
+        return !!(paisVal && ciudadVal);
+    });
 
     ngOnInit(): void {
         const usuario = this.authService.usuario();
@@ -72,7 +98,7 @@ export class ModalCompletarPerfil implements OnInit {
             genero: ['', [Validators.required]],
             pais: ['', [Validators.required, Validators.maxLength(20)]],
             ciudad: ['', [Validators.required, Validators.maxLength(100)]],
-            fechaNacimiento: ['', [Validators.required]]
+            edad: ['', [Validators.required, Validators.min(18), Validators.max(120)]]
         });
 
         // Initialize values based on verification method
@@ -91,11 +117,20 @@ export class ModalCompletarPerfil implements OnInit {
                 this.consultarDniApiPeru(val);
             }
         });
+    }
 
-        // Listen to birth date to calculate age
-        this.perfilForm.get('fechaNacimiento')?.valueChanges.subscribe(val => {
-            this.actualizarEdad(val);
-        });
+    irSiguiente(): void {
+        if (this.pasoActual() === 1 && this.paso1Valido()) {
+            this.pasoActual.set(2);
+        } else if (this.pasoActual() === 2 && this.paso2Valido()) {
+            this.pasoActual.set(3);
+        }
+    }
+
+    irAtras(): void {
+        if (this.pasoActual() > 1) {
+            this.pasoActual.update(p => p - 1);
+        }
     }
 
     // Consultar DNI real usando API Perú con fallback a simulación local
@@ -156,26 +191,6 @@ export class ModalCompletarPerfil implements OnInit {
                 apellidos: apellidosMock[indexApellidos]
             });
         }, 1000);
-    }
-
-    // Calculate age automatically on date change
-    actualizarEdad(fechaStr: string): void {
-        if (!fechaStr) {
-            this.edadCalculada.set(null);
-            return;
-        }
-
-        const nacimiento = new Date(fechaStr);
-        const hoy = new Date();
-
-        let edad = hoy.getFullYear() - nacimiento.getFullYear();
-        const mes = hoy.getMonth() - nacimiento.getMonth();
-
-        if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
-            edad--;
-        }
-
-        this.edadCalculada.set(edad >= 0 ? edad : 0);
     }
 
     // Solicitar verificación de teléfono simulada (OTP)
@@ -257,8 +272,10 @@ export class ModalCompletarPerfil implements OnInit {
             return;
         }
 
-        const edad = this.edadCalculada();
-        if (edad === null || edad < 18) {
+        const rawForm = this.perfilForm.getRawValue();
+        const edad = Number(rawForm.edad);
+
+        if (Number.isNaN(edad) || edad < 18) {
             this.errorMsg.set('Debes tener al menos 18 años para completar tu perfil.');
             return;
         }
@@ -266,7 +283,6 @@ export class ModalCompletarPerfil implements OnInit {
         this.guardando.set(true);
         this.errorMsg.set(null);
 
-        const rawForm = this.perfilForm.getRawValue();
         const payload: SolicitudDatosPersonales = {
             dni: rawForm.dni,
             nombres: rawForm.nombres,
@@ -294,13 +310,5 @@ export class ModalCompletarPerfil implements OnInit {
                 this.guardando.set(false);
             }
         });
-    }
-
-    get maxFechaNacimiento(): string {
-        const hoy = new Date();
-        const maxAnio = hoy.getFullYear() - 18;
-        const mes = String(hoy.getMonth() + 1).padStart(2, '0');
-        const dia = String(hoy.getDate()).padStart(2, '0');
-        return `${maxAnio}-${mes}-${dia}`;
     }
 }
