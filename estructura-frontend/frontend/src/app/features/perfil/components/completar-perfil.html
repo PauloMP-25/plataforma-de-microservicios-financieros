@@ -298,9 +298,13 @@
                             <!-- País -->
                             <div class="form-group">
                                 <label for="pais">País</label>
-                                <input type="text" id="pais" formControlName="pais" placeholder="Ej: Perú, Colombia"
-                                    class="form-control" maxlength="20"
-                                    [class.is-invalid]="perfilForm.get('pais')?.touched && perfilForm.get('pais')?.invalid" />
+                                <select id="pais" formControlName="pais" class="form-control"
+                                    [class.is-invalid]="perfilForm.get('pais')?.touched && perfilForm.get('pais')?.invalid">
+                                    <option value="" disabled selected>Selecciona tu país</option>
+                                    @for (p of paises; track p.codigo) {
+                                        <option [value]="p.nombre">{{ p.nombre }}</option>
+                                    }
+                                </select>
                                 @if (perfilForm.get('pais')?.touched && perfilForm.get('pais')?.invalid) {
                                 <span class="invalid-feedback">El país es obligatorio.</span>
                                 }
@@ -309,9 +313,13 @@
                             <!-- Ciudad -->
                             <div class="form-group">
                                 <label for="ciudad">Ciudad</label>
-                                <input type="text" id="ciudad" formControlName="ciudad" placeholder="Ej: Lima, Bogotá"
-                                    class="form-control" maxlength="100"
-                                    [class.is-invalid]="perfilForm.get('ciudad')?.touched && perfilForm.get('ciudad')?.invalid" />
+                                <select id="ciudad" formControlName="ciudad" class="form-control"
+                                    [class.is-invalid]="perfilForm.get('ciudad')?.touched && perfilForm.get('ciudad')?.invalid">
+                                    <option value="" disabled selected>Selecciona tu ciudad</option>
+                                    @for (c of ciudadesDisponibles(); track c) {
+                                        <option [value]="c">{{ c }}</option>
+                                    }
+                                </select>
                                 @if (perfilForm.get('ciudad')?.touched && perfilForm.get('ciudad')?.invalid) {
                                 <span class="invalid-feedback">La ciudad es obligatoria.</span>
                                 }
