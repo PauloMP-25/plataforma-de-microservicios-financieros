@@ -81,26 +81,7 @@ export class ChartPaymentMethodsComponent implements AfterViewInit, OnDestroy {
             labels: {
               color: textColor,
               font: { family: 'Inter, sans-serif', size: 12, weight: 'bold' },
-              padding: 12,
-              generateLabels: (chart) => {
-                const data = chart.data;
-                if (data.labels?.length && data.datasets.length) {
-                  return data.labels.map((label, i) => {
-                    const meta = chart.getDatasetMeta(0);
-                    const style = meta.controller.getStyle(i, false) as any;
-                    const val = data.datasets[0].data[i] as number;
-                    return {
-                      text: `${label}`,
-                      fillStyle: style['backgroundColor'] as string,
-                      strokeStyle: style['borderColor'] as string,
-                      lineWidth: style['borderWidth'] as number,
-                      hidden: !chart.getDataVisibility(i),
-                      index: i
-                    };
-                  });
-                }
-                return [];
-              }
+              padding: 12
             }
           },
           tooltip: {

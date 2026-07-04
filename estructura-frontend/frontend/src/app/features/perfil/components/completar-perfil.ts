@@ -535,10 +535,12 @@ export class ModalCompletarPerfil implements OnInit {
                 this.completado.emit();
             },
             error: (err: any) => {
-                console.warn('El backend de perfiles está offline o retornó error. Procediendo con simulación exitosa en modo pruebas/desarrollo:', err);
-                this.dashboardState.invalidarCache();
                 this.guardando.set(false);
-                this.completado.emit();
+                let mensajeError = 'Error al guardar el perfil.';
+                if (err.error && typeof err.error === 'object') {
+                    mensajeError = err.error.mensaje || err.error.message || err.error.detail || 'Verifica los datos ingresados.';
+                }
+                this.errorMsg.set(mensajeError);
             }
         });
     }

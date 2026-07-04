@@ -13,6 +13,7 @@ import { FinancieroService } from '../../../core/services/Financiero.service';
 import { AppEventBus } from '../../../core/services/app-event-bus.service';
 import { Transacciones } from '../../../core/services/transacciones';
 import { IaService } from '../../../core/services/ia.service';
+import { DashboardStateService } from '../../../core/services/dashboard-state.service';
 
 interface Breadcrumb  { label: string; route?: string; }
 
@@ -47,6 +48,7 @@ const FLOAT_MSGS = [
 export class Header implements OnInit, OnDestroy {
   public readonly iaService = inject(IaService);
   public readonly avatarService = inject(AvatarService);
+  public readonly dashboardState = inject(DashboardStateService);
 
 
   pageTitle   = 'Resumen';
@@ -191,15 +193,15 @@ export class Header implements OnInit, OnDestroy {
   }
 
   get totalIngresosMes(): number {
-    return this.financiero.resumen()?.totalIngresos ?? 3850;
+    return this.dashboardState.resumen()?.totalIngresos ?? this.financiero.resumen()?.totalIngresos ?? 3850;
   }
 
   get totalGastosMes(): number {
-    return this.financiero.resumen()?.totalGastos ?? 2950;
+    return this.dashboardState.resumen()?.totalGastos ?? this.financiero.resumen()?.totalGastos ?? 2950;
   }
 
   get balanceActual(): number {
-    return this.totalIngresosMes - this.totalGastosMes;
+    return this.dashboardState.resumen()?.balance ?? (this.totalIngresosMes - this.totalGastosMes);
   }
 
   get saludTexto(): 'Buena' | 'Atención' | 'Crítica' {

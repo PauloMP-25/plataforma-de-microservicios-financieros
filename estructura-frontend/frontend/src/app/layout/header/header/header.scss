@@ -230,71 +230,69 @@ body.theme-dark {
 
   // BASE: garantiza que ningún pill quede invisible
   .metric-pill {
-    border-width: 2px !important;
+    border-width: 1px !important;
 
     .metric-label {
-      color: #f1f5f9 !important;
       font-weight: 800;
     }
 
     .metric-value {
-      color: #ffffff !important;
       font-weight: 900;
     }
   }
 
   .metric-pill--income {
-    background: #065f46 !important;
-    border-color: #34d399 !important;
+    background: rgba(52, 211, 153, 0.12) !important;
+    border-color: rgba(52, 211, 153, 0.3) !important;
 
-    .metric-icon { background: rgba(52, 211, 153, 0.22); color: #6ee7b7; }
+    .metric-icon { background: rgba(52, 211, 153, 0.2); color: #34d399; }
     .metric-label { color: #a7f3d0 !important; }
-    .metric-value { color: #6ee7b7 !important; }
+    .metric-value { color: #34d399 !important; }
   }
 
   .metric-pill--expense {
-    background: #7f1d1d !important;
-    border-color: #f87171 !important;
+    background: rgba(248, 113, 113, 0.12) !important;
+    border-color: rgba(248, 113, 113, 0.3) !important;
 
-    .metric-icon { background: rgba(248, 113, 113, 0.22); color: #fca5a5; }
+    .metric-icon { background: rgba(248, 113, 113, 0.2); color: #f87171; }
     .metric-label { color: #fecaca !important; }
-    .metric-value { color: #fca5a5 !important; }
+    .metric-value { color: #f87171 !important; }
   }
 
   .metric-pill--balance {
-    background: #1e3a5f !important;
-    border-color: #60a5fa !important;
+    background: rgba(96, 165, 250, 0.12) !important;
+    border-color: rgba(96, 165, 250, 0.3) !important;
 
-    .metric-icon { background: rgba(96, 165, 250, 0.22); color: #93c5fd; }
+    .metric-icon { background: rgba(96, 165, 250, 0.2); color: #60a5fa; }
     .metric-label { color: #bfdbfe !important; }
-    .metric-value { color: #93c5fd !important; }
+    .metric-value { color: #60a5fa !important; }
   }
 
   .metric-pill--streak {
-    background: #7c2d12 !important;
-    border-color: #fb923c !important;
+    background: rgba(251, 146, 60, 0.12) !important;
+    border-color: rgba(251, 146, 60, 0.3) !important;
 
-    .metric-icon { background: rgba(251, 146, 60, 0.22); color: #fdba74; }
+    .metric-icon { background: rgba(251, 146, 60, 0.2); color: #fb923c; }
     .metric-label { color: #fed7aa !important; }
-    .metric-value { color: #fdba74 !important; }
+    .metric-value { color: #fb923c !important; }
   }
 
   .metric-pill--ia-analitica {
-    background: #4c1d95 !important;
-    border-color: #a78bfa !important;
+    background: rgba(167, 139, 250, 0.12) !important;
+    border-color: rgba(167, 139, 250, 0.3) !important;
 
-    .metric-icon { background: rgba(167, 139, 250, 0.22); color: #c4b5fd; }
+    .metric-icon { background: rgba(167, 139, 250, 0.2); color: #a78bfa; }
     .metric-label { color: #ddd6fe !important; }
-    .metric-value { color: #c4b5fd !important; }
+    .metric-value { color: #a78bfa !important; }
   }
 
   .metric-pill--ia-clasificar {
-    background: #134e4a !important;
-    border-color: #2dd4bf !important;
+    background: rgba(45, 212, 191, 0.12) !important;
+    border-color: rgba(45, 212, 191, 0.3) !important;
 
-    .metric-icon { background: rgba(45, 212, 191, 0.22); color: #5eead4; }
+    .metric-icon { background: rgba(45, 212, 191, 0.2); color: #2dd4bf; }
     .metric-label { color: #ccfbf1 !important; }
-    .metric-value { color: #5eead4 !important; }
+    .metric-value { color: #2dd4bf !important; }
   }
 }
 

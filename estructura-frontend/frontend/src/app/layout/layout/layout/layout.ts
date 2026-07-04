@@ -28,12 +28,15 @@ export class Layout {
       this.perfilService.consultarPerfil(user.id).subscribe({
         next: (perfil) => {
           if (perfil && !perfil.datosCompletos) {
-            this.mostrarCompletarPerfil.set(true);
+            const hasShownModal = localStorage.getItem(`luka_modal_completar_${user.id}`);
+            if (!hasShownModal) {
+              this.mostrarCompletarPerfil.set(true);
+              localStorage.setItem(`luka_modal_completar_${user.id}`, 'true');
+            }
           }
         },
         error: (err) => {
           console.warn('[Layout] Error al consultar perfil para modal de bienvenida:', err);
-          this.mostrarCompletarPerfil.set(true);
         }
       });
     }

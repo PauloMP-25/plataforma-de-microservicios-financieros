@@ -95,9 +95,9 @@ export class DashboardStateService {
             desde: resumenBackend.desde,
             hasta: resumenBackend.hasta,
             tasaAhorro: resumenBackend.tasaAhorro,
-            gastoPromedioDiario: 0, 
-            cumplimientoPresupuesto: 0, 
-            proyeccionFinDeMes: 0,
+            gastoPromedioDiario: resumenBackend.gastoPromedioDiario || 0, 
+            cumplimientoPresupuesto: resumenBackend.cumplimientoPresupuesto ?? 0, 
+            proyeccionFinDeMes: resumenBackend.proyeccionFinDeMes || 0,
             totalIngresos: resumenBackend.totalIngresos,
             totalGastos: resumenBackend.totalGastos,
             balance: resumenBackend.balance
@@ -108,18 +108,24 @@ export class DashboardStateService {
 
         if (graficos.exito && graficos.datos) {
           this.flujoCaja.set(graficos.datos.flujoCaja || []);
-          
+
           const dist = (graficos.datos.distribucionGastos || [])
             .sort((a: any, b: any) => b.total - a.total)
             .slice(0, 5);
           this.distribucionGastos.set(dist);
+
+          // Heatmap: gastos por día de semana
+          this.heatmap.set(graficos.datos.heatmap || []);
+
+          // Comparativa histórica: año actual vs año anterior
+          this.comparativa.set(graficos.datos.comparativa || []);
+
+          // Métodos de pago
+          this.transaccionesMetodo.set(graficos.datos.transaccionesMetodo || []);
         }
 
-        // Limpiar arrays para que no muestren mockups residuales
-        this.heatmap.set([]);
+        // Metas: no vienen aún del backend — dejar vacío por ahora
         this.metas.set([]);
-        this.comparativa.set([]);
-        this.transaccionesMetodo.set([]);
 
         this.loading.set(false);
         this.initialLoadDone = true;

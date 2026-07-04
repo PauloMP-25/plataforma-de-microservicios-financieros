@@ -37,6 +37,50 @@ export class ChartDistributionComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  private getCategoriaColor(categoria: string): string {
+    const cat = categoria.toLowerCase().trim();
+    const colores: Record<string, string> = {
+      'vivienda': '#3b82f6', // Azul
+      'hogar': '#3b82f6',
+      'alimentación': '#ff7043', // Naranja
+      'alimentacion': '#ff7043',
+      'comida': '#ff7043',
+      'tecnología': '#8b5cf6', // Violeta
+      'tecnologia': '#8b5cf6',
+      'viajes': '#ef4444', // Rojo
+      'viaje': '#ef4444',
+      'educación': '#10b981', // Verde
+      'educacion': '#10b981',
+      'salud': '#06b6d4', // Celeste
+      'ropa y calzado': '#f59e0b', // Ámbar
+      'ropa': '#f59e0b',
+      'calzado': '#f59e0b',
+      'ocio': '#ec4899', // Rosado
+      'leisure': '#ec4899',
+      'entretenimiento': '#ec4899',
+      'suscripciones': '#6366f1', // Indigo
+      'suscripciones streaming': '#a855f7', // Púrpura
+      'servicios': '#14b8a6', // Teal
+      'transporte': '#0ea5e9', // Sky blue
+      'pasaje moto': '#26c6da',
+      'inversiones': '#10b981',
+      'transferencia': '#f59e0b',
+      'otros': '#859397',
+      'otros gastos': '#859397'
+    };
+
+    return colores[cat] || this.generarColorPorDefecto(cat);
+  }
+
+  private generarColorPorDefecto(str: string): string {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const h = Math.abs(hash % 360);
+    return `hsl(${h}, 65%, 55%)`;
+  }
+
   private inicializarGrafico(): void {
     const canvas = document.getElementById('distributionCanvas') as HTMLCanvasElement;
     if (!canvas) return;
@@ -54,7 +98,7 @@ export class ChartDistributionComponent implements AfterViewInit, OnDestroy {
         labels: data.map(d => d.categoria),
         datasets: [{
           data: data.map(d => d.total),
-          backgroundColor: data.map(d => d.color),
+          backgroundColor: data.map(d => this.getCategoriaColor(d.categoria)),
           borderWidth: 0,
           hoverOffset: 10
         }]
@@ -112,7 +156,7 @@ export class ChartDistributionComponent implements AfterViewInit, OnDestroy {
 
     this.chart.data.labels = data.map(d => d.categoria);
     this.chart.data.datasets[0].data = data.map(d => d.total);
-    this.chart.data.datasets[0].backgroundColor = data.map(d => d.color);
+    this.chart.data.datasets[0].backgroundColor = data.map(d => this.getCategoriaColor(d.categoria));
 
     if (this.chart.options.plugins?.legend?.labels) {
       this.chart.options.plugins.legend.labels.color = textColor;
