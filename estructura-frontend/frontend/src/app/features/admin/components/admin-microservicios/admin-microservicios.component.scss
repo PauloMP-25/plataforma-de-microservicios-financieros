@@ -1,0 +1,90 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.kpi-card {
+  padding: 1.25rem;
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.icon-container {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.service-card {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  
+  &:hover {
+    transform: translateX(4px);
+  }
+}
+
+/* LED Indicator Animation */
+.animate-pulse {
+  animation: pulseLed 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulseLed {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 8px currentColor;
+  }
+  50% {
+    opacity: .5;
+    transform: scale(0.92);
+    box-shadow: 0 0 2px currentColor;
+  }
+}
+
+/* Custom Scrollbar for Terminal style */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* Tema Claro overrides */
+.modo-claro {
+  .kpi-card {
+    background-color: #ffffff;
+    border-color: #e2e8f0;
+    
+    p {
+      color: #64748b;
+    }
+    
+    h3 {
+      color: #0f172a;
+    }
+  }
+
+  .service-card {
+    border-color: #e2e8f0;
+    
+    &:hover {
+      background-color: #f8fafc;
+    }
+  }
+}

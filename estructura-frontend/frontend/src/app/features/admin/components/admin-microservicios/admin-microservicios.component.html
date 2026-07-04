@@ -1,0 +1,194 @@
+<div class="space-y-6" [class.modo-claro]="modoClaro()">
+  <!-- KPIs del Estado de los Servicios -->
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
+    <!-- Totales -->
+    <div class="kpi-card border transition hover:-translate-y-0.5" 
+         [ngClass]="modoClaro() ? 'border-indigo-100 bg-white shadow-md' : 'border-white/10 bg-slate-900/90 shadow-2xl'">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-extrabold uppercase tracking-wider text-slate-400">Total Servicios</p>
+          <h3 class="mt-2 text-3xl font-black text-indigo-500">{{ kpis().totales }}</h3>
+        </div>
+        <div class="icon-container bg-indigo-500/10 text-indigo-500">
+          <i class="fa-solid fa-server text-xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Saludables -->
+    <div class="kpi-card border transition hover:-translate-y-0.5" 
+         [ngClass]="modoClaro() ? 'border-indigo-100 bg-white shadow-md' : 'border-white/10 bg-slate-900/90 shadow-2xl'">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-extrabold uppercase tracking-wider text-slate-400">Saludables</p>
+          <h3 class="mt-2 text-3xl font-black text-emerald-500">{{ kpis().saludables }}</h3>
+        </div>
+        <div class="icon-container bg-emerald-500/10 text-emerald-500">
+          <i class="fa-solid fa-circle-check text-xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Advertencias -->
+    <div class="kpi-card border transition hover:-translate-y-0.5" 
+         [ngClass]="modoClaro() ? 'border-indigo-100 bg-white shadow-md' : 'border-white/10 bg-slate-900/90 shadow-2xl'">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-extrabold uppercase tracking-wider text-slate-400">Advertencias</p>
+          <h3 class="mt-2 text-3xl font-black text-amber-500">{{ kpis().advertencias }}</h3>
+        </div>
+        <div class="icon-container bg-amber-500/10 text-amber-500">
+          <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Offline -->
+    <div class="kpi-card border transition hover:-translate-y-0.5" 
+         [ngClass]="modoClaro() ? 'border-indigo-100 bg-white shadow-md' : 'border-white/10 bg-slate-900/90 shadow-2xl'">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-extrabold uppercase tracking-wider text-slate-400">Fuera de Línea</p>
+          <h3 class="mt-2 text-3xl font-black text-red-500">{{ kpis().offline }}</h3>
+        </div>
+        <div class="icon-container bg-red-500/10 text-red-500">
+          <i class="fa-solid fa-circle-xmark text-xl"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenedor Principal (Grid Layout) -->
+  <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_480px]">
+    <!-- Panel Izquierdo: Lista de Microservicios -->
+    <article class="overflow-hidden rounded-[24px] border shadow-2xl"
+             [ngClass]="modoClaro() ? 'border-indigo-200 bg-white' : 'border-white/10 bg-[#0d1222]'">
+      <header class="flex items-center justify-between border-b px-6 py-5"
+              [ngClass]="modoClaro() ? 'border-indigo-100 bg-indigo-50/30' : 'border-white/10 bg-slate-950/20'">
+        <div>
+          <h3 class="font-heading text-lg font-extrabold" [ngClass]="modoClaro() ? 'text-slate-900' : 'text-white'">Estado Operativo</h3>
+          <p class="text-xs text-slate-400">Listado de microservicios con puertos y latencias estimadas.</p>
+        </div>
+        <button (click)="cargarServicios()" 
+                class="rounded-xl border px-3 py-2 text-xs font-bold transition hover:bg-white/15"
+                [ngClass]="modoClaro() ? 'border-slate-300 text-slate-700 bg-slate-50' : 'border-white/10 text-white bg-slate-900'">
+          <i class="fa-solid fa-rotate mr-1" [class.fa-spin]="cargandoServicios()"></i> Refrescar
+        </button>
+      </header>
+
+      <div class="p-5 space-y-4 max-h-[580px] overflow-y-auto">
+        <div *ngIf="cargandoServicios() && servicios().length === 0" class="text-center py-12 text-slate-500">
+          <i class="fa-solid fa-spinner fa-spin text-2xl mr-2 text-primary"></i> Cargando servicios...
+        </div>
+
+        <div *ngFor="let serv of servicios()" 
+             (click)="seleccionarServicio(serv)"
+             class="service-card border rounded-2xl p-4 flex items-center justify-between transition cursor-pointer hover:border-primary/50"
+             [ngClass]="[
+               modoClaro() ? 'border-slate-200 bg-slate-50/40 hover:bg-slate-50' : 'border-white/5 bg-slate-950/40 hover:bg-slate-900/60',
+               servicioSeleccionado()?.nombre === serv.nombre ? (modoClaro() ? 'border-indigo-400 bg-indigo-50/50' : 'border-primary/40 bg-primary/5') : ''
+             ]">
+          <div class="flex items-center gap-3">
+            <!-- LED Indicator -->
+            <span class="h-3 w-3 rounded-full shadow-lg shrink-0" [ngClass]="obtenerEstadoClase(serv.estado)"></span>
+            
+            <div>
+              <div class="flex items-center gap-2">
+                <h4 class="font-bold text-sm" [ngClass]="modoClaro() ? 'text-slate-900' : 'text-white'">{{ serv.nombre }}</h4>
+                <span class="font-mono text-xs text-slate-400 bg-white/5 border border-white/10 px-1.5 py-0.5 rounded">
+                  :{{ serv.puerto }}
+                </span>
+              </div>
+              <p class="text-xs text-slate-400 mt-1 leading-normal max-w-sm">{{ serv.descripcion }}</p>
+            </div>
+          </div>
+
+          <div class="text-right flex flex-col items-end gap-1.5 shrink-0">
+            <span class="font-mono text-xs font-bold" 
+                  [class.text-emerald-400]="serv.estado === 'healthy'"
+                  [class.text-amber-400]="serv.estado === 'warning'"
+                  [class.text-red-400]="serv.estado === 'down'">
+              {{ serv.latencia }}
+            </span>
+            <span class="text-[10px] font-extrabold uppercase tracking-wide px-2 py-0.5 rounded border"
+                  [ngClass]="{
+                    'bg-emerald-500/10 text-emerald-400 border-emerald-500/20': serv.estado === 'healthy',
+                    'bg-amber-500/10 text-amber-400 border-amber-500/20': serv.estado === 'warning',
+                    'bg-red-500/10 text-red-400 border-red-500/20': serv.estado === 'down'
+                  }">
+              {{ obtenerTextoEstado(serv.estado) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Panel Derecho: Visor de Logs estilo Terminal -->
+    <article class="overflow-hidden rounded-[24px] border shadow-2xl flex flex-col h-[670px]"
+             [ngClass]="modoClaro() ? 'border-indigo-200 bg-white' : 'border-white/10 bg-[#070b19]'">
+      <header class="border-b px-5 py-4 flex items-center justify-between"
+              [ngClass]="modoClaro() ? 'border-indigo-100 bg-indigo-50/30' : 'border-white/10 bg-slate-950/20'">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-terminal text-indigo-400"></i>
+          <div>
+            <h4 class="font-heading text-sm font-extrabold" [ngClass]="modoClaro() ? 'text-slate-900' : 'text-white'">
+              Consola de Logs
+            </h4>
+            <p class="text-[10px] text-slate-400 font-mono">
+              {{ servicioSeleccionado() ? servicioSeleccionado()?.nombre : 'Ningún servicio seleccionado' }}
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2" *ngIf="servicioSeleccionado() as serv">
+          <button (click)="cargarLogs(serv.nombre)" 
+                  title="Limpiar y Recargar Logs"
+                  class="rounded-lg border p-1.5 text-xs transition hover:bg-white/10"
+                  [ngClass]="modoClaro() ? 'border-slate-300 text-slate-700 bg-white' : 'border-white/10 text-slate-300 bg-slate-900'">
+            <i class="fa-solid fa-arrows-rotate" [class.fa-spin]="cargandoLogs()"></i>
+          </button>
+          
+          <button [disabled]="reinicioEnProgreso() !== null" 
+                  (click)="reiniciarServicio(serv)" 
+                  class="rounded-xl bg-danger/10 border border-danger/20 px-3 py-1.5 text-xs font-black text-danger transition hover:bg-danger hover:text-white disabled:opacity-40">
+            <i class="fa-solid fa-power-off mr-1" [class.fa-spin]="reinicioEnProgreso() === serv.nombre"></i>
+            {{ reinicioEnProgreso() === serv.nombre ? 'Reiniciando...' : 'Reiniciar' }}
+          </button>
+        </div>
+      </header>
+
+      <!-- Terminal Body -->
+      <div class="flex-1 p-4 font-mono text-xs overflow-y-auto space-y-2 text-[#00ff66] bg-black selection:bg-indigo-500">
+        <!-- Terminal Header Info -->
+        <div class="text-slate-500 border-b border-white/5 pb-2 mb-3">
+          LUKA APP MONITORING TERM v1.0.0 -- SYSTEM INTEGRITY: OK
+          <br>Connected service: {{ servicioSeleccionado()?.nombre || 'None' }} (Port: :{{ servicioSeleccionado()?.puerto || 'N/A' }})
+        </div>
+
+        <!-- Terminal Logs -->
+        <div *ngIf="cargandoLogs()" class="text-slate-400 flex items-center gap-2 py-4">
+          <i class="fa-solid fa-spinner fa-spin"></i> Estableciendo conexión con el flujo de logs...
+        </div>
+
+        <ng-container *ngIf="!cargandoLogs()">
+          <div *ngFor="let logLine of logs()" 
+               class="leading-relaxed hover:bg-white/5 px-1 rounded transition-colors duration-150"
+               [ngClass]="{
+                 'text-red-400': logLine.includes('[ERROR]'),
+                 'text-amber-300': logLine.includes('[WARN]'),
+                 'text-slate-400': logLine.includes('[SYSTEM]'),
+                 'text-[#00ff66]': !logLine.includes('[ERROR]') && !logLine.includes('[WARN]') && !logLine.includes('[SYSTEM]')
+               }">
+            {{ logLine }}
+          </div>
+        </ng-container>
+        
+        <!-- Terminal Cursor -->
+        <div class="flex items-center gap-1 mt-3">
+          <span class="text-slate-500">$</span>
+          <span class="animate-pulse font-black text-[#00ff66]">_</span>
+        </div>
+      </div>
+    </article>
+  </div>
+</div>

@@ -4,7 +4,7 @@ import { Observable, of } from 'rxjs';
 import { delay, catchError } from 'rxjs/operators';
 import { environment } from '../../../enviroments/environment';
 import { ResultadoApi } from '../../../core/models/auth/user.model';
-import { AdminDashboardData, ResumenPagosDTO, PagoAdmin, PaginacionAdmin } from '../models/admin-dashboard.model';
+import { AdminDashboardData, ResumenPagosDTO, PagoAdmin, PaginacionAdmin, AdminServicioEstado } from '../models/admin-dashboard.model';
 
 @Injectable({ providedIn: 'root' })
 export class AdminDashboardService {
@@ -79,8 +79,102 @@ export class AdminDashboardService {
     }
   ];
 
+  // Lista mutable de microservicios como fuente de verdad
+  private readonly microserviciosList: AdminServicioEstado[] = [
+    { nombre: 'API Gateway', puerto: 8080, estado: 'healthy', latencia: '12ms', descripcion: 'Entrada principal y rutas protegidas' },
+    { nombre: 'ms-usuario', puerto: 8081, estado: 'healthy', latencia: '24ms', descripcion: 'Auth y usuarios admin' },
+    { nombre: 'ms-auditoria', puerto: 8082, estado: 'healthy', latencia: '18ms', descripcion: 'Logs, auditoría y seguridad' },
+    { nombre: 'ms-cliente', puerto: 8083, estado: 'healthy', latencia: '31ms', descripcion: 'Perfiles, metas y límites' },
+    { nombre: 'ms-mensajeria', puerto: 8084, estado: 'warning', latencia: '187ms', descripcion: 'OTP y canales externos' },
+    { nombre: 'ms-nucleo-financiero', puerto: 8085, estado: 'healthy', latencia: '42ms', descripcion: 'Transacciones y categorías' },
+    { nombre: 'ms-ia', puerto: 8086, estado: 'healthy', latencia: '55ms', descripcion: 'Módulos inteligentes' },
+    { nombre: 'ms-pagos', puerto: 8087, estado: 'healthy', latencia: '29ms', descripcion: 'Checkout y administración de pagos' },
+    { nombre: 'ms-suscripciones', puerto: 8088, estado: 'down', latencia: 'timeout', descripcion: 'Existe código, no está en Docker híbrido actual' }
+  ];
+
   obtenerResumen(): Observable<AdminDashboardData> {
-    return of(this.mockData).pipe(delay(250));
+    const data = { ...this.mockData, servicios: this.microserviciosList };
+    return of(data).pipe(delay(250));
+  }
+
+  obtenerServicios(): Observable<AdminServicioEstado[]> {
+    return of(this.microserviciosList).pipe(delay(150));
+  }
+
+  reiniciarServicio(nombre: string): Observable<boolean> {
+    const serv = this.microserviciosList.find(s => s.nombre === nombre);
+    if (serv) {
+      serv.estado = 'healthy';
+      serv.latencia = `${Math.floor(Math.random() * 30) + 10}ms`;
+    }
+    return of(true).pipe(delay(2000)); // Simular delay de 2 segundos de reinicio
+  }
+
+  obtenerLogs(nombre: string): Observable<string[]> {
+    const timestamp = () => new Date().toLocaleTimeString();
+    const logsMap: Record<string, string[]> = {
+      'API Gateway': [
+        `[${timestamp()}] [INFO] Gateway routing initialized on port 8080`,
+        `[${timestamp()}] [INFO] Route /api/v1/auth/me forwarded to ms-usuario:8081`,
+        `[${timestamp()}] [INFO] Route /api/v1/pagos/checkout forwarded to ms-pagos:8087`,
+        `[${timestamp()}] [WARN] Potential brute force attack: IP 185.45.23.1 restricted`,
+        `[${timestamp()}] [INFO] SSL Handshake succeeded for client browser session`
+      ],
+      'ms-usuario': [
+        `[${timestamp()}] [INFO] Starting Authentication Service on port 8081`,
+        `[${timestamp()}] [INFO] Connected to PostgreSQL database 'luka_users_db'`,
+        `[${timestamp()}] [INFO] JWT token validation keys initialized successfully`,
+        `[${timestamp()}] [INFO] OTP verification handler listening to event bus`
+      ],
+      'ms-auditoria': [
+        `[${timestamp()}] [INFO] Starting ms-auditoria on port 8082`,
+        `[${timestamp()}] [INFO] Event consumer started successfully on topic 'auditoria-eventos'`,
+        `[${timestamp()}] [INFO] Database connection established to MySQL 'auditoria'`,
+        `[${timestamp()}] [INFO] Admin access logging interceptor active`
+      ],
+      'ms-cliente': [
+        `[${timestamp()}] [INFO] Starting Customer Profiles Service on port 8083`,
+        `[${timestamp()}] [INFO] Budget checking service initialized`,
+        `[${timestamp()}] [INFO] Syncing user budget limits cache with Redis`
+      ],
+      'ms-mensajeria': [
+        `[${timestamp()}] [INFO] Starting ms-mensajeria on port 8084`,
+        `[${timestamp()}] [WARN] Twilio API connection latency is high (187ms)`,
+        `[${timestamp()}] [INFO] SMTP mail dispatcher initialized successfully`
+      ],
+      'ms-nucleo-financiero': [
+        `[${timestamp()}] [INFO] Starting Financial Core Service on port 8085`,
+        `[${timestamp()}] [INFO] Transaction mapping configurations loaded`,
+        `[${timestamp()}] [INFO] Database pool connection active`
+      ],
+      'ms-ia': [
+        `[${timestamp()}] [INFO] Starting python FastAPI IA engine on port 8086`,
+        `[${timestamp()}] [INFO] TensorFlow / PyTorch models loaded in memory`,
+        `[${timestamp()}] [INFO] Warm-up inference complete (took 1.2s)`
+      ],
+      'ms-pagos': [
+        `[${timestamp()}] [INFO] Starting ms-pagos on port 8087`,
+        `[${timestamp()}] [INFO] Stripe webhook endpoint active and validated`,
+        `[${timestamp()}] [INFO] Webhook signature key loaded successfully`
+      ],
+      'ms-suscripciones': [
+        `[${timestamp()}] [ERROR] Connection refused on port 8088`,
+        `[${timestamp()}] [ERROR] Service ms-suscripciones seems offline in local Docker daemon`,
+        `[${timestamp()}] [WARN] Redis subscription cache sync timed out`
+      ]
+    };
+    
+    const serv = this.microserviciosList.find(s => s.nombre === nombre);
+    if (nombre === 'ms-suscripciones' && serv && serv.estado === 'healthy') {
+      return of([
+        `[${timestamp()}] [INFO] Re-starting Suscripciones service on port 8088`,
+        `[${timestamp()}] [INFO] Connected to Database pool successfully`,
+        `[${timestamp()}] [INFO] Syncing user subscription states... complete`,
+        `[${timestamp()}] [INFO] Service is now ONLINE and healthy`
+      ]).pipe(delay(100));
+    }
+
+    return of(logsMap[nombre] || [`[${timestamp()}] [INFO] Listening to connections on port ${serv?.puerto || '8080'}`]).pipe(delay(100));
   }
 
   obtenerResumenPagos(): Observable<ResultadoApi<ResumenPagosDTO>> {
