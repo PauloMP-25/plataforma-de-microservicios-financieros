@@ -544,6 +544,7 @@ public class ControladorDashboardBFF {
                 });
     }
 
+
     private JsonNode parseJsonSilently(String json) {
         try {
             return objectMapper.readTree(json);

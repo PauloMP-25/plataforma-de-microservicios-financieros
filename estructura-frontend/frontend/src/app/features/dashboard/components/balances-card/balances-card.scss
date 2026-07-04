@@ -140,6 +140,14 @@
 .bg-indigo-soft { background: rgba(91, 106, 240, 0.1); }
 .text-indigo { color: #5b6af0; }
 
+:host-context(body.theme-dark) {
+  .text-cyan { color: #67e8f9; } 
+  .text-green { color: #86efac; }
+  .text-purple { color: #d8b4fe; }
+  .text-indigo { color: #a5b4fc; }
+  .text-danger { color: #fca5a5; } 
+}
+
 .text-mono {
   font-feature-settings: "tnum";
 }

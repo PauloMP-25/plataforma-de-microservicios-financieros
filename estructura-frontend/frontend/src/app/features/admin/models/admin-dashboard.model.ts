@@ -69,3 +69,42 @@ export interface AdminDashboardData {
   graficoIngresos: AdminBarraGrafico[];
   secciones: AdminSeccionResumen[];
 }
+
+export interface ResumenPagosDTO {
+  totalTransacciones: number;
+  ingresosTotales: number;
+  transaccionesPorEstado: Record<string, number>;
+  suscripcionesPorPlan: Record<string, number>;
+}
+
+export interface DetallePagoAdmin {
+  id: string;
+  planSolicitado: string;
+  monto: number;
+  moneda: string;
+  descripcion?: string;
+  descuento?: number;
+  cantidad: number;
+}
+
+export interface PagoAdmin {
+  id: string;
+  usuarioId: string;
+  estado: 'EXITOSO' | 'PENDIENTE' | 'FALLIDO';
+  stripeSessionId?: string;
+  stripeEventoId?: string;
+  fechaInicioPlan?: string;
+  fechaFinPlan?: string;
+  fechaCreacion: string;
+  fechaActualizacion?: string;
+  detalles?: DetallePagoAdmin[];
+}
+
+export interface PaginacionAdmin<T> {
+  contenido: T[];
+  numeroPagina: number;
+  tamañoPagina: number;
+  totalElementos: number;
+  totalPaginas: number;
+  esUltima: boolean;
+}

@@ -7,7 +7,6 @@
   <img src="https://img.shields.io/badge/Docker-Enabled-blue?style=for-the-badge&logo=docker" alt="Docker">
   <img src="https://img.shields.io/badge/RabbitMQ-FF6600?style=for-the-badge&logo=rabbitmq&logoColor=white" alt="RabbitMQ">
   <img src="https://img.shields.io/badge/Google_Gemini-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Gemini">
-  <img src="https://img.shields.io/badge/Eureka_Netflix-E50914?style=for-the-badge&logo=netflix&logoColor=white" alt="Eureka">
 </p>
 
 ---
@@ -46,7 +45,6 @@ Actualmente, el sistema cuenta con la integración core de IA, Auditoría y Gest
 *   **Análisis de Gastos Hormiga:** Identificación automática de fugas de capital y categorías.
 *   **Arquitectura Resiliente:** Comunicación asíncrona mediante **RabbitMQ** para auditoría inmutable.
 *   **Gestión de Suscripciones (SaaS):** Diferenciación de servicios para roles `FREE`, `PREMIUM` y `ADMIN`.
-*   **Service Discovery:** Gobernanza dinámica de servicios mediante **Eureka-Netflix**.
 
 ---
 
@@ -67,7 +65,6 @@ Actualmente, el sistema cuenta con la integración core de IA, Auditoría y Gest
 
 **DevOps & Herramientas:**
 *   Docker & Docker Compose: Contenerización y orquestación local del ecosistema.
-*   Eureka Server: Registro y descubrimiento de microservicios.
 *   Spring Cloud Gateway: Gateway centralizado para filtrado de seguridad y ruteo.
 * GitHub Actions (CI/CD): Controlador de versiones
 
@@ -76,14 +73,14 @@ Actualmente, el sistema cuenta con la integración core de IA, Auditoría y Gest
 
 * **Arquitectura Polyglot:** Backend construido con Java (Spring Boot) y servicios especializados en Python (IA).
 
-* El proyecto utiliza un patrón de microservicios con **Service Discovery (Eureka)** y **API Gateway**.
+* El proyecto utiliza un patrón de microservicios con un **API Gateway** central.
 
 ## Estructura del Proyecto
 El proyecto se organiza como un **Monorepo** para facilitar la gestión del ciclo de vida del software:
 
 * `/estructura-backend`: Código fuente de los microservicios (Spring Boot y Python).
 * `/estructura-frontend`: Cliente web desarrollado en Angular.
-* `/docker`: Archivos de despliegue para infraestructura (Postgres, Rabbit, Eureka).
+* `/docker`: Archivos de despliegue para infraestructura (Postgres, Rabbit).
 
 ## Configuración Local
 
@@ -109,7 +106,7 @@ Para facilitar el despliegue del ecosistema completo de **LUKA APP**, utilizamos
    Ejecuta ---> Con Make: `make up` | Sin Make: `docker compose up -d`
 
 5. **Opcional:** Levanta por separado.
-  `make infra` → Levanta solo la infraestructura (BD + RabbitMQ + Eureka)"
+  `make infra` → Levanta solo la infraestructura (BD + RabbitMQ)"
   `make service` → Levanta solo los microservicios (asume infra ya corriendo)"
   `make down` | `docker compose down` → Detiene y elimina contenedores (conserva volúmenes)"
   `make restart` → down + up"

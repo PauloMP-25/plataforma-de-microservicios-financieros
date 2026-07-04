@@ -1,0 +1,329 @@
+<div class="space-y-6" [class.modo-claro]="modoClaro()">
+  <!-- Tabs de Navegación de Auditoría -->
+  <div class="flex border-b" [ngClass]="modoClaro() ? 'border-slate-200' : 'border-white/10'">
+    <button (click)="cambiarPestana('registros')" 
+            class="px-5 py-3.5 text-sm font-extrabold border-b-2 transition"
+            [ngClass]="pestanaActiva() === 'registros' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:text-slate-200'">
+      <i class="fa-solid fa-clipboard-list mr-2"></i>Registros de Actividad
+    </button>
+    
+    <button (click)="cambiarPestana('accesos')" 
+            class="px-5 py-3.5 text-sm font-extrabold border-b-2 transition"
+            [ngClass]="pestanaActiva() === 'accesos' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:text-slate-200'">
+      <i class="fa-solid fa-user-shield mr-2"></i>Control de Accesos
+    </button>
+    
+    <button (click)="cambiarPestana('transacciones')" 
+            class="px-5 py-3.5 text-sm font-extrabold border-b-2 transition"
+            [ngClass]="pestanaActiva() === 'transacciones' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:text-slate-200'">
+      <i class="fa-solid fa-database mr-2"></i>Auditoría Transaccional
+    </button>
+  </div>
+
+  <!-- Cabecera de Filtros -->
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border rounded-[22px] p-5 shadow-sm"
+       [ngClass]="modoClaro() ? 'border-indigo-100 bg-white' : 'border-white/10 bg-[#0d1222]/80'">
+    <div class="flex flex-wrap items-center gap-3">
+      <!-- Filtro para Registros General -->
+      <ng-container *ngIf="pestanaActiva() === 'registros'">
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Módulo</label>
+          <select [ngModel]="moduloFiltro()" 
+                  (ngModelChange)="moduloFiltro.set($event); aplicarFiltros()"
+                  class="h-10 rounded-xl border bg-slate-950 px-3 text-xs font-bold text-slate-200 outline-none focus:border-primary"
+                  [ngClass]="modoClaro() ? 'border-slate-300 text-slate-900 bg-white' : 'border-white/10'">
+            <option value="">Todos los módulos</option>
+            <option value="SEGURIDAD">SEGURIDAD</option>
+            <option value="PAGOS">PAGOS</option>
+            <option value="CLIENTE">CLIENTE</option>
+            <option value="USUARIO">USUARIO</option>
+            <option value="INFRAESTRUCTURA">INFRAESTRUCTURA</option>
+          </select>
+        </div>
+      </ng-container>
+
+      <!-- Filtro para Transaccional -->
+      <ng-container *ngIf="pestanaActiva() === 'transacciones'">
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Servicio Origen</label>
+          <div class="flex gap-2">
+            <input type="text" 
+                   placeholder="Ej: ms-pagos" 
+                   [ngModel]="servicioFiltro()" 
+                   (ngModelChange)="servicioFiltro.set($event)"
+                   (keyup.enter)="aplicarFiltros()"
+                   class="h-10 w-44 rounded-xl border bg-slate-950 px-3 text-xs font-bold text-slate-200 outline-none focus:border-primary"
+                   [ngClass]="modoClaro() ? 'border-slate-300 text-slate-900 bg-white' : 'border-white/10'" />
+            <button (click)="aplicarFiltros()" 
+                    class="h-10 rounded-xl bg-primary px-4 text-xs font-bold text-white transition hover:bg-primary-dark">
+              Buscar
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Si es Accesos, no hay filtros complejos requeridos por backend -->
+      <ng-container *ngIf="pestanaActiva() === 'accesos'">
+        <span class="text-xs text-slate-400">Mostrando historial reciente de inicio de sesión de Luka App.</span>
+      </ng-container>
+    </div>
+
+    <button (click)="cargarDatos()" 
+            class="h-10 rounded-xl border px-4 py-2 text-xs font-bold transition hover:bg-white/15"
+            [ngClass]="modoClaro() ? 'border-slate-300 text-slate-700 bg-slate-50' : 'border-white/10 text-white bg-slate-900'">
+      <i class="fa-solid fa-arrows-rotate mr-1" [class.fa-spin]="cargando()"></i> Refrescar
+    </button>
+  </div>
+
+  <!-- Contenedor Principal de la Tabla -->
+  <article class="overflow-hidden rounded-[24px] border shadow-2xl"
+           [ngClass]="modoClaro() ? 'border-indigo-200 bg-white' : 'border-white/10 bg-[#0d1222]'">
+    <div class="overflow-x-auto">
+      <!-- 1. Tabla de Registros Generales -->
+      <table *ngIf="pestanaActiva() === 'registros'" class="w-full min-w-[900px] text-left text-sm">
+        <thead class="bg-white/5 text-[11px] uppercase tracking-wider text-slate-400"
+               [ngClass]="modoClaro() ? 'bg-slate-50' : 'bg-slate-950/20'">
+          <tr>
+            <th class="px-6 py-4">Fecha y Hora</th>
+            <th class="px-6 py-4">Usuario</th>
+            <th class="px-6 py-4">Módulo</th>
+            <th class="px-6 py-4">Acción</th>
+            <th class="px-6 py-4">IP Origen</th>
+            <th class="px-6 py-4 text-center">Acción</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y text-slate-300" [ngClass]="modoClaro() ? 'divide-slate-100 text-slate-700' : 'divide-white/5'">
+          <tr *ngFor="let item of registros()" class="transition hover:bg-primary/5">
+            <td class="px-6 py-4 text-xs font-mono text-slate-400">{{ formatoFecha(item.fechaHora) }}</td>
+            <td class="px-6 py-4 font-bold" [ngClass]="modoClaro() ? 'text-slate-900' : 'text-white'">{{ item.usuario }}</td>
+            <td class="px-6 py-4 text-xs">
+              <span class="px-2 py-0.5 rounded border border-indigo-500/20 bg-indigo-500/10 text-indigo-400 font-extrabold text-[10px]">
+                {{ item.modulo }}
+              </span>
+            </td>
+            <td class="px-6 py-4 font-semibold text-xs text-sky-400">{{ item.accion }}</td>
+            <td class="px-6 py-4 font-mono text-xs text-slate-400">{{ item.ipOrigen || '-' }}</td>
+            <td class="px-6 py-4 text-center">
+              <button (click)="abrirDetalle(item)" 
+                      class="rounded-xl px-3 py-1.5 text-xs font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 transition hover:bg-indigo-500/20">
+                Detalles
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="!cargando() && registros().length === 0">
+            <td colspan="6" class="py-12 text-center text-slate-500">No se encontraron logs de actividad.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 2. Tabla de Control de Accesos -->
+      <table *ngIf="pestanaActiva() === 'accesos'" class="w-full min-w-[900px] text-left text-sm">
+        <thead class="bg-white/5 text-[11px] uppercase tracking-wider text-slate-400"
+               [ngClass]="modoClaro() ? 'bg-slate-50' : 'bg-slate-950/20'">
+          <tr>
+            <th class="px-6 py-4">Fecha de Intento</th>
+            <th class="px-6 py-4">Usuario ID (UUID)</th>
+            <th class="px-6 py-4">IP Origen</th>
+            <th class="px-6 py-4">Navegador / SO</th>
+            <th class="px-6 py-4">Estado</th>
+            <th class="px-6 py-4 text-center">Acción</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y text-slate-300" [ngClass]="modoClaro() ? 'divide-slate-100 text-slate-700' : 'divide-white/5'">
+          <tr *ngFor="let item of accesos()" class="transition hover:bg-primary/5">
+            <td class="px-6 py-4 text-xs font-mono text-slate-400">{{ formatoFecha(item.fecha) }}</td>
+            <td class="px-6 py-4 font-mono text-xs">
+              <span class="cursor-help border-b border-dashed border-slate-500/40" [title]="item.usuarioId">
+                {{ formatoUsuarioId(item.usuarioId) }}
+              </span>
+            </td>
+            <td class="px-6 py-4 font-mono text-xs">{{ item.ipOrigen }}</td>
+            <td class="px-6 py-4 text-xs text-slate-400">{{ item.navegador }}</td>
+            <td class="px-6 py-4">
+              <span class="text-[10px] font-extrabold uppercase tracking-wide px-2 py-0.5 rounded border"
+                    [ngClass]="item.estado === 'EXITO' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'">
+                {{ item.estado }}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-center">
+              <button (click)="abrirDetalle(item)" 
+                      class="rounded-xl px-3 py-1.5 text-xs font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 transition hover:bg-indigo-500/20">
+                Detalles
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="!cargando() && accesos().length === 0">
+            <td colspan="6" class="py-12 text-center text-slate-500">No se encontraron registros de accesos.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 3. Tabla de Auditoría Transaccional (Base de Datos) -->
+      <table *ngIf="pestanaActiva() === 'transacciones'" class="w-full min-w-[900px] text-left text-sm">
+        <thead class="bg-white/5 text-[11px] uppercase tracking-wider text-slate-400"
+               [ngClass]="modoClaro() ? 'bg-slate-55' : 'bg-slate-950/20'">
+          <tr>
+            <th class="px-6 py-4">Fecha</th>
+            <th class="px-6 py-4">Usuario ID</th>
+            <th class="px-6 py-4">Servicio</th>
+            <th class="px-6 py-4">Entidad Afectada</th>
+            <th class="px-6 py-4">ID de Fila</th>
+            <th class="px-6 py-4 text-center">Trazabilidad</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y text-slate-300" [ngClass]="modoClaro() ? 'divide-slate-100 text-slate-700' : 'divide-white/5'">
+          <tr *ngFor="let item of transacciones()" class="transition hover:bg-primary/5">
+            <td class="px-6 py-4 text-xs font-mono text-slate-400">{{ formatoFecha(item.fecha) }}</td>
+            <td class="px-6 py-4 font-mono text-xs">
+              <span class="cursor-help border-b border-dashed border-slate-500/40" [title]="item.usuarioId">
+                {{ formatoUsuarioId(item.usuarioId) }}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-xs font-bold" [ngClass]="modoClaro() ? 'text-slate-800' : 'text-white'">
+              {{ item.servicioOrigen }}
+            </td>
+            <td class="px-6 py-4 text-xs font-mono text-indigo-400">{{ item.entidadAfectada }}</td>
+            <td class="px-6 py-4 font-mono text-xs text-slate-400">#{{ item.entidadId.slice(0, 8) }}</td>
+            <td class="px-6 py-4 text-center">
+              <button (click)="abrirDetalle(item)" 
+                      class="rounded-xl px-3 py-1.5 text-xs font-bold text-primary bg-primary/10 border border-primary/20 transition hover:bg-primary/20">
+                <i class="fa-solid fa-code mr-1"></i> Comparar Cambios
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="!cargando && transacciones().length === 0">
+            <td colspan="6" class="py-12 text-center text-slate-500">No se encontraron logs de trazabilidad en base de datos.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginador Footer -->
+    <footer class="flex items-center justify-between border-t px-6 py-4"
+            [ngClass]="modoClaro() ? 'border-slate-100 bg-slate-50/50' : 'border-white/5 bg-slate-950/20'">
+      <div class="text-xs text-slate-400">
+        Mostrando {{ totalElementos() > 0 ? (paginaActual() * tamanioPagina() + 1) : 0 }} - 
+        {{ (paginaActual() + 1) * tamanioPagina() > totalElementos() ? totalElementos() : (paginaActual() + 1) * tamanioPagina() }} 
+        de {{ totalElementos() }} registros
+      </div>
+      <div class="flex items-center gap-2">
+        <button [disabled]="paginaActual() === 0 || cargando()" 
+                (click)="anteriorPagina()" 
+                class="rounded-xl border px-3 py-1.5 text-xs font-bold transition disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white/10"
+                [ngClass]="modoClaro() ? 'border-slate-200 text-slate-700 bg-white' : 'border-white/10 text-white bg-slate-900'">
+          ‹ Anterior
+        </button>
+        <span class="text-xs text-slate-400">Página {{ paginaActual() + 1 }} de {{ totalPaginas() }}</span>
+        <button [disabled]="paginaActual() + 1 >= totalPaginas() || cargando()" 
+                (click)="siguientePagina()" 
+                class="rounded-xl border px-3 py-1.5 text-xs font-bold transition disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white/10"
+                [ngClass]="modoClaro() ? 'border-slate-200 text-slate-700 bg-white' : 'border-white/10 text-white bg-slate-900'">
+          Siguiente ›
+        </button>
+      </div>
+    </footer>
+  </article>
+
+  <!-- Modal Detallado (Visor JSON y Comparador Side-by-Side) -->
+  <div *ngIf="registroSeleccionado() as sel" 
+       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
+    <div class="w-full max-w-3xl overflow-hidden rounded-[24px] border shadow-2xl p-6 transition-all duration-300 flex flex-col max-h-[90vh]"
+         [ngClass]="modoClaro() ? 'bg-white border-indigo-100 text-slate-900' : 'bg-slate-900 border-white/10 text-white'">
+      
+      <div class="flex items-center justify-between border-b pb-3 mb-4"
+           [ngClass]="modoClaro() ? 'border-slate-100' : 'border-white/10'">
+        <h4 class="font-heading text-lg font-extrabold flex items-center gap-2">
+          <i class="fa-solid fa-magnifying-glass-chart text-primary"></i>Detalle de Registro
+        </h4>
+        <button (click)="cerrarDetalle()" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto space-y-4 pr-1">
+        <!-- 1. Caso de Auditoría Transaccional (JSON Cambios) -->
+        <div *ngIf="esTransaccional(sel)" class="space-y-4">
+          <div class="grid grid-cols-2 gap-4 text-xs">
+            <div>
+              <span class="text-slate-400 uppercase font-bold tracking-wide text-[10px]">Servicio</span>
+              <p class="font-bold text-white mt-1">{{ sel.servicioOrigen }}</p>
+            </div>
+            <div>
+              <span class="text-slate-400 uppercase font-bold tracking-wide text-[10px]">Entidad Afectada</span>
+              <p class="font-bold text-indigo-400 mt-1 font-mono">{{ sel.entidadAfectada }}</p>
+            </div>
+          </div>
+
+          <!-- Comparación Side-by-Side -->
+          <div class="grid gap-4 md:grid-cols-2">
+            <!-- Valor Anterior -->
+            <div class="space-y-2">
+              <span class="text-xs text-red-400 font-bold uppercase"><i class="fa-solid fa-circle-minus mr-1"></i>Valor Anterior</span>
+              <pre class="bg-black text-red-400 p-4 rounded-xl border border-red-500/10 font-mono text-xs overflow-x-auto min-h-[140px] max-h-[220px]">{{ formatoJSON(sel.valorAnterior) }}</pre>
+            </div>
+            
+            <!-- Valor Nuevo -->
+            <div class="space-y-2">
+              <span class="text-xs text-emerald-400 font-bold uppercase"><i class="fa-solid fa-circle-plus mr-1"></i>Valor Nuevo</span>
+              <pre class="bg-black text-emerald-400 p-4 rounded-xl border border-emerald-500/10 font-mono text-xs overflow-x-auto min-h-[140px] max-h-[220px]">{{ formatoJSON(sel.valorNuevo) }}</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Caso de Control de Accesos -->
+        <div *ngIf="!esTransaccional(sel) && esAcceso(sel)" class="space-y-3 text-sm">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="rounded-xl bg-white/5 p-3 border border-white/5">
+              <span class="text-xs text-slate-400">Usuario ID</span>
+              <p class="font-mono mt-1 text-white text-xs">{{ sel.usuarioId }}</p>
+            </div>
+            <div class="rounded-xl bg-white/5 p-3 border border-white/5">
+              <span class="text-xs text-slate-400">IP de Origen</span>
+              <p class="font-mono mt-1 text-white">{{ sel.ipOrigen }}</p>
+            </div>
+          </div>
+
+          <div class="rounded-xl bg-white/5 p-3 border border-white/5">
+            <span class="text-xs text-slate-400">Dispositivo / Agente navegador</span>
+            <p class="mt-1 text-white font-semibold">{{ sel.navegador }}</p>
+          </div>
+
+          <div class="rounded-xl bg-white/5 p-3 border border-white/5" *ngIf="sel.estado === 'FALLO'">
+            <span class="text-xs text-red-400 font-bold">Detalle del Error</span>
+            <p class="mt-1 text-red-300 font-semibold">{{ sel.detalleError }}</p>
+          </div>
+        </div>
+
+        <!-- 3. Caso de Registros de Actividad general -->
+        <div *ngIf="!esTransaccional(sel) && !esAcceso(sel)" class="space-y-3 text-sm">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="rounded-xl bg-white/5 p-3 border border-white/5">
+              <span class="text-xs text-slate-400">Administrador / Autor</span>
+              <p class="font-bold mt-1 text-white">{{ sel.usuario }}</p>
+            </div>
+            <div class="rounded-xl bg-white/5 p-3 border border-white/5">
+              <span class="text-xs text-slate-400">Acción Ejecutada</span>
+              <p class="font-bold mt-1 text-indigo-400 font-mono">{{ sel.accion }}</p>
+            </div>
+          </div>
+
+          <div class="rounded-xl bg-white/5 p-3 border border-white/5">
+            <span class="text-xs text-slate-400">Detalles de Actividad</span>
+            <p class="mt-1 text-white leading-relaxed font-semibold">{{ sel.detalles }}</p>
+          </div>
+        </div>
+
+        <div class="text-[10px] text-slate-500 font-mono border-t pt-2 mt-4" 
+             [ngClass]="modoClaro() ? 'border-slate-100' : 'border-white/5'">
+          ID de Trazabilidad: {{ sel.id }} | Generado el: {{ formatoFecha(sel.fecha || sel.fechaHora) }}
+        </div>
+      </div>
+
+      <div class="flex justify-end mt-4 pt-3 border-t"
+           [ngClass]="modoClaro() ? 'border-slate-100' : 'border-white/10'">
+        <button (click)="cerrarDetalle()" 
+                class="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-primary/20 hover:bg-primary-dark transition">
+          Cerrar Vista
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

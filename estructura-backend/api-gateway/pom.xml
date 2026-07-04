@@ -61,7 +61,7 @@
         </dependency>
         <!-- ═══════════════════════════════════════════════════════
              LOAD BALANCER: Habilita balanceo de carga basado en
-             configuración estática (sin Eureka). Permite uso de lb://
+             configuración estática. Permite uso de lb://
              con listas de instancias definidas en application.yml.
         ═══════════════════════════════════════════════════════ -->
         <dependency>

@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../enviroments/environment';
+import { ResultadoApi } from '../models/auth/user.model';
 import {
   AuditoriaAccesoDTO,
   AuditoriaAccesoRequestDTO,
@@ -27,7 +29,18 @@ export class AuditoriaService {
 
   listarAccesos(pagina = 0, tamanio = 20): Observable<PaginaAuditoriaAcceso> {
     const params = new HttpParams().set('pagina', pagina).set('tamanio', tamanio);
-    return this.http.get<PaginaAuditoriaAcceso>(`${this.base}/accesos`, { params });
+    return this.http.get<ResultadoApi<AuditoriaAccesoDTO[]>>(`${this.base}/accesos`, { params }).pipe(
+      map(res => {
+        const pag = res.pagina;
+        return {
+          content: res.datos || [],
+          totalElements: pag?.totalElementos || 0,
+          totalPages: pag?.totalPaginas || 0,
+          number: pag?.numeroPagina || 0,
+          size: pag?.tamañoPagina || 0
+        };
+      })
+    );
   }
 
   verificarIp(ip: string): Observable<RespuestaVerificacionIpDTO> {
@@ -53,7 +66,18 @@ export class AuditoriaService {
     if (filtros.desde) params = params.set('desde', filtros.desde);
     if (filtros.hasta) params = params.set('hasta', filtros.hasta);
 
-    return this.http.get<PaginaAuditoriaTransaccional>(`${this.base}/transacciones`, { params });
+    return this.http.get<ResultadoApi<AuditoriaTransaccionalDTO[]>>(`${this.base}/transacciones`, { params }).pipe(
+      map(res => {
+        const pag = res.pagina;
+        return {
+          content: res.datos || [],
+          totalElements: pag?.totalElementos || 0,
+          totalPages: pag?.totalPaginas || 0,
+          number: pag?.numeroPagina || 0,
+          size: pag?.tamañoPagina || 0
+        };
+      })
+    );
   }
 
   registrarEvento(payload: RegistroAuditoriaRequestDTO): Observable<RegistroAuditoriaDTO> {
@@ -73,7 +97,17 @@ export class AuditoriaService {
     if (filtros.modulo) params = params.set('modulo', filtros.modulo);
     if (filtros.nivel) params = params.set('nivel', filtros.nivel);
 
-    return this.http.get<PaginaRegistroAuditoria>(`${this.base}/registros`, { params });
+    return this.http.get<ResultadoApi<RegistroAuditoriaDTO[]>>(`${this.base}/registros`, { params }).pipe(
+      map(res => {
+        const pag = res.pagina;
+        return {
+          content: res.datos || [],
+          totalElements: pag?.totalElementos || 0,
+          totalPages: pag?.totalPaginas || 0,
+          number: pag?.numeroPagina || 0,
+          size: pag?.tamañoPagina || 0
+        };
+      })
+    );
   }
 }
-

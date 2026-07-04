@@ -28,7 +28,7 @@ spring:
         - id: servicio-usuario-docs
           uri: http://localhost:8081
           predicates:
-            - Path=/microservicio-usuario/v3/api-docs/**, /microservicio-usuario/swagger-ui/**, /microservicio-usuario/swagger-ui.html
+            - Path=/microservicio-usuario/v3/api-docs/**, /microservicio-usuario/swagger-ui/**, /microservicio-usuario/swagger-ui.html, /microservicio-usuario/actuator/health
           filters:
             - RewritePath=/microservicio-usuario/(?<remaining>.*), /${remaining}
           metadata:
@@ -37,7 +37,7 @@ spring:
         - id: servicio-cliente-docs
           uri: http://localhost:8083
           predicates:
-            - Path=/microservicio-cliente/v3/api-docs/**, /microservicio-cliente/swagger-ui/**, /microservicio-cliente/swagger-ui.html
+            - Path=/microservicio-cliente/v3/api-docs/**, /microservicio-cliente/swagger-ui/**, /microservicio-cliente/swagger-ui.html, /microservicio-cliente/actuator/health
           filters:
             - RewritePath=/microservicio-cliente/(?<remaining>.*), /${remaining}
           metadata:
@@ -46,7 +46,7 @@ spring:
         - id: servicio-auditoria-docs
           uri: http://localhost:8082
           predicates:
-            - Path=/microservicio-auditoria/v3/api-docs/**, /microservicio-auditoria/swagger-ui/**, /microservicio-auditoria/swagger-ui.html
+            - Path=/microservicio-auditoria/v3/api-docs/**, /microservicio-auditoria/swagger-ui/**, /microservicio-auditoria/swagger-ui.html, /microservicio-auditoria/actuator/health
           filters:
             - RewritePath=/microservicio-auditoria/(?<remaining>.*), /${remaining}
           metadata:
@@ -55,7 +55,7 @@ spring:
         - id: servicio-mensajeria-docs
           uri: http://localhost:8084
           predicates:
-            - Path=/microservicio-mensajeria/v3/api-docs/**, /microservicio-mensajeria/swagger-ui/**, /microservicio-mensajeria/swagger-ui.html
+            - Path=/microservicio-mensajeria/v3/api-docs/**, /microservicio-mensajeria/swagger-ui/**, /microservicio-mensajeria/swagger-ui.html, /microservicio-mensajeria/actuator/health
           filters:
             - RewritePath=/microservicio-mensajeria/(?<remaining>.*), /${remaining}
           metadata:
@@ -64,7 +64,7 @@ spring:
         - id: servicio-financiero-docs
           uri: http://localhost:8085
           predicates:
-            - Path=/microservicio-financiero/v3/api-docs/**, /microservicio-financiero/swagger-ui/**, /microservicio-financiero/swagger-ui.html
+            - Path=/microservicio-financiero/v3/api-docs/**, /microservicio-financiero/swagger-ui/**, /microservicio-financiero/swagger-ui.html, /microservicio-financiero/actuator/health
           filters:
             - RewritePath=/microservicio-financiero/(?<remaining>.*), /${remaining}
           metadata:
@@ -73,7 +73,7 @@ spring:
         - id: servicio-ia-docs
           uri: http://localhost:8086
           predicates:
-            - Path=/microservicio-ia/v3/api-docs/**, /microservicio-ia/swagger-ui/**, /microservicio-ia/swagger-ui.html
+            - Path=/microservicio-ia/v3/api-docs/**, /microservicio-ia/swagger-ui/**, /microservicio-ia/swagger-ui.html, /microservicio-ia/actuator/health
           filters:
             - RewritePath=/microservicio-ia/(?<remaining>.*), /${remaining}
           metadata:
@@ -82,7 +82,7 @@ spring:
         - id: servicio-pagos-docs
           uri: http://localhost:8087
           predicates:
-            - Path=/microservicio-pagos/v3/api-docs/**, /microservicio-pagos/swagger-ui/**, /microservicio-pagos/swagger-ui.html
+            - Path=/microservicio-pagos/v3/api-docs/**, /microservicio-pagos/swagger-ui/**, /microservicio-pagos/swagger-ui.html, /microservicio-pagos/actuator/health
           filters:
             - RewritePath=/microservicio-pagos/(?<remaining>.*), /${remaining}
           metadata:
@@ -91,11 +91,41 @@ spring:
         - id: servicio-suscripciones-docs
           uri: http://localhost:8088
           predicates:
-            - Path=/microservicio-suscripciones/v3/api-docs/**, /microservicio-suscripciones/swagger-ui/**, /microservicio-suscripciones/swagger-ui.html
+            - Path=/microservicio-suscripciones/v3/api-docs/**, /microservicio-suscripciones/swagger-ui/**, /microservicio-suscripciones/swagger-ui.html, /microservicio-suscripciones/actuator/health
           filters:
             - RewritePath=/microservicio-suscripciones/(?<remaining>.*), /${remaining}
           metadata:
             requiere-autenticacion: false
+
+        - id: servicio-usuario-admin
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/v1/admin/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: usuarioCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: true
+            rol-requerido: ROLE_ADMIN
+
+        - id: servicio-mensajeria-admin
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/v1/mensajeria/admin/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: mensajeriaCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: true
+            rol-requerido: ROLE_ADMIN
 
         - id: servicio-usuario-auth
           uri: http://localhost:8081
@@ -363,16 +393,3 @@ resilience4j:
         base-config: default
       pagoCB:
         base-config: default
-
-
----
-# Desactivar discovery y eureka
-spring:
-  cloud:
-    discovery:
-      enabled: false
-
-management:
-  health:
-    discovery:
-      enabled: false

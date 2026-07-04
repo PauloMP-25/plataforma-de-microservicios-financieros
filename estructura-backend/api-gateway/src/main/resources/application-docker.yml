@@ -40,7 +40,7 @@ spring:
         - id: servicio-usuario-docs
           uri: ${URL_PROD_USUARIO:https://luka-usuario.onrender.com}
           predicates:
-            - Path=/microservicio-usuario/v3/api-docs/**, /microservicio-usuario/swagger-ui/**, /microservicio-usuario/swagger-ui.html
+            - Path=/microservicio-usuario/v3/api-docs/**, /microservicio-usuario/swagger-ui/**, /microservicio-usuario/swagger-ui.html, /microservicio-usuario/actuator/health
           filters:
             - RewritePath=/microservicio-usuario/(?<remaining>.*), /${remaining}
           metadata:
@@ -49,7 +49,7 @@ spring:
         - id: servicio-cliente-docs
           uri: ${URL_PROD_CLIENTE:https://luka-cliente.onrender.com}
           predicates:
-            - Path=/microservicio-cliente/v3/api-docs/**, /microservicio-cliente/swagger-ui/**, /microservicio-cliente/swagger-ui.html
+            - Path=/microservicio-cliente/v3/api-docs/**, /microservicio-cliente/swagger-ui/**, /microservicio-cliente/swagger-ui.html, /microservicio-cliente/actuator/health
           filters:
             - RewritePath=/microservicio-cliente/(?<remaining>.*), /${remaining}
           metadata:
@@ -58,7 +58,7 @@ spring:
         - id: servicio-auditoria-docs
           uri: ${URL_PROD_AUDITORIA:https://luka-auditoria.onrender.com}
           predicates:
-            - Path=/microservicio-auditoria/v3/api-docs/**, /microservicio-auditoria/swagger-ui/**, /microservicio-auditoria/swagger-ui.html
+            - Path=/microservicio-auditoria/v3/api-docs/**, /microservicio-auditoria/swagger-ui/**, /microservicio-auditoria/swagger-ui.html, /microservicio-auditoria/actuator/health
           filters:
             - RewritePath=/microservicio-auditoria/(?<remaining>.*), /${remaining}
           metadata:
@@ -67,7 +67,7 @@ spring:
         - id: servicio-mensajeria-docs
           uri: ${URL_PROD_MENSAJERIA:https://luka-mensajeria.onrender.com}
           predicates:
-            - Path=/microservicio-mensajeria/v3/api-docs/**, /microservicio-mensajeria/swagger-ui/**, /microservicio-mensajeria/swagger-ui.html
+            - Path=/microservicio-mensajeria/v3/api-docs/**, /microservicio-mensajeria/swagger-ui/**, /microservicio-mensajeria/swagger-ui.html, /microservicio-mensajeria/actuator/health
           filters:
             - RewritePath=/microservicio-mensajeria/(?<remaining>.*), /${remaining}
           metadata:
@@ -76,7 +76,7 @@ spring:
         - id: servicio-financiero-docs
           uri: ${URL_PROD_FINANCIERO:https://luka-financiero.onrender.com}
           predicates:
-            - Path=/microservicio-financiero/v3/api-docs/**, /microservicio-financiero/swagger-ui/**, /microservicio-financiero/swagger-ui.html
+            - Path=/microservicio-financiero/v3/api-docs/**, /microservicio-financiero/swagger-ui/**, /microservicio-financiero/swagger-ui.html, /microservicio-financiero/actuator/health
           filters:
             - RewritePath=/microservicio-financiero/(?<remaining>.*), /${remaining}
           metadata:
@@ -85,7 +85,7 @@ spring:
         - id: servicio-ia-docs
           uri: ${URL_PROD_IA:https://luka-ia-ojw0.onrender.com}
           predicates:
-            - Path=/microservicio-ia/v3/api-docs/**, /microservicio-ia/swagger-ui/**, /microservicio-ia/swagger-ui.html
+            - Path=/microservicio-ia/v3/api-docs/**, /microservicio-ia/swagger-ui/**, /microservicio-ia/swagger-ui.html, /microservicio-ia/actuator/health
           filters:
             - RewritePath=/microservicio-ia/(?<remaining>.*), /${remaining}
           metadata:
@@ -94,7 +94,7 @@ spring:
         - id: servicio-pagos-docs
           uri: ${URL_PROD_PAGO:https://luka-pagos.onrender.com}
           predicates:
-            - Path=/microservicio-pagos/v3/api-docs/**, /microservicio-pagos/swagger-ui/**, /microservicio-pagos/swagger-ui.html
+            - Path=/microservicio-pagos/v3/api-docs/**, /microservicio-pagos/swagger-ui/**, /microservicio-pagos/swagger-ui.html, /microservicio-pagos/actuator/health
           filters:
             - RewritePath=/microservicio-pagos/(?<remaining>.*), /${remaining}
           metadata:
@@ -103,11 +103,41 @@ spring:
         - id: servicio-suscripciones-docs
           uri: ${URL_PROD_SUSCRIPCIONES:https://luka-suscripciones.onrender.com}
           predicates:
-            - Path=/microservicio-suscripciones/v3/api-docs/**, /microservicio-suscripciones/swagger-ui/**, /microservicio-suscripciones/swagger-ui.html
+            - Path=/microservicio-suscripciones/v3/api-docs/**, /microservicio-suscripciones/swagger-ui/**, /microservicio-suscripciones/swagger-ui.html, /microservicio-suscripciones/actuator/health
           filters:
             - RewritePath=/microservicio-suscripciones/(?<remaining>.*), /${remaining}
           metadata:
             requiere-autenticacion: false
+
+        - id: servicio-usuario-admin
+          uri: ${URL_PROD_USUARIO:https://luka-usuario.onrender.com}
+          predicates:
+            - Path=/api/v1/admin/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: usuarioCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: true
+            rol-requerido: ROLE_ADMIN
+
+        - id: servicio-mensajeria-admin
+          uri: ${URL_PROD_MENSAJERIA:https://luka-mensajeria.onrender.com}
+          predicates:
+            - Path=/api/v1/mensajeria/admin/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: mensajeriaCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: true
+            rol-requerido: ROLE_ADMIN
 
         - id: servicio-usuario-auth
           uri: ${URL_PROD_USUARIO:https://luka-usuario.onrender.com}
@@ -397,15 +427,3 @@ resilience4j:
         base-config: default
       suscripcionCB:
         base-config: default
-
----
-# Desactivar discovery y eureka
-spring:
-  cloud:
-    discovery:
-      enabled: false
-
-management:
-  health:
-    discovery:
-      enabled: false
