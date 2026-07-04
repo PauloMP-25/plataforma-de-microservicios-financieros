@@ -91,7 +91,8 @@ export class AdminDashboard implements OnInit {
         this.data.set(dataCloned);
 
         // Conectar KPIs reales de ingresos y pagos desde ms-pagos
-        this.adminDashboardService.obtenerResumenPagos().subscribe({
+        const anioActual = new Date().getFullYear();
+        this.adminDashboardService.obtenerResumenPagos(anioActual).subscribe({
           next: (pagosRes) => {
             if (pagosRes.exito && pagosRes.datos) {
               const d = pagosRes.datos;
@@ -105,6 +106,9 @@ export class AdminDashboard implements OnInit {
                 kpiExitosos.valor = (d.transaccionesPorEstado['EXITOSO'] || 0).toLocaleString();
                 kpiExitosos.detalle = `Tasa exitosa real de ${d.totalTransacciones} transacciones`;
               }
+              if (d.graficoIngresos && d.graficoIngresos.length > 0) {
+                dataCloned.graficoIngresos = d.graficoIngresos;
+              }
             }
           }
         });
@@ -115,7 +119,8 @@ export class AdminDashboard implements OnInit {
             if (userRes.exito && userRes.datos) {
               const kpiUsers = dataCloned.kpis.find(k => k.etiqueta.includes('Usuarios'));
               if (kpiUsers) {
-                kpiUsers.valor = userRes.datos.totalElementos.toLocaleString();
+                const total = userRes.datos.totalElementos ?? (userRes.datos as any).totalElements ?? 0;
+                kpiUsers.valor = total.toLocaleString();
                 kpiUsers.detalle = 'Usuarios registrados reales';
               }
             }
@@ -127,7 +132,8 @@ export class AdminDashboard implements OnInit {
           next: (audRes) => {
             const kpiAudit = dataCloned.kpis.find(k => k.etiqueta.includes('auditados') || k.etiqueta.includes('Auditoría') || k.etiqueta.includes('Eventos'));
             if (kpiAudit) {
-              kpiAudit.valor = audRes.totalElements.toLocaleString();
+              const totalAudit = audRes.totalElements ?? (audRes as any).totalElementos ?? 0;
+              kpiAudit.valor = totalAudit.toLocaleString();
               kpiAudit.detalle = 'Eventos registrados en ms-auditoria';
             }
           }
@@ -140,9 +146,11 @@ export class AdminDashboard implements OnInit {
               dataCloned.pagos = pagosListRes.datos.contenido.map((p) => {
                 const plan = p.detalles && p.detalles.length > 0 ? p.detalles[0].planSolicitado : 'FREE';
                 const monto = p.detalles && p.detalles.length > 0 ? p.detalles[0].monto : 0;
+                const userMatch = this.usuarios().find(u => u.id === p.usuarioId);
+                const nombreUsuario = userMatch ? userMatch.nombre : p.usuarioId.slice(0, 8).toUpperCase();
                 return {
                   id: `PAG-${p.id.slice(0, 4).toUpperCase()}`,
-                  usuario: p.usuarioId.slice(0, 8).toUpperCase(),
+                  usuario: nombreUsuario,
                   monto: new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(monto),
                   plan,
                   estado: p.estado

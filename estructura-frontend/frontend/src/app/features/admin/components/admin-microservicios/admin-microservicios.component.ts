@@ -99,11 +99,13 @@ export class AdminMicroserviciosComponent implements OnInit {
     this.verificandoServicio.set(serv.nombre);
     this.saludVerificada.set(null);
 
+    const inicio = Date.now();
     this.adminService.verificarSaludServicio(serv.nombre).subscribe({
       next: (res) => {
+        const latenciaMs = Date.now() - inicio;
         const statusVal = res.status || res.estado || 'DOWN';
         const estadoFinal = (statusVal === 'UP' || statusVal === 'healthy') ? 'healthy' : (statusVal === 'DEGRADADO' || statusVal === 'warning') ? 'warning' : 'down';
-        const latenciaFinal = (statusVal === 'UP' || statusVal === 'healthy') ? (res.latencia || 'OK') : 'offline';
+        const latenciaFinal = (statusVal === 'UP' || statusVal === 'healthy') ? `${latenciaMs}ms` : 'offline';
         
         // Actualizar el estado del servicio en la lista local de servicios
         this.servicios.update(lista =>

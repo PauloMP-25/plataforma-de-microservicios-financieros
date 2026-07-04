@@ -10,5 +10,6 @@ public record ResumenPagosDTO(
     long totalTransacciones,
     BigDecimal ingresosTotales,
     Map<String, Long> transaccionesPorEstado,
-    Map<String, Long> suscripcionesPorPlan
+    Map<String, Long> suscripcionesPorPlan,
+    java.util.List<Map<String, Object>> graficoIngresos
 ) {}

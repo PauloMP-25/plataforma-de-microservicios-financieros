@@ -15,7 +15,7 @@ public interface IServicioAdminPagos {
      * Obtiene un resumen consolidado de todos los pagos.
      * @return DTO con estadísticas clave.
      */
-    ResumenPagosDTO obtenerResumenGeneral();
+    ResumenPagosDTO obtenerResumenGeneral(Integer anio);
 
     /**
      * Lista todos los pagos con soporte para paginación.

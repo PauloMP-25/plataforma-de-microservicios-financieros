@@ -89,7 +89,7 @@ export class AdminDashboardService {
     { nombre: 'ms-nucleo-financiero', puerto: 8085, estado: 'healthy', latencia: '42ms', descripcion: 'Transacciones y categorías' },
     { nombre: 'ms-ia', puerto: 8086, estado: 'healthy', latencia: '55ms', descripcion: 'Módulos inteligentes' },
     { nombre: 'ms-pagos', puerto: 8087, estado: 'healthy', latencia: '29ms', descripcion: 'Checkout y administración de pagos' },
-    { nombre: 'ms-suscripciones', puerto: 8088, estado: 'down', latencia: 'timeout', descripcion: 'Existe código, no está en Docker híbrido actual' }
+    { nombre: 'ms-suscripciones', puerto: 8088, estado: 'healthy', latencia: '25ms', descripcion: 'Suscripciones y facturación periódica' }
   ];
 
   obtenerResumen(): Observable<AdminDashboardData> {
@@ -177,8 +177,11 @@ export class AdminDashboardService {
     return of(logsMap[nombre] || [`[${timestamp()}] [INFO] Listening to connections on port ${serv?.puerto || '8080'}`]).pipe(delay(100));
   }
 
-  obtenerResumenPagos(): Observable<ResultadoApi<ResumenPagosDTO>> {
-    return this.http.get<ResultadoApi<ResumenPagosDTO>>(`${this.base}/resumen`).pipe(
+  obtenerResumenPagos(anio?: number): Observable<ResultadoApi<ResumenPagosDTO>> {
+    let params = new HttpParams();
+    if (anio) params = params.set('anio', anio.toString());
+
+    return this.http.get<ResultadoApi<ResumenPagosDTO>>(`${this.base}/resumen`, { params }).pipe(
       catchError(() => {
         console.warn('Backend offline - usando mock para resumen de pagos');
         return of({
@@ -397,7 +400,7 @@ export class AdminDashboardService {
       { nombre: 'ms-nucleo-financiero', puerto: 8085, estado: 'healthy', latencia: '42ms', descripcion: 'Transacciones y categorías' },
       { nombre: 'ms-ia', puerto: 8086, estado: 'healthy', latencia: '55ms', descripcion: 'Módulos inteligentes' },
       { nombre: 'ms-pagos', puerto: 8087, estado: 'healthy', latencia: '29ms', descripcion: 'Checkout y administración de pagos' },
-      { nombre: 'ms-suscripciones', puerto: 8088, estado: 'down', latencia: 'timeout', descripcion: 'Existe código, no está en Docker híbrido actual' }
+      { nombre: 'ms-suscripciones', puerto: 8088, estado: 'healthy', latencia: '25ms', descripcion: 'Suscripciones y facturación periódica' }
     ],
     pagos: [
       { id: 'PAG-0091', usuario: 'carlos.mendez', monto: 'S/ 49.90', plan: 'PRO', estado: 'EXITOSO' },
@@ -405,11 +408,7 @@ export class AdminDashboardService {
       { id: 'PAG-0089', usuario: 'luis.ramos', monto: 'S/ 99.90', plan: 'ENTERPRISE', estado: 'EXITOSO' },
       { id: 'PAG-0088', usuario: 'sofia.vega', monto: 'S/ 49.90', plan: 'PRO', estado: 'FALLIDO' }
     ],
-    alertas: [
-      { titulo: 'Ruta Gateway faltante', descripcion: 'Agregar /api/v1/admin/** para conectar usuarios admin reales.', severidad: 'media', icono: 'fa-solid fa-route' },
-      { titulo: 'IPs bloqueadas', descripcion: '3 direcciones en lista negra pendientes de revisión.', severidad: 'critica', icono: 'fa-solid fa-ban' },
-      { titulo: 'OTP bloqueado', descripcion: '1 usuario superó intentos permitidos de verificación.', severidad: 'media', icono: 'fa-solid fa-mobile-screen' }
-    ],
+
     ipsBloqueadas: [
       { ip: '192.168.45.201', motivo: 'Fuerza bruta', tiempo: 'hace 2h' },
       { ip: '103.21.58.12', motivo: 'Múltiples OTP fallidos', tiempo: 'hace 5h' },

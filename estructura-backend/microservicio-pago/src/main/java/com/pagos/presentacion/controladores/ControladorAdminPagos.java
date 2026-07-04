@@ -29,8 +29,8 @@ public class ControladorAdminPagos {
     private final PublicadorAuditoriaPagosImpl publicadorAuditoria;
 
     @GetMapping("/resumen")
-    public ResponseEntity<ResultadoApi<ResumenPagosDTO>> obtenerResumen() {
-        ResumenPagosDTO resumen = servicioAdmin.obtenerResumenGeneral();
+    public ResponseEntity<ResultadoApi<ResumenPagosDTO>> obtenerResumen(@RequestParam(required = false) Integer anio) {
+        ResumenPagosDTO resumen = servicioAdmin.obtenerResumenGeneral(anio);
         return ResponseEntity.ok(ResultadoApi.exito(resumen, "Resumen administrativo generado"));
     }
 
@@ -40,11 +40,15 @@ public class ControladorAdminPagos {
             @RequestParam(defaultValue = "10") int tamanio,
             HttpServletRequest request) {
         int tamanioAjustado = Math.min(tamanio, 100);
-        publicadorAuditoria.auditarAccesoAdmin(
-                UtilidadSeguridad.obtenerUsuarioId(),
-                request.getRequestURI(),
-                request.getRemoteAddr()
-        );
+        try {
+            publicadorAuditoria.auditarAccesoAdmin(
+                    UtilidadSeguridad.obtenerUsuarioId(),
+                    request.getRequestURI(),
+                    request.getRemoteAddr()
+            );
+        } catch (Exception e) {
+            // Ignorar error de auditoría para no romper el flujo principal
+        }
         Paginacion<Pago> pagos = servicioAdmin.listarTodosLosPagos(pagina, tamanioAjustado);
         return ResponseEntity.ok(ResultadoApi.exito(pagos, "Historial de pagos recuperado"));
     }

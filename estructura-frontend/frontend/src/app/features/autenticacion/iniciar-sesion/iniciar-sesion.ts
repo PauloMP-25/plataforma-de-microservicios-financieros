@@ -102,7 +102,11 @@ export class IniciarSesion {
           // Añadimos un pequeño retraso para permitir que el Header/Dashboard inicialicen sin parpadeo
           setTimeout(() => {
             this.cargando = false;
-            this.router.navigate(['/dashboard']);
+            if (this.authService.esAdmin()) {
+              this.router.navigate(['/admin']);
+            } else {
+              this.router.navigate(['/dashboard']);
+            }
           }, 1000);
         } else {
           this.cargando = false;

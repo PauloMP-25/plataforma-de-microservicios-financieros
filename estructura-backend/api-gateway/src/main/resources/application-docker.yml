@@ -224,6 +224,21 @@ spring:
             requiere-autenticacion: true
             rol-requerido: ROLE_ADMIN
 
+        - id: servicio-seguridad
+          uri: ${URL_PROD_AUDITORIA:https://luka-auditoria.onrender.com}
+          predicates:
+            - Path=/api/v1/seguridad/**
+          filters:
+            - StripPrefix=0
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: CircuitBreaker
+              args:
+                name: auditoriaCB
+                fallbackUri: forward:/fallback
+          metadata:
+            requiere-autenticacion: true
+            rol-requerido: ROLE_ADMIN
+
         - id: servicio-mensajeria-otp
           uri: ${URL_PROD_MENSAJERIA:https://luka-mensajeria.onrender.com}
           predicates:

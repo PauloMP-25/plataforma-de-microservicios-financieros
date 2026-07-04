@@ -27,12 +27,6 @@ export interface AdminPagoReciente {
   estado: 'EXITOSO' | 'PENDIENTE' | 'FALLIDO';
 }
 
-export interface AdminAlertaSistema {
-  titulo: string;
-  descripcion: string;
-  severidad: 'critica' | 'media' | 'informativa';
-  icono: string;
-}
 
 export interface AdminIpBloqueada {
   ip: string;
@@ -63,7 +57,7 @@ export interface AdminDashboardData {
   kpis: AdminKpiCard[];
   servicios: AdminServicioEstado[];
   pagos: AdminPagoReciente[];
-  alertas: AdminAlertaSistema[];
+
   ipsBloqueadas: AdminIpBloqueada[];
   otpsBloqueados: AdminOtpBloqueado[];
   graficoIngresos: AdminBarraGrafico[];
@@ -75,6 +69,7 @@ export interface ResumenPagosDTO {
   ingresosTotales: number;
   transaccionesPorEstado: Record<string, number>;
   suscripcionesPorPlan: Record<string, number>;
+  graficoIngresos?: AdminBarraGrafico[];
 }
 
 export interface DetallePagoAdmin {

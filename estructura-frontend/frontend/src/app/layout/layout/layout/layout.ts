@@ -24,7 +24,7 @@ export class Layout {
 
   constructor(public sidebarState: SidebarStateService){
     const user = this.authService.usuario();
-    if (user && user.id) {
+    if (user && user.id && !this.authService.esAdmin()) {
       this.perfilService.consultarPerfil(user.id).subscribe({
         next: (perfil) => {
           if (perfil && !perfil.datosCompletos) {
