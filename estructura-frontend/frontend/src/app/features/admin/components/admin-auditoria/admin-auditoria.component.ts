@@ -7,6 +7,7 @@ import {
   AuditoriaAccesoDTO, 
   AuditoriaTransaccionalDTO 
 } from '../../../../core/models/auditoria/auditoria.model';
+import { mockAccesos, mockTransacciones, mockRegistros } from '../../mocks/auditoria.mock';
 
 @Component({
   selector: 'app-admin-auditoria',
@@ -84,6 +85,15 @@ export class AdminAuditoriaComponent implements OnInit {
           this.cargando.set(false);
         },
         error: () => {
+          console.warn('Auditoria backend offline - usando mock local para registros');
+          let filtrados = mockRegistros;
+          if (this.moduloFiltro()) {
+            filtrados = filtrados.filter(r => r.modulo === this.moduloFiltro());
+          }
+          const total = filtrados.length;
+          this.registros.set(filtrados.slice(pag * tam, (pag + 1) * tam));
+          this.totalElementos.set(total);
+          this.totalPaginas.set(Math.ceil(total / tam));
           this.cargando.set(false);
         }
       });
@@ -96,6 +106,11 @@ export class AdminAuditoriaComponent implements OnInit {
           this.cargando.set(false);
         },
         error: () => {
+          console.warn('Auditoria backend offline - usando mock local para accesos');
+          const total = mockAccesos.length;
+          this.accesos.set(mockAccesos.slice(pag * tam, (pag + 1) * tam));
+          this.totalElementos.set(total);
+          this.totalPaginas.set(Math.ceil(total / tam));
           this.cargando.set(false);
         }
       });
@@ -112,6 +127,15 @@ export class AdminAuditoriaComponent implements OnInit {
           this.cargando.set(false);
         },
         error: () => {
+          console.warn('Auditoria backend offline - usando mock local para transacciones');
+          let filtrados = mockTransacciones;
+          if (this.servicioFiltro()) {
+            filtrados = filtrados.filter(t => t.servicioOrigen.toLowerCase().includes(this.servicioFiltro().toLowerCase()));
+          }
+          const total = filtrados.length;
+          this.transacciones.set(filtrados.slice(pag * tam, (pag + 1) * tam));
+          this.totalElementos.set(total);
+          this.totalPaginas.set(Math.ceil(total / tam));
           this.cargando.set(false);
         }
       });
