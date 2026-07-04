@@ -270,6 +270,10 @@
       </div>
     </section>
 
+    <section *ngIf="seccionActiva() === 'pagos'" id="pagos-seccion-admin" class="space-y-5 animate-fade-in">
+      <app-admin-pagos [modoClaro]="modoClaro()"></app-admin-pagos>
+    </section>
+
     <div *ngIf="seccionActiva() === 'dashboard'" class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
       <div *ngIf="seccionActiva() === 'dashboard'" class="space-y-4">
         <article class="rounded-2xl border border-info/25 bg-gradient-to-br from-slate-900 via-slate-950 to-info/10 p-5 shadow-xl shadow-info/5">

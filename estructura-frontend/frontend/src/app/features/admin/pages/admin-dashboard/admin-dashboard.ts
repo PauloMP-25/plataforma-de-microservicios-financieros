@@ -6,6 +6,7 @@ import { AdminDashboardService } from '../../services/admin-dashboard.service';
 import { AdminDashboardData, AdminPagoReciente, AdminServicioEstado } from '../../models/admin-dashboard.model';
 import { AdminKpiCardComponent } from '../../components/admin-kpi-card/admin-kpi-card';
 import { AdminStatusBadgeComponent } from '../../components/admin-status-badge/admin-status-badge';
+import { AdminPagosComponent } from '../../components/admin-pagos/admin-pagos.component';
 import { AuthService } from '../../../../core/services/auth.service';
 
 type AdminSeccion = 'dashboard' | 'usuarios' | 'pagos' | 'microservicios' | 'seguridad' | 'auditoria' | 'perfil';
@@ -30,7 +31,7 @@ interface AdminUsuario {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, AdminKpiCardComponent, AdminStatusBadgeComponent],
+  imports: [CommonModule, FormsModule, RouterModule, AdminKpiCardComponent, AdminStatusBadgeComponent, AdminPagosComponent],
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.scss'
 })

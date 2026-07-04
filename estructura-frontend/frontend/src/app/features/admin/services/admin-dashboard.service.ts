@@ -1,12 +1,146 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
-import { AdminDashboardData } from '../models/admin-dashboard.model';
+import { delay, catchError } from 'rxjs/operators';
+import { environment } from '../../../enviroments/environment';
+import { ResultadoApi } from '../../../core/models/auth/user.model';
+import { AdminDashboardData, ResumenPagosDTO, PagoAdmin, PaginacionAdmin } from '../models/admin-dashboard.model';
 
 @Injectable({ providedIn: 'root' })
 export class AdminDashboardService {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.gatewayUrl}/api/v1/pagos/admin`;
+
+  // Datos mock para fallback robusto
+  private readonly mockResumenPagos: ResumenPagosDTO = {
+    totalTransacciones: 148,
+    ingresosTotales: 5420.50,
+    transaccionesPorEstado: {
+      EXITOSO: 124,
+      PENDIENTE: 15,
+      FALLIDO: 9
+    },
+    suscripcionesPorPlan: {
+      FREE: 140,
+      PRO: 78,
+      PREMIUM: 42
+    }
+  };
+
+  private readonly mockHistorialPagos: PagoAdmin[] = [
+    {
+      id: 'fa7b8c9d-1234-5678-90ab-cdef01234567',
+      usuarioId: '8f7e6d5c-4321-8765-09ba-fedcba987654',
+      estado: 'EXITOSO',
+      fechaCreacion: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+      detalles: [{ id: 'd1', planSolicitado: 'PREMIUM', monto: 99.90, moneda: 'PEN', cantidad: 1 }]
+    },
+    {
+      id: 'bc6a5d4e-5678-1234-abcd-ef0123456789',
+      usuarioId: '3d2c1b0a-8765-4321-fedc-ba9876543210',
+      estado: 'PENDIENTE',
+      fechaCreacion: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
+      detalles: [{ id: 'd2', planSolicitado: 'PRO', monto: 49.90, moneda: 'PEN', cantidad: 1 }]
+    },
+    {
+      id: 'de8f9a0b-9012-3456-7890-abcdef012345',
+      usuarioId: '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
+      estado: 'EXITOSO',
+      fechaCreacion: new Date(Date.now() - 1000 * 60 * 600).toISOString(),
+      detalles: [{ id: 'd3', planSolicitado: 'PRO', monto: 49.90, moneda: 'PEN', cantidad: 1 }]
+    },
+    {
+      id: '12345678-abcd-ef01-2345-6789abcdef01',
+      usuarioId: 'fedcba98-7654-3210-fedc-ba9876543210',
+      estado: 'FALLIDO',
+      fechaCreacion: new Date(Date.now() - 1000 * 60 * 1440).toISOString(),
+      detalles: [{ id: 'd4', planSolicitado: 'PREMIUM', monto: 99.90, moneda: 'PEN', cantidad: 1 }]
+    },
+    {
+      id: '87654321-fedc-ba98-7654-3210fedcba98',
+      usuarioId: 'abcdef01-2345-6789-abcd-ef0123456789',
+      estado: 'EXITOSO',
+      fechaCreacion: new Date(Date.now() - 1000 * 60 * 2880).toISOString(),
+      detalles: [{ id: 'd5', planSolicitado: 'PRO', monto: 49.90, moneda: 'PEN', cantidad: 1 }]
+    },
+    {
+      id: '98765432-10ab-cdef-0123-456789abcdef',
+      usuarioId: 'f0e1d2c3-b4a5-9687-7685-9403b2c1a0e9',
+      estado: 'EXITOSO',
+      fechaCreacion: new Date(Date.now() - 1000 * 60 * 4320).toISOString(),
+      detalles: [{ id: 'd6', planSolicitado: 'PRO', monto: 49.90, moneda: 'PEN', cantidad: 1 }]
+    },
+    {
+      id: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
+      usuarioId: 'c1b2a3f4-d5e6-7b8c-9a0d-1e2f3a4b5c6d',
+      estado: 'FALLIDO',
+      fechaCreacion: new Date(Date.now() - 1000 * 60 * 5760).toISOString(),
+      detalles: [{ id: 'd7', planSolicitado: 'PRO', monto: 49.90, moneda: 'PEN', cantidad: 1 }]
+    }
+  ];
+
   obtenerResumen(): Observable<AdminDashboardData> {
     return of(this.mockData).pipe(delay(250));
+  }
+
+  obtenerResumenPagos(): Observable<ResultadoApi<ResumenPagosDTO>> {
+    return this.http.get<ResultadoApi<ResumenPagosDTO>>(`${this.base}/resumen`).pipe(
+      catchError(() => {
+        console.warn('Backend offline - usando mock para resumen de pagos');
+        return of({
+          exito: true,
+          mensaje: 'Resumen administrativo generado (MOCK)',
+          estado: 200,
+          datos: this.mockResumenPagos
+        });
+      })
+    );
+  }
+
+  listarPagos(pagina: number = 0, tamanio: number = 10): Observable<ResultadoApi<PaginacionAdmin<PagoAdmin>>> {
+    return this.http.get<ResultadoApi<PaginacionAdmin<PagoAdmin>>>(`${this.base}/historial`, {
+      params: { pagina: pagina.toString(), tamanio: tamanio.toString() }
+    }).pipe(
+      catchError(() => {
+        console.warn('Backend offline - usando mock para historial de pagos');
+        const total = this.mockHistorialPagos.length;
+        const contenido = this.mockHistorialPagos.slice(pagina * tamanio, (pagina + 1) * tamanio);
+        const paginas = Math.ceil(total / tamanio);
+        return of({
+          exito: true,
+          mensaje: 'Historial de pagos recuperado (MOCK)',
+          estado: 200,
+          datos: {
+            contenido,
+            numeroPagina: pagina,
+            tamañoPagina: tamanio,
+            totalElementos: total,
+            totalPaginas: paginas,
+            esUltima: pagina >= paginas - 1
+          }
+        });
+      })
+    );
+  }
+
+  corregirEstadoPago(id: string, nuevoEstado: string): Observable<ResultadoApi<void>> {
+    return this.http.patch<ResultadoApi<void>>(`${this.base}/${id}/estado`, null, {
+      params: { nuevoEstado }
+    }).pipe(
+      catchError(() => {
+        console.warn('Backend offline - simulando actualización de estado del pago');
+        const pago = this.mockHistorialPagos.find(p => p.id === id);
+        if (pago) {
+          pago.estado = nuevoEstado as any;
+        }
+        return of({
+          exito: true,
+          mensaje: 'Estado del pago actualizado manualmente (MOCK)',
+          estado: 200,
+          datos: undefined as any
+        });
+      })
+    );
   }
 
   private readonly mockData: AdminDashboardData = {

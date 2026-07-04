@@ -1,0 +1,172 @@
+<div class="space-y-6" [class.modo-claro]="modoClaro()">
+  <!-- KPIs de Pagos -->
+  <div *ngIf="!cargandoResumen() && kpiCards().length > 0" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <app-admin-kpi-card *ngFor="let kpi of kpiCards()" [kpi]="kpi" [modoClaro]="modoClaro()"></app-admin-kpi-card>
+  </div>
+
+  <!-- Loading State del Resumen -->
+  <div *ngIf="cargandoResumen()" class="py-4 text-center text-slate-400">
+    <i class="fa-solid fa-spinner fa-spin mr-2"></i> Cargando resumen financiero...
+  </div>
+
+  <!-- Contenedor Principal de la Tabla -->
+  <article class="overflow-hidden rounded-[24px] border shadow-2xl"
+           [ngClass]="modoClaro() ? 'border-indigo-200 bg-white' : 'border-white/10 bg-[#0d1222]'">
+    <header class="flex flex-col gap-3 border-b px-6 py-5 sm:flex-row sm:items-center sm:justify-between"
+            [ngClass]="modoClaro() ? 'border-indigo-100 bg-indigo-50/30' : 'border-white/10 bg-slate-950/20'">
+      <div>
+        <h3 class="font-heading text-lg font-extrabold" [ngClass]="modoClaro() ? 'text-slate-900' : 'text-white'">Historial de Pagos</h3>
+        <p class="text-xs text-slate-400">Lista completa y paginada de transacciones en la pasarela de pagos.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button (click)="cargarResumen(); cargarPagos(paginaActual())" 
+                class="rounded-xl border px-3 py-2 text-xs font-bold transition hover:bg-white/15"
+                [ngClass]="modoClaro() ? 'border-slate-300 text-slate-700 bg-slate-50' : 'border-white/10 text-white bg-slate-900'">
+          <i class="fa-solid fa-rotate mr-1"></i> Refrescar
+        </button>
+      </div>
+    </header>
+
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[900px] text-left text-sm">
+        <thead class="bg-white/5 text-[11px] uppercase tracking-wider text-slate-400"
+               [ngClass]="modoClaro() ? 'bg-slate-50' : 'bg-slate-950/20'">
+          <tr>
+            <th class="px-6 py-4">ID de Pago</th>
+            <th class="px-6 py-4">Usuario ID (UUID)</th>
+            <th class="px-6 py-4">Plan</th>
+            <th class="px-6 py-4">Monto</th>
+            <th class="px-6 py-4">Estado</th>
+            <th class="px-6 py-4">Fecha de Creación</th>
+            <th class="px-6 py-4 text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y text-slate-300" 
+               [ngClass]="modoClaro() ? 'divide-slate-100 text-slate-700' : 'divide-white/5'">
+          <tr *ngFor="let pago of pagos()" class="transition hover:bg-primary/5">
+            <td class="px-6 py-4 font-mono text-xs text-slate-400">#{{ pago.id }}</td>
+            <td class="px-6 py-4 font-mono text-xs">
+              <span class="cursor-help border-b border-dashed border-slate-500/40" [title]="pago.usuarioId">
+                {{ formatoUsuarioId(pago.usuarioId) }}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-xs font-extrabold" 
+                [ngClass]="obtenerPlan(pago) === 'PREMIUM' ? 'text-violet-400' : obtenerPlan(pago) === 'PRO' ? 'text-indigo-400' : 'text-slate-400'">
+              {{ obtenerPlan(pago) }}
+            </td>
+            <td class="px-6 py-4 font-mono text-sm font-bold" [ngClass]="modoClaro() ? 'text-slate-900' : 'text-white'">
+              {{ obtenerMonto(pago) }}
+            </td>
+            <td class="px-6 py-4">
+              <app-admin-status-badge [texto]="pago.estado" [tipo]="obtenerTipoEstado(pago.estado)"></app-admin-status-badge>
+            </td>
+            <td class="px-6 py-4 text-xs text-slate-400">{{ formatoFecha(pago.fechaCreacion) }}</td>
+            <td class="px-6 py-4 text-center">
+              <button type="button" 
+                      (click)="abrirModalEdicion(pago)" 
+                      class="rounded-xl px-3 py-1.5 text-xs font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 transition hover:bg-indigo-500/20">
+                <i class="fa-solid fa-pen-to-square mr-1"></i> Corregir
+              </button>
+            </td>
+          </tr>
+
+          <tr *ngIf="!cargandoTabla() && pagos().length === 0">
+            <td colspan="7" class="py-12 text-center text-slate-500">
+              <i class="fa-solid fa-folder-open text-3xl mb-3 block text-slate-600"></i>
+              No se encontraron registros de pagos.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginador -->
+    <footer class="flex items-center justify-between border-t px-6 py-4"
+            [ngClass]="modoClaro() ? 'border-slate-100 bg-slate-50/50' : 'border-white/5 bg-slate-950/20'">
+      <div class="text-xs text-slate-400">
+        Mostrando {{ pagos().length }} transacciones (Total: {{ totalElementos() }})
+      </div>
+      <div class="flex items-center gap-2">
+        <button [disabled]="paginaActual() === 0 || cargandoTabla()" 
+                (click)="anteriorPagina()" 
+                class="rounded-xl border px-3 py-1.5 text-xs font-bold transition disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white/10"
+                [ngClass]="modoClaro() ? 'border-slate-200 text-slate-700 bg-white' : 'border-white/10 text-white bg-slate-900'">
+          ‹ Anterior
+        </button>
+        <span class="text-xs text-slate-400">Página {{ paginaActual() + 1 }} de {{ totalPaginas() }}</span>
+        <button [disabled]="esUltima() || cargandoTabla()" 
+                (click)="siguientePagina()" 
+                class="rounded-xl border px-3 py-1.5 text-xs font-bold transition disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white/10"
+                [ngClass]="modoClaro() ? 'border-slate-200 text-slate-700 bg-white' : 'border-white/10 text-white bg-slate-900'">
+          Siguiente ›
+        </button>
+      </div>
+    </footer>
+  </article>
+
+  <!-- Modal para la Edición de Estado -->
+  <div *ngIf="pagoEnEdicion() as pagoEdi" 
+       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
+    <div class="w-full max-w-md overflow-hidden rounded-[24px] border shadow-2xl p-6 transition-all duration-300"
+         [ngClass]="modoClaro() ? 'bg-white border-indigo-100 text-slate-900' : 'bg-slate-900 border-white/10 text-white'">
+      
+      <div class="flex items-center justify-between border-b pb-3 mb-4"
+           [ngClass]="modoClaro() ? 'border-slate-100' : 'border-white/10'">
+        <h4 class="font-heading text-lg font-extrabold"><i class="fa-solid fa-shield-halved text-indigo-400 mr-2"></i>Corregir Estado de Pago</h4>
+        <button (click)="cerrarModalEdicion()" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <p class="text-xs text-slate-400 font-bold uppercase">ID de Transacción</p>
+          <p class="font-mono text-sm mt-1 text-slate-300">#{{ pagoEdi.id }}</p>
+        </div>
+
+        <div>
+          <p class="text-xs text-slate-400 font-bold uppercase">Usuario</p>
+          <p class="font-mono text-sm mt-1 text-slate-300">{{ pagoEdi.usuarioId }}</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-xs text-slate-400 font-bold uppercase">Plan</p>
+            <p class="text-sm font-extrabold mt-1 text-indigo-400">{{ obtenerPlan(pagoEdi) }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-400 font-bold uppercase">Monto</p>
+            <p class="text-sm font-extrabold mt-1 text-white">{{ obtenerMonto(pagoEdi) }}</p>
+          </div>
+        </div>
+
+        <hr [ngClass]="modoClaro() ? 'border-slate-100' : 'border-white/10'"/>
+
+        <div>
+          <label class="block text-xs text-slate-400 font-bold uppercase mb-2">Nuevo Estado de Pago</label>
+          <select #estadoSelect [value]="pagoEdi.estado"
+                  class="w-full h-12 rounded-xl border bg-slate-950/80 px-4 text-base font-bold text-slate-200 outline-none focus:border-primary"
+                  [ngClass]="modoClaro() ? 'border-slate-300 text-slate-900 bg-white' : 'border-white/10'">
+            <option value="EXITOSO">EXITOSO</option>
+            <option value="PENDIENTE">PENDIENTE</option>
+            <option value="FALLIDO">FALLIDO</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 mt-6 pt-4 border-t"
+           [ngClass]="modoClaro() ? 'border-slate-100' : 'border-white/10'">
+        <button [disabled]="cambiandoEstado()" 
+                (click)="cerrarModalEdicion()" 
+                class="rounded-xl px-4 py-2.5 text-sm font-bold border transition hover:bg-white/10"
+                [ngClass]="modoClaro() ? 'border-slate-200 text-slate-700 bg-white' : 'border-white/10 text-white bg-slate-800'">
+          Cancelar
+        </button>
+        <button [disabled]="cambiandoEstado()" 
+                (click)="guardarNuevoEstado(estadoSelect.value)" 
+                class="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-primary/20 hover:bg-primary-dark transition flex items-center gap-2">
+          <i class="fa-solid fa-spinner fa-spin" *ngIf="cambiandoEstado()"></i>
+          {{ cambiandoEstado() ? 'Guardando...' : 'Aplicar Corrección' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

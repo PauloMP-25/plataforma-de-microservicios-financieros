@@ -1,0 +1,65 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.kpi-box {
+  padding: 1.25rem;
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.kpi-icon-container {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Animación de entrada para el modal */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Modificadores del tema claro localizados */
+.modo-claro {
+  .kpi-box {
+    background-color: #ffffff;
+    border-color: #e2e8f0;
+    
+    p {
+      color: #64748b;
+    }
+    
+    h3 {
+      color: #0f172a;
+    }
+  }
+
+  table {
+    thead {
+      th {
+        color: #475569;
+      }
+    }
+    
+    tbody {
+      tr:hover {
+        background-color: rgba(91, 106, 240, 0.04);
+      }
+    }
+  }
+}
