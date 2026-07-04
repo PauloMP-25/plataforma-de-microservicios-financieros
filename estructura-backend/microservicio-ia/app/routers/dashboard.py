@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 
 from app.libreria_comun.seguridad.validador_jwt import validar_token, obtener_usuario_id
 from app.libreria_comun.respuesta.resultado_api import ResultadoApi
-from app.clientes.luka_clients import obtener_cliente_financiero
+from app.clientes.luka_clients import obtener_cliente_financiero, obtener_cliente_perfil
 from app.persistencia.redis.cache_redis import CacheRedis
 from app.utilidades.preparador_datos import json_a_dataframe
 
@@ -29,6 +29,10 @@ class ResumenKPIs(BaseModel):
     cantidad_ingresos: int = Field(..., alias="cantidadIngresos")
     cantidad_gastos: int = Field(..., alias="cantidadGastos")
     tasa_ahorro: float = Field(..., alias="tasaAhorro")
+    gasto_promedio_diario: float = Field(..., alias="gastoPromedioDiario")
+    proyeccion_fin_de_mes: float = Field(..., alias="proyeccionFinDeMes")
+    cumplimiento_presupuesto: float = Field(default=0.0, alias="cumplimientoPresupuesto")
+    presupuesto_activo: Optional[float] = Field(default=None, alias="presupuestoActivo")
 
     model_config = {
         "populate_by_name": True,
@@ -52,6 +56,9 @@ class CategoriaDistribucion(BaseModel):
 class RespuestaGraficos(BaseModel):
     flujo_caja: List[CashflowPoint] = Field(..., alias="flujoCaja")
     distribucion_gastos: List[CategoriaDistribucion] = Field(..., alias="distribucionGastos")
+    heatmap: List[Dict[str, Any]] = Field(default=[], alias="heatmap")
+    transacciones_metodo: List[Dict[str, Any]] = Field(default=[], alias="transaccionesMetodo")
+    comparativa: List[Dict[str, Any]] = Field(default=[], alias="comparativa")
 
     model_config = {
         "populate_by_name": True,
@@ -369,18 +376,27 @@ async def get_dashboard_kpis(
     """
     Obtiene y calcula dinámicamente los KPIs principales y las últimas 10 transacciones.
     Usa caché YTD e implementa filtrado en memoria.
+    También consulta el presupuesto global activo desde ms-cliente para calcular
+    el cumplimientoPresupuesto real del usuario.
     """
     usuario_id = obtener_usuario_id(payload)
     auth_header = request.headers.get("Authorization", "")
     token = auth_header.replace("Bearer ", "") if auth_header.startswith("Bearer ") else ""
 
-    # 1. Obtener bolsa de transacciones crudas
-    datos_raw = await obtener_transacciones_YTD_optimizadas(
-        usuario_id=usuario_id,
-        token=token,
-        fecha_inicio_str=fechaInicio,
-        fecha_fin_str=fechaFin
+    # 1. Obtener bolsa de transacciones crudas y presupuesto activo en paralelo
+    import asyncio
+    cliente_perfil = obtener_cliente_perfil()
+    datos_raw, presupuesto_activo = await asyncio.gather(
+        obtener_transacciones_YTD_optimizadas(
+            usuario_id=usuario_id,
+            token=token,
+            fecha_inicio_str=fechaInicio,
+            fecha_fin_str=fechaFin
+        ),
+        cliente_perfil.obtener_presupuesto_activo_async(usuario_id=usuario_id, token=token)
     )
+    monto_presupuesto = float(presupuesto_activo.get("montoLimite", 0)) if presupuesto_activo else None
+    logger.info(f"[DASHBOARD-KPIs] Presupuesto activo para {usuario_id}: {monto_presupuesto}")
 
     # 2. Cargar en Pandas y aplicar filtros locales
     df = json_a_dataframe(datos_raw)
@@ -438,6 +454,13 @@ async def get_dashboard_kpis(
         cant_gas = len(df_gas)
         tasa_ahorro = ((total_ing - total_gas) / total_ing) * 100 if total_ing > 0 else 0.0
 
+        dias_periodo = (dt_fin - dt_inicio).days + 1
+        gasto_prom_diario = total_gas / dias_periodo if dias_periodo > 0 else 0.0
+        
+        import calendar
+        dias_en_mes = calendar.monthrange(dt_fin.year, dt_fin.month)[1]
+        proyeccion_fin = gasto_prom_diario * dias_en_mes
+
         # Para las recientes, filtramos de la lista cruda original (camelCase) para preservar la interfaz del frontend
         recientes_filtradas = []
         for tx in datos_raw:
@@ -472,6 +495,13 @@ async def get_dashboard_kpis(
             desde_str = dt_inicio.isoformat()
             hasta_str = dt_fin.isoformat()
 
+    # Calcular cumplimiento de presupuesto usando el presupuesto global activo del ms-cliente
+    if monto_presupuesto and monto_presupuesto > 0:
+        cumplimiento_presupuesto = round((total_gas / monto_presupuesto) * 100, 2)
+    else:
+        # Sin presupuesto configurado: mostrar 0
+        cumplimiento_presupuesto = 0.0
+
     kpis = {
         "resumen": {
             "desde": desde_str,
@@ -481,7 +511,11 @@ async def get_dashboard_kpis(
             "balance": round(balance, 2),
             "cantidadIngresos": cant_ing,
             "cantidadGastos": cant_gas,
-            "tasaAhorro": round(tasa_ahorro, 2)
+            "tasaAhorro": round(tasa_ahorro, 2),
+            "gastoPromedioDiario": round(gasto_prom_diario, 2) if not df.empty else 0.0,
+            "proyeccionFinDeMes": round(proyeccion_fin, 2) if not df.empty else 0.0,
+            "cumplimientoPresupuesto": cumplimiento_presupuesto,
+            "presupuestoActivo": monto_presupuesto
         },
         "recientes": recientes
     }
@@ -489,7 +523,7 @@ async def get_dashboard_kpis(
     return ResultadoApi.exito_res(datos=kpis, mensaje="KPIs calculados con éxito.", ruta=request.url.path)
 
 
-@router.get("/graficos", response_model=ResultadoApi[RespuestaGraficos])
+@router.get("/graficos")
 async def get_dashboard_graficos(
     request: Request,
     fechaInicio: Optional[str] = None,
@@ -499,7 +533,12 @@ async def get_dashboard_graficos(
     payload: dict = Security(validar_token),
 ):
     """
-    Obtiene y calcula dinámicamente los datos de gráficos.
+    Obtiene y calcula dinámicamente los datos de gráficos:
+    - Flujo de Caja (últimos 5 meses)
+    - Distribución de Gastos por categoría
+    - Heatmap: cantidad de gastos por día de semana
+    - Métodos de Pago: desglose de transacciones por método
+    - Comparativa Histórica: gastos mes a mes (año actual vs año anterior)
     Usa caché YTD e implementa filtrado en memoria.
     """
     usuario_id = obtener_usuario_id(payload)
@@ -517,7 +556,6 @@ async def get_dashboard_graficos(
     # 2. Cargar en Pandas y aplicar filtros locales
     df = json_a_dataframe(datos_raw)
 
-    # Parsear fechas de filtro
     hoy = datetime.now()
     anio_actual = hoy.year
     ytd_inicio = datetime(anio_actual, 1, 1)
@@ -535,97 +573,156 @@ async def get_dashboard_graficos(
         dt_fin = ytd_fin
 
     if not df.empty:
-        # A. Filtrar por Rango de Fecha Solicitado (en memoria)
         df = df[(df['fecha'] >= pd.to_datetime(dt_inicio)) & (df['fecha'] <= pd.to_datetime(dt_fin))]
-
-        # B. Filtrar por metodoPago si se especifica
         if metodoPago:
             df = df[df['metodo_pago'].astype(str).str.upper() == metodoPago.upper()]
-
-        # C. Filtrar por tipoMovimiento si se especifica
         if tipoMovimiento:
             tipo_map = "GASTO" if tipoMovimiento.upper() == "EGRESO" else tipoMovimiento.upper()
             df = df[df['tipo'].astype(str).str.upper() == tipo_map]
-
-    # 3. Flujo de Caja (últimos 5 meses)
-    ahora = datetime.now()
-    meses_lista = []
-    for i in range(4, -1, -1):
-        m = ahora.month - i
-        y = ahora.year
-        while m <= 0:
-            m += 12
-            y -= 1
-        meses_lista.append((y, m))
 
     NOMBRES_MESES = {
         1: "Ene", 2: "Feb", 3: "Mar", 4: "Abr", 5: "May", 6: "Jun",
         7: "Jul", 8: "Ago", 9: "Sep", 10: "Oct", 11: "Nov", 12: "Dic"
     }
 
+    # 3. Flujo de Caja (últimos 5 meses)
+    meses_lista = []
+    for i in range(4, -1, -1):
+        m = hoy.month - i
+        y = hoy.year
+        while m <= 0:
+            m += 12
+            y -= 1
+        meses_lista.append((y, m))
+
     flujo_caja = []
-    if df.empty:
-        for y, m in meses_lista:
-            flujo_caja.append({
-                "mes": NOMBRES_MESES[m],
-                "ingresos": 0.0,
-                "gastos": 0.0
-            })
-    else:
-        for y, m in meses_lista:
+    for y, m in meses_lista:
+        if not df.empty:
             df_mes = df[(df['anio'] == y) & (df['mes'] == m)]
             ing_mes = float(df_mes[(df_mes['tipo'] == 'INGRESO') & (df_mes['estado'].astype(str).str.upper() == 'COMPLETED')]['monto'].sum())
             gas_mes = float(df_mes[(df_mes['tipo'] == 'GASTO') & (df_mes['estado'].astype(str).str.upper() != 'FAILED')]['monto'].sum())
-            flujo_caja.append({
-                "mes": NOMBRES_MESES[m],
-                "ingresos": round(ing_mes, 2),
-                "gastos": round(gas_mes, 2)
-            })
+        else:
+            ing_mes, gas_mes = 0.0, 0.0
+        flujo_caja.append({"mes": NOMBRES_MESES[m], "ingresos": round(ing_mes, 2), "gastos": round(gas_mes, 2)})
 
-    # 4. Distribución de Gastos
-    distribucion = []
+    # 4. Distribución de Gastos por categoría
     colores_default = {
-        "food": "#FF7043",
-        "comida": "#FF7043",
-        "transport": "#42A5F5",
-        "transporte": "#42A5F5",
-        "leisure": "#AB47BC",
-        "ocio": "#AB47BC",
-        "entretenimiento": "#AB47BC",
-        "health": "#26C6DA",
-        "salud": "#26C6DA",
-        "saas": "#5B6AF0",
-        "hogar": "#EC4899",
-        "servicios": "#14B8A6",
-        "inversiones": "#10B981",
-        "transferencia": "#F59E0B",
-        "otros": "#859397"
+        "food": "#FF7043", "comida": "#FF7043", "alimentación": "#FF7043", "alimentacion": "#FF7043",
+        "transport": "#42A5F5", "transporte": "#42A5F5", "pasaje moto": "#26C6DA",
+        "leisure": "#AB47BC", "ocio": "#AB47BC", "entretenimiento": "#AB47BC",
+        "health": "#10B981", "salud": "#10B981",
+        "saas": "#6366F1", "hogar": "#EC4899", "vivienda": "#EC4899",
+        "suscripciones": "#6366F1", "suscripciones streaming": "#8B5CF6",
+        "servicios": "#14B8A6", "inversiones": "#10B981",
+        "transferencia": "#F59E0B", "otros": "#859397",
+        "tecnología": "#3B82F6", "tecnologia": "#3B82F6",
+        "viajes": "#EF4444", "educación": "#10B981", "educacion": "#10B981",
+        "ropa y calzado": "#F59E0B", "otros gastos": "#859397"
     }
-
+    distribucion = []
     if not df.empty:
         df_gastos = df[(df['tipo'] == 'GASTO') & (df['estado'].astype(str).str.upper() != 'FAILED')]
         total_gastado = float(df_gastos['monto'].sum())
-
         if total_gastado > 0:
             grouped = df_gastos.groupby('categoria_nombre')['monto'].sum().reset_index()
             grouped = grouped.sort_values(by='monto', ascending=False)
-            for idx, row in grouped.iterrows():
+            for _, row in grouped.iterrows():
                 cat = str(row['categoria_nombre'])
                 total_cat = float(row['monto'])
-                pct = (total_cat / total_gastado) * 100
-                cat_lower = cat.lower()
-                color = colores_default.get(cat_lower, "#859397")
                 distribucion.append({
                     "categoria": cat,
                     "total": round(total_cat, 2),
-                    "porcentaje": round(pct, 2),
-                    "color": color
+                    "porcentaje": round((total_cat / total_gastado) * 100, 2),
+                    "color": colores_default.get(cat.lower(), "#859397")
                 })
+
+    # 5. Heatmap: cantidad de gastos agrupados por día de semana (Lun–Dom)
+    DIAS_SEMANA = {0: "Lun", 1: "Mar", 2: "Mié", 3: "Jue", 4: "Vie", 5: "Sáb", 6: "Dom"}
+    heatmap = []
+    if not df.empty:
+        df_gas_hm = df[(df['tipo'] == 'GASTO') & (df['estado'].astype(str).str.upper() != 'FAILED')].copy()
+        if not df_gas_hm.empty and 'fecha' in df_gas_hm.columns:
+            df_gas_hm['dia_num'] = pd.to_datetime(df_gas_hm['fecha']).dt.dayofweek
+            conteo_sem = df_gas_hm.groupby('dia_num').size().reset_index(name='n')
+            dias_map = {int(row['dia_num']): int(row['n']) for _, row in conteo_sem.iterrows()}
+            for num, nombre in DIAS_SEMANA.items():
+                heatmap.append({"dia": nombre, "intensidad": dias_map.get(num, 0)})
+    if not heatmap:
+        heatmap = [{"dia": n, "intensidad": 0} for n in DIAS_SEMANA.values()]
+
+    # 6. Métodos de Pago: desglose de gastos por método de pago
+    COLORES_METODO = {
+        "EFECTIVO": "#10B981", "TARJETA": "#5B6AF0",
+        "TRANSFERENCIA": "#F59E0B", "DIGITAL": "#EC4899"
+    }
+    transacciones_metodo = []
+    if not df.empty:
+        df_met = df[(df['tipo'] == 'GASTO') & (df['estado'].astype(str).str.upper() != 'FAILED')].copy()
+        if not df_met.empty and 'metodo_pago' in df_met.columns:
+            conteo = df_met.groupby('metodo_pago').size().reset_index(name='cantidad')
+            conteo = conteo.sort_values('cantidad', ascending=False)
+            for _, row in conteo.iterrows():
+                m_str = str(row['metodo_pago']).upper()
+                transacciones_metodo.append({
+                    "metodo": m_str,
+                    "cantidad": int(row['cantidad']),
+                    "color": COLORES_METODO.get(m_str, "#859397")
+                })
+
+    # 7. Comparativa Histórica: gastos mes a mes (año actual vs año anterior)
+    comparativa = []
+    anio_ant = anio_actual - 1
+    df_ant = pd.DataFrame()
+    try:
+        from app.persistencia.redis.cache_redis import CacheRedis as CacheRedisComp
+        import json as json_comp
+        key_cache_ant = f"ia:raw_tx:{usuario_id}:YTD_{anio_ant}"
+        cache_comp = CacheRedisComp()
+        cached_ant = cache_comp.obtener(key_cache_ant)
+        if cached_ant:
+            datos_raw_ant = json_comp.loads(cached_ant)
+            logger.info(f"[DASHBOARD-GRAFICOS] Cache HIT comparativa año anterior ({anio_ant})")
+        else:
+            ytd_inicio_ant = datetime(anio_ant, 1, 1)
+            ytd_fin_ant = datetime(anio_ant, 12, 31, 23, 59, 59)
+            cliente_fin = obtener_cliente_financiero()
+            resp_ant = await cliente_fin.obtener_historial_transacciones_async(
+                usuario_id=usuario_id, token=token, tamanio=10000,
+                desde_exacto=ytd_inicio_ant.isoformat(), hasta_exacto=ytd_fin_ant.isoformat()
+            )
+            datos_raw_ant = resp_ant.get("datos", []) if resp_ant else []
+            try:
+                cache_comp.guardar(key_cache_ant, json_comp.dumps(datos_raw_ant), ex=86400)
+                logger.info(f"[DASHBOARD-GRAFICOS] Año anterior ({anio_ant}) cacheado por 24h.")
+            except Exception:
+                pass
+        df_ant = json_a_dataframe(datos_raw_ant)
+    except Exception as e:
+        logger.warning(f"[DASHBOARD-GRAFICOS] No se pudo cargar historial año anterior: {e}")
+
+    for m in range(1, hoy.month + 1):
+        nombre_mes = NOMBRES_MESES[m]
+        gas_actual = 0.0
+        gas_anterior = 0.0
+        if not df.empty and 'anio' in df.columns:
+            df_m_act = df[(df['anio'] == anio_actual) & (df['mes'] == m)]
+            gas_actual = float(df_m_act[(df_m_act['tipo'] == 'GASTO') & (df_m_act['estado'].astype(str).str.upper() != 'FAILED')]['monto'].sum())
+        if not df_ant.empty and 'anio' in df_ant.columns:
+            df_m_ant = df_ant[(df_ant['anio'] == anio_ant) & (df_ant['mes'] == m)]
+            gas_anterior = float(df_m_ant[(df_m_ant['tipo'] == 'GASTO') & (df_m_ant['estado'].astype(str).str.upper() != 'FAILED')]['monto'].sum())
+        comparativa.append({"mes": nombre_mes, "actual": round(gas_actual, 2), "anterior": round(gas_anterior, 2)})
 
     graficos = {
         "flujoCaja": flujo_caja,
-        "distribucionGastos": distribucion
+        "distribucionGastos": distribucion,
+        "heatmap": heatmap,
+        "transaccionesMetodo": transacciones_metodo,
+        "comparativa": comparativa
     }
 
-    return ResultadoApi.exito_res(datos=graficos, mensaje="Gráficos calculados con éxito.", ruta=request.url.path)
-
+    payload_out = ResultadoApi.exito_res(
+        datos=graficos,
+        mensaje="Gráficos calculados con éxito.",
+        ruta=str(request.url.path)
+    )
+    return payload_out

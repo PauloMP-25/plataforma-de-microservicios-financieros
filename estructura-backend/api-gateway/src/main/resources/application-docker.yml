@@ -295,11 +295,6 @@ spring:
           filters:
             - StripPrefix=0
             - AddRequestHeader=X-Gateway-Source, api-gateway
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 1
-                redis-rate-limiter.burstCapacity: 1
-                key-resolver: "#{@userKeyResolver}"
             - name: CircuitBreaker
               args:
                 name: iaCB

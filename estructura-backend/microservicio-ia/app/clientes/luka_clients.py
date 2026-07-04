@@ -116,6 +116,48 @@ class ClientePerfil(BaseLukaClient):
                 
         return datos
 
+    async def obtener_presupuesto_activo_async(
+        self,
+        usuario_id: str,
+        token: str
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Obtiene el límite de gasto (presupuesto) activo del usuario desde ms-cliente.
+        Usa Redis como caché con TTL de 30 minutos para no sobrecargar ms-cliente.
+
+        Returns:
+            Dict con 'montoLimite' y 'nombre', o None si no hay presupuesto activo.
+        """
+        from app.persistencia.redis.cache_redis import CacheRedis
+        import json
+
+        cache = CacheRedis()
+        clave_cache = f"ia:presupuesto_activo:{usuario_id}"
+        cached_data = cache.obtener(clave_cache)
+        if cached_data:
+            try:
+                logger.info(f"[CACHE-HIT] Presupuesto activo de {usuario_id} obtenido de Redis.")
+                valor = json.loads(cached_data)
+                # None se serializa como "null"
+                return valor if valor else None
+            except Exception as e:
+                logger.warning(f"[CACHE-ERROR] Error decodificando presupuesto de Redis para {usuario_id}: {e}")
+
+        endpoint = "/api/v1/clientes/limites/activo"
+        try:
+            respuesta = await self.call("GET", endpoint, token=token)
+            datos = respuesta.get("datos", None)
+            # Guardar en Redis (TTL 30 min = 1800 seg)
+            try:
+                cache.guardar(clave_cache, json.dumps(datos, default=str), ex=1800)
+                logger.info(f"[CACHE-SET] Presupuesto activo de {usuario_id} guardado en Redis (30 min).")
+            except Exception as e:
+                logger.warning(f"[CACHE-ERROR] Error guardando presupuesto en Redis: {e}")
+            return datos
+        except Exception as e:
+            logger.warning(f"[PRESUPUESTO] No se pudo obtener presupuesto activo para {usuario_id}: {e}")
+            return None
+
 # Funciones de utilidad para inyección de dependencias
 def obtener_cliente_financiero() -> ClienteFinanciero:
     return ClienteFinanciero()

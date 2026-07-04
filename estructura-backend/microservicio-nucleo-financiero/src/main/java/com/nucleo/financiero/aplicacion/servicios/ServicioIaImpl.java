@@ -37,7 +37,7 @@ public class ServicioIaImpl implements IServicioIa {
     @Override
     public RespuestaIaDTO obtenerConsejoIA(SolicitudIaDTO solicitud, String ipCliente) {
         UUID tokenUsuarioId = UtilidadSeguridad.obtenerUsuarioId();
-        if (!tokenUsuarioId.equals(solicitud.getUsuarioId())) {
+        if (tokenUsuarioId != null && !tokenUsuarioId.equals(solicitud.getUsuarioId())) {
             throw new ExcepcionAccesoDenegado();
         }
 
