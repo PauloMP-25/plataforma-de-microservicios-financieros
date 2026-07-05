@@ -13,8 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Component
@@ -22,8 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class ConsumidorTransacciones {
 
     private final MetaAhorroRepositorio metaAhorroRepositorio;
-    private final StringRedisTemplate redisTemplate;
-    private final ObjectMapper objectMapper;
 
     @RabbitListener(queues = NombresCola.FINANCIERO_TRANSACCIONES_CLIENTE)
     @Transactional
@@ -35,42 +31,6 @@ public class ConsumidorTransacciones {
             BigDecimal monto = evento.getMonto();
             boolean esIngreso = "INGRESO".equalsIgnoreCase(evento.getTipo());
 
-            // 1. Actualizar reactivamente el caché de transacciones en Redis (Estrategia modular .append)
-            try {
-                String hashKey = "usuario:" + usuarioId;
-                String campo = "transacciones";
-                
-                log.info("[MS-CLIENTE] Actualizando caché modular de transacciones en Redis para usuarioId={}", usuarioId);
-                
-                String transaccionesJson = (String) redisTemplate.opsForHash().get(hashKey, campo);
-                List<EventoTransaccionRegistradaDTO> listaTransacciones;
-                
-                if (transaccionesJson != null && !transaccionesJson.isBlank()) {
-                    listaTransacciones = objectMapper.readValue(
-                            transaccionesJson, 
-                            objectMapper.getTypeFactory().constructCollectionType(List.class, EventoTransaccionRegistradaDTO.class)
-                    );
-                } else {
-                    listaTransacciones = new java.util.ArrayList<>();
-                }
-                
-                // Agregar la nueva transacción (.append)
-                listaTransacciones.add(0, evento); // Se añade al inicio (más reciente)
-                
-                // Guardar la lista actualizada de nuevo en Redis
-                redisTemplate.opsForHash().put(hashKey, campo, objectMapper.writeValueAsString(listaTransacciones));
-                
-                // Asegurar expiración del Hash (1 hora)
-                redisTemplate.expire(hashKey, java.time.Duration.ofHours(1));
-                
-                log.info("[MS-CLIENTE] Transacción {} añadida exitosamente en Redis (Total caché: {})", 
-                        evento.getTransaccionId(), listaTransacciones.size());
-                        
-            } catch (Exception re) {
-                log.error("[MS-CLIENTE] Error no bloqueante al actualizar caché en Redis: {}", re.getMessage());
-            }
-
-            // 2. Lógica de Metas de Ahorro
             List<MetaAhorro> metasActivas = metaAhorroRepositorio
                     .findByUsuarioIdAndCompletadaAndActivaTrueOrderByFechaCreacionDesc(usuarioId, false);
 
