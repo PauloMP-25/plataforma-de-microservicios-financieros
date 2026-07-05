@@ -18,4 +18,8 @@ public class EventoTransaccionRegistradaDTO implements Serializable {
     private BigDecimal monto;
     private String tipo; // "INGRESO" o "GASTO"
     private String fechaTransaccion;
+    private String categoriaNombre;
+    private String metodoPago;
+    private String descripcion;
+    private String estado;
 }

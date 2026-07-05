@@ -585,15 +585,30 @@ async def get_dashboard_graficos(
         7: "Jul", 8: "Ago", 9: "Sep", 10: "Oct", 11: "Nov", 12: "Dic"
     }
 
-    # 3. Flujo de Caja (últimos 5 meses)
-    meses_lista = []
-    for i in range(4, -1, -1):
-        m = hoy.month - i
-        y = hoy.year
-        while m <= 0:
-            m += 12
-            y -= 1
-        meses_lista.append((y, m))
+    # 3. Flujo de Caja (meses dentro del rango filtrado)
+    if not fechaInicio and not fechaFin:
+        # Sin filtros: de Enero al mes actual del año actual
+        meses_lista = [(hoy.year, m) for m in range(1, hoy.month + 1)]
+    else:
+        # Con filtros: meses en el rango [dt_inicio, dt_fin]
+        meses_lista = []
+        cur_y, cur_m = dt_inicio.year, dt_inicio.month
+        while (cur_y < dt_fin.year) or (cur_y == dt_fin.year and cur_m <= dt_fin.month):
+            meses_lista.append((cur_y, cur_m))
+            cur_m += 1
+            if cur_m > 12:
+                cur_m = 1
+                cur_y += 1
+        
+        # Si el rango tiene solo 1 mes, agregar el mes anterior para comparación
+        if len(meses_lista) == 1:
+            y, m = meses_lista[0]
+            prev_m = m - 1
+            prev_y = y
+            if prev_m <= 0:
+                prev_m = 12
+                prev_y -= 1
+            meses_lista.insert(0, (prev_y, prev_m))
 
     flujo_caja = []
     for y, m in meses_lista:
@@ -700,15 +715,15 @@ async def get_dashboard_graficos(
     except Exception as e:
         logger.warning(f"[DASHBOARD-GRAFICOS] No se pudo cargar historial año anterior: {e}")
 
-    for m in range(1, hoy.month + 1):
+    for y, m in meses_lista:
         nombre_mes = NOMBRES_MESES[m]
         gas_actual = 0.0
         gas_anterior = 0.0
-        if not df.empty and 'anio' in df.columns:
-            df_m_act = df[(df['anio'] == anio_actual) & (df['mes'] == m)]
+        if not df.empty:
+            df_m_act = df[(df['anio'] == y) & (df['mes'] == m)]
             gas_actual = float(df_m_act[(df_m_act['tipo'] == 'GASTO') & (df_m_act['estado'].astype(str).str.upper() != 'FAILED')]['monto'].sum())
-        if not df_ant.empty and 'anio' in df_ant.columns:
-            df_m_ant = df_ant[(df_ant['anio'] == anio_ant) & (df_ant['mes'] == m)]
+        if not df_ant.empty:
+            df_m_ant = df_ant[(df_ant['anio'] == y - 1) & (df_ant['mes'] == m)]
             gas_anterior = float(df_m_ant[(df_m_ant['tipo'] == 'GASTO') & (df_m_ant['estado'].astype(str).str.upper() != 'FAILED')]['monto'].sum())
         comparativa.append({"mes": nombre_mes, "actual": round(gas_actual, 2), "anterior": round(gas_anterior, 2)})
 

@@ -46,9 +46,28 @@ export class ChartHistoricalComparisonComponent implements AfterViewInit, OnDest
     if (filtros.fechaInicio && filtros.fechaFin) {
       const start = new Date(filtros.fechaInicio);
       const end = new Date(filtros.fechaFin);
+      // Si el día de inicio es 1 (ej. "este mes"), no es semanal, sino mensual
+      if (start.getDate() === 1) {
+        return false;
+      }
       const diffTime = Math.abs(end.getTime() - start.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       return diffDays <= 7;
+    }
+    return false;
+  }
+
+  private esFiltroMensual(): boolean {
+    const filtros = this.stateService.filtrosActuales();
+    if (filtros.fechaInicio && filtros.fechaFin) {
+      const start = new Date(filtros.fechaInicio);
+      const end = new Date(filtros.fechaFin);
+      if (start.getDate() === 1) {
+        return true;
+      }
+      const diffTime = Math.abs(end.getTime() - start.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays > 7 && diffDays <= 31;
     }
     return false;
   }
@@ -66,8 +85,9 @@ export class ChartHistoricalComparisonComponent implements AfterViewInit, OnDest
     const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
 
     const esSemana = this.esFiltroSemanal();
-    const labelActual = esSemana ? 'Esta Semana' : 'Este Año';
-    const labelAnterior = esSemana ? 'Semana Anterior' : 'Año Anterior';
+    const esMes = this.esFiltroMensual();
+    const labelActual = esSemana ? 'Esta Semana' : (esMes ? 'Este Mes' : 'Este Año');
+    const labelAnterior = esSemana ? 'Semana Anterior' : (esMes ? 'Mes Anterior' : 'Año Anterior');
 
     const config: ChartConfiguration = {
       type: 'bar',
@@ -161,8 +181,9 @@ export class ChartHistoricalComparisonComponent implements AfterViewInit, OnDest
     const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
 
     const esSemana = this.esFiltroSemanal();
-    this.chart.data.datasets[0].label = esSemana ? 'Esta Semana' : 'Este Año';
-    this.chart.data.datasets[1].label = esSemana ? 'Semana Anterior' : 'Año Anterior';
+    const esMes = this.esFiltroMensual();
+    this.chart.data.datasets[0].label = esSemana ? 'Esta Semana' : (esMes ? 'Este Mes' : 'Este Año');
+    this.chart.data.datasets[1].label = esSemana ? 'Semana Anterior' : (esMes ? 'Mes Anterior' : 'Año Anterior');
 
     this.chart.data.labels = data.map(d => d.mes);
     this.chart.data.datasets[0].data = data.map(d => d.actual);

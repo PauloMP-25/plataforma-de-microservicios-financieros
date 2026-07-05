@@ -193,15 +193,15 @@ export class Header implements OnInit, OnDestroy {
   }
 
   get totalIngresosMes(): number {
-    return this.dashboardState.resumen()?.totalIngresos ?? this.financiero.resumen()?.totalIngresos ?? 3850;
+    return this.dashboardState.resumenYTD()?.totalIngresos ?? this.financiero.resumen()?.totalIngresos ?? 3850;
   }
 
   get totalGastosMes(): number {
-    return this.dashboardState.resumen()?.totalGastos ?? this.financiero.resumen()?.totalGastos ?? 2950;
+    return this.dashboardState.resumenYTD()?.totalGastos ?? this.financiero.resumen()?.totalGastos ?? 2950;
   }
 
   get balanceActual(): number {
-    return this.dashboardState.resumen()?.balance ?? (this.totalIngresosMes - this.totalGastosMes);
+    return this.dashboardState.resumenYTD()?.balance ?? (this.totalIngresosMes - this.totalGastosMes);
   }
 
   get saludTexto(): 'Buena' | 'Atención' | 'Crítica' {
