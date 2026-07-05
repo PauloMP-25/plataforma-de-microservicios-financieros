@@ -2,6 +2,7 @@
 /media/paulo/datos/proyecto-desarrollo-web-integrado/estructura-backend/microservicio-cliente/src/main/java/com/cliente/aplicacion/puertos/ServicioMetaAhorro.java
 /media/paulo/datos/proyecto-desarrollo-web-integrado/estructura-backend/microservicio-cliente/src/main/java/com/cliente/presentacion/controladores/ControladorPerfilFinanciero.java
 /media/paulo/datos/proyecto-desarrollo-web-integrado/estructura-backend/microservicio-cliente/src/main/java/com/cliente/aplicacion/eventos/EscuchaSincronizacionIA.java
+/media/paulo/datos/proyecto-desarrollo-web-integrado/estructura-backend/microservicio-cliente/src/main/java/com/cliente/infraestructura/mensajeria/ConsumidorLoginExitoso.java
 /media/paulo/datos/proyecto-desarrollo-web-integrado/estructura-backend/microservicio-cliente/src/main/java/com/cliente/aplicacion/servicios/ServicioMetaAhorroImpl.java
 /media/paulo/datos/proyecto-desarrollo-web-integrado/estructura-backend/microservicio-cliente/src/main/java/com/cliente/dominio/repositorios/PerfilFinancieroRepositorio.java
 /media/paulo/datos/proyecto-desarrollo-web-integrado/estructura-backend/microservicio-cliente/src/main/java/com/cliente/presentacion/controladores/ControladorLimiteGasto.java
