@@ -295,36 +295,6 @@ export class SuscripcionGastosService {
     return Math.ceil(diferenciaTiempo / (1000 * 60 * 60 * 24));
   }
 
-  private calcularProximoVencimiento(fechaInicio: string, frecuencia: FrecuenciaSuscripcion): string {
-    const fecha = new Date(fechaInicio);
-
-    switch (frecuencia) {
-      case 'DIARIO':
-        fecha.setDate(fecha.getDate() + 1);
-        break;
-      case 'SEMANAL':
-        fecha.setDate(fecha.getDate() + 7);
-        break;
-      case 'QUINCENAL':
-        fecha.setDate(fecha.getDate() + 15);
-        break;
-      case 'MENSUAL':
-        fecha.setMonth(fecha.getMonth() + 1);
-        break;
-      case 'TRIMESTRAL':
-        fecha.setMonth(fecha.getMonth() + 3);
-        break;
-      case 'SEMESTRAL':
-        fecha.setMonth(fecha.getMonth() + 6);
-        break;
-      case 'ANUAL':
-        fecha.setFullYear(fecha.getFullYear() + 1);
-        break;
-    }
-
-    return fecha.toISOString().split('T')[0];
-  }
-
   private calcularGastosAlMes(monto: number, frecuencia: FrecuenciaSuscripcion): number {
     switch (frecuencia) {
       case 'DIARIO':
@@ -344,9 +314,5 @@ export class SuscripcionGastosService {
       default:
         return 0;
     }
-  }
-
-  private generarId(): string {
-    return 'sus_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   }
 }
