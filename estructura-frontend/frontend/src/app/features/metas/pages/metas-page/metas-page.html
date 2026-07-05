@@ -52,7 +52,7 @@
       <app-meta-kpi 
         [title]="'Metas cumplidas'" 
         [value]="metasCumplidasCount()" 
-        [sub]="'¡Felicidades!'" 
+        [sub]="metasCumplidasCount() > 0 ? '¡Felicidades!' : 'Aún no hay logros'" 
         [icon]="'fa-solid fa-circle-check'" 
         [iconClass]="'text-success'">
       </app-meta-kpi>
