@@ -33,6 +33,7 @@ export class SuscripcionCard {
     if (nombre.includes('chatgpt') || nombre.includes('openai')) return { '--brand-bg': 'rgba(16, 163, 127, 0.1)', '--brand-color': '#10a37f', '--brand-border': 'rgba(16, 163, 127, 0.3)' };
     if (nombre.includes('github')) return { '--brand-bg': 'rgba(110, 84, 148, 0.1)', '--brand-color': '#6e5494', '--brand-border': 'rgba(110, 84, 148, 0.3)' };
     if (nombre.includes('adobe')) return { '--brand-bg': 'rgba(255, 0, 0, 0.1)', '--brand-color': '#ff0000', '--brand-border': 'rgba(255, 0, 0, 0.3)' };
+    if (nombre.includes('luka')) return { '--brand-bg': 'var(--color-primary-soft)', '--brand-color': 'var(--color-primary)', '--brand-border': 'var(--border-color)' };
 
     // Estilo genérico premium por defecto si no es una marca conocida
     return { '--brand-bg': 'var(--bg-surface-soft)', '--brand-color': 'var(--text-primary)', '--brand-border': 'var(--border-color)' };

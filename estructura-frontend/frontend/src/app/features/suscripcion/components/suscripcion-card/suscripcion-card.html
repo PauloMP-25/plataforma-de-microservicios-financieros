@@ -2,7 +2,11 @@
   
   <div class="suscripcion-card__header">
     <div class="suscripcion-card__logo-box">
-      <i class="fa-solid" [ngClass]="'fa-' + obtenerCategoriaInfo()?.icon"></i>
+      @if (suscripcion.nombre.toLowerCase().includes('luka')) {
+        <img src="assets/avatares/figuras/panda.png" alt="LUKA" style="width: 24px; height: 24px; object-fit: contain;">
+      } @else {
+        <i class="fa-solid" [ngClass]="'fa-' + obtenerCategoriaInfo()?.icon"></i>
+      }
     </div>
     
     <div class="suscripcion-card__title-wrap">
