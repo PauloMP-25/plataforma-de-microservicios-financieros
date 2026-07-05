@@ -118,7 +118,7 @@
 
     <div class="charts-grid">
       <!-- Evolución Mensual (6M) -->
-      <div class="card">
+      <div class="card purple">
         <div class="card-head">
           <div>
             <p class="card-title">Evolución Mensual (6M)</p>
@@ -156,7 +156,7 @@
       </div>
 
       <!-- Ingresos por categoría -->
-      <div class="card">
+      <div class="card teal">
         <div class="card-head">
           <div>
             <p class="card-title">Ingresos por categoría</p>
@@ -176,7 +176,7 @@
             <li *ngFor="let item of distribucion">
               <span class="legend-dot" [style.background]="item.color"></span>
               <span class="legend-name">{{ item.categoria }}</span>
-              <span class="legend-pct">{{ item.porcentaje }}%</span>
+              <span class="legend-pct">{{ item.porcentaje | number:'1.0-1' }}%</span>
             </li>
             <li *ngIf="!distribucion.length">
               <span class="legend-dot" style="background:#E8EAF2"></span>
@@ -188,12 +188,12 @@
 
         <div class="stats-row">
           <div class="stat-item"><p class="stat-label">Categorías</p><p class="stat-value">{{ distribucion.length }}</p></div>
-          <div class="stat-item"><p class="stat-label">Principal</p><p class="stat-value">{{ distribucion[0]?.porcentaje || 0 }}%</p></div>
+          <div class="stat-item"><p class="stat-label">Principal</p><p class="stat-value">{{ (distribucion[0]?.porcentaje || 0) | number:'1.0-1' }}%</p></div>
         </div>
       </div>
 
       <!-- Progreso meta -->
-      <div class="card">
+      <div class="card blue">
         <div class="card-head">
           <div>
             <p class="card-title">Progreso meta</p>
@@ -235,7 +235,7 @@
 
     <div class="charts-grid-bottom">
       <!-- Tipo de Ingreso -->
-      <div class="card">
+      <div class="card amber">
         <div class="card-head">
           <div>
             <p class="card-title">Tipo de Ingreso</p>
@@ -255,19 +255,19 @@
             <li *ngFor="let item of proporcionIngreso">
               <span class="legend-dot" [style.background]="item.color"></span>
               <span class="legend-name">{{ item.categoria }}</span>
-              <span class="legend-pct">{{ item.porcentaje }}%</span>
+              <span class="legend-pct">{{ item.porcentaje | number:'1.0-1' }}%</span>
             </li>
           </ul>
         </div>
 
         <div class="stats-row">
           <div class="stat-item"><p class="stat-label">Categorías</p><p class="stat-value">2</p></div>
-          <div class="stat-item"><p class="stat-label">Principal</p><p class="stat-value">{{ proporcionIngreso[0]?.porcentaje || 0 }}%</p></div>
+          <div class="stat-item"><p class="stat-label">Principal</p><p class="stat-value">{{ (proporcionIngreso[0]?.porcentaje || 0) | number:'1.0-1' }}%</p></div>
         </div>
       </div>
 
       <!-- Por fuente de ingreso -->
-      <div class="card">
+      <div class="card coral">
         <div class="card-head">
           <div>
             <p class="card-title">Por fuente de ingreso</p>
@@ -292,7 +292,7 @@
       </div>
 
       <!-- Ingresos recientes -->
-      <div class="card">
+      <div class="card teal">
         <div class="card-head">
           <div>
             <p class="card-title">Ingresos recientes</p>

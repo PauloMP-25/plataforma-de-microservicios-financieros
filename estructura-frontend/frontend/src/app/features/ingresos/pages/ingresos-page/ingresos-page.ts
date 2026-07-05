@@ -263,9 +263,17 @@ export class IngresosPage implements OnInit {
     }
     const stops: string[] = [];
     let prev = 0;
+    const isMultiple = data.length > 1;
     for (const item of data) {
       const end = prev + item.porcentaje;
-      stops.push(`${item.color} ${prev}% ${end}%`);
+      if (isMultiple) {
+        // Dejar un 1% de gap para que se vea la línea divisoria (el fondo de la tarjeta)
+        const gapEnd = Math.max(prev, end - 1.5);
+        stops.push(`${item.color} ${prev}% ${gapEnd}%`);
+        stops.push(`transparent ${gapEnd}% ${end}%`);
+      } else {
+        stops.push(`${item.color} ${prev}% ${end}%`);
+      }
       prev = end;
     }
     return `background: conic-gradient(${stops.join(', ')});`;

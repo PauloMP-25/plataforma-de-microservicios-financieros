@@ -12,6 +12,7 @@ import { IaService } from '../../../../core/services/ia.service';
 import { CategoriaSugerida } from '../../../../core/models/ia_coach/ia-base.model';
 import { NotificacionService } from '../../../../core/services/notificacion.service';
 import { OnboardingTour, TourStep } from '../../../../shared/components/onboarding-tour/onboarding-tour';
+import { SuscripcionGastosService } from '../../../../core/services/suscripcion-gastos.service';
 
 @Component({
   selector: 'app-gastos-page',
@@ -28,6 +29,7 @@ export class GastosPage implements OnInit, OnDestroy {
   private readonly stateService = inject(GastosStateService);
   private readonly iaService = inject(IaService);
   private readonly notificacionService = inject(NotificacionService);
+  private readonly suscripcionService = inject(SuscripcionGastosService);
   readonly iaSugeridaConfirmada = signal<boolean>(false);
 
   readonly sugerenciasIa = signal<CategoriaSugerida[]>([]);
@@ -136,11 +138,6 @@ export class GastosPage implements OnInit, OnDestroy {
   readonly variacionGastado = computed(() => this.calcularVariacion(this.totalGastadoActual(), this.totalGastosAnterior()));
   readonly variacionSaldo = computed(() => this.calcularVariacion(this.saldoActual(), this.saldoAnterior()));
   readonly variacionPendiente = signal(0);
-  readonly bannerIntegracion = signal(
-    'Integración en curso: historial de gastos (OK). Pendientes/Recurrentes dependen de Suscripciones (falta implementar backend).'
-  );
-  // TODO(backend): Implementar endpoint de Suscripciones para poblar Pendientes/Recurrentes.
-  // TODO(backend): Implementar estado de pago de suscripción para habilitar “Marcar pagado”.
 
   readonly pendientesMock = signal<Array<{
     id: string;
@@ -273,12 +270,20 @@ export class GastosPage implements OnInit, OnDestroy {
   );
 
   readonly totalPendiente = computed(() =>
-    this.pendientesMock().reduce((acc, p) => acc + Number(p.monto || 0), 0)
+    this.gastosPendientes().reduce((acc, p) => acc + Number(p.monto || 0), 0)
   );
   readonly totalPagado = computed(() =>
     this.filasPagadas().filter((g) => g.estado === 'Pagado').reduce((acc, g) => acc + g.monto, 0)
   );
-  readonly proximoVencimiento = computed(() => this.pendientesMock().find(() => true) ?? null);
+  readonly proximoVencimiento = computed(() => {
+    const arr = this.gastosPendientes();
+    if (arr.length === 0) return null;
+    return arr.reduce((closest, current) => {
+      const currentDiff = new Date(current.fechaVencimiento).getTime() - new Date().getTime();
+      const closestDiff = new Date(closest.fechaVencimiento).getTime() - new Date().getTime();
+      return currentDiff < closestDiff ? current : closest;
+    }, arr[0]);
+  });
 
   readonly gastosPorCategoria = computed(() => {
     const grupos = new Map<string, { categoria: string; total: number }>();
@@ -428,7 +433,24 @@ export class GastosPage implements OnInit, OnDestroy {
     return ((actual - previo) / previo) * 100;
   });
 
-  readonly gastosPendientes = computed(() => this.pendientesMock());
+  readonly gastosPendientes = computed(() => {
+    if (this.suscripcionService.suscripcionesActivas().length === 0 && this.suscripcionService.errorState()) {
+      return this.pendientesMock();
+    }
+    return this.suscripcionService.suscripcionesActivas().map(s => {
+      const fecha = new Date(s.proximoVencimiento);
+      return {
+        id: s.id,
+        nombre: s.nombre,
+        frecuencia: s.frecuencia as 'MENSUAL' | 'SEMANAL' | 'QUINCENAL',
+        fechaVencimiento: isNaN(fecha.getTime()) ? s.proximoVencimiento : fecha.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }),
+        monto: s.monto,
+        vencePronto: s.vencePronto,
+        metodoPago: 'TARJETA' as 'TARJETA' | 'DIGITAL' | 'TRANSFERENCIA',
+        categoriaIcono: this.iconoCategoria(s.categoria)
+      };
+    });
+  });
   readonly gastosPagados = computed(() => this.gastos());
 
   readonly filasPagadas = computed(() => {
@@ -524,29 +546,39 @@ export class GastosPage implements OnInit, OnDestroy {
   }
 
   marcarPendienteComoPagado(id: string): void {
-    const pendiente = this.pendientesMock().find((p) => p.id === id);
-    if (!pendiente) {
+    if (id.startsWith('mock-')) {
+      const pendiente = this.pendientesMock().find((p) => p.id === id);
+      if (!pendiente) return;
+      this.pendientesMock.set(this.pendientesMock().filter((p) => p.id !== id));
+      this.pagadosMock.update((items) => [
+        {
+          id: `mock-${pendiente.id}`,
+          nombre: pendiente.nombre,
+          detalle: 'Suscripción recurrente',
+          categoria: 'Servicios',
+          fecha: 'Hoy',
+          hora: 'Ahora',
+          monto: pendiente.monto,
+          metodo: pendiente.metodoPago,
+          estado: 'Pagado',
+          icono: 'circle-check',
+          colorCategoria: 'servicios',
+        },
+        ...items,
+      ]);
+      this.usarMockVisualPagados.set(true);
       return;
     }
-
-    this.pendientesMock.set(this.pendientesMock().filter((p) => p.id !== id));
-    this.pagadosMock.update((items) => [
-      {
-        id: `mock-${pendiente.id}`,
-        nombre: pendiente.nombre,
-        detalle: 'Suscripción recurrente',
-        categoria: 'Servicios',
-        fecha: 'Hoy',
-        hora: 'Ahora',
-        monto: pendiente.monto,
-        metodo: pendiente.metodoPago,
-        estado: 'Pagado',
-        icono: 'circle-check',
-        colorCategoria: 'servicios',
+    
+    // Conectar a SuscripcionGastosService para marcar como pagado
+    this.suscripcionService.cambiarEstado(id, 'ACTIVA').subscribe({
+      next: () => {
+        this.notificacionService.mostrarDatosGuardados('Gasto recurrente registrado correctamente');
+        this.stateService.invalidarCache();
+        this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
       },
-      ...items,
-    ]);
-    this.usarMockVisualPagados.set(true);
+      error: () => this.notificacionService.mostrar('Error', 'No se pudo registrar el pago', 'gasto', 'circle-exclamation', 4000)
+    });
   }
 
   abrirModal(): void {

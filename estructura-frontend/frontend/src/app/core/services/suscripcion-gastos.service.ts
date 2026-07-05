@@ -27,6 +27,7 @@ export class SuscripcionGastosService {
   private suscripciones = signal<SuscripcionDTO[]>([]);
   private cargando = signal(false);
   private error = signal<string | null>(null);
+  readonly errorState = computed(() => this.error());
 
   // Computed signals
   readonly suscripcionesActivas = computed(() =>
