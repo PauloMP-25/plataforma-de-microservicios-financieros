@@ -74,22 +74,23 @@ class ClienteContexto:
         # ── 1. Intentar desde Redis (cache hit) ──────────────────────────────
         if self._redis:
             try:
-                redis_key = f"{REDIS_KEY_PREFIX}{usuario_id}"
-                cached = self._redis.get(redis_key)
+                hash_key = f"usuario:{usuario_id}"
+                campo = "ia:contexto"
+                cached = self._redis.hget(hash_key, campo)
                 if cached:
                     logger.info(
-                        "[CONTEXTO-PULL] Cache HIT para usuario=%s",
+                        "[CONTEXTO-PULL] Cache HIT en Hash para usuario=%s",
                         usuario_id,
                     )
                     return json.loads(cached)
                 logger.info(
-                    "[CONTEXTO-PULL] Cache MISS para usuario=%s — "
+                    "[CONTEXTO-PULL] Cache MISS en Hash para usuario=%s — "
                     "realizando consulta HTTP al ms-cliente.",
                     usuario_id,
                 )
             except Exception as exc:
                 logger.warning(
-                    "[CONTEXTO-PULL] Error leyendo Redis: %s. "
+                    "[CONTEXTO-PULL] Error leyendo Redis Hash: %s. "
                     "Continuando con consulta HTTP.",
                     exc,
                 )
@@ -122,20 +123,22 @@ class ClienteContexto:
                 # ── 3. Cachear en Redis para futuras consultas ───────────────
                 if self._redis:
                     try:
-                        redis_key = f"{REDIS_KEY_PREFIX}{usuario_id}"
-                        self._redis.setex(
-                            name=redis_key,
-                            time=REDIS_TTL_SECONDS,
+                        hash_key = f"usuario:{usuario_id}"
+                        campo = "ia:contexto"
+                        self._redis.hset(
+                            name=hash_key,
+                            key=campo,
                             value=json.dumps(contexto, ensure_ascii=False),
                         )
+                        self._redis.expire(hash_key, REDIS_TTL_SECONDS)
                         logger.info(
-                            "[CONTEXTO-PULL] Caché reconstruida: %s (TTL=%ds)",
-                            redis_key,
+                            "[CONTEXTO-PULL] Caché reconstruida en Hash: %s (TTL=%ds)",
+                            hash_key,
                             REDIS_TTL_SECONDS,
                         )
                     except Exception as exc:
                         logger.warning(
-                            "[CONTEXTO-PULL] Error escribiendo en Redis: %s. "
+                            "[CONTEXTO-PULL] Error escribiendo en Redis Hash: %s. "
                             "El contexto se usará sin cachear.",
                             exc,
                         )
