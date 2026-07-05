@@ -26,6 +26,7 @@ import { OnboardingTour, TourStep } from '../../../../shared/components/onboardi
 })
 export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('evolucionCanvas') evolucionCanvasRef?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('desgloseCanvas') desgloseCanvasRef?: ElementRef<HTMLCanvasElement>;
 
   private fb = inject(FormBuilder);
   private presupuestoService = inject(PresupuestoService);
@@ -37,8 +38,9 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
 
   authService = inject(AuthService);
 
-  // Chart instance
+  // Chart instances
   private evolucionChartInstance: Chart | null = null;
+  private desgloseChartInstance: Chart | null = null;
   private injector = inject(Injector);
 
   constructor() {
@@ -48,10 +50,15 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
       if (this.esPremiumOPro() && this.evolucionChartInstance && hist.length) {
         this._actualizarChart(this.evolucionChartInstance, hist, activo?.montoLimite ?? 1000, activo?.porcentajeAlerta ?? 80);
       }
+      
+      const cat = this.categorias();
+      if (this.desgloseChartInstance && cat.length) {
+        this._actualizarDesgloseChart(this.desgloseChartInstance, cat);
+      } else if (cat.length > 0 && !this.desgloseChartInstance) {
+        setTimeout(() => this._initDesgloseChart(), 50);
+      }
     });
   }
-
-
 
   // --- SIGNALS DE ESTADO ---
   formulario!: FormGroup;
@@ -299,12 +306,17 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => this._initChart(), 0);
+    setTimeout(() => {
+      this._initChart();
+      this._initDesgloseChart();
+    }, 0);
   }
 
   ngOnDestroy(): void {
     this.evolucionChartInstance?.destroy();
     this.evolucionChartInstance = null;
+    this.desgloseChartInstance?.destroy();
+    this.desgloseChartInstance = null;
   }
 
   private _pointColors(data: number[], limit: number): string[] {
@@ -428,8 +440,68 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
     chart.update('active');
   }
 
+  private _buildDesgloseChartConfig(cat: any[]): any {
+    const isDark = document.body.classList.contains('theme-dark');
+    const textColor = isDark ? '#A1AABF' : '#6B7280';
+
+    return {
+      type: 'doughnut' as const,
+      data: {
+        labels: cat.map(c => c.nombre),
+        datasets: [{
+          data: cat.map(c => c.monto),
+          backgroundColor: cat.map(c => c.color),
+          borderWidth: 0,
+          hoverOffset: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: {
+              color: textColor,
+              usePointStyle: true,
+              padding: 15,
+              font: { size: 12 }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: (ctx: any) => {
+                const item = cat[ctx.dataIndex];
+                return ` ${item.nombre}: S/ ${item.monto} (${item.porcentaje}%)`;
+              }
+            }
+          }
+        }
+      }
+    };
+  }
+
+  private _initDesgloseChart(): void {
+    if (!this.desgloseCanvasRef) return;
+    const cat = this.categorias();
+    if (!cat.length) return;
+    const ctx = this.desgloseCanvasRef.nativeElement.getContext('2d')!;
+    this.desgloseChartInstance?.destroy();
+    this.desgloseChartInstance = new Chart(ctx, this._buildDesgloseChartConfig(cat));
+  }
+
+  private _actualizarDesgloseChart(chart: Chart, cat: any[]): void {
+    const config = this._buildDesgloseChartConfig(cat);
+    chart.data = config.data;
+    chart.update('active');
+  }
+
   initChartDeferred(): void {
-    setTimeout(() => this._initChart(), 50);
+    setTimeout(() => {
+      this._initChart();
+      this._initDesgloseChart();
+    }, 50);
   }
 
   private inicializarFormulario(): void {

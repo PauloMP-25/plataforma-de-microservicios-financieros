@@ -168,6 +168,19 @@
         </div>
 
       </div>
+
+      <div class="lk-card" *ngIf="categorias().length > 0">
+        <div class="card-header">
+          <h3 class="card-title">Desglose por categorías</h3>
+        </div>
+        <div class="desglose-chart-wrap" style="position: relative; height: 220px; margin: 1.5rem 0;">
+          <canvas #desgloseCanvas id="desgloseCanvas"></canvas>
+        </div>
+        <div class="breakdown-total">
+          <span>Total consumido</span>
+          <span class="breakdown-total-val">{{ formatearMonto(gastoTotalMes()) }}</span>
+        </div>
+      </div>
     </aside>
 
     <div class="lk-content">
@@ -259,89 +272,56 @@
         </div>
       }
 
-      <div class="lk-bottom-grid">
-
-        <div class="lk-card">
-          <div class="card-header">
-            <h3 class="card-title">Desglose por categorías</h3>
-          </div>
-          <div class="breakdown-list">
-            <div class="breakdown-item" *ngFor="let cat of categorias()">
-              <div class="bd-icon" [style.background]="cat.bg" [style.color]="cat.color">
-                <i class="fa-solid" [ngClass]="cat.icono"></i>
-              </div>
-              <div class="bd-info">
-                <div class="bd-row">
-                  <span class="bd-name">{{ cat.nombre }}</span>
-                  <div class="bd-right">
-                    <span class="bd-pct">{{ cat.porcentaje }}%</span>
-                    <span class="bd-amt">{{ formatearMonto(cat.monto) }}</span>
-                  </div>
-                </div>
-                <div class="bd-bar">
-                  <div class="bd-fill" [style.width]="cat.porcentaje + '%'" [style.background]="cat.color"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="breakdown-total">
-            <span>Total consumido</span>
-            <span class="breakdown-total-val">{{ formatearMonto(gastoTotalMes()) }}</span>
+      <div class="lk-card" style="margin-top: 1.5rem;">
+        <div class="card-header">
+          <h3 class="card-title">Historial de límites</h3>
+          <div class="hist-pagination" style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn btn-icon btn-sm" (click)="cambiarPagina(-1)" [disabled]="paginaHistorial() === 1">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">
+              Pág {{ paginaHistorial() }} de {{ totalPaginasHistorial() || 1 }}
+            </span>
+            <button class="btn btn-icon btn-sm" (click)="cambiarPagina(1)" [disabled]="paginaHistorial() >= totalPaginasHistorial() || totalPaginasHistorial() === 0">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
           </div>
         </div>
-
-        <div class="lk-card">
-          <div class="card-header">
-            <h3 class="card-title">Historial de límites</h3>
-            <div class="hist-pagination" style="display: flex; gap: 8px; align-items: center;">
-              <button class="btn btn-icon btn-sm" (click)="cambiarPagina(-1)" [disabled]="paginaHistorial() === 1">
-                <i class="fa-solid fa-chevron-left"></i>
-              </button>
-              <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">
-                Pág {{ paginaHistorial() }} de {{ totalPaginasHistorial() || 1 }}
-              </span>
-              <button class="btn btn-icon btn-sm" (click)="cambiarPagina(1)" [disabled]="paginaHistorial() >= totalPaginasHistorial() || totalPaginasHistorial() === 0">
-                <i class="fa-solid fa-chevron-right"></i>
-              </button>
-            </div>
-          </div>
-          <div class="hist-table-wrap">
-            <table class="hist-table">
-              <thead>
-                <tr>
-                  <th>Período</th>
-                  <th>Monto límite</th>
-                  <th>Consumido</th>
-                  <th>% uso</th>
-                  <th>Estado límite</th>
-                  <th>Estado consumo</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let h of historialVisible()">
-                  <td class="hist-period">{{ h.periodo }}</td>
-                  <td>{{ formatearMonto(h.montoLimite) }}</td>
-                  <td>{{ formatearMonto(h.montoConsumido) }}</td>
-                  <td><strong>{{ pctHistorial(h) }}%</strong></td>
-                  <td>
-                    <span class="badge badge-inactive">Inactivo</span>
-                  </td>
-                  <td>
-                    <span class="badge badge-success" [ngClass]="'badge-' + estadoConsumoHistorial(h)">
-                      {{ estadoConsumoHistorial(h) === 'superado' ? 'Excedido' : estadoConsumoHistorial(h) === 'alerta' ? 'Alerta' : 'Normal' }}
-                    </span>
-                  </td>
-                </tr>
-                <tr *ngIf="historialPresupuestos().length === 0">
-                  <td colspan="6" style="text-align: center; color: var(--lk-text-muted); padding: 2rem;">
-                    No hay registros en el historial.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <div class="hist-table-wrap">
+          <table class="hist-table">
+            <thead>
+              <tr>
+                <th>Período</th>
+                <th>Monto límite</th>
+                <th>Consumido</th>
+                <th>% uso</th>
+                <th>Estado límite</th>
+                <th>Estado consumo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let h of historialVisible()">
+                <td class="hist-period">{{ h.periodo }}</td>
+                <td>{{ formatearMonto(h.montoLimite) }}</td>
+                <td>{{ formatearMonto(h.montoConsumido) }}</td>
+                <td><strong>{{ pctHistorial(h) }}%</strong></td>
+                <td>
+                  <span class="badge badge-inactive">Inactivo</span>
+                </td>
+                <td>
+                  <span class="badge badge-success" [ngClass]="'badge-' + estadoConsumoHistorial(h)">
+                    {{ estadoConsumoHistorial(h) === 'superado' ? 'Excedido' : estadoConsumoHistorial(h) === 'alerta' ? 'Alerta' : 'Normal' }}
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="historialPresupuestos().length === 0">
+                <td colspan="6" style="text-align: center; color: var(--lk-text-muted); padding: 2rem;">
+                  No hay registros en el historial.
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-
       </div>
 
     </div>
