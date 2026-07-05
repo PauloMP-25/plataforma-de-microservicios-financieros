@@ -362,255 +362,144 @@ async def obtener_transacciones_YTD_optimizadas(
     return datos_raw
 
 
-# ── Endpoints ─────────────────────────────────────────────────────────────────
+# Helper Functions for Dashboard calculation
 
-@router.get("/kpis", response_model=ResultadoApi[RespuestaKPIs])
-async def get_dashboard_kpis(
-    request: Request,
-    fechaInicio: Optional[str] = None,
-    fechaFin: Optional[str] = None,
-    metodoPago: Optional[str] = None,
-    tipoMovimiento: Optional[str] = None,
-    payload: dict = Security(validar_token),
-):
-    """
-    Obtiene y calcula dinámicamente los KPIs principales y las últimas 10 transacciones.
-    Usa caché YTD e implementa filtrado en memoria.
-    También consulta el presupuesto global activo desde ms-cliente para calcular
-    el cumplimientoPresupuesto real del usuario.
-    """
-    usuario_id = obtener_usuario_id(payload)
-    auth_header = request.headers.get("Authorization", "")
-    token = auth_header.replace("Bearer ", "") if auth_header.startswith("Bearer ") else ""
-
-    # 1. Obtener bolsa de transacciones crudas y presupuesto activo en paralelo
-    import asyncio
-    cliente_perfil = obtener_cliente_perfil()
-    datos_raw, presupuesto_activo = await asyncio.gather(
-        obtener_transacciones_YTD_optimizadas(
-            usuario_id=usuario_id,
-            token=token,
-            fecha_inicio_str=fechaInicio,
-            fecha_fin_str=fechaFin
-        ),
-        cliente_perfil.obtener_presupuesto_activo_async(usuario_id=usuario_id, token=token)
-    )
-    monto_presupuesto = float(presupuesto_activo.get("montoLimite", 0)) if presupuesto_activo else None
-    logger.info(f"[DASHBOARD-KPIs] Presupuesto activo para {usuario_id}: {monto_presupuesto}")
-
-    # 2. Cargar en Pandas y aplicar filtros locales
-    df = json_a_dataframe(datos_raw)
-
-    # Parsear fechas de filtro
-    hoy = datetime.now()
-    anio_actual = hoy.year
-    ytd_inicio = datetime(anio_actual, 1, 1)
-    ytd_fin = hoy
-
-    try:
-        dt_inicio = datetime.strptime(fechaInicio, "%Y-%m-%d") if fechaInicio else ytd_inicio
-    except Exception:
-        dt_inicio = ytd_inicio
-
-    try:
-        dt_fin = datetime.strptime(fechaFin, "%Y-%m-%d") if fechaFin else ytd_fin
-        dt_fin = dt_fin.replace(hour=23, minute=59, second=59)
-    except Exception:
-        dt_fin = ytd_fin
-
-    if not df.empty:
-        # A. Filtrar por Rango de Fecha Solicitado (en memoria)
-        # La columna 'fecha' en el df ya está formateada como datetime por json_a_dataframe
-        df = df[(df['fecha'] >= pd.to_datetime(dt_inicio)) & (df['fecha'] <= pd.to_datetime(dt_fin))]
-
-        # B. Filtrar por metodoPago si se especifica
-        if metodoPago:
-            df = df[df['metodo_pago'].astype(str).str.upper() == metodoPago.upper()]
-
-        # C. Filtrar por tipoMovimiento si se especifica
-        if tipoMovimiento:
-            tipo_map = "GASTO" if tipoMovimiento.upper() == "EGRESO" else tipoMovimiento.upper()
-            df = df[df['tipo'].astype(str).str.upper() == tipo_map]
-
-    # 3. Calcular KPIs sobre el DataFrame filtrado
+def filtrar_df_kpis(df: pd.DataFrame, dt_inicio: datetime, dt_fin: datetime, metodo_pago: Optional[str], tipo_movimiento: Optional[str]) -> pd.DataFrame:
+    """Aplica los filtros de fecha, método de pago y tipo de movimiento al DataFrame."""
     if df.empty:
-        total_ing = 0.0
-        total_gas = 0.0
-        balance = 0.0
-        cant_ing = 0
-        cant_gas = 0
-        tasa_ahorro = 0.0
-        recientes = []
-        desde_str = dt_inicio.isoformat()
-        hasta_str = dt_fin.isoformat()
-    else:
-        df_ing = df[(df['tipo'] == 'INGRESO') & (df['estado'].astype(str).str.upper() == 'COMPLETED')]
-        df_gas = df[(df['tipo'] == 'GASTO') & (df['estado'].astype(str).str.upper() != 'FAILED')]
-
-        total_ing = float(df_ing['monto'].sum())
-        total_gas = float(df_gas['monto'].sum())
-        balance = total_ing - total_gas
-        cant_ing = len(df_ing)
-        cant_gas = len(df_gas)
-        tasa_ahorro = ((total_ing - total_gas) / total_ing) * 100 if total_ing > 0 else 0.0
-
-        dias_periodo = (dt_fin - dt_inicio).days + 1
-        gasto_prom_diario = total_gas / dias_periodo if dias_periodo > 0 else 0.0
+        return df
+    
+    # Rango de fecha
+    df_filtered = df[(df['fecha'] >= pd.to_datetime(dt_inicio)) & (df['fecha'] <= pd.to_datetime(dt_fin))]
+    
+    # Método de pago
+    if metodo_pago:
+        df_filtered = df_filtered[df_filtered['metodo_pago'].astype(str).str.upper() == metodo_pago.upper()]
         
-        import calendar
-        dias_en_mes = calendar.monthrange(dt_fin.year, dt_fin.month)[1]
-        proyeccion_fin = gasto_prom_diario * dias_en_mes
-
-        # Para las recientes, filtramos de la lista cruda original (camelCase) para preservar la interfaz del frontend
-        recientes_filtradas = []
-        for tx in datos_raw:
-            try:
-                tx_fecha = datetime.fromisoformat(tx.get("fechaTransaccion", "").replace("Z", ""))
-            except Exception:
-                continue
-            
-            if not (dt_inicio <= tx_fecha <= dt_fin):
-                continue
-            
-            if metodoPago and tx.get("metodoPago", "").upper() != metodoPago.upper():
-                continue
-                
-            if tipoMovimiento:
-                tipo_map = "GASTO" if tipoMovimiento.upper() == "EGRESO" else tipoMovimiento.upper()
-                if tx.get("tipo", "").upper() != tipo_map:
-                    continue
-            
-            recientes_filtradas.append(tx)
+    # Tipo de movimiento
+    if tipo_movimiento:
+        tipo_map = "GASTO" if tipo_movimiento.upper() == "EGRESO" else tipo_movimiento.upper()
+        df_filtered = df_filtered[df_filtered['tipo'].astype(str).str.upper() == tipo_map]
         
-        try:
-            recientes_filtradas.sort(key=lambda x: x.get("fechaTransaccion", ""), reverse=True)
-        except Exception:
-            pass
-        recientes = recientes_filtradas[:10]
+    return df_filtered
 
-        if 'fecha_transaccion' in df.columns:
-            desde_str = df['fecha_transaccion'].min().isoformat()
-            hasta_str = df['fecha_transaccion'].max().isoformat()
-        else:
-            desde_str = dt_inicio.isoformat()
-            hasta_str = dt_fin.isoformat()
 
-    # Calcular cumplimiento de presupuesto usando el presupuesto global activo del ms-cliente
-    if monto_presupuesto and monto_presupuesto > 0:
-        cumplimiento_presupuesto = round((total_gas / monto_presupuesto) * 100, 2)
+def calcular_gasto_presupuesto(df_completo: pd.DataFrame, presupuesto_activo: Optional[dict], monto_presupuesto: Optional[float]) -> float:
+    """Calcula la suma de los gastos que caen dentro del periodo del presupuesto activo (o mes actual por defecto)."""
+    if not monto_presupuesto or monto_presupuesto <= 0 or df_completo.empty:
+        return 0.0
+        
+    hoy = datetime.now()
+    inicio_def = pd.to_datetime(datetime(hoy.year, hoy.month, 1))
+    fin_def = pd.to_datetime(hoy)
+    
+    # Determinar rango
+    def_inicio_val = presupuesto_activo.get("fechaInicio") if presupuesto_activo else None
+    if def_inicio_val:
+        limite_inicio = pd.to_datetime(def_inicio_val)
+        if limite_inicio.tzinfo is not None:
+            limite_inicio = limite_inicio.tz_localize(None)
     else:
-        # Sin presupuesto configurado: mostrar 0
-        cumplimiento_presupuesto = 0.0
+        limite_inicio = inicio_def
+        
+    def_fin_val = presupuesto_activo.get("fechaFin") if presupuesto_activo else None
+    if def_fin_val:
+        limite_fin = pd.to_datetime(def_fin_val)
+        if limite_fin.tzinfo is not None:
+            limite_fin = limite_fin.tz_localize(None)
+    else:
+        limite_fin = fin_def
+        
+    # Filtrar gastos en el periodo del presupuesto
+    df_gas_pres = df_completo[
+        (df_completo['fecha'] >= limite_inicio) & 
+        (df_completo['fecha'] <= limite_fin) &
+        (df_completo['tipo'] == 'GASTO') & 
+        (df_completo['estado'].astype(str).str.upper() != 'FAILED')
+    ]
+    return float(df_gas_pres['monto'].sum())
 
-    kpis = {
-        "resumen": {
-            "desde": desde_str,
-            "hasta": hasta_str,
-            "totalIngresos": round(total_ing, 2),
-            "totalGastos": round(total_gas, 2),
-            "balance": round(balance, 2),
-            "cantidadIngresos": cant_ing,
-            "cantidadGastos": cant_gas,
-            "tasaAhorro": round(tasa_ahorro, 2),
-            "gastoPromedioDiario": round(gasto_prom_diario, 2) if not df.empty else 0.0,
-            "proyeccionFinDeMes": round(proyeccion_fin, 2) if not df.empty else 0.0,
-            "cumplimientoPresupuesto": cumplimiento_presupuesto,
-            "presupuestoActivo": monto_presupuesto
-        },
-        "recientes": recientes
+
+def calcular_metricas_kpis(df_filtrado: pd.DataFrame, dt_inicio: datetime, dt_fin: datetime) -> dict:
+    """Calcula las métricas e indicadores a partir del DataFrame filtrado."""
+    if df_filtrado.empty:
+        return {
+            "totalIngresos": 0.0,
+            "totalGastos": 0.0,
+            "balance": 0.0,
+            "cantidadIngresos": 0,
+            "cantidadGastos": 0,
+            "tasaAhorro": 0.0,
+            "gastoPromedioDiario": 0.0,
+            "proyeccionFinDeMes": 0.0
+        }
+        
+    df_ing = df_filtrado[(df_filtrado['tipo'] == 'INGRESO') & (df_filtrado['estado'].astype(str).str.upper() == 'COMPLETED')]
+    df_gas = df_filtrado[(df_filtrado['tipo'] == 'GASTO') & (df_filtrado['estado'].astype(str).str.upper() != 'FAILED')]
+    
+    total_ing = float(df_ing['monto'].sum())
+    total_gas = float(df_gas['monto'].sum())
+    balance = total_ing - total_gas
+    cant_ing = len(df_ing)
+    cant_gas = len(df_gas)
+    tasa_ahorro = ((total_ing - total_gas) / total_ing) * 100 if total_ing > 0 else 0.0
+    
+    dias_periodo = (dt_fin - dt_inicio).days + 1
+    gasto_prom_diario = total_gas / dias_periodo if dias_periodo > 0 else 0.0
+    
+    import calendar
+    dias_en_mes = calendar.monthrange(dt_fin.year, dt_fin.month)[1]
+    proyeccion_fin = gasto_prom_diario * dias_en_mes
+    
+    return {
+        "totalIngresos": total_ing,
+        "totalGastos": total_gas,
+        "balance": balance,
+        "cantidadIngresos": cant_ing,
+        "cantidadGastos": cant_gas,
+        "tasaAhorro": tasa_ahorro,
+        "gastoPromedioDiario": gasto_prom_diario,
+        "proyeccionFinDeMes": proyeccion_fin
     }
 
-    return ResultadoApi.exito_res(datos=kpis, mensaje="KPIs calculados con éxito.", ruta=request.url.path)
 
-
-@router.get("/graficos")
-async def get_dashboard_graficos(
-    request: Request,
-    fechaInicio: Optional[str] = None,
-    fechaFin: Optional[str] = None,
-    metodoPago: Optional[str] = None,
-    tipoMovimiento: Optional[str] = None,
-    payload: dict = Security(validar_token),
-):
-    """
-    Obtiene y calcula dinámicamente los datos de gráficos:
-    - Flujo de Caja (últimos 5 meses)
-    - Distribución de Gastos por categoría
-    - Heatmap: cantidad de gastos por día de semana
-    - Métodos de Pago: desglose de transacciones por método
-    - Comparativa Histórica: gastos mes a mes (año actual vs año anterior)
-    Usa caché YTD e implementa filtrado en memoria.
-    """
-    usuario_id = obtener_usuario_id(payload)
-    auth_header = request.headers.get("Authorization", "")
-    token = auth_header.replace("Bearer ", "") if auth_header.startswith("Bearer ") else ""
-
-    # 1. Obtener bolsa de transacciones crudas
-    datos_raw = await obtener_transacciones_YTD_optimizadas(
-        usuario_id=usuario_id,
-        token=token,
-        fecha_inicio_str=fechaInicio,
-        fecha_fin_str=fechaFin
-    )
-
-    # 2. Cargar en Pandas y aplicar filtros locales
-    df = json_a_dataframe(datos_raw)
-
-    hoy = datetime.now()
-    anio_actual = hoy.year
-    ytd_inicio = datetime(anio_actual, 1, 1)
-    ytd_fin = hoy
-
+def filtrar_transacciones_recientes(datos_raw: list, dt_inicio: datetime, dt_fin: datetime, metodo_pago: Optional[str], tipo_movimiento: Optional[str]) -> list:
+    """Filtra y ordena las últimas 10 transacciones en base a los criterios del dashboard."""
+    recientes_filtradas = []
+    for tx in datos_raw:
+        try:
+            tx_fecha = datetime.fromisoformat(tx.get("fechaTransaccion", "").replace("Z", ""))
+        except Exception:
+            continue
+        
+        if not (dt_inicio <= tx_fecha <= dt_fin):
+            continue
+        
+        if metodo_pago and tx.get("metodoPago", "").upper() != metodo_pago.upper():
+            continue
+            
+        if tipo_movimiento:
+            tipo_map = "GASTO" if tipo_movimiento.upper() == "EGRESO" else tipo_movimiento.upper()
+            if tx.get("tipo", "").upper() != tipo_map:
+                continue
+        
+        recientes_filtradas.append(tx)
+    
     try:
-        dt_inicio = datetime.strptime(fechaInicio, "%Y-%m-%d") if fechaInicio else ytd_inicio
+        recientes_filtradas.sort(key=lambda x: x.get("fechaTransaccion", ""), reverse=True)
     except Exception:
-        dt_inicio = ytd_inicio
+        pass
+        
+    return recientes_filtradas[:10]
 
-    try:
-        dt_fin = datetime.strptime(fechaFin, "%Y-%m-%d") if fechaFin else ytd_fin
-        dt_fin = dt_fin.replace(hour=23, minute=59, second=59)
-    except Exception:
-        dt_fin = ytd_fin
 
-    if not df.empty:
-        df = df[(df['fecha'] >= pd.to_datetime(dt_inicio)) & (df['fecha'] <= pd.to_datetime(dt_fin))]
-        if metodoPago:
-            df = df[df['metodo_pago'].astype(str).str.upper() == metodoPago.upper()]
-        if tipoMovimiento:
-            tipo_map = "GASTO" if tipoMovimiento.upper() == "EGRESO" else tipoMovimiento.upper()
-            df = df[df['tipo'].astype(str).str.upper() == tipo_map]
-
+def calcular_flujo_caja(df: pd.DataFrame, meses_lista: list) -> list:
+    """Calcula el ingresos/gastos mensuales para el flujo de caja."""
+    flujo_caja = []
     NOMBRES_MESES = {
         1: "Ene", 2: "Feb", 3: "Mar", 4: "Abr", 5: "May", 6: "Jun",
         7: "Jul", 8: "Ago", 9: "Sep", 10: "Oct", 11: "Nov", 12: "Dic"
     }
-
-    # 3. Flujo de Caja (meses dentro del rango filtrado)
-    if not fechaInicio and not fechaFin:
-        # Sin filtros: de Enero al mes actual del año actual
-        meses_lista = [(hoy.year, m) for m in range(1, hoy.month + 1)]
-    else:
-        # Con filtros: meses en el rango [dt_inicio, dt_fin]
-        meses_lista = []
-        cur_y, cur_m = dt_inicio.year, dt_inicio.month
-        while (cur_y < dt_fin.year) or (cur_y == dt_fin.year and cur_m <= dt_fin.month):
-            meses_lista.append((cur_y, cur_m))
-            cur_m += 1
-            if cur_m > 12:
-                cur_m = 1
-                cur_y += 1
-        
-        # Si el rango tiene solo 1 mes, agregar el mes anterior para comparación
-        if len(meses_lista) == 1:
-            y, m = meses_lista[0]
-            prev_m = m - 1
-            prev_y = y
-            if prev_m <= 0:
-                prev_m = 12
-                prev_y -= 1
-            meses_lista.insert(0, (prev_y, prev_m))
-
-    flujo_caja = []
     for y, m in meses_lista:
         if not df.empty:
             df_mes = df[(df['anio'] == y) & (df['mes'] == m)]
@@ -619,8 +508,11 @@ async def get_dashboard_graficos(
         else:
             ing_mes, gas_mes = 0.0, 0.0
         flujo_caja.append({"mes": NOMBRES_MESES[m], "ingresos": round(ing_mes, 2), "gastos": round(gas_mes, 2)})
+    return flujo_caja
 
-    # 4. Distribución de Gastos por categoría
+
+def calcular_distribucion_gastos(df: pd.DataFrame) -> list:
+    """Agrupa gastos por categoría y calcula sus porcentajes."""
     colores_default = {
         "food": "#FF7043", "comida": "#FF7043", "alimentación": "#FF7043", "alimentacion": "#FF7043",
         "transport": "#42A5F5", "transporte": "#42A5F5", "pasaje moto": "#26C6DA",
@@ -650,8 +542,11 @@ async def get_dashboard_graficos(
                     "porcentaje": round((total_cat / total_gastado) * 100, 2),
                     "color": colores_default.get(cat.lower(), "#859397")
                 })
+    return distribucion
 
-    # 5. Heatmap: cantidad de gastos agrupados por día de semana (Lun–Dom)
+
+def calcular_heatmap_gastos(df: pd.DataFrame) -> list:
+    """Agrupa cantidad de gastos por día de semana (Lun-Dom)."""
     DIAS_SEMANA = {0: "Lun", 1: "Mar", 2: "Mié", 3: "Jue", 4: "Vie", 5: "Sáb", 6: "Dom"}
     heatmap = []
     if not df.empty:
@@ -664,8 +559,11 @@ async def get_dashboard_graficos(
                 heatmap.append({"dia": nombre, "intensidad": dias_map.get(num, 0)})
     if not heatmap:
         heatmap = [{"dia": n, "intensidad": 0} for n in DIAS_SEMANA.values()]
+    return heatmap
 
-    # 6. Métodos de Pago: desglose de gastos por método de pago
+
+def calcular_metodos_pago(df: pd.DataFrame) -> list:
+    """Calcula el desglose de gastos por método de pago."""
     COLORES_METODO = {
         "EFECTIVO": "#10B981", "TARJETA": "#5B6AF0",
         "TRANSFERENCIA": "#F59E0B", "DIGITAL": "#EC4899"
@@ -683,49 +581,298 @@ async def get_dashboard_graficos(
                     "cantidad": int(row['cantidad']),
                     "color": COLORES_METODO.get(m_str, "#859397")
                 })
+    return transacciones_metodo
 
-    # 7. Comparativa Histórica: gastos mes a mes (año actual vs año anterior)
+
+async def calcular_comparativa_historica(
+    df: pd.DataFrame, 
+    datos_raw: list, 
+    dt_inicio: datetime, 
+    dt_fin: datetime, 
+    meses_lista_comp: list, 
+    anio_actual: int, 
+    usuario_id: str, 
+    token: str
+) -> list:
+    """Calcula la comparativa histórica semanal o mensual del usuario."""
     comparativa = []
-    anio_ant = anio_actual - 1
-    df_ant = pd.DataFrame()
-    try:
-        from app.persistencia.redis.cache_redis import CacheRedis as CacheRedisComp
-        import json as json_comp
-        key_cache_ant = f"ia:raw_tx:{usuario_id}:YTD_{anio_ant}"
-        cache_comp = CacheRedisComp()
-        cached_ant = cache_comp.obtener(key_cache_ant)
-        if cached_ant:
-            datos_raw_ant = json_comp.loads(cached_ant)
-            logger.info(f"[DASHBOARD-GRAFICOS] Cache HIT comparativa año anterior ({anio_ant})")
-        else:
-            ytd_inicio_ant = datetime(anio_ant, 1, 1)
-            ytd_fin_ant = datetime(anio_ant, 12, 31, 23, 59, 59)
-            cliente_fin = obtener_cliente_financiero()
-            resp_ant = await cliente_fin.obtener_historial_transacciones_async(
-                usuario_id=usuario_id, token=token, tamanio=10000,
-                desde_exacto=ytd_inicio_ant.isoformat(), hasta_exacto=ytd_fin_ant.isoformat()
-            )
-            datos_raw_ant = resp_ant.get("datos", []) if resp_ant else []
-            try:
-                cache_comp.guardar(key_cache_ant, json_comp.dumps(datos_raw_ant), ex=86400)
-                logger.info(f"[DASHBOARD-GRAFICOS] Año anterior ({anio_ant}) cacheado por 24h.")
-            except Exception:
-                pass
-        df_ant = json_a_dataframe(datos_raw_ant)
-    except Exception as e:
-        logger.warning(f"[DASHBOARD-GRAFICOS] No se pudo cargar historial año anterior: {e}")
+    dias_periodo = (dt_fin - dt_inicio).days + 1
+    es_semanal = (dias_periodo <= 7)
+    NOMBRES_MESES = {
+        1: "Ene", 2: "Feb", 3: "Mar", 4: "Abr", 5: "May", 6: "Jun",
+        7: "Jul", 8: "Ago", 9: "Sep", 10: "Oct", 11: "Nov", 12: "Dic"
+    }
 
-    for y, m in meses_lista:
-        nombre_mes = NOMBRES_MESES[m]
+    if es_semanal:
+        # Calcular semana actual
         gas_actual = 0.0
-        gas_anterior = 0.0
         if not df.empty:
-            df_m_act = df[(df['anio'] == y) & (df['mes'] == m)]
-            gas_actual = float(df_m_act[(df_m_act['tipo'] == 'GASTO') & (df_m_act['estado'].astype(str).str.upper() != 'FAILED')]['monto'].sum())
-        if not df_ant.empty:
-            df_m_ant = df_ant[(df_ant['anio'] == y - 1) & (df_ant['mes'] == m)]
-            gas_anterior = float(df_m_ant[(df_m_ant['tipo'] == 'GASTO') & (df_m_ant['estado'].astype(str).str.upper() != 'FAILED')]['monto'].sum())
-        comparativa.append({"mes": nombre_mes, "actual": round(gas_actual, 2), "anterior": round(gas_anterior, 2)})
+            df_semana_act = df[(df['fecha'] >= pd.to_datetime(dt_inicio)) & (df['fecha'] <= pd.to_datetime(dt_fin))]
+            gas_actual = float(df_semana_act[(df_semana_act['tipo'] == 'GASTO') & (df_semana_act['estado'].astype(str).str.upper() != 'FAILED')]['monto'].sum())
+        
+        # Calcular semana anterior
+        from datetime import timedelta
+        dt_inicio_ant = dt_inicio - timedelta(days=dias_periodo)
+        dt_fin_ant = dt_inicio - timedelta(seconds=1)
+        
+        gas_anterior = 0.0
+        df_completo = json_a_dataframe(datos_raw)
+        if not df_completo.empty:
+            df_semana_ant = df_completo[(df_completo['fecha'] >= pd.to_datetime(dt_inicio_ant)) & (df_completo['fecha'] <= pd.to_datetime(dt_fin_ant))]
+            gas_anterior = float(df_semana_ant[(df_semana_ant['tipo'] == 'GASTO') & (df_semana_ant['estado'].astype(str).str.upper() != 'FAILED')]['monto'].sum())
+            
+        comparativa.append({
+            "mes": "Semana",
+            "actual": round(gas_actual, 2),
+            "anterior": round(gas_anterior, 2)
+        })
+    else:
+        # Comparativa Mensual / Anual
+        anio_ant = anio_actual - 1
+        df_ant = pd.DataFrame()
+        try:
+            from app.persistencia.redis.cache_redis import CacheRedis as CacheRedisComp
+            import json as json_comp
+            key_cache_ant = f"ia:raw_tx:{usuario_id}:YTD_{anio_ant}"
+            cache_comp = CacheRedisComp()
+            cached_ant = cache_comp.obtener(key_cache_ant)
+            if cached_ant:
+                datos_raw_ant = json_comp.loads(cached_ant)
+                logger.info(f"[DASHBOARD-GRAFICOS] Cache HIT comparativa año anterior ({anio_ant})")
+            else:
+                ytd_inicio_ant = datetime(anio_ant, 1, 1)
+                ytd_fin_ant = datetime(anio_ant, 12, 31, 23, 59, 59)
+                cliente_fin = obtener_cliente_financiero()
+                resp_ant = await cliente_fin.obtener_historial_transacciones_async(
+                    usuario_id=usuario_id, token=token, tamanio=10000,
+                    desde_exacto=ytd_inicio_ant.isoformat(), hasta_exacto=ytd_fin_ant.isoformat()
+                )
+                datos_raw_ant = resp_ant.get("datos", []) if resp_ant else []
+                try:
+                    cache_comp.guardar(key_cache_ant, json_comp.dumps(datos_raw_ant), ex=86400)
+                    logger.info(f"[DASHBOARD-GRAFICOS] Año anterior ({anio_ant}) cacheado por 24h.")
+                except Exception:
+                    pass
+            df_ant = json_a_dataframe(datos_raw_ant)
+        except Exception as e:
+            logger.warning(f"[DASHBOARD-GRAFICOS] No se pudo cargar historial año anterior: {e}")
+
+        for y, m in meses_lista_comp:
+            nombre_mes = NOMBRES_MESES[m]
+            gas_actual = 0.0
+            gas_anterior = 0.0
+            if not df.empty:
+                df_m_act = df[(df['anio'] == y) & (df['mes'] == m)]
+                gas_actual = float(df_m_act[(df_m_act['tipo'] == 'GASTO') & (df_m_act['estado'].astype(str).str.upper() != 'FAILED')]['monto'].sum())
+            if not df_ant.empty:
+                df_m_ant = df_ant[(df_ant['anio'] == y - 1) & (df_ant['mes'] == m)]
+                gas_anterior = float(df_m_ant[(df_m_ant['tipo'] == 'GASTO') & (df_m_ant['estado'].astype(str).str.upper() != 'FAILED')]['monto'].sum())
+            comparativa.append({"mes": nombre_mes, "actual": round(gas_actual, 2), "anterior": round(gas_anterior, 2)})
+            
+    return comparativa
+
+
+# ── Endpoints ─────────────────────────────────────────────────────────────────
+
+@router.get("/kpis", response_model=ResultadoApi[RespuestaKPIs])
+async def get_dashboard_kpis(
+    request: Request,
+    fechaInicio: Optional[str] = None,
+    fechaFin: Optional[str] = None,
+    metodoPago: Optional[str] = None,
+    tipoMovimiento: Optional[str] = None,
+    payload: dict = Security(validar_token),
+):
+    """
+    Obtiene y calcula dinámicamente los KPIs principales y las últimas 10 transacciones.
+    Orquestador modular de KPIs.
+    """
+    usuario_id = obtener_usuario_id(payload)
+    auth_header = request.headers.get("Authorization", "")
+    token = auth_header.replace("Bearer ", "") if auth_header.startswith("Bearer ") else ""
+
+    # 1. Obtener bolsa de transacciones crudas y presupuesto activo en paralelo
+    import asyncio
+    cliente_perfil = obtener_cliente_perfil()
+    datos_raw, presupuesto_activo = await asyncio.gather(
+        obtener_transacciones_YTD_optimizadas(
+            usuario_id=usuario_id,
+            token=token,
+            fecha_inicio_str=fechaInicio,
+            fecha_fin_str=fechaFin
+        ),
+        cliente_perfil.obtener_presupuesto_activo_async(usuario_id=usuario_id, token=token)
+    )
+    
+    # Determinar si el usuario tiene presupuesto activo configurado
+    monto_presupuesto = None
+    if presupuesto_activo:
+        monto_presupuesto = float(presupuesto_activo.get("montoLimite", 0))
+    logger.info(f"[DASHBOARD-KPIs] Presupuesto activo para {usuario_id}: {monto_presupuesto}")
+
+    # 2. Cargar DataFrame principal
+    df_completo = json_a_dataframe(datos_raw)
+
+    # 3. Parsear fechas de rango
+    hoy = datetime.now()
+    anio_actual = hoy.year
+    ytd_inicio = datetime(anio_actual, 1, 1)
+    ytd_fin = hoy
+
+    try:
+        dt_inicio = datetime.strptime(fechaInicio, "%Y-%m-%d") if fechaInicio else ytd_inicio
+    except Exception:
+        dt_inicio = ytd_inicio
+
+    try:
+        dt_fin = datetime.strptime(fechaFin, "%Y-%m-%d") if fechaFin else ytd_fin
+        dt_fin = dt_fin.replace(hour=23, minute=59, second=59)
+    except Exception:
+        dt_fin = ytd_fin
+
+    # 4. Calcular gasto del presupuesto
+    gasto_presupuesto = calcular_gasto_presupuesto(df_completo, presupuesto_activo, monto_presupuesto)
+
+    # 5. Filtrar DataFrame para los KPIs del periodo
+    df_filtrado = filtrar_df_kpis(df_completo, dt_inicio, dt_fin, metodoPago, tipoMovimiento)
+
+    # 6. Calcular métricas básicas
+    metricas = calcular_metricas_kpis(df_filtrado, dt_inicio, dt_fin)
+
+    # 7. Obtener transacciones recientes
+    recientes = filtrar_transacciones_recientes(datos_raw, dt_inicio, dt_fin, metodoPago, tipoMovimiento)
+
+    # 8. Calcular cumplimiento de presupuesto
+    if monto_presupuesto and monto_presupuesto > 0:
+        cumplimiento_presupuesto = round((gasto_presupuesto / monto_presupuesto) * 100, 2)
+    else:
+        # Sin presupuesto configurado: mostrar 0 en la tarjeta
+        cumplimiento_presupuesto = 0.0
+
+    # 9. Fechas de rango reales
+    if not df_filtrado.empty and 'fecha_transaccion' in df_filtrado.columns:
+        desde_str = df_filtrado['fecha_transaccion'].min().isoformat()
+        hasta_str = df_filtrado['fecha_transaccion'].max().isoformat()
+    else:
+        desde_str = dt_inicio.isoformat()
+        hasta_str = dt_fin.isoformat()
+
+    kpis = {
+        "resumen": {
+            "desde": desde_str,
+            "hasta": hasta_str,
+            "totalIngresos": round(metricas["totalIngresos"], 2),
+            "totalGastos": round(metricas["totalGastos"], 2),
+            "balance": round(metricas["balance"], 2),
+            "cantidadIngresos": metricas["cantidadIngresos"],
+            "cantidadGastos": metricas["cantidadGastos"],
+            "tasaAhorro": round(metricas["tasaAhorro"], 2),
+            "gastoPromedioDiario": round(metricas["gastoPromedioDiario"], 2),
+            "proyeccionFinDeMes": round(metricas["proyeccionFinDeMes"], 2),
+            "cumplimientoPresupuesto": cumplimiento_presupuesto,
+            "presupuestoActivo": monto_presupuesto
+        },
+        "recientes": recientes
+    }
+
+    return ResultadoApi.exito_res(datos=kpis, mensaje="KPIs calculados con éxito.", ruta=request.url.path)
+
+
+@router.get("/graficos")
+async def get_dashboard_graficos(
+    request: Request,
+    fechaInicio: Optional[str] = None,
+    fechaFin: Optional[str] = None,
+    metodoPago: Optional[str] = None,
+    tipoMovimiento: Optional[str] = None,
+    payload: dict = Security(validar_token),
+):
+    """
+    Obtiene y calcula dinámicamente los datos de gráficos de manera modular.
+    """
+    usuario_id = obtener_usuario_id(payload)
+    auth_header = request.headers.get("Authorization", "")
+    token = auth_header.replace("Bearer ", "") if auth_header.startswith("Bearer ") else ""
+
+    # 1. Obtener transacciones crudas
+    datos_raw = await obtener_transacciones_YTD_optimizadas(
+        usuario_id=usuario_id,
+        token=token,
+        fecha_inicio_str=fechaInicio,
+        fecha_fin_str=fechaFin
+    )
+
+    # 2. Cargar en DataFrame
+    df = json_a_dataframe(datos_raw)
+
+    hoy = datetime.now()
+    anio_actual = hoy.year
+    ytd_inicio = datetime(anio_actual, 1, 1)
+    ytd_fin = hoy
+
+    try:
+        dt_inicio = datetime.strptime(fechaInicio, "%Y-%m-%d") if fechaInicio else ytd_inicio
+    except Exception:
+        dt_inicio = ytd_inicio
+
+    try:
+        dt_fin = datetime.strptime(fechaFin, "%Y-%m-%d") if fechaFin else ytd_fin
+        dt_fin = dt_fin.replace(hour=23, minute=59, second=59)
+    except Exception:
+        dt_fin = ytd_fin
+
+    # A. Filtrado local del DataFrame
+    if not df.empty:
+        df = df[(df['fecha'] >= pd.to_datetime(dt_inicio)) & (df['fecha'] <= pd.to_datetime(dt_fin))]
+        if metodoPago:
+            df = df[df['metodo_pago'].astype(str).str.upper() == metodoPago.upper()]
+        if tipoMovimiento:
+            tipo_map = "GASTO" if tipoMovimiento.upper() == "EGRESO" else tipoMovimiento.upper()
+            df = df[df['tipo'].astype(str).str.upper() == tipo_map]
+
+    # B. Determinar rango de meses (para flujo de caja)
+    if not fechaInicio and not fechaFin:
+        meses_lista = [(hoy.year, m) for m in range(1, hoy.month + 1)]
+        meses_lista_comp = [(hoy.year, m) for m in range(1, hoy.month + 1)]
+    else:
+        # Con filtros: meses en el rango [dt_inicio, dt_fin]
+        meses_lista = []
+        cur_y, cur_m = dt_inicio.year, dt_inicio.month
+        while (cur_y < dt_fin.year) or (cur_y == dt_fin.year and cur_m <= dt_fin.month):
+            meses_lista.append((cur_y, cur_m))
+            cur_m += 1
+            if cur_m > 12:
+                cur_m = 1
+                cur_y += 1
+        
+        # meses_lista_comp contiene exactamente los meses del rango sin el mes anterior
+        meses_lista_comp = list(meses_lista)
+        
+        # Si el rango tiene solo 1 mes, agregar el mes anterior para comparación
+        if len(meses_lista) == 1:
+            y, m = meses_lista[0]
+            prev_m = m - 1
+            prev_y = y
+            if prev_m <= 0:
+                prev_m = 12
+                prev_y -= 1
+            meses_lista.insert(0, (prev_y, prev_m))
+
+    # C. Cómputo modular de gráficos
+    flujo_caja = calcular_flujo_caja(df, meses_lista)
+    distribucion = calcular_distribucion_gastos(df)
+    heatmap = calcular_heatmap_gastos(df)
+    transacciones_metodo = calcular_metodos_pago(df)
+    comparativa = await calcular_comparativa_historica(
+        df=df,
+        datos_raw=datos_raw,
+        dt_inicio=dt_inicio,
+        dt_fin=dt_fin,
+        meses_lista_comp=meses_lista_comp,
+        anio_actual=anio_actual,
+        usuario_id=usuario_id,
+        token=token
+    )
 
     graficos = {
         "flujoCaja": flujo_caja,
