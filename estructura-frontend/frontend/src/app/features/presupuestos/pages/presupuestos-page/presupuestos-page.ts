@@ -94,7 +94,7 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
   // Datos del Negocio
   presupuestoActivo = signal<PresupuestoDTO | null>(null);
   gastoTotalMes = signal<number>(0);
-  historialPresupuestos = signal<any[]>([]);
+  historialLimitesRaw = signal<any[]>([]);
 
   // UI States
   mostrarConfirmEliminar = signal<boolean>(false);
@@ -104,12 +104,50 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
 
   paginaHistorial = signal<number>(1);
 
+  historialPresupuestos = computed(() => {
+    const raw = this.historialLimitesRaw();
+    const gastos = this.gastosState.gastos();
+
+    return raw.map(h => {
+      const fIni = new Date(h.fechaInicio).getTime();
+      const fFin = new Date(h.fechaFin).getTime() + 86400000 - 1;
+
+      const gastosPeriodo = gastos.filter(g => {
+        const t = new Date(g.fechaTransaccion).getTime();
+        return t >= fIni && t <= fFin;
+      });
+
+      const consumido = gastosPeriodo.reduce((acc, g) => acc + Number(g.monto || 0), 0);
+
+      // Helper para generar el "periodo" si no viene (ej: 'Enero 2024')
+      let periodoStr = h.periodo;
+      if (!periodoStr && h.fechaInicio) {
+        const date = new Date(h.fechaInicio);
+        periodoStr = date.toLocaleString('es-PE', { month: 'long', year: 'numeric' });
+        periodoStr = periodoStr.charAt(0).toUpperCase() + periodoStr.slice(1);
+      }
+
+      return {
+        ...h,
+        periodo: periodoStr,
+        montoLimite: Number(h.montoLimite) || 0,
+        montoConsumido: consumido,
+        porcentajeAlerta: Number(h.porcentajeAlerta) || 80
+      };
+    });
+  });
+
   // Categorías filtradas y top 5
   categorias = computed(() => {
     const activo = this.presupuestoActivo();
     if (!activo) return [];
 
     const gastos = this.gastosState.gastos();
+    const listaCat = this.gastosState.categorias();
+    
+    // Crear mapa de resolución id -> nombre
+    const mapaCat = new Map(listaCat.map(c => [c.id, c.nombre]));
+
     const fIni = new Date(activo.fechaInicio).getTime();
     const fFin = new Date(activo.fechaFin).getTime() + 86400000 - 1;
 
@@ -121,7 +159,14 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
     const mapa = new Map<string, number>();
     let total = 0;
     for (const g of filtrados) {
-      const cat = g.categoria || 'Otros';
+      // 1. Prioriza g.categoria si existe y no es ID
+      // 2. Si no, mapea el categoriaId
+      // 3. Sino, usa "Otros"
+      let cat = g.categoria || mapaCat.get(g.categoriaId) || 'Otros';
+      if (cat === g.categoriaId) {
+        cat = mapaCat.get(g.categoriaId) || 'Otros';
+      }
+
       const m = Number(g.monto) || 0;
       mapa.set(cat, (mapa.get(cat) || 0) + m);
       total += m;
@@ -448,10 +493,9 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
         const hMapeado = (historial || []).map(h => ({
           ...h,
           montoLimite: Number(h.montoLimite) || 0,
-          montoConsumido: Number((h as any).montoConsumido) || 0,
           porcentajeAlerta: Number(h.porcentajeAlerta) || 80
         }));
-        this.historialPresupuestos.set(hMapeado);
+        this.historialLimitesRaw.set(hMapeado);
       },
       error: () => console.error('Error silencioso al listar historial.')
     });
