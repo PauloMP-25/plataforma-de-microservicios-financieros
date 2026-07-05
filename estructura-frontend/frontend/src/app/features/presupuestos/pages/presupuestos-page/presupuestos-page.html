@@ -169,18 +169,30 @@
 
       </div>
 
-      <div class="lk-card" *ngIf="categorias().length > 0">
-        <div class="card-header">
-          <h3 class="card-title">Desglose por categorías</h3>
+      @if (categorias().length > 0) {
+        <div class="lk-card">
+          <div class="card-header">
+            <h3 class="card-title">Desglose por categorías</h3>
+          </div>
+          <div class="desglose-chart-wrap" style="position: relative; height: 220px; margin: 1.5rem 0;">
+            <canvas #desgloseCanvas id="desgloseCanvas"></canvas>
+          </div>
+          <div class="breakdown-total">
+            <span>Total consumido</span>
+            <span class="breakdown-total-val">{{ formatearMonto(gastoTotalMes()) }}</span>
+          </div>
         </div>
-        <div class="desglose-chart-wrap" style="position: relative; height: 220px; margin: 1.5rem 0;">
-          <canvas #desgloseCanvas id="desgloseCanvas"></canvas>
+      } @else {
+        <div class="lk-card">
+          <div class="card-header">
+            <h3 class="card-title">Desglose por categorías</h3>
+          </div>
+          <div class="evolucion-empty" style="padding: 2rem; text-align: center;">
+            <i class="fa-solid fa-chart-pie" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+            <p>Aún no hay gastos registrados en este presupuesto para desglosar.</p>
+          </div>
         </div>
-        <div class="breakdown-total">
-          <span>Total consumido</span>
-          <span class="breakdown-total-val">{{ formatearMonto(gastoTotalMes()) }}</span>
-        </div>
-      </div>
+      }
     </aside>
 
     <div class="lk-content">

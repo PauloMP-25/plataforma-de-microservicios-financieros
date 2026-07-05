@@ -47,15 +47,21 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
     effect(() => {
       const hist = this.historialPresupuestos();
       const activo = this.presupuestoActivo();
-      if (this.esPremiumOPro() && this.evolucionChartInstance && hist.length) {
-        this._actualizarChart(this.evolucionChartInstance, hist, activo?.montoLimite ?? 1000, activo?.porcentajeAlerta ?? 80);
+      if (this.esPremiumOPro() && hist.length > 0) {
+        if (this.evolucionChartInstance) {
+          this._actualizarChart(this.evolucionChartInstance, hist, activo?.montoLimite ?? 1000, activo?.porcentajeAlerta ?? 80);
+        } else {
+          setTimeout(() => this._initChart(), 50);
+        }
       }
       
       const cat = this.categorias();
-      if (this.desgloseChartInstance && cat.length) {
-        this._actualizarDesgloseChart(this.desgloseChartInstance, cat);
-      } else if (cat.length > 0 && !this.desgloseChartInstance) {
-        setTimeout(() => this._initDesgloseChart(), 50);
+      if (cat.length > 0) {
+        if (this.desgloseChartInstance) {
+          this._actualizarDesgloseChart(this.desgloseChartInstance, cat);
+        } else {
+          setTimeout(() => this._initDesgloseChart(), 50);
+        }
       }
     });
   }
