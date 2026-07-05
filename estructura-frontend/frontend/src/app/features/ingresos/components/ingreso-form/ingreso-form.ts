@@ -14,6 +14,7 @@ export class IngresoFormComponent {
   @Input() categorias: OptionItem[] = [];
   @Input() metodos: OptionItem[] = [];
   @Input() model: IngresoFormData = {
+    nombreIngreso: '',
     monto: 1500,
     fechaTransaccion: '',
     descripcion: '',

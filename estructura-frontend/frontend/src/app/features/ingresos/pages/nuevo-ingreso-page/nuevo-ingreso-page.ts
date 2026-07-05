@@ -53,6 +53,7 @@ export class NuevoIngresoPage implements HasUnsavedChanges, OnInit {
   ];
 
   form: IngresoFormData = {
+    nombreIngreso: '',
     monto: 0,
     fechaTransaccion: new Date().toLocaleDateString('es-PE'), // dd/mm/yyyy
     descripcion: '',
@@ -331,7 +332,7 @@ export class NuevoIngresoPage implements HasUnsavedChanges, OnInit {
 
       const payload: TransaccionRequestDTO = {
         usuarioId,
-        nombreCliente: this.authService.usuario()?.nombreUsuario ?? 'Cliente',
+        nombreCliente: this.form.nombreIngreso || 'Ingreso sin nombre',
         monto: Number(this.form.monto),
         tipo: 'INGRESO',
         categoriaId: catId,

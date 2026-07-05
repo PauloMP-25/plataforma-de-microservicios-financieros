@@ -41,6 +41,7 @@ export interface IngresoRegistro {
 }
 
 export interface IngresoFormData {
+  nombreIngreso?: string;
   monto: number;
   fechaTransaccion: string;
   descripcion: string;
@@ -50,4 +51,3 @@ export interface IngresoFormData {
   metodoPago: MetodoPago;
   etiquetas: string[];
 }
-

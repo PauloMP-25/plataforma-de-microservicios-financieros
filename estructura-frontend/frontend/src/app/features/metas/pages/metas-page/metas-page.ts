@@ -493,13 +493,14 @@ export class MetasPage implements OnInit {
     
     const transaccionPayload: TransaccionRequestDTO = {
       usuarioId: usuario?.id ?? '',
-      nombreCliente: usuario?.nombreUsuario ?? 'Cliente',
+      nombreCliente: meta.nombreVisual, // El backend y el frontend de gastos usan nombreCliente como el "Nombre del gasto"
       monto: meta.montoObjetivo,
       tipo: 'GASTO',
       categoriaId: 'otros',
       fechaTransaccion: new Date().toISOString(),
       metodoPago: 'DIGITAL',
-      notas: `Meta alcanzada: ${meta.nombreVisual}|Gasto registrado automáticamente al cumplir el objetivo financiero|DIARIO`
+      descripcion: `Gasto automático por cumplimiento de meta: ${meta.nombreVisual}`,
+      etiquetas: `META,${(meta.categoriaVisual || 'OTROS').toUpperCase().replace(/ /g, '_')}`
     };
 
     this.metasDataService.completarMeta(meta, transaccionPayload).subscribe({
