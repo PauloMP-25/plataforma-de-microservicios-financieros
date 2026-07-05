@@ -216,6 +216,10 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
     const activo = this.presupuestoActivo();
     if (!activo || activo.montoLimite <= 0) return 0;
     const pct = (this.gastoTotalMes() / activo.montoLimite) * 100;
+    // Si es menor a 1 pero mayor a 0, mostramos 1 decimal, sino redondeamos normal
+    if (pct > 0 && pct < 1) {
+      return Number(pct.toFixed(1));
+    }
     return Math.min(Math.round(pct), 999);
   });
 

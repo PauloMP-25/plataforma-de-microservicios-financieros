@@ -44,7 +44,10 @@
       <div class="kpi-body">
         <div class="kpi-label">% de uso del límite</div>
         <div class="kpi-value" [ngClass]="presupuestoActivo() ? estadoAlerta() : ''">{{ porcentajeConsumo() }}%</div>
-        <div class="kpi-sub">{{ presupuestoActivo() ? (estadoAlerta() === 'superado' ? 'Excedido' : estadoAlerta() === 'alerta' ? 'Alerta' : 'Normal') : 'Normal' }}</div>
+        <div class="kpi-sub" style="text-transform: none;">
+          <span style="font-weight: 700;">{{ formatearMonto(gastoTotalMes()) }} consumido</span> 
+          ({{ presupuestoActivo() ? (estadoAlerta() === 'superado' ? 'Excedido' : estadoAlerta() === 'alerta' ? 'Alerta' : 'Normal') : 'Normal' }})
+        </div>
       </div>
     </div>
 
@@ -169,39 +172,7 @@
 
     <div class="lk-content">
 
-      <div class="lk-card lk-gauge-card">
-        <div class="gauge-left">
-          <div class="gauge-container">
-            <svg class="gauge-svg" viewBox="0 0 120 120">
-              <circle class="gauge-track" cx="60" cy="60" r="50"/>
-              <circle class="gauge-fill" cx="60" cy="60" r="50"
-                      stroke-dasharray="314.16"
-                      [style.stroke-dashoffset]="gaugeOffset()"
-                      [style.stroke]="gaugeColor()"/>
-            </svg>
-            <div class="gauge-center">
-              <div class="gauge-pct">{{ porcentajeConsumo() }}%</div>
-              <div class="gauge-label">consumido</div>
-            </div>
-          </div>
-        </div>
-        <div class="gauge-right">
-          <div class="gauge-stat">
-            <div class="gauge-stat-label">Has consumido</div>
-            <div class="gauge-stat-value primary">{{ formatearMonto(gastoTotalMes()) }}</div>
-            <div class="gauge-stat-sub" *ngIf="presupuestoActivo()">de tu límite de {{ formatearMonto(presupuestoActivo()!.montoLimite) }}</div>
-            <div class="gauge-stat-sub" *ngIf="!presupuestoActivo()">No has definido un límite vigente</div>
-          </div>
-          <div class="gauge-divider"></div>
-          <div class="gauge-stat">
-            <div class="gauge-stat-label">Margen disponible</div>
-            <div class="gauge-stat-value success">{{ formatearMonto(margenDisponible()) }}</div>
-            <div class="gauge-stat-badge">
-              <span class="badge" [ngClass]="'badge-' + (presupuestoActivo() ? estadoAlerta() : 'success')">{{ 100 - porcentajeConsumo() }}% restante</span>
-            </div>
-          </div>
-        </div>
-      </div>
+
 
       @if (esPremiumOPro()) {
         <div class="lk-card lk-evolucion-card">
@@ -210,7 +181,7 @@
             <span class="premium-badge"><i class="fa-solid fa-crown"></i> Premium</span>
           </div>
 
-          @if (presupuestoActivo(); as pres) {
+          @if (historialPresupuestos().length > 0) {
             <div class="evolucion-chart-wrap">
               <canvas #evolucionCanvas id="evolucionCanvas"></canvas>
             </div>
@@ -234,7 +205,7 @@
               </div>
               <div class="legend-item">
                 <span class="legend-dash" style="border-color:#F59E0B; border-style:dotted"></span>
-                <span>Alerta {{ pres.porcentajeAlerta }}%</span>
+                <span>Alerta {{ presupuestoActivo()?.porcentajeAlerta || 80 }}%</span>
               </div>
             </div>
 
@@ -258,7 +229,7 @@
           } @else {
             <div class="evolucion-empty">
               <i class="fa-solid fa-chart-line"></i>
-              <p>Define un límite mensual para ver tu evolución de consumo</p>
+              <p>Tu gráfica aparecerá aquí el próximo mes cuando este límite actual pase al historial y finalice su periodo de evaluación.</p>
             </div>
           }
         </div>
