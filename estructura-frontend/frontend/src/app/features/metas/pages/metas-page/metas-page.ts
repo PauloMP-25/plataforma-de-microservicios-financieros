@@ -14,6 +14,7 @@ import { MetaDetailsSidebarComponent } from '../../components/meta-details-sideb
 import { MetaConfirmModalComponent } from '../../components/meta-confirm-modal/meta-confirm-modal.component';
 import { MetasUtilityService } from '../../services/metas-utility.service';
 import { MetasDataService } from '../../services/metas-data.service';
+import { DashboardStateService } from '../../../../core/services/dashboard-state.service';
 
 import { OnboardingTour, TourStep } from '../../../../shared/components/onboarding-tour/onboarding-tour';
 
@@ -36,6 +37,7 @@ export class MetasPage implements OnInit {
   private router = inject(Router);
   private metasDataService = inject(MetasDataService);
   private financieroService = inject(FinancieroService);
+  private dashboardState = inject(DashboardStateService);
   private authService = inject(AuthService);
   private eventBus = inject(AppEventBus);
   private metasUtility = inject(MetasUtilityService);
@@ -90,10 +92,10 @@ export class MetasPage implements OnInit {
   // Lista de categorías con sus íconos correspondientes
   categorias = this.metasUtility.categorias;
 
-  // Ahorro disponible cargado desde FinancieroService (balance general)
+  // Ahorro disponible cargado desde DashboardStateService (balance YTD)
   ahorroDisponible = computed(() => {
-    const resumen = this.financieroService.resumen();
-    return resumen ? resumen.balance : 0;
+    const resumen = this.dashboardState.resumenYTD();
+    return (resumen && resumen.balance != null) ? resumen.balance : 0;
   });
 
   // Cálculo secuencial/híbrido del avance de las metas activas usando el saldo restante
@@ -287,6 +289,7 @@ export class MetasPage implements OnInit {
 
   ngOnInit(): void {
     this.financieroService.cargarResumen();
+    this.dashboardState.cargarAnalitica();
     this.cargarMetas();
 
     const tourVisto = localStorage.getItem('luka_tour_metas_visto');
