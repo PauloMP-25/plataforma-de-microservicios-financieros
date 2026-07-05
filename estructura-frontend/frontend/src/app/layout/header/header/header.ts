@@ -132,9 +132,11 @@ export class Header implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.financiero.cargarResumen();
+    this.dashboardState.cargarAnalitica();
 
     this.txSub = this.eventBus.on('TRANSACTION_MODIFIED').subscribe(() => {
       this.financiero.cargarResumen();
+      this.dashboardState.cargarAnalitica();
       this.cargarRacha();
     });
 
