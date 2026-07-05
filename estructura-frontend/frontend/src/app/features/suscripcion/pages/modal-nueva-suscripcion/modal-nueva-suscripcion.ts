@@ -4,7 +4,9 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { 
   CATEGORIAS_SUSCRIPCION, 
   FRECUENCIAS_SUSCRIPCION,
-  CrearSuscripcionRequest 
+  CrearSuscripcionRequest,
+  ActualizarSuscripcionRequest,
+  SuscripcionDTO
 } from '../../../../core/models/financiero/suscripcion-gasto.model';
 
 @Component({
@@ -15,8 +17,11 @@ import {
   styleUrl: './modal-nueva-suscripcion.scss'
 })
 export class ModalNuevaSuscripcion {
+  @Input() suscripcionEditar: SuscripcionDTO | null = null;
   @Output() cerrar = new EventEmitter<void>();
   @Output() crear = new EventEmitter<CrearSuscripcionRequest>();
+  @Output() editar = new EventEmitter<ActualizarSuscripcionRequest>();
+  @Output() pagar = new EventEmitter<string>();
 
   // Formulario
   readonly nombre = signal('');
@@ -25,6 +30,17 @@ export class ModalNuevaSuscripcion {
   readonly monto = signal('');
   readonly frecuencia = signal('MENSUAL');
   readonly fechaInicio = signal(this.obtenerFechaHoy());
+
+  ngOnInit() {
+    if (this.suscripcionEditar) {
+      this.nombre.set(this.suscripcionEditar.nombre);
+      this.descripcion.set(this.suscripcionEditar.descripcion);
+      this.categoria.set(this.suscripcionEditar.categoria);
+      this.monto.set(this.suscripcionEditar.monto.toString());
+      this.frecuencia.set(this.suscripcionEditar.frecuencia);
+      this.fechaInicio.set(this.suscripcionEditar.proximoVencimiento || this.obtenerFechaHoy());
+    }
+  }
 
   // 👇 Calculamos los días automáticamente cuando cambia fechaInicio
   readonly diasRestantes = computed(() => {
@@ -112,21 +128,43 @@ export class ModalNuevaSuscripcion {
 
     this.guardando.set(true);
 
-    const request: CrearSuscripcionRequest = {
-      nombre: this.nombre(),
-      descripcion: this.descripcion(),
-      categoria: this.categoria(),
-      monto: parseFloat(this.monto()),
-      frecuencia: this.frecuencia() as any,
-      fechaInicio: this.fechaInicio()
-    };
+    if (this.suscripcionEditar) {
+      const request: ActualizarSuscripcionRequest = {
+        id: this.suscripcionEditar.id,
+        nombre: this.nombre(),
+        descripcion: this.descripcion(),
+        categoria: this.categoria(),
+        monto: parseFloat(this.monto()),
+        frecuencia: this.frecuencia() as any,
+        fechaInicio: this.fechaInicio()
+      };
+      setTimeout(() => {
+        this.editar.emit(request);
+        this.limpiarFormulario();
+        this.guardando.set(false);
+      }, 500);
+    } else {
+      const request: CrearSuscripcionRequest = {
+        nombre: this.nombre(),
+        descripcion: this.descripcion(),
+        categoria: this.categoria(),
+        monto: parseFloat(this.monto()),
+        frecuencia: this.frecuencia() as any,
+        fechaInicio: this.fechaInicio()
+      };
 
-    // Simular delay de envío
-    setTimeout(() => {
-      this.crear.emit(request);
-      this.limpiarFormulario();
-      this.guardando.set(false);
-    }, 500);
+      setTimeout(() => {
+        this.crear.emit(request);
+        this.limpiarFormulario();
+        this.guardando.set(false);
+      }, 500);
+    }
+  }
+
+  registrarPagoManual(): void {
+    if (this.suscripcionEditar) {
+      this.pagar.emit(this.suscripcionEditar.id);
+    }
   }
 
   /**

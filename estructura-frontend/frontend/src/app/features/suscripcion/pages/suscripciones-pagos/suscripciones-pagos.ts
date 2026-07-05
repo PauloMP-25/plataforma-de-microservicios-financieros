@@ -18,6 +18,7 @@ export class SuscripcionesPagos implements OnInit {
   private readonly suscripcionService = inject(SuscripcionGastosService);
 
   readonly modalAbierto = signal(false);
+  readonly suscripcionAEditar = signal<SuscripcionDTO | null>(null);
   readonly mostrarTour = signal(false);
 
   readonly stepsTour: TourStep[] = [
@@ -97,12 +98,14 @@ export class SuscripcionesPagos implements OnInit {
   }
 
   // 👇 4. AGREGAMOS LAS FUNCIONES PARA CONTROLAR EL MODAL
-  abrirModal(): void {
+  abrirModal(suscripcion: SuscripcionDTO | null = null): void {
+    this.suscripcionAEditar.set(suscripcion);
     this.modalAbierto.set(true);
   }
 
   cerrarModal(): void {
     this.modalAbierto.set(false);
+    setTimeout(() => this.suscripcionAEditar.set(null), 300); // delay for animation
   }
 
   onCrearSuscripcion(datosFormulario: any): void {
@@ -113,6 +116,22 @@ export class SuscripcionesPagos implements OnInit {
       error: (err) => {
         console.error('Error creando suscripción:', err);
       }
+    });
+  }
+
+  onEditarSuscripcionGuardar(datosFormulario: any): void {
+    this.suscripcionService.actualizarSuscripcion(datosFormulario).subscribe({
+      next: () => {
+        this.cerrarModal();
+      },
+      error: (err) => console.error('Error actualizando suscripción:', err)
+    });
+  }
+
+  onPagarSuscripcionManual(id: string): void {
+    this.suscripcionService.cambiarEstado(id, 'ACTIVA').subscribe({
+      next: () => this.cerrarModal(),
+      error: (err) => console.error('Error al registrar pago manual', err)
     });
   }
 
@@ -186,7 +205,7 @@ export class SuscripcionesPagos implements OnInit {
    * Eventos de tarjeta
    */
   onEditarSuscripcion(suscripcion: SuscripcionDTO): void {
-    console.log('Editar:', suscripcion);
+    this.abrirModal(suscripcion);
   }
 
   onEliminarSuscripcion(id: string): void {

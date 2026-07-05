@@ -131,8 +131,11 @@
   <!-- MODAL NUEVA SUSCRIPCIÓN -->
   @if (modalAbierto()) {
     <app-modal-nueva-suscripcion
+      [suscripcionEditar]="suscripcionAEditar()"
       (cerrar)="cerrarModal()"
-      (crear)="onCrearSuscripcion($event)">
+      (crear)="onCrearSuscripcion($event)"
+      (editar)="onEditarSuscripcionGuardar($event)"
+      (pagar)="onPagarSuscripcionManual($event)">
     </app-modal-nueva-suscripcion>
   }
 </div>
