@@ -48,7 +48,7 @@ export class BalancesCard implements OnInit, OnChanges {
   calcularPorcentaje() {
     if (this.presupuestoActivo > 0) {
       const calc = (this.totalGastos / this.presupuestoActivo) * 100;
-      this.porcentajeUso = Math.min(Math.round(calc), 100);
+      this.porcentajeUso = Math.min(Math.round(calc * 10) / 10, 100);
     } else {
       this.porcentajeUso = 0;
     }

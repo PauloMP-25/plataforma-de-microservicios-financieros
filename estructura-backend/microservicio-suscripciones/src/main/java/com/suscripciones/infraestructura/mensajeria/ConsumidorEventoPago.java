@@ -41,12 +41,13 @@ public class ConsumidorEventoPago {
                 metodoPago, evento.usuarioId(), evento.planNuevo());
 
         try {
-            String nombreSuscripcion = "Luka App " + evento.planNuevo();
+            String planCapitalizado = evento.planNuevo().substring(0, 1).toUpperCase() + evento.planNuevo().substring(1).toLowerCase();
+            String nombreSuscripcion = "Luka " + planCapitalizado;
             
             // 1. Buscar si el usuario ya tiene una suscripción activa para la plataforma Luka App
             List<Suscripcion> suscripciones = suscripcionRepository.findByUsuarioId(evento.usuarioId());
             Optional<Suscripcion> suscripcionOpt = suscripciones.stream()
-                    .filter(s -> s.getNombre().startsWith("Luka App"))
+                    .filter(s -> s.getNombre().startsWith("Luka"))
                     .findFirst();
 
             Suscripcion suscripcion;

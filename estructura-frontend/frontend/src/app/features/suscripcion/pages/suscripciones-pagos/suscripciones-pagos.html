@@ -24,7 +24,8 @@
         <input 
           type="text" 
           id="busqueda" 
-          [(ngModel)]="busqueda"
+          [ngModel]="busqueda()" 
+          (ngModelChange)="busqueda.set($event)"
           placeholder="Netflix, Spotify, Gimnasio..."
           class="filter-input"
         />
@@ -34,7 +35,8 @@
         <label for="categoria" class="filter-label">Categoría</label>
         <select 
           id="categoria" 
-          [(ngModel)]="categoriaFiltro"
+          [ngModel]="categoriaFiltro()" 
+          (ngModelChange)="categoriaFiltro.set($event)"
           class="filter-input"
         >
           <option value="">Todas</option>
@@ -48,7 +50,8 @@
         <label for="frecuencia" class="filter-label">Frecuencia</label>
         <select 
           id="frecuencia" 
-          [(ngModel)]="frecuenciaFiltro"
+          [ngModel]="frecuenciaFiltro()" 
+          (ngModelChange)="frecuenciaFiltro.set($event)"
           class="filter-input"
         >
           <option value="">Todas</option>
@@ -62,7 +65,8 @@
         <label for="estado" class="filter-label">Estado</label>
         <select 
           id="estado" 
-          [(ngModel)]="estadoFiltro"
+          [ngModel]="estadoFiltro()" 
+          (ngModelChange)="estadoFiltro.set($event)"
           class="filter-input"
         >
           <option value="">Todos</option>
@@ -77,7 +81,8 @@
         <div class="filter-range">
           <input 
             type="number" 
-            [(ngModel)]="montoMin"
+            [ngModel]="montoMin()" 
+            (ngModelChange)="montoMin.set($event)"
             placeholder="Mín"
             class="filter-input"
             min="0"
@@ -85,7 +90,8 @@
           <span class="filter-separator">—</span>
           <input 
             type="number" 
-            [(ngModel)]="montoMax"
+            [ngModel]="montoMax()" 
+            (ngModelChange)="montoMax.set($event)"
             placeholder="Máx"
             class="filter-input"
             min="0"
