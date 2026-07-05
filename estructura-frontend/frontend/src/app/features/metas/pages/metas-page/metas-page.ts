@@ -2,7 +2,6 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { RespuestaMetaAhorro } from '../../../../core/models/cliente/meta-limite.model';
-import { FinancieroService } from '../../../../core/services/Financiero.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { AppEventBus } from '../../../../core/services/app-event-bus.service';
 import { NotificacionService } from '../../../../core/services/notificacion.service';
@@ -36,7 +35,6 @@ import { OnboardingTour, TourStep } from '../../../../shared/components/onboardi
 export class MetasPage implements OnInit {
   private router = inject(Router);
   private metasDataService = inject(MetasDataService);
-  private financieroService = inject(FinancieroService);
   private dashboardState = inject(DashboardStateService);
   private authService = inject(AuthService);
   private eventBus = inject(AppEventBus);
@@ -288,7 +286,6 @@ export class MetasPage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.financieroService.cargarResumen();
     this.dashboardState.cargarAnalitica();
     this.cargarMetas();
 
@@ -515,7 +512,7 @@ export class MetasPage implements OnInit {
         this.modalConfirmarCompletar.set(null);
         this.metaSeleccionada.set(null);
         
-        this.financieroService.cargarResumen();
+        this.dashboardState.invalidarCache();
         this.cargarMetas();
         
         this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
