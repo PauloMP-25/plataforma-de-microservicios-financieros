@@ -243,4 +243,97 @@ public class ConfiguracionRabbitMQ {
                 .to(exchangeFinanciero)
                 .with(RoutingKeys.TRANSACCION_REGISTRADA);
     }
+
+    // =========================================================================
+    // USUARIO → CLIENTE (Eventos de Dominio: Login)
+    // =========================================================================
+
+    /**
+     * Exchange de tipo Topic donde ms-usuario publica eventos de dominio.
+     * ms-cliente actúa como consumidor de estos eventos.
+     *
+     * @return {@link TopicExchange} durable para eventos de usuario.
+     */
+    @Bean
+    public TopicExchange exchangeUsuarioEventos() {
+        return ExchangeBuilder
+                .topicExchange(NombresExchange.USUARIO_EVENTOS)
+                .durable(true)
+                .build();
+    }
+
+    /**
+     * Dead Letter Exchange para mensajes de eventos de usuario que no pudieron procesarse.
+     *
+     * @return {@link DirectExchange} durable para mensajes de error.
+     */
+    @Bean
+    public DirectExchange exchangeUsuarioEventosDlx() {
+        return ExchangeBuilder
+                .directExchange(NombresExchange.USUARIO_EVENTOS_DLX)
+                .durable(true)
+                .build();
+    }
+
+    /**
+     * Cola donde ms-cliente recibe los eventos de login exitoso.
+     * Configurada con DLX y un TTL de 5 minutos para mensajes no procesados.
+     *
+     * @return {@link Queue} durable con DLX configurado.
+     */
+    @Bean
+    public Queue colaClienteLoginEventos() {
+        return QueueBuilder
+                .durable(NombresCola.CLIENTE_LOGIN_EVENTOS)
+                .withArgument("x-dead-letter-exchange", NombresExchange.USUARIO_EVENTOS_DLX)
+                .withArgument("x-dead-letter-routing-key", NombresCola.CLIENTE_LOGIN_EVENTOS_DLQ)
+                .withArgument("x-message-ttl", 300000) // 5 minutos TTL
+                .build();
+    }
+
+    /**
+     * Cola de error para eventos de login que no pudieron procesarse.
+     *
+     * @return {@link Queue} durable para persistencia de fallos.
+     */
+    @Bean
+    public Queue colaClienteLoginEventosDlq() {
+        return QueueBuilder
+                .durable(NombresCola.CLIENTE_LOGIN_EVENTOS_DLQ)
+                .build();
+    }
+
+    /**
+     * Vincula la cola de login al exchange de eventos de usuario.
+     *
+     * @param colaClienteLoginEventos Bean de la cola de login.
+     * @param exchangeUsuarioEventos  Bean del exchange de eventos de usuario.
+     * @return {@link Binding} con routing key {@code usuario.login.exitoso}.
+     */
+    @Bean
+    public Binding bindingLoginEventos(
+            @Qualifier("colaClienteLoginEventos") Queue colaClienteLoginEventos,
+            @Qualifier("exchangeUsuarioEventos") TopicExchange exchangeUsuarioEventos) {
+        return BindingBuilder
+                .bind(colaClienteLoginEventos)
+                .to(exchangeUsuarioEventos)
+                .with(RoutingKeys.USUARIO_LOGIN_EXITOSO);
+    }
+
+    /**
+     * Vincula la cola DLQ al Dead Letter Exchange de eventos de usuario.
+     *
+     * @param colaClienteLoginEventosDlq Bean de la cola DLQ de login.
+     * @param exchangeUsuarioEventosDlx  Bean del DLX de eventos de usuario.
+     * @return {@link Binding} de Dead Letter.
+     */
+    @Bean
+    public Binding bindingLoginEventosDlq(
+            @Qualifier("colaClienteLoginEventosDlq") Queue colaClienteLoginEventosDlq,
+            @Qualifier("exchangeUsuarioEventosDlx") DirectExchange exchangeUsuarioEventosDlx) {
+        return BindingBuilder
+                .bind(colaClienteLoginEventosDlq)
+                .to(exchangeUsuarioEventosDlx)
+                .with(NombresCola.CLIENTE_LOGIN_EVENTOS_DLQ);
+    }
 }

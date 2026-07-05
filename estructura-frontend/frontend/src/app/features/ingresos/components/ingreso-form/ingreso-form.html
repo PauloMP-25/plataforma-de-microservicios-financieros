@@ -79,7 +79,7 @@
         <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Categoría *</span>
         <select [(ngModel)]="model.categoria" name="categoria"
           class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900"
-          (ngModelChange)="onModelChange()">
+          (ngModelChange)="onCategoriaChange()">
           <option *ngFor="let c of categoriasConCrear" [value]="c.value">{{ c.label }}</option>
         </select>
       </label>

@@ -30,4 +30,17 @@ public interface ServicioLimiteGasto {
      * Consulta interna del límite activo sin validación de JWT (uso para Facade).
      */
     RespuestaLimiteGasto obtenerActivoInterno(UUID usuarioId);
+
+    /**
+     * Verifica si el límite de gasto activo del usuario ha vencido y,
+     * en tal caso, lo desactiva automáticamente.
+     * <p>
+     * Este método es invocado de forma automática durante el evento de login exitoso.
+     * Es idempotente: si no hay límite activo o si el límite vigente no ha expirado,
+     * retorna sin realizar ningún cambio.
+     * </p>
+     *
+     * @param usuarioId UUID del usuario cuyo límite se debe verificar.
+     */
+    void verificarYDesactivarSiVencido(UUID usuarioId);
 }

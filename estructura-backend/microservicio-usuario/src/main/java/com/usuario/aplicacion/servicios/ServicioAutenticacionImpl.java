@@ -154,6 +154,10 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
 
         publicadorAuditoria.publicarAcceso(usuario.getId(), ipCliente, EstadoEvento.EXITO, "LOGIN_EXITOSO");
 
+        // Publica evento de dominio para procesamiento post-login en otros microservicios
+        // (ej: desactivar límites de gasto vencidos en ms-cliente)
+        publicadorAuditoria.publicarLoginExitoso(usuario.getId(), ipCliente);
+
         return generarRespuestaAuth(usuario);
     }
 

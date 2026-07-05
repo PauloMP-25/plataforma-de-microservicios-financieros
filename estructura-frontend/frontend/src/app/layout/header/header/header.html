@@ -89,7 +89,7 @@
 
         <div class="avatar-meta">
           <span class="avatar-name">
-            {{ auth.usuario()?.nombreUsuario ?? 'Usuario' }}
+            {{ (auth.usuario()?.nombreUsuario ?? 'Usuario') | uppercase }}
           </span>
 
           <span class="avatar-plan">
@@ -114,7 +114,7 @@
           <div class="hero-info">
 
             <p class="hero-name">
-              {{ auth.usuario()?.nombreUsuario ?? 'Usuario' }}
+              {{ (auth.usuario()?.nombreUsuario ?? 'Usuario') | uppercase }}
             </p>
 
             <span class="plan-badge">
@@ -169,7 +169,7 @@
               <i class="fa-solid fa-right-from-bracket menu-item-icon"></i>
               <div>
                 <p>Cerrar sesión</p>
-                <small>{{ auth.usuario()?.nombreUsuario }}</small>
+                <small>{{ auth.usuario()?.nombreUsuario | uppercase }}</small>
               </div>
             </button>
           </li>

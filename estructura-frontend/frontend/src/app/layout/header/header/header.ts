@@ -224,12 +224,27 @@ export class Header implements OnInit, OnDestroy {
   }
 
   formatSoles(value: number): string {
-    return new Intl.NumberFormat('es-PE', {
-      style: 'currency',
-      currency: 'PEN',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(value);
+    if (value === undefined || value === null) return 'S/ 0.00';
+    const absolute = Math.abs(value);
+    const sign = value < 0 ? '-' : '';
+    
+    let formatted = '';
+    if (absolute >= 1_000_000) {
+      formatted = `${(absolute / 1_000_000).toFixed(2).replace(/\.00$/, '')}M`;
+    } else if (absolute >= 100_000) {
+      formatted = `${(absolute / 1_000).toFixed(2).replace(/\.00$/, '')}K`;
+    } else if (absolute >= 10_000) {
+      formatted = `${(absolute / 1_000).toFixed(1).replace(/\.0$/, '')}K`;
+    } else {
+      return new Intl.NumberFormat('es-PE', {
+        style: 'currency',
+        currency: 'PEN',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(value);
+    }
+    
+    return `${sign}S/ ${formatted}`;
   }
 
   // Cierra todos los dropdowns al hacer clic fuera del header

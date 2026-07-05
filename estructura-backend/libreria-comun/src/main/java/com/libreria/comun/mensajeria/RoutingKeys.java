@@ -33,6 +33,10 @@ public final class RoutingKeys {
     // Financiero
     public static final String TRANSACCION_REGISTRADA = "financiero.transaccion.registrada";
 
+    // Usuario – Eventos de dominio
+    /** Routing key para el evento disparado cuando un usuario se autentica exitosamente. */
+    public static final String USUARIO_LOGIN_EXITOSO = "usuario.login.exitoso";
+
     private RoutingKeys() {
     }
 }

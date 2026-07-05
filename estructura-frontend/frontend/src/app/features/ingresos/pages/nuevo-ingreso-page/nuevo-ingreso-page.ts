@@ -57,6 +57,7 @@ export class NuevoIngresoPage implements HasUnsavedChanges, OnInit {
     fechaTransaccion: new Date().toLocaleDateString('es-PE'), // dd/mm/yyyy
     descripcion: '',
     categoria: '',
+    categoriaNombre: '',
     metodoPago: 'TRANSFERENCIA',
     etiquetas: [],
   };
@@ -77,6 +78,7 @@ export class NuevoIngresoPage implements HasUnsavedChanges, OnInit {
       const match = cats.find(c => c.nombre.toLowerCase() === 'salario');
       if (match && this.form.categoria === 'Salario') {
         this.form.categoria = match.id;
+        this.form.categoriaNombre = match.nombre;
       }
       options = cats.map(c => ({ label: c.nombre, value: c.id }));
     } else {
@@ -241,6 +243,7 @@ export class NuevoIngresoPage implements HasUnsavedChanges, OnInit {
     );
     if (match) {
       this.form.categoria = match.value;
+      this.form.categoriaNombre = match.label;
       return;
     }
 
@@ -254,8 +257,9 @@ export class NuevoIngresoPage implements HasUnsavedChanges, OnInit {
       next: (cat) => {
         // Añadirla reactivamente a la lista local
         this.stateService.categorias.update(cats => [...cats, cat]);
-        // Pre-seleccionar el UUID
+        // Pre-seleccionar el UUID y actualizar el nombre legible
         this.form.categoria = cat.id;
+        this.form.categoriaNombre = cat.nombre;
       },
       error: (err) => {
         console.error('Error al crear categoría:', err);
@@ -276,10 +280,12 @@ export class NuevoIngresoPage implements HasUnsavedChanges, OnInit {
     );
     if (match) {
       this.form.categoria = match.value;
+      this.form.categoriaNombre = match.label;
       this.categoriaIAPendiente.set(null);
     } else {
       this.categoriaIAPendiente.set({ nombre: sug.categoria, icono: sug.icono });
       this.form.categoria = 'PENDIENTE_IA';
+      this.form.categoriaNombre = sug.categoria;
     }
     this.sugerenciaSeleccionadaSignal.set(null);
   }

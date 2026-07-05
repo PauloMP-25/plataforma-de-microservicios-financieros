@@ -123,4 +123,29 @@ public class ConfiguracionRabbitMQ {
                 .to(exchangePagos)
                 .with(RoutingKeys.PAGO_EXITOSO);
     }
+
+    // =========================================================================
+    // EVENTOS DE DOMINIO DE USUARIO (Publicación hacia otros microservicios)
+    // =========================================================================
+
+    /**
+     * Exchange de tipo Topic donde ms-usuario publica eventos de dominio
+     * (ej: login exitoso) para que otros microservicios los consuman.
+     *
+     * @return {@link TopicExchange} durable para eventos de usuario.
+     */
+    @Bean
+    public TopicExchange exchangeUsuarioEventos() {
+        return new TopicExchange(NombresExchange.USUARIO_EVENTOS, true, false);
+    }
+
+    /**
+     * Dead Letter Exchange para mensajes de eventos de usuario que no pudieron entregarse.
+     *
+     * @return {@link DirectExchange} durable para mensajes de error.
+     */
+    @Bean
+    public DirectExchange exchangeUsuarioEventosDlx() {
+        return new DirectExchange(NombresExchange.USUARIO_EVENTOS_DLX, true, false);
+    }
 }

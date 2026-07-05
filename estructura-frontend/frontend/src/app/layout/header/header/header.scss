@@ -81,27 +81,33 @@ $transition: all 0.2s ease-in-out;
 .header-pills {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.6rem;
 }
 
 .metric-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  padding: 4px 8px;
-  min-width: 100px;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  gap: 0.5rem;
+  border-radius: var(--radius-full, 999px);
+  border: 1.5px solid transparent;
+  padding: 6px 12px;
+  min-width: 120px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  transition: var(--transition, all 0.2s ease-in-out);
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.1);
+  }
 
   .metric-icon {
-    width: 22px;
-    height: 22px;
-    border-radius: 999px;
+    width: 26px;
+    height: 26px;
+    border-radius: var(--radius-full, 999px);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     flex-shrink: 0;
   }
 
@@ -109,20 +115,20 @@ $transition: all 0.2s ease-in-out;
     min-width: 0;
     display: flex;
     flex-direction: column;
-    line-height: 1.1;
+    line-height: 1.15;
   }
 
   .metric-label {
-    font-size: 0.68rem;
+    font-size: 0.72rem;
     font-weight: 800;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.02em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .metric-value {
-    font-size: 0.82rem;
+    font-size: 0.92rem;
     font-weight: 900;
     white-space: nowrap;
   }
@@ -219,7 +225,7 @@ $transition: all 0.2s ease-in-out;
 }
 
 /* ── Dark mode: pills alto contraste ── */
-body.theme-dark {
+:host-context(.theme-dark) {
   .luka-header {
     background: rgba(10, 15, 30, 0.97) !important;
     backdrop-filter: blur(12px);
@@ -620,6 +626,13 @@ body.theme-dark {
   }
 }
 
+@media (max-width: 1200px) {
+  .metric-pill--ia-analitica,
+  .metric-pill--ia-clasificar {
+    display: none !important; /* Ocultar cuotas IA en pantallas medianas para dar espacio */
+  }
+}
+
 @media (max-width: 1024px) {
   .luka-header {
     height: auto;
@@ -646,12 +659,16 @@ body.theme-dark {
   }
 
   .header-pills {
-    gap: 0.45rem;
+    gap: 0.5rem;
   }
 
   .metric-pill {
-    min-width: 80px;
-    padding: 3px 6px;
+    min-width: 100px;
+    padding: 5px 10px;
+  }
+
+  .metric-pill--streak {
+    display: none !important; /* Ocultar racha en tablets */
   }
 
   .health-badge {
@@ -667,8 +684,9 @@ body.theme-dark {
   .luka-header {
     height: auto;
     min-height: 72px;
-    padding: 10px 12px;
-    gap: 0.65rem;
+    padding: 8px 12px;
+    gap: 0.5rem;
+    flex-wrap: wrap; /* Permite que las píldoras bajen si es necesario o fluyan */
 
     .header-left {
       flex: 1;
@@ -685,16 +703,38 @@ body.theme-dark {
     }
 
     .header-right {
-      gap: 0.35rem;
+      gap: 0.5rem;
+      flex: 1;
+      justify-content: flex-end;
+      width: 100%;
     }
   }
 
+  /* Píldoras con scroll horizontal táctil suave en móviles */
   .header-pills {
-    display: none;
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    gap: 0.4rem;
+    max-width: calc(100vw - 110px); /* Ajusta al ancho de la pantalla restando el avatar */
+    padding-bottom: 2px;
+    scrollbar-width: none; /* Firefox */
+    &::-webkit-scrollbar { display: none; } /* Chrome/Safari/Webkit */
+  }
+
+  .metric-pill {
+    flex-shrink: 0;
+    min-width: 90px;
+    padding: 4px 8px;
+    
+    .metric-value {
+      font-size: 0.8rem;
+    }
   }
 
   .metric-pill--desktop-only {
-    display: none;
+    display: none !important;
   }
 
   .dropdown-panel {
