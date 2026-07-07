@@ -39,17 +39,40 @@
     <label class="auth__label">CONTRASEÑA</label>
     <div class="auth__input-grupo" [class.auth__input-grupo--error]="formulario.get('password')?.touched && formulario.get('password')?.invalid">
       <i class="fas fa-lock auth__input-icono"></i>
-      <input [type]="mostrarPassword ? 'text' : 'password'" formControlName="password" placeholder="Mínimo 6 caracteres" class="auth__input" id="input-password-registro">
-      <button type="button" class="auth__btn-ojo" (click)="alternarPassword()">
+      <input [type]="mostrarPassword ? 'text' : 'password'" 
+             formControlName="password" 
+             placeholder="Mínimo 8 caracteres" 
+             class="auth__input" 
+             id="input-password-registro"
+             (focus)="passwordFocus = true"
+             (blur)="passwordFocus = false">
+      <button type="button" class="auth__btn-ojo" (mousedown)="$event.preventDefault(); alternarPassword()">
         <i [class]="mostrarPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
       </button>
     </div>
     <span class="auth__error" *ngIf="formulario.get('password')?.touched && formulario.get('password')?.hasError('required')">
       La contraseña es obligatoria
     </span>
-    <span class="auth__error" *ngIf="formulario.get('password')?.touched && formulario.get('password')?.hasError('minlength')">
-      Mínimo 6 caracteres
-    </span>
+
+    <div class="auth__password-reqs" *ngIf="passwordFocus || (formulario.get('password')?.touched && formulario.get('password')?.invalid && formulario.get('password')?.value)">
+      <ul class="auth__password-reqs-list">
+        <li [class.valid]="reqLength">
+          <i class="fas" [ngClass]="reqLength ? 'fa-check-circle' : 'fa-circle'"></i> 8+ caracteres
+        </li>
+        <li [class.valid]="reqUpper">
+          <i class="fas" [ngClass]="reqUpper ? 'fa-check-circle' : 'fa-circle'"></i> Una letra mayúscula
+        </li>
+        <li [class.valid]="reqLower">
+          <i class="fas" [ngClass]="reqLower ? 'fa-check-circle' : 'fa-circle'"></i> Una letra minúscula
+        </li>
+        <li [class.valid]="reqNum">
+          <i class="fas" [ngClass]="reqNum ? 'fa-check-circle' : 'fa-circle'"></i> Un número
+        </li>
+        <li [class.valid]="reqSpec">
+          <i class="fas" [ngClass]="reqSpec ? 'fa-check-circle' : 'fa-circle'"></i> Un carácter especial (@, $, !, %, *, ?, &, #, -)
+        </li>
+      </ul>
+    </div>
   </div>
 
   <!-- Confirmar Contraseña -->
@@ -71,7 +94,7 @@
   </div>
 
   <!-- Botón Submit -->
-  <button type="submit" class="auth__btn-submit" [disabled]="cargando" id="btn-submit-registro">
+  <button type="submit" class="auth__btn-submit" [disabled]="formulario.invalid || cargando" id="btn-submit-registro">
     <span *ngIf="!cargando">Registrarse Gratis</span>
     <span *ngIf="cargando" class="auth__spinner"></span>
   </button>

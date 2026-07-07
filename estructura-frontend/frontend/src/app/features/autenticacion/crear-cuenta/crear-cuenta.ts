@@ -20,6 +20,13 @@ export class CrearCuenta {
   mostrarConfirmar = false;
   cargando = false;
   errorMensaje = '';
+  passwordFocus = false;
+
+  get reqLength() { return (this.formulario.get('password')?.value || '').length >= 8; }
+  get reqLower() { return /[a-z]/.test(this.formulario.get('password')?.value || ''); }
+  get reqUpper() { return /[A-Z]/.test(this.formulario.get('password')?.value || ''); }
+  get reqNum() { return /\d/.test(this.formulario.get('password')?.value || ''); }
+  get reqSpec() { return /[@$!%*?&#\-]/.test(this.formulario.get('password')?.value || ''); }
 
   constructor(
     private fb: FormBuilder,
@@ -29,7 +36,10 @@ export class CrearCuenta {
     this.formulario = this.fb.group({
       nombreUsuario: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(100)]],
       correo: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      password: ['', [
+        Validators.required, 
+        Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#\-]).{8,}$/)
+      ]],
       confirmarPassword: ['', [Validators.required]]
     }, { validators: this.validarCoincidencia });
   }
