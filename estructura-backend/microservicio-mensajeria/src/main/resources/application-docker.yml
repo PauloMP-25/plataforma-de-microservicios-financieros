@@ -131,7 +131,7 @@ management:
     db:
       enabled: true
     mail:
-      enabled: true
+      enabled: false
     diskspace:
       enabled: false
 

@@ -37,7 +37,7 @@
               @if (mostrarSugerencias() && sugerencias().length > 0) {
                 <div class="autocomplete-dropdown">
                   @for (sug of sugerencias(); track sug.nombre) {
-                    <div class="autocomplete-item" (click)="seleccionarPlataforma(sug)">
+                    <div class="autocomplete-item" (mousedown)="$event.preventDefault(); seleccionarPlataforma(sug)">
                       <div class="autocomplete-icon" [style.color]="sug.color">
                         <i [className]="sug.icono"></i>
                       </div>

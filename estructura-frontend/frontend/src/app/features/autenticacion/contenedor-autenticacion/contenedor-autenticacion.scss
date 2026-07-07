@@ -292,4 +292,32 @@
   .auth__formulario-contenedor {
     background: #FFFFFF;
   }
+  .auth__canal {
+    background: #F8FAFC;
+    border-color: #E2E8F0;
+    color: #0F172A;
+
+    strong {
+      color: #0F172A;
+    }
+    small {
+      color: #64748B;
+    }
+    i {
+      background: rgba(91, 106, 240, 0.08);
+      color: #5B6AF0;
+    }
+
+    &:hover {
+      border-color: #5B6AF0;
+      background: #F1F3FF;
+    }
+
+    &--activo {
+      border-color: #5B6AF0;
+      background: #E5E7FF !important;
+      box-shadow: 0 0 0 3px rgba(91, 106, 240, 0.15);
+    }
+  }
 }
+

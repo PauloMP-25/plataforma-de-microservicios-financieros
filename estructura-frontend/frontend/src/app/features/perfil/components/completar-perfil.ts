@@ -136,7 +136,8 @@ export class ModalCompletarPerfil implements OnInit {
         this.correoUsuario.set(usuario?.nombreUsuario || '');
 
         // Determine if they registered using email or phone
-        const esCorreo = this.correoUsuario().includes('@');
+        // If the username has letters or contains '@', it is considered email-based registration
+        const esCorreo = this.correoUsuario().includes('@') || !/^\+?[0-9]+$/.test(this.correoUsuario());
         if (esCorreo) {
             this.metodoRegistro.set('CORREO');
             this.correoVerificado.set(true);

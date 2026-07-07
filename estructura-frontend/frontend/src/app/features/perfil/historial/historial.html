@@ -1,211 +1,196 @@
-<div class="historial-wrapper">
-  <div class="page-header animate-fade-in">
-    <h1>Historial de Movimientos</h1>
-    <p>Revisa y administra de forma consolidada todos tus ingresos y gastos.</p>
-  </div>
+<main class="historial animate-fade-in">
 
-  <div class="bento-grid animate-fade-in">
-    <!-- Tarjeta de Balance del Periodo -->
-    <div class="balance-card">
-      <div class="balance-info">
-        <span>Balance neto filtrado</span>
-        <h2>S/ {{ balance() | number:'1.2-2' }}</h2>
-        <small class="balance-breakdown">
-          Ingresos: +S/ {{ sumaIngresos() | number:'1.2-2' }} | Gastos: -S/ {{ sumaGastos() | number:'1.2-2' }}
-        </small>
+  <!-- Header -->
+  <header class="historial__header">
+    <h1 class="historial__title">Historial de Movimientos</h1>
+    <p class="historial__subtitle">Revisa y administra de forma consolidada todos tus ingresos y gastos.</p>
+  </header>
+
+  <!-- Summary cards -->
+  <section class="summary-cards">
+
+    <article class="summary-card summary-card--balance">
+      <div class="summary-card__icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 7a2 2 0 0 1 2-2h13a1 1 0 0 1 1 1v2H5a2 2 0 0 1-2-2Z" fill="currentColor" opacity=".5"/><path d="M3 8h16a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8Z" fill="currentColor"/><circle cx="16.5" cy="13.5" r="1.5" fill="#fff"/></svg>
       </div>
-      <div class="balance-icon">
-        <i class="fa-solid fa-scale-balanced"></i>
+      <div class="summary-card__body">
+        <span class="summary-card__label">Balance actual</span>
+        <span class="summary-card__value">S/ {{ balance() | number:'1.2-2' }}</span>
       </div>
+    </article>
+
+    <article class="summary-card summary-card--income">
+      <div class="summary-card__icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 18 18 6M18 6H9M18 6v9" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="summary-card__body">
+        <span class="summary-card__label">Total ingresos</span>
+        <span class="summary-card__value">S/ {{ sumaIngresos() | number:'1.2-2' }}</span>
+      </div>
+    </article>
+
+    <article class="summary-card summary-card--expense">
+      <div class="summary-card__icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 6 6 18M6 18h9M6 18V9" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="summary-card__body">
+        <span class="summary-card__label">Total gastos</span>
+        <span class="summary-card__value">-S/ {{ sumaGastos() | number:'1.2-2' }}</span>
+      </div>
+    </article>
+
+  </section>
+
+  <!-- Period selector -->
+  <section class="period">
+    <div class="period__options" role="tablist" aria-label="Selecciona un período">
+      <button class="period__pill" [class.period__pill--active]="periodoSeleccionado() === 'HOY'" (click)="periodoSeleccionado.set('HOY')" role="tab" [attr.aria-selected]="periodoSeleccionado() === 'HOY'">Hoy</button>
+      <button class="period__pill" [class.period__pill--active]="periodoSeleccionado() === '7_DIAS'" (click)="periodoSeleccionado.set('7_DIAS')" role="tab" [attr.aria-selected]="periodoSeleccionado() === '7_DIAS'">7 días</button>
+      <button class="period__pill" [class.period__pill--active]="periodoSeleccionado() === '15_DIAS'" (click)="periodoSeleccionado.set('15_DIAS')" role="tab" [attr.aria-selected]="periodoSeleccionado() === '15_DIAS'">15 días</button>
+      <button class="period__pill" [class.period__pill--active]="periodoSeleccionado() === '30_DIAS'" (click)="periodoSeleccionado.set('30_DIAS')" role="tab" [attr.aria-selected]="periodoSeleccionado() === '30_DIAS'">30 días</button>
+      <button class="period__pill" [class.period__pill--active]="periodoSeleccionado() === '90_DIAS'" (click)="periodoSeleccionado.set('90_DIAS')" role="tab" [attr.aria-selected]="periodoSeleccionado() === '90_DIAS'">90 días</button>
+    </div>
+  </section>
+
+  <!-- Filters -->
+  <section class="filters">
+    <div class="filters__header">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 21v-7m0-4V3m8 18v-9m0-4V3m8 18v-5m0-4V3M1 14h6m2-4h6m2 6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Panel de Filtrado Avanzado</span>
+    </div>
+    <div class="filters__row">
+
+      <div class="filters__field">
+        <label for="tipo-movimiento">Tipo de movimiento</label>
+        <div class="select-wrap">
+          <svg class="select-wrap__leading" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M7 5v14M7 19l-3-3M7 19l3-3M17 19V5M17 5l-3 3M17 5l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <select id="tipo-movimiento" [ngModel]="filtroEstado()" (ngModelChange)="filtroEstado.set($event)">
+            <option value="TODOS">Todos</option>
+            <option value="INGRESO">Ingresos</option>
+            <option value="GASTO">Gastos</option>
+          </select>
+          <svg class="select-wrap__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+      <div class="filters__field">
+        <label for="categoria">Categoría</label>
+        <div class="select-wrap">
+          <select id="categoria" [ngModel]="filtroCategoria()" (ngModelChange)="filtroCategoria.set($event)" [disabled]="filtroEstado() === 'TODOS'">
+            <option value="TODOS">Selecciona una categoría</option>
+            <option *ngFor="let cat of categoriasDisponibles()" [value]="cat">{{ cat }}</option>
+          </select>
+          <svg class="select-wrap__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+      <div class="filters__field">
+        <label for="orden">Ordenar por</label>
+        <div class="select-wrap">
+          <select id="orden" [ngModel]="orden()" (ngModelChange)="orden.set($event)">
+            <option value="fecha_desc">Más recientes</option>
+            <option value="fecha_asc">Más antiguos</option>
+            <option value="mayor_monto">Mayor monto</option>
+            <option value="menor_monto">Menor monto</option>
+          </select>
+          <svg class="select-wrap__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn--primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 5h16l-6 8v6l-4-2v-4L4 5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        Aplicar filtros
+      </button>
+
+      <button type="button" class="btn btn--ghost" (click)="limpiarFiltros()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 4v5h5M20 20v-5h-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 15a7 7 0 0 0 12.1 3M18.5 9A7 7 0 0 0 6.4 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Limpiar
+      </button>
+
     </div>
 
-    <!-- Tarjeta de Filtros -->
-    <div class="filters-card">
-      <div class="search-box">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input 
-          type="text" 
-          [ngModel]="busqueda()" 
-          (ngModelChange)="busqueda.set($event)" 
-          placeholder="Buscar descripción, categoría o método..."
-        >
-      </div>
-      
-      <!-- Filtro Tipo/Estado -->
-      <select [ngModel]="filtroEstado()" (ngModelChange)="filtroEstado.set($event)" class="filter-select">
-        <option value="TODOS">Todos los movimientos</option>
-        <option value="INGRESO">Solo Ingresos</option>
-        <option value="GASTO">Solo Gastos</option>
-        <option value="Pagado">Gastos Pagados</option>
-        <option value="Pendiente">Gastos Pendientes</option>
-      </select>
-
-      <!-- Filtro Periodo (Mes) -->
-      <select [ngModel]="filtroMes()" (ngModelChange)="filtroMes.set($event)" class="filter-select">
-        <option *ngFor="let mes of meses" [value]="mes.value">{{ mes.label }}</option>
-      </select>
-
-      <!-- Filtro Categoría Dinámica -->
-      <select [ngModel]="filtroCategoria()" (ngModelChange)="filtroCategoria.set($event)" class="filter-select">
-        <option value="TODOS">Todas las categorías</option>
-        <option *ngFor="let cat of categoriasDisponibles()" [value]="cat">{{ cat }}</option>
-      </select>
-
-      <!-- Ordenamiento -->
-      <select [ngModel]="orden()" (ngModelChange)="orden.set($event)" class="filter-select">
-        <option value="fecha_desc">Más recientes</option>
-        <option value="fecha_asc">Más antiguos</option>
-        <option value="mayor_gasto">Mayor gasto</option>
-        <option value="menor_gasto">Menor gasto</option>
-        <option value="mayor_ingreso">Mayor ingreso</option>
-        <option value="menor_ingreso">Menor ingreso</option>
-      </select>
+    <div class="filters__hint">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="currentColor" opacity=".15"/><path d="M12 11v5.5M12 7.5v.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      Primero selecciona el tipo de movimiento para mostrar las categorías correspondientes.
     </div>
-  </div>
+  </section>
 
-  <!-- Tabla de Transacciones -->
-  <div class="table-card animate-fade-in">
-    <table>
-      <thead>
-        <tr>
-          <th>Detalle / Nombre</th>
-          <th>Categoría</th>
-          <th>Fecha</th>
-          <th>Monto</th>
-          <th>Estado</th>
-          <th>Método de pago</th>
-          <th class="text-center">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (item of historialFiltrado(); track item.id) {
-          <tr class="transaction-row">
-            <td>
-              <div class="transaction-info">
-                <div class="icon-circle" [class.is-income]="item.tipo === 'ingreso'">
-                  <i class="fa-solid" [class.fa-arrow-trend-up]="item.tipo === 'ingreso'" [class.fa-arrow-trend-down]="item.tipo === 'gasto'"></i>
-                </div>
-                <div class="details-wrap">
-                  <strong class="fw-bold">{{ item.nombre }}</strong>
-                  <span class="text-muted block text-xs">{{ item.detalle }}</span>
-                </div>
-              </div>
-            </td>
-            <td>
-              <span class="tag-cat" [class]="'tag-cat--' + item.colorCategoria">
-                {{ item.categoria }}
-              </span>
-            </td>
-            <td><span class="text-muted">{{ item.fecha | date:'dd MMM, yyyy':'UTC' }}</span></td>
-            <td class="text-bold" [class.amount-positive]="item.tipo === 'ingreso'" [class.amount-negative]="item.tipo === 'gasto'">
-              {{ item.tipo === 'ingreso' ? '+' : '-' }}S/ {{ (item.monto < 0 ? -item.monto : item.monto) | number:'1.2-2' }}
-            </td>
-            <td>
-              <span class="tag-status" [class.is-paid]="item.estado === 'Pagado' || item.estado === 'Recibido'" [class.is-warning]="item.estado === 'Pendiente'">
-                <i class="fa-solid" [ngClass]="(item.estado === 'Pagado' || item.estado === 'Recibido') ? 'fa-circle-check' : 'fa-clock'"></i>
-                {{ item.estado }}
-              </span>
-            </td>
-            <td>
-              <span class="text-muted text-sm">
-                <i class="fa-solid fa-credit-card mr-1" *ngIf="item.metodo === 'TARJETA'"></i>
-                <i class="fa-solid fa-mobile-screen-button mr-1" *ngIf="item.metodo === 'DIGITAL'"></i>
-                <i class="fa-solid fa-money-bill-transfer mr-1" *ngIf="item.metodo === 'TRANSFERENCIA'"></i>
-                <i class="fa-solid fa-money-bill-wave mr-1" *ngIf="item.metodo === 'EFECTIVO'"></i>
-                {{ item.metodo }}
-              </span>
-            </td>
-            <td>
-              <div class="row-actions">
-                <button type="button" class="action-btn edit" (click)="abrirEditarMovimiento(item)" title="Editar">
-                  <i class="fa-solid fa-pen"></i>
-                </button>
-                <button type="button" class="action-btn delete" (click)="solicitarEliminarMovimiento(item)" title="Eliminar">
-                  <i class="fa-solid fa-trash"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
+  <!-- Movements table -->
+  <section class="movements">
+
+    <div class="movements__head">
+      <span class="col-fecha">Fecha</span>
+      <span class="col-desc">Descripción</span>
+      <span class="col-cat">Categoría</span>
+      <span class="col-tipo">Tipo</span>
+      <span class="col-monto">Monto</span>
+      <span class="col-metodo">Método de pago</span>
+    </div>
+
+    <div class="movements__body">
+      @for (item of historialFiltrado(); track item.id) {
+        <!-- Date Group Labels -->
+        @if ($index === 0 || item.fecha !== historialFiltrado()[$index - 1].fecha) {
+          <div class="movements__group-label">
+            @let diasDiff = obtenerDiferenciaDias(item.fecha);
+            @if (diasDiff === 0) {
+              Hoy, {{ item.fechaObjeto | date:'d \'de\' MMMM':'UTC' }}
+            } @else if (diasDiff === 1) {
+              Ayer, {{ item.fechaObjeto | date:'d \'de\' MMMM':'UTC' }}
+            } @else {
+              {{ item.fechaObjeto | date:'d \'de\' MMMM':'UTC' }}
+            }
+          </div>
         }
-      </tbody>
-    </table>
-    
-    @if (historialFiltrado().length === 0) {
-      <div class="empty-state">
-        <i class="fa-solid fa-folder-open empty-icon"></i>
-        <p>No se encontraron movimientos registrados en este periodo con los filtros seleccionados.</p>
-      </div>
-    }
-  </div>
-</div>
 
-<!-- Modal de Confirmación de Eliminación -->
-@if (movimientoAEliminar(); as confirmacion) {
-  <div class="modal-overlay">
-    <div class="confirm-box animate-scale-up">
-      <div class="confirm-icon warning"><i class="fa-solid fa-triangle-exclamation"></i></div>
-      <h3>¿Eliminar movimiento?</h3>
-      <p>¿Estás seguro de que deseas eliminar <strong>{{ confirmacion.nombre }}</strong>? Esta acción es irreversible.</p>
-      <div class="confirm-actions">
-        <button class="btn-cancel" (click)="cancelarEliminar()">Cancelar</button>
-        <button class="btn-danger" (click)="confirmarEliminar()">Eliminar</button>
-      </div>
+        <div class="movements__row">
+          <span class="col-fecha">
+            {{ item.fechaObjeto | date:'hh:mm a':'UTC' }}
+          </span>
+          <span class="col-desc">
+            <span class="desc__title">{{ item.nombre }}</span>
+            <span class="desc__subtitle" *ngIf="item.detalle">{{ item.detalle }}</span>
+          </span>
+          <span class="col-cat">
+            <span class="tag" [class]="'tag--' + (item.colorCategoria || 'otros')">
+              <i [class]="'fa-solid fa-' + (item.icono || 'circle') + ' mr-1'"></i>
+              {{ item.categoria }}
+            </span>
+          </span>
+          <span class="col-tipo" [class.col-tipo--income]="item.tipo === 'ingreso'" [class.col-tipo--expense]="item.tipo === 'gasto'">
+            @if (item.tipo === 'ingreso') {
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M12 5l-6 6M12 5l6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Ingreso
+            } @else {
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M12 19l-6-6M12 19l6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Gasto
+            }
+          </span>
+          <span class="col-monto" [class.col-monto--positive]="item.tipo === 'ingreso'" [class.col-monto--negative]="item.tipo === 'gasto'">
+            {{ item.tipo === 'ingreso' ? '+' : '-' }} S/ {{ (item.monto < 0 ? -item.monto : item.monto) | number:'1.2-2' }}
+          </span>
+          <span class="col-metodo">
+            <i class="fa-solid fa-credit-card mr-1" *ngIf="item.metodo === 'TARJETA'"></i>
+            <i class="fa-solid fa-mobile-screen-button mr-1" *ngIf="item.metodo === 'DIGITAL'"></i>
+            <i class="fa-solid fa-money-bill-transfer mr-1" *ngIf="item.metodo === 'TRANSFERENCIA'"></i>
+            <i class="fa-solid fa-money-bill-wave mr-1" *ngIf="item.metodo === 'EFECTIVO'"></i>
+            {{ formatearMetodo(item.metodo) }}
+          </span>
+        </div>
+      }
+
+      @if (historialFiltrado().length === 0) {
+        <div class="empty-state" style="padding: 40px; text-align: center; color: var(--color-text-secondary);">
+          <i class="fa-solid fa-folder-open empty-icon" style="font-size: 3rem; margin-bottom: 12px; opacity: 0.5; display: block; margin-left: auto; margin-right: auto;"></i>
+          <p>No se encontraron movimientos registrados en este periodo con los filtros seleccionados.</p>
+        </div>
+      }
     </div>
-  </div>
-}
 
-<!-- Modal de Edición Rápida -->
-@if (modalEdicionAbierto()) {
-  <div class="modal-overlay">
-    <div class="edit-modal animate-scale-up">
-      <header class="modal-header">
-        <h3>Editar {{ editandoMovimientoTipo() === 'gasto' ? 'Gasto' : 'Ingreso' }}</h3>
-        <button type="button" class="close-btn" (click)="cerrarModalEdicion()">&times;</button>
-      </header>
-
-      <div class="edit-form">
-        <label class="form-field">
-          <span>Concepto / Nombre *</span>
-          <input type="text" [ngModel]="nombreEdit()" (ngModelChange)="nombreEdit.set($event)" placeholder="Ej. Uber, Netflix, Salario..." />
-        </label>
-
-        <label class="form-field">
-          <span>Monto (S/) *</span>
-          <input type="number" min="0.01" step="0.01" [ngModel]="montoEdit()" (ngModelChange)="montoEdit.set($event)" />
-        </label>
-
-        <label class="form-field">
-          <span>Categoría *</span>
-          <select [ngModel]="categoriaEdit()" (ngModelChange)="categoriaEdit.set($event)" class="form-select">
-            <option *ngFor="let cat of categoriasEdicion()" [value]="cat">{{ cat }}</option>
-          </select>
-        </label>
-
-        <label class="form-field">
-          <span>Fecha *</span>
-          <input type="date" [ngModel]="fechaEdit()" (ngModelChange)="fechaEdit.set($event)" />
-        </label>
-
-        <label class="form-field">
-          <span>Método de pago</span>
-          <select [ngModel]="metodoPagoEdit()" (ngModelChange)="metodoPagoEdit.set($event)" class="form-select">
-            <option value="DIGITAL">Digital (Yape/Plin)</option>
-            <option value="TARJETA">Tarjeta</option>
-            <option value="TRANSFERENCIA">Transferencia</option>
-            <option value="EFECTIVO">Efectivo</option>
-          </select>
-        </label>
-
-        <label class="form-field col-full">
-          <span>Detalle / Descripción</span>
-          <textarea rows="3" [ngModel]="descripcionEdit()" (ngModelChange)="descripcionEdit.set($event)" placeholder="Escribe notas adicionales..."></textarea>
-        </label>
-      </div>
-
-      <footer class="modal-footer">
-        <button type="button" class="btn-cancel" (click)="cerrarModalEdicion()">Cancelar</button>
-        <button type="button" class="btn-save" (click)="guardarEdicion()">Guardar cambios</button>
-      </footer>
+    <!-- Loading spinner -->
+    <div class="movements__loading" *ngIf="cargando()">
+      <span class="spinner" aria-hidden="true"></span>
+      Cargando más movimientos...
     </div>
-  </div>
-}
+
+  </section>
+
+</main>

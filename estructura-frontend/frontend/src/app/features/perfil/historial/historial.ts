@@ -32,6 +32,8 @@ export class Historial implements OnInit, OnDestroy {
   readonly filtroMes = signal<number>(new Date().getMonth() + 1); // default to current month
   readonly filtroCategoria = signal<string>('TODOS');
   readonly orden = signal<string>('fecha_desc');
+  readonly periodoSeleccionado = signal<'TODOS' | 'HOY' | '7_DIAS' | '15_DIAS' | '30_DIAS' | '90_DIAS'>('7_DIAS');
+  readonly cargando = computed(() => this.gastosState.cargando() || this.ingresosState.cargando());
 
   readonly meses = [
     { label: 'Enero', value: 1 },
@@ -49,15 +51,7 @@ export class Historial implements OnInit, OnDestroy {
   ];
 
   // Data de prueba enriquecida con más movimientos y categorías
-  readonly mockHistorial = signal([
-    { id: 'mock-1', nombre: 'Netflix', detalle: 'Suscripción mensual estándar', categoria: 'Entretenimiento', monto: -44.90, fecha: '2026-06-18', tipo: 'gasto', metodo: 'TARJETA', estado: 'Pagado', icono: 'film', colorCategoria: 'entretenimiento' },
-    { id: 'mock-2', nombre: 'Salario Luka Corp', detalle: 'Sueldo mensual LUKA Corp', categoria: 'Trabajo', monto: 3500.00, fecha: '2026-06-01', tipo: 'ingreso', metodo: 'TRANSFERENCIA', estado: 'Recibido', icono: 'briefcase', colorCategoria: 'servicios' },
-    { id: 'mock-3', nombre: 'Supermercado PlazaVea', detalle: 'Víveres de la quincena', categoria: 'Alimentos', monto: -120.50, fecha: '2026-06-15', tipo: 'gasto', metodo: 'TARJETA', estado: 'Pagado', icono: 'utensils', colorCategoria: 'comida' },
-    { id: 'mock-4', nombre: 'Diseño Freelance', detalle: 'Landing page cliente', categoria: 'Freelance', monto: 450.00, fecha: '2026-06-10', tipo: 'ingreso', metodo: 'DIGITAL', estado: 'Recibido', icono: 'code', colorCategoria: 'transporte' },
-    { id: 'mock-5', nombre: 'Uber', detalle: 'Traslado al aeropuerto', categoria: 'Transporte', monto: -18.50, fecha: '2026-06-17', tipo: 'gasto', metodo: 'DIGITAL', estado: 'Pagado', icono: 'bus', colorCategoria: 'transporte' },
-    { id: 'mock-6', nombre: 'Cena por aniversario', detalle: 'Cena familiar Plaza San Miguel', categoria: 'Restaurantes', monto: -65.00, fecha: '2026-06-12', tipo: 'gasto', metodo: 'EFECTIVO', estado: 'Pagado', icono: 'utensils', colorCategoria: 'comida' },
-    { id: 'mock-7', nombre: 'Spotify', detalle: 'Plan familiar', categoria: 'Entretenimiento', monto: -5.99, fecha: '2026-06-11', tipo: 'gasto', metodo: 'TARJETA', estado: 'Pagado', icono: 'film', colorCategoria: 'entretenimiento' }
-  ]);
+  readonly mockHistorial = signal<any[]>([]);
 
   // Modal de edición
   modalEdicionAbierto = signal(false);
@@ -75,9 +69,7 @@ export class Historial implements OnInit, OnDestroy {
   // Modal de confirmación de eliminación
   movimientoAEliminar = signal<{ id: string; nombre: string; tipo: 'gasto' | 'ingreso' } | null>(null);
 
-  readonly usarMockVisual = computed(() => {
-    return this.gastosState.gastos().length === 0 && this.ingresosState.ingresos().length === 0;
-  });
+  readonly usarMockVisual = computed(() => false);
 
   readonly historialCombinado = computed(() => {
     if (this.usarMockVisual()) {
@@ -153,6 +145,7 @@ export class Historial implements OnInit, OnDestroy {
     const mes = this.filtroMes();
     const cat = this.filtroCategoria();
     const ordenVal = this.orden();
+    const periodo = this.periodoSeleccionado();
 
     let filtrados = this.historialCombinado().filter((item) => {
       const coincideBusqueda = !q || 
@@ -172,25 +165,48 @@ export class Historial implements OnInit, OnDestroy {
         coincideEstado = item.tipo === 'gasto' && item.estado === estado;
       }
 
-      const coincideMes = item.fechaObjeto.getMonth() + 1 === mes;
+      let coincideFecha = true;
+      if (periodo === 'TODOS') {
+        coincideFecha = item.fechaObjeto.getMonth() + 1 === mes;
+      } else {
+        const hoy = new Date();
+        // Compare dates ignoring time
+        const itemFecha = new Date(item.fechaObjeto);
+        itemFecha.setHours(0, 0, 0, 0);
+        
+        const hoySinHora = new Date(hoy);
+        hoySinHora.setHours(0, 0, 0, 0);
+        
+        const diffMs = hoySinHora.getTime() - itemFecha.getTime();
+        const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+        if (periodo === 'HOY') {
+          coincideFecha = itemFecha.toDateString() === hoySinHora.toDateString();
+        } else if (periodo === '7_DIAS') {
+          coincideFecha = diffDays >= 0 && diffDays <= 7;
+        } else if (periodo === '15_DIAS') {
+          coincideFecha = diffDays >= 0 && diffDays <= 15;
+        } else if (periodo === '30_DIAS') {
+          coincideFecha = diffDays >= 0 && diffDays <= 30;
+        } else if (periodo === '90_DIAS') {
+          coincideFecha = diffDays >= 0 && diffDays <= 90;
+        }
+      }
+
       const coincideCat = cat === 'TODOS' || item.categoria === cat;
 
-      return coincideBusqueda && coincideEstado && coincideMes && coincideCat;
+      return coincideBusqueda && coincideEstado && coincideFecha && coincideCat;
     });
 
     return filtrados.sort((a, b) => {
       if (ordenVal === 'fecha_desc') return b.fechaObjeto.getTime() - a.fechaObjeto.getTime();
       if (ordenVal === 'fecha_asc') return a.fechaObjeto.getTime() - b.fechaObjeto.getTime();
 
-      if (ordenVal === 'mayor_gasto') {
-        const aVal = a.tipo === 'gasto' ? Math.abs(a.monto) : 0;
-        const bVal = b.tipo === 'gasto' ? Math.abs(b.monto) : 0;
-        return bVal - aVal;
+      if (ordenVal === 'mayor_gasto' || ordenVal === 'mayor_monto') {
+        return Math.abs(b.monto) - Math.abs(a.monto);
       }
-      if (ordenVal === 'menor_gasto') {
-        const aVal = a.tipo === 'gasto' ? Math.abs(a.monto) : 0;
-        const bVal = b.tipo === 'gasto' ? Math.abs(b.monto) : 0;
-        return aVal - bVal;
+      if (ordenVal === 'menor_gasto' || ordenVal === 'menor_monto') {
+        return Math.abs(a.monto) - Math.abs(b.monto);
       }
 
       if (ordenVal === 'mayor_ingreso') {
@@ -225,6 +241,22 @@ export class Historial implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
+    const todayStr = new Date().toISOString().substring(0, 10);
+    const yesterdayStr = new Date(Date.now() - 86400000).toISOString().substring(0, 10);
+    const twoDaysAgoStr = new Date(Date.now() - 2 * 86400000).toISOString().substring(0, 10);
+    const threeDaysAgoStr = new Date(Date.now() - 3 * 86400000).toISOString().substring(0, 10);
+
+    this.mockHistorial.set([
+      { id: 'mock-1', nombre: 'Sueldo mensual', detalle: 'Empresa XYZ', categoria: 'Salario', monto: 3000.00, fecha: todayStr, tipo: 'ingreso', metodo: 'TRANSFERENCIA', estado: 'Recibido', icono: 'briefcase', colorCategoria: 'salario' },
+      { id: 'mock-2', nombre: 'Supermercado Plaza Vea', detalle: 'Compras de la semana', categoria: 'Alimentación', monto: -85.60, fecha: todayStr, tipo: 'gasto', metodo: 'TARJETA', estado: 'Pagado', icono: 'basket-shopping', colorCategoria: 'alimentacion' },
+      { id: 'mock-3', nombre: 'Transporte a oficina', detalle: 'Uber de ida', categoria: 'Transporte', monto: -6.00, fecha: todayStr, tipo: 'gasto', metodo: 'EFECTIVO', estado: 'Pagado', icono: 'car', colorCategoria: 'transporte' },
+      { id: 'mock-4', nombre: 'Freelance - Diseño web', detalle: 'Proyecto Cliente A', categoria: 'Trabajo Freelance', monto: 850.00, fecha: yesterdayStr, tipo: 'ingreso', metodo: 'DIGITAL', estado: 'Recibido', icono: 'laptop-code', colorCategoria: 'freelance' },
+      { id: 'mock-5', nombre: 'Restaurante La Trattoria', detalle: 'Cena familiar', categoria: 'Salidas', monto: -120.00, fecha: yesterdayStr, tipo: 'gasto', metodo: 'TARJETA', estado: 'Pagado', icono: 'utensils', colorCategoria: 'salidas' },
+      { id: 'mock-6', nombre: 'Pago de luz', detalle: 'Enel recibo mensual', categoria: 'Servicios', monto: -65.90, fecha: yesterdayStr, tipo: 'gasto', metodo: 'TRANSFERENCIA', estado: 'Pagado', icono: 'file-invoice-dollar', colorCategoria: 'servicios' },
+      { id: 'mock-7', nombre: 'Venta de libro usado', detalle: 'Libro de cálculo', categoria: 'Venta', monto: 45.00, fecha: twoDaysAgoStr, tipo: 'ingreso', metodo: 'EFECTIVO', estado: 'Recibido', icono: 'tag', colorCategoria: 'venta' },
+      { id: 'mock-8', nombre: 'Netflix', detalle: 'Plan mensual familiar', categoria: 'Entretenimiento', monto: -44.90, fecha: threeDaysAgoStr, tipo: 'gasto', metodo: 'TARJETA', estado: 'Pagado', icono: 'film', colorCategoria: 'entretenimiento' }
+    ]);
+
     this.gastosState.cargarDatos();
     this.ingresosState.cargarDatos();
 
@@ -415,5 +447,36 @@ export class Historial implements OnInit, OnDestroy {
     if (key.includes('freelance')) return 'transporte';
     if (key.includes('invers')) return 'hogar';
     return 'comida';
+  }
+
+  obtenerDiferenciaDias(fechaStr: string): number {
+    if (!fechaStr) return -1;
+    const parts = fechaStr.split('-');
+    if (parts.length !== 3) return -1;
+    const dateTx = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    const today = new Date();
+    const dateToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const diffMs = dateToday.getTime() - dateTx.getTime();
+    return Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  }
+
+  formatearMetodo(metodo: string): string {
+    if (!metodo) return '';
+    const map: Record<string, string> = {
+      TARJETA: 'Tarjeta',
+      DIGITAL: 'Digital',
+      TRANSFERENCIA: 'Transferencia',
+      EFECTIVO: 'Efectivo'
+    };
+    return map[metodo.toUpperCase()] ?? (metodo.charAt(0).toUpperCase() + metodo.slice(1).toLowerCase());
+  }
+
+  limpiarFiltros(): void {
+    this.busqueda.set('');
+    this.filtroEstado.set('TODOS');
+    this.filtroMes.set(new Date().getMonth() + 1);
+    this.filtroCategoria.set('TODOS');
+    this.orden.set('fecha_desc');
+    this.periodoSeleccionado.set('7_DIAS');
   }
 }

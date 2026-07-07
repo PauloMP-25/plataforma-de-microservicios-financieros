@@ -5,6 +5,7 @@ import { AdminDashboardService } from '../../services/admin-dashboard.service';
 import { PagoAdmin, ResumenPagosDTO, AdminKpiCard } from '../../models/admin-dashboard.model';
 import { AdminStatusBadgeComponent } from '../admin-status-badge/admin-status-badge';
 import { AdminKpiCardComponent } from '../admin-kpi-card/admin-kpi-card';
+import { NotificacionService } from '../../../../core/services/notificacion.service';
 
 @Component({
   selector: 'app-admin-pagos',
@@ -16,6 +17,7 @@ import { AdminKpiCardComponent } from '../admin-kpi-card/admin-kpi-card';
 })
 export class AdminPagosComponent implements OnInit {
   private readonly adminService = inject(AdminDashboardService);
+  private readonly notificacion = inject(NotificacionService);
 
   // Input de tema visual (claro/oscuro)
   modoClaro = input(false);
@@ -149,7 +151,13 @@ export class AdminPagosComponent implements OnInit {
       },
       error: (err) => {
         this.cambiandoEstado.set(false);
-        alert('No se pudo actualizar el estado del pago.');
+        this.notificacion.mostrar(
+          'Error',
+          'No se pudo actualizar el estado del pago.',
+          'gasto',
+          'triangle-exclamation',
+          4000
+        );
       }
     });
   }

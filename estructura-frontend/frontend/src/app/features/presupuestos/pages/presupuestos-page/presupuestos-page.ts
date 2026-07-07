@@ -80,8 +80,8 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
       position: 'right'
     },
     {
-      targetSelector: '.lk-gauge-card',
-      title: 'Gauge de Consumo',
+      targetSelector: '.lk-kpis',
+      title: 'Resumen de Consumo',
       description: 'Visualiza de forma gráfica el porcentaje consumido de tu límite de presupuesto, la cantidad gastada y el monto de dinero disponible.',
       position: 'bottom'
     },
@@ -92,7 +92,7 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
       position: 'bottom'
     },
     {
-      targetSelector: '.lk-bottom-grid',
+      targetSelector: '.hist-table-wrap',
       title: 'Desglose y Registro de Historial',
       description: 'Consulta un resumen detallado del dinero gastado por cada categoría y la lista histórica de límites inactivos del sistema.',
       position: 'top'
@@ -106,7 +106,19 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
 
   // Datos del Negocio
   presupuestoActivo = signal<PresupuestoDTO | null>(null);
-  gastoTotalMes = signal<number>(0);
+  // Reactivo: suma los gastos del mes actual desde gastosState para reflejar cambios inmediatamente
+  gastoTotalMes = computed(() => {
+    const gastos = this.gastosState.gastos();
+    const ahora = new Date();
+    const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1).getTime();
+    const finMes = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0, 23, 59, 59, 999).getTime();
+    return gastos
+      .filter(g => {
+        const t = new Date(g.fechaTransaccion).getTime();
+        return t >= inicioMes && t <= finMes;
+      })
+      .reduce((acc, g) => acc + Number(g.monto || 0), 0);
+  });
   historialLimitesRaw = signal<any[]>([]);
 
   // UI States
@@ -542,7 +554,7 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
     this.cargando.set(true);
 
     this.financieroService.getResumen().subscribe({
-      next: (resumen) => this.gastoTotalMes.set(resumen.totalGastos || 0),
+      next: () => { /* gastoTotalMes is now computed reactively from gastosState.gastos() */ },
       error: () => this.mostrarToast('Error al recuperar balance de gastos.', 'danger')
     });
 
@@ -691,6 +703,13 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private mostrarToast(mensaje: string, tipo: 'success' | 'danger'): void {
+    // Delegate to the global notification service for a consistent UX
+    if (tipo === 'success') {
+      this.notificacionService.mostrar('Presupuesto', mensaje, 'presupuesto', 'scale-balanced', 4000);
+    } else {
+      this.notificacionService.mostrar('Error', mensaje, 'guardado', 'triangle-exclamation', 4000);
+    }
+    // Also update local signals for in-page feedback (e.g., form validation messages)
     if (tipo === 'success') {
       this.exitoMensaje.set(mensaje);
       setTimeout(() => this.exitoMensaje.set(null), 4000);

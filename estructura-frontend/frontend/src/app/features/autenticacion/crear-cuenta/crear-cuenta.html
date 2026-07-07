@@ -93,14 +93,20 @@
     </span>
   </div>
 
+  <!-- Error general — moved above the submit button for better UX -->
+  <div class="auth__error-general" *ngIf="errorMensaje">
+    <i class="fas fa-exclamation-circle"></i>
+    <span>{{ errorMensaje }}</span>
+    <div class="auth__error-acciones" *ngIf="esConflictoRegistro">
+      <a routerLink="/auth/login" class="auth__error-btn">Iniciar sesión</a>
+      <a routerLink="/auth/login" [queryParams]="{modo: 'recuperar'}" class="auth__error-btn auth__error-btn--outline">Recuperar contraseña</a>
+    </div>
+  </div>
+
   <!-- Botón Submit -->
   <button type="submit" class="auth__btn-submit" [disabled]="formulario.invalid || cargando" id="btn-submit-registro">
     <span *ngIf="!cargando">Registrarse Gratis</span>
     <span *ngIf="cargando" class="auth__spinner"></span>
   </button>
 
-  <!-- Error general -->
-  <div class="auth__error-general" *ngIf="errorMensaje">
-    <i class="fas fa-exclamation-circle"></i> {{ errorMensaje }}
-  </div>
 </form>

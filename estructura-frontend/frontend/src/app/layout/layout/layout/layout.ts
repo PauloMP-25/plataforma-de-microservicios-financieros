@@ -8,11 +8,12 @@ import { SidebarStateService } from '../../../core/services/sidebar-state.servic
 import { AuthService } from '../../../core/services/auth.service';
 import { ClientePerfilService } from '../../../core/services/cliente-perfil.service';
 import { ModalCompletarPerfil } from '../../../features/perfil/components/completar-perfil';
+import { NotificacionCentroComponent } from '../../../shared/components/notificacion-centro/notificacion-centro';
 
 @Component({
   selector: 'app-layout',
   standalone:true,
-  imports: [RouterOutlet,CommonModule, RouterModule,Sidebar,Header,ModalCompletarPerfil],
+  imports: [RouterOutlet, CommonModule, RouterModule, Sidebar, Header, ModalCompletarPerfil, NotificacionCentroComponent],
   templateUrl: './layout.html',
   styleUrls: ['./layout.scss'],
 })

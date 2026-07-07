@@ -113,18 +113,24 @@
 
 /* ── CONTENEDOR DE FILTROS ── */
 .filters-container {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 1fr 1.8fr auto;
+  display: flex;
+  flex-wrap: wrap;
   gap: 16px;
   align-items: flex-end;
-}
 
-@media (max-width: 1100px) {
-  .filters-container {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  > .filter-group {
+    flex: 1 1 180px;
+    min-width: 150px;
   }
-  .filter-group--range {
-    grid-column: span 2;
+
+  > .filter-group--range {
+    flex: 2 1 300px;
+  }
+
+  > .filter-actions {
+    flex: 0 0 auto;
+    display: flex;
+    gap: 8px;
   }
 }
 

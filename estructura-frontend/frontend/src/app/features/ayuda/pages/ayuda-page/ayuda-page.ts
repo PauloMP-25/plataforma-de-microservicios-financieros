@@ -109,10 +109,10 @@ export class AyudaPageComponent implements OnInit {
       ctaClass: 'cta-email', textoBoton: 'Enviar correo', href: 'mailto:soporte@luka.pe'
     },
     {
-      tipo: 'WhatsApp', valor: '+51 999 999 999',
+      tipo: 'WhatsApp', valor: '923 480 568',
       horario: 'Lun – Vie, 9am – 6pm', badge: '● Rápido', badgeClass: 'badge-fast',
       iconoClass: 'fa-brands fa-whatsapp', cardClass: 'card-whatsapp', iconWrapClass: 'icon-wa',
-      ctaClass: 'cta-wa', textoBoton: 'Chatear ahora', href: 'https://wa.me/51999999999'
+      ctaClass: 'cta-wa', textoBoton: 'Chatear ahora', href: 'https://wa.me/51923480568?text=Hola,%20soy%20usuario%20de%20LukaApp.%20Necesito%20ayuda%20con%20la%20siguiente%20consulta:'
     },
     {
       tipo: 'Teléfono', valor: '01 800 000 (Lima)',
@@ -123,19 +123,24 @@ export class AyudaPageComponent implements OnInit {
   ];
 
   preguntasFrecuentes: FaqMock[] = [
-    { id: 1, categoria: 'cuenta',    iconoClass: 'fa-solid fa-user-pen',       abierta: false, pregunta: '¿Cómo edito mi perfil y datos personales?',       respuesta: 'Ve a Configuración → Mi Perfil desde el menú lateral. Allí podrás actualizar tu nombre, correo electrónico, número de teléfono y foto de perfil. Los cambios se guardan al hacer clic en "Guardar cambios".' },
     { id: 2, categoria: 'cuenta',    iconoClass: 'fa-solid fa-key',            abierta: false, pregunta: '¿Cómo restablezco mi contraseña?',                 respuesta: 'En la pantalla de inicio de sesión, haz clic en "¿Olvidaste tu contraseña?". Ingresa tu correo y recibirás un enlace para crear una nueva contraseña en menos de 5 minutos. Si no llega, revisa tu carpeta de spam.' },
-    { id: 3, categoria: 'pagos',     iconoClass: 'fa-solid fa-credit-card',    abierta: false, pregunta: '¿Cómo registro un nuevo método de pago?',          respuesta: 'Ve a Configuración → Métodos de Pago y selecciona "Agregar tarjeta". Aceptamos tarjetas de débito y crédito Visa, Mastercard y American Express. También puedes vincular tu cuenta bancaria.' },
-    { id: 4, categoria: 'pagos',     iconoClass: 'fa-solid fa-rotate-left',    abierta: false, pregunta: '¿Puedo solicitar un reembolso de una transacción?', respuesta: 'Sí. Tienes hasta 7 días hábiles para solicitar el reembolso. Ve a Mis Transacciones, selecciona la operación y haz clic en "Solicitar reembolso". El monto se acredita en 3 a 5 días hábiles.' },
     { id: 5, categoria: 'limites',   iconoClass: 'fa-solid fa-shield-halved',  abierta: false, pregunta: '¿Cómo configuro mi límite de gasto mensual?',      respuesta: 'Desde el menú principal ve a Límites de Gasto. Define el monto máximo mensual con el slider o ingresándolo manualmente. Elige el porcentaje de alerta y haz clic en "Guardar Límite".' },
-    { id: 6, categoria: 'limites',   iconoClass: 'fa-solid fa-bell',           abierta: false, pregunta: '¿Cuándo y cómo recibo las alertas de límite?',     respuesta: 'Las alertas se envían por notificación push y correo electrónico cuando tu gasto alcanza el porcentaje configurado (por defecto 80%). Puedes personalizar esto en Límites de Gasto → Porcentaje de Alerta.' },
     { id: 7, categoria: 'seguridad', iconoClass: 'fa-solid fa-lock',           abierta: false, pregunta: '¿Mis datos financieros están seguros en Luka?',    respuesta: 'Sí. Luka utiliza encriptación AES-256 para proteger tu información financiera. Nunca almacenamos los datos completos de tu tarjeta; usamos tokenización. Además puedes activar 2FA en Configuración → Seguridad.' },
-    { id: 8, categoria: 'seguridad', iconoClass: 'fa-solid fa-mobile-screen',  abierta: false, pregunta: '¿Cómo activo la verificación en dos pasos?',       respuesta: 'Ve a Configuración → Seguridad → Verificación en dos pasos. Puedes elegir entre SMS o una app autenticadora como Google Authenticator o Authy. Cada inicio de sesión requerirá un código adicional.' },
+    
+    // Nuevas preguntas solicitadas
+    { id: 9, categoria: 'cuenta',    iconoClass: 'fa-solid fa-arrow-trend-up', abierta: false, pregunta: '¿Cómo registro un ingreso?',                        respuesta: 'Desde la sección Ingresos, presiona "Nuevo ingreso", completa la información solicitada y guarda el registro.' },
+    { id: 10, categoria: 'pagos',    iconoClass: 'fa-solid fa-arrow-trend-down',abierta: false, pregunta: '¿Cómo registro un gasto?',                         respuesta: 'Ingresa a Gastos, selecciona "Nuevo gasto", elige la categoría correspondiente y guarda la información.' },
+    { id: 11, categoria: 'limites',  iconoClass: 'fa-solid fa-scale-balanced', abierta: false, pregunta: '¿Cómo crear un presupuesto?',                      respuesta: 'Dirígete a Presupuestos, crea un nuevo presupuesto indicando el monto y el período que deseas controlar.' },
+    { id: 12, categoria: 'cuenta',   iconoClass: 'fa-solid fa-bullseye',       abierta: false, pregunta: '¿Cómo crear una meta de ahorro?',                  respuesta: 'Accede a Metas, define el monto objetivo y la fecha estimada para alcanzarlo.' },
+    { id: 13, categoria: 'pagos',    iconoClass: 'fa-solid fa-receipt',        abierta: false, pregunta: '¿Cómo registrar una suscripción?',                 respuesta: 'Ve a Suscripciones, selecciona "Agregar suscripción", elige el servicio o escríbelo manualmente y registra el costo y la frecuencia de pago.' },
+    { id: 14, categoria: 'cuenta',   iconoClass: 'fa-solid fa-scale-unbalanced',abierta: false, pregunta: '¿Qué significa el Balance Neto?',                 respuesta: 'Es la diferencia entre todos tus ingresos y gastos registrados durante el período seleccionado.' }
   ];
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
   ngOnInit(): void {
     this.formContacto = this.fb.group({
+      nombre:    ['', [Validators.required]],
+      correo:    ['', [Validators.required, Validators.email]],
       categoria: ['', Validators.required],
       asunto:    ['', [Validators.required, Validators.minLength(5), Validators.maxLength(100)]],
       mensaje:   ['', [Validators.required, Validators.minLength(20), Validators.maxLength(1000)]],
