@@ -529,10 +529,10 @@ def calcular_distribucion_gastos(df: pd.DataFrame) -> list:
     }
     distribucion = []
     if not df.empty:
-        df_gastos = df[(df['tipo'] == 'GASTO') & (df['estado'].astype(str).str.upper() != 'FAILED')]
-        total_gastado = float(df_gastos['monto'].sum())
+        df_validos = df[((df['tipo'] == 'GASTO') & (df['estado'].astype(str).str.upper() != 'FAILED')) | ((df['tipo'] == 'INGRESO') & (df['estado'].astype(str).str.upper() == 'COMPLETED'))]
+        total_gastado = float(df_validos['monto'].sum())
         if total_gastado > 0:
-            grouped = df_gastos.groupby('categoria_nombre')['monto'].sum().reset_index()
+            grouped = df_validos.groupby('categoria_nombre')['monto'].sum().reset_index()
             grouped = grouped.sort_values(by='monto', ascending=False)
             for _, row in grouped.iterrows():
                 cat = str(row['categoria_nombre'])
@@ -551,7 +551,7 @@ def calcular_heatmap_gastos(df: pd.DataFrame) -> list:
     DIAS_SEMANA = {0: "Lun", 1: "Mar", 2: "Mié", 3: "Jue", 4: "Vie", 5: "Sáb", 6: "Dom"}
     heatmap = []
     if not df.empty:
-        df_gas_hm = df[(df['tipo'] == 'GASTO') & (df['estado'].astype(str).str.upper() != 'FAILED')].copy()
+        df_gas_hm = df[((df['tipo'] == 'GASTO') & (df['estado'].astype(str).str.upper() != 'FAILED')) | ((df['tipo'] == 'INGRESO') & (df['estado'].astype(str).str.upper() == 'COMPLETED'))].copy()
         if not df_gas_hm.empty and 'fecha' in df_gas_hm.columns:
             df_gas_hm['dia_num'] = pd.to_datetime(df_gas_hm['fecha']).dt.dayofweek
             conteo_sem = df_gas_hm.groupby('dia_num').size().reset_index(name='n')
@@ -571,7 +571,7 @@ def calcular_metodos_pago(df: pd.DataFrame) -> list:
     }
     transacciones_metodo = []
     if not df.empty:
-        df_met = df[(df['tipo'] == 'GASTO') & (df['estado'].astype(str).str.upper() != 'FAILED')].copy()
+        df_met = df[((df['tipo'] == 'GASTO') & (df['estado'].astype(str).str.upper() != 'FAILED')) | ((df['tipo'] == 'INGRESO') & (df['estado'].astype(str).str.upper() == 'COMPLETED'))].copy()
         if not df_met.empty and 'metodo_pago' in df_met.columns:
             conteo = df_met.groupby('metodo_pago').size().reset_index(name='cantidad')
             conteo = conteo.sort_values('cantidad', ascending=False)
