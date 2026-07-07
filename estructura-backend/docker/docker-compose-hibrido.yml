@@ -341,7 +341,7 @@ services:
       SPRING_RABBITMQ_VIRTUAL_HOST: /
       JAVA_OPTS: -Xms64m -Xmx200m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
         -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1
-      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal/db_luka_suscripciones?sslmode=disable
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal/db_microservicio_suscripciones?sslmode=disable
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: adminUTP
       SPRING_DATA_REDIS_HOST: host.docker.internal
