@@ -17,7 +17,7 @@ export interface PlataformaSuscripcion {
 
 export const PLATAFORMAS_SUSCRIPCION: PlataformaSuscripcion[] = [
   // Entretenimiento
-  { nombre: 'Netflix', categoria: 'leisure', icono: 'fa-brands fa-netflix', color: '#e50914' },
+  { nombre: 'Netflix', categoria: 'leisure', icono: 'fa-solid fa-film', color: '#e50914' },
   { nombre: 'Spotify', categoria: 'leisure', icono: 'fa-brands fa-spotify', color: '#1db954' },
   { nombre: 'YouTube Premium', categoria: 'leisure', icono: 'fa-brands fa-youtube', color: '#ff0000' },
   { nombre: 'Amazon Prime', categoria: 'leisure', icono: 'fa-brands fa-amazon', color: '#ff9900' },
@@ -43,20 +43,25 @@ export const PLATAFORMAS_SUSCRIPCION: PlataformaSuscripcion[] = [
   { nombre: 'Xbox Game Pass', categoria: 'leisure', icono: 'fa-brands fa-xbox', color: '#107c10' },
   { nombre: 'Nintendo Switch Online', categoria: 'leisure', icono: 'fa-solid fa-gamepad', color: '#E60012' },
   
-  // Hogar / Utilidades
+  // Hogar / Utilidades / Telecomunicaciones
   { nombre: 'Google One', categoria: 'home', icono: 'fa-brands fa-google', color: '#4285f4' },
   { nombre: 'iCloud', categoria: 'home', icono: 'fa-brands fa-apple', color: '#000000' },
   { nombre: 'Microsoft 365', categoria: 'study', icono: 'fa-brands fa-windows', color: '#00a4ef' },
   { nombre: 'Dropbox', categoria: 'home', icono: 'fa-brands fa-dropbox', color: '#0061FE' },
   { nombre: 'OneDrive', categoria: 'home', icono: 'fa-solid fa-cloud', color: '#0078d4' },
+  { nombre: 'Claro', categoria: 'home', icono: 'fa-solid fa-wifi', color: '#E11B22' },
+  { nombre: 'Movistar', categoria: 'home', icono: 'fa-solid fa-wifi', color: '#019DF4' },
+  { nombre: 'WOW', categoria: 'home', icono: 'fa-solid fa-wifi', color: '#6A1B9A' },
+  { nombre: 'Bitel', categoria: 'home', icono: 'fa-solid fa-wifi', color: '#FFD700' },
   
   // Salud / Deporte
   { nombre: 'SmartFit', categoria: 'health', icono: 'fa-solid fa-dumbbell', color: '#ffc700' },
   { nombre: 'Bodytech', categoria: 'health', icono: 'fa-solid fa-weight-hanging', color: '#e60000' },
   { nombre: 'Strava', categoria: 'health', icono: 'fa-solid fa-person-running', color: '#fc4c02' },
   
-  // Universidad / Servicios de estudio
-  { nombre: 'UTP Pago Mensual', categoria: 'study', icono: 'fa-solid fa-university', color: '#C8102E' }
+  // Universidad / Servicios de estudio e IA
+  { nombre: 'UTP Pago Mensual', categoria: 'study', icono: 'fa-solid fa-university', color: '#C8102E' },
+  { nombre: 'Gemini Advanced', categoria: 'study', icono: 'fa-solid fa-sparkles', color: '#1A73E8' }
 ];
 
 @Component({
