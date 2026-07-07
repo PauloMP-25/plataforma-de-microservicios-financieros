@@ -304,14 +304,13 @@
 
       <!-- Plan Pro -->
       <div class="inicio__precio-tarjeta inicio__precio-tarjeta--pro">
-        <div class="inicio__precio-popular">MÁS POPULAR</div>
         <div class="inicio__precio-header">
           <h3>Pro <i class="fas fa-star" style="color: #F0A500; font-size: 0.9rem; margin-left: 5px;"></i></h3>
           <p>Inteligencia Artificial y control total</p>
         </div>
         <div class="inicio__precio-monto">
           <span class="moneda">S/</span>
-          <span class="valor">19.90</span>
+          <span class="valor">15.00</span>
           <span class="periodo">/mes</span>
         </div>
         <ul class="inicio__precio-lista">
@@ -332,6 +331,39 @@
         </button>
         <a routerLink="/autenticacion/crear-cuenta" class="inicio__btn inicio__btn--grande inicio__btn--primario" style="width: 100%; justify-content: center; margin-top: 15px;">
           Obtener Pro
+        </a>
+      </div>
+
+      <!-- Plan Premium -->
+      <div class="inicio__precio-tarjeta inicio__precio-tarjeta--premium">
+        <div class="inicio__precio-popular">MÁS RECOMENDADO</div>
+        <div class="inicio__precio-header">
+          <h3>Premium <i class="fas fa-crown" style="font-size: 0.9rem; margin-left: 5px;"></i></h3>
+          <p>Todo lo que necesitas para tomar mejores decisiones y crecer tu dinero</p>
+        </div>
+        <div class="inicio__precio-monto">
+          <span class="moneda">S/</span>
+          <span class="valor">25.00</span>
+          <span class="periodo">/mes</span>
+        </div>
+        <ul class="inicio__precio-lista">
+          <li><i class="fas fa-check"></i> <strong>Todo lo del plan Pro</strong></li>
+          <li><i class="fas fa-check"></i> <strong>Análisis avanzado con IA</strong></li>
+          <li><i class="fas fa-check"></i> <strong>Recomendaciones inteligentes avanzadas</strong></li>
+          <li><i class="fas fa-check"></i> <strong>Reportes avanzados limitados</strong></li>
+          <ng-container *ngIf="mostrarMasPremium">
+            <li><i class="fas fa-check"></i> Acceso prioritario y nuevas funciones</li>
+            <li><i class="fas fa-check"></i> Módulos de analítica: 50 consultas</li>
+            <li><i class="fas fa-check"></i> Auto Clasificar: 20 consultas</li>
+            <li><i class="fas fa-check"></i> Soporte 24/7 de alta prioridad</li>
+          </ng-container>
+        </ul>
+        <button class="inicio__btn-saber-mas" (click)="mostrarMasPremium = !mostrarMasPremium" type="button">
+          {{ mostrarMasPremium ? 'Ver menos' : 'Saber más...' }}
+          <i class="fas" [class.fa-chevron-up]="mostrarMasPremium" [class.fa-chevron-down]="!mostrarMasPremium"></i>
+        </button>
+        <a routerLink="/autenticacion/crear-cuenta" class="inicio__btn inicio__btn--grande inicio__btn--premium-btn" style="width: 100%; justify-content: center; margin-top: 15px;">
+          Obtener Premium
         </a>
       </div>
     </div>
