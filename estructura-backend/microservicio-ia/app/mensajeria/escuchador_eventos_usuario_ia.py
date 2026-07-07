@@ -34,6 +34,8 @@ logger = logging.getLogger(__name__)
 EXCHANGE_USUARIO_EVENTOS = "exchange.usuario.eventos"
 ROUTING_KEY_LOGIN_EXITOSO = "usuario.login.exitoso"
 COLA_IA_LOGIN_EVENTOS = "cola.ia.login.eventos"
+ROUTING_KEY_LOGOUT_EXITOSO = "usuario.logout.exitoso"
+COLA_IA_LOGOUT_EVENTOS = "cola.ia.logout.eventos"
 
 EXCHANGE_FINANCIERO = "exchange.financiero"
 ROUTING_KEY_TRANSACCION_REGISTRADA = "financiero.transaccion.registrada"
@@ -139,6 +141,21 @@ class EscuchadorEventosUsuarioIA:
             routing_key=ROUTING_KEY_LOGIN_EXITOSO,
         )
 
+        self._canal.queue_declare(
+            queue=COLA_IA_LOGOUT_EVENTOS,
+            durable=True,
+            arguments={
+                "x-dead-letter-exchange": "exchange.usuario.eventos.dlq",
+                "x-dead-letter-routing-key": "cola.ia.logout.eventos.dlq",
+                "x-message-ttl": 300000,
+            }
+        )
+        self._canal.queue_bind(
+            queue=COLA_IA_LOGOUT_EVENTOS,
+            exchange=EXCHANGE_USUARIO_EVENTOS,
+            routing_key=ROUTING_KEY_LOGOUT_EXITOSO,
+        )
+
         # ── 2. Cola e Exchange de Transacciones ─────────────────────────────
         self._canal.exchange_declare(
             exchange=EXCHANGE_FINANCIERO,
@@ -164,6 +181,10 @@ class EscuchadorEventosUsuarioIA:
         self._canal.basic_consume(
             queue=COLA_IA_LOGIN_EVENTOS,
             on_message_callback=self._callback_login,
+        )
+        self._canal.basic_consume(
+            queue=COLA_IA_LOGOUT_EVENTOS,
+            on_message_callback=self._callback_logout,
         )
         self._canal.basic_consume(
             queue=COLA_IA_TRANSACCIONES_EVENTOS,
@@ -192,6 +213,31 @@ class EscuchadorEventosUsuarioIA:
 
         except Exception as exc:
             logger.error("[USER-EVENTS-IA] Error en callback de login: %s", exc, exc_info=True)
+            canal.basic_nack(delivery_tag=tag, requeue=False)
+
+    def _callback_logout(self, canal, metodo, propiedades, cuerpo) -> None:
+        tag = metodo.delivery_tag
+        try:
+            evento = json.loads(cuerpo)
+            usuario_id = evento.get("usuarioId")
+            
+            if not usuario_id:
+                logger.warning("[USER-EVENTS-IA] Evento de logout sin usuarioId. Ignorando.")
+                canal.basic_ack(delivery_tag=tag)
+                return
+
+            logger.info(
+                "[USER-EVENTS-IA] Logout exitoso detectado para usuario=%s. Limpiando caché en Redis.",
+                usuario_id
+            )
+
+            # Borrar la clave principal
+            hash_key = f"usuario:{usuario_id}"
+            self._redis.delete(hash_key)
+            canal.basic_ack(delivery_tag=tag)
+
+        except Exception as exc:
+            logger.error("[USER-EVENTS-IA] Error en callback de logout: %s", exc, exc_info=True)
             canal.basic_nack(delivery_tag=tag, requeue=False)
 
     def _callback_transaccion(self, canal, metodo, propiedades, cuerpo) -> None:

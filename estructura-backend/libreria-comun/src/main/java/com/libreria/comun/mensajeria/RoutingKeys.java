@@ -36,6 +36,7 @@ public final class RoutingKeys {
     // Usuario – Eventos de dominio
     /** Routing key para el evento disparado cuando un usuario se autentica exitosamente. */
     public static final String USUARIO_LOGIN_EXITOSO = "usuario.login.exitoso";
+    public static final String USUARIO_LOGOUT_EXITOSO = "usuario.logout.exitoso";
 
     private RoutingKeys() {
     }

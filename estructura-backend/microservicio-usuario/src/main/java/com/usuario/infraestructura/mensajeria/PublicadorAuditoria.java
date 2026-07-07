@@ -317,4 +317,48 @@ public class PublicadorAuditoria extends PublicadorEventosBase {
             }
         }
     }
+
+    /**
+     * Publica el evento de dominio {@code LOGOUT_EXITOSO} al exchange
+     * {@code exchange.usuario.eventos} con la routing key {@code usuario.logout.exitoso}.
+     */
+    @Transactional
+    public void publicarLogoutExitoso(UUID usuarioId, String ipCliente) {
+        String correlationId = UUID.randomUUID().toString();
+        com.libreria.comun.dtos.EventoLogoutExitosoDTO evento = com.libreria.comun.dtos.EventoLogoutExitosoDTO.de(usuarioId, ipCliente, correlationId);
+
+        log.info("[DOMINIO-LOGOUT] Preparando evento LOGOUT_EXITOSO para usuario: {} [correlationId: {}]",
+                usuarioId, correlationId);
+
+        final PublicadorAuditoria publicador = this;
+
+        if (org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()) {
+            org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                    new org.springframework.transaction.support.TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            try {
+                                publicador.enviar(
+                                        NombresExchange.USUARIO_EVENTOS,
+                                        RoutingKeys.USUARIO_LOGOUT_EXITOSO,
+                                        evento);
+                                log.info("[DOMINIO-LOGOUT] Evento LOGOUT_EXITOSO publicado en RabbitMQ para usuario: {}",
+                                        usuarioId);
+                            } catch (Exception e) {
+                                log.error("[DOMINIO-LOGOUT] Error al publicar evento LOGOUT_EXITOSO para usuario: {}. Causa: {}",
+                                        usuarioId, e.getMessage());
+                            }
+                        }
+                    });
+        } else {
+            try {
+                this.enviar(NombresExchange.USUARIO_EVENTOS, RoutingKeys.USUARIO_LOGOUT_EXITOSO, evento);
+                log.info("[DOMINIO-LOGOUT] Evento LOGOUT_EXITOSO publicado directamente para usuario: {}",
+                        usuarioId);
+            } catch (Exception e) {
+                log.error("[DOMINIO-LOGOUT] Error al publicar evento LOGOUT_EXITOSO. Causa: {}",
+                        e.getMessage());
+            }
+        }
+    }
 }

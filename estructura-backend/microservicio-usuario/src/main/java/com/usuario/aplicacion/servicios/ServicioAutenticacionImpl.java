@@ -195,6 +195,7 @@ public class ServicioAutenticacionImpl implements IServicioAutenticacion {
             redisTemplate.opsForValue().set(key, usuarioId.toString(), 24, TimeUnit.HOURS);
         }
         publicadorAuditoria.publicarAcceso(usuarioId, ipCliente, EstadoEvento.EXITO, "LOGOUT_EXITOSO");
+        publicadorAuditoria.publicarLogoutExitoso(usuarioId, ipCliente);
     }
 
     @SuppressWarnings("null")
