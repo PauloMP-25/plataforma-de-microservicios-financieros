@@ -8,6 +8,56 @@ import {
   ActualizarSuscripcionRequest,
   SuscripcionDTO
 } from '../../../../core/models/financiero/suscripcion-gasto.model';
+export interface PlataformaSuscripcion {
+  nombre: string;
+  categoria: string;
+  icono: string;
+  color: string;
+}
+
+export const PLATAFORMAS_SUSCRIPCION: PlataformaSuscripcion[] = [
+  // Entretenimiento
+  { nombre: 'Netflix', categoria: 'leisure', icono: 'fa-brands fa-netflix', color: '#e50914' },
+  { nombre: 'Spotify', categoria: 'leisure', icono: 'fa-brands fa-spotify', color: '#1db954' },
+  { nombre: 'YouTube Premium', categoria: 'leisure', icono: 'fa-brands fa-youtube', color: '#ff0000' },
+  { nombre: 'Amazon Prime', categoria: 'leisure', icono: 'fa-brands fa-amazon', color: '#ff9900' },
+  { nombre: 'Disney+', categoria: 'leisure', icono: 'fa-solid fa-play', color: '#113CCF' },
+  { nombre: 'HBO Max', categoria: 'leisure', icono: 'fa-solid fa-tv', color: '#441864' },
+  { nombre: 'Crunchyroll', categoria: 'leisure', icono: 'fa-solid fa-film', color: '#F47521' },
+  { nombre: 'Apple Music', categoria: 'leisure', icono: 'fa-brands fa-apple', color: '#fa243c' },
+  
+  // Educación & Productividad
+  { nombre: 'ChatGPT Plus', categoria: 'study', icono: 'fa-solid fa-robot', color: '#10a37f' },
+  { nombre: 'Canva Pro', categoria: 'study', icono: 'fa-solid fa-palette', color: '#00c4cc' },
+  { nombre: 'Notion', categoria: 'study', icono: 'fa-solid fa-book-open', color: '#000000' },
+  { nombre: 'Platzi', categoria: 'study', icono: 'fa-solid fa-laptop-code', color: '#98ca3f' },
+  { nombre: 'Coursera', categoria: 'study', icono: 'fa-solid fa-graduation-cap', color: '#0056D2' },
+  { nombre: 'Duolingo', categoria: 'study', icono: 'fa-solid fa-language', color: '#58CC02' },
+  { nombre: 'Domestika', categoria: 'study', icono: 'fa-solid fa-pen-nib', color: '#e02424' },
+  { nombre: 'Udemy', categoria: 'study', icono: 'fa-solid fa-chalkboard-user', color: '#a435f0' },
+  { nombre: 'Adobe Creative Cloud', categoria: 'study', icono: 'fa-solid fa-bezier-curve', color: '#ff0000' },
+  { nombre: 'Zoom Pro', categoria: 'study', icono: 'fa-solid fa-video', color: '#2D8CFF' },
+  
+  // Juegos
+  { nombre: 'PlayStation Plus', categoria: 'leisure', icono: 'fa-brands fa-playstation', color: '#003087' },
+  { nombre: 'Xbox Game Pass', categoria: 'leisure', icono: 'fa-brands fa-xbox', color: '#107c10' },
+  { nombre: 'Nintendo Switch Online', categoria: 'leisure', icono: 'fa-solid fa-gamepad', color: '#E60012' },
+  
+  // Hogar / Utilidades
+  { nombre: 'Google One', categoria: 'home', icono: 'fa-brands fa-google', color: '#4285f4' },
+  { nombre: 'iCloud', categoria: 'home', icono: 'fa-brands fa-apple', color: '#000000' },
+  { nombre: 'Microsoft 365', categoria: 'study', icono: 'fa-brands fa-windows', color: '#00a4ef' },
+  { nombre: 'Dropbox', categoria: 'home', icono: 'fa-brands fa-dropbox', color: '#0061FE' },
+  { nombre: 'OneDrive', categoria: 'home', icono: 'fa-solid fa-cloud', color: '#0078d4' },
+  
+  // Salud / Deporte
+  { nombre: 'SmartFit', categoria: 'health', icono: 'fa-solid fa-dumbbell', color: '#ffc700' },
+  { nombre: 'Bodytech', categoria: 'health', icono: 'fa-solid fa-weight-hanging', color: '#e60000' },
+  { nombre: 'Strava', categoria: 'health', icono: 'fa-solid fa-person-running', color: '#fc4c02' },
+  
+  // Universidad / Servicios de estudio
+  { nombre: 'UTP Pago Mensual', categoria: 'study', icono: 'fa-solid fa-university', color: '#C8102E' }
+];
 
 @Component({
   selector: 'app-modal-nueva-suscripcion',
@@ -30,6 +80,17 @@ export class ModalNuevaSuscripcion {
   readonly monto = signal('');
   readonly frecuencia = signal('MENSUAL');
   readonly fechaInicio = signal(this.obtenerFechaHoy());
+  
+  // Autocompletado
+  readonly mostrarSugerencias = signal(false);
+  readonly sugerencias = computed(() => {
+    const texto = this.nombre().toLowerCase().trim();
+    if (!texto) return [];
+    
+    return PLATAFORMAS_SUSCRIPCION.filter(p => 
+      p.nombre.toLowerCase().includes(texto)
+    );
+  });
 
   ngOnInit() {
     if (this.suscripcionEditar) {
@@ -67,19 +128,16 @@ export class ModalNuevaSuscripcion {
 
   // 👇 Computed signal para el preview de ícono
   readonly iconoPreview = computed(() => {
-    const name = this.nombre().toLowerCase();
+    const name = this.nombre().toLowerCase().trim();
     
-    if (name.includes('netflix')) return 'fa-brands fa-netflix';
-    if (name.includes('spotify')) return 'fa-brands fa-spotify';
-    if (name.includes('youtube')) return 'fa-brands fa-youtube';
-    if (name.includes('prime') || name.includes('amazon')) return 'fa-brands fa-amazon';
-    if (name.includes('apple')) return 'fa-brands fa-apple';
-    if (name.includes('github')) return 'fa-brands fa-github';
-    if (name.includes('google')) return 'fa-brands fa-google';
-    if (name.includes('playstation') || name.includes('ps plus')) return 'fa-brands fa-playstation';
-    if (name.includes('xbox')) return 'fa-brands fa-xbox';
+    // Buscar si coincide con alguna plataforma predefinida
+    const plataforma = PLATAFORMAS_SUSCRIPCION.find(p => p.nombre.toLowerCase() === name || p.nombre.toLowerCase().includes(name));
     
-    // Si no es una marca conocida, buscar el ícono de la categoría
+    if (plataforma) {
+      return plataforma.icono;
+    }
+    
+    // Si no es una marca conocida, buscar el ícono de la categoría seleccionada
     const catId = this.categoria();
     const cat = this.categorias.find(c => c.id === catId);
     return cat ? `fa-solid ${cat.icon}` : 'fa-solid fa-circle-question';
@@ -94,21 +152,30 @@ export class ModalNuevaSuscripcion {
   readonly frecuencias = FRECUENCIAS_SUSCRIPCION.filter(f => ['MENSUAL', 'ANUAL', 'QUINCENAL'].includes(f.id));
 
   readonly colorPreview = computed(() => {
-    const name = this.nombre().toLowerCase();
-    if (name.includes('netflix')) return '#e50914';
-    if (name.includes('spotify')) return '#1db954';
-    if (name.includes('youtube')) return '#ff0000';
-    if (name.includes('prime') || name.includes('amazon')) return '#ff9900';
-    if (name.includes('apple')) return '#a3aaae';
-    if (name.includes('github')) return '#24292e';
-    if (name.includes('google')) return '#4285f4';
-    if (name.includes('playstation')) return '#003087';
-    if (name.includes('xbox')) return '#107c10';
+    const name = this.nombre().toLowerCase().trim();
+    
+    const plataforma = PLATAFORMAS_SUSCRIPCION.find(p => p.nombre.toLowerCase() === name || p.nombre.toLowerCase().includes(name));
+    if (plataforma) {
+      return plataforma.color;
+    }
 
     const catId = this.categoria();
     const cat = this.categorias.find(c => c.id === catId);
     return cat ? cat.color : '#5B6AF0';
   });
+
+  // Métodos de autocompletado
+  seleccionarPlataforma(plataforma: PlataformaSuscripcion): void {
+    this.nombre.set(plataforma.nombre);
+    this.categoria.set(plataforma.categoria);
+    this.mostrarSugerencias.set(false);
+  }
+
+  ocultarSugerenciasConRetraso(): void {
+    setTimeout(() => {
+      this.mostrarSugerencias.set(false);
+    }, 200);
+  }
 
   /**
    * Cerrar modal

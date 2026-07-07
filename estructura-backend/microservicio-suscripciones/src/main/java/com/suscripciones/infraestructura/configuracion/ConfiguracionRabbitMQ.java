@@ -39,4 +39,34 @@ public class ConfiguracionRabbitMQ {
                 .to(exchangePagos)
                 .with(RoutingKeys.PAGO_EXITOSO);
     }
+
+    // --- NUEVA CONFIGURACIÓN DE LOGIN Y EVENTOS ---
+    
+    public static final String COLA_SUSCRIPCIONES_LOGIN_EXITOSO = "cola.suscripciones.login.exitoso";
+    public static final String EXCHANGE_SUSCRIPCIONES_EVENTOS = "exchange.suscripciones.eventos";
+    
+    @Bean
+    public Queue queueSuscripcionLoginExitoso() {
+        return QueueBuilder.durable(COLA_SUSCRIPCIONES_LOGIN_EXITOSO).build();
+    }
+    
+    @Bean
+    public TopicExchange exchangeUsuarioEventosSuscripciones() {
+        return new TopicExchange(NombresExchange.USUARIO_EVENTOS, true, false);
+    }
+
+    @Bean
+    public Binding bindingSuscripcionLoginExitoso(
+            @Qualifier("queueSuscripcionLoginExitoso") Queue queueSuscripcionLoginExitoso,
+            @Qualifier("exchangeUsuarioEventosSuscripciones") TopicExchange exchangeUsuarioEventosSuscripciones) {
+        return BindingBuilder
+                .bind(queueSuscripcionLoginExitoso)
+                .to(exchangeUsuarioEventosSuscripciones)
+                .with(RoutingKeys.USUARIO_LOGIN_EXITOSO);
+    }
+
+    @Bean
+    public TopicExchange exchangeSuscripcionesEventos() {
+        return new TopicExchange(EXCHANGE_SUSCRIPCIONES_EVENTOS, true, false);
+    }
 }

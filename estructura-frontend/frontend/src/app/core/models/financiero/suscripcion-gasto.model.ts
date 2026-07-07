@@ -70,10 +70,10 @@ export interface ResumenSuscripciones {
  * Categorías disponibles con sus colores
  */
 export const CATEGORIAS_SUSCRIPCION = [
-  { id: 'food', nombre: 'Comida', color: '#FF7043', icon: 'fa-utensils' },
+  { id: 'food', nombre: 'Alimentación', color: '#FF7043', icon: 'fa-utensils' },
   { id: 'transport', nombre: 'Transporte', color: '#42A5F5', icon: 'fa-car' },
-  { id: 'health', nombre: 'Salud', color: '#26C6DA', icon: 'fa-heartbeat' },
-  { id: 'home', nombre: 'Hogar', color: '#FFA726', icon: 'fa-house' },
+  { id: 'health', nombre: 'Salud', color: '#26C6DA', icon: 'fa-heart-pulse' },
+  { id: 'home', nombre: 'Vivienda', color: '#FFA726', icon: 'fa-house' },
   { id: 'leisure', nombre: 'Entretenimiento', color: '#AB47BC', icon: 'fa-gamepad' },
   { id: 'study', nombre: 'Educación', color: '#66BB6A', icon: 'fa-graduation-cap' }
 ];

@@ -17,12 +17,38 @@
         
         <div class="form-group col-12">
           <label class="form-label"><i class="fa-solid fa-signature"></i> Nombre *</label>
-          <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+          <div style="display: flex; align-items: center; gap: 12px; width: 100%; position: relative;">
             <!-- Interactive color and icon preview -->
             <div class="icon-preview-box" [style.background]="colorPreview() + '15'" [style.color]="colorPreview()" [style.borderColor]="colorPreview() + '35'">
               <i [className]="iconoPreview()"></i>
             </div>
-            <input type="text" class="form-input" style="flex: 1;" [ngModel]="nombre()" (ngModelChange)="nombre.set($event)" name="nombre" placeholder="Ej: Netflix, Spotify, Prime...">
+            
+            <div style="flex: 1; position: relative;">
+              <input type="text" class="form-input" style="width: 100%;" 
+                [ngModel]="nombre()" 
+                (ngModelChange)="nombre.set($event)" 
+                name="nombre" 
+                placeholder="Ej: Netflix, Spotify, Prime..."
+                (focus)="mostrarSugerencias.set(true)"
+                (blur)="ocultarSugerenciasConRetraso()"
+                autocomplete="off">
+                
+              <!-- Autocomplete dropdown -->
+              @if (mostrarSugerencias() && sugerencias().length > 0) {
+                <div class="autocomplete-dropdown">
+                  @for (sug of sugerencias(); track sug.nombre) {
+                    <div class="autocomplete-item" (click)="seleccionarPlataforma(sug)">
+                      <div class="autocomplete-icon" [style.color]="sug.color">
+                        <i [className]="sug.icono"></i>
+                      </div>
+                      <div class="autocomplete-text">
+                        <span class="autocomplete-name">{{ sug.nombre }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
           </div>
         </div>
 
