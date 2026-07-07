@@ -104,6 +104,13 @@ Este documento detalla de manera estructurada y clara los requerimientos de corr
    * Asegurar que la selección de una categoría muestre siempre su icono asociado en todas las vistas de Luka App de forma consistente (a excepción de la sección de Metas).
 
 ---
+### 🔑 Guía de Contraseña (LISTO)
+1. **Validación Interactiva en Registro:**
+   * En el formulario de registro, al seleccionar el primer campo para crear la contraseña, se deben describir debajo las restricciones de seguridad con un círculo interactivo a la izquierda.
+   * En caso se detecte que el usuario está cumpliendo con cada requisito, el círculo debe ir cambiando de color (validación en tiempo real).
+   * Esta guía debe desaparecer automáticamente si el usuario hace click en otro campo del formulario.
+2. **Bloqueo del Botón de Registro:**
+   * El botón de registrar tampoco deberá habilitarse si no se detecta que el usuario cumple con todos los requisitos de seguridad exigidos por el backend.
 ---
 
 ## 🔧 Capa Backend (LISTO)
