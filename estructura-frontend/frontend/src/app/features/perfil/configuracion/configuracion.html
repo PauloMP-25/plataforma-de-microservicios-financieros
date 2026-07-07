@@ -194,7 +194,17 @@
           </div>
         </div>
 
-        <button type="button" class="configuracion__danger-btn" [disabled]="eliminandoCuenta()" (click)="abrirModalEliminarCuenta()">
+        <label class="configuracion__danger-checkbox-label">
+          <input
+            type="checkbox"
+            [ngModel]="aceptaRiesgo()"
+            (ngModelChange)="aceptaRiesgo.set($event)"
+            class="configuracion__danger-checkbox"
+          />
+          <span class="configuracion__danger-checkbox-text">Entiendo que esta acción es irreversible</span>
+        </label>
+
+        <button type="button" class="configuracion__danger-btn" [disabled]="!aceptaRiesgo()" (click)="abrirModalEliminarCuenta()">
           Eliminar cuenta
         </button>
 
@@ -204,59 +214,6 @@
       </section>
     </article>
 
-    @if (modalEliminarCuentaAbierto()) {
-      <div class="configuracion__modal-backdrop configuracion__modal-backdrop--danger" (click)="cerrarModalEliminarCuenta()">
-        <section class="configuracion__modal configuracion__delete-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="titulo-eliminar-cuenta">
-          <header class="configuracion__modal-header configuracion__delete-modal-header">
-            <span class="configuracion__delete-icon" aria-hidden="true">
-              <i class="fa-solid fa-triangle-exclamation"></i>
-            </span>
-            <div>
-              <p class="configuracion__delete-eyebrow">Acción irreversible</p>
-              <h3 id="titulo-eliminar-cuenta">Confirmar eliminación de cuenta</h3>
-            </div>
-            <button type="button" class="configuracion__close" [disabled]="eliminandoCuenta()" (click)="cerrarModalEliminarCuenta()" aria-label="Cerrar modal">
-              ×
-            </button>
-          </header>
-
-          <div class="configuracion__delete-warning">
-            <p>
-              Si continúas, se iniciará la eliminación de tu cuenta y se perderán tus datos asociados a LUKA,
-              incluyendo perfil, configuraciones, registros financieros, historial y preferencias guardadas.
-            </p>
-            <p>
-              Para confirmar que entiendes las consecuencias, escribe exactamente esta frase:
-            </p>
-            <strong>{{ fraseConfirmacionEliminarCuenta }}</strong>
-          </div>
-
-          <label class="configuracion__delete-confirm">
-            <span>Frase de confirmación</span>
-            <textarea
-              rows="3"
-              [ngModel]="confirmacionEliminarCuenta()"
-              (ngModelChange)="confirmacionEliminarCuenta.set($event)"
-              [disabled]="eliminandoCuenta()"
-              placeholder="Estoy de acuerdo con la eliminación de la cuenta"
-            ></textarea>
-          </label>
-
-          @if (mensajeCuenta()) {
-            <p class="configuracion__mensaje configuracion__mensaje--danger">{{ mensajeCuenta() }}</p>
-          }
-
-          <footer class="configuracion__delete-actions">
-            <button type="button" class="configuracion__delete-cancel" [disabled]="eliminandoCuenta()" (click)="cerrarModalEliminarCuenta()">
-              Cancelar
-            </button>
-            <button type="button" class="configuracion__danger-btn" [disabled]="eliminandoCuenta() || !confirmacionEliminarCuentaValida()" (click)="eliminarCuenta()">
-              {{ eliminandoCuenta() ? 'Procesando...' : 'Sí, eliminar mi cuenta' }}
-            </button>
-          </footer>
-        </section>
-      </div>
-    }
     @if (modalPlanesAbierto()) {
       <app-modal-planes
         [comprando]="comprandoPlan()"
@@ -275,4 +232,58 @@
   <button type="button" class="floating-help-btn" (click)="mostrarTour.set(true)" title="Ver guía de ayuda">
     <i class="fa-solid fa-circle-question"></i>
   </button>
+
+  @if (modalEliminarCuentaAbierto()) {
+    <div class="configuracion__modal-backdrop configuracion__modal-backdrop--danger" (click)="cerrarModalEliminarCuenta()">
+      <section class="configuracion__modal configuracion__delete-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="titulo-eliminar-cuenta">
+        <header class="configuracion__modal-header configuracion__delete-modal-header">
+          <span class="configuracion__delete-icon" aria-hidden="true">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </span>
+          <div>
+            <p class="configuracion__delete-eyebrow">Acción irreversible</p>
+            <h3 id="titulo-eliminar-cuenta">Confirmar eliminación de cuenta</h3>
+          </div>
+          <button type="button" class="configuracion__close" [disabled]="eliminandoCuenta()" (click)="cerrarModalEliminarCuenta()" aria-label="Cerrar modal">
+            ×
+          </button>
+        </header>
+
+        <div class="configuracion__delete-warning">
+          <p>
+            Si continúas, se iniciará la eliminación de tu cuenta y se perderán tus datos asociados a LUKA,
+            incluyendo perfil, configuraciones, registros financieros, historial y preferencias guardadas.
+          </p>
+          <p>
+            Para confirmar que entiendes las consecuencias, escribe exactamente esta frase:
+          </p>
+          <strong>{{ fraseConfirmacionEliminarCuenta }}</strong>
+        </div>
+
+        <label class="configuracion__delete-confirm">
+          <span>Frase de confirmación</span>
+          <textarea
+            rows="3"
+            [ngModel]="confirmacionEliminarCuenta()"
+            (ngModelChange)="confirmacionEliminarCuenta.set($event)"
+            [disabled]="eliminandoCuenta()"
+            placeholder="Estoy de acuerdo con la eliminación de la cuenta"
+          ></textarea>
+        </label>
+
+        @if (mensajeCuenta()) {
+          <p class="configuracion__mensaje configuracion__mensaje--danger">{{ mensajeCuenta() }}</p>
+        }
+
+        <footer class="configuracion__delete-actions">
+          <button type="button" class="configuracion__delete-cancel" [disabled]="eliminandoCuenta()" (click)="cerrarModalEliminarCuenta()">
+            Cancelar
+          </button>
+          <button type="button" class="configuracion__danger-btn" [disabled]="eliminandoCuenta() || !confirmacionEliminarCuentaValida()" (click)="eliminarCuenta()">
+            {{ eliminandoCuenta() ? 'Procesando...' : 'Sí, eliminar mi cuenta' }}
+          </button>
+        </footer>
+      </section>
+    </div>
+  }
 </section>
