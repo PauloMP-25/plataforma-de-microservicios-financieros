@@ -43,7 +43,7 @@
 
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 14px;
   margin-bottom: 1.75rem;
 }
@@ -172,8 +172,41 @@
 }
 .charts-grid-bottom {
   display: grid;
-  grid-template-columns: 1fr 1fr 1.6fr;
+  grid-template-columns: 1fr 1.6fr;
   gap: 14px;
+}
+
+@media (max-width: 768px) {
+  .kpi-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .charts-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .charts-grid-bottom {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Hero article del mes — más compacto en móvil */
+  article {
+    padding: 1.2rem 1.25rem !important;
+  }
+  article .text-2xl {
+    font-size: 1rem !important;
+  }
+  article .text-6xl {
+    font-size: 2.4rem !important;
+    line-height: 1.1 !important;
+  }
+  article svg {
+    display: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .kpi-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 .card {

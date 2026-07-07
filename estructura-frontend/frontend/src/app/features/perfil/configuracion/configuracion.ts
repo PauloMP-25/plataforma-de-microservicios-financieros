@@ -128,6 +128,7 @@ export class Configuracion implements OnInit {
   readonly modalEliminarCuentaAbierto = signal(false);
   readonly confirmacionEliminarCuenta = signal('');
   readonly fraseConfirmacionEliminarCuenta = 'Estoy de acuerdo con la eliminación de la cuenta';
+  readonly aceptaRiesgo = signal(false);
 
   readonly formNombres = signal('');
   readonly formApellidos = signal('');
@@ -237,8 +238,7 @@ export class Configuracion implements OnInit {
   }
 
   eliminarCuenta(): void {
-    if (!this.confirmacionEliminarCuentaValida()) {
-      this.mensajeCuenta.set('Para continuar, escribe exactamente la frase de confirmación.');
+    if (!this.aceptaRiesgo()) {
       return;
     }
 
@@ -256,8 +256,6 @@ export class Configuracion implements OnInit {
       .pipe(finalize(() => this.eliminandoCuenta.set(false)))
       .subscribe({
         next: () => {
-          this.modalEliminarCuentaAbierto.set(false);
-          this.confirmacionEliminarCuenta.set('');
           this.authService.logout();
         },
         error: () => {
