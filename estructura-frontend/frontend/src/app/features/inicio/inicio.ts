@@ -15,6 +15,7 @@ export class Inicio {
   menuAbierto = false;
   mostrarMasGratis = false;
   mostrarMasPro = false;
+  mostrarMasPremium = false;
   readonly servicioTema = inject(ServicioTema);
 
   scrollHacia(idElemento: string): void {
