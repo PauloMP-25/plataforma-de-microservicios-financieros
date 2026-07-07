@@ -71,7 +71,7 @@ export class MetasPage implements OnInit {
     yearsSet.add(currentYear + 2);
 
     this.metas().forEach(m => {
-      const fechaAnio = m.fechaCreacion || m.fechaLimite;
+      const fechaAnio = m.fechaCreacion || m.fechaObjetivo;
       if (fechaAnio) {
         const parts = fechaAnio.substring(0, 10).split('-');
         if (parts.length === 3) {
@@ -106,9 +106,9 @@ export class MetasPage implements OnInit {
 
     // Ordenar activas por fecha límite más cercana (prioridad de llenado)
     const activasOrdenadas = [...activas].sort((a, b) => {
-      if (!a.fechaLimite) return 1;
-      if (!b.fechaLimite) return -1;
-      return new Date(a.fechaLimite).getTime() - new Date(b.fechaLimite).getTime();
+      if (!a.fechaObjetivo) return 1;
+      if (!b.fechaObjetivo) return -1;
+      return new Date(a.fechaObjetivo).getTime() - new Date(b.fechaObjetivo).getTime();
     });
 
     const activasCalculadas = activasOrdenadas.map(meta => {
@@ -175,8 +175,8 @@ export class MetasPage implements OnInit {
     if (mes !== 'Todos') {
       const mesNum = parseInt(mes, 10);
       listado = listado.filter(m => {
-        if (!m.fechaLimite) return false;
-        const limitStr = m.fechaLimite.substring(0, 10);
+        if (!m.fechaObjetivo) return false;
+        const limitStr = m.fechaObjetivo.substring(0, 10);
         const parts = limitStr.split('-');
         if (parts.length !== 3) return false;
         const month = parseInt(parts[1], 10) - 1; // 0-indexed en JS
@@ -189,7 +189,7 @@ export class MetasPage implements OnInit {
     if (anio !== 'Todos') {
       const anioNum = parseInt(anio, 10);
       listado = listado.filter(m => {
-        const fechaAnio = m.fechaCreacion || m.fechaLimite;
+        const fechaAnio = m.fechaCreacion || m.fechaObjetivo;
         if (!fechaAnio) return false;
         const startStr = fechaAnio.substring(0, 10);
         const parts = startStr.split('-');
@@ -246,9 +246,9 @@ export class MetasPage implements OnInit {
     const activas = this.metasCalculadas().filter(m => !m.completada);
     if (activas.length === 0) return null;
     return [...activas].sort((a, b) => {
-      if (!a.fechaLimite) return 1;
-      if (!b.fechaLimite) return -1;
-      return new Date(a.fechaLimite).getTime() - new Date(b.fechaLimite).getTime();
+      if (!a.fechaObjetivo) return 1;
+      if (!b.fechaObjetivo) return -1;
+      return new Date(a.fechaObjetivo).getTime() - new Date(b.fechaObjetivo).getTime();
     })[0];
   });
 
@@ -376,16 +376,16 @@ export class MetasPage implements OnInit {
   }
 
   esVencida(meta: RespuestaMetaAhorro): boolean {
-    if (!meta.fechaLimite) return false;
-    const limite = new Date(meta.fechaLimite + 'T00:00:00');
+    if (!meta.fechaObjetivo) return false;
+    const limite = new Date(meta.fechaObjetivo + 'T00:00:00');
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     return limite < hoy;
   }
 
-  calcularDiasRestantes(fechaLimiteStr: string): number {
-    if (!fechaLimiteStr) return 0;
-    const limite = new Date(fechaLimiteStr + 'T00:00:00');
+  calcularDiasRestantes(fechaObjetivoStr: string): number {
+    if (!fechaObjetivoStr) return 0;
+    const limite = new Date(fechaObjetivoStr + 'T00:00:00');
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     const dif = limite.getTime() - hoy.getTime();
@@ -406,15 +406,15 @@ export class MetasPage implements OnInit {
   }
 
   obtenerTiempoEmpleadoMeta(meta: RespuestaMetaAhorro): string {
-    if (!meta.fechaCreacion) {
+    if (!meta.fechaInicio) {
       return 'N/A';
     }
-    const fin = meta.fechaActualizacion || meta.fechaCreacion;
-    return this.calcularTiempoEmpleado(meta.fechaCreacion, fin);
+    const fin = meta.fechaCompletada || meta.fechaActualizacion || new Date().toISOString();
+    return this.calcularTiempoEmpleado(meta.fechaInicio, fin);
   }
 
   obtenerFechaActualizacionOCreacion(meta: RespuestaMetaAhorro): string {
-    return meta.fechaActualizacion || meta.fechaCreacion || '';
+    return meta.fechaInicio || meta.fechaCreacion || '';
   }
 
   abrirCrearMeta(): void {

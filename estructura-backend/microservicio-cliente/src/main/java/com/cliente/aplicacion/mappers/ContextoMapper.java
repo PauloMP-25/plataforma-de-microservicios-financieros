@@ -40,7 +40,7 @@ public class ContextoMapper {
                 .nombre(m.nombre())
                 .montoObjetivo(m.montoObjetivo())
                 .montoActual(m.montoActual())
-                .fechaMeta(m.fechaLimite() != null ? m.fechaLimite().toString() : null)
+                .fechaMeta(m.fechaObjetivo() != null ? m.fechaObjetivo().toString() : null)
                 .build();
     }
 

@@ -25,7 +25,7 @@ import { CommonModule } from '@angular/common';
 
       <!-- Filtro Mes -->
       <div class="metas-page__filter-group">
-        <label for="filtroMes">Mes</label>
+        <label for="filtroMes">Mes Vencimiento</label>
         <select id="filtroMes" [value]="filtroMes()" (change)="mesChange.emit($any($event.target).value)">
           <option value="Todos">Todos</option>
           <option value="0">Enero</option>

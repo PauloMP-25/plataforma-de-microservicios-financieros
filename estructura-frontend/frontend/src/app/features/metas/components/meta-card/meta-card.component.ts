@@ -54,7 +54,7 @@ import { MetaBubbleComponent } from '../meta-bubble/meta-bubble.component';
             <span class="monto-total">/ S/ {{ formatMoneda(meta().montoObjetivo) }}</span>
           </span>
           <span class="sub-label" [ngClass]="esVencida() ? 'text-danger' : 'text-secondary'">
-            {{ meta().fechaLimite | date:'dd/MM/yyyy' }}
+            {{ meta().fechaObjetivo | date:'dd/MM/yyyy' }}
           </span>
         }
       </div>
@@ -89,8 +89,8 @@ export class MetaCardComponent {
 
   esVencida(): boolean {
     const meta = this.meta();
-    if (!meta.fechaLimite) return false;
-    const limite = new Date(meta.fechaLimite + 'T00:00:00');
+    if (!meta.fechaObjetivo) return false;
+    const limite = new Date(meta.fechaObjetivo + 'T00:00:00');
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     return limite < hoy;

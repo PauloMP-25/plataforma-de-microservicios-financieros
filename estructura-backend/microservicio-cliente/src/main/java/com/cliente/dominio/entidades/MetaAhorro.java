@@ -58,11 +58,17 @@ public class MetaAhorro {
     @Builder.Default
     private BigDecimal montoActual = BigDecimal.ZERO;
 
+    @Column(name = "fecha_inicio")
+    private LocalDate fechaInicio;
+
     /**
      * Fecha límite para cumplir la meta. Puede ser nula (sin límite).
      */
     @Column(name = "fecha_limite")
-    private LocalDate fechaLimite;
+    private LocalDate fechaObjetivo;
+
+    @Column(name = "fecha_completada")
+    private LocalDate fechaCompletada;
 
     @Column(nullable = false)
     @Builder.Default
@@ -119,6 +125,7 @@ public class MetaAhorro {
     public boolean evaluarYMarcarCompletada() {
         if (!this.completada && montoActual.compareTo(montoObjetivo) >= 0) {
             this.completada = true;
+            this.fechaCompletada = LocalDate.now();
             return true; // Recién alcanzada — publicar evento
         }
         return false;

@@ -11,6 +11,7 @@ import { MetaPurposeSelectorComponent } from '../../components/meta-purpose-sele
 import { MetaPreviewCardComponent } from '../../components/meta-preview-card/meta-preview-card.component';
 import { MetaRecommendedSavingsComponent } from '../../components/meta-recommended-savings/meta-recommended-savings.component';
 import { MetasDataService } from '../../services/metas-data.service';
+import { DashboardStateService } from '../../../../core/services/dashboard-state.service';
 
 @Component({
   selector: 'app-meta-form-page',
@@ -31,9 +32,9 @@ export class MetaFormPage implements OnInit, HasUnsavedChanges {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private metasDataService = inject(MetasDataService);
-  private financieroService = inject(FinancieroService);
-  private notificacionService = inject(NotificacionService);
   private metasUtility = inject(MetasUtilityService);
+  private dashboardState = inject(DashboardStateService);
+  private notificacionService = inject(NotificacionService);
 
   formulario!: FormGroup;
   modoEdicion = false;
@@ -59,15 +60,17 @@ export class MetaFormPage implements OnInit, HasUnsavedChanges {
 
     this.inicializarFormulario();
 
-    this.financieroService.getResumen().subscribe({
-      next: (resumen) => {
-        if (!this.modoEdicion && resumen) {
-          this.formulario.patchValue({
-            montoActual: resumen.balance
-          });
-        }
-      }
-    });
+    // Garantizar que la analítica esté cargada
+    this.dashboardState.cargarAnalitica();
+    
+    // Suscribir reactivamente al balance (si cambia)
+    // Pero como estamos en un form, solo lo tomamos una vez al inicio.
+    const resumen = this.dashboardState.resumenYTD();
+    if (!this.modoEdicion && resumen) {
+      this.formulario.patchValue({
+        montoActual: resumen.balance
+      });
+    }
 
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
@@ -89,7 +92,7 @@ export class MetaFormPage implements OnInit, HasUnsavedChanges {
       categoria: ['Viaje', Validators.required],
       montoObjetivo: [null, [Validators.required, Validators.min(1.00)]],
       montoActual: [{ value: 0.00, disabled: true }, [Validators.required, Validators.min(0.00)]],
-      fechaLimite: [fechaDefecto, [Validators.required, this.validarFechaFutura.bind(this)]]
+      fechaObjetivo: [fechaDefecto, [Validators.required, this.validarFechaFutura.bind(this)]]
     });
   }
 
@@ -128,7 +131,7 @@ export class MetaFormPage implements OnInit, HasUnsavedChanges {
       categoria: meta.proposito || datosVisuales.categoria || 'Otros',
       montoObjetivo: meta.montoObjetivo,
       montoActual: meta.montoActual,
-      fechaLimite: meta.fechaLimite
+      fechaObjetivo: meta.fechaObjetivo
     });
     if (this.modoEdicion) {
       this.formulario.get('nombre')?.disable();
@@ -144,7 +147,7 @@ export class MetaFormPage implements OnInit, HasUnsavedChanges {
     const hoy = new Date();
     const nuevaFecha = new Date(hoy.getFullYear(), hoy.getMonth() + meses, hoy.getDate());
     const fechaStr = nuevaFecha.toISOString().split('T')[0];
-    this.formulario.get('fechaLimite')?.setValue(fechaStr);
+    this.formulario.get('fechaObjetivo')?.setValue(fechaStr);
   }
 
   seleccionarCategoriaForm(catId: string): void {
@@ -162,7 +165,7 @@ export class MetaFormPage implements OnInit, HasUnsavedChanges {
     
     const obj = this.formulario.get('montoObjetivo')?.value || 0;
     const act = this.formulario.get('montoActual')?.value || 0;
-    const fecha = this.formulario.get('fechaLimite')?.value;
+    const fecha = this.formulario.get('fechaObjetivo')?.value;
 
     if (!fecha || obj <= 0) return { cuota: 0, meses: 0 };
 
@@ -199,7 +202,8 @@ export class MetaFormPage implements OnInit, HasUnsavedChanges {
       nombre: nombreConPrefijo,
       montoObjetivo: formVal.montoObjetivo,
       montoActual: formVal.montoActual ?? 0,
-      fechaLimite: formVal.fechaLimite,
+      fechaObjetivo: formVal.fechaObjetivo,
+      fechaInicio: new Date().toISOString().split('T')[0],
       proposito: formVal.categoria
     };
 

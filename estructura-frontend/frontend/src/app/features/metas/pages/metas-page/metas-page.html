@@ -68,7 +68,7 @@
       <app-meta-kpi 
         [title]="'Próxima meta'" 
         [value]="metaMasCercana() ? obtenerCategoriaYNombre(metaMasCercana()!.nombre).nombre : 'Ninguna'" 
-        [sub]="metaMasCercana() ? 'Vence el ' + (metaMasCercana()!.fechaLimite | date:'dd/MM/yyyy') : 'Crea un objetivo'" 
+        [sub]="metaMasCercana() ? 'Vence el ' + (metaMasCercana()!.fechaObjetivo | date:'dd/MM/yyyy') : 'Crea un objetivo'" 
         [icon]="'fa-regular fa-calendar'" 
         [iconClass]="'text-warning'">
       </app-meta-kpi>

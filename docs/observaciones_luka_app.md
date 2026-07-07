@@ -56,7 +56,7 @@ Este documento detalla de manera estructurada y clara los requerimientos de corr
 
 ---
 
-### 🎯 Sección de Metas
+### 🎯 Sección de Metas (LISTO)
 1. **Actualización de Saldo Disponible:**
    * Al completar (cumplir) una meta, se debe recalcular y actualizar en tiempo real el **saldo disponible** tanto en el Header global de la aplicación como en la tarjeta interna de la sección de metas.
 2. **Flujo de Creación (Monto Disponible):**

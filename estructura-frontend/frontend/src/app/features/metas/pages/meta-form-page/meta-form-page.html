@@ -96,12 +96,12 @@
           <!-- Campo Fecha Objetivo con Helpers Rápidos -->
           <div class="meta-form-page__form-group">
             <label for="formFecha">¿PARA CUÁNDO LO NECESITAS?</label>
-            <input id="formFecha" type="date" formControlName="fechaLimite" [min]="fechaMinima" />
-            @if (formulario.get('fechaLimite')?.touched && formulario.get('fechaLimite')?.errors) {
-              @if (formulario.get('fechaLimite')?.errors?.['required']) {
+            <input id="formFecha" type="date" formControlName="fechaObjetivo" [min]="fechaMinima" />
+            @if (formulario.get('fechaObjetivo')?.touched && formulario.get('fechaObjetivo')?.errors) {
+              @if (formulario.get('fechaObjetivo')?.errors?.['required']) {
                 <small class="error-msg"><i class="fa-solid fa-triangle-exclamation"></i> La fecha es obligatoria.</small>
               }
-              @if (formulario.get('fechaLimite')?.errors?.['fechaPasada']) {
+              @if (formulario.get('fechaObjetivo')?.errors?.['fechaPasada']) {
                 <small class="error-msg"><i class="fa-solid fa-triangle-exclamation"></i> Elige una fecha posterior o igual a hoy.</small>
               }
             }
@@ -125,7 +125,7 @@
             [icono]="obtenerIconoCategoria(formulario.get('categoria')?.value || 'Otros')"
             [montoObjetivo]="formulario.get('montoObjetivo')?.value || 0"
             [montoActual]="formulario.get('montoActual')?.value || 0"
-            [fechaLimite]="formulario.get('fechaLimite')?.value">
+            [fechaObjetivo]="formulario.get('fechaObjetivo')?.value">
           </app-meta-preview-card>
 
           <!-- Cuadro de Proyección: Ahorro Mensual Recomendado -->

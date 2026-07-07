@@ -46,7 +46,7 @@ import { MetaBubbleComponent } from '../meta-bubble/meta-bubble.component';
       </div>
       <div class="summary-item">
         <span class="label">Fecha Límite</span>
-        <span class="value">{{ fechaLimite() ? (fechaLimite()! | date:'dd/MM/yyyy') : 'No establecida' }}</span>
+        <span class="value">{{ fechaObjetivo() ? (fechaObjetivo()! | date:'dd/MM/yyyy') : 'No establecida' }}</span>
       </div>
     </div>
   `
@@ -57,7 +57,7 @@ export class MetaPreviewCardComponent {
   icono = input<string>('');
   montoObjetivo = input<number>(0);
   montoActual = input<number>(0);
-  fechaLimite = input<string | null>(null);
+  fechaObjetivo = input<string | null>(null);
 
   porcentaje(): number {
     const obj = this.montoObjetivo();

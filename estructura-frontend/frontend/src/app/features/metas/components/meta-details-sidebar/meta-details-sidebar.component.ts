@@ -74,11 +74,11 @@ import { MetaBubbleComponent } from '../meta-bubble/meta-bubble.component';
             }
             <div class="detail-item">
               <span class="label"><i class="fa-regular fa-calendar-days"></i> Fecha de inicio</span>
-              <span class="value">{{ meta().fechaCreacion | date:'dd/MM/yyyy' }}</span>
+              <span class="value">{{ (meta().fechaInicio || meta().fechaCreacion) | date:'dd/MM/yyyy' }}</span>
             </div>
             <div class="detail-item">
               <span class="label"><i class="fa-regular fa-calendar-check"></i> Fecha objetivo</span>
-              <span class="value">{{ meta().fechaLimite | date:'dd/MM/yyyy' }}</span>
+              <span class="value">{{ meta().fechaObjetivo | date:'dd/MM/yyyy' }}</span>
             </div>
             <div class="detail-item">
               <span class="label"><i class="fa-regular fa-clock"></i> Categoría</span>
@@ -140,8 +140,8 @@ export class MetaDetailsSidebarComponent {
 
   esVencida(): boolean {
     const meta = this.meta();
-    if (!meta.fechaLimite) return false;
-    const limite = new Date(meta.fechaLimite + 'T00:00:00');
+    if (!meta.fechaObjetivo) return false;
+    const limite = new Date(meta.fechaObjetivo + 'T00:00:00');
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     return limite < hoy;
@@ -175,7 +175,7 @@ export class MetaDetailsSidebarComponent {
 
   obtenerFechaActualizacionOCreacion(): string {
     const meta = this.meta();
-    return meta.fechaActualizacion || meta.fechaCreacion || '';
+    return meta.fechaCompletada || meta.fechaActualizacion || meta.fechaCreacion || '';
   }
 
   calcularTiempoEmpleado(creacion: string, actualizacion: string): string {
@@ -193,11 +193,11 @@ export class MetaDetailsSidebarComponent {
 
   obtenerTiempoEmpleadoMeta(): string {
     const meta = this.meta();
-    if (!meta.fechaCreacion) {
+    if (!meta.fechaInicio) {
       return 'N/A';
     }
-    const fin = meta.fechaActualizacion || meta.fechaCreacion;
-    return this.calcularTiempoEmpleado(meta.fechaCreacion, fin);
+    const fin = meta.fechaCompletada || meta.fechaActualizacion || new Date().toISOString();
+    return this.calcularTiempoEmpleado(meta.fechaInicio, fin);
   }
 
   mostrarCajaExito(): boolean {
