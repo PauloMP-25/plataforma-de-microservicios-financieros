@@ -23,6 +23,7 @@ Este documento detalla de manera estructurada y clara los requerimientos de corr
    * Quitar el botón grande de **"Limpiar filtros"** en la sección de Suscripciones para mejorar el diseño.
 2. **Listado de Plataformas Soportadas:**
    * Agregar una lista exhaustiva en el frontend (Typescript) de todas las plataformas donde se pueden pagar suscripciones con sus respectivos iconos personalizados (por ejemplo: WhatsApp, UTP, Netflix, Spotify, etc.).
+   * **Nota (Iconos faltantes):** Es necesario descargar e incluir manualmente en formato SVG o PNG (dentro de `assets/logos/`) los logos de las siguientes plataformas, ya que **FontAwesome no los tiene en su catálogo**: Netflix, Disney+, HBO Max, Crunchyroll, ChatGPT Plus, Canva Pro, Notion, Platzi, Coursera, Duolingo, Domestika, Udemy, Adobe Creative Cloud, Zoom Pro, Nintendo Switch Online, SmartFit, Bodytech, Strava y UTP.
 3. **Integración Total con Backend:**
    * Conectar de manera definitiva todas las operaciones CRUD (Agregar, eliminar, editar) de la sección de Suscripciones con los endpoints correspondientes del Backend.
 
