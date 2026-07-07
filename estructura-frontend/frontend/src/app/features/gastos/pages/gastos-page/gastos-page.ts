@@ -135,6 +135,58 @@ export class GastosPage implements OnInit, OnDestroy {
   readonly totalGastosAnterior = computed(() => Number(this.stateService.resumenAnterior()?.totalGastos ?? 0));
   readonly saldoAnterior = computed(() => Number(this.stateService.resumenAnterior()?.balance ?? 0));
 
+  readonly racha = computed(() => this.stateService.rachaActual());
+  
+  readonly calendarioRacha = computed(() => {
+    const rachaData = this.racha();
+    const activos = new Set(rachaData?.diasActivosMesActual || []);
+    
+    const hoy = new Date();
+    const year = hoy.getFullYear();
+    const month = hoy.getMonth();
+    const primerDia = new Date(year, month, 1);
+    const ultimoDia = new Date(year, month + 1, 0);
+    
+    let offset = primerDia.getDay() - 1;
+    if (offset === -1) offset = 6;
+    
+    const diasDelMes = ultimoDia.getDate();
+    const totalCeldas = Math.ceil((diasDelMes + offset) / 7) * 7;
+    
+    const celdas = [];
+    for (let i = 0; i < totalCeldas; i++) {
+      if (i < offset || i >= diasDelMes + offset) {
+        celdas.push({ vacio: true });
+      } else {
+        const dia = i - offset + 1;
+        const fecha = new Date(year, month, dia);
+        const yyyy = fecha.getFullYear();
+        const mm = String(fecha.getMonth() + 1).padStart(2, '0');
+        const dd = String(fecha.getDate()).padStart(2, '0');
+        const dateStr = `${yyyy}-${mm}-${dd}`;
+        
+        celdas.push({
+          vacio: false,
+          dia,
+          fecha: dateStr,
+          activo: activos.has(dateStr),
+          esFuturo: fecha > hoy
+        });
+      }
+    }
+    
+    const semanas = [];
+    for (let i = 0; i < celdas.length; i += 7) {
+      semanas.push(celdas.slice(i, i + 7));
+    }
+    return semanas;
+  });
+
+  readonly nombreMesActual = computed(() => {
+    const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    return meses[new Date().getMonth()];
+  });
+
   readonly variacionGastado = computed(() => this.calcularVariacion(this.totalGastadoActual(), this.totalGastosAnterior()));
   readonly variacionSaldo = computed(() => this.calcularVariacion(this.saldoActual(), this.saldoAnterior()));
   readonly variacionPendiente = signal(0);
@@ -418,10 +470,7 @@ export class GastosPage implements OnInit, OnDestroy {
   });
 
   readonly gastoPromedioMensual = computed(() => {
-    const data = this.tendenciaMensual();
-    if (!data.length) return 0;
-    const total = data.reduce((acc, item) => acc + Number(item.total || 0), 0);
-    return total / data.length;
+    return Number(this.stateService.resumenActual()?.promedioGasto ?? 0);
   });
 
   readonly variacionPromedioMensual = computed(() => {

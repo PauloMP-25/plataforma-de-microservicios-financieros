@@ -38,7 +38,7 @@ Este documento detalla de manera estructurada y clara los requerimientos de corr
 
 ---
 
-### 📉 Sección de Gastos
+### 📉 Sección de Gastos (Listo)
 1. **Cálculo de Promedio Mensual:**
    * Verificar la lógica del card de **"Promedio de gastos mensual"**. Actualmente parece estar promediando sobre la base de todo el año, lo cual distorsiona la métrica real.
 2. **Nuevo KPI de Gasto Mensual:**

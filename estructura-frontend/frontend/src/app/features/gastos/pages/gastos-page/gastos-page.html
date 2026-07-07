@@ -15,13 +15,22 @@
   </header>
 
   <section id="tour-kpis" class="gastos-page__kpis">
+    <article class="gastos-page__kpi gastos-page__kpi--total">
+      <div class="gastos-page__kpi-head">
+        <span class="gastos-page__icon" aria-hidden="true"><i class="fa-solid fa-wallet"></i></span>
+        <p>Total gastado en {{ nombreMesActual() }}</p>
+      </div>
+      <strong>S/ {{ totalGastadoActual().toFixed(2) }}</strong>
+      <small>Gastos del mes actual</small>
+    </article>
+
     <article class="gastos-page__kpi gastos-page__kpi--salida">
       <div class="gastos-page__kpi-head">
         <span class="gastos-page__icon" aria-hidden="true"><i class="fa-solid fa-file-invoice-dollar"></i></span>
-        <p>Promedio de Gasto Mensual</p>
+        <p>Promedio de gasto en {{ nombreMesActual() }}</p>
       </div>
       <strong>S/ {{ gastoPromedioMensual().toFixed(2) }}</strong>
-      <small>Promedio mensual</small>
+      <small>Promedio por transacción</small>
     </article>
 
 
@@ -73,7 +82,8 @@
         </div>
       } @else {
         <div class="gastos-page__pending-list">
-          @for (pendiente of pendientesFiltrados(); track pendiente.id) {
+          <!-- Mostrar solo los 2 más próximos para alinear con el calendario -->
+          @for (pendiente of pendientesFiltrados().slice(0, 2); track pendiente.id) {
             <article class="gastos-page__pending-item">
               <div class="gastos-page__pending-top">
                 <div class="gastos-page__pending-title-wrap">
@@ -81,9 +91,13 @@
                     <i class="fa-solid" [ngClass]="'fa-' + pendiente.categoriaIcono"></i>
                   </span>
                   <h4>{{ pendiente.nombre }}</h4>
-                  <p>{{ pendiente.frecuencia }} · {{ pendiente.metodoPago }}</p>
                 </div>
                 <span class="gastos-page__pending-amount">S/ {{ pendiente.monto.toFixed(2) }}</span>
+              </div>
+              
+              <div class="gastos-page__pending-details">
+                <span class="detail-label">Frecuencia: <strong>{{ pendiente.frecuencia }}</strong></span>
+                <span class="detail-label">Método: <strong>{{ pendiente.metodoPago }}</strong></span>
               </div>
 
               <div class="gastos-page__pending-bottom">
@@ -92,17 +106,19 @@
                   {{ pendiente.fechaVencimiento }}
                 </span>
 
-                @if (pendiente.vencePronto) {
-                  <span class="gastos-page__badge is-warning">Vence pronto</span>
-                } @else {
-                  <span class="gastos-page__badge is-soft">Programado</span>
-                }
+                <div class="gastos-page__pending-actions">
+                  @if (pendiente.vencePronto) {
+                    <span class="gastos-page__badge is-warning">Vence pronto</span>
+                  } @else {
+                    <span class="gastos-page__badge is-soft">Programado</span>
+                  }
+                  
+                  <button type="button" class="gastos-page__btn-mark" (click)="marcarPendienteComoPagado(pendiente.id)">
+                    <i class="fa-solid fa-circle-check"></i>
+                    Marcar pagado
+                  </button>
+                </div>
               </div>
-
-              <button type="button" class="gastos-page__btn-mark" (click)="marcarPendienteComoPagado(pendiente.id)">
-                <i class="fa-solid fa-circle-check"></i>
-                Marcar pagado
-              </button>
             </article>
           }
         </div>
@@ -111,22 +127,61 @@
 
     <section id="tour-summary-note" class="gastos-page__panel gastos-page__panel--right gastos-page__panel--summary-note">
       <header class="gastos-page__panel-header">
-        <div>
-          <h3>Historial organizado</h3>
-          <p>Revisa tus gastos con una vista más cómoda y enfocada para encontrar cada movimiento rápidamente.</p>
+        <div class="gastos-page__racha-header-title">
+          <h3>
+            Racha de días registrando gastos
+            <div class="gastos-page__racha-flame-mini">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11.238 2.1466C11.5838 1.62793 12.416 1.62793 12.7618 2.1466C15.6987 6.5519 18.5 9.87034 18.5 13.9168C18.5 17.5066 15.5898 20.4168 12 20.4168C8.41015 20.4168 5.5 17.5066 5.5 13.9168C5.5 9.87034 8.30113 6.5519 11.238 2.1466Z" fill="url(#flame-gradient)" />
+                <defs>
+                  <linearGradient id="flame-gradient" x1="12" y1="2" x2="12" y2="20" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#FFB020" />
+                    <stop offset="1" stop-color="#FF3A3A" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <strong>{{ racha()?.diasRacha || 0 }}</strong>
+            </div>
+          </h3>
+          <p>¡Sigue así!</p>
         </div>
-        <span class="gastos-page__chip is-success">Vista ampliada</span>
       </header>
 
-      <img src="assets/avatares/figuras/oso_lentes.png" alt="Oso LUKA revisando historial" class="gastos-page__history-bear" />
-
-      <div class="gastos-page__history-cta">
-        <i class="fa-solid fa-table-list"></i>
-        <div>
-          <strong>Ver todos mis gastos</strong>
-          <p>Entra al historial para revisar, buscar y administrar tus gastos con más espacio.</p>
+      <div class="gastos-page__racha-content">
+        <div class="gastos-page__racha-calendar">
+          <div class="gastos-page__racha-month">
+            <h4>{{ nombreMesActual() }}</h4>
+            <div class="gastos-page__racha-oportunidades">
+              <span>Tienes {{ racha()?.oportunidadesRestantes ?? 3 }} oportunidades restantes</span>
+            </div>
+          </div>
+          <div class="gastos-page__racha-grid">
+            <div class="gastos-page__racha-weekdays">
+              <span>Lunes</span><span>Martes</span><span>Miércoles</span><span>Jueves</span><span>Viernes</span><span>Sábado</span><span>Domingo</span>
+            </div>
+            @for (semana of calendarioRacha(); track $index) {
+              <div class="gastos-page__racha-row">
+                @for (celda of semana; track $index) {
+                  @if (celda.vacio) {
+                    <div class="gastos-page__racha-dot is-empty"></div>
+                  } @else {
+                    <div class="gastos-page__racha-dot" 
+                         [class.is-active]="celda.activo" 
+                         [class.is-inactive]="!celda.activo && !celda.esFuturo"
+                         [class.is-future]="celda.esFuturo"
+                         [title]="celda.fecha">
+                      <span class="gastos-page__racha-day-number">{{ celda.dia }}</span>
+                    </div>
+                  }
+                }
+              </div>
+            }
+          </div>
         </div>
-        <button type="button" class="gastos-page__btn-main" routerLink="/perfil/historial">Abrir historial</button>
+      </div>
+
+      <div class="gastos-page__racha-footer">
+        <p>Tu constancia te acerca a tus metas.</p>
       </div>
     </section>
   </section>

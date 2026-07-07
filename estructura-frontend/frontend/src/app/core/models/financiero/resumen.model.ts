@@ -10,3 +10,9 @@ export interface ResumenFinancieroDTO {
   promedioIngreso:     number;
   promedioGasto:       number;
 }
+
+export interface RachaDTO {
+  diasRacha: number;
+  oportunidadesRestantes: number;
+  diasActivosMesActual: string[]; // Fechas en formato 'YYYY-MM-DD'
+}

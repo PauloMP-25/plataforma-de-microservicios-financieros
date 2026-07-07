@@ -26,6 +26,9 @@ public interface TransaccionRepository extends JpaRepository<Transaccion, UUID>,
 
     List<Transaccion> findTop10ByUsuarioIdOrderByFechaTransaccionDesc(UUID usuarioId);
 
+    @Query(value = "SELECT DISTINCT DATE(t.fecha_transaccion) FROM transacciones t WHERE t.usuario_id = :usuarioId ORDER BY DATE(t.fecha_transaccion) ASC", nativeQuery = true)
+    List<java.time.LocalDate> findDistinctFechasTransaccionByUsuarioIdAsc(@Param("usuarioId") UUID usuarioId);
+
 
     @Query("""
         SELECT COALESCE(SUM(t.monto), 0)

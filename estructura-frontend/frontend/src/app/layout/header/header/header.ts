@@ -314,64 +314,6 @@ export class Header implements OnInit, OnDestroy {
     setTimeout(() => this.floatBounce = false, 700);
   }
 
-  calcularRacha(transacciones: any[]): number {
-    if (!transacciones || transacciones.length === 0) {
-      return 0;
-    }
-
-    // Extraer fechas en formato YYYY-MM-DD
-    const fechasSet = new Set<string>();
-    transacciones.forEach(t => {
-      const fechaStr = t.fechaRegistro || t.fechaTransaccion;
-      if (fechaStr) {
-        const fecha = new Date(fechaStr);
-        if (!isNaN(fecha.getTime())) {
-          const yyyy = fecha.getFullYear();
-          const mm = String(fecha.getMonth() + 1).padStart(2, '0');
-          const dd = String(fecha.getDate()).padStart(2, '0');
-          fechasSet.add(`${yyyy}-${mm}-${dd}`);
-        }
-      }
-    });
-
-    const fechasOrdenadas = Array.from(fechasSet).sort((a, b) => b.localeCompare(a));
-    if (fechasOrdenadas.length === 0) {
-      return 0;
-    }
-
-    const hoyObj = new Date();
-    const hoyStr = `${hoyObj.getFullYear()}-${String(hoyObj.getMonth() + 1).padStart(2, '0')}-${String(hoyObj.getDate()).padStart(2, '0')}`;
-    
-    const ayerObj = new Date();
-    ayerObj.setDate(ayerObj.getDate() - 1);
-    const ayerStr = `${ayerObj.getFullYear()}-${String(ayerObj.getMonth() + 1).padStart(2, '0')}-${String(ayerObj.getDate()).padStart(2, '0')}`;
-
-    const masReciente = fechasOrdenadas[0];
-    
-    // Si la más reciente no es hoy ni ayer, racha es 0
-    if (masReciente !== hoyStr && masReciente !== ayerStr) {
-      return 0;
-    }
-
-    let racha = 1;
-    let fechaActual = new Date(masReciente + 'T00:00:00');
-
-    for (let i = 1; i < fechasOrdenadas.length; i++) {
-      const fechaSiguiente = new Date(fechasOrdenadas[i] + 'T00:00:00');
-      const difTiempo = fechaActual.getTime() - fechaSiguiente.getTime();
-      const difDias = Math.round(difTiempo / (1000 * 60 * 60 * 24));
-
-      if (difDias === 1) {
-        racha++;
-        fechaActual = fechaSiguiente;
-      } else if (difDias > 1) {
-        break; // Hueco en la racha
-      }
-    }
-
-    return racha;
-  }
-
   cargarRacha(): void {
     const usuarioId = this.auth.usuario()?.id;
     if (!usuarioId) {
@@ -379,13 +321,11 @@ export class Header implements OnInit, OnDestroy {
       return;
     }
 
-    // Listar las últimas 100 transacciones para computar la racha
-    this.transaccionesService.listarHistorial({ pagina: 0, tamanio: 100 }).subscribe({
-      next: (pagina) => {
-        if (pagina && pagina.content) {
-          const racha = this.calcularRacha(pagina.content);
-          this.rachaDias.set(racha);
-          localStorage.setItem('luka_racha_mock', racha.toString());
+    this.financiero.getRacha().subscribe({
+      next: (rachaData) => {
+        if (rachaData) {
+          this.rachaDias.set(rachaData.diasRacha);
+          localStorage.setItem('luka_racha_mock', rachaData.diasRacha.toString());
         } else {
           this.rachaDias.set(0);
         }
@@ -393,7 +333,7 @@ export class Header implements OnInit, OnDestroy {
       error: (err) => {
         console.error('Error al recuperar historial para racha:', err);
         const localRacha = localStorage.getItem('luka_racha_mock');
-        this.rachaDias.set(localRacha ? parseInt(localRacha, 10) : 14);
+        this.rachaDias.set(localRacha ? parseInt(localRacha, 10) : 0);
       }
     });
   }

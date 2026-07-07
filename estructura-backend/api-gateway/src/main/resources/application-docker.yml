@@ -271,7 +271,7 @@ spring:
         - id: servicio-nucleo-financiero
           uri: ${URL_PROD_FINANCIERO:https://luka-financiero.onrender.com}
           predicates:
-            - Path=/api/v1/financiero/**
+            - Path=/api/v1/financiero/**, /api/v1/resumen/**
           filters:
             - StripPrefix=0
             - AddRequestHeader=X-Gateway-Source, api-gateway

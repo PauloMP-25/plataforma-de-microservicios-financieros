@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../enviroments/environment';
-import { ResumenFinancieroDTO}  from '../models/financiero/resumen.model';
+import { ResumenFinancieroDTO, RachaDTO }  from '../models/financiero/resumen.model';
 import { CategoriaDTO, CategoriaRequestDTO, TipoMovimiento } from '../models/financiero/categoria.model';
 import { AuthService } from './auth.service';
 import { ResultadoApi } from '../models/auth/user.model';
@@ -56,6 +56,19 @@ export class FinancieroService {
           promedioIngreso: Math.round(totalIngresos / cantIng),
           promedioGasto: Math.round(totalGastos / cantGas)
         } as ResumenFinancieroDTO);
+      })
+    );
+  }
+
+  // ── Racha de gastos ──
+  getRacha(): Observable<RachaDTO> {
+    const usuarioId = this.auth.usuario()?.id;
+    let params = new HttpParams().set('usuarioId', usuarioId ?? '');
+    return this.http.get<ResultadoApi<RachaDTO>>(`${this.baseTransacciones}/resumen/racha`, { params }).pipe(
+      map(resp => resp.datos),
+      catchError(() => {
+        // Mock en caso de fallo
+        return of({ diasRacha: 0, oportunidadesRestantes: 3, diasActivosMesActual: [] } as RachaDTO);
       })
     );
   }
