@@ -13,6 +13,7 @@ export interface DashboardResumenDTO {
   totalIngresos?: number; // Total acumulado anual de ingresos
   totalGastos?: number; // Total acumulado anual de egresos
   balance?: number; // Balance total acumulado anual
+  volumenTransacciones?: number; // Cantidad total de movimientos en el periodo
 }
 
 export interface CashflowPointDTO {

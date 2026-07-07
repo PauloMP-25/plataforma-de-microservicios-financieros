@@ -48,6 +48,6 @@ export class DashboardPage implements OnInit, OnDestroy {
   // Lectura directa de señales para la vista (KPIs)
   get tasaAhorro(): number { return this.stateService.resumen()?.tasaAhorro ?? 0; }
   get gastoPromedioDiario(): number { return this.stateService.resumen()?.gastoPromedioDiario ?? 0; }
-  get cumplimientoPresupuesto(): number { return this.stateService.resumen()?.cumplimientoPresupuesto ?? 0; }
+  get volumenTransacciones(): number { return this.stateService.resumen()?.volumenTransacciones ?? 0; }
   get proyeccionFinDeMes(): number { return this.stateService.resumen()?.proyeccionFinDeMes ?? 0; }
 }

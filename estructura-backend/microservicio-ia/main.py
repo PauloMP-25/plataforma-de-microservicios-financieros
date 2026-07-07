@@ -413,8 +413,6 @@ async def health() -> dict:
         },
         "sync_usuario_transacciones": {
             "estado": "UP" if _escuchador_usuario_activo else "DEGRADADO",
-            "cola_login": COLA_IA_LOGIN_EVENTOS,
-            "cola_transacciones": COLA_IA_TRANSACCIONES_EVENTOS,
             "redis": f"{config.redis_host}:{config.redis_port}",
             "descripcion": "Caché de transacciones e inicializador de login activos" if _escuchador_usuario_activo else "Inactivo",
         },

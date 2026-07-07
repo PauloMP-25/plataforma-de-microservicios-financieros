@@ -115,7 +115,8 @@ export class DashboardStateService {
             proyeccionFinDeMes: resumenBackend.proyeccionFinDeMes || 0,
             totalIngresos: resumenBackend.totalIngresos,
             totalGastos: resumenBackend.totalGastos,
-            balance: resumenBackend.balance
+            balance: resumenBackend.balance,
+            volumenTransacciones: resumenBackend.volumenTransacciones || 0
           });
         } else {
           this.error.set(kpis.mensaje || 'Error al cargar KPIs');
@@ -133,7 +134,8 @@ export class DashboardStateService {
             proyeccionFinDeMes: resumenBackend.proyeccionFinDeMes || 0,
             totalIngresos: resumenBackend.totalIngresos,
             totalGastos: resumenBackend.totalGastos,
-            balance: resumenBackend.balance
+            balance: resumenBackend.balance,
+            volumenTransacciones: resumenBackend.volumenTransacciones || 0
           });
         }
 

@@ -6,7 +6,7 @@ Este documento detalla de manera estructurada y clara los requerimientos de corr
 
 ## 🎨 Capa Frontend (Angular)
 
-### 📊 Dashboard & Filtros
+### 📊 Dashboard & Filtros (LISTO)
 1. **Filtro de "Última Semana" a "Últimos 6 Meses":**
    * Cambiar la opción de filtro "Última semana" por **"Últimos 6 meses"** (tanto en el selector como en la lógica del filtro correspondiente).
    * Al hacer clic en la **"X"** de limpieza de filtros rápidos, el sistema debe activar por defecto el filtro **"Este año"** y sincronizar/rellenar de forma automática los campos de fecha correspondientes (evitando que queden vacíos o mostrando un placeholder genérico del tipo `dd/mm/yyyy`).

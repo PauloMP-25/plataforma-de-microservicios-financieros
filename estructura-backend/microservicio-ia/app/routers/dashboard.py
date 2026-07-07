@@ -31,8 +31,7 @@ class ResumenKPIs(BaseModel):
     tasa_ahorro: float = Field(..., alias="tasaAhorro")
     gasto_promedio_diario: float = Field(..., alias="gastoPromedioDiario")
     proyeccion_fin_de_mes: float = Field(..., alias="proyeccionFinDeMes")
-    cumplimiento_presupuesto: float = Field(default=0.0, alias="cumplimientoPresupuesto")
-    presupuesto_activo: Optional[float] = Field(default=None, alias="presupuestoActivo")
+    volumen_transacciones: int = Field(..., alias="volumenTransacciones")
 
     model_config = {
         "populate_by_name": True,
@@ -431,7 +430,8 @@ def calcular_metricas_kpis(df_filtrado: pd.DataFrame, dt_inicio: datetime, dt_fi
             "cantidadGastos": 0,
             "tasaAhorro": 0.0,
             "gastoPromedioDiario": 0.0,
-            "proyeccionFinDeMes": 0.0
+            "proyeccionFinDeMes": 0.0,
+            "volumenTransacciones": 0
         }
         
     df_ing = df_filtrado[(df_filtrado['tipo'] == 'INGRESO') & (df_filtrado['estado'].astype(str).str.upper() == 'COMPLETED')]
@@ -459,7 +459,8 @@ def calcular_metricas_kpis(df_filtrado: pd.DataFrame, dt_inicio: datetime, dt_fi
         "cantidadGastos": cant_gas,
         "tasaAhorro": tasa_ahorro,
         "gastoPromedioDiario": gasto_prom_diario,
-        "proyeccionFinDeMes": proyeccion_fin
+        "proyeccionFinDeMes": proyeccion_fin,
+        "volumenTransacciones": cant_ing + cant_gas
     }
 
 
@@ -692,23 +693,13 @@ async def get_dashboard_kpis(
     token = auth_header.replace("Bearer ", "") if auth_header.startswith("Bearer ") else ""
 
     # 1. Obtener bolsa de transacciones crudas y presupuesto activo en paralelo
-    import asyncio
-    cliente_perfil = obtener_cliente_perfil()
-    datos_raw, presupuesto_activo = await asyncio.gather(
-        obtener_transacciones_YTD_optimizadas(
-            usuario_id=usuario_id,
-            token=token,
-            fecha_inicio_str=fechaInicio,
-            fecha_fin_str=fechaFin
-        ),
-        cliente_perfil.obtener_presupuesto_activo_async(usuario_id=usuario_id, token=token)
+    # 1. Obtener bolsa de transacciones crudas
+    datos_raw = await obtener_transacciones_YTD_optimizadas(
+        usuario_id=usuario_id,
+        token=token,
+        fecha_inicio_str=fechaInicio,
+        fecha_fin_str=fechaFin
     )
-    
-    # Determinar si el usuario tiene presupuesto activo configurado
-    monto_presupuesto = None
-    if presupuesto_activo:
-        monto_presupuesto = float(presupuesto_activo.get("montoLimite", 0))
-    logger.info(f"[DASHBOARD-KPIs] Presupuesto activo para {usuario_id}: {monto_presupuesto}")
 
     # 2. Cargar DataFrame principal
     df_completo = json_a_dataframe(datos_raw)
@@ -730,8 +721,7 @@ async def get_dashboard_kpis(
     except Exception:
         dt_fin = ytd_fin
 
-    # 4. Calcular gasto del presupuesto
-    gasto_presupuesto = calcular_gasto_presupuesto(df_completo, presupuesto_activo, monto_presupuesto)
+
 
     # 5. Filtrar DataFrame para los KPIs del periodo
     df_filtrado = filtrar_df_kpis(df_completo, dt_inicio, dt_fin, metodoPago, tipoMovimiento)
@@ -742,12 +732,7 @@ async def get_dashboard_kpis(
     # 7. Obtener transacciones recientes
     recientes = filtrar_transacciones_recientes(datos_raw, dt_inicio, dt_fin, metodoPago, tipoMovimiento)
 
-    # 8. Calcular cumplimiento de presupuesto
-    if monto_presupuesto and monto_presupuesto > 0:
-        cumplimiento_presupuesto = round((gasto_presupuesto / monto_presupuesto) * 100, 2)
-    else:
-        # Sin presupuesto configurado: mostrar 0 en la tarjeta
-        cumplimiento_presupuesto = 0.0
+
 
     # 9. Fechas de rango reales
     if not df_filtrado.empty and 'fecha_transaccion' in df_filtrado.columns:
@@ -769,8 +754,7 @@ async def get_dashboard_kpis(
             "tasaAhorro": round(metricas["tasaAhorro"], 2),
             "gastoPromedioDiario": round(metricas["gastoPromedioDiario"], 2),
             "proyeccionFinDeMes": round(metricas["proyeccionFinDeMes"], 2),
-            "cumplimientoPresupuesto": cumplimiento_presupuesto,
-            "presupuestoActivo": monto_presupuesto
+            "volumenTransacciones": metricas["volumenTransacciones"]
         },
         "recientes": recientes
     }
