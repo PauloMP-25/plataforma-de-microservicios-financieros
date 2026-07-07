@@ -132,7 +132,7 @@ public class ServicioDatosPersonalesImpl implements ServicioDatosPersonales {
     private RespuestaDatosPersonales convertirADTO(DatosPersonales e) {
         return new RespuestaDatosPersonales(
                 e.getDni(), e.getNombres(), e.getApellidos(),
-                e.getGenero(), e.getEdad(), e.getTelefono(),
+                e.getGenero(), e.getFechaNacimiento(), e.getTelefono(),
                 e.getFotoPerfilUrl(),
                 e.getPais(), e.getCiudad(), e.getDatosCompletos());
     }
@@ -169,8 +169,8 @@ public class ServicioDatosPersonalesImpl implements ServicioDatosPersonales {
         if (d.genero() != null) {
             e.setGenero(d.genero());
         }
-        if (d.edad() != null) {
-            e.setEdad(d.edad());
+        if (d.fechaNacimiento() != null) {
+            e.setFechaNacimiento(d.fechaNacimiento());
         }
         if (d.telefono() != null) {
             e.setTelefono(d.telefono());

@@ -252,7 +252,7 @@ export class PerfilCliente implements HasUnsavedChanges {
         nombres: f.nombres,
         apellidos: f.apellidos,
         genero: generoBackend,
-        edad: Number(f.edad || p.edad || 0),
+        fechaNacimiento: f.fechaNacimiento || p.fechaNacimiento || '',
         telefono: telefonoCompleto,
         fotoPerfilUrl: avatarUrl,
         pais: f.pais,
@@ -414,7 +414,7 @@ export class PerfilCliente implements HasUnsavedChanges {
       nombres: f.nombres,
       apellidos: f.apellidos,
       genero: generoBackend,
-      edad: Number(f.edad || p.edad || 0),
+      fechaNacimiento: f.fechaNacimiento || p.fechaNacimiento || '',
       telefono: telefonoCompleto,
       fotoPerfilUrl: avatarUrl,
       pais: f.pais,
@@ -539,9 +539,9 @@ export class PerfilCliente implements HasUnsavedChanges {
     const nextForm: PerfilForm = {
       nombres: perfil.nombres ?? '',
       apellidos: perfil.apellidos ?? '',
-      fechaNacimiento: '',
+      fechaNacimiento: perfil.fechaNacimiento ?? '',
       dni: perfil.dni ?? '',
-      edad: String(perfil.edad ?? ''),
+      edad: '',
       correo,
       telefonoCodigoPais: prefijo,
       telefonoNumero: numero,
@@ -550,9 +550,24 @@ export class PerfilCliente implements HasUnsavedChanges {
       genero: generoFrontend
     };
 
-    this.fechaDia.set('');
-    this.fechaMes.set('');
-    this.fechaAnio.set('');
+    if (nextForm.fechaNacimiento) {
+      const parsed = this.parseFechaNacimiento(nextForm.fechaNacimiento);
+      if (parsed) {
+        this.fechaDia.set(String(parsed.dia));
+        this.fechaMes.set(String(parsed.mes));
+        this.fechaAnio.set(String(parsed.anio));
+        const d = new Date(parsed.anio, parsed.mes, parsed.dia);
+        nextForm.edad = String(this.calcularEdadDesdeFecha(d));
+      } else {
+        this.fechaDia.set('');
+        this.fechaMes.set('');
+        this.fechaAnio.set('');
+      }
+    } else {
+      this.fechaDia.set('');
+      this.fechaMes.set('');
+      this.fechaAnio.set('');
+    }
 
     this.form.set(nextForm);
     this.formOriginal.set({ ...nextForm });

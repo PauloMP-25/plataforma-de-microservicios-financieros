@@ -522,7 +522,7 @@ export class ModalCompletarPerfil implements OnInit {
             nombres: rawForm.nombres,
             apellidos: rawForm.apellidos,
             genero: rawForm.genero,
-            edad: edad,
+            fechaNacimiento: rawForm.fechaNacimiento,
             telefono: rawForm.telefono,
             pais: rawForm.pais,
             ciudad: rawForm.ciudad

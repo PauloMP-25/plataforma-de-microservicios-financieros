@@ -211,7 +211,7 @@ export class Configuracion implements OnInit {
     const payload: SolicitudDatosPersonales = {
       dni: p.dni,
       genero: p.genero,
-      edad: p.edad,
+      fechaNacimiento: p.fechaNacimiento,
       fotoPerfilUrl: p.fotoPerfilUrl,
       nombres: this.formNombres().trim(),
       apellidos: this.formApellidos().trim(),

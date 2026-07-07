@@ -82,7 +82,7 @@ Este documento detalla de manera estructurada y clara los requerimientos de corr
 
 ---
 
-### 👤 Perfil de Usuario & Header
+### 👤 Perfil de Usuario & Header (LISTO)
 1. **Fecha de Nacimiento:**
    * Sincronizar el campo "Fecha de nacimiento" en el backend para que el formulario del frontend pueda guardar, consultar y plasmar este dato directamente en la UI.
 2. **Coherencia en el Header:**
@@ -106,7 +106,7 @@ Este documento detalla de manera estructurada y clara los requerimientos de corr
 ---
 ---
 
-## 🔧 Capa Backend
+## 🔧 Capa Backend (LISTO)
 
 1. **Alineación de Nombres de Bases de Datos:**
    * Se debe revisar y unificar el esquema de nombres de base de datos utilizado por los microservicios en sus archivos de configuración (`application.yml` / `application-docker.yml`). Actualmente existe discrepancia entre la convención individual de microservicios (`db_microservicio_usuario`, `db_microservicio_cliente`, etc.) y el prefijo general `db_luka_suscripciones`. El objetivo es mantener una estructura limpia y homogénea en toda la arquitectura.

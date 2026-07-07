@@ -336,12 +336,12 @@
   z-index: 1;
   transition: all 0.3s ease;
 
-  &:nth-of-type(1) {
+  &:nth-child(2) {
     left: 16.6%;
     width: 33.3%;
   }
 
-  &:nth-of-type(2) {
+  &:nth-child(4) {
     left: 50%;
     width: 33.3%;
   }

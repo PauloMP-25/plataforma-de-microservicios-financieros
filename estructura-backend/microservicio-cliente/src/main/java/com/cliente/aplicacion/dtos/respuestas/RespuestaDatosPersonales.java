@@ -10,7 +10,7 @@ public record RespuestaDatosPersonales(
         String        nombres,
         String        apellidos,
         String        genero,
-        Integer       edad,
+        java.time.LocalDate fechaNacimiento,
         String        telefono,
         String        fotoPerfilUrl,
         String        pais,

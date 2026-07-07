@@ -21,9 +21,9 @@ public record SolicitudDatosPersonales(
         )
         String genero,
 
-        @Min(value = 18, message = "La edad mínima es 18 años")
-        @Max(value = 120, message = "La edad máxima es 120 años")
-        Integer edad,
+        @NotNull(message = "La fecha de nacimiento es obligatoria")
+        @Past(message = "La fecha de nacimiento debe estar en el pasado")
+        java.time.LocalDate fechaNacimiento,
 
         @Pattern(regexp = "^\\+?[0-9]{8,15}$", message = "Número de teléfono inválido")
         String telefono,

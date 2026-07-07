@@ -753,8 +753,6 @@ $transition: all 0.2s ease-in-out;
   flex-shrink: 0;
 
   ::ng-deep .avatar-display {
-    width: 100% !important;
-    height: 100% !important;
     border-radius: 50% !important;
     background: transparent !important;
     border: none !important;
