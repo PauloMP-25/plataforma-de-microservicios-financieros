@@ -151,9 +151,6 @@
         <div class="gastos-page__racha-calendar">
           <div class="gastos-page__racha-month">
             <h4>{{ nombreMesActual() }}</h4>
-            <div class="gastos-page__racha-oportunidades">
-              <span>Tienes {{ racha()?.oportunidadesRestantes ?? 3 }} oportunidades restantes</span>
-            </div>
           </div>
           <div class="gastos-page__racha-grid">
             <div class="gastos-page__racha-weekdays">
@@ -181,7 +178,7 @@
       </div>
 
       <div class="gastos-page__racha-footer">
-        <p>Tu constancia te acerca a tus metas.</p>
+        <p>Tienes {{ racha()?.oportunidadesRestantes ?? 3 }} oportunidades restantes.</p>
       </div>
     </section>
   </section>
