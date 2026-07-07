@@ -51,7 +51,6 @@ class EscuchadorEventosUsuarioIA:
     def __init__(self, redis_client) -> None:
         self._config = obtener_configuracion()
         self._redis = redis_client
-        self._cliente_financiero = ClienteFinanciero()
         self._conexion: Optional[pika.BlockingConnection] = None
         self._canal: Optional[pika.adapters.blocking_connection.BlockingChannel] = None
 
@@ -219,13 +218,15 @@ class EscuchadorEventosUsuarioIA:
             canal.basic_nack(delivery_tag=tag, requeue=False)
 
     async def _inicializar_transacciones_anuales(self, usuario_id: str) -> None:
+        cliente_financiero = None
         try:
             anio_actual = datetime.now().year
+            cliente_financiero = ClienteFinanciero()
             
             # Consultar historial completo de transacciones del año al microservicio financiero
             # Usando token=None para que se aplique X-Internal-Token de llamada inter-servicio
             logger.info("[USER-EVENTS-IA] Solicitando transacciones del año %d al ms-financiero...", anio_actual)
-            respuesta = await self._cliente_financiero.obtener_historial_transacciones_async(
+            respuesta = await cliente_financiero.obtener_historial_transacciones_async(
                 usuario_id=usuario_id,
                 token=None,
                 tamanio=10000,
@@ -255,6 +256,9 @@ class EscuchadorEventosUsuarioIA:
 
         except Exception as exc:
             logger.error("[USER-EVENTS-IA] Error al inicializar transacciones anuales en Redis: %s", exc, exc_info=True)
+        finally:
+            if cliente_financiero:
+                await cliente_financiero.close()
 
     def _hacer_append_transaccion(self, usuario_id: str, evento: dict) -> None:
         try:

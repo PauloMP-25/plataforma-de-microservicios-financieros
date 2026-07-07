@@ -17,7 +17,7 @@ Este documento detalla de manera estructurada y clara los requerimientos de corr
 
 ---
 
-### 💳 Suscripciones
+### 💳 Suscripciones (LISTO)
 1. **Flujo de Vencimiento de Suscripciones:**
    * Cuando una suscripción de plan Premium o Pro expire (se venza), no debe simplemente eliminarse de la vista o base de datos. Debe cambiar su estado visible a **Vencido/Inactivo** y la cuenta del usuario debe degradarse (actualizarse) automáticamente al rol **Free**.
    * Quitar el botón grande de **"Limpiar filtros"** en la sección de Suscripciones para mejorar el diseño.
