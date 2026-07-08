@@ -33,12 +33,12 @@ export class DashboardHeaderComponent implements OnInit {
     this.filtrosCambio.emit(filtros);
   }
 
-  seleccionarRangoRapido(tipo: 'semana' | 'mes' | 'tres_meses' | 'anio'): void {
+  seleccionarRangoRapido(tipo: 'seis_meses' | 'mes' | 'tres_meses' | 'anio'): void {
     const hoy = new Date();
     
-    if (tipo === 'semana') {
+    if (tipo === 'seis_meses') {
       const inicio = new Date();
-      inicio.setDate(hoy.getDate() - 7);
+      inicio.setMonth(hoy.getMonth() - 6);
       this.fechaInicio = this.formatDate(inicio);
       this.fechaFin = this.formatDate(hoy);
     } else if (tipo === 'mes') {
@@ -59,16 +59,16 @@ export class DashboardHeaderComponent implements OnInit {
     this.onFiltroChange();
   }
 
-  esRangoActivo(tipo: 'semana' | 'mes' | 'tres_meses' | 'anio'): boolean {
+  esRangoActivo(tipo: 'seis_meses' | 'mes' | 'tres_meses' | 'anio'): boolean {
     if (!this.fechaInicio || !this.fechaFin) return false;
     
     const hoy = new Date();
     const hoyStr = this.formatDate(hoy);
     if (this.fechaFin !== hoyStr) return false;
     
-    if (tipo === 'semana') {
+    if (tipo === 'seis_meses') {
       const inicio = new Date();
-      inicio.setDate(hoy.getDate() - 7);
+      inicio.setMonth(hoy.getMonth() - 6);
       return this.fechaInicio === this.formatDate(inicio);
     } else if (tipo === 'mes') {
       const inicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
@@ -86,32 +86,9 @@ export class DashboardHeaderComponent implements OnInit {
   }
 
   limpiarFiltrosFechas(): void {
-    this.fechaInicio = '';
-    this.fechaFin = '';
-    this.onFiltroChange();
+    this.seleccionarRangoRapido('anio');
   }
 
-  getTituloConFecha(): string {
-    if (!this.fechaInicio && !this.fechaFin) {
-      return 'DASHBOARD FINANCIERO - TODO EL TIEMPO';
-    }
-    
-    const format = (dateStr: string) => {
-      const parts = dateStr.split('-');
-      if (parts.length === 3) {
-        return `${parts[2]}/${parts[1]}/${parts[0]}`;
-      }
-      return dateStr;
-    };
-
-    if (this.fechaInicio && this.fechaFin) {
-      return `DASHBOARD FINANCIERO - ${format(this.fechaInicio)} A ${format(this.fechaFin)}`.toUpperCase();
-    } else if (this.fechaInicio) {
-      return `DASHBOARD FINANCIERO - DESDE ${format(this.fechaInicio)}`.toUpperCase();
-    } else {
-      return `DASHBOARD FINANCIERO - HASTA ${format(this.fechaFin)}`.toUpperCase();
-    }
-  }
 
   obtenerNombreMesActual(): string {
     const meses = [

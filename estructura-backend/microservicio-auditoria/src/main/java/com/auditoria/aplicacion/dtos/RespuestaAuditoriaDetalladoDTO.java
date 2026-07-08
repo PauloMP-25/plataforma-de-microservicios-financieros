@@ -21,7 +21,6 @@ import java.util.UUID;
  * @param ipOrigen       Dirección IP desde donde se realizó la petición.
  * @param detalles       Información adicional o técnica sobre el evento.
  * 
- * @author Paulo Moron
  * @since 2026-05
  */
 public record RespuestaAuditoriaDetalladoDTO(

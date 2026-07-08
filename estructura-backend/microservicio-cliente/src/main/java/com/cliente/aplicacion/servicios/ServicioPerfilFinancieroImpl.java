@@ -22,7 +22,6 @@ import java.util.UUID;
 /**
  * Lógica de negocio para el perfil financiero del cliente.
  * 
- * @author Paulo Moron
  * @version 1.1.0
  */
 @Service

@@ -52,7 +52,7 @@
       <app-meta-kpi 
         [title]="'Metas cumplidas'" 
         [value]="metasCumplidasCount()" 
-        [sub]="'¡Felicidades!'" 
+        [sub]="metasCumplidasCount() > 0 ? '¡Felicidades!' : 'Aún no hay logros'" 
         [icon]="'fa-solid fa-circle-check'" 
         [iconClass]="'text-success'">
       </app-meta-kpi>
@@ -68,7 +68,7 @@
       <app-meta-kpi 
         [title]="'Próxima meta'" 
         [value]="metaMasCercana() ? obtenerCategoriaYNombre(metaMasCercana()!.nombre).nombre : 'Ninguna'" 
-        [sub]="metaMasCercana() ? 'Vence el ' + (metaMasCercana()!.fechaLimite | date:'dd/MM/yyyy') : 'Crea un objetivo'" 
+        [sub]="metaMasCercana() ? 'Vence el ' + (metaMasCercana()!.fechaObjetivo | date:'dd/MM/yyyy') : 'Crea un objetivo'" 
         [icon]="'fa-regular fa-calendar'" 
         [iconClass]="'text-warning'">
       </app-meta-kpi>
@@ -182,4 +182,14 @@
       (cancel)="cerrarModalCompletar()">
     </app-meta-confirm-modal>
   }
+
+  <app-onboarding-tour 
+    *ngIf="mostrarTour()" 
+    [steps]="stepsTour" 
+    (cerrar)="completarTour()"
+  ></app-onboarding-tour>
+
+  <button type="button" class="floating-help-btn" (click)="mostrarTour.set(true)" title="Ver guía de ayuda">
+    <i class="fa-solid fa-circle-question"></i>
+  </button>
 </section>

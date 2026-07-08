@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
  * peticiones desde el frontend.
  * </p>
  *
- * @author Paulo Moron
  */
 @RequiredArgsConstructor
 public abstract class ConfiguracionSeguridadBase {

@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
  * Desacopla la lógica de presentación del dominio del negocio.
  * </p>
  *
- * @author Luka-Dev-Backend
  * @version 1.0.0
  */
 @Component

@@ -3,6 +3,7 @@ import logging
 from typing import Optional
 import os
 import ssl as ssl_lib
+from datetime import datetime
 import pika
 from app.configuracion import obtener_configuracion
 from app.persistencia.redis.cache_redis import CacheRedis
@@ -35,6 +36,19 @@ class EscuchadorCambioDatosIA:
                 exchange="exchange.cliente.actualizaciones",
                 routing_key="ahorro.dato.cambiado"
             )
+            
+            # Escuchamos eventos de transacciones registradas para invalidar el caché YTD
+            self._canal.exchange_declare(
+                exchange="exchange.financiero",
+                exchange_type="topic",
+                durable=True
+            )
+            self._canal.queue_bind(
+                queue="cola.ia.invalidacion.cache",
+                exchange="exchange.financiero",
+                routing_key="financiero.transaccion.registrada"
+            )
+            
             self._canal.basic_consume(
                 queue="cola.ia.invalidacion.cache",
                 on_message_callback=self._callback
@@ -68,9 +82,13 @@ class EscuchadorCambioDatosIA:
     def _callback(self, canal, metodo, propiedades, cuerpo):
         try:
             datos = json.loads(cuerpo)
-            cliente_id = datos.get("clienteId") or propiedades.headers.get("clienteId")
+            cliente_id = datos.get("clienteId") or datos.get("usuarioId") or propiedades.headers.get("clienteId") or propiedades.headers.get("usuarioId")
             
-            if cliente_id:
+            routing_key = metodo.routing_key
+            if routing_key == "financiero.transaccion.registrada" and cliente_id:
+                logger.info(f"[SYNC-CACHE] Evento transaccion registrada recibido para cliente: {cliente_id}")
+                self._procesar_append_transaccion(cliente_id, datos)
+            elif cliente_id:
                 logger.info(f"[SYNC-CACHE] Invalidando caché para cliente: {cliente_id}")
                 self._invalidar_cache(cliente_id)
             
@@ -79,11 +97,61 @@ class EscuchadorCambioDatosIA:
             logger.error(f"[SYNC-CACHE] Error en callback: {e}")
             canal.basic_ack(delivery_tag=metodo.delivery_tag)
 
-    def _invalidar_cache(self, cliente_id: str):
-        """Elimina de Redis las firmas del cliente."""
+    def _procesar_append_transaccion(self, cliente_id: str, datos: dict):
+        """Añade la nueva transacción al caché YTD en Redis para evitar consultarlo de nuevo."""
         try:
+            # 1. Invalidar firmas del coach de Gemini, ya que los datos financieros cambiaron
+            self._cache_redis.flush_firmas_usuario(cliente_id)
+            
+            # 2. Mapear datos recibidos al esquema utilizado por preparador_datos
+            nueva_tx = {
+                "id": datos.get("transaccionId"),
+                "usuarioId": datos.get("usuarioId"),
+                "monto": datos.get("monto"),
+                "tipo": datos.get("tipo"),
+                "fechaTransaccion": datos.get("fechaTransaccion"),
+                "categoriaNombre": datos.get("categoriaNombre"),
+                "metodoPago": datos.get("metodoPago"),
+                "descripcion": datos.get("descripcion"),
+                "estado": datos.get("estado")
+            }
+            
+            # Extraer año de la transacción o usar el año actual
+            fecha_str = nueva_tx.get("fechaTransaccion")
+            anio = fecha_str[:4] if fecha_str and len(fecha_str) >= 4 else str(datetime.now().year)
+            
+            key_cache = f"ia:raw_tx:{cliente_id}:YTD_{anio}"
+            cached_data = self._cache_redis.obtener(key_cache)
+            
+            if cached_data:
+                datos_list = json.loads(cached_data)
+                if isinstance(datos_list, list):
+                    # Verificar duplicados por ID de transacción
+                    if not any(tx.get("id") == nueva_tx["id"] for tx in datos_list if isinstance(tx, dict)):
+                        datos_list.append(nueva_tx)
+                        self._cache_redis.guardar(key_cache, json.dumps(datos_list), ex=10800)
+                        logger.info(f"[SYNC-CACHE] Transacción {nueva_tx['id']} agregada exitosamente al caché YTD ({key_cache}).")
+                    else:
+                        logger.info(f"[SYNC-CACHE] Transacción {nueva_tx['id']} ya existe en el caché. Ignorado.")
+            else:
+                logger.info(f"[SYNC-CACHE] No hay caché YTD activo para el cliente {cliente_id}. Se generará en la próxima consulta.")
+        except Exception as e:
+            logger.error(f"[SYNC-CACHE] Error al procesar append de transacción: {e}")
+
+    def _invalidar_cache(self, cliente_id: str):
+        """Elimina de Redis las firmas del cliente y el caché YTD de transacciones."""
+        try:
+            # 1. Eliminar firmas de consulta de Gemini
             claves_borradas = self._cache_redis.flush_firmas_usuario(cliente_id)
-            logger.info(f"[SYNC-CACHE] Firmas de consulta invalidadas para cliente {cliente_id}: {claves_borradas} firmas eliminadas.")
+            
+            # 2. Eliminar caché YTD de transacciones crudas
+            patron_tx = f"ia:raw_tx:{cliente_id}:*"
+            claves_tx_borradas = self._cache_redis.flush_ia_cache(patron_tx)
+            
+            logger.info(
+                f"[SYNC-CACHE] Caché invalidado para cliente {cliente_id}: "
+                f"{claves_borradas} firmas y {claves_tx_borradas} claves de transacciones eliminadas."
+            )
         except Exception as e:
             logger.error(f"[SYNC-CACHE] Error al invalidar: {e}")
 

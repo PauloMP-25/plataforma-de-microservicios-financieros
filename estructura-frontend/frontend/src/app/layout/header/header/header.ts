@@ -6,11 +6,14 @@ import { RouterModule, Router,
 import { filter, map }                      from 'rxjs/operators';
 import { Subscription }                     from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
+import { AvatarService } from '../../../core/services/avatar.service';
+import { AvatarDisplay } from '../../../features/perfil/perfil-cliente/components/avatar-display/avatar-display';
 import { SidebarStateService } from '../../../core/services/sidebar-state.service';
 import { FinancieroService } from '../../../core/services/Financiero.service';
 import { AppEventBus } from '../../../core/services/app-event-bus.service';
 import { Transacciones } from '../../../core/services/transacciones';
 import { IaService } from '../../../core/services/ia.service';
+import { DashboardStateService } from '../../../core/services/dashboard-state.service';
 
 interface Breadcrumb  { label: string; route?: string; }
 
@@ -38,12 +41,14 @@ const FLOAT_MSGS = [
 @Component({
   selector:    'app-header',
   standalone:  true,
-  imports:     [CommonModule, RouterModule],
+  imports:     [CommonModule, RouterModule, AvatarDisplay],
   templateUrl: './header.html',
   styleUrl:    './header.scss'
 })
 export class Header implements OnInit, OnDestroy {
   public readonly iaService = inject(IaService);
+  public readonly avatarService = inject(AvatarService);
+  public readonly dashboardState = inject(DashboardStateService);
 
 
   pageTitle   = 'Resumen';
@@ -127,9 +132,11 @@ export class Header implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.financiero.cargarResumen();
+    this.dashboardState.cargarAnalitica();
 
     this.txSub = this.eventBus.on('TRANSACTION_MODIFIED').subscribe(() => {
       this.financiero.cargarResumen();
+      this.dashboardState.cargarAnalitica();
       this.cargarRacha();
     });
 
@@ -188,15 +195,15 @@ export class Header implements OnInit, OnDestroy {
   }
 
   get totalIngresosMes(): number {
-    return this.financiero.resumen()?.totalIngresos ?? 3850;
+    return this.dashboardState.resumenYTD()?.totalIngresos ?? this.financiero.resumen()?.totalIngresos ?? 3850;
   }
 
   get totalGastosMes(): number {
-    return this.financiero.resumen()?.totalGastos ?? 2950;
+    return this.dashboardState.resumenYTD()?.totalGastos ?? this.financiero.resumen()?.totalGastos ?? 2950;
   }
 
   get balanceActual(): number {
-    return this.totalIngresosMes - this.totalGastosMes;
+    return this.dashboardState.resumenYTD()?.balance ?? (this.totalIngresosMes - this.totalGastosMes);
   }
 
   get saludTexto(): 'Buena' | 'Atención' | 'Crítica' {
@@ -219,12 +226,27 @@ export class Header implements OnInit, OnDestroy {
   }
 
   formatSoles(value: number): string {
-    return new Intl.NumberFormat('es-PE', {
-      style: 'currency',
-      currency: 'PEN',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(value);
+    if (value === undefined || value === null) return 'S/ 0.00';
+    const absolute = Math.abs(value);
+    const sign = value < 0 ? '-' : '';
+    
+    let formatted = '';
+    if (absolute >= 1_000_000) {
+      formatted = `${(absolute / 1_000_000).toFixed(2).replace(/\.00$/, '')}M`;
+    } else if (absolute >= 100_000) {
+      formatted = `${(absolute / 1_000).toFixed(2).replace(/\.00$/, '')}K`;
+    } else if (absolute >= 10_000) {
+      formatted = `${(absolute / 1_000).toFixed(1).replace(/\.0$/, '')}K`;
+    } else {
+      return new Intl.NumberFormat('es-PE', {
+        style: 'currency',
+        currency: 'PEN',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(value);
+    }
+    
+    return `${sign}S/ ${formatted}`;
   }
 
   // Cierra todos los dropdowns al hacer clic fuera del header
@@ -292,64 +314,6 @@ export class Header implements OnInit, OnDestroy {
     setTimeout(() => this.floatBounce = false, 700);
   }
 
-  calcularRacha(transacciones: any[]): number {
-    if (!transacciones || transacciones.length === 0) {
-      return 0;
-    }
-
-    // Extraer fechas en formato YYYY-MM-DD
-    const fechasSet = new Set<string>();
-    transacciones.forEach(t => {
-      const fechaStr = t.fechaRegistro || t.fechaTransaccion;
-      if (fechaStr) {
-        const fecha = new Date(fechaStr);
-        if (!isNaN(fecha.getTime())) {
-          const yyyy = fecha.getFullYear();
-          const mm = String(fecha.getMonth() + 1).padStart(2, '0');
-          const dd = String(fecha.getDate()).padStart(2, '0');
-          fechasSet.add(`${yyyy}-${mm}-${dd}`);
-        }
-      }
-    });
-
-    const fechasOrdenadas = Array.from(fechasSet).sort((a, b) => b.localeCompare(a));
-    if (fechasOrdenadas.length === 0) {
-      return 0;
-    }
-
-    const hoyObj = new Date();
-    const hoyStr = `${hoyObj.getFullYear()}-${String(hoyObj.getMonth() + 1).padStart(2, '0')}-${String(hoyObj.getDate()).padStart(2, '0')}`;
-    
-    const ayerObj = new Date();
-    ayerObj.setDate(ayerObj.getDate() - 1);
-    const ayerStr = `${ayerObj.getFullYear()}-${String(ayerObj.getMonth() + 1).padStart(2, '0')}-${String(ayerObj.getDate()).padStart(2, '0')}`;
-
-    const masReciente = fechasOrdenadas[0];
-    
-    // Si la más reciente no es hoy ni ayer, racha es 0
-    if (masReciente !== hoyStr && masReciente !== ayerStr) {
-      return 0;
-    }
-
-    let racha = 1;
-    let fechaActual = new Date(masReciente + 'T00:00:00');
-
-    for (let i = 1; i < fechasOrdenadas.length; i++) {
-      const fechaSiguiente = new Date(fechasOrdenadas[i] + 'T00:00:00');
-      const difTiempo = fechaActual.getTime() - fechaSiguiente.getTime();
-      const difDias = Math.round(difTiempo / (1000 * 60 * 60 * 24));
-
-      if (difDias === 1) {
-        racha++;
-        fechaActual = fechaSiguiente;
-      } else if (difDias > 1) {
-        break; // Hueco en la racha
-      }
-    }
-
-    return racha;
-  }
-
   cargarRacha(): void {
     const usuarioId = this.auth.usuario()?.id;
     if (!usuarioId) {
@@ -357,13 +321,11 @@ export class Header implements OnInit, OnDestroy {
       return;
     }
 
-    // Listar las últimas 100 transacciones para computar la racha
-    this.transaccionesService.listarHistorial({ pagina: 0, tamanio: 100 }).subscribe({
-      next: (pagina) => {
-        if (pagina && pagina.content) {
-          const racha = this.calcularRacha(pagina.content);
-          this.rachaDias.set(racha);
-          localStorage.setItem('luka_racha_mock', racha.toString());
+    this.financiero.getRacha().subscribe({
+      next: (rachaData) => {
+        if (rachaData) {
+          this.rachaDias.set(rachaData.diasRacha);
+          localStorage.setItem('luka_racha_mock', rachaData.diasRacha.toString());
         } else {
           this.rachaDias.set(0);
         }
@@ -371,7 +333,7 @@ export class Header implements OnInit, OnDestroy {
       error: (err) => {
         console.error('Error al recuperar historial para racha:', err);
         const localRacha = localStorage.getItem('luka_racha_mock');
-        this.rachaDias.set(localRacha ? parseInt(localRacha, 10) : 14);
+        this.rachaDias.set(localRacha ? parseInt(localRacha, 10) : 0);
       }
     });
   }

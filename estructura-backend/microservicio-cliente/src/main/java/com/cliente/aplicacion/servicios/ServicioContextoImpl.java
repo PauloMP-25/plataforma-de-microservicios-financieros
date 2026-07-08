@@ -30,7 +30,6 @@ import com.cliente.infraestructura.mensajeria.PublicadorSincronizacionIA;
  * Servicio que consolida la información del cliente mediante el patrón Facade
  * orquestando llamadas a otros servicios.
  * 
- * @author Paulo Moron
  * @version 1.3.0
  */
 @Service
@@ -125,16 +124,62 @@ public class ServicioContextoImpl implements ServicioContexto {
             return;
         }
         try {
-            log.info("Refrescando contexto IA en Redis para usuarioId={}", usuarioId);
+            log.info("Refrescando diccionario modular de Redis para usuarioId={}", usuarioId);
+            String hashKey = "usuario:" + usuarioId;
+
+            // 1. Obtener y serializar Contexto IA
             ContextoEstrategicoIADTO contexto = obtenerContextoFinanciero(usuarioId);
-            String redisKey = "ia:contexto:" + usuarioId;
-            redisTemplate.opsForValue().set(redisKey, objectMapper.writeValueAsString(contexto),
-                    java.time.Duration.ofHours(1));
+            redisTemplate.opsForHash().put(hashKey, "ia:contexto", objectMapper.writeValueAsString(contexto));
+
+            // 2. Obtener y serializar Datos Personales
+            try {
+                RespuestaDatosPersonales datosPersonales = servicioDatosPersonales.consultarInterno(usuarioId);
+                if (datosPersonales != null) {
+                    redisTemplate.opsForHash().put(hashKey, "datos_personales", objectMapper.writeValueAsString(datosPersonales));
+                }
+            } catch (Exception e) {
+                log.error("Error al cachear datos_personales para usuarioId={}", usuarioId, e);
+            }
+
+            // 3. Obtener y serializar Perfil Financiero
+            try {
+                RespuestaPerfilFinanciero perfilFinanciero = servicioPerfilFinanciero.consultarInterno(usuarioId);
+                if (perfilFinanciero != null) {
+                    redisTemplate.opsForHash().put(hashKey, "perfil_financiero", objectMapper.writeValueAsString(perfilFinanciero));
+                }
+            } catch (Exception e) {
+                log.error("Error al cachear perfil_financiero para usuarioId={}", usuarioId, e);
+            }
+
+            // 4. Obtener y serializar Metas
+            try {
+                List<RespuestaMetaAhorro> metas = servicioMetaAhorro.listarInterno(usuarioId);
+                if (metas != null) {
+                    redisTemplate.opsForHash().put(hashKey, "metas", objectMapper.writeValueAsString(metas));
+                }
+            } catch (Exception e) {
+                log.error("Error al cachear metas para usuarioId={}", usuarioId, e);
+            }
+
+            // 5. Obtener y serializar Límites de Gasto
+            try {
+                RespuestaLimiteGasto limite = servicioLimiteGasto.obtenerActivoInterno(usuarioId);
+                if (limite != null) {
+                    redisTemplate.opsForHash().put(hashKey, "limites", objectMapper.writeValueAsString(limite));
+                }
+            } catch (Exception e) {
+                log.error("Error al cachear limites para usuarioId={}", usuarioId, e);
+            }
+
+            // 6. Configurar expiración global para la "carpeta/diccionario" del usuario en Redis (1 hora)
+            redisTemplate.expire(hashKey, java.time.Duration.ofHours(1));
+            
+            log.info("Diccionario de Redis refrescado exitosamente para usuarioId={}", usuarioId);
 
             // Publicar a RabbitMQ para sincronización en tiempo real con ms-ia (síncronamente en hilo seguro)
             publicadorSincronizacionIA.publicarActualizacionContexto(usuarioId, contexto);
         } catch (Exception e) {
-            log.error("Error al refrescar contexto en Redis para usuarioId={}", usuarioId, e);
+            log.error("Error al refrescar diccionario modular en Redis para usuarioId={}", usuarioId, e);
         }
     }
 }

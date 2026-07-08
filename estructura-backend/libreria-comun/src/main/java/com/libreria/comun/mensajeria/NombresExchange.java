@@ -23,6 +23,10 @@ public final class NombresExchange {
     public static final String PAGOS = "exchange.pagos";
     /** Exchange para eventos financieros (transacciones, ingresos, gastos) */
     public static final String FINANCIERO = "exchange.financiero";
+    /** Exchange para eventos de dominio del microservicio de usuario */
+    public static final String USUARIO_EVENTOS = "exchange.usuario.eventos";
+    /** Dead Letter Exchange para eventos de usuario que no pudieron procesarse */
+    public static final String USUARIO_EVENTOS_DLX = "exchange.usuario.eventos.dlq";
 
     private NombresExchange() {} // Previene instanciación
 }

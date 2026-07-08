@@ -24,7 +24,6 @@ import java.util.List;
  * {@code @RestControllerAdvice}.
  * </p>
  *
- * @author Paulo Moron
  */
 @Slf4j
 public abstract class ManejadorGlobalExcepcionesBase {

@@ -32,7 +32,6 @@ import java.util.UUID;
  * integrando repositorios de dominio y publicadores de eventos.
  * </p>
  *
- * @author Luka-Dev-Backend
  * @version 1.3.0
  */
 @Service
@@ -67,7 +66,11 @@ public class TransaccionServiceImpl implements ITransaccionService {
                 guardada.getUsuarioId(),
                 guardada.getMonto(),
                 guardada.getTipo().name(),
-                guardada.getFechaTransaccion().toString()
+                guardada.getFechaTransaccion().toString(),
+                guardada.getCategoria() != null ? guardada.getCategoria().getNombre() : null,
+                guardada.getMetodoPago() != null ? guardada.getMetodoPago().name() : null,
+                guardada.getDescripcion(),
+                null
         );
         return transaccionMapper.aDto(guardada);
     }
@@ -101,7 +104,11 @@ public class TransaccionServiceImpl implements ITransaccionService {
                     t.getUsuarioId(),
                     t.getMonto(),
                     t.getTipo().name(),
-                    t.getFechaTransaccion().toString()
+                    t.getFechaTransaccion().toString(),
+                    t.getCategoria() != null ? t.getCategoria().getNombre() : null,
+                    t.getMetodoPago() != null ? t.getMetodoPago().name() : null,
+                    t.getDescripcion(),
+                    null
             );
         }
         return guardadas.stream().map(transaccionMapper::aDto).toList();

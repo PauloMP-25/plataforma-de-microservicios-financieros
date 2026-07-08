@@ -25,7 +25,6 @@ import java.nio.charset.StandardCharsets;
  * Se ejecuta únicamente después de que el cortafuegos de IPs (FiltroBloqueoIp)
  * haya validado que la IP de origen es segura.
  * 
- * @author Paulo Moron
  * @version 2.0.0
  * @since 2026-05-10
  */

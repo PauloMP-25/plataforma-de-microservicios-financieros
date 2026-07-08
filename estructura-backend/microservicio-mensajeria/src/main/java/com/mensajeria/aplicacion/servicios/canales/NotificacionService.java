@@ -16,7 +16,6 @@ import java.util.Map;
  * {@code "proposito"}, etc.) sin acoplar la interfaz a DTOs concretos.
  * </p>
  *
- * @author Paulo Moron
  * @version 1.1.0
  */
 public interface NotificacionService {

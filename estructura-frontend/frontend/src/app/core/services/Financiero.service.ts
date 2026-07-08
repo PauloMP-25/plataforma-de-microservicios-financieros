@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../enviroments/environment';
-import { ResumenFinancieroDTO}  from '../models/financiero/resumen.model';
+import { ResumenFinancieroDTO, RachaDTO }  from '../models/financiero/resumen.model';
 import { CategoriaDTO, CategoriaRequestDTO, TipoMovimiento } from '../models/financiero/categoria.model';
 import { AuthService } from './auth.service';
 import { ResultadoApi } from '../models/auth/user.model';
@@ -29,7 +29,22 @@ export class FinancieroService {
     if (anio) params = params.set('anio', anio);
  
     return this.http.get<ResultadoApi<ResumenFinancieroDTO>>(`${this.baseTransacciones}/resumen`, { params }).pipe(
-      map(resp => resp.datos),
+      map(resp => {
+        const datos = resp.datos;
+        if (!datos) return datos;
+        
+        const cantIng = Number(datos.cantidadIngresos ?? 0);
+        const cantGas = Number(datos.cantidadGastos ?? 0);
+        const totIng = Number(datos.totalIngresos ?? 0);
+        const totGas = Number(datos.totalGastos ?? 0);
+
+        return {
+          ...datos,
+          totalTransacciones: datos.totalTransacciones ?? (cantIng + cantGas),
+          promedioIngreso: datos.promedioIngreso ?? (cantIng > 0 ? (totIng / cantIng) : 0),
+          promedioGasto: datos.promedioGasto ?? (cantGas > 0 ? (totGas / cantGas) : 0)
+        };
+      }),
       catchError(() => {
         // Fallback a mock dinámico según el mes y año si falla el backend
         const finalMes = mes ?? new Date().getMonth() + 1;
@@ -56,6 +71,19 @@ export class FinancieroService {
           promedioIngreso: Math.round(totalIngresos / cantIng),
           promedioGasto: Math.round(totalGastos / cantGas)
         } as ResumenFinancieroDTO);
+      })
+    );
+  }
+
+  // ── Racha de gastos ──
+  getRacha(): Observable<RachaDTO> {
+    const usuarioId = this.auth.usuario()?.id;
+    let params = new HttpParams().set('usuarioId', usuarioId ?? '');
+    return this.http.get<ResultadoApi<RachaDTO>>(`${this.baseTransacciones}/resumen/racha`, { params }).pipe(
+      map(resp => resp.datos),
+      catchError(() => {
+        // Mock en caso de fallo
+        return of({ diasRacha: 0, oportunidadesRestantes: 3, diasActivosMesActual: [] } as RachaDTO);
       })
     );
   }

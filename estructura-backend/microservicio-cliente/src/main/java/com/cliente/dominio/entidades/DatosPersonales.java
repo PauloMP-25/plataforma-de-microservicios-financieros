@@ -49,8 +49,8 @@ public class DatosPersonales {
     @Column(length = 20)
     private String genero;
 
-    @Column
-    private Integer edad;
+    @Column(name = "fecha_nacimiento")
+    private java.time.LocalDate fechaNacimiento;
 
     @Column(name = "telefono", length = 15)
     private String telefono;

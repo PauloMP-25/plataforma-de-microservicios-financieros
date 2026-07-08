@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
  * recomendaciones financieras en tiempo real.
  * </p>
  * 
- * @author Luka-Dev-Backend
  */
 @FeignClient(name = "microservicio-ia", url = "${URL_PROD_IA:http://localhost:8086}")
 public interface ClienteIa {

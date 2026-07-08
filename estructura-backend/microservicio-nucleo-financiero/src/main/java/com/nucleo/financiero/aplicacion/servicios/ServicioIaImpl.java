@@ -23,7 +23,6 @@ import org.springframework.stereotype.Service;
  * analítica en el sistema de auditoría.
  * </p>
  *
- * @author Luka-Dev-Backend
  * @version 1.3.0
  */
 @Service
@@ -38,7 +37,7 @@ public class ServicioIaImpl implements IServicioIa {
     @Override
     public RespuestaIaDTO obtenerConsejoIA(SolicitudIaDTO solicitud, String ipCliente) {
         UUID tokenUsuarioId = UtilidadSeguridad.obtenerUsuarioId();
-        if (!tokenUsuarioId.equals(solicitud.getUsuarioId())) {
+        if (tokenUsuarioId != null && !tokenUsuarioId.equals(solicitud.getUsuarioId())) {
             throw new ExcepcionAccesoDenegado();
         }
 

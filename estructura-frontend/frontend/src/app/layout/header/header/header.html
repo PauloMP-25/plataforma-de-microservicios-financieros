@@ -85,14 +85,11 @@
     <div class="header-action">
 
       <button class="avatar-btn" (click)="toggleUserMenu()">
-
-        <div class="avatar-letter">
-          {{ auth.usuario()?.nombreUsuario?.charAt(0)?.toUpperCase() ?? 'U' }}
-        </div>
+        <app-avatar-display [avatarConfig]="avatarService.avatarConfig()" [size]="36" class="avatar-header-display"></app-avatar-display>
 
         <div class="avatar-meta">
           <span class="avatar-name">
-            {{ auth.usuario()?.nombreUsuario ?? 'Usuario' }}
+            {{ (auth.usuario()?.nombreUsuario ?? 'Usuario') | uppercase }}
           </span>
 
           <span class="avatar-plan">
@@ -112,14 +109,12 @@
         <!-- HERO -->
         <div class="user-panel-hero">
 
-          <div class="hero-avatar">
-            {{ auth.usuario()?.nombreUsuario?.charAt(0)?.toUpperCase() ?? 'U' }}
-          </div>
+          <app-avatar-display [avatarConfig]="avatarService.avatarConfig()" [size]="44" class="avatar-header-display"></app-avatar-display>
 
           <div class="hero-info">
 
             <p class="hero-name">
-              {{ auth.usuario()?.nombreUsuario ?? 'Usuario' }}
+              {{ (auth.usuario()?.nombreUsuario ?? 'Usuario') | uppercase }}
             </p>
 
             <span class="plan-badge">
@@ -145,15 +140,7 @@
             </a>
           </li>
 
-          <li>
-            <a routerLink="/suscripcion/luka" class="menu-item">
-              <i class="fa-solid fa-crown menu-item-icon" style="color: #f59e0b;"></i>
-              <div>
-                <p>Membresía</p>
-                <small>Gestionar plan Luka</small>
-              </div>
-            </a>
-          </li>
+
 
           <li>
             <a routerLink="/perfil/configuracion" class="menu-item">
@@ -182,7 +169,7 @@
               <i class="fa-solid fa-right-from-bracket menu-item-icon"></i>
               <div>
                 <p>Cerrar sesión</p>
-                <small>{{ auth.usuario()?.nombreUsuario }}</small>
+                <small>{{ auth.usuario()?.nombreUsuario | uppercase }}</small>
               </div>
             </button>
           </li>

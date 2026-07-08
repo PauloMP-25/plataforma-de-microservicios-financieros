@@ -11,7 +11,6 @@ import jakarta.validation.constraints.NotNull;
  * petición, se usará {@link ProveedorPago#STRIPE} por compatibilidad con el
  * frontend actual.</p>
  *
- * @author LUKA APP Team
  */
 public record SolicitudPagoDTO(
 

@@ -15,7 +15,6 @@ import java.util.UUID;
  * motor de IA.
  * </p>
  * 
- * @author Luka-Dev-Backend
  * @version 1.1.0
  */
 @Entity

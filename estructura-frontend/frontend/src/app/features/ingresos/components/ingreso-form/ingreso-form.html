@@ -1,4 +1,13 @@
 <form class="space-y-4" (ngSubmit)="guardar.emit()">
+  <div class="col-span-1 md:col-span-2">
+    <label class="block">
+      <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Nombre del ingreso *</span>
+      <input [(ngModel)]="model.nombreIngreso" name="nombreIngreso" type="text" placeholder="Ej: Salario de Junio, Bono trimestral, Venta bicicleta"
+        class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900"
+        (ngModelChange)="onModelChange()" />
+    </label>
+  </div>
+
   <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
     <label class="block">
       <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Monto *</span>
@@ -79,7 +88,7 @@
         <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Categoría *</span>
         <select [(ngModel)]="model.categoria" name="categoria"
           class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900"
-          (ngModelChange)="onModelChange()">
+          (ngModelChange)="onCategoriaChange()">
           <option *ngFor="let c of categoriasConCrear" [value]="c.value">{{ c.label }}</option>
         </select>
       </label>

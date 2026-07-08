@@ -24,7 +24,6 @@ import java.util.UUID;
 /**
  * Lógica de negocio para la gestión de datos personales del cliente.
  * 
- * @author Paulo Moron
  * @since 2026-05
  */
 @Service
@@ -133,7 +132,7 @@ public class ServicioDatosPersonalesImpl implements ServicioDatosPersonales {
     private RespuestaDatosPersonales convertirADTO(DatosPersonales e) {
         return new RespuestaDatosPersonales(
                 e.getDni(), e.getNombres(), e.getApellidos(),
-                e.getGenero(), e.getEdad(), e.getTelefono(),
+                e.getGenero(), e.getFechaNacimiento(), e.getTelefono(),
                 e.getFotoPerfilUrl(),
                 e.getPais(), e.getCiudad(), e.getDatosCompletos());
     }
@@ -170,8 +169,8 @@ public class ServicioDatosPersonalesImpl implements ServicioDatosPersonales {
         if (d.genero() != null) {
             e.setGenero(d.genero());
         }
-        if (d.edad() != null) {
-            e.setEdad(d.edad());
+        if (d.fechaNacimiento() != null) {
+            e.setFechaNacimiento(d.fechaNacimiento());
         }
         if (d.telefono() != null) {
             e.setTelefono(d.telefono());

@@ -20,7 +20,6 @@ import java.util.UUID;
  * Implementación de {@link ICategoriaService} para la gestión de categorías.
  * Aplica lógica de negocio y persistencia para el dominio financiero.
  *
- * @author Luka-Dev-Backend
  * @version 1.2.0
  */
 @Service

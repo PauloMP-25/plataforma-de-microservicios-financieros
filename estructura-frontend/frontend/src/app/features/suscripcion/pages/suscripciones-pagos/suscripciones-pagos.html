@@ -5,13 +5,15 @@
       <h1 class="suscripciones-pagos-page__title">Todas las Suscripciones</h1>
       <p class="suscripciones-pagos-page__subtitle">Visualiza y administra todas tus suscripciones en una sola vista</p>
     </div>
-    <button type="button" class="btn-primary" (click)="abrirModal()" style="padding: 10px 20px; border-radius: var(--radius-md); font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-      <i class="fa-solid fa-plus"></i>
-      Nueva Suscripción
-    </button>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <button type="button" id="btn-nueva-suscripcion" class="btn-primary" (click)="abrirModal()" style="padding: 10px 20px; border-radius: var(--radius-md); font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-plus"></i>
+        Nueva Suscripción
+      </button>
+    </div>
   </header>
 
-  <section class="suscripciones-pagos-page__filters">
+  <section class="suscripciones-pagos-page__filters" id="tour-filtros">
     <div class="filters-container">
       
       <div class="filter-group">
@@ -22,7 +24,8 @@
         <input 
           type="text" 
           id="busqueda" 
-          [(ngModel)]="busqueda"
+          [ngModel]="busqueda()" 
+          (ngModelChange)="busqueda.set($event)"
           placeholder="Netflix, Spotify, Gimnasio..."
           class="filter-input"
         />
@@ -32,7 +35,8 @@
         <label for="categoria" class="filter-label">Categoría</label>
         <select 
           id="categoria" 
-          [(ngModel)]="categoriaFiltro"
+          [ngModel]="categoriaFiltro()" 
+          (ngModelChange)="categoriaFiltro.set($event)"
           class="filter-input"
         >
           <option value="">Todas</option>
@@ -46,7 +50,8 @@
         <label for="frecuencia" class="filter-label">Frecuencia</label>
         <select 
           id="frecuencia" 
-          [(ngModel)]="frecuenciaFiltro"
+          [ngModel]="frecuenciaFiltro()" 
+          (ngModelChange)="frecuenciaFiltro.set($event)"
           class="filter-input"
         >
           <option value="">Todas</option>
@@ -60,7 +65,8 @@
         <label for="estado" class="filter-label">Estado</label>
         <select 
           id="estado" 
-          [(ngModel)]="estadoFiltro"
+          [ngModel]="estadoFiltro()" 
+          (ngModelChange)="estadoFiltro.set($event)"
           class="filter-input"
         >
           <option value="">Todos</option>
@@ -71,11 +77,12 @@
       </div>
 
       <div class="filter-group filter-group--range">
-        <label class="filter-label">Monto (USD)</label>
+        <label class="filter-label">Monto (S/)</label>
         <div class="filter-range">
           <input 
             type="number" 
-            [(ngModel)]="montoMin"
+            [ngModel]="montoMin()" 
+            (ngModelChange)="montoMin.set($event)"
             placeholder="Mín"
             class="filter-input"
             min="0"
@@ -83,7 +90,8 @@
           <span class="filter-separator">—</span>
           <input 
             type="number" 
-            [(ngModel)]="montoMax"
+            [ngModel]="montoMax()" 
+            (ngModelChange)="montoMax.set($event)"
             placeholder="Máx"
             class="filter-input"
             min="0"
@@ -140,17 +148,13 @@
   </section>
 
   @if (suscripciones().length === 0) {
-    <div class="suscripciones-pagos-page__empty">
+    <div class="suscripciones-pagos-page__empty" id="tour-suscripciones-grid">
       <i class="fa-solid fa-inbox"></i>
       <h2>No hay resultados</h2>
       <p>Intenta ajustar tus filtros para encontrar lo que buscas</p>
-      <button type="button" class="btn-primary" (click)="limpiarFiltros()">
-        <i class="fa-solid fa-rotate-right"></i>
-        Limpiar filtros
-      </button>
     </div>
   } @else {
-    <section class="suscripciones-pagos-page__grid">
+    <section class="suscripciones-pagos-page__grid" id="tour-suscripciones-grid">
       @for (suscripcion of suscripciones(); track suscripcion.id) {
         <app-suscripcion-card 
           [suscripcion]="suscripcion"
@@ -165,8 +169,22 @@
 
   @if (modalAbierto()) {
     <app-modal-nueva-suscripcion
+      [suscripcionEditar]="suscripcionAEditar()"
       (cerrar)="cerrarModal()"
-      (crear)="onCrearSuscripcion($event)">
+      (crear)="onCrearSuscripcion($event)"
+      (editar)="onEditarSuscripcionGuardar($event)"
+      (pagar)="onPagarSuscripcionManual($event)">
     </app-modal-nueva-suscripcion>
   }
+
+  @if (mostrarTour()) {
+    <app-onboarding-tour
+      [steps]="stepsTour"
+      (cerrar)="completarTour()">
+    </app-onboarding-tour>
+  }
+
+  <button type="button" class="floating-help-btn" (click)="iniciarTourManualmente()" title="Ver guía de ayuda">
+    <i class="fa-solid fa-circle-question"></i>
+  </button>
 </div>

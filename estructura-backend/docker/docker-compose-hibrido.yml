@@ -26,7 +26,7 @@ services:
     ports:
     - 8081:8081
     build:
-      context: ../..
+      context: ..
       dockerfile: microservicio-usuario/Dockerfile.local
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -63,7 +63,7 @@ services:
     ports:
     - 8083:8083
     build:
-      context: ../..
+      context: ..
       dockerfile: microservicio-cliente/Dockerfile.local
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -98,7 +98,7 @@ services:
     ports:
     - 8084:8084
     build:
-      context: ../..
+      context: ..
       dockerfile: microservicio-mensajeria/Dockerfile.local
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -138,7 +138,7 @@ services:
     ports:
     - 8086:8086
     build:
-      context: ../..
+      context: ..
       dockerfile: microservicio-ia/Dockerfile.local
     networks:
     - luka-network
@@ -181,7 +181,7 @@ services:
     ports:
     - 8082:8082
     build:
-      context: ../..
+      context: ..
       dockerfile: microservicio-auditoria/Dockerfile.local
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -214,7 +214,7 @@ services:
     ports:
     - 8085:8085
     build:
-      context: ../..
+      context: ..
       dockerfile: microservicio-nucleo-financiero/Dockerfile.local
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -250,7 +250,7 @@ services:
     ports:
     - 8087:8087
     build:
-      context: ../..
+      context: ..
       dockerfile: microservicio-pago/Dockerfile.local
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -286,7 +286,7 @@ services:
     env_file:
     - ../.env.local
     build:
-      context: ../..
+      context: ..
       dockerfile: api-gateway/Dockerfile.local
     ports:
     - ${GATEWAY_PORT:-8080}:8080
@@ -329,7 +329,7 @@ services:
     ports:
     - 8088:8088
     build:
-      context: ../..
+      context: ..
       dockerfile: microservicio-suscripciones/Dockerfile.local
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -341,7 +341,7 @@ services:
       SPRING_RABBITMQ_VIRTUAL_HOST: /
       JAVA_OPTS: -Xms64m -Xmx200m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
         -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1
-      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal/db_luka_suscripciones?sslmode=disable
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal/db_microservicio_suscripciones?sslmode=disable
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: adminUTP
       SPRING_DATA_REDIS_HOST: host.docker.internal

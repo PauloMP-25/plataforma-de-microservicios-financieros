@@ -16,6 +16,6 @@ public class ExcepcionRecursoNoEncontrado extends ExcepcionGlobal {
     public ExcepcionRecursoNoEncontrado(String recurso, Object id) {
         super(CodigoError.RECURSO_NO_ENCONTRADO, 
               String.format("No se encontró %s con identificador: %s", recurso, id), 
-              Map.of("recurso", recurso, "id", id.toString()));
+              Map.of("recurso", recurso, "id", id != null ? id.toString() : "null"));
     }
 }

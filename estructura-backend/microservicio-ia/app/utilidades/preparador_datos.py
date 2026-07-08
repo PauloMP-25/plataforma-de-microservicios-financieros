@@ -46,6 +46,7 @@ MAPA_COLUMNAS: Dict[str, str] = {
     "descripcion":       "descripcion",
     "fechaRegistro":     "fecha_registro",
     "categoria":         "categoria",
+    "estado":            "estado",
 }
 
 # Columnas garantizadas en el DataFrame de salida (sin las derivadas)

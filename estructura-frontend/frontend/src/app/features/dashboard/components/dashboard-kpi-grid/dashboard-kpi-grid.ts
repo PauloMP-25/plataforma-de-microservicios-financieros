@@ -11,6 +11,6 @@ import { CommonModule } from '@angular/common';
 export class DashboardKpiGridComponent {
   @Input() tasaAhorro: number = 0;
   @Input() gastoPromedioDiario: number = 0;
-  @Input() cumplimientoPresupuesto: number = 0;
+  @Input() volumenTransacciones: number = 0;
   @Input() proyeccionFinDeMes: number = 0;
 }

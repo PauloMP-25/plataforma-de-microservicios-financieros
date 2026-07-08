@@ -1,0 +1,213 @@
+<main class="min-h-screen bg-slate-50 p-4 text-slate-900 dark:bg-slate-900 dark:text-slate-100 md:p-6">
+  <section class="mx-auto max-w-7xl space-y-4">
+    <a routerLink="/gastos" class="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">← Volver</a>
+
+    <header class="flex justify-between items-start">
+      <div>
+        <h1 class="text-3xl font-bold">Nuevo gasto</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Añade un gasto de forma sencilla e inteligente a tu registro.</p>
+      </div>
+      <button type="button" class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" (click)="iniciarTourManualmente()">
+        <i class="fa-solid fa-circle-question"></i> Ayuda
+      </button>
+    </header>
+
+    <section class="grid grid-cols-1 gap-5 xl:grid-cols-3 xl:items-start">
+      <!-- FORMULARIO -->
+      <article class="relative overflow-hidden rounded-2xl border border-rose-200/70 bg-white p-5 shadow-[0_8px_30px_rgba(225,29,72,.08)] ring-1 ring-rose-100/70 dark:border-rose-500/30 dark:bg-slate-800 dark:ring-rose-500/20 xl:col-span-2" id="tour-form-gasto">
+        <div class="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500"></div>
+        
+        <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-rose-700 dark:border-rose-500/40 dark:bg-rose-500/15 dark:text-rose-300">
+          <i class="fa-solid fa-receipt"></i> Detalle del gasto
+        </div>
+
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+          <!-- Nombre -->
+          <div class="col-span-1">
+            <label class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-300">Nombre del gasto</label>
+            <input type="text" id="gasto-nombre" [ngModel]="nombreGasto()" (ngModelChange)="nombreGasto.set($event)" placeholder="Ej. Almuerzo, Internet, Taxi" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-900 transition-colors focus:border-rose-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-white dark:focus:border-rose-500" [ngClass]="{'border-red-500': errores()['nombreGasto']}"/>
+            @if (errores()['nombreGasto']) { <p class="mt-1 text-xs font-medium text-red-500">{{ errores()['nombreGasto'] }}</p> }
+          </div>
+
+          <!-- Monto -->
+          <div class="col-span-1">
+            <label class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-300">Monto</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">S/</span>
+              <input type="number" min="0" step="0.01" id="gasto-monto" [ngModel]="monto()" (ngModelChange)="monto.set(+$event)" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-8 pr-3 py-2 text-sm font-bold text-slate-900 transition-colors focus:border-rose-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-white dark:focus:border-rose-500" [ngClass]="{'border-red-500': errores()['monto']}"/>
+            </div>
+            @if (errores()['monto']) { <p class="mt-1 text-xs font-medium text-red-500">{{ errores()['monto'] }}</p> }
+          </div>
+
+          <!-- Categoría -->
+          <div class="col-span-1">
+            <label class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-300">Categoría</label>
+            <select id="gasto-categoria" [ngModel]="categoria()" (ngModelChange)="categoria.set($event)" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-900 transition-colors focus:border-rose-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-white dark:focus:border-rose-500" [ngClass]="{'border-red-500': errores()['categoria']}">
+              <option value="">Selecciona una categoría</option>
+              @for (cat of categoriasConCrear(); track cat.id) {
+                <option [value]="cat.id">{{ cat.nombre }}</option>
+              }
+            </select>
+            @if (errores()['categoria']) { <p class="mt-1 text-xs font-medium text-red-500">{{ errores()['categoria'] }}</p> }
+            
+            @if (categoria() === 'CREAR_NUEVA') {
+              <div class="mt-2 rounded-xl border border-dashed border-rose-300 bg-rose-50/30 p-2.5 dark:border-rose-500/30 dark:bg-rose-900/10">
+                <span class="mb-1 block text-xs font-bold text-rose-700 dark:text-rose-300">Nueva categoría</span>
+                <div class="flex gap-2">
+                  <input type="text" #nuevaCatInput placeholder="Ej: Mascotas" class="w-full rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-900"/>
+                  <button type="button" class="rounded-lg bg-rose-600 px-3 py-1 text-xs font-bold text-white hover:bg-rose-500" (click)="confirmarCrearCategoriaGasto(nuevaCatInput.value); nuevaCatInput.value = ''">Crear</button>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Fecha -->
+          <div class="col-span-1">
+            <label class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-300">Fecha</label>
+            <input type="date" [ngModel]="fecha()" (ngModelChange)="fecha.set($event)" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-900 transition-colors focus:border-rose-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-white dark:focus:border-rose-500" [ngClass]="{'border-red-500': errores()['fecha']}"/>
+            @if (errores()['fecha']) { <p class="mt-1 text-xs font-medium text-red-500">{{ errores()['fecha'] }}</p> }
+          </div>
+
+          <!-- Método de Pago -->
+          <div class="col-span-1">
+            <label class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-300">Método de pago</label>
+            <select [ngModel]="metodoPago()" (ngModelChange)="metodoPago.set($event)" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-900 transition-colors focus:border-rose-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-white dark:focus:border-rose-500">
+              @for (metodo of metodosPagoDisponibles; track metodo.id) {
+                <option [value]="metodo.id">{{ metodo.nombre }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Descripción -->
+          <div class="col-span-1 md:col-span-2">
+            <label class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-300">Descripción (Opcional)</label>
+            <textarea rows="2" [ngModel]="descripcion()" (ngModelChange)="descripcion.set($event)" placeholder="Agrega un detalle adicional..." class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-900 transition-colors focus:border-rose-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-white dark:focus:border-rose-500"></textarea>
+          </div>
+
+          <!-- IA Section -->
+          <div class="col-span-1 md:col-span-2" id="tour-ia-gasto">
+            <div class="flex flex-col gap-3 rounded-xl border border-rose-100 bg-rose-50/50 p-4 dark:border-rose-900/30 dark:bg-rose-900/10 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p class="text-sm font-bold text-slate-800 dark:text-slate-200"><i class="fa-solid fa-wand-magic-sparkles text-rose-500"></i> Sugerencia inteligente de categoría</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">
+                  Tienes {{ intentosIaMaximos }} intentos.
+                  @if (intentosIaRestantes <= 0) {
+                    <strong class="text-red-500"> Ya agotaste tus intentos disponibles.</strong>
+                  }
+                </p>
+              </div>
+              <button type="button" class="inline-flex shrink-0 items-center gap-2 rounded-lg bg-gradient-to-r from-rose-500 to-orange-500 px-4 py-2 text-sm font-bold text-white shadow-sm transition-all hover:scale-[1.02] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100" [disabled]="!puedeSugerirCategoriaIa()" (click)="clasificarConIa()">
+                <i class="fa-solid" [ngClass]="clasificandoIa() ? 'fa-spinner fa-spin' : 'fa-wand-magic-sparkles'"></i>
+                {{ clasificandoIa() ? 'Analizando...' : 'Sugerir categoría' }}
+                <span class="rounded bg-white/20 px-1.5 py-0.5 text-xs">{{ intentosIaRestantes }}/{{ intentosIaMaximos }}</span>
+              </button>
+            </div>
+
+            @if (sugerenciasIa().length > 0) {
+              <div class="mt-3 rounded-xl border border-rose-200 bg-rose-50/20 p-3">
+                <p class="mb-2 text-xs font-bold text-rose-700 dark:text-rose-300">✨ Categorías sugeridas (selecciona una y presiona Confirmar):</p>
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                  <div class="flex flex-wrap gap-2">
+                    @for (sug of sugerenciasIa(); track sug.categoria) {
+                      <button type="button" class="inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-extrabold shadow-sm transition-all" [ngClass]="sugerenciaSeleccionada()?.categoria === sug.categoria ? 'border-rose-600 bg-rose-100 text-rose-700 dark:border-rose-400 dark:bg-rose-950/40 dark:text-rose-300' : 'border-rose-200 bg-white text-slate-700 hover:bg-rose-50 hover:text-rose-600 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200'" (click)="seleccionarSugerencia(sug)">
+                        <i class="fa-solid" [ngClass]="'fa-' + sug.icono" [style.color]="sugerenciaSeleccionada()?.categoria === sug.categoria ? '#e11d48' : '#fb7185'"></i> {{ sug.categoria }}
+                      </button>
+                    }
+                  </div>
+                  @if (sugerenciaSeleccionada()) {
+                    <button type="button" class="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-emerald-500" (click)="confirmarSugerencia()"><i class="fa-solid fa-check"></i> Confirmar</button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Etiquetas -->
+          <div class="col-span-1 md:col-span-2">
+            <label class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-300">Etiquetas</label>
+            <div class="flex flex-wrap gap-2 mb-2">
+              @for (tag of etiquetas(); track tag) {
+                <span class="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                  {{ tag }} <button type="button" class="text-slate-400 hover:text-red-500" (click)="eliminarEtiqueta(tag)">✕</button>
+                </span>
+              }
+            </div>
+            <div class="flex gap-2">
+              <input type="text" id="gasto-etiqueta-input" maxlength="20" placeholder="Ej: Fijo, Urgente, Necesario" [ngModel]="nuevaEtiqueta()" (ngModelChange)="nuevaEtiqueta.set($event)" (keydown.enter)="$event.preventDefault(); agregarEtiqueta()" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-900 transition-colors focus:border-rose-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-white dark:focus:border-rose-500"/>
+              <button type="button" class="shrink-0 rounded-xl bg-slate-200 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600" (click)="agregarEtiqueta()">Agregar</button>
+            </div>
+          </div>
+        </div>
+
+        @if (mensajeFormulario()) {
+          <div class="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
+            {{ mensajeFormulario() }}
+          </div>
+        }
+
+        <hr class="my-6 border-slate-100 dark:border-slate-800"/>
+        <div class="flex items-center justify-end gap-3">
+          <button type="button" class="rounded-xl px-5 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800" (click)="cancelar()">Cancelar</button>
+          <button type="button" id="gasto-guardar" class="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-6 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-rose-500 disabled:opacity-50" [disabled]="guardandoGasto()" (click)="guardarGasto()">
+            @if (guardandoGasto()) { <i class="fa-solid fa-spinner fa-spin"></i> Guardando... } @else { Guardar gasto }
+          </button>
+        </div>
+      </article>
+
+      <!-- SIDEBAR -->
+      <aside class="grid grid-cols-1 gap-4 xl:sticky xl:top-4">
+        <!-- Requisitos del Formulario -->
+        <div class="rounded-2xl border border-rose-100 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          <h3 class="mb-4 text-sm font-bold text-slate-800 dark:text-slate-200">
+            <i class="fa-solid fa-list-check mr-2 text-rose-500"></i> Pasos para registrar
+          </h3>
+          <div class="relative space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-all duration-300"
+                   [ngClass]="nombreGasto() ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'">
+                <i class="fa-solid" [ngClass]="nombreGasto() ? 'fa-circle-check' : 'fa-circle'"></i>
+              </div>
+              <div>
+                <p class="text-sm font-semibold transition-all duration-300" [class.line-through]="nombreGasto()" [class.text-slate-400]="nombreGasto()">Concepto ingresado</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-all duration-300"
+                   [ngClass]="monto() > 0 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'">
+                <i class="fa-solid" [ngClass]="monto() > 0 ? 'fa-circle-check' : 'fa-circle'"></i>
+              </div>
+              <div>
+                <p class="text-sm font-semibold transition-all duration-300" [class.line-through]="monto() > 0" [class.text-slate-400]="monto() > 0">Monto superior a S/ 0</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-all duration-300"
+                   [ngClass]="categoria() ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'">
+                <i class="fa-solid" [ngClass]="categoria() ? 'fa-circle-check' : 'fa-circle'"></i>
+              </div>
+              <div>
+                <p class="text-sm font-semibold transition-all duration-300" [class.line-through]="categoria()" [class.text-slate-400]="categoria()">Categoría seleccionada</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-all duration-300"
+                   [ngClass]="descripcion().trim() ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'">
+                <i class="fa-solid" [ngClass]="descripcion().trim() ? 'fa-circle-check' : 'fa-circle'"></i>
+              </div>
+              <div>
+                <p class="text-sm font-semibold transition-all duration-300" [class.line-through]="descripcion().trim()" [class.text-slate-400]="descripcion().trim()">Descripción detallada</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </section>
+
+  @if (mostrarTour()) {
+    <app-onboarding-tour
+      [steps]="stepsTour"
+      (cerrar)="completarTour()">
+    </app-onboarding-tour>
+  }
+</main>

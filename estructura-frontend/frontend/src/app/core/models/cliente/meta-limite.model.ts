@@ -2,7 +2,9 @@ export interface SolicitudMetaAhorro {
   nombre: string;
   montoObjetivo: number;
   montoActual?: number;
-  fechaLimite: string;
+  fechaInicio?: string;
+  fechaObjetivo: string;
+  fechaCompletada?: string;
   proposito?: string;
 }
 
@@ -20,7 +22,9 @@ export interface RespuestaMetaAhorro {
   montoObjetivo: number;
   montoActual: number;
   porcentajeProgreso: number;
-  fechaLimite: string;
+  fechaInicio: string;
+  fechaObjetivo: string;
+  fechaCompletada?: string;
   completada: boolean;
   proposito?: string;
   fechaCreacion?: string;

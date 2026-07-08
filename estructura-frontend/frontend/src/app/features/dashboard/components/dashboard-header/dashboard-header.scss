@@ -31,7 +31,7 @@
 
 .header-filters {
   display: grid;
-  grid-template-columns: 1fr 130px 130px 145px 145px;
+  grid-template-columns: 1.2fr 120px 120px 130px 130px 110px;
   gap: 16px;
   width: 100%;
   align-items: flex-end;
@@ -162,5 +162,30 @@
       height: 32px;
       padding: 0 8px;
     }
+  }
+}
+
+.apply-btn {
+  width: 100%;
+  height: 42px;
+  background: var(--color-primary);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-main);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 2px 6px rgba(91, 106, 240, 0.2);
+
+  &:hover {
+    background: var(--color-primary-hover, #4453d8);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(91, 106, 240, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 }

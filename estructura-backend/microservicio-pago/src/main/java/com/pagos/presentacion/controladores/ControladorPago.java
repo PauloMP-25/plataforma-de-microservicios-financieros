@@ -24,7 +24,6 @@ import java.util.UUID;
  * La selección de la pasarela se delega dinámicamente en la fábrica según el campo
  * {@code proveedor} del cuerpo de la solicitud.</p>
  *
- * @author LUKA APP Team
  */
 @Slf4j
 @RestController

@@ -16,7 +16,9 @@ public record RespuestaMetaAhorro(
                 BigDecimal montoObjetivo,
                 BigDecimal montoActual,
                 BigDecimal porcentajeProgreso,
-                LocalDate fechaLimite,
+                LocalDate fechaInicio,
+                LocalDate fechaObjetivo,
+                LocalDate fechaCompletada,
                 Boolean completada,
                 String proposito) {
 }

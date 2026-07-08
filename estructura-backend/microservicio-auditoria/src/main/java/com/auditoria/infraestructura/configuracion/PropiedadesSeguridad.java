@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
  * Reemplaza el uso disperso de {@code @Value} por un modelo tipado e inyectable.
  * </p>
  * 
- * @author Paulo Moron
  * @version 1.0.0
  */
 @Component

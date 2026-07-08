@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
  * Publicador de auditoría para mensajería.
  * Hereda de la base para aprovechar el enrutamiento estándar.
  * 
- * @author Paulo Moron
  * @version 1.2.0
  */
 @Component

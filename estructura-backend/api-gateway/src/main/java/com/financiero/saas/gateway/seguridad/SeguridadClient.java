@@ -20,7 +20,6 @@ import java.time.Duration;
  * bloquee si los servicios de seguridad dejan de responder.
  * </p>
  * 
- * @author Paulo Moron
  * @version 2.0.0
  * @since 2026-05-10
  */

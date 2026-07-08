@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 /**
  * Lógica de negocio para la gestión de metas de ahorro.
  * 
- * @author Paulo Moron
  * @version 1.2.0
  */
 @Service
@@ -50,7 +49,9 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
                 .proposito(solicitud.proposito())
                 .montoObjetivo(solicitud.montoObjetivo())
                 .montoActual(solicitud.montoActual() != null ? solicitud.montoActual() : BigDecimal.ZERO)
-                .fechaLimite(solicitud.fechaLimite())
+                .fechaInicio(solicitud.fechaInicio())
+                .fechaObjetivo(solicitud.fechaObjetivo())
+                .fechaCompletada(solicitud.fechaCompletada())
                 .completada(false)
                 .activa(true)
                 .build();
@@ -72,7 +73,7 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
         
         // El nombre y propósito no se actualizan según las reglas de negocio
         meta.setMontoObjetivo(solicitud.montoObjetivo());
-        meta.setFechaLimite(solicitud.fechaLimite());
+        meta.setFechaObjetivo(solicitud.fechaObjetivo());
         
         if (solicitud.montoActual() != null) {
             meta.setMontoActual(solicitud.montoActual());
@@ -182,7 +183,8 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
                 m.getId(), m.getNombre(),
                 m.getMontoObjetivo(), m.getMontoActual(),
                 m.calcularPorcentajeProgreso(),
-                m.getFechaLimite(), m.getCompletada(),
+                m.getFechaInicio(), m.getFechaObjetivo(), m.getFechaCompletada(),
+                m.getCompletada(),
                 m.getProposito());
     }
 }

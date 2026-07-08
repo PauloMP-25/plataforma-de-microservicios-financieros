@@ -35,7 +35,7 @@ public class ConsumidorTransacciones {
                     .findByUsuarioIdAndCompletadaAndActivaTrueOrderByFechaCreacionDesc(usuarioId, false);
 
             if (metasActivas.isEmpty()) {
-                log.info("[MS-CLIENTE] No hay metas activas para el usuario {}. Ignorando evento.", usuarioId);
+                log.info("[MS-CLIENTE] No hay metas activas para el usuario {}. Evento de metas omitido.", usuarioId);
                 return;
             }
 

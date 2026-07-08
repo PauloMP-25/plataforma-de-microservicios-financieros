@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal, effect, OnDestroy } from '@angular/core';
+import { Component, computed, inject, signal, effect, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Transacciones } from '../../../../core/services/transacciones';
@@ -11,15 +11,17 @@ import { GastosStateService } from '../../../../core/services/gastos-state.servi
 import { IaService } from '../../../../core/services/ia.service';
 import { CategoriaSugerida } from '../../../../core/models/ia_coach/ia-base.model';
 import { NotificacionService } from '../../../../core/services/notificacion.service';
+import { OnboardingTour, TourStep } from '../../../../shared/components/onboarding-tour/onboarding-tour';
+import { SuscripcionGastosService } from '../../../../core/services/suscripcion-gastos.service';
 
 @Component({
   selector: 'app-gastos-page',
   standalone:true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, OnboardingTour],
   templateUrl: './gastos-page.html',
   styleUrl: './gastos-page.scss',
 })
-export class GastosPage implements OnDestroy {
+export class GastosPage implements OnInit, OnDestroy {
   private readonly transaccionesService = inject(Transacciones);
   private readonly authService = inject(AuthService);
   private readonly financieroService = inject(FinancieroService);
@@ -27,6 +29,7 @@ export class GastosPage implements OnDestroy {
   private readonly stateService = inject(GastosStateService);
   private readonly iaService = inject(IaService);
   private readonly notificacionService = inject(NotificacionService);
+  private readonly suscripcionService = inject(SuscripcionGastosService);
   readonly iaSugeridaConfirmada = signal<boolean>(false);
 
   readonly sugerenciasIa = signal<CategoriaSugerida[]>([]);
@@ -60,19 +63,133 @@ export class GastosPage implements OnDestroy {
   readonly errores = signal<Record<string, string>>({});
   readonly eliminadosIds = signal<string[]>([]);
 
+  readonly gastosRecientes = computed(() => {
+    return [...this.stateService.gastos()]
+      .sort((a, b) => new Date(b.fechaTransaccion).getTime() - new Date(a.fechaTransaccion).getTime())
+      .slice(0, 5);
+  });
+
+  colorCategoriaGasto(cat: string): string {
+    const colores: Record<string, string> = {
+      'food': '#FF7043',
+      'transport': '#42A5F5',
+      'health': '#26C6DA',
+      'home': '#FFA726',
+      'leisure': '#AB47BC',
+      'study': '#66BB6A',
+      'comida': '#FF7043',
+      'transporte': '#42A5F5',
+      'salud': '#26C6DA',
+      'hogar': '#FFA726',
+      'entretenimiento': '#AB47BC',
+      'educación': '#66BB6A',
+      'otros': '#78909C'
+    };
+    return colores[cat?.toLowerCase()] || '#5B6AF0';
+  }
+
+  readonly mostrarTour = signal(false);
+  readonly stepsTour: TourStep[] = [
+    {
+      targetSelector: '#btn-registrar-gasto',
+      title: 'Registrar Gasto',
+      description: 'Presiona aquí para registrar tus egresos diarios. Podrás ingresar el monto, clasificarlo con categorías inteligentes y asignarle métodos de pago.',
+      position: 'bottom'
+    },
+    {
+      targetSelector: '#tour-kpis',
+      title: 'Métricas Financieras',
+      description: 'Visualiza tus deudas y gastos promedio del mes, el saldo acumulado pendiente por pagar, y el próximo vencimiento más cercano.',
+      position: 'bottom'
+    },
+    {
+      targetSelector: '#tour-pending',
+      title: 'Próximos Cargos y Recurrentes',
+      description: 'Lleva el control de tus deudas pendientes y cargos recurrentes de suscripciones que vencen pronto. Puedes marcarlos como pagados aquí.',
+      position: 'top'
+    },
+    {
+      targetSelector: '#tour-summary-note',
+      title: 'Acceso al Historial Completo',
+      description: 'Entra a la vista ampliada de tu historial para revisar, buscar y administrar detalladamente todas tus transacciones de ingresos y gastos.',
+      position: 'top'
+    }
+  ];
+
+  ngOnInit(): void {
+    const tourVisto = localStorage.getItem('luka_tour_gastos_visto');
+    if (!tourVisto) {
+      setTimeout(() => {
+        this.mostrarTour.set(true);
+      }, 600);
+    }
+  }
+
+  completarTour(): void {
+    localStorage.setItem('luka_tour_gastos_visto', 'true');
+    this.mostrarTour.set(false);
+  }
+
   readonly saldoActual = computed(() => Number(this.stateService.resumenActual()?.balance ?? 0));
   readonly totalGastadoActual = computed(() => Number(this.stateService.resumenActual()?.totalGastos ?? 0));
   readonly totalGastosAnterior = computed(() => Number(this.stateService.resumenAnterior()?.totalGastos ?? 0));
   readonly saldoAnterior = computed(() => Number(this.stateService.resumenAnterior()?.balance ?? 0));
 
+  readonly racha = computed(() => this.stateService.rachaActual());
+  
+  readonly calendarioRacha = computed(() => {
+    const rachaData = this.racha();
+    const activos = new Set(rachaData?.diasActivosMesActual || []);
+    
+    const hoy = new Date();
+    const year = hoy.getFullYear();
+    const month = hoy.getMonth();
+    const primerDia = new Date(year, month, 1);
+    const ultimoDia = new Date(year, month + 1, 0);
+    
+    let offset = primerDia.getDay() - 1;
+    if (offset === -1) offset = 6;
+    
+    const diasDelMes = ultimoDia.getDate();
+    const totalCeldas = Math.ceil((diasDelMes + offset) / 7) * 7;
+    
+    const celdas = [];
+    for (let i = 0; i < totalCeldas; i++) {
+      if (i < offset || i >= diasDelMes + offset) {
+        celdas.push({ vacio: true });
+      } else {
+        const dia = i - offset + 1;
+        const fecha = new Date(year, month, dia);
+        const yyyy = fecha.getFullYear();
+        const mm = String(fecha.getMonth() + 1).padStart(2, '0');
+        const dd = String(fecha.getDate()).padStart(2, '0');
+        const dateStr = `${yyyy}-${mm}-${dd}`;
+        
+        celdas.push({
+          vacio: false,
+          dia,
+          fecha: dateStr,
+          activo: activos.has(dateStr),
+          esFuturo: fecha > hoy
+        });
+      }
+    }
+    
+    const semanas = [];
+    for (let i = 0; i < celdas.length; i += 7) {
+      semanas.push(celdas.slice(i, i + 7));
+    }
+    return semanas;
+  });
+
+  readonly nombreMesActual = computed(() => {
+    const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    return meses[new Date().getMonth()];
+  });
+
   readonly variacionGastado = computed(() => this.calcularVariacion(this.totalGastadoActual(), this.totalGastosAnterior()));
   readonly variacionSaldo = computed(() => this.calcularVariacion(this.saldoActual(), this.saldoAnterior()));
   readonly variacionPendiente = signal(0);
-  readonly bannerIntegracion = signal(
-    'Integración en curso: historial de gastos (OK). Pendientes/Recurrentes dependen de Suscripciones (falta implementar backend).'
-  );
-  // TODO(backend): Implementar endpoint de Suscripciones para poblar Pendientes/Recurrentes.
-  // TODO(backend): Implementar estado de pago de suscripción para habilitar “Marcar pagado”.
 
   readonly pendientesMock = signal<Array<{
     id: string;
@@ -205,12 +322,20 @@ export class GastosPage implements OnDestroy {
   );
 
   readonly totalPendiente = computed(() =>
-    this.pendientesMock().reduce((acc, p) => acc + Number(p.monto || 0), 0)
+    this.gastosPendientes().reduce((acc, p) => acc + Number(p.monto || 0), 0)
   );
   readonly totalPagado = computed(() =>
     this.filasPagadas().filter((g) => g.estado === 'Pagado').reduce((acc, g) => acc + g.monto, 0)
   );
-  readonly proximoVencimiento = computed(() => this.pendientesMock().find(() => true) ?? null);
+  readonly proximoVencimiento = computed(() => {
+    const arr = this.gastosPendientes();
+    if (arr.length === 0) return null;
+    return arr.reduce((closest, current) => {
+      const currentDiff = new Date(current.fechaVencimiento).getTime() - new Date().getTime();
+      const closestDiff = new Date(closest.fechaVencimiento).getTime() - new Date().getTime();
+      return currentDiff < closestDiff ? current : closest;
+    }, arr[0]);
+  });
 
   readonly gastosPorCategoria = computed(() => {
     const grupos = new Map<string, { categoria: string; total: number }>();
@@ -345,10 +470,7 @@ export class GastosPage implements OnDestroy {
   });
 
   readonly gastoPromedioMensual = computed(() => {
-    const data = this.tendenciaMensual();
-    if (!data.length) return 0;
-    const total = data.reduce((acc, item) => acc + Number(item.total || 0), 0);
-    return total / data.length;
+    return Number(this.stateService.resumenActual()?.promedioGasto ?? 0);
   });
 
   readonly variacionPromedioMensual = computed(() => {
@@ -360,7 +482,24 @@ export class GastosPage implements OnDestroy {
     return ((actual - previo) / previo) * 100;
   });
 
-  readonly gastosPendientes = computed(() => this.pendientesMock());
+  readonly gastosPendientes = computed(() => {
+    if (this.suscripcionService.suscripcionesActivas().length === 0 && this.suscripcionService.errorState()) {
+      return this.pendientesMock();
+    }
+    return this.suscripcionService.suscripcionesActivas().map(s => {
+      const fecha = new Date(s.proximoVencimiento);
+      return {
+        id: s.id,
+        nombre: s.nombre,
+        frecuencia: s.frecuencia as 'MENSUAL' | 'SEMANAL' | 'QUINCENAL',
+        fechaVencimiento: isNaN(fecha.getTime()) ? s.proximoVencimiento : fecha.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }),
+        monto: s.monto,
+        vencePronto: s.vencePronto,
+        metodoPago: 'TARJETA' as 'TARJETA' | 'DIGITAL' | 'TRANSFERENCIA',
+        categoriaIcono: this.iconoCategoria(s.categoria)
+      };
+    });
+  });
   readonly gastosPagados = computed(() => this.gastos());
 
   readonly filasPagadas = computed(() => {
@@ -456,29 +595,39 @@ export class GastosPage implements OnDestroy {
   }
 
   marcarPendienteComoPagado(id: string): void {
-    const pendiente = this.pendientesMock().find((p) => p.id === id);
-    if (!pendiente) {
+    if (id.startsWith('mock-')) {
+      const pendiente = this.pendientesMock().find((p) => p.id === id);
+      if (!pendiente) return;
+      this.pendientesMock.set(this.pendientesMock().filter((p) => p.id !== id));
+      this.pagadosMock.update((items) => [
+        {
+          id: `mock-${pendiente.id}`,
+          nombre: pendiente.nombre,
+          detalle: 'Suscripción recurrente',
+          categoria: 'Servicios',
+          fecha: 'Hoy',
+          hora: 'Ahora',
+          monto: pendiente.monto,
+          metodo: pendiente.metodoPago,
+          estado: 'Pagado',
+          icono: 'circle-check',
+          colorCategoria: 'servicios',
+        },
+        ...items,
+      ]);
+      this.usarMockVisualPagados.set(true);
       return;
     }
-
-    this.pendientesMock.set(this.pendientesMock().filter((p) => p.id !== id));
-    this.pagadosMock.update((items) => [
-      {
-        id: `mock-${pendiente.id}`,
-        nombre: pendiente.nombre,
-        detalle: 'Suscripción recurrente',
-        categoria: 'Servicios',
-        fecha: 'Hoy',
-        hora: 'Ahora',
-        monto: pendiente.monto,
-        metodo: pendiente.metodoPago,
-        estado: 'Pagado',
-        icono: 'circle-check',
-        colorCategoria: 'servicios',
+    
+    // Conectar a SuscripcionGastosService para marcar como pagado
+    this.suscripcionService.cambiarEstado(id, 'ACTIVA').subscribe({
+      next: () => {
+        this.notificacionService.mostrarDatosGuardados('Gasto recurrente registrado correctamente');
+        this.stateService.invalidarCache();
+        this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
       },
-      ...items,
-    ]);
-    this.usarMockVisualPagados.set(true);
+      error: () => this.notificacionService.mostrar('Error', 'No se pudo registrar el pago', 'gasto', 'circle-exclamation', 4000)
+    });
   }
 
   abrirModal(): void {

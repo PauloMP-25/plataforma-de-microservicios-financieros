@@ -69,8 +69,8 @@ export class IaEspejoTemporalComponent implements OnInit, OnChanges {
       }
     },
     narrativasGemini: {
-      cartaContinuidad: 'Hola Paulo del futuro. Veo que sigues gastando en mototaxi en lugar de caminar esas pocas cuadras, y los antojos diarios se siguen consumiendo tu presupuesto. Hoy, después de un año, tu ahorro acumulado apenas llega a S/ 100. Tus metas de realizar el Viaje a Cusco, comprar la Laptop Gamer y guardar para tu Ahorro Departamento siguen congeladas. Has continuado priorizando los gastos a corto plazo, y el mañana se ve idéntico al ayer.',
-      cartaTransformacion: 'Hola Paulo. Qué gran decisión de ahorro tomaste al reducir esos gastos hormiga de transporte y antojos de fin de semana. Tras 12 meses de constancia, has acumulado S/ 1,550 en ahorros. Gracias a esto, no solo lograste financiar tu Viaje a Cusco y comprar la Laptop Gamer que tanto querías, sino que también diste el primer paso sólido acumulando capital para tu Ahorro Departamento. Este futuro alternativo brilla gracias al poder de tus pequeñas decisiones financieras.'
+      cartaContinuidad: 'Hola Usuario del futuro. Veo que sigues gastando en mototaxi en lugar de caminar esas pocas cuadras, y los antojos diarios se siguen consumiendo tu presupuesto. Hoy, después de un año, tu ahorro acumulado apenas llega a S/ 100. Tus metas de realizar el Viaje a Cusco, comprar la Laptop Gamer y guardar para tu Ahorro Departamento siguen congeladas. Has continuado priorizando los gastos a corto plazo, y el mañana se ve idéntico al ayer.',
+      cartaTransformacion: 'Hola Usuario. Qué gran decisión de ahorro tomaste al reducir esos gastos hormiga de transporte y antojos de fin de semana. Tras 12 meses de constancia, has acumulado S/ 1,550 en ahorros. Gracias a esto, no solo lograste financiar tu Viaje a Cusco y comprar la Laptop Gamer que tanto querías, sino que también diste el primer paso sólido acumulando capital para tu Ahorro Departamento. Este futuro alternativo brilla gracias al poder de tus pequeñas decisiones financieras.'
     }
   };
 

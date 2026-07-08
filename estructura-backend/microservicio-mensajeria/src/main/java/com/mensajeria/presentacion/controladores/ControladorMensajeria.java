@@ -31,7 +31,6 @@ import java.util.UUID;
  * de dependencias (SOLID-D).
  * </p>
  *
- * @author Paulo Moron
  * @version 1.2.0
  */
 @RestController

@@ -41,7 +41,7 @@ class AlertaCostosIA:
         
         asunto = "⚠️ ALERTA CRÍTICA: Límite de Gasto Gemini Excedido"
         cuerpo = (
-            f"Hola Paulo,\n\n"
+            f"Hola Luka,\n\n"
             f"Se ha detectado que el costo acumulado de Gemini hoy es de ${costo:.2f} USD,\n"
             f"superando el umbral diario configurado.\n\n"
             f"Por favor, revisa el dashboard de costos y el uso de los microservicios de IA.\n\n"
@@ -49,7 +49,7 @@ class AlertaCostosIA:
         )
         
         await publicador_mensajeria.enviar_email(
-            destinatario="paulomoronpoma@gmail.com",
+            destinatario="lukaapp2026@gmail.com",
             asunto=asunto,
             cuerpo=cuerpo
         )

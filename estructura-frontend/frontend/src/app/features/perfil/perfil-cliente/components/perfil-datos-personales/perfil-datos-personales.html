@@ -18,9 +18,9 @@
       <!-- Nombres -->
       <div class="perfil-cliente__field-group">
         <label class="perfil-cliente__label" for="nombres">Nombres</label>
-        <div class="perfil-cliente__field" [class.perfil-cliente__field--error]="errores.nombres">
+        <div class="perfil-cliente__field" [class.perfil-cliente__field--error]="errores.nombres" [class.perfil-cliente__field--readonly]="!!form.dni">
           <span class="perfil-cliente__field-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></span>
-          <input id="nombres" class="perfil-cliente__input" type="text" [value]="form.nombres" (input)="onCampoInput('nombres', $any($event.target).value)"/>
+          <input id="nombres" class="perfil-cliente__input" [class.perfil-cliente__input--locked]="!!form.dni" type="text" [value]="form.nombres" [disabled]="!!form.dni" (input)="onCampoInput('nombres', $any($event.target).value)"/>
         </div>
         @if (errores.nombres) { <small class="perfil-cliente__error">{{ errores.nombres }}</small> }
       </div>
@@ -28,9 +28,9 @@
       <!-- Apellidos -->
       <div class="perfil-cliente__field-group">
         <label class="perfil-cliente__label" for="apellidos">Apellidos</label>
-        <div class="perfil-cliente__field" [class.perfil-cliente__field--error]="errores.apellidos">
+        <div class="perfil-cliente__field" [class.perfil-cliente__field--error]="errores.apellidos" [class.perfil-cliente__field--readonly]="!!form.dni">
           <span class="perfil-cliente__field-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></span>
-          <input id="apellidos" class="perfil-cliente__input" type="text" [value]="form.apellidos" (input)="onCampoInput('apellidos', $any($event.target).value)"/>
+          <input id="apellidos" class="perfil-cliente__input" [class.perfil-cliente__input--locked]="!!form.dni" type="text" [value]="form.apellidos" [disabled]="!!form.dni" (input)="onCampoInput('apellidos', $any($event.target).value)"/>
         </div>
         @if (errores.apellidos) { <small class="perfil-cliente__error">{{ errores.apellidos }}</small> }
       </div>
@@ -38,9 +38,9 @@
       <!-- DNI -->
       <div class="perfil-cliente__field-group">
         <label class="perfil-cliente__label" for="dni">DNI</label>
-        <div class="perfil-cliente__field" [class.perfil-cliente__field--error]="errores.dni">
+        <div class="perfil-cliente__field" [class.perfil-cliente__field--error]="errores.dni" [class.perfil-cliente__field--readonly]="!!form.dni">
           <span class="perfil-cliente__field-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="9" cy="12" r="2"/><path d="M13 10h5M13 14h5"/></svg></span>
-          <input id="dni" class="perfil-cliente__input" type="text" [value]="form.dni" (keypress)="onTeclaNumerica($event)" (input)="onCampoInput('dni', $any($event.target).value)" maxlength="8" pattern="[0-9]*" inputmode="numeric"/>
+          <input id="dni" class="perfil-cliente__input" [class.perfil-cliente__input--locked]="!!form.dni" type="text" [value]="form.dni" [disabled]="!!form.dni" (keypress)="onTeclaNumerica($event)" (input)="onCampoInput('dni', $any($event.target).value)" maxlength="8" pattern="[0-9]*" inputmode="numeric"/>
         </div>
         @if (errores.dni) { <small class="perfil-cliente__error">{{ errores.dni }}</small> }
       </div>
@@ -49,19 +49,19 @@
       <div class="perfil-cliente__field-group">
         <label class="perfil-cliente__label">Fecha de nacimiento</label>
         <div class="perfil-cliente__birth-row">
-          <select class="perfil-cliente__input" [ngModel]="fechaPartes.dia" (change)="onFechaParte('dia', $any($event.target).value)">
+          <select class="perfil-cliente__input" [class.perfil-cliente__input--locked]="!!form.dni" [disabled]="!!form.dni" [ngModel]="fechaPartes.dia" (change)="onFechaParte('dia', $any($event.target).value)">
             <option value="">Día</option>
             @for (d of diasNacimiento; track d) {
               <option [value]="d">{{ d }}</option>
             }
           </select>
-          <select class="perfil-cliente__input" [ngModel]="fechaPartes.mes" (change)="onFechaParte('mes', $any($event.target).value)">
+          <select class="perfil-cliente__input" [class.perfil-cliente__input--locked]="!!form.dni" [disabled]="!!form.dni" [ngModel]="fechaPartes.mes" (change)="onFechaParte('mes', $any($event.target).value)">
             <option value="">Mes</option>
             @for (mes of mesesCatalogo; track mes.value) {
               <option [value]="mes.value">{{ mes.label }}</option>
             }
           </select>
-          <select class="perfil-cliente__input" [ngModel]="fechaPartes.anio" (change)="onFechaParte('anio', $any($event.target).value)">
+          <select class="perfil-cliente__input" [class.perfil-cliente__input--locked]="!!form.dni" [disabled]="!!form.dni" [ngModel]="fechaPartes.anio" (change)="onFechaParte('anio', $any($event.target).value)">
             <option value="">Año</option>
             @for (anio of aniosNacimiento; track anio) {
               <option [value]="anio">{{ anio }}</option>

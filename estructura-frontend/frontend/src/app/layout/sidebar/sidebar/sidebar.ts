@@ -105,7 +105,6 @@ export class Sidebar implements OnInit {
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe((e: any) => {
         this.isPerfilSection = (e.url.startsWith('/perfil') && !e.url.startsWith('/perfil/historial'))
-          || e.url.startsWith('/suscripcion/luka')
           || e.url.startsWith('/ayuda');
       });
   }

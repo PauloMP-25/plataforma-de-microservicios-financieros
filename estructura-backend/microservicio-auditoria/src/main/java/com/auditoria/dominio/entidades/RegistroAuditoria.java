@@ -21,7 +21,6 @@ import java.util.UUID;
  * la velocidad de búsqueda por módulo, fecha y usuario.
  * </p>
  * 
- * @author Paulo Moron
  * @version 1.1.0
  * @since 2026-05-10
  */

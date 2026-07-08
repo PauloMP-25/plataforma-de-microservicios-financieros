@@ -150,16 +150,3 @@ logging:
     console: "%d{HH:mm:ss} %-5p [%X{correlationId:-NoID}] - %msg%n"
   file:
     name: logs/microservicio-auditoria.log
-
-
----
-# Desactivar discovery y eureka
-spring:
-  cloud:
-    discovery:
-      enabled: false
-
-management:
-  health:
-    discovery:
-      enabled: false

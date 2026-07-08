@@ -1,13 +1,12 @@
-<article class="suscripcion-card bento-card" 
-  [ngStyle]="{
-    '--brand-bg': estiloMarca.bg, 
-    '--brand-color': estiloMarca.color, 
-    '--brand-border': estiloMarca.border
-  }">
+<article class="suscripcion-card bento-card" [ngStyle]="estiloMarca">
   
   <div class="suscripcion-card__header">
     <div class="suscripcion-card__logo-box">
-      <i class="fa-solid" [ngClass]="'fa-' + obtenerCategoriaInfo()?.icon"></i>
+      @if (suscripcion.nombre.toLowerCase().includes('luka')) {
+        <img src="assets/avatares/figuras/panda.png" alt="LUKA" style="width: 24px; height: 24px; object-fit: contain;">
+      } @else {
+        <i class="fa-solid" [ngClass]="'fa-' + obtenerCategoriaInfo()?.icon"></i>
+      }
     </div>
     
     <div class="suscripcion-card__title-wrap">
@@ -38,7 +37,7 @@
   <div class="suscripcion-card__footer">
     <div class="action-buttons">
       <button class="btn-icon" (click)="onEditar()" title="Editar"><i class="fa-solid fa-pen"></i></button>
-      <button class="btn-icon" (click)="onVerDetalle()" title="Detalle"><i class="fa-solid fa-eye"></i></button>
+      <!-- <button class="btn-icon" (click)="onVerDetalle()" title="Detalle"><i class="fa-solid fa-eye"></i></button> -->
       <button class="btn-icon btn-icon--danger" (click)="onEliminar()" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
     </div>
 

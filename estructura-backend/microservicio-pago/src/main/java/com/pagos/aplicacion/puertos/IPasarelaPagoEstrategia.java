@@ -19,7 +19,6 @@ import java.util.UUID;
  * de pago solo requiere crear una nueva clase que implemente esta interfaz, sin
  * modificar el código existente.</p>
  *
- * @author LUKA APP Team
  * @see com.pagos.aplicacion.servicios.PasarelaPagoFactory
  */
 public interface IPasarelaPagoEstrategia {

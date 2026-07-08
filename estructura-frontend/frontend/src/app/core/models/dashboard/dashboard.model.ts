@@ -10,6 +10,10 @@ export interface DashboardResumenDTO {
   gastoPromedioDiario: number; // Nuevo KPI
   cumplimientoPresupuesto: number; // % consumido
   proyeccionFinDeMes: number; // Balance proyectado
+  totalIngresos?: number; // Total acumulado anual de ingresos
+  totalGastos?: number; // Total acumulado anual de egresos
+  balance?: number; // Balance total acumulado anual
+  volumenTransacciones?: number; // Cantidad total de movimientos en el periodo
 }
 
 export interface CashflowPointDTO {

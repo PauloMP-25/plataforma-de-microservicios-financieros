@@ -28,6 +28,7 @@ export class DashboardStateService {
 
   // ── Angular Signals de Estado ──
   readonly resumen = signal<DashboardResumenDTO | null>(null);
+  readonly resumenYTD = signal<DashboardResumenDTO | null>(null); // Resumen YTD anual fijo para el Header
   readonly flujoCaja = signal<CashflowPointDTO[]>([]);
   readonly distribucionGastos = signal<CategoriaDistribucionDTO[]>([]);
   readonly heatmap = signal<HeatmapPointDTO[]>([]);
@@ -84,42 +85,80 @@ export class DashboardStateService {
     if (currentFilters.metodoPago) params = params.set('metodoPago', currentFilters.metodoPago);
     if (currentFilters.tipoMovimiento) params = params.set('tipoMovimiento', currentFilters.tipoMovimiento);
 
-    forkJoin({
+    const hasFilters = !!(currentFilters.fechaInicio || currentFilters.fechaFin || currentFilters.metodoPago || currentFilters.tipoMovimiento);
+
+    const requests: any = {
       kpis: this.http.get<ResultadoApi<any>>(`${this.base}/kpis`, { params }),
       graficos: this.http.get<ResultadoApi<any>>(`${this.base}/graficos`, { params })
-    }).subscribe({
-      next: ({ kpis, graficos }) => {
+    };
+
+    // Cargar resumenYTD si es la carga inicial o si se invalidó la caché
+    const cargarYTD = !this.initialLoadDone || !this.resumenYTD();
+    if (cargarYTD) {
+      requests.kpisYTD = this.http.get<ResultadoApi<any>>(`${this.base}/kpis`);
+    }
+
+    forkJoin(requests).subscribe({
+      next: (res: any) => {
+        const kpis = res.kpis;
+        const graficos = res.graficos;
+        const kpisYTD = res.kpisYTD;
+
         if (kpis.exito && kpis.datos) {
           const resumenBackend = kpis.datos.resumen;
           this.resumen.set({
             desde: resumenBackend.desde,
             hasta: resumenBackend.hasta,
             tasaAhorro: resumenBackend.tasaAhorro,
-            gastoPromedioDiario: 0, 
-            cumplimientoPresupuesto: 0, 
-            proyeccionFinDeMes: 0,
+            gastoPromedioDiario: resumenBackend.gastoPromedioDiario || 0, 
+            cumplimientoPresupuesto: resumenBackend.cumplimientoPresupuesto ?? 0, 
+            proyeccionFinDeMes: resumenBackend.proyeccionFinDeMes || 0,
             totalIngresos: resumenBackend.totalIngresos,
             totalGastos: resumenBackend.totalGastos,
-            balance: resumenBackend.balance
-          } as any);
+            balance: resumenBackend.balance,
+            volumenTransacciones: resumenBackend.volumenTransacciones || 0
+          });
         } else {
           this.error.set(kpis.mensaje || 'Error al cargar KPIs');
         }
 
+        const ytdData = kpisYTD ? kpisYTD : (hasFilters ? null : kpis);
+        if (ytdData && ytdData.exito && ytdData.datos) {
+          const resumenBackend = ytdData.datos.resumen;
+          this.resumenYTD.set({
+            desde: resumenBackend.desde,
+            hasta: resumenBackend.hasta,
+            tasaAhorro: resumenBackend.tasaAhorro,
+            gastoPromedioDiario: resumenBackend.gastoPromedioDiario || 0, 
+            cumplimientoPresupuesto: resumenBackend.cumplimientoPresupuesto ?? 0, 
+            proyeccionFinDeMes: resumenBackend.proyeccionFinDeMes || 0,
+            totalIngresos: resumenBackend.totalIngresos,
+            totalGastos: resumenBackend.totalGastos,
+            balance: resumenBackend.balance,
+            volumenTransacciones: resumenBackend.volumenTransacciones || 0
+          });
+        }
+
         if (graficos.exito && graficos.datos) {
           this.flujoCaja.set(graficos.datos.flujoCaja || []);
-          
+
           const dist = (graficos.datos.distribucionGastos || [])
             .sort((a: any, b: any) => b.total - a.total)
             .slice(0, 5);
           this.distribucionGastos.set(dist);
+
+          // Heatmap: gastos por día de semana
+          this.heatmap.set(graficos.datos.heatmap || []);
+
+          // Comparativa histórica: año actual vs año anterior
+          this.comparativa.set(graficos.datos.comparativa || []);
+
+          // Métodos de pago
+          this.transaccionesMetodo.set(graficos.datos.transaccionesMetodo || []);
         }
 
-        // Limpiar arrays para que no muestren mockups residuales
-        this.heatmap.set([]);
+        // Metas: no vienen aún del backend — dejar vacío por ahora
         this.metas.set([]);
-        this.comparativa.set([]);
-        this.transaccionesMetodo.set([]);
 
         this.loading.set(false);
         this.initialLoadDone = true;
@@ -140,6 +179,7 @@ export class DashboardStateService {
 
   limpiarEstado(): void {
     this.resumen.set(null);
+    this.resumenYTD.set(null);
     this.flujoCaja.set([]);
     this.distribucionGastos.set([]);
     this.heatmap.set([]);

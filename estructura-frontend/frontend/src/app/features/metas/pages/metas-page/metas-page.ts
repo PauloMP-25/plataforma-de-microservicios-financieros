@@ -2,7 +2,6 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { RespuestaMetaAhorro } from '../../../../core/models/cliente/meta-limite.model';
-import { FinancieroService } from '../../../../core/services/Financiero.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { AppEventBus } from '../../../../core/services/app-event-bus.service';
 import { NotificacionService } from '../../../../core/services/notificacion.service';
@@ -14,6 +13,9 @@ import { MetaDetailsSidebarComponent } from '../../components/meta-details-sideb
 import { MetaConfirmModalComponent } from '../../components/meta-confirm-modal/meta-confirm-modal.component';
 import { MetasUtilityService } from '../../services/metas-utility.service';
 import { MetasDataService } from '../../services/metas-data.service';
+import { DashboardStateService } from '../../../../core/services/dashboard-state.service';
+
+import { OnboardingTour, TourStep } from '../../../../shared/components/onboarding-tour/onboarding-tour';
 
 @Component({
   selector: 'app-metas-page',
@@ -24,7 +26,8 @@ import { MetasDataService } from '../../services/metas-data.service';
     MetaFiltersComponent,
     MetaCardComponent,
     MetaDetailsSidebarComponent,
-    MetaConfirmModalComponent
+    MetaConfirmModalComponent,
+    OnboardingTour
   ],
   templateUrl: './metas-page.html',
   styleUrl: './metas-page.scss',
@@ -32,7 +35,7 @@ import { MetasDataService } from '../../services/metas-data.service';
 export class MetasPage implements OnInit {
   private router = inject(Router);
   private metasDataService = inject(MetasDataService);
-  private financieroService = inject(FinancieroService);
+  private dashboardState = inject(DashboardStateService);
   private authService = inject(AuthService);
   private eventBus = inject(AppEventBus);
   private metasUtility = inject(MetasUtilityService);
@@ -68,7 +71,7 @@ export class MetasPage implements OnInit {
     yearsSet.add(currentYear + 2);
 
     this.metas().forEach(m => {
-      const fechaAnio = m.fechaCreacion || m.fechaLimite;
+      const fechaAnio = m.fechaCreacion || m.fechaObjetivo;
       if (fechaAnio) {
         const parts = fechaAnio.substring(0, 10).split('-');
         if (parts.length === 3) {
@@ -87,10 +90,10 @@ export class MetasPage implements OnInit {
   // Lista de categorías con sus íconos correspondientes
   categorias = this.metasUtility.categorias;
 
-  // Ahorro disponible cargado desde FinancieroService (balance general)
+  // Ahorro disponible cargado desde DashboardStateService (balance YTD)
   ahorroDisponible = computed(() => {
-    const resumen = this.financieroService.resumen();
-    return resumen ? resumen.balance : 0;
+    const resumen = this.dashboardState.resumenYTD();
+    return (resumen && resumen.balance != null) ? resumen.balance : 0;
   });
 
   // Cálculo secuencial/híbrido del avance de las metas activas usando el saldo restante
@@ -103,12 +106,10 @@ export class MetasPage implements OnInit {
 
     // Ordenar activas por fecha límite más cercana (prioridad de llenado)
     const activasOrdenadas = [...activas].sort((a, b) => {
-      if (!a.fechaLimite) return 1;
-      if (!b.fechaLimite) return -1;
-      return new Date(a.fechaLimite).getTime() - new Date(b.fechaLimite).getTime();
+      if (!a.fechaObjetivo) return 1;
+      if (!b.fechaObjetivo) return -1;
+      return new Date(a.fechaObjetivo).getTime() - new Date(b.fechaObjetivo).getTime();
     });
-
-    let saldoRestante = disponibleGlobal;
 
     const activasCalculadas = activasOrdenadas.map(meta => {
       const datosVisuales = this.metasUtility.obtenerCategoriaYNombre(meta.nombre);
@@ -116,11 +117,7 @@ export class MetasPage implements OnInit {
       const categoriaVisual = meta.proposito || datosVisuales.categoria || 'Otros';
       const iconoVisual = this.metasUtility.obtenerIconoCategoria(categoriaVisual);
 
-      const faltante = meta.montoObjetivo;
-      const adicionalAplicado = Math.min(faltante, saldoRestante);
-
-      const montoAplicado = adicionalAplicado;
-      saldoRestante = Math.max(0, saldoRestante - adicionalAplicado);
+      const montoAplicado = Math.min(meta.montoObjetivo, disponibleGlobal);
 
       const porcentaje = meta.montoObjetivo > 0 
         ? (montoAplicado / meta.montoObjetivo) * 100 
@@ -178,8 +175,8 @@ export class MetasPage implements OnInit {
     if (mes !== 'Todos') {
       const mesNum = parseInt(mes, 10);
       listado = listado.filter(m => {
-        if (!m.fechaLimite) return false;
-        const limitStr = m.fechaLimite.substring(0, 10);
+        if (!m.fechaObjetivo) return false;
+        const limitStr = m.fechaObjetivo.substring(0, 10);
         const parts = limitStr.split('-');
         if (parts.length !== 3) return false;
         const month = parseInt(parts[1], 10) - 1; // 0-indexed en JS
@@ -192,7 +189,7 @@ export class MetasPage implements OnInit {
     if (anio !== 'Todos') {
       const anioNum = parseInt(anio, 10);
       listado = listado.filter(m => {
-        const fechaAnio = m.fechaCreacion || m.fechaLimite;
+        const fechaAnio = m.fechaCreacion || m.fechaObjetivo;
         if (!fechaAnio) return false;
         const startStr = fechaAnio.substring(0, 10);
         const parts = startStr.split('-');
@@ -249,15 +246,55 @@ export class MetasPage implements OnInit {
     const activas = this.metasCalculadas().filter(m => !m.completada);
     if (activas.length === 0) return null;
     return [...activas].sort((a, b) => {
-      if (!a.fechaLimite) return 1;
-      if (!b.fechaLimite) return -1;
-      return new Date(a.fechaLimite).getTime() - new Date(b.fechaLimite).getTime();
+      if (!a.fechaObjetivo) return 1;
+      if (!b.fechaObjetivo) return -1;
+      return new Date(a.fechaObjetivo).getTime() - new Date(b.fechaObjetivo).getTime();
     })[0];
   });
 
+  readonly mostrarTour = signal(false);
+  readonly stepsTour: TourStep[] = [
+    {
+      targetSelector: '.metas-page__btn-nueva',
+      title: 'Crear Nueva Meta',
+      description: 'Define tus objetivos de ahorro especificando el nombre, monto total necesario y la fecha límite para cumplirlos.',
+      position: 'bottom'
+    },
+    {
+      targetSelector: '.metas-page__resumen-dashboard',
+      title: 'Resumen de Metas',
+      description: 'Lleva el seguimiento del total de metas activas, cuántas has logrado completar y el saldo acumulado disponible para repartir.',
+      position: 'bottom'
+    },
+    {
+      targetSelector: 'app-meta-filters',
+      title: 'Barra de Filtros',
+      description: 'Filtra y ordena tus metas por estado, periodo mensual y rango de montos para focalizar tus prioridades de ahorro.',
+      position: 'bottom'
+    },
+    {
+      targetSelector: '.metas-page__grid',
+      title: 'Tus Objetivos de Ahorro',
+      description: 'Visualiza el avance detallado de cada meta. Puedes seleccionarla para ver su desglose, editarla o completarla.',
+      position: 'top'
+    }
+  ];
+
+  completarTour(): void {
+    localStorage.setItem('luka_tour_metas_visto', 'true');
+    this.mostrarTour.set(false);
+  }
+
   ngOnInit(): void {
-    this.financieroService.cargarResumen();
+    this.dashboardState.cargarAnalitica();
     this.cargarMetas();
+
+    const tourVisto = localStorage.getItem('luka_tour_metas_visto');
+    if (!tourVisto) {
+      setTimeout(() => {
+        this.mostrarTour.set(true);
+      }, 600);
+    }
   }
 
   cargarMetas(): void {
@@ -339,16 +376,16 @@ export class MetasPage implements OnInit {
   }
 
   esVencida(meta: RespuestaMetaAhorro): boolean {
-    if (!meta.fechaLimite) return false;
-    const limite = new Date(meta.fechaLimite + 'T00:00:00');
+    if (!meta.fechaObjetivo) return false;
+    const limite = new Date(meta.fechaObjetivo + 'T00:00:00');
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     return limite < hoy;
   }
 
-  calcularDiasRestantes(fechaLimiteStr: string): number {
-    if (!fechaLimiteStr) return 0;
-    const limite = new Date(fechaLimiteStr + 'T00:00:00');
+  calcularDiasRestantes(fechaObjetivoStr: string): number {
+    if (!fechaObjetivoStr) return 0;
+    const limite = new Date(fechaObjetivoStr + 'T00:00:00');
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     const dif = limite.getTime() - hoy.getTime();
@@ -369,15 +406,15 @@ export class MetasPage implements OnInit {
   }
 
   obtenerTiempoEmpleadoMeta(meta: RespuestaMetaAhorro): string {
-    if (!meta.fechaCreacion) {
+    if (!meta.fechaInicio) {
       return 'N/A';
     }
-    const fin = meta.fechaActualizacion || meta.fechaCreacion;
-    return this.calcularTiempoEmpleado(meta.fechaCreacion, fin);
+    const fin = meta.fechaCompletada || meta.fechaActualizacion || new Date().toISOString();
+    return this.calcularTiempoEmpleado(meta.fechaInicio, fin);
   }
 
   obtenerFechaActualizacionOCreacion(meta: RespuestaMetaAhorro): string {
-    return meta.fechaActualizacion || meta.fechaCreacion || '';
+    return meta.fechaInicio || meta.fechaCreacion || '';
   }
 
   abrirCrearMeta(): void {
@@ -456,13 +493,14 @@ export class MetasPage implements OnInit {
     
     const transaccionPayload: TransaccionRequestDTO = {
       usuarioId: usuario?.id ?? '',
-      nombreCliente: usuario?.nombreUsuario ?? 'Cliente',
+      nombreCliente: meta.nombreVisual, // El backend y el frontend de gastos usan nombreCliente como el "Nombre del gasto"
       monto: meta.montoObjetivo,
       tipo: 'GASTO',
       categoriaId: 'otros',
       fechaTransaccion: new Date().toISOString(),
       metodoPago: 'DIGITAL',
-      notas: `Meta alcanzada: ${meta.nombreVisual}|Gasto registrado automáticamente al cumplir el objetivo financiero|DIARIO`
+      descripcion: `Gasto automático por cumplimiento de meta: ${meta.nombreVisual}`,
+      etiquetas: `META,${(meta.categoriaVisual || 'OTROS').toUpperCase().replace(/ /g, '_')}`
     };
 
     this.metasDataService.completarMeta(meta, transaccionPayload).subscribe({
@@ -475,7 +513,7 @@ export class MetasPage implements OnInit {
         this.modalConfirmarCompletar.set(null);
         this.metaSeleccionada.set(null);
         
-        this.financieroService.cargarResumen();
+        this.dashboardState.invalidarCache();
         this.cargarMetas();
         
         this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });

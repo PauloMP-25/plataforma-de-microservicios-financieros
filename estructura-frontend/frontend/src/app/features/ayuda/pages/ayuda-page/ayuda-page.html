@@ -170,6 +170,46 @@
 
           <form [formGroup]="formContacto" (ngSubmit)="enviarContacto()" class="ayuda-form" novalidate>
 
+            <!-- Nombre -->
+            <div class="form-field" [class.has-error]="formContacto.get('nombre')?.invalid && formContacto.get('nombre')?.touched">
+              <label class="form-label" for="contacto-nombre">
+                <i class="fa-solid fa-user"></i> Nombre
+                <span class="field-required">*</span>
+              </label>
+              <input
+                id="contacto-nombre"
+                type="text"
+                class="form-control"
+                formControlName="nombre"
+                placeholder="Ej: Juan Pérez"
+              >
+              @if (formContacto.get('nombre')?.invalid && formContacto.get('nombre')?.touched) {
+                <span class="field-error">
+                  <i class="fa-solid fa-circle-exclamation"></i> Ingresa tu nombre.
+                </span>
+              }
+            </div>
+
+            <!-- Correo -->
+            <div class="form-field" [class.has-error]="formContacto.get('correo')?.invalid && formContacto.get('correo')?.touched">
+              <label class="form-label" for="contacto-correo">
+                <i class="fa-solid fa-envelope"></i> Correo electrónico
+                <span class="field-required">*</span>
+              </label>
+              <input
+                id="contacto-correo"
+                type="email"
+                class="form-control"
+                formControlName="correo"
+                placeholder="Ej: juan@ejemplo.com"
+              >
+              @if (formContacto.get('correo')?.invalid && formContacto.get('correo')?.touched) {
+                <span class="field-error">
+                  <i class="fa-solid fa-circle-exclamation"></i> Ingresa un correo válido.
+                </span>
+              }
+            </div>
+
             <!-- Categoría -->
             <div class="form-field" [class.has-error]="fContactoCategoria.invalid && fContactoCategoria.touched">
               <label class="form-label">

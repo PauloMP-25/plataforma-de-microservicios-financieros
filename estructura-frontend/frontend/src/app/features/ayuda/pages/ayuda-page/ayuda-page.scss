@@ -427,9 +427,9 @@
   justify-content: space-between;
   gap: 16px;
   padding: 22px 26px;
-  background: var(--color-primary-soft);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 8%, var(--bg-card)), var(--bg-card));
   border-radius: var(--radius-md);
-  border: 1.5px solid rgba(91, 106, 240, 0.2);
+  border: 1.5px solid color-mix(in srgb, var(--color-primary) 20%, var(--border-color));
   flex-wrap: wrap;
 }
 
@@ -438,8 +438,8 @@
 }
 
 .cta-banner-text   { display: flex; flex-direction: column; gap: 4px; }
-.cta-banner-title  { font-size: 0.95rem; font-weight: 800; color: var(--text-primary); }
-.cta-banner-desc   { font-size: 0.82rem; color: var(--text-secondary); }
+.cta-banner-title  { font-size: 1rem; font-weight: 800; color: var(--text-primary); }
+.cta-banner-desc   { font-size: 0.85rem; color: var(--text-secondary); }
 
 /* ── Botones ──────────────────────────────────────────────────────────────── */
 .btn {

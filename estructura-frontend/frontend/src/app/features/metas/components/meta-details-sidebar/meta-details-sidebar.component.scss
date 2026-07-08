@@ -194,10 +194,10 @@
     }
 
     &--delete {
-      background: transparent;
+      background: var(--color-danger-soft);
       color: var(--color-danger);
-      border: 1.5px solid transparent;
-      &:hover { background: var(--color-danger-soft); border-color: rgba(239, 68, 68, 0.2); }
+      border: 1.5px solid rgba(239, 68, 68, 0.2);
+      &:hover { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); }
     }
   }
 }

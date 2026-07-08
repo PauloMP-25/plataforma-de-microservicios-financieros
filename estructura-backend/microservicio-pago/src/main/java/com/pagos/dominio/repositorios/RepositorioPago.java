@@ -26,4 +26,11 @@ public interface RepositorioPago extends JpaRepository<Pago, UUID>, JpaSpecifica
     List<Object[]> contarSuscripcionesActivasPorPlan();
 
     Optional<Pago> findFirstByUsuarioIdAndEstadoOrderByFechaCreacionDesc(UUID usuarioId, EstadoPago estado);
+
+    @Query("SELECT EXTRACT(MONTH FROM p.fechaCreacion), SUM(d.monto) " +
+           "FROM Pago p JOIN p.detalles d " +
+           "WHERE p.estado = 'COMPLETADO' AND EXTRACT(YEAR FROM p.fechaCreacion) = :anio " +
+           "GROUP BY EXTRACT(MONTH FROM p.fechaCreacion) " +
+           "ORDER BY EXTRACT(MONTH FROM p.fechaCreacion) ASC")
+    List<Object[]> sumarIngresosPorMesYAnio(int anio);
 }

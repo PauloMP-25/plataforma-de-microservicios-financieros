@@ -39,6 +39,12 @@ public final class NombresCola {
     // Financiero -> Cliente
     public static final String FINANCIERO_TRANSACCIONES_CLIENTE = "cola.cliente.transacciones.registradas";
 
+    // Usuario → Cliente (eventos de dominio post-login)
+    /** Cola donde ms-cliente recibe los eventos de login exitoso emitidos por ms-usuario. */
+    public static final String CLIENTE_LOGIN_EVENTOS = "cola.cliente.login.eventos";
+    /** Dead Letter Queue para mensajes de login que no pudieron procesarse. */
+    public static final String CLIENTE_LOGIN_EVENTOS_DLQ = "cola.cliente.login.eventos.dlq";
+
     private NombresCola() {
     }
 }

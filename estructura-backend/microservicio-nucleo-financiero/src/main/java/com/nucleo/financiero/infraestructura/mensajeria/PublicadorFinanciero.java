@@ -17,13 +17,19 @@ public class PublicadorFinanciero extends PublicadorEventosBase {
         super(rabbitTemplate);
     }
 
-    public void publicarTransaccionRegistrada(UUID id, UUID usuarioId, BigDecimal monto, String tipo, String fechaTransaccion) {
+    public void publicarTransaccionRegistrada(
+            UUID id, UUID usuarioId, BigDecimal monto, String tipo, String fechaTransaccion,
+            String categoriaNombre, String metodoPago, String descripcion, String estado) {
         EventoTransaccionRegistradaDTO evento = EventoTransaccionRegistradaDTO.builder()
                 .transaccionId(id.toString())
                 .usuarioId(usuarioId.toString())
                 .monto(monto)
                 .tipo(tipo)
                 .fechaTransaccion(fechaTransaccion)
+                .categoriaNombre(categoriaNombre)
+                .metodoPago(metodoPago)
+                .descripcion(descripcion)
+                .estado(estado)
                 .build();
 
         enviar(NombresExchange.FINANCIERO, RoutingKeys.TRANSACCION_REGISTRADA, evento);

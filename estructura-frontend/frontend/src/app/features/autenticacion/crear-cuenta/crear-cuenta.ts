@@ -1,13 +1,13 @@
 import { Component, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-crear-cuenta',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './crear-cuenta.html',
   styleUrl: './crear-cuenta.scss',
 })
@@ -20,6 +20,14 @@ export class CrearCuenta {
   mostrarConfirmar = false;
   cargando = false;
   errorMensaje = '';
+  esConflictoRegistro = false;
+  passwordFocus = false;
+
+  get reqLength() { return (this.formulario.get('password')?.value || '').length >= 8; }
+  get reqLower() { return /[a-z]/.test(this.formulario.get('password')?.value || ''); }
+  get reqUpper() { return /[A-Z]/.test(this.formulario.get('password')?.value || ''); }
+  get reqNum() { return /\d/.test(this.formulario.get('password')?.value || ''); }
+  get reqSpec() { return /[@$!%*?&#\-]/.test(this.formulario.get('password')?.value || ''); }
 
   constructor(
     private fb: FormBuilder,
@@ -29,7 +37,10 @@ export class CrearCuenta {
     this.formulario = this.fb.group({
       nombreUsuario: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(100)]],
       correo: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      password: ['', [
+        Validators.required, 
+        Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#\-]).{8,}$/)
+      ]],
       confirmarPassword: ['', [Validators.required]]
     }, { validators: this.validarCoincidencia });
   }
@@ -72,12 +83,16 @@ export class CrearCuenta {
             usuarioId: resp.datos // El UUID del usuario creado
           });
         } else {
-          this.errorMensaje = resp.mensaje || 'Error al registrar usuario';
+          this.esConflictoRegistro = false;
+          this.errorMensaje = 'No pudimos crear tu cuenta con estos datos. Si ya tienes una cuenta, inicia sesión o recupera tu contraseña.';
         }
       },
       error: (err) => {
         this.cargando = false;
-        this.errorMensaje = err.error?.mensaje || 'Error de conexión con el servidor';
+        // Never reveal whether email/username already exists — generic message prevents user enumeration
+        const status = err?.status;
+        this.esConflictoRegistro = status === 409 || status === 400;
+        this.errorMensaje = 'No pudimos crear tu cuenta con estos datos. Si ya tienes una cuenta, inicia sesión o recupera tu contraseña.';
         console.error('Error Registro:', err);
       }
     });

@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
  * Repositorio para la gestión de usuarios.
  * Extiende JpaSpecificationExecutor para soportar el Specification Pattern.
  * 
- * @author Paulo
  */
 public interface UsuarioRepository extends JpaRepository<Usuario, UUID>, JpaSpecificationExecutor<Usuario> {
     

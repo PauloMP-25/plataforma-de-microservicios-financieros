@@ -19,7 +19,7 @@ class ClienteFinanciero(BaseLukaClient):
         self, 
         usuario_id: str, 
         token: str, 
-        tamanio: int = 200,
+        tamanio: int = 10000,
         mes: Optional[int] = None,
         anio: Optional[int] = None,
         dia_inicio: Optional[int] = None,
@@ -31,9 +31,35 @@ class ClienteFinanciero(BaseLukaClient):
         desde_exacto: Optional[str] = None,
         hasta_exacto: Optional[str] = None
     ) -> Dict[str, Any]:
-        """Recupera el historial de transacciones (concurrente)."""
+        """Recupera el historial de transacciones, buscando prioritariamente en Redis."""
+        # Solo usamos caché si no se piden filtros específicos complejos de fechas (excepto el año actual)
+        es_consulta_anual_general = (
+            mes is None and anio is None and
+            dia_inicio is None and mes_inicio is None and
+            dia_fin is None and mes_fin is None and
+            desde_exacto is None and hasta_exacto is None
+        )
+
+        from app.persistencia.redis.cache_redis import CacheRedis
+        import json
+
+        cache = CacheRedis()
+        hash_key = f"usuario:{usuario_id}"
+        campo = "transacciones"
+
+        if es_consulta_anual_general:
+            try:
+                cached_data = cache._client.hget(hash_key, campo) if cache._client else None
+                if cached_data:
+                    logger.info(f"[CACHE-HIT] Historial de transacciones obtenido desde Redis Hash para {usuario_id}.")
+                    lista = json.loads(cached_data)
+                    return {"datos": lista}
+                logger.info(f"[CACHE-MISS] Historial de transacciones no encontrado en Redis para {usuario_id}. Consultando HTTP.")
+            except Exception as e:
+                logger.warning(f"[CACHE-ERROR] Falló lectura de transacciones en Redis: {e}")
+
+        # Fallback HTTP
         endpoint = f"/api/v1/financiero/transacciones/historial"
-        
         desde_str = None
         hasta_str = None
         
@@ -70,6 +96,20 @@ class ClienteFinanciero(BaseLukaClient):
         if hasta_str: params["hasta"] = hasta_str
 
         respuesta = await self.call("GET", endpoint, token=token, params=params)
+        
+        # Si fue una consulta general y exitosa, calentamos el caché en Redis
+        if es_consulta_anual_general and respuesta and "datos" in respuesta:
+            datos_lista = respuesta.get("datos", [])
+            if isinstance(datos_lista, dict):
+                datos_lista = datos_lista.get("content", [])
+            if isinstance(datos_lista, list):
+                try:
+                    cache._client.hset(hash_key, campo, json.dumps(datos_lista, ensure_ascii=False))
+                    cache._client.expire(hash_key, 3600)  # 1 hora
+                    logger.info(f"[CACHE-SET] Historial de transacciones guardado en Redis Hash para {usuario_id}.")
+                except Exception as e:
+                    logger.warning(f"[CACHE-ERROR] Falló escritura de transacciones en Redis Hash: {e}")
+
         return respuesta
 
 
@@ -115,6 +155,48 @@ class ClientePerfil(BaseLukaClient):
                 logger.warning(f"[CACHE-ERROR] Error guardando perfil en Redis para {usuario_id}: {e}")
                 
         return datos
+
+    async def obtener_presupuesto_activo_async(
+        self,
+        usuario_id: str,
+        token: str
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Obtiene el límite de gasto (presupuesto) activo del usuario desde ms-cliente.
+        Usa Redis como caché con TTL de 30 minutos para no sobrecargar ms-cliente.
+
+        Returns:
+            Dict con 'montoLimite' y 'nombre', o None si no hay presupuesto activo.
+        """
+        from app.persistencia.redis.cache_redis import CacheRedis
+        import json
+
+        cache = CacheRedis()
+        clave_cache = f"ia:presupuesto_activo:{usuario_id}"
+        cached_data = cache.obtener(clave_cache)
+        if cached_data:
+            try:
+                logger.info(f"[CACHE-HIT] Presupuesto activo de {usuario_id} obtenido de Redis.")
+                valor = json.loads(cached_data)
+                # None se serializa como "null"
+                return valor if valor else None
+            except Exception as e:
+                logger.warning(f"[CACHE-ERROR] Error decodificando presupuesto de Redis para {usuario_id}: {e}")
+
+        endpoint = "/api/v1/clientes/limites/activo"
+        try:
+            respuesta = await self.call("GET", endpoint, token=token)
+            datos = respuesta.get("datos", None)
+            # Guardar en Redis (TTL 30 min = 1800 seg)
+            try:
+                cache.guardar(clave_cache, json.dumps(datos, default=str), ex=1800)
+                logger.info(f"[CACHE-SET] Presupuesto activo de {usuario_id} guardado en Redis (30 min).")
+            except Exception as e:
+                logger.warning(f"[CACHE-ERROR] Error guardando presupuesto en Redis: {e}")
+            return datos
+        except Exception as e:
+            logger.warning(f"[PRESUPUESTO] No se pudo obtener presupuesto activo para {usuario_id}: {e}")
+            return None
 
 # Funciones de utilidad para inyección de dependencias
 def obtener_cliente_financiero() -> ClienteFinanciero:

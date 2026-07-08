@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -10,18 +10,61 @@ import { ServicioTema } from '../../../core/services/servicio-tema';
 import { SuscripcionService } from '../../../core/services/suscripcion.service';
 import { ModalPlanes } from '../../suscripcion/components/modal-planes/modal-planes';
 import { finalize } from 'rxjs';
+import { OnboardingTour, TourStep } from '../../../shared/components/onboarding-tour/onboarding-tour';
 
 @Component({
   selector: 'app-configuracion',
   standalone:true,
-  imports: [CommonModule, FormsModule, RouterLink, ModalPlanes],
+  imports: [CommonModule, FormsModule, RouterLink, ModalPlanes, OnboardingTour],
   templateUrl: './configuracion.html',
   styleUrls: ['./configuracion.scss'],
 })
-export class Configuracion {
+export class Configuracion implements OnInit {
 
   modalPlanesAbierto = signal(false);
   comprandoPlan = signal(false);
+
+  readonly mostrarTour = signal(false);
+  readonly stepsTour: TourStep[] = [
+    {
+      targetSelector: '#tour-apariencia',
+      title: 'Apariencia y Tema',
+      description: 'Elige entre tema Claro u Oscuro para adaptar la interfaz de Luka a tus preferencias visuales y condiciones de luz.',
+      position: 'bottom'
+    },
+    {
+      targetSelector: '#tour-color-principal',
+      title: 'Color de Acento',
+      description: 'Personaliza los botones y elementos interactivos de la aplicación seleccionando tu color favorito en esta paleta.',
+      position: 'bottom'
+    },
+    {
+      targetSelector: '#tour-ia-premium',
+      title: 'Inteligencia Artificial y Premium',
+      description: 'Mejora tu plan para acceder al Asistente de IA Financiera, análisis predictivos avanzados y gráficos históricos detallados.',
+      position: 'top'
+    },
+    {
+      targetSelector: '#tour-zona-peligro',
+      title: 'Zona de Peligro',
+      description: 'Desde aquí puedes gestionar opciones de alta sensibilidad de tu cuenta, como la eliminación definitiva del perfil.',
+      position: 'top'
+    }
+  ];
+
+  completarTour(): void {
+    localStorage.setItem('luka_tour_configuracion_visto', 'true');
+    this.mostrarTour.set(false);
+  }
+
+  ngOnInit(): void {
+    const tourVisto = localStorage.getItem('luka_tour_configuracion_visto');
+    if (!tourVisto) {
+      setTimeout(() => {
+        this.mostrarTour.set(true);
+      }, 600);
+    }
+  }
 
   abrirModalPlanes(): void {
     this.modalPlanesAbierto.set(true);
@@ -85,6 +128,7 @@ export class Configuracion {
   readonly modalEliminarCuentaAbierto = signal(false);
   readonly confirmacionEliminarCuenta = signal('');
   readonly fraseConfirmacionEliminarCuenta = 'Estoy de acuerdo con la eliminación de la cuenta';
+  readonly aceptaRiesgo = signal(false);
 
   readonly formNombres = signal('');
   readonly formApellidos = signal('');
@@ -168,7 +212,7 @@ export class Configuracion {
     const payload: SolicitudDatosPersonales = {
       dni: p.dni,
       genero: p.genero,
-      edad: p.edad,
+      fechaNacimiento: p.fechaNacimiento,
       fotoPerfilUrl: p.fotoPerfilUrl,
       nombres: this.formNombres().trim(),
       apellidos: this.formApellidos().trim(),
@@ -194,8 +238,7 @@ export class Configuracion {
   }
 
   eliminarCuenta(): void {
-    if (!this.confirmacionEliminarCuentaValida()) {
-      this.mensajeCuenta.set('Para continuar, escribe exactamente la frase de confirmación.');
+    if (!this.aceptaRiesgo()) {
       return;
     }
 
@@ -213,8 +256,6 @@ export class Configuracion {
       .pipe(finalize(() => this.eliminandoCuenta.set(false)))
       .subscribe({
         next: () => {
-          this.modalEliminarCuentaAbierto.set(false);
-          this.confirmacionEliminarCuenta.set('');
           this.authService.logout();
         },
         error: () => {

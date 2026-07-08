@@ -6,7 +6,6 @@ import java.util.UUID;
 /**
  * Excepción lanzada cuando no se encuentran los datos personales.
  * 
- * @author Paulo Moron
  * @version 1.1.0
  */
 public class DatosPersonalesNoEncontradosException extends ExcepcionRecursoNoEncontrado {

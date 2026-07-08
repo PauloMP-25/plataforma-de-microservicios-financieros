@@ -15,7 +15,7 @@ import java.util.UUID;
  * autenticación y autorización directamente con este objeto.
  * </p>
  *
- * * @author Paulo
+
  * @version 1.0
  */
 @Entity

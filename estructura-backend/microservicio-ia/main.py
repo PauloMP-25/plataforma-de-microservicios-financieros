@@ -36,6 +36,7 @@ from app.mensajeria.consumidor_ia import ConsumidorIA
 from app.mensajeria.outbox_scheduler import OutboxScheduler
 from app.mensajeria.escuchador_sincronizacion_ia import EscuchadorSincronizacionIA
 from app.mensajeria.escuchador_cambio_datos_ia import EscuchadorCambioDatosIA
+from app.mensajeria.escuchador_eventos_usuario_ia import EscuchadorEventosUsuarioIA
 from app.routers import analisis, dashboard
 from app.persistencia.postgres.database import inicializar_db
 
@@ -69,6 +70,8 @@ _escuchador_sync: EscuchadorSincronizacionIA | None = None
 _escuchador_sync_activo: bool = False
 _escuchador_cambio: EscuchadorCambioDatosIA | None = None
 _escuchador_cambio_activo: bool = False
+_escuchador_usuario: EscuchadorEventosUsuarioIA | None = None
+_escuchador_usuario_activo: bool = False
 
 # ══════════════════════════════════════════════════════════════════════════════
 # CONSUMIDOR RABBITMQ — hilo daemon
@@ -105,10 +108,11 @@ def _iniciar_consumidor_rabbitmq() -> None:
 
 def _iniciar_escuchadores_adicionales() -> None:
     """
-    Arranca los escuchadores de sincronización e invalidación en hilos daemon.
+    Arranca los escuchadores de sincronización, invalidación y eventos de usuario en hilos daemon.
     """
-    global _escuchador_sync, _escuchador_sync_activo, _escuchador_cambio, _escuchador_cambio_activo
+    global _escuchador_sync, _escuchador_sync_activo, _escuchador_cambio, _escuchador_cambio_activo, _escuchador_usuario, _escuchador_usuario_activo
     
+    redis_client = None
     # 1. Sincronización de Perfil (Redis)
     try:
         import redis
@@ -157,6 +161,19 @@ def _iniciar_escuchadores_adicionales() -> None:
     except Exception as exc:
         _escuchador_cambio_activo = False
         logger.error(f"[MAIN] Error iniciando sync caché: {exc}")
+
+    # 3. Inicialización y Sincronización de Transacciones (Redis HASH)
+    if redis_client:
+        try:
+            _escuchador_usuario = EscuchadorEventosUsuarioIA(redis_client)
+            threading.Thread(target=_escuchador_usuario.iniciar, name="hilo-sync-usuario-transacciones", daemon=True).start()
+            _escuchador_usuario_activo = True
+            logger.info("[MAIN] Escuchador de eventos de usuario e inicialización de caché transacciones iniciado.")
+        except Exception as exc:
+            _escuchador_usuario_activo = False
+            logger.error(f"[MAIN] Error iniciando hearder eventos usuario/transacciones: {exc}")
+    else:
+        logger.error("[MAIN] Redis no disponible. No se puede arrancar el escuchador de eventos de usuario.")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # LIFECYCLE — startup / shutdown
@@ -244,6 +261,13 @@ async def lifespan(app: FastAPI):
             logger.info("[MAIN] EscuchadorCambioDatosIA detenido correctamente.")
         except Exception as exc:
             logger.warning("[MAIN] Error al detener el EscuchadorCambioDatosIA: %s", str(exc))
+
+    if _escuchador_usuario:
+        try:
+            _escuchador_usuario.detener()
+            logger.info("[MAIN] EscuchadorEventosUsuarioIA detenido correctamente.")
+        except Exception as exc:
+            logger.warning("[MAIN] Error al detener el EscuchadorEventosUsuarioIA: %s", str(exc))
 
     logger.info("[MAIN] Microservicio IA de LUKA detenido correctamente.")
 
@@ -386,6 +410,11 @@ async def health() -> dict:
             "cola": config.cola_ia_sincronizacion_contexto,
             "redis": f"{config.redis_host}:{config.redis_port}",
             "descripcion": "Sincronización activa" if _escuchador_sync_activo else "Sin sincronización",
+        },
+        "sync_usuario_transacciones": {
+            "estado": "UP" if _escuchador_usuario_activo else "DEGRADADO",
+            "redis": f"{config.redis_host}:{config.redis_port}",
+            "descripcion": "Caché de transacciones e inicializador de login activos" if _escuchador_usuario_activo else "Inactivo",
         },
     }
  

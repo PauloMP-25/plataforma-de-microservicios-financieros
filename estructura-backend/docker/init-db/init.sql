@@ -6,4 +6,4 @@ CREATE DATABASE db_microservicio_auditoria;
 CREATE DATABASE db_microservicio_mensajeria;
 CREATE DATABASE db_microservicio_ia;
 CREATE DATABASE db_microservicio_pagos;
-CREATE DATABASE db_luka_suscripciones;
+CREATE DATABASE db_microservicio_suscripciones;

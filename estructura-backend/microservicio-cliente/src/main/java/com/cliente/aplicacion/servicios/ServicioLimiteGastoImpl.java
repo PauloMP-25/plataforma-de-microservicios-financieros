@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 /**
  * Lógica de negocio para la gestión del limite de gasto global.
  *
- * @author Paulo Moron
  * @since 2026-05
  */
 @Service
@@ -191,6 +190,50 @@ public class ServicioLimiteGastoImpl implements ServicioLimiteGasto {
         return repositorio.findByUsuarioIdAndActivoTrue(usuarioId)
                 .map(this::convertirADTO)
                 .orElse(null);
+    }
+
+    /**
+     * Verifica si el límite de gasto activo del usuario ha vencido y,
+     * en tal caso, lo desactiva automáticamente.
+     * <p>
+     * Operación idempotente: si no hay límite activo o si el límite
+     * vigente no ha expirado, retorna sin realizar cambios.
+     * Invocado durante el procesamiento del evento de login exitoso.
+     * </p>
+     *
+     * @param usuarioId UUID del usuario cuyo límite se debe verificar.
+     */
+    @Override
+    @Transactional
+    public void verificarYDesactivarSiVencido(UUID usuarioId) {
+        log.info("[LIMITE-GASTO] Verificando límite vencido para usuario: {}", usuarioId);
+
+        repositorio.findByUsuarioIdAndActivoTrue(usuarioId).ifPresentOrElse(limite -> {
+            if (!limite.estaVencido()) {
+                log.debug("[LIMITE-GASTO] Límite activo de usuario {} aún vigente hasta {}. Sin cambios.",
+                        usuarioId, limite.getFechaFin());
+                return;
+            }
+
+            log.info("[LIMITE-GASTO] Límite vencido detectado (ID: {}, fechaFin: {}). Desactivando automáticamente.",
+                    limite.getId(), limite.getFechaFin());
+
+            repositorio.desactivarLimitesAnteriores(usuarioId);
+
+            publicadorAuditoria.publicarEventoExitoso(EventoAuditoriaDTO.crear(
+                    usuarioId,
+                    "LIMITE_DESACTIVADO_AUTOMATICAMENTE",
+                    "MS-CLIENTE",
+                    "SISTEMA",
+                    String.format("Límite ID: %s desactivado automáticamente. Venció el: %s",
+                            limite.getId(), limite.getFechaFin())));
+
+            eventPublisher.publishEvent(new EventoContextoActualizado(usuarioId, "LIMITE_DESACTIVADO_AUTOMATICAMENTE"));
+
+            log.info("[LIMITE-GASTO] Límite {} desactivado automáticamente para usuario {}.",
+                    limite.getId(), usuarioId);
+
+        }, () -> log.debug("[LIMITE-GASTO] Usuario {} no tiene límite activo. Sin cambios.", usuarioId));
     }
 
     private RespuestaLimiteGasto convertirADTO(LimiteGasto limite) {

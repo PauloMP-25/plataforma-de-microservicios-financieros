@@ -1,6 +1,6 @@
 <header class="dashboard-header card glass-panel">
   <div class="header-left">
-    <h1 class="dashboard-title">{{ getTituloConFecha() }}</h1>
+    <h1 class="dashboard-title">DASHBOARD FINANCIERO</h1>
     <p class="dashboard-subtitle">Optimiza tu rendimiento financiero y monitorea tus ingresos, gastos, metas y presupuestos en tiempo real mediante analítica avanzada.</p>
   </div>
   
@@ -12,14 +12,14 @@
         <button type="button" class="preset-btn" (click)="seleccionarRangoRapido('anio')" [class.active]="esRangoActivo('anio')">
           ESTE AÑO
         </button>
-        <button type="button" class="preset-btn" (click)="seleccionarRangoRapido('mes')" [class.active]="esRangoActivo('mes')">
-          ÚLTIMO MES
+        <button type="button" class="preset-btn" (click)="seleccionarRangoRapido('seis_meses')" [class.active]="esRangoActivo('seis_meses')">
+          ÚLTIMOS 6 MESES
         </button>
         <button type="button" class="preset-btn" (click)="seleccionarRangoRapido('tres_meses')" [class.active]="esRangoActivo('tres_meses')">
           ÚLTIMOS 3 MESES
         </button>
-        <button type="button" class="preset-btn" (click)="seleccionarRangoRapido('semana')" [class.active]="esRangoActivo('semana')">
-          ÚLTIMA SEMANA
+        <button type="button" class="preset-btn" (click)="seleccionarRangoRapido('mes')" [class.active]="esRangoActivo('mes')">
+          ÚLTIMO MES
         </button>
         <button type="button" *ngIf="fechaInicio || fechaFin" class="preset-btn clear-btn" (click)="limpiarFiltrosFechas()" title="Limpiar fechas">
           <i class="fa-solid fa-xmark"></i>
@@ -30,18 +30,18 @@
     <!-- Fechas -->
     <div class="filter-group">
       <label class="filter-label">Desde</label>
-      <input type="date" class="date-input" [(ngModel)]="fechaInicio" (ngModelChange)="onFiltroChange()" />
+      <input type="date" class="date-input" [(ngModel)]="fechaInicio" />
     </div>
     
     <div class="filter-group">
       <label class="filter-label">Hasta</label>
-      <input type="date" class="date-input" [(ngModel)]="fechaFin" (ngModelChange)="onFiltroChange()" />
+      <input type="date" class="date-input" [(ngModel)]="fechaFin" />
     </div>
 
     <!-- Tipo de Movimiento -->
     <div class="filter-group">
       <label class="filter-label">Tipo</label>
-      <select class="period-selector-select" [(ngModel)]="tipoMovimiento" (ngModelChange)="onFiltroChange()">
+      <select class="period-selector-select" [(ngModel)]="tipoMovimiento">
         <option value="">Todos</option>
         <option value="INGRESO">Solo Ingresos</option>
         <option value="EGRESO">Solo Egresos</option>
@@ -51,13 +51,20 @@
     <!-- Método de pago -->
     <div class="filter-group">
       <label class="filter-label">Método</label>
-      <select class="period-selector-select" [(ngModel)]="metodoPago" (ngModelChange)="onFiltroChange()">
+      <select class="period-selector-select" [(ngModel)]="metodoPago">
         <option value="">Todos</option>
         <option value="EFECTIVO">Efectivo</option>
         <option value="TARJETA">Tarjeta</option>
         <option value="TRANSFERENCIA">Transferencia</option>
         <option value="DIGITAL">Digital</option>
       </select>
+    </div>
+
+    <!-- Botón Aplicar -->
+    <div class="filter-group action-group">
+      <button type="button" class="apply-btn" (click)="onFiltroChange()">
+        APLICAR
+      </button>
     </div>
   </div>
 </header>

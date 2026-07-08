@@ -9,7 +9,6 @@ import java.util.Map;
  * cumpliendo con las políticas de Meta para el inicio de conversaciones.
  * </p>
  *
- * @author Paulo Moron
  * @version 1.0.0
  * @since 2026-05
  */

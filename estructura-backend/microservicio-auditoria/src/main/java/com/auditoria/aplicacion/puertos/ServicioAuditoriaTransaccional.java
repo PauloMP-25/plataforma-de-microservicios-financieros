@@ -13,7 +13,6 @@ import java.util.UUID;
  * de estado en las entidades de negocio del ecosistema.
  * </p>
  * 
- * @author Paulo Moron
  * @since 2026-05
  */
 public interface ServicioAuditoriaTransaccional {

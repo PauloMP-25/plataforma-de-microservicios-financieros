@@ -21,7 +21,6 @@ import com.mensajeria.infraestructura.configuracion.PropiedadesTwilio;
  * eliminando la dependencia de un número fijo. Twilio selecciona dinámicamente
  * el número de envío con la estrategia configurada en el Messaging Service.</p>
  *
- * @author Paulo Moron
  * @version 1.2.0
  */
 @Service

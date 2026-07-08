@@ -69,7 +69,8 @@ export class ClienteMetasLimitesService {
               montoObjetivo: 2000,
               montoActual: 2000,
               porcentajeProgreso: 100,
-              fechaLimite: '2026-11-29',
+              fechaObjetivo: '2026-11-29',
+              fechaInicio: '2025-01-15',
               completada: true,
               fechaCreacion: '2025-01-15',
               fechaActualizacion: '2026-11-29'
@@ -80,7 +81,8 @@ export class ClienteMetasLimitesService {
               montoObjetivo: 300,
               montoActual: 300,
               porcentajeProgreso: 100,
-              fechaLimite: '2025-08-15',
+              fechaObjetivo: '2025-08-15',
+              fechaInicio: '2024-10-10',
               completada: true,
               fechaCreacion: '2024-10-10',
               fechaActualizacion: '2025-08-15'
@@ -91,7 +93,8 @@ export class ClienteMetasLimitesService {
               montoObjetivo: 5000,
               montoActual: 1700,
               porcentajeProgreso: 34,
-              fechaLimite: '2026-03-10',
+              fechaObjetivo: '2026-03-10',
+              fechaInicio: '2025-02-01',
               completada: false,
               fechaCreacion: '2025-02-01',
               fechaActualizacion: '2025-02-01'
@@ -102,7 +105,8 @@ export class ClienteMetasLimitesService {
               montoObjetivo: 5100,
               montoActual: 1700,
               porcentajeProgreso: 33,
-              fechaLimite: '2027-04-20',
+              fechaObjetivo: '2027-04-20',
+              fechaInicio: '2025-01-20',
               completada: false,
               fechaCreacion: '2025-01-20',
               fechaActualizacion: '2025-01-20'
@@ -113,7 +117,8 @@ export class ClienteMetasLimitesService {
               montoObjetivo: 1500,
               montoActual: 850,
               porcentajeProgreso: 57,
-              fechaLimite: '2026-05-05',
+              fechaObjetivo: '2026-05-05',
+              fechaInicio: '2025-03-01',
               completada: false,
               fechaCreacion: '2025-03-01',
               fechaActualizacion: '2025-03-01'
@@ -124,7 +129,8 @@ export class ClienteMetasLimitesService {
               montoObjetivo: 2500,
               montoActual: 250,
               porcentajeProgreso: 10,
-              fechaLimite: '2025-09-20',
+              fechaObjetivo: '2025-09-20',
+              fechaInicio: '2024-12-01',
               completada: false,
               fechaCreacion: '2024-12-01',
               fechaActualizacion: '2024-12-01'
@@ -135,7 +141,8 @@ export class ClienteMetasLimitesService {
               montoObjetivo: 1000,
               montoActual: 300,
               porcentajeProgreso: 30,
-              fechaLimite: '2026-12-31',
+              fechaObjetivo: '2026-12-31',
+              fechaInicio: '2025-04-10',
               completada: false,
               fechaCreacion: '2025-04-10',
               fechaActualizacion: '2025-04-10'

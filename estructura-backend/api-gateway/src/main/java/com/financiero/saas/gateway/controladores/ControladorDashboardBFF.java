@@ -28,7 +28,6 @@ import java.util.Map;
  * reduciendo ráfagas de red en el cliente y mejorando los tiempos de respuesta.
  * </p>
  *
- * @author Antigravity
  * @version 1.0.3
  * @since 2026-06-01
  */
@@ -544,6 +543,7 @@ public class ControladorDashboardBFF {
                     return Mono.just(objectMapper.createObjectNode());
                 });
     }
+
 
     private JsonNode parseJsonSilently(String json) {
         try {

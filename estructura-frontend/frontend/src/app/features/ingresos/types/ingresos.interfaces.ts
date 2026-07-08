@@ -41,11 +41,13 @@ export interface IngresoRegistro {
 }
 
 export interface IngresoFormData {
+  nombreIngreso?: string;
   monto: number;
   fechaTransaccion: string;
   descripcion: string;
   categoria: string;
+  /** Nombre legible de la categoría (para el preview). Se actualiza junto con `categoria`. */
+  categoriaNombre: string;
   metodoPago: MetodoPago;
   etiquetas: string[];
 }
-

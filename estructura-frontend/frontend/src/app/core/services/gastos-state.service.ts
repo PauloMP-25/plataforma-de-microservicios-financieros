@@ -4,7 +4,7 @@ import { catchError } from 'rxjs/operators';
 import { Transacciones } from './transacciones';
 import { FinancieroService } from './Financiero.service';
 import { TransaccionDTO } from '../models/financiero/transaccion.model';
-import { ResumenFinancieroDTO } from '../models/financiero/resumen.model';
+import { ResumenFinancieroDTO, RachaDTO } from '../models/financiero/resumen.model';
 import { CategoriaDTO } from '../models/financiero/categoria.model';
 
 @Injectable({
@@ -16,6 +16,7 @@ export class GastosStateService {
   readonly resumenActual = signal<ResumenFinancieroDTO | null>(null);
   readonly resumenAnterior = signal<ResumenFinancieroDTO | null>(null);
   readonly categorias = signal<CategoriaDTO[]>([]);
+  readonly rachaActual = signal<RachaDTO | null>(null);
 
   // ── Loading state ──
   readonly cargando = signal<boolean>(false);
@@ -87,6 +88,14 @@ export class GastosStateService {
       llamadas['categorias'] = of(null);
     }
 
+    if (necesitaRefrescoVolatil) {
+      llamadas['racha'] = this.financieroService.getRacha().pipe(
+        catchError(() => of(null))
+      );
+    } else {
+      llamadas['racha'] = of(null);
+    }
+
     forkJoin(llamadas).subscribe({
       next: (res: any) => {
         if (res.historial !== null) {
@@ -101,6 +110,9 @@ export class GastosStateService {
         }
         if (res.categorias !== null) {
           this.categorias.set(res.categorias || []);
+        }
+        if (res.racha !== null) {
+          this.rachaActual.set(res.racha);
         }
         this.cargando.set(false);
       },

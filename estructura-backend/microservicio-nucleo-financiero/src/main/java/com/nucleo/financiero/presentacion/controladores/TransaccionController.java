@@ -32,7 +32,6 @@ import org.springframework.format.annotation.DateTimeFormat;
  * {@link ITransaccionService}.
  * </p>
  *
- * @author Luka-Dev-Backend
  * @version 1.2.2
  */
 @RestController
@@ -57,7 +56,7 @@ public class TransaccionController {
             HttpServletRequest httpRequest) {
 
         UUID tokenUsuarioId = UtilidadSeguridad.obtenerUsuarioId();
-        if (!tokenUsuarioId.equals(request.usuarioId())) {
+        if (tokenUsuarioId != null && !tokenUsuarioId.equals(request.usuarioId())) {
             throw new ExcepcionAccesoDenegado();
         }
 
@@ -82,7 +81,7 @@ public class TransaccionController {
 
         UUID tokenUsuarioId = UtilidadSeguridad.obtenerUsuarioId();
         for (SolicitudTransaccion request : solicitudes) {
-            if (!tokenUsuarioId.equals(request.usuarioId())) {
+            if (tokenUsuarioId != null && !tokenUsuarioId.equals(request.usuarioId())) {
                 throw new ExcepcionAccesoDenegado();
             }
         }
@@ -116,7 +115,7 @@ public class TransaccionController {
             HttpServletRequest httpRequest) {
 
         UUID tokenUsuarioId = UtilidadSeguridad.obtenerUsuarioId();
-        if (!tokenUsuarioId.equals(usuarioId)) {
+        if (tokenUsuarioId != null && !tokenUsuarioId.equals(usuarioId)) {
             throw new ExcepcionAccesoDenegado();
         }
 
@@ -147,7 +146,7 @@ public class TransaccionController {
             HttpServletRequest httpRequest) {
 
         UUID tokenUsuarioId = UtilidadSeguridad.obtenerUsuarioId();
-        if (!tokenUsuarioId.equals(usuarioId)) {
+        if (tokenUsuarioId != null && !tokenUsuarioId.equals(usuarioId)) {
             throw new ExcepcionAccesoDenegado();
         }
 

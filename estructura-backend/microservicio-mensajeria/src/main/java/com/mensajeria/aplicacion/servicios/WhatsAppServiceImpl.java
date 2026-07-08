@@ -22,7 +22,6 @@ import java.util.Map;
  * eliminando la dependencia de un número de WhatsApp fijo como origen.
  * Twilio gestiona el enrutamiento internamente.</p>
  *
- * @author Paulo Moron
  * @version 1.2.0
  */
 @Service

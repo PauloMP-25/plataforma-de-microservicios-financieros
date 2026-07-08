@@ -18,4 +18,6 @@ public interface SuscripcionRepository extends JpaRepository<Suscripcion, UUID>,
     List<Suscripcion> findByUsuarioId(UUID usuarioId);
     
     List<Suscripcion> findByEstado(String estado);
+
+    List<Suscripcion> findByUsuarioIdAndNombreIn(UUID usuarioId, List<String> nombres);
 }

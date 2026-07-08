@@ -8,7 +8,6 @@ import java.util.Map;
  * (ej. Fallo en el microservicio de IA, mensajería o API de terceros).
  * <p>Mapea a un estado HTTP 502 Bad Gateway.</p>
  * 
- * @author Paulo Moron
  */
 public class ExcepcionServicioExterno extends ExcepcionGlobal {
 

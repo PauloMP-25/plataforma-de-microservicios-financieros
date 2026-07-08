@@ -26,7 +26,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * asegurando la inyección de DTOs y componentes compartidos.</li>
  * </ul>
  *
- * @author Paulo Moron
  * @version 1.1.0
  * @since 2026-05-10
  */

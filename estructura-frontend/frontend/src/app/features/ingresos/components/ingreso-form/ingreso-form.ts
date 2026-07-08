@@ -14,10 +14,12 @@ export class IngresoFormComponent {
   @Input() categorias: OptionItem[] = [];
   @Input() metodos: OptionItem[] = [];
   @Input() model: IngresoFormData = {
+    nombreIngreso: '',
     monto: 1500,
     fechaTransaccion: '',
     descripcion: '',
     categoria: '',
+    categoriaNombre: '',
     metodoPago: 'TRANSFERENCIA',
     etiquetas: [],
   };
@@ -48,6 +50,16 @@ export class IngresoFormComponent {
   }
 
   onModelChange(): void {
+    this.modelChange.emit(this.model);
+  }
+
+  /** Resuelve el nombre legible de la categoría seleccionada y emite el cambio. */
+  onCategoriaChange(): void {
+    const opcion = this.categoriasConCrear.find(c => c.value === this.model.categoria);
+    this.model = {
+      ...this.model,
+      categoriaNombre: opcion ? opcion.label : this.model.categoria,
+    };
     this.modelChange.emit(this.model);
   }
 

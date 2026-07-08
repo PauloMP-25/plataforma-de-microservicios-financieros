@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.GetMapping;
  * Cliente Feign para la comunicación saliente con el microservicio de Núcleo Financiero.
  * Permite integraciones de control financiero y aprovecha la configuración del circuit breaker de Feign.
  * 
- * @author Paulo Moron
  * @version 1.0.0
  * @since 2026-05-17
  */

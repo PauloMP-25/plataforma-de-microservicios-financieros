@@ -15,7 +15,6 @@ Flujo:
         → cola.ia.sincronizacion.contexto → EscuchadorSincronizacionIA
         → Redis (ia:contexto:{usuarioId})
 
-@author Paulo Moron
 @version 2.0.0
 @since 2026-05-10
 ══════════════════════════════════════════════════════════════════════════════
@@ -255,14 +254,15 @@ class EscuchadorSincronizacionIA:
                 return
 
             # 3. Serializar en snake_case para que Python lo consuma cómodamente
-            redis_key = f"{REDIS_KEY_PREFIX}{usuario_id}"
+            hash_key = f"usuario:{usuario_id}"
+            campo = "ia:contexto"
             json_value = contexto.model_dump_json()
 
             # 4. Guardar en Redis con reintentos
-            if self._guardar_en_redis_con_reintentos(redis_key, json_value):
+            if self._guardar_en_redis_con_reintentos(hash_key, campo, json_value):
                 logger.info(
-                    "[SYNC-IA] Redis actualizado exitosamente: %s (TTL=%ds)",
-                    redis_key, REDIS_TTL_SECONDS,
+                    "[SYNC-IA] Redis Hash actualizado exitosamente: %s | %s (TTL=%ds)",
+                    hash_key, campo, REDIS_TTL_SECONDS,
                 )
                 canal.basic_ack(delivery_tag=tag)
             else:
@@ -287,13 +287,14 @@ class EscuchadorSincronizacionIA:
     # ── Resiliencia: Reintentos con backoff exponencial ──────────────────────
 
     def _guardar_en_redis_con_reintentos(
-        self, clave: str, valor: str
+        self, clave: str, campo: str, valor: str
     ) -> bool:
         """
-        Intenta guardar en Redis con reintentos exponenciales.
+        Intenta guardar en Redis Hash con reintentos exponenciales.
 
         Args:
-            clave: Clave Redis (ej: ia:contexto:uuid).
+            clave: Clave Redis (ej: usuario:uuid).
+            campo: Campo del Hash (ej: ia:contexto).
             valor: Valor JSON serializado del contexto (snake_case).
 
         Returns:
@@ -301,16 +302,17 @@ class EscuchadorSincronizacionIA:
         """
         for intento in range(1, self.MAX_REINTENTOS + 1):
             try:
-                self._redis.setex(
+                self._redis.hset(
                     name=clave,
-                    time=REDIS_TTL_SECONDS,
+                    key=campo,
                     value=valor,
                 )
+                self._redis.expire(clave, REDIS_TTL_SECONDS)
                 return True
             except Exception as exc:
                 espera = self.BACKOFF_BASE_SECONDS * (2 ** (intento - 1))
                 logger.warning(
-                    "[SYNC-IA] Intento %d/%d — Redis falló: %s. "
+                    "[SYNC-IA] Intento %d/%d — Redis Hash falló: %s. "
                     "Reintentando en %ds...",
                     intento, self.MAX_REINTENTOS, exc, espera,
                 )

@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
  * Especificaciones dinámicas para el filtrado de registros de auditoría.
  * Implementa el Specification Pattern para búsquedas avanzadas y modulares.
  * 
- * @author Paulo Moron
  * @version 1.0.0
  */
 public class AuditoriaSpecs {

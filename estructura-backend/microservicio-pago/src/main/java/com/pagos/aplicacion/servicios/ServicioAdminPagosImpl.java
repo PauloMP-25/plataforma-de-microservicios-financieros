@@ -36,7 +36,10 @@ public class ServicioAdminPagosImpl implements IServicioAdminPagos {
 
     @Override
     @Transactional(readOnly = true)
-    public ResumenPagosDTO obtenerResumenGeneral() {
+    public ResumenPagosDTO obtenerResumenGeneral(Integer anio) {
+        if (anio == null) {
+            anio = java.time.Year.now().getValue();
+        }
         long total = repositorioPago.count();
         BigDecimal ingresos = repositorioDetallePago.sumarIngresosTotales();
         if (ingresos == null) ingresos = BigDecimal.ZERO;
@@ -52,7 +55,28 @@ public class ServicioAdminPagosImpl implements IServicioAdminPagos {
             porPlan.put(((PlanSuscripcion) fila[0]).name(), (Long) fila[1]);
         }
 
-        return new ResumenPagosDTO(total, ingresos.setScale(2, RoundingMode.HALF_UP), porEstado, porPlan);
+        String[] nombresMeses = {"Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"};
+        List<Map<String, Object>> grafico = new java.util.ArrayList<>();
+        
+        List<Object[]> resultadosGrafico = repositorioPago.sumarIngresosPorMesYAnio(anio);
+        Map<Integer, BigDecimal> ingresosPorMes = new HashMap<>();
+        for (Object[] fila : resultadosGrafico) {
+            Number mesNum = (Number) fila[0];
+            Number montoNum = (Number) fila[1];
+            BigDecimal monto = montoNum != null ? new BigDecimal(montoNum.toString()) : BigDecimal.ZERO;
+            ingresosPorMes.put(mesNum.intValue(), monto);
+        }
+
+        for (int i = 1; i <= 12; i++) {
+            BigDecimal ingresoMes = ingresosPorMes.getOrDefault(i, BigDecimal.ZERO);
+            grafico.add(Map.of(
+                "mes", nombresMeses[i - 1],
+                "ingresos", ingresoMes,
+                "egresos", 0
+            ));
+        }
+
+        return new ResumenPagosDTO(total, ingresos.setScale(2, RoundingMode.HALF_UP), porEstado, porPlan, grafico);
     }
 
     @SuppressWarnings("null")

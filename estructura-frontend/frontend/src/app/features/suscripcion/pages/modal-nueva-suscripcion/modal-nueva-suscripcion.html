@@ -1,9 +1,14 @@
 <div class="modal-backdrop" (click)="cerrarModal()">
   
-  <div class="modal-container" (click)="$event.stopPropagation()">
+  <div class="modal-container" [class.modal-right-side]="suscripcionEditar !== null" (click)="$event.stopPropagation()">
+    <!-- Top accent bar tied to brand color preview -->
+    <div class="modal-top-accent-bar" [style.background]="colorPreview()"></div>
     
     <div class="modal-header">
-      <h2>Nueva Suscripción</h2>
+      <h2>
+        <i class="fa-solid" [ngClass]="suscripcionEditar ? 'fa-pen text-indigo-500' : 'fa-sparkles text-amber-500'"></i> 
+        {{ suscripcionEditar ? 'Editar Suscripción' : 'Nueva Suscripción' }}
+      </h2>
       <button type="button" class="modal-close" (click)="cerrarModal()">×</button>
     </div>
 
@@ -11,17 +16,49 @@
       <div class="form-grid">
         
         <div class="form-group col-12">
-          <label class="form-label">Nombre *</label>
-          <input type="text" class="form-input" [ngModel]="nombre()" (ngModelChange)="nombre.set($event)" name="nombre" placeholder="Ej: Netflix, Spotify...">
+          <label class="form-label"><i class="fa-solid fa-signature"></i> Nombre *</label>
+          <div style="display: flex; align-items: center; gap: 12px; width: 100%; position: relative;">
+            <!-- Interactive color and icon preview -->
+            <div class="icon-preview-box" [style.background]="colorPreview() + '15'" [style.color]="colorPreview()" [style.borderColor]="colorPreview() + '35'">
+              <i [className]="iconoPreview()"></i>
+            </div>
+            
+            <div style="flex: 1; position: relative;">
+              <input type="text" class="form-input" style="width: 100%;" 
+                [ngModel]="nombre()" 
+                (ngModelChange)="nombre.set($event)" 
+                name="nombre" 
+                placeholder="Ej: Netflix, Spotify, Prime..."
+                (focus)="mostrarSugerencias.set(true)"
+                (blur)="ocultarSugerenciasConRetraso()"
+                autocomplete="off">
+                
+              <!-- Autocomplete dropdown -->
+              @if (mostrarSugerencias() && sugerencias().length > 0) {
+                <div class="autocomplete-dropdown">
+                  @for (sug of sugerencias(); track sug.nombre) {
+                    <div class="autocomplete-item" (mousedown)="$event.preventDefault(); seleccionarPlataforma(sug)">
+                      <div class="autocomplete-icon" [style.color]="sug.color">
+                        <i [className]="sug.icono"></i>
+                      </div>
+                      <div class="autocomplete-text">
+                        <span class="autocomplete-name">{{ sug.nombre }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
         </div>
 
         <div class="form-group col-12">
-          <label class="form-label">Descripción</label>
-          <textarea class="form-input" [ngModel]="descripcion()" (ngModelChange)="descripcion.set($event)" name="descripcion" rows="2"></textarea>
+          <label class="form-label"><i class="fa-solid fa-align-left"></i> Descripción</label>
+          <textarea class="form-input" [ngModel]="descripcion()" (ngModelChange)="descripcion.set($event)" name="descripcion" placeholder="Detalles de la membresía (opcional)..." rows="2"></textarea>
         </div>
 
         <div class="form-group col-6">
-          <label class="form-label">Categoría *</label>
+          <label class="form-label"><i class="fa-solid fa-tags"></i> Categoría *</label>
           <select class="form-input" [ngModel]="categoria()" (ngModelChange)="categoria.set($event)" name="categoria">
             <option value="">Selecciona</option>
             @for (cat of categorias; track cat.id) { <option [value]="cat.id">{{cat.nombre}}</option> }
@@ -29,31 +66,40 @@
         </div>
 
         <div class="form-group col-6">
-          <label class="form-label">Monto (USD) *</label>
+          <label class="form-label"><i class="fa-solid fa-coins"></i> MONTO (S/) *</label>
           <input type="number" class="form-input" [ngModel]="monto()" (ngModelChange)="monto.set($event)" name="monto" placeholder="0.00">
         </div>
 
         <div class="form-group col-6">
-          <label class="form-label">Frecuencia *</label>
+          <label class="form-label"><i class="fa-solid fa-arrows-spin"></i> Frecuencia *</label>
           <select class="form-input" [ngModel]="frecuencia()" (ngModelChange)="frecuencia.set($event)" name="frecuencia">
             @for (frec of frecuencias; track frec.id) { <option [value]="frec.id">{{frec.nombre}}</option> }
           </select>
         </div>
 
         <div class="form-group col-6">
-          <label class="form-label">Próximo Pago *</label>
-          <input type="date" class="form-input" [ngModel]="proximoPago()" (ngModelChange)="proximoPago.set($event)" name="proximoPago">
+          <label class="form-label"><i class="fa-solid fa-calendar-day"></i> Próximo Pago *</label>
+          <input type="date" class="form-input" [ngModel]="fechaInicio()" (ngModelChange)="fechaInicio.set($event)" name="fechaInicio">
         </div>
 
-        <div class="form-group col-12">
-          <label class="form-label">Días restantes</label>
-          <input type="text" class="form-input" [value]="diasRestantes() + ' días'" readonly disabled style="opacity: 0.7;">
+        <div class="form-group col-12 calculated-hint" *ngIf="diasRestantes() !== null" style="opacity: 0.85; margin-top: -2px;">
+          <div class="alert-box" [style.background]="colorPreview() + '10'" [style.borderColor]="colorPreview() + '20'">
+            <i class="fa-solid fa-circle-info" [style.color]="colorPreview()"></i>
+            <span>Cobro programado en <strong>{{ diasRestantes() }} días</strong></span>
+          </div>
         </div>
       </div>
 
-      <div class="modal-footer">
-        <button type="button" class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
-        <button type="submit" class="btn-primary">Guardar Suscripción</button>
+      <div class="modal-footer" style="flex-direction: column;">
+        <div style="display: flex; gap: 12px; width: 100%;">
+          <button type="button" class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn-primary" [style.background]="colorPreview()" [style.boxShadow]="'0 8px 20px ' + colorPreview() + '40'">{{ suscripcionEditar ? 'Guardar Cambios' : 'Guardar Suscripción' }}</button>
+        </div>
+        @if (suscripcionEditar) {
+          <button type="button" class="btn-success" style="width: 100%; margin-top: 8px; padding: 12px; border-radius: 12px; font-weight: 800; border: none; cursor: pointer; background: var(--color-success); color: white; transition: all 0.2s;" (click)="registrarPagoManual()">
+            <i class="fa-solid fa-check-circle"></i> Registrar Pago Manual Ahora
+          </button>
+        }
       </div>
     </form>
   </div>

@@ -1,9 +1,10 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { IngresosStateService } from '../../../../core/services/ingresos-state.service';
 import { AppEventBus } from '../../../../core/services/app-event-bus.service';
+import { OnboardingTour, TourStep } from '../../../../shared/components/onboarding-tour/onboarding-tour';
 import {
   DistribucionCategoria,
   IngresoKpi,
@@ -17,12 +18,13 @@ import {
   imports: [
     CommonModule,
     FormsModule,
-    RouterLink
+    RouterLink,
+    OnboardingTour
   ],
   templateUrl: './ingresos-page.html',
   styleUrl: './ingresos-page.scss',
 })
-export class IngresosPage {
+export class IngresosPage implements OnInit {
   private readonly stateService = inject(IngresosStateService);
   private readonly eventBus = inject(AppEventBus);
 
@@ -261,9 +263,17 @@ export class IngresosPage {
     }
     const stops: string[] = [];
     let prev = 0;
+    const isMultiple = data.length > 1;
     for (const item of data) {
       const end = prev + item.porcentaje;
-      stops.push(`${item.color} ${prev}% ${end}%`);
+      if (isMultiple) {
+        // Dejar un 1% de gap para que se vea la línea divisoria (el fondo de la tarjeta)
+        const gapEnd = Math.max(prev, end - 1.5);
+        stops.push(`${item.color} ${prev}% ${gapEnd}%`);
+        stops.push(`transparent ${gapEnd}% ${end}%`);
+      } else {
+        stops.push(`${item.color} ${prev}% ${end}%`);
+      }
       prev = end;
     }
     return `background: conic-gradient(${stops.join(', ')});`;
@@ -364,6 +374,48 @@ export class IngresosPage {
 
   get absVariacionIngresos(): number {
     return Math.abs(this.variacionIngresos);
+  }
+
+  readonly mostrarTour = signal(false);
+  readonly stepsTour: TourStep[] = [
+    {
+      targetSelector: 'a[routerLink="/ingresos/nuevo"]',
+      title: 'Registrar Nuevo Ingreso',
+      description: 'Haz clic aquí para agregar un nuevo flujo de ingresos, asignando categorías, montos y métodos de pago de forma rápida.',
+      position: 'bottom'
+    },
+    {
+      targetSelector: 'article.bg-gradient-to-r',
+      title: 'Resumen de Ingresos',
+      description: 'Esta sección te muestra el dinero total acumulado que ha ingresado este mes y la comparación porcentual con el mes anterior.',
+      position: 'bottom'
+    },
+    {
+      targetSelector: '.kpi-grid',
+      title: 'Indicadores Clave (KPIs)',
+      description: 'Examina estadísticas rápidas sobre la cantidad de ingresos del mes, la categoría principal, tu promedio por transacción y el progreso hacia tu meta de ahorro.',
+      position: 'top'
+    },
+    {
+      targetSelector: '.charts-grid',
+      title: 'Gráficos de Distribución',
+      description: 'Aquí puedes analizar de forma visual en qué categorías se concentran tus ingresos (Salario, Freelance, etc.) y visualizar tu progreso acumulado.',
+      position: 'top'
+    }
+  ];
+
+  ngOnInit(): void {
+    const tourVisto = localStorage.getItem('luka_tour_ingresos_visto');
+    if (!tourVisto) {
+      setTimeout(() => {
+        this.mostrarTour.set(true);
+      }, 600);
+    }
+  }
+
+  completarTour(): void {
+    localStorage.setItem('luka_tour_ingresos_visto', 'true');
+    this.mostrarTour.set(false);
   }
 
   constructor() {

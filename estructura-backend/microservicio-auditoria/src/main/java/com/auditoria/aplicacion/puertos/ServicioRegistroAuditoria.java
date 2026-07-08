@@ -13,7 +13,6 @@ import org.springframework.data.domain.Pageable;
  * realizar consultas históricas filtradas para el ecosistema Luka App.
  * </p>
  * 
- * @author Paulo Moron
  * @since 2026-05
  */
 public interface ServicioRegistroAuditoria {

@@ -54,6 +54,7 @@ com/cliente/aplicacion/puertos/ServicioPerfilFinanciero.class
 com/cliente/presentacion/controladores/ControladorMetaAhorro.class
 com/cliente/infraestructura/configuracion/ConfiguracionAsync.class
 com/cliente/dominio/entidades/DatosPersonales$DatosPersonalesBuilder.class
+com/cliente/infraestructura/mensajeria/ConsumidorLoginExitoso.class
 com/cliente/presentacion/manejadores/ManejadorGlobalExcepciones.class
 com/cliente/dominio/entidades/LimiteGasto.class
 com/cliente/aplicacion/dtos/solicitudes/SolicitudProgreso.class

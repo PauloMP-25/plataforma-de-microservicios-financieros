@@ -23,7 +23,7 @@ Esta carpeta contiene la lógica de negocio, servicios de infraestructura y mód
 
 ## Flujo de Desarrollo
 
-1. **Configuración de Red:** Los microservicios se comunican internamente a través de un API Gateway de forma estática o mediante orquestación externa (sin Eureka).
+1. **Configuración de Red:** Los microservicios se comunican internamente a través de un API Gateway de forma estática o mediante enrutamiento explícito.
 2. **Seguridad:** Todas las solicitudes deben pasar por la validación de JWT gestionada en la `libreria-comun`.
 3. **Persistencia:** Cada microservicio gestiona su propia base de datos para garantizar el bajo acoplamiento.
 

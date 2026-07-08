@@ -1,6 +1,7 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from './auth.service';
+import { Injector } from '@angular/core';
 import { catchError, filter, switchMap, take } from 'rxjs/operators';
 import { throwError, BehaviorSubject, Observable } from 'rxjs';
 
@@ -8,11 +9,14 @@ let isRefreshing = false;
 let refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
-  const auth = inject(AuthService);
-  const token = auth.getToken();
+  const injector = inject(Injector);
+  const token = localStorage.getItem('luka_token');
 
   let authReq = req;
-  if (token) {
+  // Solo agregar token a las peticiones internas, evitar enviarlo a API Peru u otras APIs externas
+  const isExternalApi = req.url.includes('apiperu.dev');
+  
+  if (token && !isExternalApi) {
     authReq = req.clone({
       setHeaders: { Authorization: `Bearer ${token}` }
     });
@@ -20,15 +24,16 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401 && !req.url.includes('/auth/login') && !req.url.includes('/auth/refrescar-token')) {
-        return handle401Error(authReq, next, auth);
+      if (error.status === 401 && !req.url.includes('/auth/login') && !req.url.includes('/auth/refrescar-token') && !isExternalApi) {
+        return handle401Error(authReq, next, injector);
       }
       return throwError(() => error);
     })
   );
 };
 
-const handle401Error = (req: any, next: any, auth: AuthService): Observable<any> => {
+const handle401Error = (req: any, next: any, injector: Injector): Observable<any> => {
+  const auth = injector.get(AuthService);
   if (!isRefreshing) {
     isRefreshing = true;
     refreshTokenSubject.next(null);

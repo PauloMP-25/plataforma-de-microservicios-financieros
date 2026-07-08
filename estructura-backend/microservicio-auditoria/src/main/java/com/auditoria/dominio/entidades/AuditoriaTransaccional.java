@@ -19,7 +19,6 @@ import java.util.UUID;
  * financiero.
  * </p>
  * 
- * @author Paulo Moron
  * @version 1.1.0
  * @since 2026-05-10
  */

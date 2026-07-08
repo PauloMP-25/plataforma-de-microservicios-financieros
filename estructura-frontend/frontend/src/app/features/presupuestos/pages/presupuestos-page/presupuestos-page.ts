@@ -13,16 +13,20 @@ import { AuthService } from '../../../../core/services/auth.service';
 import Chart from 'chart.js/auto';
 
 
+import { OnboardingTour, TourStep } from '../../../../shared/components/onboarding-tour/onboarding-tour';
+
+
 @Component({
   selector: 'app-presupuestos-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, OnboardingTour],
   providers: [DatePipe],
   templateUrl: './presupuestos-page.html',
   styleUrls: ['./presupuestos-page.scss']
 })
 export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('evolucionCanvas') evolucionCanvasRef?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('desgloseCanvas') desgloseCanvasRef?: ElementRef<HTMLCanvasElement>;
 
   private fb = inject(FormBuilder);
   private presupuestoService = inject(PresupuestoService);
@@ -34,31 +38,88 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
 
   authService = inject(AuthService);
 
-  // Chart instance
+  // Chart instances
   private evolucionChartInstance: Chart | null = null;
+  private desgloseChartInstance: Chart | null = null;
   private injector = inject(Injector);
 
   constructor() {
     effect(() => {
       const hist = this.historialPresupuestos();
       const activo = this.presupuestoActivo();
-      if (this.esPremiumOPro() && this.evolucionChartInstance && hist.length) {
-        this._actualizarChart(this.evolucionChartInstance, hist, activo?.montoLimite ?? 1000, activo?.porcentajeAlerta ?? 80);
+      if (this.esPremiumOPro() && hist.length > 0) {
+        if (this.evolucionChartInstance) {
+          this._actualizarChart(this.evolucionChartInstance, hist, activo?.montoLimite ?? 1000, activo?.porcentajeAlerta ?? 80);
+        } else {
+          setTimeout(() => this._initChart(), 50);
+        }
+      }
+      
+      const cat = this.categorias();
+      if (cat.length > 0) {
+        if (this.desgloseChartInstance) {
+          this._actualizarDesgloseChart(this.desgloseChartInstance, cat);
+        } else {
+          setTimeout(() => this._initDesgloseChart(), 50);
+        }
       }
     });
   }
-
-
 
   // --- SIGNALS DE ESTADO ---
   formulario!: FormGroup;
   cargando = signal<boolean>(false);
   temaOscuro = signal<boolean>(false);
 
+  readonly mostrarTour = signal(false);
+  readonly stepsTour: TourStep[] = [
+    {
+      targetSelector: '.lk-sidebar',
+      title: 'Configuración de Límite',
+      description: 'Establece el monto límite mensual, define alertas en base a porcentajes y especifica las fechas de inicio/fin del período de evaluación.',
+      position: 'right'
+    },
+    {
+      targetSelector: '.lk-kpis',
+      title: 'Resumen de Consumo',
+      description: 'Visualiza de forma gráfica el porcentaje consumido de tu límite de presupuesto, la cantidad gastada y el monto de dinero disponible.',
+      position: 'bottom'
+    },
+    {
+      targetSelector: '.lk-evolucion-card, .lk-premium-card',
+      title: 'Evolución Histórica',
+      description: 'Revisa de forma comparativa tus presupuestos y consumo real a lo largo de periodos anteriores (Exclusivo en Luka Premium).',
+      position: 'bottom'
+    },
+    {
+      targetSelector: '.hist-table-wrap',
+      title: 'Desglose y Registro de Historial',
+      description: 'Consulta un resumen detallado del dinero gastado por cada categoría y la lista histórica de límites inactivos del sistema.',
+      position: 'top'
+    }
+  ];
+
+  completarTour(): void {
+    localStorage.setItem('luka_tour_presupuestos_visto', 'true');
+    this.mostrarTour.set(false);
+  }
+
   // Datos del Negocio
   presupuestoActivo = signal<PresupuestoDTO | null>(null);
-  gastoTotalMes = signal<number>(0);
-  historialPresupuestos = signal<any[]>([]);
+  // Reactivo: suma los gastos del mes actual desde gastosState para reflejar cambios inmediatamente
+  gastoTotalMes = computed(() => {
+    const gastos = this.gastosState.gastos();
+    const ahora = new Date();
+    const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1).getTime();
+    const finMes = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0, 23, 59, 59, 999).getTime();
+    return gastos
+      .filter(g => {
+        const t = new Date(g.fechaTransaccion).getTime();
+        return t >= inicioMes && t <= finMes;
+      })
+      .reduce((acc, g) => acc + Number(g.monto || 0), 0);
+  });
+  historialLimitesRaw = signal<any[]>([]);
 
   // UI States
   mostrarConfirmEliminar = signal<boolean>(false);
@@ -68,12 +129,50 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
 
   paginaHistorial = signal<number>(1);
 
+  historialPresupuestos = computed(() => {
+    const raw = this.historialLimitesRaw();
+    const gastos = this.gastosState.gastos();
+
+    return raw.map(h => {
+      const fIni = new Date(h.fechaInicio).getTime();
+      const fFin = new Date(h.fechaFin).getTime() + 86400000 - 1;
+
+      const gastosPeriodo = gastos.filter(g => {
+        const t = new Date(g.fechaTransaccion).getTime();
+        return t >= fIni && t <= fFin;
+      });
+
+      const consumido = gastosPeriodo.reduce((acc, g) => acc + Number(g.monto || 0), 0);
+
+      // Helper para generar el "periodo" si no viene (ej: 'Enero 2024')
+      let periodoStr = h.periodo;
+      if (!periodoStr && h.fechaInicio) {
+        const date = new Date(h.fechaInicio);
+        periodoStr = date.toLocaleString('es-PE', { month: 'long', year: 'numeric' });
+        periodoStr = periodoStr.charAt(0).toUpperCase() + periodoStr.slice(1);
+      }
+
+      return {
+        ...h,
+        periodo: periodoStr,
+        montoLimite: Number(h.montoLimite) || 0,
+        montoConsumido: consumido,
+        porcentajeAlerta: Number(h.porcentajeAlerta) || 80
+      };
+    });
+  });
+
   // Categorías filtradas y top 5
   categorias = computed(() => {
     const activo = this.presupuestoActivo();
     if (!activo) return [];
 
     const gastos = this.gastosState.gastos();
+    const listaCat = this.gastosState.categorias();
+    
+    // Crear mapa de resolución id -> nombre
+    const mapaCat = new Map(listaCat.map(c => [c.id, c.nombre]));
+
     const fIni = new Date(activo.fechaInicio).getTime();
     const fFin = new Date(activo.fechaFin).getTime() + 86400000 - 1;
 
@@ -85,7 +184,14 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
     const mapa = new Map<string, number>();
     let total = 0;
     for (const g of filtrados) {
-      const cat = g.categoria || 'Otros';
+      // 1. Prioriza g.categoria si existe y no es ID
+      // 2. Si no, mapea el categoriaId
+      // 3. Sino, usa "Otros"
+      let cat = g.categoria || mapaCat.get(g.categoriaId) || 'Otros';
+      if (cat === g.categoriaId) {
+        cat = mapaCat.get(g.categoriaId) || 'Otros';
+      }
+
       const m = Number(g.monto) || 0;
       mapa.set(cat, (mapa.get(cat) || 0) + m);
       total += m;
@@ -135,6 +241,10 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
     const activo = this.presupuestoActivo();
     if (!activo || activo.montoLimite <= 0) return 0;
     const pct = (this.gastoTotalMes() / activo.montoLimite) * 100;
+    // Si es menor a 1 pero mayor a 0, mostramos 1 decimal, sino redondeamos normal
+    if (pct > 0 && pct < 1) {
+      return Number(pct.toFixed(1));
+    }
     return Math.min(Math.round(pct), 999);
   });
 
@@ -204,15 +314,27 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
     this.cargarDatosDashboard();
     this.gastosState.cargarDatos();
     this.detectarTemaActual();
+
+    const tourVisto = localStorage.getItem('luka_tour_presupuestos_visto');
+    if (!tourVisto) {
+      setTimeout(() => {
+        this.mostrarTour.set(true);
+      }, 600);
+    }
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => this._initChart(), 0);
+    setTimeout(() => {
+      this._initChart();
+      this._initDesgloseChart();
+    }, 0);
   }
 
   ngOnDestroy(): void {
     this.evolucionChartInstance?.destroy();
     this.evolucionChartInstance = null;
+    this.desgloseChartInstance?.destroy();
+    this.desgloseChartInstance = null;
   }
 
   private _pointColors(data: number[], limit: number): string[] {
@@ -336,8 +458,68 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
     chart.update('active');
   }
 
+  private _buildDesgloseChartConfig(cat: any[]): any {
+    const isDark = document.body.classList.contains('theme-dark');
+    const textColor = isDark ? '#A1AABF' : '#6B7280';
+
+    return {
+      type: 'doughnut' as const,
+      data: {
+        labels: cat.map(c => c.nombre),
+        datasets: [{
+          data: cat.map(c => c.monto),
+          backgroundColor: cat.map(c => c.color),
+          borderWidth: 0,
+          hoverOffset: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: {
+              color: textColor,
+              usePointStyle: true,
+              padding: 15,
+              font: { size: 12 }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: (ctx: any) => {
+                const item = cat[ctx.dataIndex];
+                return ` ${item.nombre}: S/ ${item.monto} (${item.porcentaje}%)`;
+              }
+            }
+          }
+        }
+      }
+    };
+  }
+
+  private _initDesgloseChart(): void {
+    if (!this.desgloseCanvasRef) return;
+    const cat = this.categorias();
+    if (!cat.length) return;
+    const ctx = this.desgloseCanvasRef.nativeElement.getContext('2d')!;
+    this.desgloseChartInstance?.destroy();
+    this.desgloseChartInstance = new Chart(ctx, this._buildDesgloseChartConfig(cat));
+  }
+
+  private _actualizarDesgloseChart(chart: Chart, cat: any[]): void {
+    const config = this._buildDesgloseChartConfig(cat);
+    chart.data = config.data;
+    chart.update('active');
+  }
+
   initChartDeferred(): void {
-    setTimeout(() => this._initChart(), 50);
+    setTimeout(() => {
+      this._initChart();
+      this._initDesgloseChart();
+    }, 50);
   }
 
   private inicializarFormulario(): void {
@@ -372,7 +554,7 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
     this.cargando.set(true);
 
     this.financieroService.getResumen().subscribe({
-      next: (resumen) => this.gastoTotalMes.set(resumen.totalGastos || 0),
+      next: () => { /* gastoTotalMes is now computed reactively from gastosState.gastos() */ },
       error: () => this.mostrarToast('Error al recuperar balance de gastos.', 'danger')
     });
 
@@ -405,10 +587,9 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
         const hMapeado = (historial || []).map(h => ({
           ...h,
           montoLimite: Number(h.montoLimite) || 0,
-          montoConsumido: Number((h as any).montoConsumido) || 0,
           porcentajeAlerta: Number(h.porcentajeAlerta) || 80
         }));
-        this.historialPresupuestos.set(hMapeado);
+        this.historialLimitesRaw.set(hMapeado);
       },
       error: () => console.error('Error silencioso al listar historial.')
     });
@@ -522,6 +703,13 @@ export class PresupuestosPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private mostrarToast(mensaje: string, tipo: 'success' | 'danger'): void {
+    // Delegate to the global notification service for a consistent UX
+    if (tipo === 'success') {
+      this.notificacionService.mostrar('Presupuesto', mensaje, 'presupuesto', 'scale-balanced', 4000);
+    } else {
+      this.notificacionService.mostrar('Error', mensaje, 'guardado', 'triangle-exclamation', 4000);
+    }
+    // Also update local signals for in-page feedback (e.g., form validation messages)
     if (tipo === 'success') {
       this.exitoMensaje.set(mensaje);
       setTimeout(() => this.exitoMensaje.set(null), 4000);

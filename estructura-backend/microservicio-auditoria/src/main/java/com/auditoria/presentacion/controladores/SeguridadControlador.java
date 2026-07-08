@@ -23,7 +23,6 @@ import java.util.List;
  * peticiones.
  * </p>
  * 
- * @author Paulo Moron
  * @version 2.0.0
  * @since 2026-05-10
  */

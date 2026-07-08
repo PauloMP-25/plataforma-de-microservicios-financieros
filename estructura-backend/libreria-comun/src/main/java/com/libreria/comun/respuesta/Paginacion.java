@@ -18,7 +18,6 @@ import org.springframework.data.domain.Page;
  * @param totalPaginas   Cantidad total de páginas disponibles.
  * @param esUltima       Indica si la página actual es la última de la colección.
  * 
- * @author Paulo Moron
  */
 public record Paginacion<T>(
     List<T> contenido,

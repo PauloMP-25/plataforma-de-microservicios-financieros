@@ -11,7 +11,6 @@ import java.util.UUID;
  * Los roles soportados son: FREE, PRO, PREMIUM, ADMIN y ADMINISTRADOR.
  * </p>
  * 
- * @author Paulo
  * @version 1.1.0
  */
 @Entity

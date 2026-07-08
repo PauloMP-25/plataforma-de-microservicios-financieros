@@ -1,11 +1,15 @@
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, OnInit, computed, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AdminDashboardService } from '../../services/admin-dashboard.service';
+import { AuditoriaService } from '../../../../core/services/auditoria.service';
 import { AdminDashboardData, AdminPagoReciente, AdminServicioEstado } from '../../models/admin-dashboard.model';
 import { AdminKpiCardComponent } from '../../components/admin-kpi-card/admin-kpi-card';
 import { AdminStatusBadgeComponent } from '../../components/admin-status-badge/admin-status-badge';
+import { AdminPagosComponent } from '../../components/admin-pagos/admin-pagos.component';
+import { AdminMicroserviciosComponent } from '../../components/admin-microservicios/admin-microservicios.component';
+import { AdminAuditoriaComponent } from '../../components/admin-auditoria/admin-auditoria.component';
 import { AuthService } from '../../../../core/services/auth.service';
 
 type AdminSeccion = 'dashboard' | 'usuarios' | 'pagos' | 'microservicios' | 'seguridad' | 'auditoria' | 'perfil';
@@ -13,7 +17,7 @@ type UsuarioEstado = 'ACTIVO' | 'INACTIVO' | 'SUSPENDIDO';
 type UsuarioRol = 'FREE' | 'PRO' | 'PREMIUM';
 
 interface AdminUsuario {
-  id: number;
+  id: string;
   nombre: string;
   email: string;
   rol: UsuarioRol;
@@ -30,7 +34,7 @@ interface AdminUsuario {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, AdminKpiCardComponent, AdminStatusBadgeComponent],
+  imports: [CommonModule, FormsModule, RouterModule, AdminKpiCardComponent, AdminStatusBadgeComponent, AdminPagosComponent, AdminMicroserviciosComponent, AdminAuditoriaComponent],
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.scss'
 })
@@ -43,36 +47,228 @@ export class AdminDashboard implements OnInit {
   filtroEstadoUsuarios = signal<UsuarioEstado | 'TODOS'>('TODOS');
   usuarioSeleccionado = signal<AdminUsuario | null>(null);
 
-  readonly usuarios: AdminUsuario[] = [
-    { id: 1, nombre: 'Ana Torres', email: 'ana@mail.com', rol: 'PREMIUM', estado: 'ACTIVO', fecha: '2024-01-15', telefono: '+51 987 654 321', suscripcion: 'PREMIUM', metas: 3, limiteGasto: 2000, ultimoAcceso: '2024-06-01 14:32', transacciones: 28 },
-    { id: 2, nombre: 'Luis Ramírez', email: 'luis@mail.com', rol: 'PRO', estado: 'ACTIVO', fecha: '2024-02-03', telefono: '+51 912 345 678', suscripcion: 'PRO', metas: 0, limiteGasto: null, ultimoAcceso: '2024-06-01 08:10', transacciones: 5 },
-    { id: 3, nombre: 'Carla Díaz', email: 'carla@mail.com', rol: 'FREE', estado: 'INACTIVO', fecha: '2024-03-18', telefono: '+51 945 112 233', suscripcion: 'FREE', metas: 1, limiteGasto: 500, ultimoAcceso: '2024-03-17 11:00', transacciones: 4 },
-    { id: 4, nombre: 'Pedro Solano', email: 'pedro@mail.com', rol: 'PREMIUM', estado: 'ACTIVO', fecha: '2024-03-22', telefono: '+51 900 222 333', suscripcion: 'PREMIUM', metas: 5, limiteGasto: 3000, ultimoAcceso: '2024-06-01 09:55', transacciones: 41 },
-    { id: 5, nombre: 'Sofía Vega', email: 'sofia@mail.com', rol: 'PRO', estado: 'ACTIVO', fecha: '2024-04-01', telefono: '+51 933 444 555', suscripcion: 'PRO', metas: 2, limiteGasto: 1500, ultimoAcceso: '2024-05-31 20:00', transacciones: 17 },
-    { id: 6, nombre: 'Miguel Oros', email: 'miguel@mail.com', rol: 'FREE', estado: 'SUSPENDIDO', fecha: '2024-04-10', telefono: '+51 966 777 888', suscripcion: 'FREE', metas: 0, limiteGasto: 300, ultimoAcceso: '2024-04-09 15:30', transacciones: 2 },
-  ];
+  // Signals para datos reales del backend
+  usuarios = signal<AdminUsuario[]>([]);
+  listaNegra = signal<any[]>([]);
+  otpsBloqueados = signal<any[]>([]);
 
-  usuariosFiltrados = computed(() => {
-    const busqueda = this.busquedaUsuarios().trim().toLowerCase();
-    const estado = this.filtroEstadoUsuarios();
-    return this.usuarios.filter(usuario => (estado === 'TODOS' || usuario.estado === estado) && (!busqueda || usuario.nombre.toLowerCase().includes(busqueda) || usuario.email.toLowerCase().includes(busqueda)));
-  });
+  // Paginación de usuarios
+  paginaActual = signal(0);
+  tamanioPagina = signal(10);
+  totalPaginas = signal(0);
+  totalElementos = signal(0);
+  esUltima = signal(true);
 
-  totalUsuarios = computed(() => this.usuarios.length);
-  usuariosActivos = computed(() => this.usuarios.filter(usuario => usuario.estado === 'ACTIVO').length);
-  usuariosSuspendidos = computed(() => this.usuarios.filter(usuario => usuario.estado === 'SUSPENDIDO').length);
+  usuariosFiltrados = computed(() => this.usuarios());
+  totalUsuarios = computed(() => this.totalElementos());
+  usuariosActivos = computed(() => this.usuarios().filter(usuario => usuario.estado === 'ACTIVO').length);
+  usuariosSuspendidos = computed(() => this.usuarios().filter(usuario => usuario.estado === 'SUSPENDIDO').length);
 
   constructor(
     private adminDashboardService: AdminDashboardService,
+    private auditoriaService: AuditoriaService,
     public auth: AuthService
-  ) {}
+  ) {
+    // Efecto reactivo para actualizar usuarios al cambiar filtros
+    effect(() => {
+      this.filtroEstadoUsuarios();
+      this.busquedaUsuarios();
+      this.cargarUsuarios(0);
+    }, { allowSignalWrites: true });
+  }
 
   ngOnInit(): void {
-    this.adminDashboardService.obtenerResumen().subscribe((resumen) => {
-      this.data.set(resumen);
-      this.cargando.set(false);
+    this.cargarResumenDashboard();
+    this.cargarListaNegra(0);
+    this.cargarOtpsBloqueados();
+  }
+
+  cargarResumenDashboard(): void {
+    this.cargando.set(true);
+    this.adminDashboardService.obtenerResumen().subscribe({
+      next: (resumen) => {
+        const dataCloned = JSON.parse(JSON.stringify(resumen)) as AdminDashboardData;
+        this.data.set(dataCloned);
+
+        // Conectar KPIs reales de ingresos y pagos desde ms-pagos
+        const anioActual = new Date().getFullYear();
+        this.adminDashboardService.obtenerResumenPagos(anioActual).subscribe({
+          next: (pagosRes) => {
+            if (pagosRes.exito && pagosRes.datos) {
+              const d = pagosRes.datos;
+              const kpiIngresos = dataCloned.kpis.find(k => k.etiqueta.includes('Ingresos'));
+              if (kpiIngresos) {
+                kpiIngresos.valor = new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(d.ingresosTotales);
+                kpiIngresos.detalle = 'Acumulado real en pasarela';
+              }
+              const kpiExitosos = dataCloned.kpis.find(k => k.etiqueta.includes('exitosos') || k.etiqueta.includes('exitosos') || k.etiqueta.includes('Pagos exitosos'));
+              if (kpiExitosos) {
+                kpiExitosos.valor = (d.transaccionesPorEstado['EXITOSO'] || 0).toLocaleString();
+                kpiExitosos.detalle = `Tasa exitosa real de ${d.totalTransacciones} transacciones`;
+              }
+              if (d.graficoIngresos && d.graficoIngresos.length > 0) {
+                dataCloned.graficoIngresos = d.graficoIngresos;
+              }
+            }
+          }
+        });
+
+        // Conectar total usuarios real desde ms-usuario
+        this.adminDashboardService.obtenerUsuarios(undefined, undefined, undefined, 0, 1).subscribe({
+          next: (userRes) => {
+            if (userRes.exito && userRes.datos) {
+              const kpiUsers = dataCloned.kpis.find(k => k.etiqueta.includes('Usuarios'));
+              if (kpiUsers) {
+                const total = userRes.datos.totalElementos ?? (userRes.datos as any).totalElements ?? 0;
+                kpiUsers.valor = total.toLocaleString();
+                kpiUsers.detalle = 'Usuarios registrados reales';
+              }
+            }
+          }
+        });
+
+        // Conectar total auditorías reales desde ms-auditoria
+        this.auditoriaService.listarRegistros({ pagina: 0, tamanio: 1 }).subscribe({
+          next: (audRes) => {
+            const kpiAudit = dataCloned.kpis.find(k => k.etiqueta.includes('auditados') || k.etiqueta.includes('Auditoría') || k.etiqueta.includes('Eventos'));
+            if (kpiAudit) {
+              const totalAudit = audRes.totalElements ?? (audRes as any).totalElementos ?? 0;
+              kpiAudit.valor = totalAudit.toLocaleString();
+              kpiAudit.detalle = 'Eventos registrados en ms-auditoria';
+            }
+          }
+        });
+
+        // Cargar lista de pagos reales para la tabla principal
+        this.adminDashboardService.listarPagos(0, 5).subscribe({
+          next: (pagosListRes) => {
+            if (pagosListRes.exito && pagosListRes.datos) {
+              dataCloned.pagos = pagosListRes.datos.contenido.map((p) => {
+                const plan = p.detalles && p.detalles.length > 0 ? p.detalles[0].planSolicitado : 'FREE';
+                const monto = p.detalles && p.detalles.length > 0 ? p.detalles[0].monto : 0;
+                const userMatch = this.usuarios().find(u => u.id === p.usuarioId);
+                const nombreUsuario = userMatch ? userMatch.nombre : p.usuarioId.slice(0, 8).toUpperCase();
+                return {
+                  id: `PAG-${p.id.slice(0, 4).toUpperCase()}`,
+                  usuario: nombreUsuario,
+                  monto: new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(monto),
+                  plan,
+                  estado: p.estado
+                };
+              });
+            }
+          }
+        });
+
+        this.cargando.set(false);
+      },
+      error: () => {
+        this.cargando.set(false);
+      }
     });
-    this.usuarioSeleccionado.set(this.usuarios[0]);
+  }
+
+  cargarUsuarios(pagina: number): void {
+    const estado = this.filtroEstadoUsuarios();
+    const habilitado = estado === 'ACTIVO' ? true : estado === 'INACTIVO' ? false : undefined;
+
+    this.adminDashboardService.obtenerUsuarios(habilitado, undefined, this.busquedaUsuarios() || undefined, pagina, this.tamanioPagina()).subscribe({
+      next: (res) => {
+        if (res.exito && res.datos) {
+          const mapped = (res.datos.contenido || []).map((u: any): AdminUsuario => ({
+            id: u.id,
+            nombre: u.nombreUsuario,
+            email: u.correo,
+            rol: (u.planActual || 'FREE') as UsuarioRol,
+            estado: (u.habilitado ? 'ACTIVO' : 'INACTIVO') as UsuarioEstado,
+            fecha: u.fechaCreacion ? u.fechaCreacion.split('T')[0] : '',
+            telefono: '+51 987 654 321', // mock
+            suscripcion: (u.planActual || 'FREE') as UsuarioRol,
+            metas: 0,
+            limiteGasto: null,
+            ultimoAcceso: u.fechaActualizacion ? u.fechaActualizacion.replace('T', ' ').slice(0, 16) : '',
+            transacciones: 0
+          }));
+          this.usuarios.set(mapped);
+          this.paginaActual.set(res.datos.numeroPagina);
+          this.totalPaginas.set(res.datos.totalPaginas);
+          this.totalElementos.set(res.datos.totalElementos);
+          this.esUltima.set(res.datos.esUltima);
+
+          if (mapped.length > 0) {
+            const actual = this.usuarioSeleccionado();
+            if (!actual || !mapped.some((m: any) => m.id === actual.id)) {
+              this.usuarioSeleccionado.set(mapped[0]);
+            }
+          } else {
+            this.usuarioSeleccionado.set(null);
+          }
+        }
+      }
+    });
+  }
+
+  cargarListaNegra(pagina: number): void {
+    this.adminDashboardService.obtenerListaNegraIp(pagina, 10).subscribe({
+      next: (res) => {
+        if (res.exito && res.datos) {
+          this.listaNegra.set(res.datos.contenido || []);
+        }
+      }
+    });
+  }
+
+  cargarOtpsBloqueados(): void {
+    this.adminDashboardService.obtenerOtpsBloqueados().subscribe({
+      next: (res) => {
+        if (res.exito && res.datos) {
+          this.otpsBloqueados.set(res.datos || []);
+        }
+      }
+    });
+  }
+
+  bloquearIp(ip: string, motivo: string): void {
+    if (!ip || !motivo) return;
+    this.adminDashboardService.bloquearIp(ip, motivo).subscribe({
+      next: (res) => {
+        if (res.exito) {
+          this.cargarListaNegra(0);
+          this.cargarResumenDashboard();
+        }
+      }
+    });
+  }
+
+  desbloquearIp(ip: string): void {
+    if (!ip) return;
+    this.adminDashboardService.desbloquearIp(ip).subscribe({
+      next: (res) => {
+        if (res.exito) {
+          this.cargarListaNegra(0);
+          this.cargarResumenDashboard();
+        }
+      }
+    });
+  }
+
+  desbloquearUsuarioOtp(usuarioId: string): void {
+    if (!usuarioId) return;
+    this.adminDashboardService.desbloquearUsuarioOtp(usuarioId).subscribe({
+      next: (res) => {
+        if (res.exito) {
+          this.cargarOtpsBloqueados();
+          this.cargarResumenDashboard();
+        }
+      }
+    });
+  }
+
+  cambiarPaginaUsuarios(dir: number): void {
+    const target = this.paginaActual() + dir;
+    if (target >= 0 && target < this.totalPaginas()) {
+      this.cargarUsuarios(target);
+    }
   }
 
   estadoServicioClases(servicio: AdminServicioEstado): string {
@@ -133,16 +329,10 @@ export class AdminDashboard implements OnInit {
 
   cambiarFiltroEstadoUsuarios(estado: UsuarioEstado | 'TODOS'): void {
     this.filtroEstadoUsuarios.set(estado);
-    this.usuarioSeleccionado.set(this.usuariosFiltrados()[0] ?? null);
   }
 
   actualizarBusquedaUsuarios(valor: string): void {
     this.busquedaUsuarios.set(valor);
-    const usuarios = this.usuariosFiltrados();
-    const seleccionado = this.usuarioSeleccionado();
-    if (!seleccionado || !usuarios.some(usuario => usuario.id === seleccionado.id)) {
-      this.usuarioSeleccionado.set(usuarios[0] ?? null);
-    }
   }
 
   seleccionarUsuario(usuario: AdminUsuario): void {

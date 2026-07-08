@@ -48,7 +48,7 @@ class ContextoEstrategicoIADTO(BaseModel):
         min_length=1,
         max_length=150,
         description="Nombre del cliente para personalizar la conversación.",
-        examples=["Paulo"],
+        examples=["Usuario"],
     )
 
     ocupacion: str = Field(

@@ -44,7 +44,10 @@
       <div class="kpi-body">
         <div class="kpi-label">% de uso del límite</div>
         <div class="kpi-value" [ngClass]="presupuestoActivo() ? estadoAlerta() : ''">{{ porcentajeConsumo() }}%</div>
-        <div class="kpi-sub">{{ presupuestoActivo() ? (estadoAlerta() === 'superado' ? 'Excedido' : estadoAlerta() === 'alerta' ? 'Alerta' : 'Normal') : 'Normal' }}</div>
+        <div class="kpi-sub" style="text-transform: none;">
+          <span style="font-weight: 700;">{{ formatearMonto(gastoTotalMes()) }} consumido</span> 
+          ({{ presupuestoActivo() ? (estadoAlerta() === 'superado' ? 'Excedido' : estadoAlerta() === 'alerta' ? 'Alerta' : 'Normal') : 'Normal' }})
+        </div>
       </div>
     </div>
 
@@ -114,34 +117,19 @@
           <div class="form-label-row">
             <label class="form-label">Monto límite mensual (S/) *</label>
             <div class="monto-display" [ngClass]="{ 'is-invalid': campoInvalido('montoLimite') }">
-              <span class="monto-currency">S/</span>
-              <input type="number" formControlName="montoLimite" class="monto-input" min="1" placeholder="0.00">
+               <span class="monto-currency">S/</span>
+               <input type="number" formControlName="montoLimite" class="monto-input" min="1" placeholder="0.00" (input)="formulario.get('montoLimite')?.setValue(+$any($event.target).value, {emitEvent: true})">
             </div>
           </div>
           <input type="range" formControlName="montoLimite" class="lk-slider" min="0" max="5000" step="50"
+                 (input)="formulario.get('montoLimite')?.setValue(+$any($event.target).value, {emitEvent: true})"
                  [style.--fill]="((formulario.get('montoLimite')?.value ?? 0) > 5000 ? 100 : ((formulario.get('montoLimite')?.value ?? 0) / 5000) * 100) + '%'">
           <div class="slider-bounds">
             <span>S/ 0</span><span>S/ 5,000</span>
           </div>
         </div>
 
-        <div class="form-group">
-          <div class="form-label-row">
-            <label class="form-label">Porcentaje de alerta</label>
-            <span class="badge-alert" [ngClass]="formulario.get('porcentajeAlerta')?.value >= 90 ? 'danger' : formulario.get('porcentajeAlerta')?.value >= 70 ? 'warning' : 'ok'">
-              {{ formulario.get('porcentajeAlerta')?.value ?? 80 }}%
-            </span>
-          </div>
-          <input type="range" formControlName="porcentajeAlerta" class="lk-slider slider-warning" min="50" max="100" step="1"
-                 [style.--fill]="(((formulario.get('porcentajeAlerta')?.value ?? 80) - 50) / 50) * 100 + '%'">
-          <div class="slider-bounds">
-            <span>50%</span><span>100%</span>
-          </div>
-          <div class="alert-hint">
-            <i class="fa-solid fa-bell"></i>
-            <span>Recibirás una alerta al gastar {{ formatearMonto(montoAlertaCalculado()) }} ({{ formulario.get('porcentajeAlerta')?.value ?? 80 }}% de tu límite)</span>
-          </div>
-        </div>
+
 
         <div class="form-dates" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; box-sizing: border-box;">
           <div class="form-group form-group-sm" style="min-width: 0;">
@@ -180,43 +168,36 @@
         </div>
 
       </div>
+
+      @if (categorias().length > 0) {
+        <div class="lk-card">
+          <div class="card-header">
+            <h3 class="card-title">Desglose por categorías</h3>
+          </div>
+          <div class="desglose-chart-wrap" style="position: relative; height: 220px; margin: 1.5rem 0;">
+            <canvas #desgloseCanvas id="desgloseCanvas"></canvas>
+          </div>
+          <div class="breakdown-total">
+            <span>Total consumido</span>
+            <span class="breakdown-total-val">{{ formatearMonto(gastoTotalMes()) }}</span>
+          </div>
+        </div>
+      } @else {
+        <div class="lk-card">
+          <div class="card-header">
+            <h3 class="card-title">Desglose por categorías</h3>
+          </div>
+          <div class="evolucion-empty" style="padding: 2rem; text-align: center;">
+            <i class="fa-solid fa-chart-pie" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+            <p>Aún no hay gastos registrados en este presupuesto para desglosar.</p>
+          </div>
+        </div>
+      }
     </aside>
 
     <div class="lk-content">
 
-      <div class="lk-card lk-gauge-card">
-        <div class="gauge-left">
-          <div class="gauge-container">
-            <svg class="gauge-svg" viewBox="0 0 120 120">
-              <circle class="gauge-track" cx="60" cy="60" r="50"/>
-              <circle class="gauge-fill" cx="60" cy="60" r="50"
-                      stroke-dasharray="314.16"
-                      [style.stroke-dashoffset]="gaugeOffset()"
-                      [style.stroke]="gaugeColor()"/>
-            </svg>
-            <div class="gauge-center">
-              <div class="gauge-pct">{{ porcentajeConsumo() }}%</div>
-              <div class="gauge-label">consumido</div>
-            </div>
-          </div>
-        </div>
-        <div class="gauge-right">
-          <div class="gauge-stat">
-            <div class="gauge-stat-label">Has consumido</div>
-            <div class="gauge-stat-value primary">{{ formatearMonto(gastoTotalMes()) }}</div>
-            <div class="gauge-stat-sub" *ngIf="presupuestoActivo()">de tu límite de {{ formatearMonto(presupuestoActivo()!.montoLimite) }}</div>
-            <div class="gauge-stat-sub" *ngIf="!presupuestoActivo()">No has definido un límite vigente</div>
-          </div>
-          <div class="gauge-divider"></div>
-          <div class="gauge-stat">
-            <div class="gauge-stat-label">Margen disponible</div>
-            <div class="gauge-stat-value success">{{ formatearMonto(margenDisponible()) }}</div>
-            <div class="gauge-stat-badge">
-              <span class="badge" [ngClass]="'badge-' + (presupuestoActivo() ? estadoAlerta() : 'success')">{{ 100 - porcentajeConsumo() }}% restante</span>
-            </div>
-          </div>
-        </div>
-      </div>
+
 
       @if (esPremiumOPro()) {
         <div class="lk-card lk-evolucion-card">
@@ -225,7 +206,7 @@
             <span class="premium-badge"><i class="fa-solid fa-crown"></i> Premium</span>
           </div>
 
-          @if (presupuestoActivo(); as pres) {
+          @if (historialPresupuestos().length > 0) {
             <div class="evolucion-chart-wrap">
               <canvas #evolucionCanvas id="evolucionCanvas"></canvas>
             </div>
@@ -249,7 +230,7 @@
               </div>
               <div class="legend-item">
                 <span class="legend-dash" style="border-color:#F59E0B; border-style:dotted"></span>
-                <span>Alerta {{ pres.porcentajeAlerta }}%</span>
+                <span>Alerta {{ presupuestoActivo()?.porcentajeAlerta || 80 }}%</span>
               </div>
             </div>
 
@@ -273,7 +254,7 @@
           } @else {
             <div class="evolucion-empty">
               <i class="fa-solid fa-chart-line"></i>
-              <p>Define un límite mensual para ver tu evolución de consumo</p>
+              <p>Tu gráfica aparecerá aquí el próximo mes cuando este límite actual pase al historial y finalice su periodo de evaluación.</p>
             </div>
           }
         </div>
@@ -303,91 +284,68 @@
         </div>
       }
 
-      <div class="lk-bottom-grid">
-
-        <div class="lk-card">
-          <div class="card-header">
-            <h3 class="card-title">Desglose por categorías</h3>
-          </div>
-          <div class="breakdown-list">
-            <div class="breakdown-item" *ngFor="let cat of categorias()">
-              <div class="bd-icon" [style.background]="cat.bg" [style.color]="cat.color">
-                <i class="fa-solid" [ngClass]="cat.icono"></i>
-              </div>
-              <div class="bd-info">
-                <div class="bd-row">
-                  <span class="bd-name">{{ cat.nombre }}</span>
-                  <div class="bd-right">
-                    <span class="bd-pct">{{ cat.porcentaje }}%</span>
-                    <span class="bd-amt">{{ formatearMonto(cat.monto) }}</span>
-                  </div>
-                </div>
-                <div class="bd-bar">
-                  <div class="bd-fill" [style.width]="cat.porcentaje + '%'" [style.background]="cat.color"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="breakdown-total">
-            <span>Total consumido</span>
-            <span class="breakdown-total-val">{{ formatearMonto(gastoTotalMes()) }}</span>
+      <div class="lk-card" style="margin-top: 1.5rem;">
+        <div class="card-header">
+          <h3 class="card-title">Historial de límites</h3>
+          <div class="hist-pagination" style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn btn-icon btn-sm" (click)="cambiarPagina(-1)" [disabled]="paginaHistorial() === 1">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">
+              Pág {{ paginaHistorial() }} de {{ totalPaginasHistorial() || 1 }}
+            </span>
+            <button class="btn btn-icon btn-sm" (click)="cambiarPagina(1)" [disabled]="paginaHistorial() >= totalPaginasHistorial() || totalPaginasHistorial() === 0">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
           </div>
         </div>
-
-        <div class="lk-card">
-          <div class="card-header">
-            <h3 class="card-title">Historial de límites</h3>
-            <div class="hist-pagination" style="display: flex; gap: 8px; align-items: center;">
-              <button class="btn btn-icon btn-sm" (click)="cambiarPagina(-1)" [disabled]="paginaHistorial() === 1">
-                <i class="fa-solid fa-chevron-left"></i>
-              </button>
-              <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">
-                Pág {{ paginaHistorial() }} de {{ totalPaginasHistorial() || 1 }}
-              </span>
-              <button class="btn btn-icon btn-sm" (click)="cambiarPagina(1)" [disabled]="paginaHistorial() >= totalPaginasHistorial() || totalPaginasHistorial() === 0">
-                <i class="fa-solid fa-chevron-right"></i>
-              </button>
-            </div>
-          </div>
-          <div class="hist-table-wrap">
-            <table class="hist-table">
-              <thead>
-                <tr>
-                  <th>Período</th>
-                  <th>Monto límite</th>
-                  <th>Consumido</th>
-                  <th>% uso</th>
-                  <th>Estado límite</th>
-                  <th>Estado consumo</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let h of historialVisible()">
-                  <td class="hist-period">{{ h.periodo }}</td>
-                  <td>{{ formatearMonto(h.montoLimite) }}</td>
-                  <td>{{ formatearMonto(h.montoConsumido) }}</td>
-                  <td><strong>{{ pctHistorial(h) }}%</strong></td>
-                  <td>
-                    <span class="badge badge-inactive">Inactivo</span>
-                  </td>
-                  <td>
-                    <span class="badge badge-success" [ngClass]="'badge-' + estadoConsumoHistorial(h)">
-                      {{ estadoConsumoHistorial(h) === 'superado' ? 'Excedido' : estadoConsumoHistorial(h) === 'alerta' ? 'Alerta' : 'Normal' }}
-                    </span>
-                  </td>
-                </tr>
-                <tr *ngIf="historialPresupuestos().length === 0">
-                  <td colspan="6" style="text-align: center; color: var(--lk-text-muted); padding: 2rem;">
-                    No hay registros en el historial.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <div class="hist-table-wrap">
+          <table class="hist-table">
+            <thead>
+              <tr>
+                <th>Período</th>
+                <th>Monto límite</th>
+                <th>Consumido</th>
+                <th>% uso</th>
+                <th>Estado límite</th>
+                <th>Estado consumo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let h of historialVisible()">
+                <td class="hist-period">{{ h.periodo }}</td>
+                <td>{{ formatearMonto(h.montoLimite) }}</td>
+                <td>{{ formatearMonto(h.montoConsumido) }}</td>
+                <td><strong>{{ pctHistorial(h) }}%</strong></td>
+                <td>
+                  <span class="badge badge-inactive">Inactivo</span>
+                </td>
+                <td>
+                  <span class="badge badge-success" [ngClass]="'badge-' + estadoConsumoHistorial(h)">
+                    {{ estadoConsumoHistorial(h) === 'superado' ? 'Excedido' : estadoConsumoHistorial(h) === 'alerta' ? 'Alerta' : 'Normal' }}
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="historialPresupuestos().length === 0">
+                <td colspan="6" style="text-align: center; color: var(--lk-text-muted); padding: 2rem;">
+                  No hay registros en el historial.
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-
       </div>
 
     </div>
   </div>
+
+  <app-onboarding-tour 
+    *ngIf="mostrarTour()" 
+    [steps]="stepsTour" 
+    (cerrar)="completarTour()"
+  ></app-onboarding-tour>
+
+  <button type="button" class="floating-help-btn" (click)="mostrarTour.set(true)" title="Ver guía de ayuda">
+    <i class="fa-solid fa-circle-question"></i>
+  </button>
 </main>

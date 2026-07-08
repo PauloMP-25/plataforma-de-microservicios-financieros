@@ -18,7 +18,6 @@ import java.util.UUID;
  * y el cálculo de agregados financieros (sumas y conteos) por periodos de tiempo.
  * </p>
  * 
- * @author Luka-Dev-Backend
  * @version 1.1.0
  */
 @Repository
@@ -26,6 +25,9 @@ public interface TransaccionRepository extends JpaRepository<Transaccion, UUID>,
     org.springframework.data.jpa.repository.JpaSpecificationExecutor<Transaccion> {
 
     List<Transaccion> findTop10ByUsuarioIdOrderByFechaTransaccionDesc(UUID usuarioId);
+
+    @Query(value = "SELECT DISTINCT DATE(t.fecha_transaccion) FROM transacciones t WHERE t.usuario_id = :usuarioId ORDER BY DATE(t.fecha_transaccion) ASC", nativeQuery = true)
+    List<java.time.LocalDate> findDistinctFechasTransaccionByUsuarioIdAsc(@Param("usuarioId") UUID usuarioId);
 
 
     @Query("""

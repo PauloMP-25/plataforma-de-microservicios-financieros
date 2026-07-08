@@ -123,4 +123,55 @@ public class ConfiguracionRabbitMQ {
                 .to(exchangePagos)
                 .with(RoutingKeys.PAGO_EXITOSO);
     }
+
+    // =========================================================================
+    // EVENTOS DE DOMINIO DE USUARIO (Publicación hacia otros microservicios)
+    // =========================================================================
+
+    /**
+     * Exchange de tipo Topic donde ms-usuario publica eventos de dominio
+     * (ej: login exitoso) para que otros microservicios los consuman.
+     *
+     * @return {@link TopicExchange} durable para eventos de usuario.
+     */
+    @Bean
+    public TopicExchange exchangeUsuarioEventos() {
+        return new TopicExchange(NombresExchange.USUARIO_EVENTOS, true, false);
+    }
+
+    /**
+     * Dead Letter Exchange para mensajes de eventos de usuario que no pudieron entregarse.
+     *
+     * @return {@link DirectExchange} durable para mensajes de error.
+     */
+    @Bean
+    public DirectExchange exchangeUsuarioEventosDlx() {
+        return new DirectExchange(NombresExchange.USUARIO_EVENTOS_DLX, true, false);
+    }
+
+    // --- CONSUMO DE EVENTOS DE SUSCRIPCIONES ---
+    
+    public static final String EXCHANGE_SUSCRIPCIONES_EVENTOS = "exchange.suscripciones.eventos";
+    public static final String COLA_USUARIO_SUSCRIPCION_EXPIRADA = "cola.usuario.suscripcion.expirada";
+    public static final String ROUTING_KEY_SUSCRIPCION_EXPIRADA = "suscripcion.luka.expirada";
+
+    @Bean
+    public Queue colaUsuarioSuscripcionExpirada() {
+        return QueueBuilder.durable(COLA_USUARIO_SUSCRIPCION_EXPIRADA).build();
+    }
+
+    @Bean
+    public TopicExchange exchangeSuscripcionesEventos() {
+        return new TopicExchange(EXCHANGE_SUSCRIPCIONES_EVENTOS, true, false);
+    }
+
+    @Bean
+    public Binding bindingSuscripcionExpirada(
+            @Qualifier("colaUsuarioSuscripcionExpirada") Queue colaUsuarioSuscripcionExpirada,
+            @Qualifier("exchangeSuscripcionesEventos") TopicExchange exchangeSuscripcionesEventos) {
+        return BindingBuilder
+                .bind(colaUsuarioSuscripcionExpirada)
+                .to(exchangeSuscripcionesEventos)
+                .with(ROUTING_KEY_SUSCRIPCION_EXPIRADA);
+    }
 }

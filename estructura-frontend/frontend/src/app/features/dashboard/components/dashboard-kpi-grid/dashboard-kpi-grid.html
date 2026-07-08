@@ -39,24 +39,21 @@
     </div>
   </div>
 
-  <!-- Cumplimiento de Presupuesto -->
+  <!-- Volumen de Transacciones -->
   <div class="kpi-card-wrapper">
     <div class="kpi-card-inner">
-      <div class="kpi-card-front glass-panel" [class.warning]="cumplimientoPresupuesto > 85" [class.danger]="cumplimientoPresupuesto > 100">
-        <div class="kpi-icon" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;"><i class="fa-solid fa-scale-balanced"></i></div>
+      <div class="kpi-card-front glass-panel">
+        <div class="kpi-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;"><i class="fa-solid fa-list-check"></i></div>
         <div class="kpi-info">
-          <h3 class="kpi-title">Uso de Presupuesto</h3>
-          <p class="kpi-value">{{ cumplimientoPresupuesto | number:'1.1-1' }}%</p>
-          <div class="progress-bar-container">
-            <div class="progress-bar-fill" [style.width.%]="cumplimientoPresupuesto > 100 ? 100 : cumplimientoPresupuesto"></div>
-          </div>
+          <h3 class="kpi-title">Transacciones</h3>
+          <p class="kpi-value">{{ volumenTransacciones }}</p>
         </div>
       </div>
-      <div class="kpi-card-back glass-panel" [class.warning]="cumplimientoPresupuesto > 85" [class.danger]="cumplimientoPresupuesto > 100" style="border-color: rgba(168, 85, 247, 0.2);">
-        <div class="kpi-icon" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;"><i class="fa-solid fa-scale-balanced"></i></div>
+      <div class="kpi-card-back glass-panel" style="border-color: rgba(59, 130, 246, 0.2);">
+        <div class="kpi-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;"><i class="fa-solid fa-list-check"></i></div>
         <div class="kpi-back-info">
-          <h4 class="back-title" style="color: #a855f7;">Uso de Presupuesto</h4>
-          <p class="back-description">Porcentaje del presupuesto total asignado que ya ha sido consumido por transacciones.</p>
+          <h4 class="back-title" style="color: #3b82f6;">Volumen de Transacciones</h4>
+          <p class="back-description">Cantidad total de movimientos financieros (ingresos y gastos) generados en el periodo seleccionado.</p>
         </div>
       </div>
     </div>

@@ -18,6 +18,7 @@ export class SuscripcionLuka implements OnInit {
 
   // State
   readonly modalAbierto = signal(false);
+  readonly suscripcionAEditar = signal<SuscripcionDTO | null>(null);
   readonly cargando = signal(false);
 
   // Computed values from service
@@ -33,15 +34,14 @@ export class SuscripcionLuka implements OnInit {
   /**
    * Abrir modal de nueva suscripción
    */
-  abrirModal(): void {
+  abrirModal(suscripcion: SuscripcionDTO | null = null): void {
+    this.suscripcionAEditar.set(suscripcion);
     this.modalAbierto.set(true);
   }
 
-  /**
-   * Cerrar modal
-   */
   cerrarModal(): void {
     this.modalAbierto.set(false);
+    setTimeout(() => this.suscripcionAEditar.set(null), 300);
   }
 
   /**
@@ -66,8 +66,7 @@ export class SuscripcionLuka implements OnInit {
    * Editar suscripción
    */
   onEditarSuscripcion(suscripcion: SuscripcionDTO): void {
-    console.log('Editar suscripción:', suscripcion);
-    // TODO: Implementar lógica de edición (abrir modal con datos precargados)
+    this.abrirModal(suscripcion);
   }
 
   /**
@@ -105,7 +104,20 @@ export class SuscripcionLuka implements OnInit {
    */
   onVerDetalle(suscripcion: SuscripcionDTO): void {
     console.log('Ver detalle:', suscripcion);
-    // TODO: Navegar a página de detalles o abrir modal
+  }
+
+  onEditarSuscripcionGuardar(datosFormulario: any): void {
+    this.suscripcionService.actualizarSuscripcion(datosFormulario).subscribe({
+      next: () => this.cerrarModal(),
+      error: (err) => console.error('Error actualizando:', err)
+    });
+  }
+
+  onPagarSuscripcionManual(id: string): void {
+    this.suscripcionService.cambiarEstado(id, 'ACTIVA').subscribe({
+      next: () => this.cerrarModal(),
+      error: (err) => console.error('Error pagando:', err)
+    });
   }
 
   /**

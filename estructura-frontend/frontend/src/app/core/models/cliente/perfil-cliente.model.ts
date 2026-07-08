@@ -3,7 +3,7 @@ export interface SolicitudDatosPersonales {
   nombres: string;
   apellidos: string;
   genero: string;
-  edad: number;
+  fechaNacimiento: string;
   telefono: string;
   fotoPerfilUrl?: string;
   pais?: string;
@@ -15,7 +15,7 @@ export interface RespuestaDatosPersonales {
   nombres: string;
   apellidos: string;
   genero: string;
-  edad: number;
+  fechaNacimiento: string;
   telefono: string;
   fotoPerfilUrl: string;
   pais: string;

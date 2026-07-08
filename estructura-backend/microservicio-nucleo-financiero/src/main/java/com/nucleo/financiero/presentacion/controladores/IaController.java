@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
  * para delegar el procesamiento analítico.
  * </p>
  *
- * @author Luka-Dev-Backend
  * @version 1.2.2
  */
 @RestController
