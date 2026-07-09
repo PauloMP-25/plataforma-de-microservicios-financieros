@@ -1,0 +1,43 @@
+<article
+  class="flex h-full min-h-[420px] flex-col justify-between rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800 md:p-6">
+  <div>
+    <header class="mb-4 flex items-center justify-between">
+      <h3 class="text-xl font-extrabold text-slate-900 dark:text-slate-100">Gastos recientes</h3>
+    </header>
+
+    <ul class="space-y-4">
+      <li *ngFor="let item of itemsPaginados" class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl"
+            [ngClass]="iconBgClass(item.categoria)">
+            <i [class]="iconClass(item.categoria)"></i>
+          </span>
+          <div>
+            <p class="text-sm font-medium text-slate-800 dark:text-slate-100">{{ item.categoria }}</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">{{ item.descripcion }}</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">S/ {{ item.monto | number:'1.2-2' }}</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400">{{ item.fecha }}</p>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <footer class="mt-5 flex items-center justify-between border-t border-slate-100 pt-4 dark:border-slate-700/50">
+    <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
+      Pág. {{ paginaActual }} de {{ totalPaginas }}
+    </span>
+    <div class="flex items-center gap-2">
+      <button (click)="cambiarPagina(-1)" [disabled]="paginaActual === 1"
+        class="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition-all hover:bg-slate-50 disabled:pointer-events-none disabled:opacity-40 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800">
+        <i class="fa-solid fa-chevron-left text-xs"></i>
+      </button>
+      <button (click)="cambiarPagina(1)" [disabled]="paginaActual === totalPaginas"
+        class="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition-all hover:bg-slate-50 disabled:pointer-events-none disabled:opacity-40 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800">
+        <i class="fa-solid fa-chevron-right text-xs"></i>
+      </button>
+    </div>
+  </footer>
+</article>

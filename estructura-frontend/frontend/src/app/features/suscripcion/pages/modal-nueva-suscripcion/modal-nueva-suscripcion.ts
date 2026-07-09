@@ -9,6 +9,7 @@ import {
   SuscripcionDTO,
   findPlatform
 } from '../../../../core/models/financiero/suscripcion-gasto.model';
+import { CategoriaDTO } from '../../../../core/models/financiero/categoria.model';
 export interface PlataformaSuscripcion {
   nombre: string;
   categoria: string;
@@ -74,6 +75,7 @@ export const PLATAFORMAS_SUSCRIPCION: PlataformaSuscripcion[] = [
 })
 export class ModalNuevaSuscripcion {
   @Input() suscripcionEditar: SuscripcionDTO | null = null;
+  @Input() categorias: CategoriaDTO[] = [];
   @Output() cerrar = new EventEmitter<void>();
   @Output() crear = new EventEmitter<CrearSuscripcionRequest>();
   @Output() editar = new EventEmitter<ActualizarSuscripcionRequest>();
@@ -82,8 +84,9 @@ export class ModalNuevaSuscripcion {
   // Formulario
   readonly nombre = signal('');
   readonly descripcion = signal('');
-  readonly categoria = signal('');
+  readonly categoriaId = signal('');
   readonly monto = signal('');
+  readonly metodoPago = signal('TARJETA');
   readonly frecuencia = signal('MENSUAL');
   readonly fechaInicio = signal(this.obtenerFechaHoy());
 
@@ -102,8 +105,9 @@ export class ModalNuevaSuscripcion {
     if (this.suscripcionEditar) {
       this.nombre.set(this.suscripcionEditar.nombre);
       this.descripcion.set(this.suscripcionEditar.descripcion);
-      this.categoria.set(this.suscripcionEditar.categoria);
+      this.categoriaId.set(this.suscripcionEditar.categoriaId || this.suscripcionEditar.categoria);
       this.monto.set(this.suscripcionEditar.monto.toString());
+      this.metodoPago.set(this.suscripcionEditar.metodoPago || 'TARJETA');
       this.frecuencia.set(this.suscripcionEditar.frecuencia);
       this.fechaInicio.set(this.suscripcionEditar.proximoVencimiento || this.obtenerFechaHoy());
     }
@@ -147,9 +151,9 @@ export class ModalNuevaSuscripcion {
     }
 
     // Si no es una marca conocida, buscar el ícono de la categoría seleccionada
-    const catId = this.categoria();
+    const catId = this.categoriaId();
     const cat = this.categorias.find(c => c.id === catId);
-    return cat ? `fa-solid ${cat.icon}` : 'fa-solid fa-circle-question';
+    return cat ? `fa-solid ${cat.icono}` : 'fa-solid fa-circle-question';
   });
 
   // 👇 Computed signal para el color de marca unificado — prioriza catálogo, fallback a categoría
@@ -161,9 +165,9 @@ export class ModalNuevaSuscripcion {
     const plataformaCatalogo = PLATAFORMAS_SUSCRIPCION.find(p => p.nombre.toLowerCase() === name || p.nombre.toLowerCase().includes(name));
     if (plataformaCatalogo) return plataformaCatalogo.color;
 
-    const catId = this.categoria();
-    const cat = this.categorias.find(c => c.id === catId);
-    return cat ? cat.color : '#5B6AF0';
+    const catId = this.categoriaId();
+    // CategoriaDTO doesn't have a color property natively, fallback to default
+    return '#5B6AF0';
   });
 
   // UI
@@ -171,13 +175,22 @@ export class ModalNuevaSuscripcion {
   readonly errores = signal<Record<string, string>>({});
 
   // Data para selects
-  readonly categorias = CATEGORIAS_SUSCRIPCION;
   readonly frecuencias = FRECUENCIAS_SUSCRIPCION.filter(f => ['MENSUAL', 'ANUAL', 'QUINCENAL'].includes(f.id));
 
   // Métodos de autocompletado
   seleccionarPlataforma(plataforma: PlataformaSuscripcion): void {
     this.nombre.set(plataforma.nombre);
-    this.categoria.set(plataforma.categoria);
+    
+    // Attempt to map hardcoded 'categoria' string to a real category ID
+    let realCategory = this.categorias.find(c => c.nombre.toLowerCase().includes(plataforma.categoria.toLowerCase()));
+    if (!realCategory && plataforma.categoria === 'leisure') realCategory = this.categorias.find(c => c.nombre.toLowerCase().includes('entretenimiento'));
+    if (!realCategory && plataforma.categoria === 'study') realCategory = this.categorias.find(c => c.nombre.toLowerCase().includes('educación') || c.nombre.toLowerCase().includes('educacion'));
+    if (!realCategory && (plataforma.categoria === 'health' || plataforma.categoria === 'home')) realCategory = this.categorias.find(c => c.nombre.toLowerCase().includes('salud') || c.nombre.toLowerCase().includes('hogar') || c.nombre.toLowerCase().includes('vivienda'));
+    
+    if (realCategory) {
+      this.categoriaId.set(realCategory.id);
+    }
+    
     this.mostrarSugerencias.set(false);
   }
 
@@ -210,8 +223,10 @@ export class ModalNuevaSuscripcion {
         id: this.suscripcionEditar.id,
         nombre: this.nombre(),
         descripcion: this.descripcion(),
-        categoria: this.categoria(),
+        categoria: this.categoriaId(), // Sending UUID here
+        categoriaId: this.categoriaId(),
         monto: parseFloat(this.monto()),
+        metodoPago: this.metodoPago(),
         frecuencia: this.frecuencia() as any,
         fechaInicio: this.fechaInicio()
       };
@@ -224,8 +239,10 @@ export class ModalNuevaSuscripcion {
       const request: CrearSuscripcionRequest = {
         nombre: this.nombre(),
         descripcion: this.descripcion(),
-        categoria: this.categoria(),
+        categoria: this.categoriaId(), // Sending UUID here
+        categoriaId: this.categoriaId(),
         monto: parseFloat(this.monto()),
+        metodoPago: this.metodoPago(),
         frecuencia: this.frecuencia() as any,
         fechaInicio: this.fechaInicio()
       };
@@ -253,8 +270,8 @@ export class ModalNuevaSuscripcion {
     if (!this.nombre().trim()) {
       nuevosErrores['nombre'] = 'El nombre es requerido';
     }
-    if (!this.categoria()) {
-      nuevosErrores['categoria'] = 'La categoría es requerida';
+    if (!this.categoriaId()) {
+      nuevosErrores['categoriaId'] = 'La categoría es requerida';
     }
     if (!this.monto() || parseFloat(this.monto()) <= 0) {
       nuevosErrores['monto'] = 'El monto debe ser mayor a 0';
@@ -262,8 +279,11 @@ export class ModalNuevaSuscripcion {
     if (!this.frecuencia()) {
       nuevosErrores['frecuencia'] = 'La frecuencia es requerida';
     }
+    if (!this.metodoPago()) {
+      nuevosErrores['metodoPago'] = 'El método de pago es requerido';
+    }
     if (!this.fechaInicio()) {
-      nuevosErrores['fechaInicio'] = 'La fecha de inicio es requerida';
+      nuevosErrores['fechaInicio'] = 'La fecha de pago es requerida';
     }
 
     this.errores.set(nuevosErrores);
@@ -276,7 +296,7 @@ export class ModalNuevaSuscripcion {
   private limpiarFormulario(): void {
     this.nombre.set('');
     this.descripcion.set('');
-    this.categoria.set('');
+    this.categoriaId.set('');
     this.monto.set('');
     this.frecuencia.set('MENSUAL');
     this.fechaInicio.set(this.obtenerFechaHoy());

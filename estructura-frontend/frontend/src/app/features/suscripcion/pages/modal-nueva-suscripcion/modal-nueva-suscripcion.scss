@@ -145,7 +145,39 @@
   &::placeholder {
     color: var(--text-muted);
   }
+
+  &.is-invalid {
+    border-color: var(--color-danger, #ef4444);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+
+    &:focus {
+      border-color: var(--color-danger, #ef4444);
+      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2);
+    }
+  }
 }
+
+.form-error-msg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-danger, #ef4444);
+  animation: errorFadeIn 0.2s ease-out;
+
+  i {
+    font-size: 0.7rem;
+    flex-shrink: 0;
+  }
+}
+
+@keyframes errorFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 
 textarea.form-input {
   resize: none;

@@ -163,7 +163,7 @@ export class HistorialGastosPage implements OnDestroy {
   constructor() {
     this.stateService.cargarDatos();
     effect(() => {
-      this.usarMockVisualPagados.set(this.stateService.gastos().length === 0);
+      this.usarMockVisualPagados.set(this.stateService.gastos().length === 0 && this.stateService.resumenActual() === null);
     });
 
     this.txSub = this.eventBus.on('TRANSACTION_MODIFIED').subscribe(() => {

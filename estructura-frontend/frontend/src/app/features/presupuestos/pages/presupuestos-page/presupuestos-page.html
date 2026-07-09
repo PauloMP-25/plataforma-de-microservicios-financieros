@@ -96,7 +96,7 @@
             <div class="status-text">
               <span class="status-label">{{ presupuestoActivo() ? (presupuestoActivo()!.nombre || 'Límite activo') : 'Sin límite activo' }}</span>
               <span class="status-dates" *ngIf="presupuestoActivo()">
-                {{ presupuestoActivo()!.fechaInicio | date:'dd/MM/yyyy':'UTC' }} — {{ presupuestoActivo()!.fechaFin | date:'dd/MM/yyyy':'UTC' }}
+                {{ presupuestoActivo()!.fechaInicio | date:'dd/MM/yyyy' }} — {{ presupuestoActivo()!.fechaFin | date:'dd/MM/yyyy' }}
               </span>
             </div>
           </div>

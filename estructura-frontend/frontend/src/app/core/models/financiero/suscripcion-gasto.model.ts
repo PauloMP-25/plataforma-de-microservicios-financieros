@@ -10,11 +10,14 @@ export interface SuscripcionGasto {
   id: string;
   nombre: string;
   descripcion: string;
-  categoria: string; // food, transport, health, home, leisure, study
+  categoria: string; // legacy category string or just alias
+  categoriaId: string;
   monto: number;
+  metodoPago: string;
   frecuencia: FrecuenciaSuscripcion;
   fechaInicio: string; // ISO 8601
   proximoVencimiento: string; // ISO 8601
+  fechaUltimoPago?: string; // ISO 8601
   estado: EstadoSuscripcion;
   fechaCreacion: string;
   ultimaActualizacion: string;
@@ -35,7 +38,9 @@ export interface CrearSuscripcionRequest {
   nombre: string;
   descripcion: string;
   categoria: string;
+  categoriaId: string;
   monto: number;
+  metodoPago: string;
   frecuencia: FrecuenciaSuscripcion;
   fechaInicio: string;
 }
