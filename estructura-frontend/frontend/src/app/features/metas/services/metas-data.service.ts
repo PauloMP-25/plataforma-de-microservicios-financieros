@@ -69,11 +69,8 @@ export class MetasDataService {
     );
   }
 
-  completarMeta(meta: any, transaccionPayload: TransaccionRequestDTO): Observable<any> {
-    return forkJoin({
-      gasto: this.transaccionesService.registrar(transaccionPayload),
-      meta: this.metasService.actualizarProgresoMeta(meta.id, meta.montoObjetivo)
-    }).pipe(
+  completarMeta(meta: any): Observable<any> {
+    return this.metasService.actualizarProgresoMeta(meta.id, meta.montoObjetivo).pipe(
       catchError(err => {
         console.warn(`API error completing meta ${meta.id}, using mock fallback`, err);
         this.metasUtility.marcarMockComoCompletadoLocalmente(meta.id, meta.montoObjetivo);

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal, OnInit } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HasUnsavedChanges } from '../../../../core/guards/pending-changes.guard';
 import { OnboardingTour, TourStep } from '../../../../shared/components/onboarding-tour/onboarding-tour';
 import { GastoFormComponent } from '../../components/gasto-form/gasto-form';
@@ -32,6 +32,7 @@ export class NuevoGastoPage implements HasUnsavedChanges, OnInit {
   private readonly iaService = inject(IaService);
   private readonly eventBus = inject(AppEventBus);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly notificacionService = inject(NotificacionService);
 
   formularioGuardado = false;
@@ -169,6 +170,25 @@ export class NuevoGastoPage implements HasUnsavedChanges, OnInit {
         this.mostrarTour.set(true);
       }, 600);
     }
+    
+    // Leer query params para auto-completar desde Metas
+    this.route.queryParams.subscribe(params => {
+      if (params['monto']) {
+        this.form.monto = Number(params['monto']);
+      }
+      if (params['nombre']) {
+        this.form.nombreGasto = params['nombre'];
+      }
+      if (params['descripcion']) {
+        this.form.descripcion = params['descripcion'];
+      }
+      if (params['metaId']) {
+        // Añadir una etiqueta de la meta
+        if (!this.form.etiquetas.includes('META')) {
+          this.form.etiquetas.push('META');
+        }
+      }
+    });
   }
 
   completarTour(): void {
