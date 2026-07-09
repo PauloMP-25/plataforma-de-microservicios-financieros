@@ -14,8 +14,10 @@ import { ServicioTema } from '../../../../core/services/servicio-tema';
 export class ChartHistoricalComparisonComponent implements AfterViewInit, OnDestroy {
   private chart: Chart | undefined;
 
+  /** Título dinámico según el tipo de movimiento seleccionado */
   tituloComparativa = computed(() => {
-    return 'Comparativa Mensual';
+    const tipo = this.stateService.filtrosActuales().tipoMovimiento?.toUpperCase();
+    return tipo === 'INGRESO' ? 'Comparativa Mensual de Ingresos' : 'Comparativa Mensual de Gastos';
   });
 
   constructor(
@@ -25,8 +27,9 @@ export class ChartHistoricalComparisonComponent implements AfterViewInit, OnDest
     effect(() => {
       const data = this.stateService.comparativa();
       const isDark = this.themeService.temaOscuro();
+      const tipo = this.stateService.filtrosActuales().tipoMovimiento?.toUpperCase();
       if (this.chart) {
-        this.actualizarGrafico(data, isDark);
+        this.actualizarGrafico(data, isDark, tipo);
       }
     });
   }
@@ -41,38 +44,31 @@ export class ChartHistoricalComparisonComponent implements AfterViewInit, OnDest
     }
   }
 
+  private resolverColorBarra(tipo?: string): string {
+    return tipo === 'INGRESO' ? '#10b981' : '#5b6af0';
+  }
 
+  private resolverLabelBarra(tipo?: string): string {
+    return tipo === 'INGRESO' ? 'Ingresos' : 'Gastos';
+  }
 
-  private esFiltroMensual(): boolean {
-    const filtros = this.stateService.filtrosActuales();
-    if (filtros.fechaInicio && filtros.fechaFin) {
-      const start = new Date(filtros.fechaInicio);
-      const end = new Date(filtros.fechaFin);
-      if (start.getDate() === 1) {
-        return true;
-      }
-      const diffTime = Math.abs(end.getTime() - start.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays > 7 && diffDays <= 31;
-    }
-    return false;
+  private resolverDatos(data: any[], tipo?: string): number[] {
+    return tipo === 'INGRESO'
+      ? data.map(d => d.ingresos ?? d.actual ?? 0)
+      : data.map(d => d.gastos ?? d.actual ?? 0);
   }
 
   private inicializarGrafico(): void {
     const canvas = document.getElementById('historicalComparisonCanvas') as HTMLCanvasElement;
     if (!canvas) return;
-
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     const data = this.stateService.comparativa();
     const isDark = this.themeService.temaOscuro();
+    const tipo = this.stateService.filtrosActuales().tipoMovimiento?.toUpperCase();
     const textColor = isDark ? '#94a3b8' : '#64748b';
     const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
-
-    const esMes = this.esFiltroMensual();
-    const labelActual = esMes ? 'Este Mes' : 'Este Año';
-    const labelAnterior = esMes ? 'Mes Anterior' : 'Año Anterior';
 
     const config: ChartConfiguration = {
       type: 'bar',
@@ -80,15 +76,9 @@ export class ChartHistoricalComparisonComponent implements AfterViewInit, OnDest
         labels: data.map(d => d.mes),
         datasets: [
           {
-            label: labelActual,
-            data: data.map(d => d.actual),
-            backgroundColor: '#5b6af0',
-            borderRadius: 4
-          },
-          {
-            label: labelAnterior,
-            data: data.map(d => d.anterior),
-            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+            label: this.resolverLabelBarra(tipo),
+            data: this.resolverDatos(data, tipo),
+            backgroundColor: this.resolverColorBarra(tipo),
             borderRadius: 4
           }
         ]
@@ -96,18 +86,9 @@ export class ChartHistoricalComparisonComponent implements AfterViewInit, OnDest
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        layout: {
-          padding: {
-            left: 15,
-            right: 15,
-            top: 20,
-            bottom: 5
-          }
-        },
+        layout: { padding: { left: 15, right: 15, top: 20, bottom: 5 } },
         plugins: {
-          legend: {
-            labels: { color: textColor, font: { family: 'Inter, sans-serif', size: 13, weight: 'bold' } }
-          },
+          legend: { display: false },
           tooltip: {
             backgroundColor: isDark ? 'rgba(30, 41, 59, 0.9)' : 'rgba(255, 255, 255, 0.9)',
             titleColor: isDark ? '#f8fafc' : '#0f172a',
@@ -132,21 +113,20 @@ export class ChartHistoricalComparisonComponent implements AfterViewInit, OnDest
         id: 'dataLabels',
         afterDraw: (chart) => {
           const { ctx } = chart;
+          const color = this.resolverColorBarra(this.stateService.filtrosActuales().tipoMovimiento?.toUpperCase());
           ctx.save();
           ctx.font = 'bold 11px Inter, sans-serif';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'bottom';
-          
+          ctx.fillStyle = color;
           chart.data.datasets.forEach((dataset, i) => {
             const meta = chart.getDatasetMeta(i);
             if (!meta.hidden) {
               meta.data.forEach((element: any, index) => {
                 const val = dataset.data[index] as number;
                 if (val !== undefined && val !== null) {
-                  const label = `S/ ${val.toLocaleString()}`;
                   const { x, y } = element.tooltipPosition();
-                  ctx.fillStyle = i === 0 ? '#5b6af0' : (isDark ? '#94a3b8' : '#64748b');
-                  ctx.fillText(label, x, y - 6);
+                  ctx.fillText(`S/ ${val.toLocaleString()}`, x, y - 6);
                 }
               });
             }
@@ -159,24 +139,17 @@ export class ChartHistoricalComparisonComponent implements AfterViewInit, OnDest
     this.chart = new Chart(ctx, config);
   }
 
-  private actualizarGrafico(data: any[], isDark: boolean): void {
+  private actualizarGrafico(data: any[], isDark: boolean, tipo?: string): void {
     if (!this.chart) return;
-    
+
     const textColor = isDark ? '#94a3b8' : '#64748b';
     const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
 
-    const esMes = this.esFiltroMensual();
-    this.chart.data.datasets[0].label = esMes ? 'Este Mes' : 'Este Año';
-    this.chart.data.datasets[1].label = esMes ? 'Mes Anterior' : 'Año Anterior';
-
     this.chart.data.labels = data.map(d => d.mes);
-    this.chart.data.datasets[0].data = data.map(d => d.actual);
-    this.chart.data.datasets[1].data = data.map(d => d.anterior);
-    this.chart.data.datasets[1].backgroundColor = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)';
+    this.chart.data.datasets[0].label = this.resolverLabelBarra(tipo);
+    this.chart.data.datasets[0].data = this.resolverDatos(data, tipo);
+    (this.chart.data.datasets[0] as any).backgroundColor = this.resolverColorBarra(tipo);
 
-    if (this.chart.options.plugins?.legend?.labels) {
-      this.chart.options.plugins.legend.labels.color = textColor;
-    }
     if (this.chart.options.scales?.['x']) {
       (this.chart.options.scales['x'] as any).ticks.color = textColor;
     }

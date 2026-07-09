@@ -19,21 +19,21 @@
     </div>
   </div>
 
-  <!-- Gasto Promedio Diario -->
+  <!-- Gasto / Ingreso Promedio Diario -->
   <div class="kpi-card-wrapper">
     <div class="kpi-card-inner">
       <div class="kpi-card-front glass-panel">
         <div class="kpi-icon" style="background: rgba(236, 72, 153, 0.1); color: #ec4899;"><i class="fa-solid fa-calendar-day"></i></div>
         <div class="kpi-info">
-          <h3 class="kpi-title">Gasto Prom. Diario</h3>
+          <h3 class="kpi-title">{{ labelPromDiario }}</h3>
           <p class="kpi-value">S/ {{ gastoPromedioDiario | number:'1.2-2' }}</p>
         </div>
       </div>
       <div class="kpi-card-back glass-panel" style="border-color: rgba(236, 72, 153, 0.2);">
         <div class="kpi-icon" style="background: rgba(236, 72, 153, 0.1); color: #ec4899;"><i class="fa-solid fa-calendar-day"></i></div>
         <div class="kpi-back-info">
-          <h4 class="back-title" style="color: #ec4899;">Gasto Prom. Diario</h4>
-          <p class="back-description">Monto estimado que gastas cada día en promedio dentro del período seleccionado.</p>
+          <h4 class="back-title" style="color: #ec4899;">{{ labelPromDiario }}</h4>
+          <p class="back-description">{{ descPromDiario }}</p>
         </div>
       </div>
     </div>
@@ -53,27 +53,27 @@
         <div class="kpi-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;"><i class="fa-solid fa-list-check"></i></div>
         <div class="kpi-back-info">
           <h4 class="back-title" style="color: #3b82f6;">Volumen de Transacciones</h4>
-          <p class="back-description">Cantidad total de movimientos financieros (ingresos y gastos) generados en el periodo seleccionado.</p>
+          <p class="back-description">Cantidad total de {{ esIngreso ? 'ingresos' : 'egresos' }} generados en el periodo seleccionado.</p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Proyección a Fin de Mes -->
+  <!-- Proyección a Fin de Mes / Ingresos -->
   <div class="kpi-card-wrapper">
     <div class="kpi-card-inner">
       <div class="kpi-card-front glass-panel">
         <div class="kpi-icon" style="background: rgba(6, 182, 212, 0.1); color: #06b6d4;"><i class="fa-solid fa-chart-line"></i></div>
         <div class="kpi-info">
-          <h3 class="kpi-title">Proyección Fin de Mes</h3>
+          <h3 class="kpi-title">{{ labelProyeccion }}</h3>
           <p class="kpi-value">S/ {{ proyeccionFinDeMes | number:'1.2-2' }}</p>
         </div>
       </div>
       <div class="kpi-card-back glass-panel" style="border-color: rgba(6, 182, 212, 0.2);">
         <div class="kpi-icon" style="background: rgba(6, 182, 212, 0.1); color: #06b6d4;"><i class="fa-solid fa-chart-line"></i></div>
         <div class="kpi-back-info">
-          <h4 class="back-title" style="color: #06b6d4;">Proyección Fin de Mes</h4>
-          <p class="back-description">Estimación de tus egresos totales para el cierre de mes en base a tu velocidad de gasto actual.</p>
+          <h4 class="back-title" style="color: #06b6d4;">{{ labelProyeccion }}</h4>
+          <p class="back-description">{{ descProyeccion }}</p>
         </div>
       </div>
     </div>
