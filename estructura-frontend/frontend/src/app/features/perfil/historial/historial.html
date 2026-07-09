@@ -134,18 +134,18 @@
           <div class="movements__group-label">
             @let diasDiff = obtenerDiferenciaDias(item.fecha);
             @if (diasDiff === 0) {
-              Hoy, {{ item.fechaObjeto | date:'d \'de\' MMMM':'UTC' }}
+              Hoy, {{ item.fechaObjeto | date:'d \'de\' MMMM' }}
             } @else if (diasDiff === 1) {
-              Ayer, {{ item.fechaObjeto | date:'d \'de\' MMMM':'UTC' }}
+              Ayer, {{ item.fechaObjeto | date:'d \'de\' MMMM' }}
             } @else {
-              {{ item.fechaObjeto | date:'d \'de\' MMMM':'UTC' }}
+              {{ item.fechaObjeto | date:'d \'de\' MMMM' }}
             }
           </div>
         }
 
         <div class="movements__row">
           <span class="col-fecha">
-            {{ item.fechaObjeto | date:'hh:mm a':'UTC' }}
+            {{ item.fechaObjeto | date:'hh:mm a' }}
           </span>
           <span class="col-desc">
             <span class="desc__title">{{ item.nombre }}</span>

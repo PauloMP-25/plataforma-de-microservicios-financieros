@@ -860,34 +860,6 @@ export class GastosPage implements OnInit, OnDestroy {
           },
         });
       } else {
-        if (this.usarMockVisualPagados()) {
-          const mockId = `mock-${Date.now()}`;
-          this.pagadosMock.update((items) => [
-            {
-              id: mockId,
-              nombre: this.nombreGasto().trim(),
-              detalle: this.descripcion().trim(),
-              categoria: this.nombreCategoriaPorId(catId),
-              fecha: this.fecha()
-                ? new Date(this.fecha()).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
-                : 'Hoy',
-              hora: new Date().toLocaleTimeString('es-PE', { hour: 'numeric', minute: '2-digit' }),
-              monto: Number(this.monto()),
-              metodo: this.metodoPago(),
-              estado: 'Pagado',
-              icono: this.iconoCategoria(this.nombreCategoriaPorId(catId)),
-              colorCategoria: this.colorCategoria(this.nombreCategoriaPorId(catId))
-            },
-            ...items
-          ]);
-          this.usarMockVisualPagados.set(true);
-          this.modalAbierto.set(false);
-          this.resetFormulario();
-          this.guardandoGasto.set(false);
-          this.notificacionService.mostrarGastoRegistrado(Number(this.monto()), this.nombreCategoriaPorId(catId));
-          return;
-        }
-
         const request: TransaccionRequestDTO = {
           usuarioId,
           nombreCliente: this.nombreGasto().trim(),

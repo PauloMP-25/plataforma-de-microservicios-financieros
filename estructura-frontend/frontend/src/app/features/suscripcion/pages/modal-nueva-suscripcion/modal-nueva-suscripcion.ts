@@ -185,7 +185,7 @@ export class ModalNuevaSuscripcion {
     let realCategory = this.categorias.find(c => c.nombre.toLowerCase().includes(plataforma.categoria.toLowerCase()));
     if (!realCategory && plataforma.categoria === 'leisure') realCategory = this.categorias.find(c => c.nombre.toLowerCase().includes('entretenimiento'));
     if (!realCategory && plataforma.categoria === 'study') realCategory = this.categorias.find(c => c.nombre.toLowerCase().includes('educación') || c.nombre.toLowerCase().includes('educacion'));
-    if (!realCategory && (plataforma.categoria === 'health' || plataforma.categoria === 'home')) realCategory = this.categorias.find(c => c.nombre.toLowerCase().includes('salud') || c.nombre.toLowerCase().includes('hogar'));
+    if (!realCategory && (plataforma.categoria === 'health' || plataforma.categoria === 'home')) realCategory = this.categorias.find(c => c.nombre.toLowerCase().includes('salud') || c.nombre.toLowerCase().includes('hogar') || c.nombre.toLowerCase().includes('vivienda'));
     
     if (realCategory) {
       this.categoriaId.set(realCategory.id);
