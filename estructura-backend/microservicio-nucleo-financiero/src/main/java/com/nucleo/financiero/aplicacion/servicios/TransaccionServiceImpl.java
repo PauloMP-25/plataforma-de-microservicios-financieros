@@ -170,6 +170,24 @@ public class TransaccionServiceImpl implements ITransaccionService {
 
     @Override
     @Transactional(readOnly = true)
+    public ResumenFinancieroDTO obtenerResumenGlobal(UUID usuarioId, String ipCliente) {
+        BigDecimal totalIngresos = transaccionRepository.sumarIngresosGlobal(usuarioId);
+        BigDecimal totalGastos = transaccionRepository.sumarGastosGlobal(usuarioId);
+        // Contadores en global pueden ser 0 para simplificar, no afectan el balance
+        long cantidadIngresos = 0;
+        long cantidadGastos = 0;
+
+        publicadorAuditoria.publicarAcceso(
+                usuarioId,
+                "OBTENER_RESUMEN_GLOBAL",
+                "Se generó el resumen financiero global histórico.",
+                ipCliente
+        );
+        return ResumenFinancieroDTO.calcular(null, null, totalIngresos, totalGastos, cantidadIngresos, cantidadGastos);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public RespuestaTransaccion obtenerPorId(UUID id) {
         if (id == null) {
             throw new IllegalArgumentException("El ID de transacción no puede ser nulo.");

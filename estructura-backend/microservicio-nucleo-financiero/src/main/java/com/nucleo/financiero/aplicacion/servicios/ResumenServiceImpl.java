@@ -30,9 +30,10 @@ public class ResumenServiceImpl implements IResumenService {
     public RachaDTO calcularRacha(UUID usuarioId) {
         log.info("Calculando racha de días registrando gastos para el usuario: {}", usuarioId);
 
-        List<LocalDate> fechas = transaccionRepository.findDistinctFechasTransaccionByUsuarioIdAsc(usuarioId);
+        List<java.sql.Date> fechasSql = transaccionRepository.findDistinctFechasTransaccionByUsuarioIdAsc(usuarioId);
+        List<LocalDate> fechas = fechasSql != null ? fechasSql.stream().map(java.sql.Date::toLocalDate).toList() : new ArrayList<>();
 
-        if (fechas == null || fechas.isEmpty()) {
+        if (fechas.isEmpty()) {
             return RachaDTO.builder()
                     .diasRacha(0)
                     .oportunidadesRestantes(3)

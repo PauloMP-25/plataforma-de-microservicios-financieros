@@ -17,36 +17,36 @@ services:
 
   # ── BASES DE DATOS: exponemos puertos para herramientas externas ─────────────
 
-  postgres-usuario:
-    ports:
-      - "5433:5432"   # localhost:5433 → DBeaver/pgAdmin
-
-  postgres-cliente:
-    ports:
-      - "5434:5432"
-
-  postgres-financiero:
-    ports:
-      - "5435:5432"
-
-  postgres-auditoria:
-    ports:
-      - "5436:5432"
-
-  postgres-mensajeria:
-    ports:
-      - "5437:5432"
-
-  postgres-ia:
-    ports:
-      - "5438:5432"
+#  postgres-usuario:
+#    ports:
+#      - "5433:5432"   # localhost:5433 → DBeaver/pgAdmin
+#
+#  postgres-cliente:
+#    ports:
+#      - "5434:5432"
+#
+#  postgres-financiero:
+#    ports:
+#      - "5435:5432"
+#
+#  postgres-auditoria:
+#    ports:
+#      - "5436:5432"
+#
+#  postgres-mensajeria:
+#    ports:
+#      - "5437:5432"
+#
+#  postgres-ia:
+#    ports:
+#      - "5438:5432"
 
   # ── RABBITMQ: también exponemos el puerto AMQP para testing externo ──────────
 
-  rabbitmq:
-    ports:
-      - "5672:5672"    # Puerto AMQP para clientes locales (ej: pruebas con pika)
-      - "15672:15672"  # UI Management (ya estaba)
+#  rabbitmq:
+#    ports:
+#      - "5672:5672"    # Puerto AMQP para clientes locales (ej: pruebas con pika)
+#      - "15672:15672"  # UI Management (ya estaba)
 
   # ── MICROSERVICIOS: desactivamos límites de RAM en desarrollo ─────────────────
 

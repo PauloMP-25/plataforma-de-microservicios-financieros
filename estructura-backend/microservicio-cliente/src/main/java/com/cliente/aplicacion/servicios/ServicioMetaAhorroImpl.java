@@ -12,7 +12,6 @@ import com.cliente.infraestructura.mensajeria.PublicadorAuditoria;
 import com.libreria.comun.dtos.EventoAuditoriaDTO;
 import com.libreria.comun.dtos.EventoTransaccionalDTO;
 import com.libreria.comun.respuesta.Paginacion;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -39,6 +38,7 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
     private final MetaAhorroRepositorio repositorio;
     private final PublicadorAuditoria publicadorAuditoria;
     private final ApplicationEventPublisher eventPublisher;
+    private final RabbitTemplate rabbitTemplate;
 
     @Override
     @Transactional
@@ -96,15 +96,17 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
     public RespuestaMetaAhorro actualizarProgreso(UUID metaId, UUID usuarioIdToken, BigDecimal nuevoMontoActual, String ipOrigen) {
         MetaAhorro meta = obtenerYValidarPropiedad(metaId, usuarioIdToken);
         BigDecimal montoAnterior = meta.getMontoActual();
+        boolean estabaCompletada = meta.getCompletada();
         meta.setMontoActual(nuevoMontoActual);
 
-        boolean recienCompletada = meta.evaluarYMarcarCompletada();
+        meta.evaluarYMarcarCompletada();
         MetaAhorro actualizada = repositorio.save(meta);
 
-        if (recienCompletada) {
+        if (actualizada.getCompletada() && !estabaCompletada) {
+            log.info("Meta completada al 100%: {}", metaId);
             publicadorAuditoria.publicarTransaccionExitosa(EventoTransaccionalDTO.crear(
                     usuarioIdToken, metaId, "MS-CLIENTE", "META_AHORRO",
-                    String.format("¡Meta '%s' alcanzada! S/ %.2f de S/ %.2f", actualizada.getNombre(), actualizada.getMontoActual(), actualizada.getMontoObjetivo()),
+                    String.format("¡Felicidades! Meta completada: '%s'", actualizada.getNombre()),
                     montoAnterior + "", actualizada.getMontoActual() + ""));
         } else {
             publicadorAuditoria.publicarTransaccionExitosa(EventoTransaccionalDTO.crear(
@@ -184,6 +186,7 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
                 m.getMontoObjetivo(), m.getMontoActual(),
                 m.calcularPorcentajeProgreso(),
                 m.getFechaInicio(), m.getFechaObjetivo(), m.getFechaCompletada(),
+                m.getFechaCreacion(),
                 m.getCompletada(),
                 m.getProposito());
     }

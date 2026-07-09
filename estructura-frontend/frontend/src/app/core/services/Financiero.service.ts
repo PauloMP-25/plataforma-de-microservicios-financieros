@@ -76,6 +76,26 @@ export class FinancieroService {
     );
   }
 
+  // ── Resumen financiero global (todo el histórico) ──
+  getResumenGlobal(): Observable<ResumenFinancieroDTO> {
+    const usuarioId = this.auth.usuario()?.id;
+    const params = new HttpParams().set('usuarioId', usuarioId ?? '');
+ 
+    return this.http.get<ResultadoApi<ResumenFinancieroDTO>>(`${this.baseTransacciones}/resumen/global`, { params }).pipe(
+      map(resp => resp.datos),
+      catchError(() => {
+        // Fallback
+        return of({
+          balance: 0,
+          totalIngresos: 0,
+          totalGastos: 0,
+          cantidadIngresos: 0,
+          cantidadGastos: 0
+        } as ResumenFinancieroDTO);
+      })
+    );
+  }
+
   // ── Racha de gastos ──
   getRacha(): Observable<RachaDTO> {
     const usuarioId = this.auth.usuario()?.id;

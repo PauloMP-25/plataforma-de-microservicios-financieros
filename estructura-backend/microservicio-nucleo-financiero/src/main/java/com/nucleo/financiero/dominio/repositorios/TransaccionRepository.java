@@ -27,7 +27,7 @@ public interface TransaccionRepository extends JpaRepository<Transaccion, UUID>,
     List<Transaccion> findTop10ByUsuarioIdOrderByFechaTransaccionDesc(UUID usuarioId);
 
     @Query(value = "SELECT DISTINCT DATE(t.fecha_transaccion) FROM transacciones t WHERE t.usuario_id = :usuarioId ORDER BY DATE(t.fecha_transaccion) ASC", nativeQuery = true)
-    List<java.time.LocalDate> findDistinctFechasTransaccionByUsuarioIdAsc(@Param("usuarioId") UUID usuarioId);
+    List<java.sql.Date> findDistinctFechasTransaccionByUsuarioIdAsc(@Param("usuarioId") UUID usuarioId);
 
 
     @Query("""
@@ -47,6 +47,14 @@ public interface TransaccionRepository extends JpaRepository<Transaccion, UUID>,
         SELECT COALESCE(SUM(t.monto), 0)
         FROM Transaccion t
         WHERE t.usuarioId = :usuarioId
+          AND t.tipo = 'INGRESO'
+        """)
+    BigDecimal sumarIngresosGlobal(@Param("usuarioId") UUID usuarioId);
+
+    @Query("""
+        SELECT COALESCE(SUM(t.monto), 0)
+        FROM Transaccion t
+        WHERE t.usuarioId = :usuarioId
           AND t.tipo = 'GASTO'
           AND t.fechaTransaccion BETWEEN :desde AND :hasta
         """)
@@ -55,6 +63,14 @@ public interface TransaccionRepository extends JpaRepository<Transaccion, UUID>,
             @Param("desde") LocalDateTime desde,
             @Param("hasta") LocalDateTime hasta
     );
+
+    @Query("""
+        SELECT COALESCE(SUM(t.monto), 0)
+        FROM Transaccion t
+        WHERE t.usuarioId = :usuarioId
+          AND t.tipo = 'GASTO'
+        """)
+    BigDecimal sumarGastosGlobal(@Param("usuarioId") UUID usuarioId);
 
     @Query("""
         SELECT COUNT(t)
