@@ -16,6 +16,7 @@ public record RespuestaSuscripcion(
         java.time.LocalDate fechaInicio,
         java.time.LocalDate fechaVencimiento,
         java.time.LocalDate fechaUltimoPago,
-        String tipoEstrategia
+        String tipoEstrategia,
+        UUID categoriaId
 ) {
 }

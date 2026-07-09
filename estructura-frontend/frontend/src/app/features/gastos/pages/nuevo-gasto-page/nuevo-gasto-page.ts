@@ -1,27 +1,30 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { HasUnsavedChanges } from '../../../../core/guards/pending-changes.guard';
+import { OnboardingTour, TourStep } from '../../../../shared/components/onboarding-tour/onboarding-tour';
+import { GastoFormComponent } from '../../components/gasto-form/gasto-form';
+import { GastoPreviewComponent } from '../../components/gasto-preview/gasto-preview';
+import { GastoRecentListComponent } from '../../components/gasto-recent-list/gasto-recent-list';
 import { GastosStateService } from '../../../../core/services/gastos-state.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { Transacciones } from '../../../../core/services/transacciones';
 import { FinancieroService } from '../../../../core/services/Financiero.service';
 import { IaService } from '../../../../core/services/ia.service';
-import { AppEventBus } from '../../../../core/services/app-event-bus.service';
-import { NotificacionService } from '../../../../core/services/notificacion.service';
-import { MetodoPago, TransaccionRequestDTO } from '../../../../core/models/financiero/transaccion.model';
 import { CategoriaSugerida } from '../../../../core/models/ia_coach/ia-base.model';
-import { OnboardingTour, TourStep } from '../../../../shared/components/onboarding-tour/onboarding-tour';
-import { HasUnsavedChanges } from '../../../../core/guards/pending-changes.guard';
+import { AppEventBus } from '../../../../core/services/app-event-bus.service';
+import { TransaccionRequestDTO } from '../../../../core/models/financiero/transaccion.model';
+import { NotificacionService } from '../../../../core/services/notificacion.service';
+import { DistribucionCategoria, GastoFormData, GastoReciente, OptionItem } from '../../types/gastos.interfaces';
 
 @Component({
   selector: 'app-nuevo-gasto-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, OnboardingTour],
+  imports: [CommonModule, RouterLink, GastoFormComponent, GastoPreviewComponent, GastoRecentListComponent, OnboardingTour],
   templateUrl: './nuevo-gasto-page.html',
-  styleUrls: ['../gastos-page/gastos-page.scss']
+  styleUrl: './nuevo-gasto-page.scss',
 })
-export class NuevoGastoPage implements OnInit, HasUnsavedChanges {
+export class NuevoGastoPage implements HasUnsavedChanges, OnInit {
   private readonly stateService = inject(GastosStateService);
   private readonly authService = inject(AuthService);
   private readonly transaccionesService = inject(Transacciones);
@@ -31,91 +34,145 @@ export class NuevoGastoPage implements OnInit, HasUnsavedChanges {
   private readonly router = inject(Router);
   private readonly notificacionService = inject(NotificacionService);
 
-  readonly nombreGasto = signal('');
-  readonly monto = signal<number>(0);
-  readonly categoria = signal('');
-  readonly fecha = signal(new Date().toISOString().split('T')[0]);
-  readonly metodoPago = signal('DIGITAL');
-  readonly descripcion = signal('');
-  readonly etiquetas = signal<string[]>([]);
-  readonly nuevaEtiqueta = signal('');
-  readonly errores = signal<Record<string, string>>({});
-
-  readonly sugerenciasIa = signal<CategoriaSugerida[]>([]);
-  readonly sugerenciaSeleccionada = signal<CategoriaSugerida | null>(null);
-  readonly categoriaIAPendiente = signal<{ nombre: string; icono: string } | null>(null);
-  readonly clasificandoIa = signal(false);
-  readonly guardandoGasto = signal(false);
-  readonly mensajeFormulario = signal<string | null>(null);
-
   formularioGuardado = false;
+  private initialForm = '';
+
+  hasUnsavedChanges(): boolean {
+    return !this.formularioGuardado && JSON.stringify(this.form) !== this.initialForm;
+  }
+
+  readonly sugerenciaSeleccionadaSignal = signal<CategoriaSugerida | null>(null);
+  readonly categoriaIAPendiente = signal<{ nombre: string; icono: string } | null>(null);
+  get sugerenciaSeleccionada(): CategoriaSugerida | null { return this.sugerenciaSeleccionadaSignal(); }
+
+  readonly metodos: OptionItem[] = [
+    { label: 'Efectivo', value: 'EFECTIVO' },
+    { label: 'Tarjeta', value: 'TARJETA' },
+    { label: 'Transferencia', value: 'TRANSFERENCIA' },
+    { label: 'Digital (Yape/Plin)', value: 'DIGITAL' },
+  ];
+
+  form: GastoFormData = {
+    nombreGasto: '',
+    monto: 0,
+    fechaTransaccion: new Date().toLocaleDateString('es-PE'), // dd/mm/yyyy
+    descripcion: '',
+    categoria: '',
+    categoriaNombre: '',
+    metodoPago: 'TRANSFERENCIA',
+    etiquetas: [],
+  };
+
+  readonly sugerenciasSignal = signal<CategoriaSugerida[]>([]);
+  readonly guardando = signal<boolean>(false);
+  readonly clasificandoIa = signal<boolean>(false);
+  get sugerencias(): CategoriaSugerida[] { return this.sugerenciasSignal(); }
+  get intentosIaRestantes(): number { return this.iaService.clasificacionesRestantes(); }
+  get intentosIaMaximos(): number { return this.iaService.clasificacionesMaximas(); }
+
+  // ── Signals computados para enlazar al estado real ──
+  readonly categoriasSignal = computed<OptionItem[]>(() => {
+    const cats = this.stateService.categorias();
+    const pending = this.categoriaIAPendiente();
+    let options: OptionItem[] = [];
+    if (cats.length > 0) {
+      const match = cats.find(c => c.nombre.toLowerCase() === 'salario');
+      if (match && this.form.categoria === 'Salario') {
+        this.form.categoria = match.id;
+        this.form.categoriaNombre = match.nombre;
+      }
+      options = cats.map(c => ({ label: c.nombre, value: c.id }));
+    } else {
+      options = [
+        { label: 'Salario', value: 'salario' },
+        { label: 'Freelance', value: 'freelance' },
+        { label: 'Inversiones', value: 'inversion' },
+        { label: 'Ventas', value: 'venta' },
+        { label: 'Otros Gastos', value: 'otros' },
+      ];
+    }
+    if (pending) {
+      if (!options.some(o => o.label.toLowerCase() === pending.nombre.toLowerCase())) {
+        options.push({ label: pending.nombre, value: 'PENDIENTE_IA' });
+      }
+    }
+    return options;
+  });
+
+
+  readonly distribucionSignal = computed<DistribucionCategoria[]>(() => {
+    const transacciones = this.stateService.gastos();
+    if (!transacciones.length) return [];
+    const map = new Map<string, number>();
+    let total = 0;
+    for (const t of transacciones) {
+      const cat = t.categoria || 'Otros';
+      const m = t.monto || 0;
+      map.set(cat, (map.get(cat) ?? 0) + m);
+      total += m;
+    }
+    const colores = ['#22c55e', '#7c3aed', '#f59e0b', '#06b6d4', '#ec4899', '#64748b'];
+    return Array.from(map.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([categoria, monto], idx) => ({
+        categoria,
+        monto,
+        porcentaje: total > 0 ? (monto / total) * 100 : 0,
+        color: colores[idx % colores.length]
+      }));
+  });
+
+  readonly recientesSignal = computed<GastoReciente[]>(() => {
+    const transacciones = this.stateService.gastos();
+    return transacciones.slice(0, 5).map(t => {
+      const fecha = new Date(t.fechaTransaccion);
+      return {
+        categoria: t.categoria || 'Otros',
+        descripcion: t.descripcion || t.notas || 'Gasto registrado',
+        monto: t.monto || 0,
+        fecha: fecha.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
+      };
+    });
+  });
+
+  // Getters para mantener bindings de la plantilla HTML
+  get categorias(): OptionItem[] { return this.categoriasSignal(); }
+  get distribucion(): DistribucionCategoria[] { return this.distribucionSignal(); }
+  get recientes(): GastoReciente[] { return this.recientesSignal(); }
 
   readonly mostrarTour = signal(false);
   readonly stepsTour: TourStep[] = [
     {
-      targetSelector: '#gasto-nombre',
-      title: 'Nombre del Gasto',
-      description: 'Ingresa el nombre o concepto de la compra (ej: Spotify, Almuerzo).',
-      position: 'bottom'
-    },
-    {
-      targetSelector: '#gasto-monto',
+      targetSelector: 'input[name="monto"]',
       title: 'Monto del Gasto',
-      description: 'Digita el importe de la transacción en soles.',
+      description: 'Ingresa la cantidad recibida en Soles (S/).',
       position: 'bottom'
     },
     {
-      targetSelector: '#gasto-categoria',
-      title: 'Categoría',
-      description: 'Elige el rubro correspondiente para clasificar tu presupuesto.',
-      position: 'top'
+      targetSelector: 'textarea[name="descripcion"]',
+      title: 'Descripción del Gasto',
+      description: 'Describe brevemente de dónde proviene este dinero (ej: Salario, Venta, Freelance).',
+      position: 'bottom'
     },
     {
-      targetSelector: '#tour-ia-gasto',
-      title: 'Sugerencia Inteligente',
-      description: 'Haz clic aquí para que nuestra IA analice la descripción y te recomiende la mejor categoría.',
+      targetSelector: 'select[name="categoria"]',
+      title: 'Categoría de Gasto',
+      description: 'Clasifica tu Gasto para organizar mejor el origen de tus flujos.',
       position: 'top'
     }
   ];
-
-  readonly categoriasConCrear = computed(() => {
-    const defaultCats = this.stateService.categorias();
-    const result = [...defaultCats];
-    const pending = this.categoriaIAPendiente();
-    if (pending) {
-      if (!result.some(c => c.nombre.toLowerCase() === pending.nombre.toLowerCase())) {
-        result.push({ id: 'PENDIENTE_IA', nombre: pending.nombre, icono: pending.icono, tipo: 'GASTO' } as any);
-      }
-    }
-    result.push({ id: 'CREAR_NUEVA', nombre: '+ Crear nueva categoría...', icono: 'plus', tipo: 'GASTO' } as any);
-    return result;
-  });
-
-  readonly metodosPagoDisponibles = [
-    { id: 'EFECTIVO', nombre: 'Efectivo' },
-    { id: 'TARJETA', nombre: 'Tarjeta' },
-    { id: 'TRANSFERENCIA', nombre: 'Transferencia' },
-    { id: 'DIGITAL', nombre: 'Digital (Yape/Plin)' },
-  ];
-
-  get intentosIaMaximos(): number { return this.iaService.clasificacionesMaximas(); }
-  get intentosIaRestantes(): number { return this.iaService.clasificacionesRestantes(); }
 
   ngOnInit(): void {
-    this.stateService.cargarDatos();
-    const tourVisto = localStorage.getItem('luka_tour_nuevo_gasto_visto');
+    const tourVisto = localStorage.getItem('luka_tour_nuevo_Gasto_visto');
     if (!tourVisto) {
-      setTimeout(() => this.mostrarTour.set(true), 600);
+      setTimeout(() => {
+        this.mostrarTour.set(true);
+      }, 600);
     }
-  }
-
-  hasUnsavedChanges(): boolean {
-    if (this.formularioGuardado) return false;
-    return this.nombreGasto() !== '' || this.monto() > 0 || this.categoria() !== '';
   }
 
   completarTour(): void {
-    localStorage.setItem('luka_tour_nuevo_gasto_visto', 'true');
+    localStorage.setItem('luka_tour_nuevo_Gasto_visto', 'true');
     this.mostrarTour.set(false);
   }
 
@@ -123,144 +180,215 @@ export class NuevoGastoPage implements OnInit, HasUnsavedChanges {
     this.mostrarTour.set(true);
   }
 
-  agregarEtiqueta(): void {
-    const et = this.nuevaEtiqueta().trim();
-    if (et && !this.etiquetas().includes(et)) {
-      this.etiquetas.update(list => [...list, et]);
-    }
-    this.nuevaEtiqueta.set('');
-  }
-
-  eliminarEtiqueta(et: string): void {
-    this.etiquetas.update(list => list.filter(e => e !== et));
-  }
-
-  puedeSugerirCategoriaIa(): boolean {
-    return this.nombreGasto().length > 2 && !this.clasificandoIa() && this.intentosIaRestantes > 0;
+  constructor() {
+    this.stateService.cargarDatos();
+    this.initialForm = JSON.stringify(this.form);
   }
 
   clasificarConIa(): void {
-    const texto = `${this.nombreGasto()} ${this.descripcion()}`.trim();
-    if (!texto || texto.length < 3) return;
+    const desc = this.form.descripcion?.trim();
+    if (!desc || desc.length < 4) {
+      this.sugerenciasSignal.set([]);
+      return;
+    }
+    if (this.clasificandoIa() || this.intentosIaRestantes <= 0) return;
     this.clasificandoIa.set(true);
-    this.sugerenciasIa.set([]);
 
     this.iaService.getClasificarTransaccion({
-      id_temporal: 'gasto',
+      id_temporal: 'nuevo-gasto',
       tipo_movimiento: 'GASTO',
-      descripcion: texto,
-      etiquetas: this.etiquetas().join(',')
+      descripcion: desc,
+      etiquetas: this.form.etiquetas.join(',')
     }).subscribe({
       next: (res) => {
         this.clasificandoIa.set(false);
-        if (res.datos?.sugerencias) {
-          this.sugerenciasIa.set(res.datos.sugerencias);
+        if (res.datos) {
+          const sugerencias = res.datos.sugerencias;
+          if (sugerencias) {
+            this.sugerenciasSignal.set(sugerencias);
+          }
         }
       },
       error: () => {
         this.clasificandoIa.set(false);
+        // Fallback local
+        const matched = ['Salario', 'Freelance', 'Inversiones', 'Ventas', 'Otros Gastos'].filter(c =>
+          c.toLowerCase().includes(desc.toLowerCase())
+        );
+        const fallbackList: CategoriaSugerida[] = (matched.length > 0 ? matched : ['Salario', 'Freelance', 'Inversiones', 'Ventas', 'Otros Gastos']).slice(0, 5).map(c => ({
+          categoria: c,
+          icono: this.iconoCategoria(c)
+        }));
+        this.sugerenciasSignal.set(fallbackList);
+      }
+    });
+  }
+
+  private iconoCategoria(nombre: string): string {
+    const key = nombre.toLowerCase();
+    if (key.includes('salario') || key.includes('sueldo')) return 'briefcase';
+    if (key.includes('freelance') || key.includes('independiente')) return 'code';
+    if (key.includes('invers') || key.includes('dividendo')) return 'trending-up';
+    if (key.includes('venta') || key.includes('comercio')) return 'tag';
+    if (key.includes('bono') || key.includes('regalo')) return 'gift';
+    return 'plus-circle';
+  }
+
+  crearCategoriaManualmente(nombre: string, icono?: string): void {
+    const nameTrim = nombre.trim();
+    if (!nameTrim) return;
+
+    // Verificar si ya existe por nombre
+    const match = this.categorias.find(
+      c => c.label.toLowerCase() === nameTrim.toLowerCase()
+    );
+    if (match) {
+      this.form.categoria = match.value;
+      this.form.categoriaNombre = match.label;
+      return;
+    }
+
+    // Crear la categoría en base de datos
+    this.financieroService.crearCategoria({
+      nombre: nameTrim,
+      descripcion: 'Categoría personalizada de Gastos',
+      icono: icono || this.iconoCategoria(nameTrim),
+      tipo: 'GASTO'
+    }).subscribe({
+      next: (cat) => {
+        // Añadirla reactivamente a la lista local
+        this.stateService.categorias.update(cats => [...cats, cat]);
+        // Pre-seleccionar el UUID y actualizar el nombre legible
+        this.form.categoria = cat.id;
+        this.form.categoriaNombre = cat.nombre;
+      },
+      error: (err) => {
+        console.error('Error al crear categoría:', err);
       }
     });
   }
 
   seleccionarSugerencia(sug: CategoriaSugerida): void {
-    this.sugerenciaSeleccionada.set(sug);
+    this.sugerenciaSeleccionadaSignal.set(sug);
   }
 
   confirmarSugerencia(): void {
-    const sug = this.sugerenciaSeleccionada();
+    const sug = this.sugerenciaSeleccionadaSignal();
     if (!sug) return;
-    const existe = this.stateService.categorias().find(c => c.nombre.toLowerCase() === sug.categoria.toLowerCase());
-    if (existe) {
-      this.categoria.set(existe.id);
+
+    const match = this.categorias.find(
+      c => c.label.toLowerCase() === sug.categoria.toLowerCase()
+    );
+    if (match) {
+      this.form.categoria = match.value;
+      this.form.categoriaNombre = match.label;
       this.categoriaIAPendiente.set(null);
     } else {
       this.categoriaIAPendiente.set({ nombre: sug.categoria, icono: sug.icono });
-      this.categoria.set('PENDIENTE_IA');
+      this.form.categoria = 'PENDIENTE_IA';
+      this.form.categoriaNombre = sug.categoria;
     }
-    this.sugerenciasIa.set([]);
-    this.sugerenciaSeleccionada.set(null);
+    this.sugerenciaSeleccionadaSignal.set(null);
   }
 
-  confirmarCrearCategoriaGasto(nombre: string): void {
-    const n = nombre.trim();
-    if (!n) return;
-    this.financieroService.crearCategoria({
-      nombre: n, descripcion: 'Categoría personalizada', icono: 'receipt', tipo: 'GASTO'
-    }).subscribe({
-      next: (c) => {
-        this.stateService.categorias.update(cats => [...cats, c]);
-        this.categoria.set(c.id);
-      },
-      error: () => console.error('Error al crear categoría.')
-    });
+
+  private nombreCategoriaPorId(id: string): string {
+    const match = this.categorias.find(c => c.value === id);
+    return match ? match.label : 'Gastos';
   }
 
-  private validarFormulario(): boolean {
-    const e: Record<string, string> = {};
-    if (!this.nombreGasto().trim()) e['nombreGasto'] = 'El nombre es requerido';
-    if (!this.categoria()) e['categoria'] = 'Selecciona una categoría';
-    if (this.monto() <= 0) e['monto'] = 'El monto debe ser mayor a 0';
-    if (!this.fecha()) e['fecha'] = 'La fecha es inválida';
-    this.errores.set(e);
-    return Object.keys(e).length === 0;
-  }
+  guardar(): void {
+    const usuarioId = this.authService.usuario()?.id;
+    if (!usuarioId) {
+      console.error('No se encontró sesión activa.');
+      return;
+    }
 
-  private registrarFinal(catId: string): void {
-    const payload: TransaccionRequestDTO = {
-      usuarioId: this.authService.usuario()?.id || '',
-      nombreCliente: this.nombreGasto().trim(),
-      monto: this.monto(),
-      tipo: 'GASTO',
-      categoriaId: catId,
-      fechaTransaccion: new Date(this.fecha() + 'T12:00:00').toISOString(),
-      metodoPago: this.metodoPago() as MetodoPago,
-      descripcion: this.descripcion().trim(),
-      etiquetas: this.etiquetas().join(',')
+    this.formularioGuardado = true;
+
+    const registrarGastoFinal = (catId: string) => {
+      this.guardando.set(true);
+
+      const getLocalIsoString = (date: Date): string => {
+        const now = new Date();
+        date.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+        const tzOffset = date.getTimezoneOffset() * 60000;
+        return new Date(date.getTime() - tzOffset).toISOString().slice(0, 19);
+      };
+
+      let fechaTransaccion = getLocalIsoString(new Date());
+      if (this.form.fechaTransaccion) {
+        const parts = this.form.fechaTransaccion.split('/');
+        if (parts.length === 3) {
+          const local = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
+          fechaTransaccion = getLocalIsoString(local);
+        } else {
+          const parsed = new Date(this.form.fechaTransaccion);
+          if (!Number.isNaN(parsed.getTime())) {
+            fechaTransaccion = getLocalIsoString(parsed);
+          }
+        }
+      }
+
+      const payload: TransaccionRequestDTO = {
+        usuarioId,
+        nombreCliente: this.form.nombreGasto || 'Gasto sin nombre',
+        monto: Number(this.form.monto),
+        tipo: 'GASTO',
+        categoriaId: catId,
+        fechaTransaccion,
+        metodoPago: this.form.metodoPago,
+        etiquetas: this.form.etiquetas.join(','),
+        descripcion: this.form.descripcion
+      };
+
+      this.transaccionesService.registrar(payload).subscribe({
+        next: () => {
+          this.guardando.set(false);
+          this.stateService.invalidarCache();
+          this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
+          const catNombre = this.categoriaIAPendiente()?.nombre || this.nombreCategoriaPorId(catId);
+          this.notificacionService.mostrarGastoRegistrado(Number(this.form.monto), catNombre);
+          this.router.navigate(['/gastos']);
+        },
+        error: (err) => {
+          this.guardando.set(false);
+          console.error('Error al registrar Gasto:', err);
+        }
+      });
     };
 
-    this.transaccionesService.registrar(payload).subscribe({
-      next: () => {
-        this.guardandoGasto.set(false);
-        this.formularioGuardado = true;
-        this.stateService.invalidarCache();
-        this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
-        this.notificacionService.mostrarIngresoRegistrado(this.monto(), 'Gasto registrado');
-        this.router.navigate(['/gastos']);
-      },
-      error: () => {
-        this.guardandoGasto.set(false);
-        this.mensajeFormulario.set('Ocurrió un error al registrar el gasto.');
-      }
-    });
-  }
-
-  guardarGasto(): void {
-    if (!this.validarFormulario()) return;
-    this.guardandoGasto.set(true);
-    this.mensajeFormulario.set(null);
-
-    const pending = this.categoriaIAPendiente();
-    if (this.categoria() === 'PENDIENTE_IA' && pending) {
+    const pendingCat = this.categoriaIAPendiente();
+    if (this.form.categoria === 'PENDIENTE_IA' && pendingCat) {
+      this.guardando.set(true);
       this.financieroService.crearCategoria({
-        nombre: pending.nombre, descripcion: 'Sugerida por IA', icono: pending.icono, tipo: 'GASTO'
+        nombre: pendingCat.nombre,
+        descripcion: 'Categoría personalizada de Gastos recomendada por IA',
+        icono: pendingCat.icono,
+        tipo: 'GASTO'
       }).subscribe({
-        next: (c) => {
-          this.stateService.categorias.update(cats => [...cats, c]);
-          this.categoria.set(c.id);
-          this.registrarFinal(c.id);
+        next: (cat) => {
+          this.stateService.categorias.update(cats => [...cats, cat]);
+          this.form.categoria = cat.id;
+          registrarGastoFinal(cat.id);
         },
-        error: () => {
-          this.guardandoGasto.set(false);
-          this.mensajeFormulario.set('Error al crear la categoría de IA.');
+        error: (err) => {
+          this.guardando.set(false);
+          console.error('Error al crear categoría de IA para Gasto:', err);
         }
       });
     } else {
-      this.registrarFinal(this.categoria());
+      let catId = '';
+      const selectedCat = this.form.categoria;
+      const match = this.categorias.find(
+        c => c.label.toLowerCase() === selectedCat.toLowerCase() || c.value === selectedCat
+      );
+      catId = match ? match.value : selectedCat;
+      registrarGastoFinal(catId);
     }
   }
 
   cancelar(): void {
-    this.router.navigate(['/gastos']);
+    this.router.navigate(['/Gastos']);
   }
 }

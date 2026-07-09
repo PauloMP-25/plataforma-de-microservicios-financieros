@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -12,6 +12,7 @@ import { MetaPreviewCardComponent } from '../../components/meta-preview-card/met
 import { MetaRecommendedSavingsComponent } from '../../components/meta-recommended-savings/meta-recommended-savings.component';
 import { MetasDataService } from '../../services/metas-data.service';
 import { DashboardStateService } from '../../../../core/services/dashboard-state.service';
+import { GastosStateService } from '../../../../core/services/gastos-state.service';
 
 @Component({
   selector: 'app-meta-form-page',
@@ -34,6 +35,8 @@ export class MetaFormPage implements OnInit, HasUnsavedChanges {
   private metasDataService = inject(MetasDataService);
   private metasUtility = inject(MetasUtilityService);
   private dashboardState = inject(DashboardStateService);
+  private financieroService = inject(FinancieroService);
+  private gastosState = inject(GastosStateService);
   private notificacionService = inject(NotificacionService);
 
   formulario!: FormGroup;
@@ -44,6 +47,27 @@ export class MetaFormPage implements OnInit, HasUnsavedChanges {
   exitoMensaje = signal<string>('');
   fechaMinima = '';
   formularioGuardado = false;
+  private balanceAplicado = false;
+
+  constructor() {
+    // Reactivamente aplicar el balance cuando llegue del backend
+    effect(() => {
+      if (this.modoEdicion || this.balanceAplicado || !this.formulario) return;
+
+      // Intentar primero con FinancieroService (llega más rápido vía header)
+      const resumenFin = this.financieroService.resumen();
+      // Segundo fallback: resumenActual de GastosStateService
+      const resumenGastos = this.gastosState.resumenActual();
+      // Tercero: dashboardState resumenYTD
+      const resumenYTD = this.dashboardState.resumenYTD();
+
+      const balance = resumenFin?.balance ?? resumenGastos?.balance ?? resumenYTD?.balance;
+      if (balance !== undefined && balance !== null) {
+        this.formulario.patchValue({ montoActual: balance });
+        this.balanceAplicado = true;
+      }
+    });
+  }
 
   hasUnsavedChanges(): boolean {
     return this.formulario && this.formulario.dirty && !this.formularioGuardado;
@@ -60,17 +84,10 @@ export class MetaFormPage implements OnInit, HasUnsavedChanges {
 
     this.inicializarFormulario();
 
-    // Garantizar que la analítica esté cargada
+    // Garantizar que los datos de balance estén disponibles
+    this.financieroService.cargarResumen();
+    this.gastosState.cargarDatos();
     this.dashboardState.cargarAnalitica();
-    
-    // Suscribir reactivamente al balance (si cambia)
-    // Pero como estamos en un form, solo lo tomamos una vez al inicio.
-    const resumen = this.dashboardState.resumenYTD();
-    if (!this.modoEdicion && resumen) {
-      this.formulario.patchValue({
-        montoActual: resumen.balance
-      });
-    }
 
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');

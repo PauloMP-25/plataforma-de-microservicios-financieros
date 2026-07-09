@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SuscripcionDTO } from '../../../../core/models/financiero/suscripcion-gasto.model';
 
-// TODO: Necesitas importar tu AuthService aquí arriba. Por ejemplo:
-// import { AuthService } from '../../../../core/services/auth.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-suscripcion-exito',
@@ -15,8 +14,7 @@ import { SuscripcionDTO } from '../../../../core/models/financiero/suscripcion-g
 })
 export class SuscripcionExito implements OnInit {
   private readonly router = inject(Router);
-  // TODO: Inyecta tu servicio de autenticación para que this.authService funcione
-  // private readonly authService = inject(AuthService);
+  private readonly authService = inject(AuthService);
 
   // Señales de datos
   readonly suscripcion = signal<SuscripcionDTO | null>(null);
@@ -27,20 +25,23 @@ export class SuscripcionExito implements OnInit {
   readonly error = signal<string>('');
 
   ngOnInit(): void {
-    // TODO: Aquí deberías poner la lógica (o la suscripción al servicio) que detona esta validación.
-    // Lo dejo estructurado para que funcione en cuanto inyectes el AuthService.
-    
-    /* Descomenta esto cuando tu AuthService esté listo:
-    if (this.authService.esPremium()) {
-      this.plan.set('PREMIUM');
-      this.monto.set(25.00);
-    } else if (this.authService.esPro()) {
-      this.plan.set('PRO');
-      this.monto.set(15.00);
-    } else {
-      this.error.set('No se pudo verificar la activación de tu plan. Tu pago está siendo procesado.');
-    }
-    */
+    this.authService.obtenerUsuarioActual().subscribe({
+      next: () => {
+        if (this.authService.esPremium()) {
+          this.plan.set('PREMIUM');
+          this.monto.set(25.00);
+        } else if (this.authService.esPro()) {
+          this.plan.set('PRO');
+          this.monto.set(15.00);
+        } else {
+          this.error.set('No se pudo verificar la activación de tu plan. Tu pago está siendo procesado.');
+        }
+      },
+      error: (err) => {
+        console.error('Error al actualizar el rol del usuario:', err);
+        this.error.set('Error al conectar con el servidor para verificar tu plan.');
+      }
+    });
   }
 
   /**

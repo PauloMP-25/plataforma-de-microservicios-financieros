@@ -75,8 +75,8 @@ export class IngresosPage implements OnInit {
     const transacciones = this.stateService.ingresos();
     const resumen = this.stateService.resumenActual();
 
-    const total = transacciones.length > 0 ? (resumen?.totalIngresos ?? 0) : 4100.00;
-    const cantidad = transacciones.length > 0 ? (resumen?.cantidadIngresos ?? 0) : 3;
+    const total = resumen !== null ? (resumen.totalIngresos ?? 0) : 4100.00;
+    const cantidad = resumen !== null ? (resumen.cantidadIngresos ?? 0) : 3;
     const cats = this.distribucionSignal();
     const primaryCatName = cats[0]?.categoria ?? 'Ninguna';
     const primaryCatPorc = cats[0]?.porcentaje ? `${cats[0].porcentaje.toFixed(0)}% del total` : '0% del total';
@@ -146,7 +146,7 @@ export class IngresosPage implements OnInit {
 
   readonly tendenciaSignal = computed<IngresoTendenciaPunto[]>(() => {
     let transacciones = this.stateService.ingresos();
-    if (!transacciones.length) {
+    if (this.stateService.resumenActual() === null && !transacciones.length) {
       transacciones = this.ingresosMock as any[];
     }
     const meses = new Map<string, { periodo: string; monto: number }>();
@@ -235,7 +235,7 @@ export class IngresosPage implements OnInit {
 
   readonly recientesSignal = computed<IngresoReciente[]>(() => {
     let transacciones = this.stateService.ingresos();
-    if (!transacciones.length) {
+    if (this.stateService.resumenActual() === null && !transacciones.length) {
       transacciones = this.ingresosMock as any[];
     }
     return transacciones.slice(0, 5).map(t => {
@@ -350,19 +350,17 @@ export class IngresosPage implements OnInit {
   }
 
   get totalIngresosActual(): number {
-    const real = this.stateService.resumenActual()?.totalIngresos ?? 0;
-    if (real === 0 && this.stateService.ingresos().length === 0) {
+    if (this.stateService.resumenActual() === null) {
       return 4100.00;
     }
-    return real;
+    return this.stateService.resumenActual()?.totalIngresos ?? 0;
   }
 
   get totalIngresosAnterior(): number {
-    const real = this.stateService.resumenAnterior()?.totalIngresos ?? 0;
-    if (real === 0 && this.stateService.ingresos().length === 0) {
+    if (this.stateService.resumenAnterior() === null) {
       return 3800.00;
     }
-    return real;
+    return this.stateService.resumenAnterior()?.totalIngresos ?? 0;
   }
 
   get variacionIngresos(): number {

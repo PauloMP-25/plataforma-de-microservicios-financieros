@@ -8,7 +8,6 @@ import com.libreria.comun.mensajeria.NombresExchange;
 import com.libreria.comun.mensajeria.RoutingKeys;
 import com.libreria.comun.respuesta.ResultadoApi;
 import com.libreria.comun.seguridad.DetallesUsuario;
-import com.libreria.comun.seguridad.ServicioJwt;
 import com.suscripciones.dominio.entidades.BandejaSalida;
 import com.suscripciones.dominio.repositorios.BandejaSalidaRepository;
 import com.suscripciones.dominio.repositorios.HistorialPagoSuscripcionRepository;
@@ -44,7 +43,6 @@ public class OutboxScheduler {
     private final NucleoFinancieroClient nucleoFinancieroClient;
     private final RabbitTemplate rabbitTemplate;
     private final ObjectMapper objectMapper;
-    private final ServicioJwt servicioJwt;
 
     @Scheduled(fixedDelayString = "${luka.scheduler.outbox.delay:5000}")
     @SchedulerLock(name = "procesarOutbox", lockAtMostFor = "10s", lockAtLeastFor = "2s")
@@ -101,23 +99,16 @@ public class OutboxScheduler {
         String metodoPagoStr = payload.get("metodoPago").asText();
         LocalDate fechaPago = LocalDate.parse(payload.get("fechaPago").asText());
 
-        // Generar un token JWT efímero para este usuario con el rol adecuado para autorizar la llamada inter-servicio
-        DetallesUsuario detallesUsuario = DetallesUsuario.builder()
-                .usuarioId(usuarioId)
-                .email("sistema-suscripciones@luka.com")
-                .roles(List.of("ROLE_PREMIUM"))
-                .build();
-        String token = "Bearer " + servicioJwt.generarToken(detallesUsuario, Map.of("usuarioId", usuarioId.toString()));
+        LocalDateTime fechaHoraPago = payload.has("fechaHoraPago") ? LocalDateTime.parse(payload.get("fechaHoraPago").asText()) : null;
 
-        // 1. Obtener Categoria ID del núcleo financiero
-        UUID categoriaId = obtenerCategoriaId(token);
+        var pagoOpt = historialPagoSuscripcionRepository.findById(historialPagoId);
+        UUID categoriaId = pagoOpt.isPresent() ? pagoOpt.get().getSuscripcion().getCategoriaId() : null;
         if (categoriaId == null) {
-            log.error("No se pudo obtener el ID de categoría del núcleo financiero para el evento pago ID: {}. Abortando intento.", historialPagoId);
-            throw new IllegalStateException("Categoría no disponible en núcleo financiero");
+            log.error("No se pudo obtener el ID de categoría de la suscripción para el evento pago ID: {}. Abortando intento.", historialPagoId);
+            throw new IllegalStateException("Categoría no disponible en suscripción");
         }
 
         // Obtener frecuencia de la suscripción para el concepto de la transacción
-        var pagoOpt = historialPagoSuscripcionRepository.findById(historialPagoId);
         String tipoEstrategia = pagoOpt.isPresent() ? pagoOpt.get().getSuscripcion().getTipoEstrategia() : "CALENDARIO";
         String frecuencia = "mensual";
         if (tipoEstrategia != null) {
@@ -134,17 +125,18 @@ public class OutboxScheduler {
         // 2. Registrar transacción (gasto) en núcleo financiero
         SolicitudTransaccion solicitud = new SolicitudTransaccion(
                 usuarioId,
-                "Pago " + frecuencia + " al servicio " + nombre,
+                nombre,
                 monto,
                 TipoMovimiento.GASTO,
                 categoriaId,
                 mapearMetodoPago(metodoPagoStr),
                 "suscripcion,sistema",
-                "Pago " + frecuencia + " de suscripción " + nombre
+                "Pago " + frecuencia + " de suscripción " + nombre,
+                fechaHoraPago
         );
 
         log.info("Enviando registro de transacción al núcleo financiero para el pago ID: {}", historialPagoId);
-        ResultadoApi<RespuestaTransaccion> resp = nucleoFinancieroClient.registrarTransaccion(token, solicitud);
+        ResultadoApi<RespuestaTransaccion> resp = nucleoFinancieroClient.registrarTransaccion(solicitud);
 
         if (resp != null && resp.exito() && resp.datos() != null) {
             log.info("Transacción registrada con éxito en núcleo financiero. ID Retornado: {}", resp.datos().id());
@@ -199,33 +191,6 @@ public class OutboxScheduler {
         evento.setProcesado(true);
         evento.setFechaProceso(LocalDateTime.now());
         bandejaSalidaRepository.save(evento);
-    }
-
-    private UUID obtenerCategoriaId(String token) {
-        try {
-            ResultadoApi<List<CategoriaDTO>> respuesta = nucleoFinancieroClient.listarCategorias(token, TipoMovimiento.GASTO);
-            if (respuesta != null && respuesta.exito() && respuesta.datos() != null) {
-                // 1. Intentar buscar "Suscripciones Streaming" o "Suscripciones"
-                for (CategoriaDTO cat : respuesta.datos()) {
-                    if (cat.nombre().toLowerCase().contains("suscripción") || cat.nombre().toLowerCase().contains("suscripcion")) {
-                        return cat.id();
-                    }
-                }
-                // 2. Fallback a "Otros Gastos"
-                for (CategoriaDTO cat : respuesta.datos()) {
-                    if (cat.nombre().toLowerCase().contains("otros")) {
-                        return cat.id();
-                    }
-                }
-                // 3. Fallback al primer elemento disponible
-                if (!respuesta.datos().isEmpty()) {
-                    return respuesta.datos().get(0).id();
-                }
-            }
-        } catch (Exception e) {
-            log.error("Excepción al listar categorías desde núcleo financiero: ", e);
-        }
-        return null;
     }
 
     private MetodoPago mapearMetodoPago(String metodo) {

@@ -113,9 +113,23 @@
                     <span class="gastos-page__badge is-soft">Programado</span>
                   }
                   
-                  <button type="button" class="gastos-page__btn-mark" (click)="marcarPendienteComoPagado(pendiente.id)">
-                    <i class="fa-solid fa-circle-check"></i>
-                    Marcar pagado
+                  <button 
+                    type="button" 
+                    class="gastos-page__btn-mark"
+                    [class.is-loading]="esPagando(pendiente.id)"
+                    [class.is-paid]="yaPagado(pendiente.id)"
+                    [disabled]="esPagando(pendiente.id) || yaPagado(pendiente.id)"
+                    (click)="marcarPendienteComoPagado(pendiente.id)">
+                    @if (esPagando(pendiente.id)) {
+                      <i class="fa-solid fa-spinner fa-spin"></i>
+                      Procesando...
+                    } @else if (yaPagado(pendiente.id)) {
+                      <i class="fa-solid fa-circle-check"></i>
+                      Pago realizado
+                    } @else {
+                      <i class="fa-solid fa-circle-check"></i>
+                      Marcar pagado
+                    }
                   </button>
                 </div>
               </div>

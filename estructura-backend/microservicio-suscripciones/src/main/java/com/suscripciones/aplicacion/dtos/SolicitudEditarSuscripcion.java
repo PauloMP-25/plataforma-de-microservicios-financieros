@@ -14,6 +14,8 @@ public record SolicitudEditarSuscripcion(
         @Size(max = 50, message = "El método de pago no debe superar los 50 caracteres")
         String metodoPago,
 
+        java.util.UUID categoriaId,
+
         @Size(max = 30, message = "El tipo de estrategia no debe superar los 30 caracteres")
         String tipoEstrategia
 ) {

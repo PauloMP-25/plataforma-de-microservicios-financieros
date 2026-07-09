@@ -24,19 +24,16 @@ public interface NucleoFinancieroClient {
 
     @GetMapping("/api/v1/financiero/categorias")
     ResultadoApi<List<CategoriaDTO>> listarCategorias(
-            @RequestHeader("Authorization") String token,
             @RequestParam(required = false) TipoMovimiento tipo
     );
 
     @PostMapping("/api/v1/financiero/categorias")
     ResultadoApi<CategoriaDTO> crearCategoria(
-            @RequestHeader("Authorization") String token,
             @RequestBody CategoriaRequestDTO request
     );
 
     @PostMapping("/api/v1/financiero/transacciones")
     ResultadoApi<RespuestaTransaccion> registrarTransaccion(
-            @RequestHeader("Authorization") String token,
             @RequestBody SolicitudTransaccion request
     );
 }

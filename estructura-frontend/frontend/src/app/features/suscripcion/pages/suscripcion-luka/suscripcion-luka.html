@@ -132,6 +132,7 @@
   @if (modalAbierto()) {
     <app-modal-nueva-suscripcion
       [suscripcionEditar]="suscripcionAEditar()"
+      [categorias]="categorias()"
       (cerrar)="cerrarModal()"
       (crear)="onCrearSuscripcion($event)"
       (editar)="onEditarSuscripcionGuardar($event)"

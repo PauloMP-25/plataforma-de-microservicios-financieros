@@ -2,6 +2,9 @@ import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { SuscripcionGastosService } from '../../../../core/services/suscripcion-gastos.service';
+import { AppEventBus } from '../../../../core/services/app-event-bus.service';
+import { DashboardStateService } from '../../../../core/services/dashboard-state.service';
+import { GastosStateService } from '../../../../core/services/gastos-state.service';
 import { SuscripcionDTO } from '../../../../core/models/financiero/suscripcion-gasto.model';
 import { SuscripcionCard } from '../../components/suscripcion-card/suscripcion-card';
 import { ModalNuevaSuscripcion } from '../modal-nueva-suscripcion/modal-nueva-suscripcion';
@@ -15,6 +18,9 @@ import { ModalNuevaSuscripcion } from '../modal-nueva-suscripcion/modal-nueva-su
 })
 export class SuscripcionLuka implements OnInit {
   private readonly suscripcionService = inject(SuscripcionGastosService);
+  private readonly dashboardState = inject(DashboardStateService);
+  private readonly gastosState = inject(GastosStateService);
+  private readonly eventBus = inject(AppEventBus);
 
   // State
   readonly modalAbierto = signal(false);
@@ -25,6 +31,7 @@ export class SuscripcionLuka implements OnInit {
   readonly resumen = computed(() => this.suscripcionService.resumenSuscripciones());
   readonly suscripcionesProximas = computed(() => this.suscripcionService.suscripcionesProximas());
   readonly suscripcionesActivas = computed(() => this.suscripcionService.suscripcionesActivas());
+  readonly categorias = computed(() => this.gastosState.categorias());
 
   ngOnInit(): void {
     // Cargar suscripciones al inicializar
@@ -54,6 +61,10 @@ export class SuscripcionLuka implements OnInit {
       next: () => {
         this.cargando.set(false);
         this.cerrarModal();
+        this.suscripcionService.cargarSuscripciones().subscribe();
+        this.gastosState.cargarDatos(true);
+        this.dashboardState.cargarAnalitica(this.dashboardState.filtrosActuales());
+        this.eventBus.emit({ type: 'SUBSCRIPTION_MODIFIED' });
       },
       error: (err) => {
         console.error('Error creando suscripción:', err);
@@ -92,6 +103,10 @@ export class SuscripcionLuka implements OnInit {
     this.suscripcionService.cambiarEstado(evento.id, evento.estado).subscribe({
       next: () => {
         console.log('Estado actualizado');
+        this.suscripcionService.cargarSuscripciones().subscribe();
+        this.gastosState.cargarDatos(true);
+        this.dashboardState.cargarAnalitica(this.dashboardState.filtrosActuales());
+        this.eventBus.emit({ type: 'SUBSCRIPTION_MODIFIED' });
       },
       error: (err) => {
         console.error('Error cambiando estado:', err);
@@ -108,14 +123,26 @@ export class SuscripcionLuka implements OnInit {
 
   onEditarSuscripcionGuardar(datosFormulario: any): void {
     this.suscripcionService.actualizarSuscripcion(datosFormulario).subscribe({
-      next: () => this.cerrarModal(),
+      next: () => {
+        this.cerrarModal();
+        this.suscripcionService.cargarSuscripciones().subscribe();
+        this.gastosState.cargarDatos(true);
+        this.dashboardState.cargarAnalitica(this.dashboardState.filtrosActuales());
+        this.eventBus.emit({ type: 'SUBSCRIPTION_MODIFIED' });
+      },
       error: (err) => console.error('Error actualizando:', err)
     });
   }
 
   onPagarSuscripcionManual(id: string): void {
     this.suscripcionService.cambiarEstado(id, 'ACTIVA').subscribe({
-      next: () => this.cerrarModal(),
+      next: () => {
+        this.cerrarModal();
+        this.suscripcionService.cargarSuscripciones().subscribe();
+        this.gastosState.cargarDatos(true);
+        this.dashboardState.cargarAnalitica(this.dashboardState.filtrosActuales());
+        this.eventBus.emit({ type: 'SUBSCRIPTION_MODIFIED' });
+      },
       error: (err) => console.error('Error pagando:', err)
     });
   }
