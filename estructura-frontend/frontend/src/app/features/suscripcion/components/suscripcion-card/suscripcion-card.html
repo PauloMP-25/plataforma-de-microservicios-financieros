@@ -5,7 +5,7 @@
       @if (suscripcion.nombre.toLowerCase().includes('luka')) {
         <img src="assets/avatares/figuras/panda.png" alt="LUKA" style="width: 24px; height: 24px; object-fit: contain;">
       } @else {
-        <i class="fa-solid" [ngClass]="'fa-' + obtenerCategoriaInfo()?.icon"></i>
+        <i [className]="'fa-solid ' + (obtenerCategoriaInfo()?.icon ?? 'fa-circle-question')"></i>
       }
     </div>
     

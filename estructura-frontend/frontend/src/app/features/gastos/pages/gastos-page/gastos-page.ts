@@ -63,6 +63,25 @@ export class GastosPage implements OnInit, OnDestroy {
   readonly errores = signal<Record<string, string>>({});
   readonly eliminadosIds = signal<string[]>([]);
 
+  // Tracking de suscripciones que se están pagando o ya fueron pagadas en esta sesión
+  readonly pagandoIds = signal<Set<string>>(new Set());
+  readonly pagadosEnSesion = signal<Set<string>>(new Set());
+
+  esPagando(id: string): boolean { return this.pagandoIds().has(id); }
+  yaPagado(id: string): boolean { 
+    if (this.pagadosEnSesion().has(id)) return true;
+    
+    const suscripcion = this.suscripcionService.suscripcionesActivas().find(s => s.id === id);
+    if (!suscripcion || !suscripcion.fechaUltimoPago) return false;
+    
+    // Check if the last payment date was within the current month/year
+    const fechaPago = new Date(suscripcion.fechaUltimoPago);
+    const hoy = new Date();
+    
+    return fechaPago.getMonth() === hoy.getMonth() && 
+           fechaPago.getFullYear() === hoy.getFullYear();
+  }
+
   readonly gastosRecientes = computed(() => {
     return [...this.stateService.gastos()]
       .sort((a, b) => new Date(b.fechaTransaccion).getTime() - new Date(a.fechaTransaccion).getTime())
@@ -165,12 +184,14 @@ export class GastosPage implements OnInit, OnDestroy {
         const dd = String(fecha.getDate()).padStart(2, '0');
         const dateStr = `${yyyy}-${mm}-${dd}`;
         
+        // Comparar solo fecha (sin hora) para que HOY no quede como 'futuro'
+        const hoyStr_compare = `${year}-${String(month+1).padStart(2,'0')}-${String(hoy.getDate()).padStart(2,'0')}`;
         celdas.push({
           vacio: false,
           dia,
           fecha: dateStr,
           activo: activos.has(dateStr),
-          esFuturo: fecha > hoy
+          esFuturo: dateStr > hoyStr_compare
         });
       }
     }
@@ -470,7 +491,13 @@ export class GastosPage implements OnInit, OnDestroy {
   });
 
   readonly gastoPromedioMensual = computed(() => {
-    return Number(this.stateService.resumenActual()?.promedioGasto ?? 0);
+    const resumen = this.stateService.resumenActual();
+    if (!resumen) return 0;
+    // El backend (ResumenFinancieroDTO) no incluye promedioGasto en su contrato REST.
+    // Lo calculamos aquí con los campos que sí vienen: totalGastos y cantidadGastos.
+    const cantidad = Number(resumen.cantidadGastos ?? 0);
+    const total = Number(resumen.totalGastos ?? 0);
+    return cantidad > 0 ? Math.round(total / cantidad) : 0;
   });
 
   readonly variacionPromedioMensual = computed(() => {
@@ -564,26 +591,44 @@ export class GastosPage implements OnInit, OnDestroy {
   });
 
   private txSub?: any;
+  private subSub?: any;
+
+  /**
+   * Delay en ms que coincide con el `fixedDelay` configurado para el OutboxScheduler
+   * del ms-suscripciones. El historial de transacciones solo existe en el
+   * núcleo financiero después de que el Outbox procese el evento, por eso
+   * no podemos invalidar la caché inmediatamente tras recibir el 200 OK.
+   * Si se cambia `luka.scheduler.outbox.delay` en el backend, actualizar este valor.
+   */
+  private readonly OUTBOX_PROCESSING_DELAY_MS = 5000;
 
   constructor() {
     this.stateService.cargarDatos();
     effect(() => {
-      if (this.stateService.gastos().length > 0) {
+      if (this.stateService.gastos().length > 0 || this.stateService.resumenActual() !== null) {
         this.usarMockVisualPagados.set(false);
       } else {
         this.usarMockVisualPagados.set(true);
       }
     });
 
+    // Recarga el historial y resumen financiero cuando una transacción externa es creada.
+    // El delay corresponde al OutboxScheduler del ms-suscripciones (ver OUTBOX_PROCESSING_DELAY_MS).
     this.txSub = this.eventBus.on('TRANSACTION_MODIFIED').subscribe(() => {
       this.stateService.invalidarCache();
+    });
+
+    // Recarga las suscripciones cuando se crea o edita una desde otro módulo (ej: SuscripcionesPagos).
+    // La actualización de fecha de vencimiento es síncrona en el backend, por lo que
+    // no se necesita delay: el 200 OK garantiza que los datos de suscripción ya están actualizados.
+    this.subSub = this.eventBus.on('SUBSCRIPTION_MODIFIED').subscribe(() => {
+      this.suscripcionService.cargarSuscripciones().subscribe();
     });
   }
 
   ngOnDestroy(): void {
-    if (this.txSub) {
-      this.txSub.unsubscribe();
-    }
+    this.txSub?.unsubscribe();
+    this.subSub?.unsubscribe();
   }
 
   seleccionarTab(tab: 'todos' | 'pagados' | 'pendientes' | 'recurrentes'): void {
@@ -618,17 +663,42 @@ export class GastosPage implements OnInit, OnDestroy {
       this.usarMockVisualPagados.set(true);
       return;
     }
-    
-    // Conectar a SuscripcionGastosService para marcar como pagado
+
+    // Evitar doble pago
+    if (this.esPagando(id) || this.yaPagado(id)) return;
+
+    // Feedback visual: spinner en el botón
+    this.pagandoIds.update(s => new Set([...s, id]));
+
+    const suscripcion = this.suscripcionService.suscripcionesActivas().find(s => s.id === id);
+    const nombreSus   = suscripcion?.nombre ?? 'Suscripción';
+    const montoSus    = suscripcion?.monto  ?? 0;
+
+    // Notificar al backend de suscripciones que fue pagado.
+    // El backend actualizará la fecha de vencimiento y registrará el gasto en el núcleo financiero de forma asíncrona vía Outbox.
     this.suscripcionService.cambiarEstado(id, 'ACTIVA').subscribe({
       next: () => {
-        this.notificacionService.mostrarDatosGuardados('Gasto recurrente registrado correctamente');
-        this.stateService.invalidarCache();
-        this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
+        // Feedback inmediato: marca la suscripción como pagada en la sesión actual.
+        // La suscripción ya tiene nueva fechaVencimiento en la BD (sincónico en el endpoint /pagar).
+        this.pagandoIds.update(s => { const n = new Set(s); n.delete(id); return n; });
+        this.pagadosEnSesion.update(s => new Set([...s, id]));
+        this.notificacionService.mostrarDatosGuardados(`Pago de "${nombreSus}" registrado — S/ ${montoSus.toFixed(2)}`);
+
+        // El gasto financiero se crea de forma asíncrona en ms-nucleo-financiero
+        // a través del Outbox Pattern. Solo después de OUTBOX_PROCESSING_DELAY_MS
+        // se garantiza que la transacción exista y pueda ser consultada.
+        setTimeout(() => {
+          this.stateService.invalidarCache();
+          this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
+        }, this.OUTBOX_PROCESSING_DELAY_MS);
       },
-      error: () => this.notificacionService.mostrar('Error', 'No se pudo registrar el pago', 'gasto', 'circle-exclamation', 4000)
+      error: () => {
+        this.pagandoIds.update(s => { const n = new Set(s); n.delete(id); return n; });
+        this.notificacionService.mostrar('Error', 'No se pudo registrar el pago', 'gasto', 'circle-exclamation', 4000);
+      }
     });
   }
+
 
   abrirModal(): void {
     this.resetFormulario();

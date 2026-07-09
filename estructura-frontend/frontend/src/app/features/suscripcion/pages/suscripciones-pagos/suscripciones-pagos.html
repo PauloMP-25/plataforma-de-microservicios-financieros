@@ -40,7 +40,7 @@
           class="filter-input"
         >
           <option value="">Todas</option>
-          @for (cat of categorias; track cat.id) {
+          @for (cat of categorias(); track cat.id) {
             <option [value]="cat.id">{{ cat.nombre }}</option>
           }
         </select>
@@ -170,6 +170,7 @@
   @if (modalAbierto()) {
     <app-modal-nueva-suscripcion
       [suscripcionEditar]="suscripcionAEditar()"
+      [categorias]="categorias()"
       (cerrar)="cerrarModal()"
       (crear)="onCrearSuscripcion($event)"
       (editar)="onEditarSuscripcionGuardar($event)"

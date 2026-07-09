@@ -14,6 +14,7 @@ public record SolicitudTransaccion(
         UUID categoriaId,
         MetodoPago metodoPago,
         String etiquetas,
-        String descripcion
+        String descripcion,
+        java.time.LocalDateTime fechaTransaccion
 ) {
 }

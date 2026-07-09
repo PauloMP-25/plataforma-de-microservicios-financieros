@@ -1090,8 +1090,12 @@
   font-weight: 800;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 
-  &:hover {
+  &:not(:disabled):hover {
     transform: translateY(-2px) scale(1.015);
     box-shadow: 0 12px 22px color-mix(in srgb, var(--status-success) 50%, transparent);
     filter: saturate(1.22) brightness(1.05);
@@ -1100,19 +1104,35 @@
     border-color: #15803d !important;
   }
 
-  &:focus-visible,
-  &:active {
+  &:not(:disabled):focus-visible,
+  &:not(:disabled):active {
     background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%) !important;
     color: #ffffff !important;
     border-color: #15803d !important;
   }
 
-  &:active {
+  &:not(:disabled):active {
     transform: translateY(0);
   }
 
+  &.is-loading {
+    opacity: 0.8;
+    cursor: wait;
+    background: var(--bg-surface-soft);
+    color: var(--text-muted);
+  }
+
+  &.is-paid {
+    background: color-mix(in srgb, var(--status-success) 12%, transparent);
+    color: var(--status-success);
+    border-color: color-mix(in srgb, var(--status-success) 30%, transparent);
+    cursor: default;
+    box-shadow: none;
+    transform: none;
+  }
+
   i {
-    margin-right: 6px;
+    margin: 0;
   }
 }
 

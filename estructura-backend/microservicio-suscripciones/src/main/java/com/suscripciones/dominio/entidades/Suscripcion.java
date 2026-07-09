@@ -40,6 +40,9 @@ public class Suscripcion {
     @Column(nullable = false, length = 100)
     private String nombre; // e.g. Netflix, Spotify, Luka Premium
 
+    @Column(name = "categoria_id", nullable = false)
+    private UUID categoriaId;
+
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal monto;
 

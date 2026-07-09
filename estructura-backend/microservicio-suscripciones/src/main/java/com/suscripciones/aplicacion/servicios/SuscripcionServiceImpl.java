@@ -74,6 +74,7 @@ public class SuscripcionServiceImpl implements ISuscripcionService {
                 .monto(solicitud.monto())
                 .estado("ACTIVA")
                 .metodoPago(solicitud.metodoPago())
+                .categoriaId(solicitud.categoriaId())
                 .fechaInicio(fechaInicio)
                 .fechaVencimiento(fechaVencimiento)
                 .tipoEstrategia(estrategiaCode)
@@ -181,14 +182,15 @@ public class SuscripcionServiceImpl implements ISuscripcionService {
 
         // 6. Escribir a la Bandeja de Salida (Transactional Outbox)
         try {
-            Map<String, Object> payloadMap = Map.of(
-                    "historialPagoId", pagoGuardado.getId().toString(),
-                    "usuarioId", suscripcion.getUsuarioId().toString(),
-                    "nombre", suscripcion.getNombre(),
-                    "monto", monto.toString(),
-                    "metodoPago", metodoPago,
-                    "fechaPago", fechaPago.toString()
-            );
+            java.util.Map<String, Object> payloadMap = new java.util.HashMap<>();
+            payloadMap.put("historialPagoId", pagoGuardado.getId().toString());
+            payloadMap.put("usuarioId", suscripcion.getUsuarioId().toString());
+            payloadMap.put("nombre", suscripcion.getNombre());
+            payloadMap.put("monto", monto.toString());
+            payloadMap.put("metodoPago", metodoPago);
+            payloadMap.put("fechaPago", fechaPago.toString());
+            payloadMap.put("fechaHoraPago", LocalDateTime.now(java.time.ZoneId.of("America/Lima")).toString());
+
             String jsonPayload = objectMapper.writeValueAsString(payloadMap);
             
             BandejaSalida outbox = new BandejaSalida("EVENTO_SUSCRIPCION_PAGADA", jsonPayload);
@@ -260,6 +262,9 @@ public class SuscripcionServiceImpl implements ISuscripcionService {
         if (solicitud.metodoPago() != null && !solicitud.metodoPago().isBlank()) {
             suscripcion.setMetodoPago(solicitud.metodoPago());
         }
+        if (solicitud.categoriaId() != null) {
+            suscripcion.setCategoriaId(solicitud.categoriaId());
+        }
         if (solicitud.tipoEstrategia() != null && !solicitud.tipoEstrategia().isBlank()) {
             String estrategiaCode = solicitud.tipoEstrategia().toUpperCase();
             CalculadorFechasStrategy estrategia = obtenerEstrategia(estrategiaCode);
@@ -294,7 +299,8 @@ public class SuscripcionServiceImpl implements ISuscripcionService {
                 suscripcion.getFechaInicio(),
                 suscripcion.getFechaVencimiento(),
                 suscripcion.getFechaUltimoPago(),
-                suscripcion.getTipoEstrategia()
+                suscripcion.getTipoEstrategia(),
+                suscripcion.getCategoriaId()
         );
     }
 }

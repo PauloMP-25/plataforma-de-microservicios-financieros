@@ -6,6 +6,9 @@ import { SuscripcionDTO, CATEGORIAS_SUSCRIPCION, FRECUENCIAS_SUSCRIPCION, ESTADO
 import { SuscripcionCard } from '../../components/suscripcion-card/suscripcion-card';
 import { ModalNuevaSuscripcion } from '../modal-nueva-suscripcion/modal-nueva-suscripcion';
 import { OnboardingTour, TourStep } from '../../components/onboarding-tour/onboarding-tour';
+import { AppEventBus } from '../../../../core/services/app-event-bus.service';
+import { DashboardStateService } from '../../../../core/services/dashboard-state.service';
+import { GastosStateService } from '../../../../core/services/gastos-state.service';
 
 @Component({
   selector: 'app-suscripciones-pagos',
@@ -16,6 +19,9 @@ import { OnboardingTour, TourStep } from '../../components/onboarding-tour/onboa
 })
 export class SuscripcionesPagos implements OnInit {
   private readonly suscripcionService = inject(SuscripcionGastosService);
+  private readonly dashboardState = inject(DashboardStateService);
+  private readonly gastosState = inject(GastosStateService);
+  private readonly eventBus = inject(AppEventBus);
 
   readonly modalAbierto = signal(false);
   readonly suscripcionAEditar = signal<SuscripcionDTO | null>(null);
@@ -73,7 +79,7 @@ export class SuscripcionesPagos implements OnInit {
   readonly totalResultados = computed(() => this.suscripciones().length);
 
   // Data para selects
-  readonly categorias = CATEGORIAS_SUSCRIPCION;
+  readonly categorias = computed(() => this.gastosState.categorias());
   readonly frecuencias = FRECUENCIAS_SUSCRIPCION.filter(f => ['MENSUAL', 'ANUAL', 'QUINCENAL'].includes(f.id));
   readonly estados = ESTADOS_SUSCRIPCION;
 
@@ -111,7 +117,11 @@ export class SuscripcionesPagos implements OnInit {
   onCrearSuscripcion(datosFormulario: any): void {
     this.suscripcionService.crearSuscripcion(datosFormulario).subscribe({
       next: () => {
-        this.cerrarModal(); // Cerramos el modal cuando se crea con éxito
+        this.cerrarModal();
+        this.suscripcionService.cargarSuscripciones().subscribe(); // Recarga las suscripciones locales
+        this.gastosState.cargarDatos(true); // Fuerza refresco del estado de gastos (KPIs, Pendientes, Historial)
+        this.dashboardState.cargarAnalitica(this.dashboardState.filtrosActuales()); // Refresca header y balance global
+        this.eventBus.emit({ type: 'SUBSCRIPTION_MODIFIED' });
       },
       error: (err) => {
         console.error('Error creando suscripción:', err);
@@ -123,6 +133,10 @@ export class SuscripcionesPagos implements OnInit {
     this.suscripcionService.actualizarSuscripcion(datosFormulario).subscribe({
       next: () => {
         this.cerrarModal();
+        this.suscripcionService.cargarSuscripciones().subscribe();
+        this.gastosState.cargarDatos(true);
+        this.dashboardState.cargarAnalitica(this.dashboardState.filtrosActuales());
+        this.eventBus.emit({ type: 'SUBSCRIPTION_MODIFIED' });
       },
       error: (err) => console.error('Error actualizando suscripción:', err)
     });
@@ -130,7 +144,13 @@ export class SuscripcionesPagos implements OnInit {
 
   onPagarSuscripcionManual(id: string): void {
     this.suscripcionService.cambiarEstado(id, 'ACTIVA').subscribe({
-      next: () => this.cerrarModal(),
+      next: () => {
+        this.cerrarModal();
+        this.suscripcionService.cargarSuscripciones().subscribe();
+        this.gastosState.cargarDatos(true);
+        this.dashboardState.cargarAnalitica(this.dashboardState.filtrosActuales());
+        this.eventBus.emit({ type: 'SUBSCRIPTION_MODIFIED' });
+      },
       error: (err) => console.error('Error al registrar pago manual', err)
     });
   }
@@ -190,8 +210,10 @@ export class SuscripcionesPagos implements OnInit {
   /**
    * Obtener categoría por ID
    */
-  obtenerCategoria(id: string) {
-    return this.categorias.find(c => c.id === id);
+  obtenerCategoriaNombre(id: string): string {
+    if (!id) return 'Sin categoría';
+    const cat = this.categorias().find(c => c.id === id);
+    return cat ? cat.nombre : 'Otra';
   }
 
   /**

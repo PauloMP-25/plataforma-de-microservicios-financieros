@@ -118,7 +118,8 @@ export class SuscripcionGastosService {
       usuarioId,
       nombre: request.nombre,
       monto: request.monto,
-      metodoPago: 'MANUAL',
+      categoriaId: request.categoriaId,
+      metodoPago: request.metodoPago || 'TARJETA',
       tipoEstrategia: request.frecuencia === 'MENSUAL' ? 'CALENDARIO' : request.frecuencia,
       fechaInicio: request.fechaInicio
     };
@@ -138,7 +139,8 @@ export class SuscripcionGastosService {
   actualizarSuscripcion(request: ActualizarSuscripcionRequest): Observable<SuscripcionDTO> {
     const body = {
       monto: request.monto,
-      metodoPago: 'MANUAL',
+      categoriaId: request.categoriaId,
+      metodoPago: request.metodoPago,
       tipoEstrategia: request.frecuencia === 'MENSUAL' ? 'CALENDARIO' : request.frecuencia
     };
 
@@ -166,15 +168,40 @@ export class SuscripcionGastosService {
   }
 
   /**
+   * Registrar pago manual de suscripción.
+   * El backend crea el gasto en el núcleo financiero vía Outbox (~5s).
+   */
+  pagarSuscripcion(id: string, monto?: number, metodoPago?: string): Observable<any> {
+    const body: any = {};
+    if (monto !== undefined) body['monto'] = monto;
+    if (metodoPago) body['metodoPago'] = metodoPago;
+    // fechaPago omitido: el backend usa LocalDate.now() por defecto
+
+    // Idempotency-Key para prevenir cobros duplicados
+    const idempotencyKey = `pay-${id}-${Date.now()}`;
+
+    return this.http.post<ResultadoApi<any>>(
+      `${this.baseUrl}/${id}/pagar`,
+      body,
+      { headers: { 'Idempotency-Key': idempotencyKey } }
+    ).pipe(
+      map(res => {
+        // Actualizar la suscripción localmente: avanzar su fecha de vencimiento
+        // El backend retorna RespuestaPagoSuscripcion (historialPagoId, suscripcionId, monto, fechaPago, estado)
+        // Recargamos las suscripciones para obtener la nueva fechaVencimiento real
+        this.cargarSuscripciones().subscribe();
+        return res.datos;
+      })
+    );
+  }
+
+  /**
    * Cambiar estado de suscripción
    */
   cambiarEstado(id: string, estado: 'ACTIVA' | 'PAUSADA' | 'VENCIDA'): Observable<SuscripcionDTO> {
     if (estado === 'ACTIVA') {
-      return this.http.post<ResultadoApi<any>>(`${this.baseUrl}/${id}/pagar`, {}).pipe(
+      return this.pagarSuscripcion(id).pipe(
         map(() => {
-          this.suscripciones.update(sus =>
-            sus.map(s => s.id === id ? { ...s, estado: 'ACTIVA' } : s)
-          );
           return this.suscripciones().find(s => s.id === id)!;
         })
       );
@@ -253,13 +280,16 @@ export class SuscripcionGastosService {
       nombre: res.nombre,
       descripcion: `Pago con ${res.metodoPago || 'tarjeta'}`,
       categoria: this.determinarCategoria(res.nombre),
+      categoriaId: res.categoriaId,
       monto: res.monto,
+      metodoPago: res.metodoPago || 'TARJETA',
       frecuencia: frecuencia || 'MENSUAL',
       fechaInicio: res.fechaInicio,
       proximoVencimiento: proximoVencimiento,
       estado: res.estado === 'CANCELADA' ? 'PAUSADA' : (res.estado as EstadoSuscripcion),
       fechaCreacion: res.fechaInicio,
       ultimaActualizacion: res.fechaInicio,
+      fechaUltimoPago: res.fechaUltimoPago,
       diasParaVencimiento,
       vencePronto: diasParaVencimiento <= 5
     };
