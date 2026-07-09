@@ -207,13 +207,29 @@ export class NuevoGastoPage implements OnInit, HasUnsavedChanges {
   }
 
   private registrarFinal(catId: string): void {
+    const getLocalIsoString = (dateString: string): string => {
+      let localDate = new Date();
+      if (dateString) {
+        const parts = dateString.split('-');
+        if (parts.length === 3) {
+          localDate = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        } else {
+          localDate = new Date(dateString);
+        }
+      }
+      const now = new Date();
+      localDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+      const tzOffset = localDate.getTimezoneOffset() * 60000;
+      return new Date(localDate.getTime() - tzOffset).toISOString().slice(0, 19);
+    };
+
     const payload: TransaccionRequestDTO = {
       usuarioId: this.authService.usuario()?.id || '',
       nombreCliente: this.nombreGasto().trim(),
       monto: this.monto(),
       tipo: 'GASTO',
       categoriaId: catId,
-      fechaTransaccion: new Date(this.fecha() + 'T12:00:00').toISOString(),
+      fechaTransaccion: getLocalIsoString(this.fecha()),
       metodoPago: this.metodoPago() as MetodoPago,
       descripcion: this.descripcion().trim(),
       etiquetas: this.etiquetas().join(',')
