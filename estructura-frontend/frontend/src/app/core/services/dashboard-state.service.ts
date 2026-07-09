@@ -173,8 +173,11 @@ export class DashboardStateService {
   }
 
   invalidarCache(): void {
-    this.initialLoadDone = false; 
-    this.cargarAnalitica(this.filtrosActuales());
+    this.initialLoadDone = false;
+    const filtrosActuales = { ...this.filtrosActuales() };
+    // Forzar limpieza del estado para que el guard de igualdad no bloquee la recarga
+    this.filtrosActuales.set({});
+    this.cargarAnalitica(filtrosActuales);
   }
 
   limpiarEstado(): void {

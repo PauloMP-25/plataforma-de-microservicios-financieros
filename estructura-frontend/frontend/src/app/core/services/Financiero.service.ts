@@ -13,6 +13,7 @@ export class FinancieroService {
  
   private baseTransacciones = `${environment.gatewayUrl}/api/v1/financiero/transacciones`;
   private baseCategorias    = `${environment.gatewayUrl}/api/v1/financiero/categorias`;
+  private baseResumen       = `${environment.gatewayUrl}/api/v1/resumen`;
  
   // ── Estado reactivo ──
   resumen    = signal<ResumenFinancieroDTO | null>(null);
@@ -79,7 +80,7 @@ export class FinancieroService {
   getRacha(): Observable<RachaDTO> {
     const usuarioId = this.auth.usuario()?.id;
     let params = new HttpParams().set('usuarioId', usuarioId ?? '');
-    return this.http.get<ResultadoApi<RachaDTO>>(`${this.baseTransacciones}/resumen/racha`, { params }).pipe(
+    return this.http.get<ResultadoApi<RachaDTO>>(`${this.baseResumen}/racha`, { params }).pipe(
       map(resp => resp.datos),
       catchError(() => {
         // Mock en caso de fallo
