@@ -74,7 +74,7 @@ EXPOSE ${PORT}
 
 # Health check: verifica el endpoint de salud de FastAPI
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:${PORT}/health || exit 1
+    CMD curl -f http://localhost:${PORT}/actuator/health || exit 1
 
 # dumb-init para manejo correcto de señales en PID 1
 ENTRYPOINT ["dumb-init", "--"]
