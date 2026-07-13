@@ -1,6 +1,11 @@
 app = "luka-ms-suscripciones"
 primary_region = "iad"
 
+[vm]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256
+
 [build]
   dockerfile = "Dockerfile"
 
