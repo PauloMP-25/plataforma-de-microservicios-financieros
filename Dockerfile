@@ -66,7 +66,7 @@ USER lukaapp
 # UseContainerSupport → respeta los límites cgroup del contenedor
 # MaxRAMPercentage=75 → JVM usa máx 75% de los 512 MB de Render (≈384 MB)
 # Xss256k           → reduce el tamaño de stack por hilo
-ENV JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Xss256k"
+ENV JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Xss256k -XX:TieredStopAtLevel=1 -noverify"
 
 # Render inyecta dinámicamente la variable $PORT. Por defecto usamos 8084.
 ENV PORT=8084
