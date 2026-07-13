@@ -487,36 +487,27 @@ export class MetasPage implements OnInit {
 
     this.cargando.set(true);
     this.errorMensaje.set('');
-    this.exitoMensaje.set('');
-
-    const usuario = this.authService.usuario();
-    
-    const transaccionPayload: TransaccionRequestDTO = {
-      usuarioId: usuario?.id ?? '',
-      nombreCliente: meta.nombreVisual, // El backend y el frontend de gastos usan nombreCliente como el "Nombre del gasto"
-      monto: meta.montoObjetivo,
-      tipo: 'GASTO',
-      categoriaId: 'otros',
-      fechaTransaccion: new Date().toISOString(),
-      metodoPago: 'DIGITAL',
-      descripcion: `Gasto automático por cumplimiento de meta: ${meta.nombreVisual}`,
-      etiquetas: `META,${(meta.categoriaVisual || 'OTROS').toUpperCase().replace(/ /g, '_')}`
-    };
-
-    this.metasDataService.completarMeta(meta, transaccionPayload).subscribe({
+    this.metasDataService.completarMeta(meta).subscribe({
       next: (res) => {
         const mensajeExito = res.isMock
-          ? `¡Felicidades! Has completado tu meta "${meta.nombreVisual}" (Modo Pruebas).`
-          : `¡Felicidades! Has completado tu meta "${meta.nombreVisual}". Se registró un gasto de S/ ${meta.montoObjetivo.toFixed(2)}.`;
+          ? `Has completado tu meta "${meta.nombreVisual}" (Modo Pruebas). Completa el registro del gasto.`
+          : `Has completado tu meta "${meta.nombreVisual}". Completa el registro del gasto.`;
         
         this.notificacionService.mostrar('¡Felicidades!', mensajeExito, 'meta', 'award', 5000);
         this.modalConfirmarCompletar.set(null);
         this.metaSeleccionada.set(null);
         
         this.dashboardState.invalidarCache();
-        this.cargarMetas();
         
-        this.eventBus.emit({ type: 'TRANSACTION_MODIFIED' });
+        // Redirigir al formulario de gastos
+        this.router.navigate(['/gastos/nuevo'], {
+          queryParams: {
+            metaId: meta.id,
+            monto: meta.montoObjetivo,
+            nombre: meta.nombreVisual,
+            descripcion: `Gasto por meta: ${meta.nombreVisual}`
+          }
+        });
       },
       error: () => {
         this.notificacionService.mostrar(

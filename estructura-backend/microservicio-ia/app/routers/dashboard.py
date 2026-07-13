@@ -433,24 +433,31 @@ def calcular_metricas_kpis(df_filtrado: pd.DataFrame, dt_inicio: datetime, dt_fi
             "proyeccionFinDeMes": 0.0,
             "volumenTransacciones": 0
         }
-        
+
     df_ing = df_filtrado[(df_filtrado['tipo'] == 'INGRESO') & (df_filtrado['estado'].astype(str).str.upper() == 'COMPLETED')]
     df_gas = df_filtrado[(df_filtrado['tipo'] == 'GASTO') & (df_filtrado['estado'].astype(str).str.upper() != 'FAILED')]
-    
+
     total_ing = float(df_ing['monto'].sum())
     total_gas = float(df_gas['monto'].sum())
     balance = total_ing - total_gas
     cant_ing = len(df_ing)
     cant_gas = len(df_gas)
     tasa_ahorro = ((total_ing - total_gas) / total_ing) * 100 if total_ing > 0 else 0.0
-    
+
     dias_periodo = (dt_fin - dt_inicio).days + 1
-    gasto_prom_diario = total_gas / dias_periodo if dias_periodo > 0 else 0.0
-    
+
     import calendar
     dias_en_mes = calendar.monthrange(dt_fin.year, dt_fin.month)[1]
-    proyeccion_fin = gasto_prom_diario * dias_en_mes
-    
+
+    # Si el filtro es solo INGRESOS (sin gastos), calculamos promedio e proyección sobre ingresos
+    solo_ingresos = (total_gas == 0.0 and total_ing > 0.0 and cant_gas == 0)
+    if solo_ingresos:
+        gasto_prom_diario = total_ing / dias_periodo if dias_periodo > 0 else 0.0
+        proyeccion_fin = gasto_prom_diario * dias_en_mes
+    else:
+        gasto_prom_diario = total_gas / dias_periodo if dias_periodo > 0 else 0.0
+        proyeccion_fin = gasto_prom_diario * dias_en_mes
+
     return {
         "totalIngresos": total_ing,
         "totalGastos": total_gas,
@@ -513,7 +520,7 @@ def calcular_flujo_caja(df: pd.DataFrame, meses_lista: list) -> list:
 
 
 def calcular_distribucion_gastos(df: pd.DataFrame) -> list:
-    """Agrupa gastos por categoría y calcula sus porcentajes."""
+    """Agrupa gastos o ingresos por categoría (top 6, excluye sin categoría)."""
     colores_default = {
         "food": "#FF7043", "comida": "#FF7043", "alimentación": "#FF7043", "alimentacion": "#FF7043",
         "transport": "#42A5F5", "transporte": "#42A5F5", "pasaje moto": "#26C6DA",
@@ -525,15 +532,43 @@ def calcular_distribucion_gastos(df: pd.DataFrame) -> list:
         "transferencia": "#F59E0B", "otros": "#859397",
         "tecnología": "#3B82F6", "tecnologia": "#3B82F6",
         "viajes": "#EF4444", "educación": "#10B981", "educacion": "#10B981",
-        "ropa y calzado": "#F59E0B", "otros gastos": "#859397"
+        "ropa y calzado": "#F59E0B", "otros gastos": "#859397",
+        "salario": "#8B5CF6", "freelance": "#14B8A6", "ventas": "#F59E0B"
     }
     distribucion = []
     if not df.empty:
-        df_validos = df[((df['tipo'] == 'GASTO') & (df['estado'].astype(str).str.upper() != 'FAILED')) | ((df['tipo'] == 'INGRESO') & (df['estado'].astype(str).str.upper() == 'COMPLETED'))]
-        total_gastado = float(df_validos['monto'].sum())
+        # Determinar si mostrar GASTOS o INGRESOS dependiendo del df
+        tiene_gastos = not df[df['tipo'] == 'GASTO'].empty
+        tiene_ingresos = not df[df['tipo'] == 'INGRESO'].empty
+        
+        if tiene_ingresos and not tiene_gastos:
+            filtro_tipo = 'INGRESO'
+            estados_validos = ['COMPLETED']
+        else:
+            filtro_tipo = 'GASTO'
+            estados_validos = None # Para gastos, cualquier cosa != FAILED
+            
+        if filtro_tipo == 'INGRESO':
+            df_gastos = df[
+                (df['tipo'] == 'INGRESO') &
+                (df['estado'].astype(str).str.upper() == 'COMPLETED')
+            ].copy()
+        else:
+            df_gastos = df[
+                (df['tipo'] == 'GASTO') &
+                (df['estado'].astype(str).str.upper() != 'FAILED')
+            ].copy()
+            
+        # Excluir filas sin categoría (NaN, "nan", "none", vacío)
+        mask_invalida = (
+            df_gastos['categoria_nombre'].isna() |
+            df_gastos['categoria_nombre'].astype(str).str.strip().str.lower().isin(['nan', 'none', ''])
+        )
+        df_gastos = df_gastos[~mask_invalida]
+        total_gastado = float(df_gastos['monto'].sum())
         if total_gastado > 0:
-            grouped = df_validos.groupby('categoria_nombre')['monto'].sum().reset_index()
-            grouped = grouped.sort_values(by='monto', ascending=False)
+            grouped = df_gastos.groupby('categoria_nombre')['monto'].sum().reset_index()
+            grouped = grouped.sort_values(by='monto', ascending=False).head(6)
             for _, row in grouped.iterrows():
                 cat = str(row['categoria_nombre'])
                 total_cat = float(row['monto'])
@@ -604,71 +639,39 @@ async def calcular_comparativa_historica(
         7: "Jul", 8: "Ago", 9: "Sep", 10: "Oct", 11: "Nov", 12: "Dic"
     }
 
+    # Determinar si comparamos gastos o ingresos (según filtro)
+    filtro_tipo = 'GASTO'
+    if not df.empty and not df[df['tipo'] == 'INGRESO'].empty and df[df['tipo'] == 'GASTO'].empty:
+        filtro_tipo = 'INGRESO'
+
     if es_semanal:
         # Calcular semana actual
         gas_actual = 0.0
         if not df.empty:
             df_semana_act = df[(df['fecha'] >= pd.to_datetime(dt_inicio)) & (df['fecha'] <= pd.to_datetime(dt_fin))]
-            gas_actual = float(df_semana_act[(df_semana_act['tipo'] == 'GASTO') & (df_semana_act['estado'].astype(str).str.upper() != 'FAILED')]['monto'].sum())
+            if filtro_tipo == 'INGRESO':
+                gas_actual = float(df_semana_act[(df_semana_act['tipo'] == 'INGRESO') & (df_semana_act['estado'].astype(str).str.upper() == 'COMPLETED')]['monto'].sum())
+            else:
+                gas_actual = float(df_semana_act[(df_semana_act['tipo'] == 'GASTO') & (df_semana_act['estado'].astype(str).str.upper() != 'FAILED')]['monto'].sum())
         
-        # Calcular semana anterior
-        from datetime import timedelta
-        dt_inicio_ant = dt_inicio - timedelta(days=dias_periodo)
-        dt_fin_ant = dt_inicio - timedelta(seconds=1)
-        
-        gas_anterior = 0.0
-        df_completo = json_a_dataframe(datos_raw)
-        if not df_completo.empty:
-            df_semana_ant = df_completo[(df_completo['fecha'] >= pd.to_datetime(dt_inicio_ant)) & (df_completo['fecha'] <= pd.to_datetime(dt_fin_ant))]
-            gas_anterior = float(df_semana_ant[(df_semana_ant['tipo'] == 'GASTO') & (df_semana_ant['estado'].astype(str).str.upper() != 'FAILED')]['monto'].sum())
-            
         comparativa.append({
             "mes": "Semana",
             "actual": round(gas_actual, 2),
-            "anterior": round(gas_anterior, 2)
+            "anterior": 0.0
         })
     else:
-        # Comparativa Mensual / Anual
-        anio_ant = anio_actual - 1
-        df_ant = pd.DataFrame()
-        try:
-            from app.persistencia.redis.cache_redis import CacheRedis as CacheRedisComp
-            import json as json_comp
-            key_cache_ant = f"ia:raw_tx:{usuario_id}:YTD_{anio_ant}"
-            cache_comp = CacheRedisComp()
-            cached_ant = cache_comp.obtener(key_cache_ant)
-            if cached_ant:
-                datos_raw_ant = json_comp.loads(cached_ant)
-                logger.info(f"[DASHBOARD-GRAFICOS] Cache HIT comparativa año anterior ({anio_ant})")
-            else:
-                ytd_inicio_ant = datetime(anio_ant, 1, 1)
-                ytd_fin_ant = datetime(anio_ant, 12, 31, 23, 59, 59)
-                cliente_fin = obtener_cliente_financiero()
-                resp_ant = await cliente_fin.obtener_historial_transacciones_async(
-                    usuario_id=usuario_id, token=token, tamanio=10000,
-                    desde_exacto=ytd_inicio_ant.isoformat(), hasta_exacto=ytd_fin_ant.isoformat()
-                )
-                datos_raw_ant = resp_ant.get("datos", []) if resp_ant else []
-                try:
-                    cache_comp.guardar(key_cache_ant, json_comp.dumps(datos_raw_ant), ex=86400)
-                    logger.info(f"[DASHBOARD-GRAFICOS] Año anterior ({anio_ant}) cacheado por 24h.")
-                except Exception:
-                    pass
-            df_ant = json_a_dataframe(datos_raw_ant)
-        except Exception as e:
-            logger.warning(f"[DASHBOARD-GRAFICOS] No se pudo cargar historial año anterior: {e}")
-
+        # Comparativa Mensual / Anual (Solo mes actual, sin comparar con año anterior)
         for y, m in meses_lista_comp:
             nombre_mes = NOMBRES_MESES[m]
             gas_actual = 0.0
-            gas_anterior = 0.0
             if not df.empty:
                 df_m_act = df[(df['anio'] == y) & (df['mes'] == m)]
-                gas_actual = float(df_m_act[(df_m_act['tipo'] == 'GASTO') & (df_m_act['estado'].astype(str).str.upper() != 'FAILED')]['monto'].sum())
-            if not df_ant.empty:
-                df_m_ant = df_ant[(df_ant['anio'] == y - 1) & (df_ant['mes'] == m)]
-                gas_anterior = float(df_m_ant[(df_m_ant['tipo'] == 'GASTO') & (df_m_ant['estado'].astype(str).str.upper() != 'FAILED')]['monto'].sum())
-            comparativa.append({"mes": nombre_mes, "actual": round(gas_actual, 2), "anterior": round(gas_anterior, 2)})
+                if filtro_tipo == 'INGRESO':
+                    gas_actual = float(df_m_act[(df_m_act['tipo'] == 'INGRESO') & (df_m_act['estado'].astype(str).str.upper() == 'COMPLETED')]['monto'].sum())
+                else:
+                    gas_actual = float(df_m_act[(df_m_act['tipo'] == 'GASTO') & (df_m_act['estado'].astype(str).str.upper() != 'FAILED')]['monto'].sum())
+            
+            comparativa.append({"mes": nombre_mes, "actual": round(gas_actual, 2), "anterior": 0.0})
             
     return comparativa
 
@@ -805,14 +808,23 @@ async def get_dashboard_graficos(
     except Exception:
         dt_fin = ytd_fin
 
-    # A. Filtrado local del DataFrame
-    if not df.empty:
-        df = df[(df['fecha'] >= pd.to_datetime(dt_inicio)) & (df['fecha'] <= pd.to_datetime(dt_fin))]
+    # A. DataFrame con TODOS los filtros (para la mayoría de gráficos)
+    df_filtrado = df.copy()
+    if not df_filtrado.empty:
+        df_filtrado = df_filtrado[(df_filtrado['fecha'] >= pd.to_datetime(dt_inicio)) & (df_filtrado['fecha'] <= pd.to_datetime(dt_fin))]
         if metodoPago:
-            df = df[df['metodo_pago'].astype(str).str.upper() == metodoPago.upper()]
+            df_filtrado = df_filtrado[df_filtrado['metodo_pago'].astype(str).str.upper() == metodoPago.upper()]
         if tipoMovimiento:
             tipo_map = "GASTO" if tipoMovimiento.upper() == "EGRESO" else tipoMovimiento.upper()
-            df = df[df['tipo'].astype(str).str.upper() == tipo_map]
+            df_filtrado = df_filtrado[df_filtrado['tipo'].astype(str).str.upper() == tipo_map]
+
+    # A2. DataFrame solo con filtro de FECHA (para Relación Gasto-Ingreso — ignora tipo y método)
+    df_ratio = df.copy()
+    if not df_ratio.empty:
+        df_ratio = df_ratio[(df_ratio['fecha'] >= pd.to_datetime(dt_inicio)) & (df_ratio['fecha'] <= pd.to_datetime(dt_fin))]
+
+    # alias para compatibilidad con el resto del código
+    df = df_filtrado
 
     # B. Determinar rango de meses (para flujo de caja)
     if not fechaInicio and not fechaFin:
@@ -828,10 +840,10 @@ async def get_dashboard_graficos(
             if cur_m > 12:
                 cur_m = 1
                 cur_y += 1
-        
+
         # meses_lista_comp contiene exactamente los meses del rango sin el mes anterior
         meses_lista_comp = list(meses_lista)
-        
+
         # Si el rango tiene solo 1 mes, agregar el mes anterior para comparación
         if len(meses_lista) == 1:
             y, m = meses_lista[0]
@@ -843,7 +855,7 @@ async def get_dashboard_graficos(
             meses_lista.insert(0, (prev_y, prev_m))
 
     # C. Cómputo modular de gráficos
-    flujo_caja = calcular_flujo_caja(df, meses_lista)
+    flujo_caja = calcular_flujo_caja(df_ratio, meses_lista)   # Relación Gasto-Ingreso: solo fecha
     distribucion = calcular_distribucion_gastos(df)
     heatmap = calcular_heatmap_gastos(df)
     transacciones_metodo = calcular_metodos_pago(df)

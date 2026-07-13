@@ -13,6 +13,7 @@ export class FinancieroService {
  
   private baseTransacciones = `${environment.gatewayUrl}/api/v1/financiero/transacciones`;
   private baseCategorias    = `${environment.gatewayUrl}/api/v1/financiero/categorias`;
+  private baseResumen       = `${environment.gatewayUrl}/api/v1/resumen`;
  
   // ── Estado reactivo ──
   resumen    = signal<ResumenFinancieroDTO | null>(null);
@@ -75,11 +76,31 @@ export class FinancieroService {
     );
   }
 
+  // ── Resumen financiero global (todo el histórico) ──
+  getResumenGlobal(): Observable<ResumenFinancieroDTO> {
+    const usuarioId = this.auth.usuario()?.id;
+    const params = new HttpParams().set('usuarioId', usuarioId ?? '');
+ 
+    return this.http.get<ResultadoApi<ResumenFinancieroDTO>>(`${this.baseTransacciones}/resumen/global`, { params }).pipe(
+      map(resp => resp.datos),
+      catchError(() => {
+        // Fallback
+        return of({
+          balance: 0,
+          totalIngresos: 0,
+          totalGastos: 0,
+          cantidadIngresos: 0,
+          cantidadGastos: 0
+        } as ResumenFinancieroDTO);
+      })
+    );
+  }
+
   // ── Racha de gastos ──
   getRacha(): Observable<RachaDTO> {
     const usuarioId = this.auth.usuario()?.id;
     let params = new HttpParams().set('usuarioId', usuarioId ?? '');
-    return this.http.get<ResultadoApi<RachaDTO>>(`${this.baseTransacciones}/resumen/racha`, { params }).pipe(
+    return this.http.get<ResultadoApi<RachaDTO>>(`${this.baseResumen}/racha`, { params }).pipe(
       map(resp => resp.datos),
       catchError(() => {
         // Mock en caso de fallo

@@ -19,6 +19,7 @@ public record RespuestaMetaAhorro(
                 LocalDate fechaInicio,
                 LocalDate fechaObjetivo,
                 LocalDate fechaCompletada,
+                java.time.LocalDateTime fechaCreacion,
                 Boolean completada,
                 String proposito) {
 }

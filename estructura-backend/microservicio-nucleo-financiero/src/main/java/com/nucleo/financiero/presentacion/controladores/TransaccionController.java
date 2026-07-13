@@ -155,6 +155,27 @@ public class TransaccionController {
     }
 
     /**
+     * Obtiene un resumen consolidado global de todo el historial.
+     * 
+     * @param usuarioId   ID del usuario.
+     * @param httpRequest Datos de la petición.
+     * @return ResponseEntity con el DTO de resumen financiero global.
+     */
+    @GetMapping("/resumen/global")
+    public ResponseEntity<ResultadoApi<ResumenFinancieroDTO>> obtenerResumenGlobal(
+            @RequestParam UUID usuarioId,
+            HttpServletRequest httpRequest) {
+
+        UUID tokenUsuarioId = UtilidadSeguridad.obtenerUsuarioId();
+        if (tokenUsuarioId != null && !tokenUsuarioId.equals(usuarioId)) {
+            throw new ExcepcionAccesoDenegado();
+        }
+
+        ResumenFinancieroDTO resumen = transaccionService.obtenerResumenGlobal(usuarioId, UtilidadIp.obtenerIpReal(httpRequest));
+        return ResponseEntity.ok(ResultadoApi.exito(resumen, "Resumen financiero global generado"));
+    }
+
+    /**
      * Busca una transacción específica por su identificador único.
      * 
      * @param id UUID de la transacción.

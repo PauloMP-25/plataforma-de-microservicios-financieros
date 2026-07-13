@@ -28,7 +28,10 @@ public class TareaLimpiezaUsuarios {
         log.debug("Iniciando purga de usuarios no habilitados creados antes de: {}", limite);
 
         try {
-            // Usamos el método que definiremos en el repositorio
+            // 1. Primero borramos los roles de los usuarios a eliminar para evitar la violación de llave foránea
+            repositorioUsuario.limpiarRolesUsuariosNoActivados(limite);
+            
+            // 2. Luego borramos a los usuarios en sí
             int eliminados = repositorioUsuario.limpiarUsuariosNoActivados(limite);
             
             if (eliminados > 0) {

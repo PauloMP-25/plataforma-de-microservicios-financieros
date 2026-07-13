@@ -39,6 +39,11 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID>, JpaSpec
      */
     @Modifying
     @Transactional
+    @Query(value = "DELETE FROM usuario_roles WHERE usuario_id IN (SELECT id FROM usuarios WHERE habilitado = false AND fecha_creacion < :fechaLimite)", nativeQuery = true)
+    void limpiarRolesUsuariosNoActivados(@Param("fechaLimite") LocalDateTime fechaLimite);
+
+    @Modifying
+    @Transactional
     @Query(value = "DELETE FROM usuarios WHERE habilitado = false AND fecha_creacion < :fechaLimite", nativeQuery = true)
     int limpiarUsuariosNoActivados(@Param("fechaLimite") LocalDateTime fechaLimite);
 

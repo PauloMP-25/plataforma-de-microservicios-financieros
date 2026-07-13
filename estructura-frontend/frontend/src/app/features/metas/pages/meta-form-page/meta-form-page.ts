@@ -50,23 +50,7 @@ export class MetaFormPage implements OnInit, HasUnsavedChanges {
   private balanceAplicado = false;
 
   constructor() {
-    // Reactivamente aplicar el balance cuando llegue del backend
-    effect(() => {
-      if (this.modoEdicion || this.balanceAplicado || !this.formulario) return;
-
-      // Intentar primero con FinancieroService (llega más rápido vía header)
-      const resumenFin = this.financieroService.resumen();
-      // Segundo fallback: resumenActual de GastosStateService
-      const resumenGastos = this.gastosState.resumenActual();
-      // Tercero: dashboardState resumenYTD
-      const resumenYTD = this.dashboardState.resumenYTD();
-
-      const balance = resumenFin?.balance ?? resumenGastos?.balance ?? resumenYTD?.balance;
-      if (balance !== undefined && balance !== null) {
-        this.formulario.patchValue({ montoActual: balance });
-        this.balanceAplicado = true;
-      }
-    });
+    // Constructor sin effect, la carga de balance global se hace en ngOnInit
   }
 
   hasUnsavedChanges(): boolean {
@@ -95,6 +79,24 @@ export class MetaFormPage implements OnInit, HasUnsavedChanges {
         this.modoEdicion = true;
         this.metaId = id;
         this.cargarMetaParaEditar(id);
+      } else {
+        this.cargarBalanceGlobal();
+      }
+    });
+  }
+
+  cargarBalanceGlobal(): void {
+    if (this.modoEdicion) return;
+    this.cargando.set(true);
+    this.financieroService.getResumenGlobal().subscribe({
+      next: (resumen) => {
+        if (resumen && resumen.balance !== undefined) {
+          this.formulario.patchValue({ montoActual: resumen.balance });
+        }
+        this.cargando.set(false);
+      },
+      error: () => {
+        this.cargando.set(false);
       }
     });
   }

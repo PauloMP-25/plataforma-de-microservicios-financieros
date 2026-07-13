@@ -50,4 +50,5 @@ export class DashboardPage implements OnInit, OnDestroy {
   get gastoPromedioDiario(): number { return this.stateService.resumen()?.gastoPromedioDiario ?? 0; }
   get volumenTransacciones(): number { return this.stateService.resumen()?.volumenTransacciones ?? 0; }
   get proyeccionFinDeMes(): number { return this.stateService.resumen()?.proyeccionFinDeMes ?? 0; }
+  get tipoMovimiento(): string | undefined { return this.stateService.filtrosActuales().tipoMovimiento; }
 }

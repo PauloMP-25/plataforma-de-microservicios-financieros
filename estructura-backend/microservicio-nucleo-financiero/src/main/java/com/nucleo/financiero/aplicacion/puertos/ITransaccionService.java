@@ -68,6 +68,15 @@ public interface ITransaccionService {
     ResumenFinancieroDTO obtenerResumen(UUID usuarioId, Integer mes, Integer anio, String ipCliente);
 
     /**
+     * Obtiene un resumen financiero consolidado global (histórico completo).
+     *
+     * @param usuarioId ID del usuario.
+     * @param ipCliente Dirección IP de origen.
+     * @return DTO con el resumen de ingresos y gastos totales.
+     */
+    ResumenFinancieroDTO obtenerResumenGlobal(UUID usuarioId, String ipCliente);
+
+    /**
      * Busca una transacción por su identificador único.
      *
      * @param id UUID de la transacción.
