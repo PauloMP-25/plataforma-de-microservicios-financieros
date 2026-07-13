@@ -281,7 +281,7 @@ class Configuracion(BaseSettings):
     redis_db: int = 0
     redis_password: str = Field(
         default="",
-        validation_alias=AliasChoices("SPRING_REDIS_PASSWORD", "REDIS_PASSWORD"),
+        validation_alias=AliasChoices("SPRING_DATA_REDIS_PASSWORD", "SPRING_REDIS_PASSWORD", "REDIS_PASSWORD"),
         description="Password Redis.",
     )
     redis_ssl: bool = Field(
