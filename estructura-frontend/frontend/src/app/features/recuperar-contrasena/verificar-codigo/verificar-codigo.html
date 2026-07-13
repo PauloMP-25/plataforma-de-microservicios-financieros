@@ -28,46 +28,121 @@
 
 <!-- Template reutilizable del contenido -->
 <ng-template #contenidoVerificacion>
-  <div class="recuperar__icono-principal">
-    <i class="fas fa-shield-alt"></i>
-  </div>
-  <h1>Verificar Código</h1>
-  <p class="recuperar__desc">{{ textoDescripcion }}</p>
-  <p class="recuperar__correo-enviado" *ngIf="destinoMostrado">{{ destinoMostrado }}</p>
+  <!-- SI NO SE ESTÁ CAMBIANDO EL CANAL -->
+  <ng-container *ngIf="!nuevoCanal">
+    <div class="recuperar__icono-principal">
+      <i class="fas fa-shield-alt"></i>
+    </div>
+    <h1>Verificar Código</h1>
+    <p class="recuperar__desc">{{ textoDescripcion }}</p>
+    <p class="recuperar__correo-enviado" *ngIf="destinoMostrado">{{ destinoMostrado }}</p>
 
-  <!-- Inputs OTP -->
-  <div class="recuperar__otp-grupo" (paste)="onPegar($event)">
-    @for (digito of digitos; track $index) {
-      <input
-        #digitoInput
-        type="text"
-        inputmode="numeric"
-        maxlength="1"
-        class="recuperar__otp-input"
-        [class.recuperar__otp-input--lleno]="digitos[$index]"
-        [value]="digitos[$index]"
-        (input)="onDigitoInput($event, $index)"
-        (keydown)="onDigitoKeydown($event, $index)"
-        [attr.id]="'otp-' + $index"
-      />
-    }
-  </div>
+    <!-- Inputs OTP -->
+    <div class="recuperar__otp-grupo" (paste)="onPegar($event)">
+      @for (digito of digitos; track $index) {
+        <input
+          #digitoInput
+          type="text"
+          inputmode="numeric"
+          maxlength="1"
+          class="recuperar__otp-input"
+          [class.recuperar__otp-input--lleno]="digitos[$index]"
+          [value]="digitos[$index]"
+          (input)="onDigitoInput($event, $index)"
+          (keydown)="onDigitoKeydown($event, $index)"
+          [attr.id]="'otp-' + $index"
+        />
+      }
+    </div>
 
-  <button type="button" class="recuperar__btn-submit" [disabled]="!codigoValido || cargando" (click)="verificarCodigo()" id="btn-verificar-codigo">
-    <span *ngIf="!cargando">Verificar Código <i class="fas fa-arrow-right"></i></span>
-    <span *ngIf="cargando" class="recuperar__spinner"></span>
-  </button>
+    <button type="button" class="recuperar__btn-submit" [disabled]="!codigoValido || cargando" (click)="verificarCodigo()" id="btn-verificar-codigo">
+      <span *ngIf="!cargando">Verificar Código <i class="fas fa-arrow-right"></i></span>
+      <span *ngIf="cargando" class="recuperar__spinner"></span>
+    </button>
 
-  <div class="recuperar__error-general" *ngIf="errorMensaje">
-    <i class="fas fa-exclamation-circle"></i> {{ errorMensaje }}
-  </div>
+    <div class="recuperar__error-general" *ngIf="errorMensaje">
+      <i class="fas fa-exclamation-circle"></i> {{ errorMensaje }}
+    </div>
 
-  <div class="recuperar__info-general" *ngIf="infoMensaje" style="color: #10B981; margin-top: 1rem; font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem; justify-content: center;">
-    <i class="fas fa-check-circle"></i> {{ infoMensaje }}
-  </div>
+    <div class="recuperar__info-general" *ngIf="infoMensaje" style="color: #10B981; margin-top: 1rem; font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem; justify-content: center;">
+      <i class="fas fa-check-circle"></i> {{ infoMensaje }}
+    </div>
 
-  <p class="recuperar__reenviar">
-    ¿No recibiste el código?
-    <button type="button" class="recuperar__enlace-reenviar" (click)="reenviarCodigo()" id="btn-reenviar-codigo">Reenviar código</button>
-  </p>
+    <p class="recuperar__reenviar">
+      ¿No recibiste el código?
+      <button type="button" class="recuperar__enlace-reenviar" (click)="reenviarCodigo()" id="btn-reenviar-codigo">Reenviar código</button>
+    </p>
+
+    <!-- Opciones de cambio de canal -->
+    <div class="recuperar__opciones-canal" style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 1.2rem; display: flex; flex-direction: column; gap: 0.8rem; align-items: center;">
+      <span style="font-size: 0.78rem; color: #94A3B8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">¿Recibir por otro medio?</span>
+      <div style="display: flex; gap: 0.5rem; justify-content: center; width: 100%; flex-wrap: wrap;">
+        
+        <!-- Si el actual NO es correo, mostrar botón para cambiar a correo -->
+        <button *ngIf="medioVerificacion !== 'correo'" type="button" (click)="seleccionarNuevoCanal('EMAIL')" class="recuperar__enlace-reenviar" style="padding: 6px 12px; border-radius: 8px; border: 1.5px solid rgba(91,106,240,0.3); background: rgba(91,106,240,0.06); color: #5B6AF0; font-size: 0.78rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;">
+          <i class="fas fa-envelope"></i> Usar Correo
+        </button>
+
+        <!-- Botones para SMS y WhatsApp (Siempre disponibles si queremos cambiar de celular o cambiar desde correo) -->
+        <button type="button" (click)="seleccionarNuevoCanal('SMS')" class="recuperar__enlace-reenviar" style="padding: 6px 12px; border-radius: 8px; border: 1.5px solid rgba(91,106,240,0.3); background: rgba(91,106,240,0.06); color: #5B6AF0; font-size: 0.78rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;">
+          <i class="fas fa-sms"></i> Usar SMS
+        </button>
+
+        <button type="button" (click)="seleccionarNuevoCanal('WHATSAPP')" class="recuperar__enlace-reenviar" style="padding: 6px 12px; border-radius: 8px; border: 1.5px solid rgba(91,106,240,0.3); background: rgba(91,106,240,0.06); color: #5B6AF0; font-size: 0.78rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;">
+          <i class="fab fa-whatsapp"></i> Usar WhatsApp
+        </button>
+        
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- SI SE ESTÁ CAMBIANDO EL CANAL -->
+  <ng-container *ngIf="nuevoCanal">
+    <div class="recuperar__icono-principal" style="color: #5B6AF0;">
+      <i class="fas" [class.fa-envelope]="nuevoCanal === 'EMAIL'" [class.fa-sms]="nuevoCanal === 'SMS'" [class.fa-comment-alt]="nuevoCanal === 'WHATSAPP'"></i>
+    </div>
+    <h1 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Enviar a {{ nuevoCanal === 'EMAIL' ? 'Correo' : (nuevoCanal === 'SMS' ? 'SMS' : 'WhatsApp') }}</h1>
+    <p class="recuperar__desc" style="margin-bottom: 1.5rem; font-size: 0.875rem; color: #94A3B8;">
+      {{ nuevoCanal === 'EMAIL' ? 'Se enviará un nuevo código de activación al correo registrado:' : 'Ingresa el número de celular al que enviaremos tu código:' }}
+    </p>
+
+    <!-- Si es EMAIL, mostrar el correo estático -->
+    <p class="recuperar__correo-enviado" *ngIf="nuevoCanal === 'EMAIL'" style="margin-bottom: 2rem; font-family: monospace; color: #38BDF8;">
+      {{ correoActivacion || correoRecuperacion }}
+    </p>
+
+    <!-- Si es SMS o WHATSAPP, pedir número de teléfono -->
+    <div class="auth__campo" *ngIf="nuevoCanal === 'SMS' || nuevoCanal === 'WHATSAPP'" style="margin-bottom: 1.5rem; text-align: left; width: 100%;">
+      <label class="auth__label" style="display: block; font-size: 0.75rem; font-weight: 800; color: #94A3B8; margin-bottom: 6px; letter-spacing: 0.5px;">NÚMERO DE CELULAR</label>
+      <div class="auth__input-grupo" [class.auth__input-grupo--error]="telefonoTocado && !nuevoTelefonoValido" style="position: relative; display: flex; align-items: center; border: 1.5px solid rgba(255,255,255,0.08); background: rgba(15,23,42,0.6); border-radius: 12px;">
+        <i class="fas fa-mobile-alt auth__input-icono" style="position: absolute; left: 16px; color: #5B6AF0; font-size: 1.1rem;"></i>
+        <input
+          type="tel"
+          [(ngModel)]="nuevoTelefono"
+          (blur)="telefonoTocado = true"
+          placeholder="+51 999 999 999"
+          class="auth__input"
+          style="width: 100%; padding: 12px 16px 12px 42px; border: none; background: transparent; color: white; outline: none; font-size: 0.95rem;"
+          id="input-nuevo-telefono-cambio">
+      </div>
+      <span class="auth__error" *ngIf="telefonoTocado && !nuevoTelefonoValido" style="color: #EF4444; font-size: 0.75rem; margin-top: 4px; display: block;">
+        Ingresa un número válido de 7 a 15 dígitos.
+      </span>
+    </div>
+
+    <!-- Botón Enviar OTP -->
+    <button type="button" class="recuperar__btn-submit" [disabled]="cargando || ((nuevoCanal === 'SMS' || nuevoCanal === 'WHATSAPP') && !nuevoTelefonoValido)" (click)="confirmarCambioCanal()" id="btn-enviar-nuevo-otp">
+      <span *ngIf="!cargando">Enviar Código OTP <i class="fas fa-arrow-right"></i></span>
+      <span *ngIf="cargando" class="recuperar__spinner"></span>
+    </button>
+
+    <div class="recuperar__error-general" *ngIf="errorMensaje" style="margin-top: 1rem;">
+      <i class="fas fa-exclamation-circle"></i> {{ errorMensaje }}
+    </div>
+
+    <!-- Botón Cancelar / Volver -->
+    <p class="recuperar__reenviar" style="margin-top: 1.5rem;">
+      <button type="button" class="recuperar__enlace-reenviar" style="color: #94A3B8;" (click)="nuevoCanal = null; errorMensaje = ''" id="btn-cancelar-cambio">Cancelar y volver</button>
+    </p>
+  </ng-container>
 </ng-template>

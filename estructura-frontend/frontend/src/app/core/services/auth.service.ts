@@ -156,6 +156,10 @@ export class AuthService {
   }
 
   logout(): void {
+    const user = this._usuario();
+    if (user && user.id) {
+      sessionStorage.removeItem(`luka_modal_completar_${user.id}`);
+    }
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USUARIO_KEY);

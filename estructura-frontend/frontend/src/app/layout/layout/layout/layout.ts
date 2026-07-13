@@ -29,10 +29,10 @@ export class Layout {
       this.perfilService.consultarPerfil(user.id).subscribe({
         next: (perfil) => {
           if (perfil && !perfil.datosCompletos) {
-            const hasShownModal = localStorage.getItem(`luka_modal_completar_${user.id}`);
+            const hasShownModal = sessionStorage.getItem(`luka_modal_completar_${user.id}`);
             if (!hasShownModal) {
               this.mostrarCompletarPerfil.set(true);
-              localStorage.setItem(`luka_modal_completar_${user.id}`, 'true');
+              sessionStorage.setItem(`luka_modal_completar_${user.id}`, 'true');
             }
           }
         },
