@@ -38,7 +38,6 @@ public class ServicioMetaAhorroImpl implements ServicioMetaAhorro {
     private final MetaAhorroRepositorio repositorio;
     private final PublicadorAuditoria publicadorAuditoria;
     private final ApplicationEventPublisher eventPublisher;
-    private final RabbitTemplate rabbitTemplate;
 
     @Override
     @Transactional
