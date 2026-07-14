@@ -41,6 +41,11 @@ export class VerificarCodigo {
   infoMensaje = '';
   correoRecuperacion = '';
 
+  // ── Nuevas propiedades para cambio de canal en caliente ──
+  nuevoCanal: 'EMAIL' | 'SMS' | 'WHATSAPP' | null = null;
+  nuevoTelefono = '';
+  telefonoTocado = false;
+
   constructor(
     private router: Router,
     private authService: AuthService
@@ -60,6 +65,22 @@ export class VerificarCodigo {
       return 'Ingresa el código de 6 dígitos que enviamos a tu número de celular.';
     }
     return 'Ingresa el código de 6 dígitos que enviamos a tu correo electrónico.';
+  }
+
+  get nuevoTelefonoValido(): boolean {
+    return /^\+?[0-9]{7,15}$/.test(this.nuevoTelefono.trim().replace(/\s+/g, ''));
+  }
+
+  seleccionarNuevoCanal(canal: 'EMAIL' | 'SMS' | 'WHATSAPP'): void {
+    this.nuevoCanal = canal;
+    this.telefonoTocado = false;
+    this.errorMensaje = '';
+    this.infoMensaje = '';
+    if (canal === 'EMAIL') {
+      this.nuevoTelefono = '';
+    } else {
+      this.nuevoTelefono = this.medioVerificacion === 'celular' ? this.destinoVerificacion : '';
+    }
   }
 
   onDigitoInput(evento: Event, indice: number): void {
@@ -170,6 +191,100 @@ export class VerificarCodigo {
       });
     } else {
       console.log('Reenviar código de activación a:', this.destinoMostrado);
+      // Flujo de activación: si el usuario pide reenviar al canal actual
+      this.cargando = true;
+      this.errorMensaje = '';
+      this.infoMensaje = '';
+      const email = this.correoActivacion || this.correoRecuperacion;
+      const tipo = this.medioVerificacion === 'correo' ? 'EMAIL' : 'SMS'; // Fallback a SMS si es celular por defecto
+      const telefono = this.medioVerificacion === 'celular' ? this.destinoVerificacion.replace(/\s+/g, '') : undefined;
+
+      this.authService.solicitarOtpActivacion({ email, tipo, telefono }).subscribe({
+        next: (resp) => {
+          this.cargando = false;
+          if (resp.exito) {
+            this.infoMensaje = 'Código reenviado con éxito';
+            setTimeout(() => this.infoMensaje = '', 4000);
+          } else {
+            this.errorMensaje = resp.mensaje || 'Error al reenviar el código';
+          }
+        },
+        error: (err) => {
+          this.cargando = false;
+          this.errorMensaje = err.error?.mensaje || 'Error al reenviar el código';
+        }
+      });
+    }
+  }
+
+  confirmarCambioCanal(): void {
+    if (!this.nuevoCanal) return;
+
+    if ((this.nuevoCanal === 'SMS' || this.nuevoCanal === 'WHATSAPP') && !this.nuevoTelefonoValido) {
+      this.telefonoTocado = true;
+      this.errorMensaje = 'Ingresa un número válido de 7 a 15 dígitos.';
+      return;
+    }
+
+    this.cargando = true;
+    this.errorMensaje = '';
+    this.infoMensaje = '';
+
+    const email = this.correoActivacion || this.correoRecuperacion;
+    const telefono = (this.nuevoCanal === 'SMS' || this.nuevoCanal === 'WHATSAPP') ? this.nuevoTelefono.trim().replace(/\s+/g, '') : undefined;
+
+    if (this.usuarioId) {
+      // Flujo de activación de cuenta
+      const payload = {
+        email: email,
+        tipo: this.nuevoCanal,
+        telefono: telefono
+      };
+
+      this.authService.solicitarOtpActivacion(payload).subscribe({
+        next: (resp) => {
+          this.cargando = false;
+          if (resp.exito) {
+            this.medioVerificacion = this.nuevoCanal === 'EMAIL' ? 'correo' : 'celular';
+            this.destinoVerificacion = this.nuevoCanal === 'EMAIL' ? email : this.nuevoTelefono.trim();
+            this.nuevoCanal = null;
+            this.infoMensaje = 'Código OTP enviado al nuevo canal con éxito';
+            setTimeout(() => this.infoMensaje = '', 4000);
+          } else {
+            this.errorMensaje = resp.mensaje || 'Error al enviar el código';
+          }
+        },
+        error: (err) => {
+          this.cargando = false;
+          this.errorMensaje = err.error?.mensaje || 'Error de conexión con el servidor';
+        }
+      });
+    } else {
+      // Flujo de recuperación de contraseña
+      const payload = {
+        correo: email,
+        tipo: this.nuevoCanal,
+        telefono: telefono
+      };
+
+      this.authService.solicitarRecuperacion(payload).subscribe({
+        next: (resp) => {
+          this.cargando = false;
+          if (resp.exito) {
+            this.medioVerificacion = this.nuevoCanal === 'EMAIL' ? 'correo' : 'celular';
+            this.destinoVerificacion = this.nuevoCanal === 'EMAIL' ? email : this.nuevoTelefono.trim();
+            this.nuevoCanal = null;
+            this.infoMensaje = 'Código OTP enviado al nuevo canal con éxito';
+            setTimeout(() => this.infoMensaje = '', 4000);
+          } else {
+            this.errorMensaje = resp.mensaje || 'Error al enviar el código';
+          }
+        },
+        error: (err) => {
+          this.cargando = false;
+          this.errorMensaje = err.error?.mensaje || 'Error de conexión con el servidor';
+        }
+      });
     }
   }
 }

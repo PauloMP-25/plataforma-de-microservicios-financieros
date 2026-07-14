@@ -33,22 +33,6 @@ export class IniciarSesion {
     this.mostrarPassword = !this.mostrarPassword;
   }
 
-  usarMock(): void {
-    this.formulario.patchValue({
-      correo: 'prueba@gmail.com',
-      password: '12345'
-    });
-    this.iniciarSesion();
-  }
-
-  usarMockAdmin(): void {
-    this.formulario.patchValue({
-      correo: 'admin@gmail.com',
-      password: '12345'
-    });
-    this.iniciarSesion();
-  }
-
   iniciarSesion(): void {
     if (this.formulario.invalid) {
       this.formulario.markAllAsTouched();
@@ -61,39 +45,6 @@ export class IniciarSesion {
       correo: this.formulario.value.correo,
       password: this.formulario.value.password
     };
-
-    // [F-29] Intercepción de Usuario Mock para Pruebas (Frontend Only)
-    if (solicitudLogin.correo === 'prueba@gmail.com' && solicitudLogin.password === '12345') {
-      setTimeout(() => {
-        this.cargando = false;
-        this.authService.actualizarSesion({
-          idUsuario: 'mock-12345',
-          nombreUsuario: 'Usuario Prueba',
-          roles: ['ROLE_PREMIUM', 'USER'],
-          tokenAcceso: 'mock-jwt-token-valido-solo-frontend',
-          expiraEn: new Date(Date.now() + 86400000).toISOString()
-        } as any);
-        this.notificacionService.mostrarLoginExitoso('Usuario Prueba');
-        this.router.navigate(['/dashboard']);
-      }, 600);
-      return;
-    }
-
-    if (solicitudLogin.correo === 'admin@gmail.com' && solicitudLogin.password === '12345') {
-      setTimeout(() => {
-        this.cargando = false;
-        this.authService.actualizarSesion({
-          idUsuario: 'mock-admin',
-          nombreUsuario: 'Administrador Prueba',
-          roles: ['ROLE_ADMIN', 'ADMIN', 'ROLE_PREMIUM', 'USER'],
-          tokenAcceso: 'mock-jwt-token-valido-solo-frontend-admin',
-          expiraEn: new Date(Date.now() + 86400000).toISOString()
-        } as any);
-        this.notificacionService.mostrarLoginExitoso('Administrador Prueba');
-        this.router.navigate(['/admin']);
-      }, 600);
-      return;
-    }
 
     this.authService.login(solicitudLogin).subscribe({
       next: (resp) => {

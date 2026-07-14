@@ -29,7 +29,7 @@ class Configuracion(BaseSettings):
     # ══════════════════════════════════════════════════════════════════════════
     nombre_app: str = "Microservicio IA Financiera - LUKA"
     version_app: str = "4.0.0"
-    puerto: int = Field(default=8086, ge=1024, le=65535)
+    puerto: int = Field(default=8086, validation_alias=AliasChoices("PORT", "PUERTO"), ge=1024, le=65535)
     entorno: str = "desarrollo"
 
     # ══════════════════════════════════════════════════════════════════════════

@@ -47,16 +47,6 @@
     <a routerLink="/recuperar-contrasena" class="auth__enlace-olvide" id="enlace-olvide-password">¿Olvidaste tu contraseña?</a>
   </div>
 
-  <!-- [F-29] Botón Mock para Pruebas -->
-  <div style="margin-bottom: 1.5rem; display: flex; gap: 10px; justify-content: space-between;">
-    <button type="button" (click)="usarMock()" style="flex: 1; background: rgba(138, 43, 226, 0.1); border: 1px dashed var(--luka-color-primario, #8a2be2); color: var(--luka-color-primario, #8a2be2); padding: 0.6rem; border-radius: 8px; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 500; transition: all 0.3s ease;">
-      <i class="fas fa-vial"></i> Mock Cliente
-    </button>
-    <button type="button" (click)="usarMockAdmin()" style="flex: 1; background: rgba(220, 38, 38, 0.1); border: 1px dashed #dc2626; color: #dc2626; padding: 0.6rem; border-radius: 8px; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 500; transition: all 0.3s ease;">
-      <i class="fas fa-user-shield"></i> Mock Admin
-    </button>
-  </div>
-
   <!-- Botón Submit -->
   <button type="submit" class="auth__btn-submit" [disabled]="cargando" id="btn-submit-login">
     <span *ngIf="!cargando">Ingresar <i class="fas fa-arrow-right"></i></span>
